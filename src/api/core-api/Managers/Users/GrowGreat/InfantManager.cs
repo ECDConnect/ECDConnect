@@ -565,16 +565,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         }
         public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
         {
-            List<Infant> infants = new List<Infant>();
-            var children = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
-            foreach (var child in children)
+            List<Infant> infants = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
+            foreach (var infant in infants)
             {
-                child.StatusInfo = GetStatusInfo(child, true);
-                child.NextVisitDate = GetClientsNextVisitDate(child.Id);
-                if (child.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && child.StatusInfo.Subject.Contains(" due "))
-                {
-                    infants.Add(child);
-                }
+                infant.StatusInfo = GetStatusInfo(infant, true);
+                infant.NextVisitDate = GetClientsNextVisitDate(infant.Id);
             }
 
             return infants;
