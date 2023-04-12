@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi {
             // Mother Questions
             public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
-            public const string q_measurement = "MUAC measurement";
+            public const string q_measurement = "What is {client} mid-upper arm circumference (MUAC) today?";
             public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
 
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
@@ -46,9 +46,9 @@ namespace EcdLink.Api.CoreApi {
             public const string q_suicide = "Had thoughts and plans to harm yourself or commit suicide?";
 
             public const string q_T = "(T) Tolerance: how many drinks does it take to make you high?";
-            public const string q_A = "(A) Have people annoyed you by critizing your drinking?";
+            public const string q_A = "(A) Have people annoyed you by criticizing your drinking?";
             public const string q_C = "(C) Have you ever felt you need to cut down on your drinking?";
-            public const string q_E = "(E) Eye - opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
+            public const string q_E = "(E) Eye-opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
 
             public const string q_ID_doc = "Does {client} have an ID document?";
             public const string q_citizen = "Is {client} a South African citizen or permanent resident?";

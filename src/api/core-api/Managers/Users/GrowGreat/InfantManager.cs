@@ -15,7 +15,6 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
@@ -152,9 +151,35 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Infant UpdateInfant(string id, InfantModel input)
         {
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
-            
+
+            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
+            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+
+            if (mother == null && caregiver == null)
+            {
+                caregiver = GetCaregiverFromInput(input);
+            } else
+            {
+                if (mother != null)
+                {
+                    infantToUpdate.MotherCaregiverId = input.CaregiverId;
+                    infantToUpdate.CaregiverId = null;
+                    infantToUpdate.MotherCaregiverId = mother.Id;
+                    infantToUpdate.Mother = mother;
+                }
+                else
+                {
+                    infantToUpdate.MotherCaregiverId = null;
+                    infantToUpdate.CaregiverId = caregiver.Id;
+                    infantToUpdate.Caregiver = caregiver;
+                }
+            }
+
             var infantUser = infantToUpdate.User;
             infantUser.DateOfBirth = (DateTime)input.DateOfBirth;
+
+            var infantCaregiver = infantToUpdate.Caregiver;
 
             infantToUpdate.UpdatedDate = DateTime.Now;
             infantToUpdate.UpdatedBy = _applicationUserId;
