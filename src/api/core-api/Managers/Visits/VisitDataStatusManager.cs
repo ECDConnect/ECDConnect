@@ -591,7 +591,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     }
                 }
                 else if (visitData.Question == Constants.GGSettings.q_measurement) {
-                    var questionAnswer = Int32.Parse(visitData.QuestionAnswer);
+                    var questionAnswer = visitData.QuestionAnswer != "undefined" ? Int32.Parse(visitData.QuestionAnswer) : 0;
 
                     if (questionAnswer < 22) {
                         // add to referrals items list(""May be underweight - MUAC less than 22cm"") red
@@ -937,7 +937,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _height, _weight, gender);
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
