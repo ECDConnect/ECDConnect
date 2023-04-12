@@ -449,8 +449,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Mother GetMotherForCaregiver(string caregiverId)
         {
             Mother mother = _motherRepo.GetAll().Where(x => x.LinkedCaregiverId.ToString() == caregiverId).FirstOrDefault();
-            mother.StatusInfo = GetStatusInfo(mother, true);
-            mother.NextVisitDate = GetClientsNextVisitDate(mother.Id);
+            if (mother != null)
+            {
+                mother.StatusInfo = GetStatusInfo(mother, true);
+                mother.NextVisitDate = GetClientsNextVisitDate(mother.Id);
+            }
             return mother;
         }
     }
