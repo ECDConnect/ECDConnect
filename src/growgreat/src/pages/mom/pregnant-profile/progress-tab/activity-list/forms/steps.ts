@@ -4,44 +4,25 @@ import {
   DangerSignsFollowUpStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
-  // MaternalDistressStep,
-  // MaternalDistressScreeningStep,
   AntenatalCare,
 } from './healthcare-steps';
 import {
   MotherGrowthMUACStep,
   NutritonEatingStep,
-  DangerSignsStep as BabyDangerSignsStep,
   DangerSignsFollowUpStep as BabyDangerSignsFollowUpStep,
   HealthyEatingStep,
 } from './nutrition-steps';
 import {
-  WeightAndLengthFormStep,
   WeightAndLengthResultStep,
   MaternalDistressSteps,
   MidUpperArmCircumferenceResultStep,
   DrugOrAlcoholUseStep,
   NutritionStep,
-  BreastMilkOnlyStep,
-  BreastfeedingIssuesStep,
-  BreastfeedingIssuesRelevantItemsStep,
-  FormulaMilkNotesStep,
-  BenefitsOfBreastfeedingStep,
-  BreastfeedingWorksStep,
-  UnsafeFeedingPracticesStep,
-  FoodsFormStep,
-  MixedBenefitsOfBreastfeedingStep,
-  MixedBreastfeedingWorksStep,
-  MixedUnsafeFeedingPracticesStep,
-  FirstFoodsStep,
-  ComplementaryFeedingStep,
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
 import {
   DevelopmentalScreeningStep,
-  DevelopmentalScreeningWeeksStep,
-  DevelopmentalScreeningWeeksFollowUpStep,
   DangerSignsStep,
 } from './danger-signs-steps';
 import {
@@ -107,38 +88,6 @@ export const getPillar1Steps = ({
     ...(isShowNutritionStep ? [NutritionStep] : []),
   ];
 
-  const breastMilkOnlyFlow = [
-    BreastMilkOnlyStep,
-    BreastfeedingIssuesStep,
-    ...(isToSkipBreastfeedingIssuesRelevantItemsStep
-      ? []
-      : [BreastfeedingIssuesRelevantItemsStep]),
-  ];
-
-  const formulaMilkOnlyFlow = [
-    FormulaMilkNotesStep,
-    BenefitsOfBreastfeedingStep,
-    ...(isFormulaMilkHowBreastfeedingWorks ? [BreastfeedingWorksStep] : []),
-    ...(isFormulaMilkUnsafeFeedingPractices
-      ? [UnsafeFeedingPracticesStep]
-      : []),
-  ];
-
-  const mixedFeedingFlow = [
-    ...(isMixedFeedingFoodsForm ? [FoodsFormStep] : []),
-    ...(isMixedFeedingBenefitsOfBreastfeeding
-      ? [MixedBenefitsOfBreastfeedingStep]
-      : []),
-    ...(isMixedFeedingHowBreastfeedingWorks
-      ? [MixedBreastfeedingWorksStep]
-      : []),
-    ...(isMixedFeedingUnsafeFeedingPractices
-      ? [MixedUnsafeFeedingPracticesStep]
-      : []),
-    ...(isMixedFeedingFistFoods ? [FirstFoodsStep] : []),
-    ...(isMixedFeedingComplementaryFeeding ? [ComplementaryFeedingStep] : []),
-  ];
-
   const complementaryFeedingFlow = [
     AlcoholUseStep,
     HivCareAndMedicationStep,
@@ -149,23 +98,11 @@ export const getPillar1Steps = ({
   if (!!nutritionAnswer) {
     switch (nutritionAnswer) {
       case nutritionAnswers.mixedFeeding:
-        return [
-          ...defaultScreens,
-          ...mixedFeedingFlow,
-          ...complementaryFeedingFlow,
-        ];
+        return [...defaultScreens, ...complementaryFeedingFlow];
       case nutritionAnswers.formulaMilkOnly:
-        return [
-          ...defaultScreens,
-          ...formulaMilkOnlyFlow,
-          ...complementaryFeedingFlow,
-        ];
+        return [...defaultScreens, ...complementaryFeedingFlow];
       default:
-        return [
-          ...defaultScreens,
-          ...breastMilkOnlyFlow,
-          ...complementaryFeedingFlow,
-        ];
+        return [...defaultScreens, ...complementaryFeedingFlow];
     }
   }
 
@@ -174,13 +111,7 @@ export const getPillar1Steps = ({
 
 export const dangerSignsSteps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean
-) => [
-  DevelopmentalScreeningStep,
-  // ...(isDevelopmentalScreeningWeeksFollowUp
-  //   ? [DevelopmentalScreeningWeeksFollowUpStep]
-  //   : []),
-  DangerSignsStep,
-];
+) => [DevelopmentalScreeningStep, DangerSignsStep];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

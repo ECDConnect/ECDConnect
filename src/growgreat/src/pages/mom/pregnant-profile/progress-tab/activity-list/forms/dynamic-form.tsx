@@ -18,12 +18,8 @@ import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { useSelector } from 'react-redux';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
-import { GrowthMonitoring } from './pregnancy-care-steps';
-import { getMotherVisits } from '@/store/mother/mother.selectors';
 import { useParams } from 'react-router';
 
 export interface Question {
@@ -50,7 +46,6 @@ export interface DynamicFormProps {
   isTipPage?: boolean;
   steps?: any[]; // TODO: add type
   sectionQuestions?: SectionQuestions[];
-  growthMonitoring?: GrowthMonitoring;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
@@ -58,7 +53,6 @@ export interface DynamicFormProps {
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
-  setGrowthMonitoring?: (value: GrowthMonitoring) => void;
 }
 
 export interface MotherProfileParams {
@@ -83,7 +77,6 @@ export const DynamicForm = ({
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
-  const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -97,10 +90,6 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
   const { visitId } = useParams<MotherProfileParams>();
-
-  const motherVisits = useSelector(getMotherVisits);
-
-  console.log({ motherVisits });
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -148,8 +137,6 @@ export const DynamicForm = ({
     [setSectionQuestionsForm]
   );
 
-  console.log({ sectionQuestions });
-
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
       setReferralsInput((prevState) => {
@@ -167,11 +154,6 @@ export const DynamicForm = ({
     },
     []
   );
-
-  const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
-    setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
-  }, []);
-
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
@@ -246,10 +228,8 @@ export const DynamicForm = ({
         mother={mother}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
-        growthMonitoring={growthMonitoring}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
-        setGrowthMonitoring={handleGrowthMonitoring}
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
@@ -257,8 +237,6 @@ export const DynamicForm = ({
     );
   }, [
     currentStep,
-    growthMonitoring,
-    handleGrowthMonitoring,
     handleSetQuestions,
     handleSetReferrals,
     infant,

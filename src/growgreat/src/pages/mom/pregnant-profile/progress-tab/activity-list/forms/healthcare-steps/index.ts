@@ -4,5 +4,3 @@ export { ExpectedDeliveryStep } from './expected-delivery';
 export { DangerSignsFollowUpStep } from './expected-delivery/follow-up';
 export { ClinicVisitsUpToDateStep } from './clinic-visits-up-to-date';
 export { AntenatalClinicVideoStep } from './antenatal-clinic-video';
-export { MaternalDistressStep } from './maternal-distress';
-export { MaternalDistressScreeningStep } from './maternal-distress-screening';

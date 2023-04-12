@@ -69,8 +69,6 @@ export const MomActivityList: React.FC = () => {
   const [displayHelp, setDisplayHelp] = useState(false);
   const { visitId } = useParams<MotherProfileParams>();
 
-  console.log({ visitId });
-
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
   const { isOnline } = useOnlineStatus();

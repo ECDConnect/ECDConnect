@@ -1,12 +1,8 @@
-import P1 from '@/assets/pillar/p1.svg';
 import {
   Alert,
-  AlertSeverityType,
   ButtonGroup,
   ButtonGroupTypes,
   Divider,
-  getColourByAlertSeverity,
-  getShapeClassByAlertSeverity,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
@@ -14,30 +10,11 @@ import Pregnant from '@/assets/pregnant.svg';
 import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Label, Header } from '@/pages/mom/pregnant-profile/components';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { useSelector } from 'react-redux';
-import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
-import { GrowthMonitoring } from '../..';
-import { muacFormSection } from '../../../nutrition-steps/mother-growth-muac';
-import { muacQuestion } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/pillar-1-steps/mid-upper-arm-circumference/form';
-
-enum Question {
-  one = 0,
-  two = 1,
-  three = 2,
-  four = 3,
-  five = 4,
-  six = 5,
-  seven = 6,
-}
 
 export const MidUpperArmCircumferenceResultStep = ({
   mother,
   sectionQuestions,
   setEnableButton,
-  setGrowthMonitoring,
   setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
@@ -133,10 +110,6 @@ export const MidUpperArmCircumferenceResultStep = ({
           questions: updatedQuestions,
         },
       ]);
-
-      const undefinedAnswersCount = updatedQuestions.filter(
-        (item) => item.answer === undefined
-      ).length;
     },
     [questions, setQuestions]
   );

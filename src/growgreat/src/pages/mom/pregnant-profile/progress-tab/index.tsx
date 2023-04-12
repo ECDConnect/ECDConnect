@@ -12,8 +12,6 @@ export const ProgressTab = () => {
     motherSelectors.getMotherCurrentVisitSelector
   );
 
-  console.log({ currentVisit });
-
   return (
     <div className="mt-16 p-4">
       <Button

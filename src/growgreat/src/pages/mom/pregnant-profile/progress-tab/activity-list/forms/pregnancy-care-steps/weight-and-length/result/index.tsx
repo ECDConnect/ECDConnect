@@ -9,9 +9,7 @@ import { HealthPromotion } from '../../../components/health-promotion';
 
 export const WeightAndLengthResultStep = ({
   mother,
-  infant,
   sectionQuestions,
-  setGrowthMonitoring,
   setEnableButton,
   setIsTip,
   isTipPage,
