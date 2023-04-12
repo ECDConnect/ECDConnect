@@ -19,9 +19,12 @@ import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
+  currentClassroomGroup
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
+
+  const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
 
   const successStatus = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
@@ -66,7 +69,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const today = new Date();
 
   useEffect(() => {
-    if (!classroom) return;
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
       today.getMonth() + 1,
@@ -81,7 +83,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroom?.id!,
+          classroomID!,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
@@ -119,7 +121,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         />
         <AttendanceMonthlyReport
           attendanceSummary={attendanceData}
-          classroomId={classroom?.id || classroom?.id!}
+          classroomId={classroomID || classroomID!}
         />
         {!isOnline && <OfflineCard />}
       </div>
