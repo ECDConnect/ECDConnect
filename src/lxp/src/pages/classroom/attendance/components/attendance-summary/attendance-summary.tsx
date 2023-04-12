@@ -339,9 +339,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           currentEditClassroomGroupId
         );
 
-      console.log('>>?', updatedMissedAttendance);
-      console.log(currentEditClassroomGroupId);
-
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
           missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
@@ -394,14 +391,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
-          <PointsSuccessCard
-            visible={successMessageVisible}
-            isSmartStartUser={isSmartStartUser}
-            points={100}
-            onClose={() => closeNotification()}
-            message={getPointsMessage(isSmartStartUser)}
-            icon={''}
-          />
+          !props.hidePopup ?? (
+            <PointsSuccessCard
+              visible={successMessageVisible}
+              isSmartStartUser={isSmartStartUser}
+              points={100}
+              onClose={() => closeNotification()}
+              message={getPointsMessage(isSmartStartUser)}
+              icon={''}
+            />
+          )
         ) : (
           <div>
             <Alert
