@@ -15,7 +15,7 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { Translations } from './translations';
 import ReactDatePicker from 'react-datepicker';
-import { getNextDateByDay, getWeeksDiff } from '@ecdlink/core';
+import { getNextDateByDay, getWeeksDiff, replaceBraces } from '@ecdlink/core';
 import { yesNoOptions } from '@/pages/mom/components/pregnant-address/pregnant-address.types';
 import { InformationCircleIcon } from '@heroicons/react/solid';
 import {
@@ -37,10 +37,10 @@ export const ExpectedDeliveryStep = ({
   setSectionQuestions: setQuestions,
   setEnableButton,
   setIsTip,
+  sectionQuestions,
 }: DynamicFormProps) => {
   const {
     trigger,
-    getValues: getPregnantMaternalCaseRecordFormValues,
     // formState: pregnantMaternalRecordState,
     setValue: setPregnantMaternalCaseRecordFormValue,
     register: pregnantMaternalCaseRecordFormRegister,
@@ -134,11 +134,11 @@ export const ExpectedDeliveryStep = ({
             visitSection: ClinicExpectedDeliverySection,
             questions: [
               {
-                question: 'deliveryDate',
+                question: 'Expected delivery Date',
                 answer: String(deliveryDate),
               },
               {
-                question: 'Does Lethabo have her Maternal Case Record?',
+                question: 'Does {client} have her Maternal Case Record?',
                 answer: hasMaternalCaseRecord,
               },
               {
@@ -164,32 +164,6 @@ export const ExpectedDeliveryStep = ({
     confirmHasNoRecord,
   ]);
 
-  //     const currentAnswers = answers?.filter((item) => item !== event.value);
-
-  //     setEnableButton && setEnableButton(!!currentAnswers?.length);
-  //     setAnswer(currentAnswers);
-  //     return setQuestions?.([
-  //       {
-  //         visitSection: ClinicExpectedDeliverySection,
-  //         questions: [
-  //           {
-  //             question,
-  //             answer: currentAnswers,
-  //           },
-  //         ],
-  //       },
-  //     ]);
-  //   },
-  //   [
-  //     answers,
-  //     dialog,
-  //     infant?.caregiver?.firstName,
-  //     question,
-  //     setEnableButton,
-  //     setQuestions,
-  //   ]
-  // );
-
   if (isTipPage && currentOption) {
     return (
       <Translations
@@ -207,80 +181,6 @@ export const ExpectedDeliveryStep = ({
         title={ClinicExpectedDeliverySection}
       />
       <div className="flex flex-col p-4">
-        {/* <Alert
-          type="info"
-          title="The most common complications after delivery are infection and vaginal bleeding."
-          className="mb-4"
-        /> */}
-        {/* <Typography
-          type="h4"
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
-          color="black"
-        />
-        <Typography
-          type="body"
-          text="Tap the chat icons to see translations"
-          color="textMid"
-          className="mb-4"
-        />
-        {options.map((option, index) => (
-          <div
-            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={answers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <div>
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={option?.name || ''}
-                color="textMid"
-              />
-              {option?.description && (
-                <Typography
-                  type="body"
-                  align="left"
-                  weight="skinny"
-                  color="textLight"
-                  text={option?.description}
-                />
-              )}
-            </div>
-            {options.length - 1 > index && (
-              <button
-                className="ml-auto"
-                onClick={() => {
-                  setCurrentOption(option?.name);
-                  setIsTip && setIsTip(true);
-                }}
-              >
-                <Translation className="h-6 w-6" />
-              </button>
-            )}
-          </div>
-        ))} */}
-
-        {/* {answers?.some((item) => item !== noneOption) && (
-          <Alert
-            className="mt-4"
-            type="error"
-            title={`Eish! Refer ${infant?.caregiver?.firstName} to the clinic and discuss the importance of seeking help.`}
-            customIcon={
-              <div className="rounded-full">
-                {renderIcon(
-                  'ExclamationCircleIcon',
-                  'text-errorMain w-10 h-10'
-                )}
-              </div>
-            }
-          />
-        )} */}
-
         <div className="mt-4">
           <Typography
             type="h4"
@@ -340,7 +240,14 @@ export const ExpectedDeliveryStep = ({
           <Typography
             type="h4"
             color={'textMid'}
-            text={`Does ${mother?.user?.firstName} have her Maternal Case Record?`}
+            text={
+              sectionQuestions?.[1]?.questions?.[1]?.question
+                ? replaceBraces(
+                    sectionQuestions?.[1]?.questions?.[1]?.question!,
+                    mother?.user?.firstName!
+                  )
+                : ''
+            }
             className="mb-2 w-11/12 pt-2"
           />
           <ButtonGroup<boolean>

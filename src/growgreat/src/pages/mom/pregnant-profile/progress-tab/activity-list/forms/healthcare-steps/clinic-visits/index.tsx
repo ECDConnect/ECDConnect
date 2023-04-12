@@ -35,9 +35,8 @@ export const ClinicVisitsStep = ({
   ];
 
   const question = useMemo(
-    () =>
-      `Has ${mother?.user?.firstName} gone to the clinic for her first antenatal visit?`,
-    [mother?.user?.firstName]
+    () => `Has {client} gone to the clinic for her first antenatal visit?`,
+    []
   );
 
   const onOptionSelected = useCallback(
@@ -85,9 +84,7 @@ export const ClinicVisitsStep = ({
           onClick={() => setIsTip && setIsTip(true)}
         />
 
-        <Label
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
-        />
+        <Label text={replaceBraces(question, mother?.user?.firstName || '')} />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}

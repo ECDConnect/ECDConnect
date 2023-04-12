@@ -28,7 +28,6 @@ export const getMotherCurrentVisitSelector = (
   state: RootState
 ): VisitDto | undefined => {
   const visits = state.mothers.visits || [];
-  console.log({ visits });
   const noAttended =
     visits?.filter(
       (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()

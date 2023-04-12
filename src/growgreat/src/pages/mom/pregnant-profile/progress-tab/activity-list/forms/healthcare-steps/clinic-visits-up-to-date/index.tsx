@@ -1,6 +1,4 @@
-import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
 import {
   Label,
   Header,
@@ -15,7 +13,6 @@ import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as PollySad } from '@/assets/pollySad.svg';
 
 export const ClinicVisitsUpToDateStep = ({
-  infant,
   mother,
   isTipPage,
   setIsTip,
@@ -37,9 +34,8 @@ export const ClinicVisitsUpToDateStep = ({
   ];
 
   const question = useMemo(
-    () =>
-      `Is ${mother?.user?.firstName} up to date with their antenatal clinic visits?`,
-    [mother?.user?.firstName]
+    () => `Is {client} up to date with their antenatal clinic visits?`,
+    []
   );
 
   const onOptionSelected = useCallback(
@@ -87,9 +83,7 @@ export const ClinicVisitsUpToDateStep = ({
           onClick={() => setIsTip && setIsTip(true)}
         />
 
-        <Label
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
-        />
+        <Label text={replaceBraces(question, mother?.user?.firstName || '')} />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}

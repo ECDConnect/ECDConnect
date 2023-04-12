@@ -126,7 +126,9 @@ export const Visits: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/start-visit`),
+          history.push(
+            `${location.pathname}/activities-form/${currentVisit?.id}`
+          ),
       };
     });
 

@@ -92,7 +92,6 @@ const visitSlice = createSlice({
       action: PayloadAction<CmsVisitDataInputModelInput>
     ) => {
       if (state.visitFormDataForMother) {
-        console.log(action?.payload);
         state.visitFormDataForMother = !!state.visitFormDataForMother.length
           ? state.visitFormDataForMother.map((item) => {
               if (item.visitId === action.payload.visitId) {

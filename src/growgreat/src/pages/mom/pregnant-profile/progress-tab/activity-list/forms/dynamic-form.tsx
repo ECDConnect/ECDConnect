@@ -98,10 +98,9 @@ export const DynamicForm = ({
   const wasLoadingReferral = usePrevious(isLoadingReferral);
   const { visitId } = useParams<MotherProfileParams>();
 
-  const visits = useSelector(getInfantVisitsSelector);
   const motherVisits = useSelector(getMotherVisits);
-  const MOCKED_VISIT_ID = visitId;
-  /* '454686a9-2142-4061-aa47-4e89d46110b9' */
+
+  console.log({ motherVisits });
 
   const { successDialog } = useRequestResponseDialog();
 
@@ -188,7 +187,7 @@ export const DynamicForm = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const input: CmsVisitDataInputModelInput = {
-      visitId: MOCKED_VISIT_ID, // TODO: add integration
+      visitId: visitId, // TODO: add integration
       motherId: mother?.user?.id,
       visitData: {
         visitName: name,
@@ -203,7 +202,7 @@ export const DynamicForm = ({
 
     appDispatch(
       visitActions.addMomCompletedVisitsByVisitId({
-        visitId: MOCKED_VISIT_ID,
+        visitId: visitId,
         visits: [name || ''],
       })
     );
@@ -214,7 +213,7 @@ export const DynamicForm = ({
 
       await appDispatch(
         visitThunkActions.getMomCompletedVisitsForVisitId({
-          visitId: MOCKED_VISIT_ID,
+          visitId: visitId,
         })
       );
     }
@@ -225,7 +224,7 @@ export const DynamicForm = ({
       );
     }
   }, [
-    MOCKED_VISIT_ID,
+    visitId,
     appDispatch,
     mother?.user?.id,
     name,

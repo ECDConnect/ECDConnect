@@ -6,6 +6,7 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { ChangeEvent, useEffect, useMemo, useState } from 'react';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { replaceBraces } from '@ecdlink/core';
 
 export const muacFormSection =
   'Mother growth monitoring (Mid-upper arm circumference)';
@@ -23,7 +24,7 @@ export const MotherGrowthMUACStep = ({
   const underWeightError = Number(answer) <= 20 && Number(answer) > 0;
   const notUnderWeightMessage = notUnderWeight > 20 && notUnderWeight < 100;
 
-  const muacQuestion = `What is ${mother?.user?.firstName} mid-upper arm circumference (MUAC) today?`;
+  const muacQuestion = `What is {client} mid-upper arm circumference (MUAC) today?`;
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -51,7 +52,7 @@ export const MotherGrowthMUACStep = ({
     if (answer) {
       setNotUnderWeight(Number(answer));
     }
-    if (Number(answer) > 20 && Number(answer) < 100) {
+    if (Number(answer) > 0 && Number(answer) < 100) {
       setEnableButton?.(true);
       return;
     }
@@ -66,7 +67,11 @@ export const MotherGrowthMUACStep = ({
         title="MUAC measurement"
       />
       <div className="relative flex flex-col p-4">
-        <Typography type="h4" color="textDark" text={muacQuestion} />
+        <Typography
+          type="h4"
+          color="textDark"
+          text={replaceBraces(muacQuestion, mother?.user?.firstName!)}
+        />
         <div className="mb-4 flex flex-row items-center gap-1">
           <FormInput
             placeholder={'Tap to add'}

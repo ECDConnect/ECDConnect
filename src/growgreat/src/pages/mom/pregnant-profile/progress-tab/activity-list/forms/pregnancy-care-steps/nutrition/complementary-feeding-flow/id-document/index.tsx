@@ -1,10 +1,11 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { replaceBraces } from '@ecdlink/core';
 
 export const IdDocumentStep = ({
   mother,
@@ -24,11 +25,11 @@ export const IdDocumentStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(() => `Does ${name} have an ID document?`, [name]);
+  const question = useMemo(() => `Does {client} have an ID document?`, []);
 
   const question2 = useMemo(
-    () => `Is ${name} a South African citizen or permanent resident?`,
-    [name]
+    () => `Is {client} a South African citizen or permanent resident?`,
+    []
   );
 
   useEffect(() => {
@@ -88,7 +89,11 @@ export const IdDocumentStep = ({
           onClick={() => setIsTip && setIsTip(true)}
         />
         <div className="mt-2 flex flex-col gap-2">
-          <Typography type="body" text={question} color="textDark" />
+          <Typography
+            type="body"
+            text={replaceBraces(question, name)}
+            color="textDark"
+          />
           <ButtonGroup<boolean>
             color="secondary"
             type={ButtonGroupTypes.Button}
@@ -101,7 +106,11 @@ export const IdDocumentStep = ({
         </div>
         {answer === false && (
           <div className="mt-2 flex flex-col gap-2">
-            <Typography type="body" text={question2} color="textDark" />
+            <Typography
+              type="body"
+              text={replaceBraces(question2, name)}
+              color="textDark"
+            />
             <ButtonGroup<boolean | undefined>
               color="secondary"
               type={ButtonGroupTypes.Button}

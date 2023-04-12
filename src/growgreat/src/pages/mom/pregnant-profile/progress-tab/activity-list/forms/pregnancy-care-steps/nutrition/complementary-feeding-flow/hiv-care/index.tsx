@@ -5,6 +5,7 @@ import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { HealthPromotion } from '../../../../components/health-promotion';
+import { replaceBraces } from '@ecdlink/core';
 
 export const HivCareAndMedicationStep = ({
   mother,
@@ -23,10 +24,7 @@ export const HivCareAndMedicationStep = ({
     { text: 'Unsure', value: undefined },
   ];
 
-  const question = useMemo(
-    () => `Refer to ${name} Maternal Health Record. Is ${name} HIV positive?`,
-    [name]
-  );
+  const question = useMemo(() => `Is {client} HIV positive?`, []);
 
   const onOptionSelected = useCallback(
     (value) => {
@@ -76,7 +74,14 @@ export const HivCareAndMedicationStep = ({
           onClick={() => setIsTip && setIsTip(true)}
         />
         <div className="mt-2 flex flex-col gap-2">
-          <Typography type="body" text={question} color="textDark" />
+          <Typography
+            type="body"
+            text={`Refer to ${name} Maternal Health Record. ${replaceBraces(
+              question,
+              name
+            )}`}
+            color="textDark"
+          />
           <ButtonGroup<boolean | undefined>
             color="secondary"
             type={ButtonGroupTypes.Button}
