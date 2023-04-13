@@ -14,7 +14,7 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getTime, isSameDay, startOfWeek } from 'date-fns';
+import { addDays, format, getDay, getTime, isSameDay, startOfWeek } from 'date-fns';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -120,8 +120,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     if (lastDate !== today) {
       // Show notification on a new day
       if (trackedAttendance) {
-        let date = trackedAttendance[0]?.attendanceDate;
-        if (date === today) {
+        let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
+        if (date === getDay(new Date(today))) {
           setSuccessMessageVisible(true);
           localStorage.setItem('summarylastDate', today);
         }
@@ -407,7 +407,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     setSuccessMessageVisible(false);
     setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
     const today = new Date().toDateString();
-    localStorage.setItem('lastDate', today);
+    localStorage.setItem('summarylastDate', today);
   };
 
   return (
