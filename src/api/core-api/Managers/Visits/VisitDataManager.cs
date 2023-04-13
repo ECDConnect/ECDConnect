@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using MimeKit.Encodings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -64,13 +65,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed
-            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-            entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.Attended = true;
-            entityToUpdate.ActualVisitDate = DateTime.Now;
-            _visitRepo.Update(entityToUpdate);
+            // update the visit record to show attended/completed when all 7 questionnaires are completed
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId)).Select(y => y.VisitName).Distinct().Count();
+            if (count == 7)
+            {
+                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+            }
 
             // then handle status data
             _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
@@ -101,12 +106,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed
-            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-            entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.Attended = true;
-            _visitRepo.Update(entityToUpdate);
+            // update the visit record to show attended/completed when all 4 questionnaires are completed
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId)).Select(y => y.VisitName).Distinct().Count();
+            if (count == 4)
+            {
+                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+            }
 
             // then handle status data
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
