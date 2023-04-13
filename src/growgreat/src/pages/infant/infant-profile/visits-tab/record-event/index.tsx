@@ -1,4 +1,10 @@
-import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useHistory, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import {
@@ -34,14 +40,20 @@ import {
 } from '@/schemas/record-event/record-event';
 import { PregnantProfileRouteState } from '@/pages/mom/pregnant-profile/index.types';
 import { InfantRouteState } from '@/pages/infant/infant.types';
+import { ChangeCaregiver } from './change-caregiver';
+import { InfantActions } from '@/store/infant/infant.actions';
+import { ActionModalButton } from '@/../../../packages/ui/lib/components/action-modal/models/ActionModalButton';
 
 const eventNames = {
   close: 'close_folder',
   caregiverIsPregnant: 'caregiver_is_pregnant',
   newChildInFamily: 'new_child_in_family',
+  caregiverHasChanged: 'caregiver_has_changed',
 };
 
 export const RecordEvent: React.FC = () => {
+  const [isChangeCaregiver, setIsChangeCaregiver] = useState(false);
+
   const { isOnline } = useOnlineStatus();
 
   const history = useHistory();
@@ -50,6 +62,10 @@ export const RecordEvent: React.FC = () => {
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
+  );
+  const infantName = useMemo(
+    () => infant?.user?.firstName,
+    [infant?.user?.firstName]
   );
 
   const goBack = useCallback(() => {
@@ -70,6 +86,14 @@ export const RecordEvent: React.FC = () => {
   const { errorDialog, successDialog } = useRequestResponseDialog();
 
   const appDispatch = useAppDispatch();
+
+  const {
+    isLoading: isLoadingUpdateInfantCaregiver,
+    isRejected: isRejectedUpdateInfantCaregiver,
+  } = useThunkFetchCall('infants', InfantActions.UPDATE_INFANT_CAREGIVER);
+  const wasLoadingUpdateInfantCaregiver = usePrevious(
+    isLoadingUpdateInfantCaregiver
+  );
 
   const { isLoading, isRejected, isFulfilled } = useThunkFetchCall(
     'eventRecord',
@@ -130,18 +154,48 @@ export const RecordEvent: React.FC = () => {
       onOk,
       onOkText,
       onOkIcon,
+      hideDismissButton,
     }: {
       title: string;
       detailText?: string;
       onOk: () => void;
       onOkText: string;
       onOkIcon: string;
+      hideDismissButton?: boolean;
     }) => {
       return dialog({
         blocking: false,
         position: DialogPosition.Middle,
         color: 'bg-white',
         render: (onClose) => {
+          const actionButtons: ActionModalButton[] = [
+            {
+              colour: 'primary',
+              text: onOkText,
+              textColour: 'white',
+              type: 'filled',
+              leadingIcon: onOkIcon,
+              onClick: () => {
+                onOk();
+                onClose();
+              },
+            },
+          ];
+
+          if (!hideDismissButton) {
+            actionButtons.push({
+              colour: 'primary',
+              text: 'No, exit',
+              textColour: 'primary',
+              type: 'outlined',
+              leadingIcon: 'XIcon',
+              onClick: () => {
+                onSubmit();
+                onClose();
+              },
+            });
+          }
+
           return (
             <ActionModal
               icon="InformationCircleIcon"
@@ -149,30 +203,7 @@ export const RecordEvent: React.FC = () => {
               className="z-50"
               title={title}
               detailText={detailText}
-              actionButtons={[
-                {
-                  colour: 'primary',
-                  text: onOkText,
-                  textColour: 'white',
-                  type: 'filled',
-                  leadingIcon: onOkIcon,
-                  onClick: () => {
-                    onOk();
-                    onClose();
-                  },
-                },
-                {
-                  colour: 'primary',
-                  text: 'No, exit',
-                  textColour: 'primary',
-                  type: 'outlined',
-                  leadingIcon: 'XIcon',
-                  onClick: () => {
-                    onSubmit();
-                    onClose();
-                  },
-                },
-              ]}
+              actionButtons={actionButtons}
             />
           );
         },
@@ -205,21 +236,46 @@ export const RecordEvent: React.FC = () => {
           onOkIcon: 'FolderAddIcon',
           onOkText: 'Yes, open folder',
         });
+      case eventNames.caregiverHasChanged:
+        return displayConfirmDialog({
+          title: `Please add a different caregiver for ${infantName}.`,
+          onOk: () => setIsChangeCaregiver(true),
+          onOkIcon: 'UserAddIcon',
+          onOkText: 'Add a different caregiver',
+          hideDismissButton: true,
+        });
       default:
         break;
     }
-
-    return '';
-    //  TODO: add integration
-    // return onSubmit();
   }, [
     displayConfirmDialog,
     history,
     infant?.caregiver?.id,
     infantId,
+    infantName,
     recordEventInput,
     selectedOption?.name,
   ]);
+
+  const handleWithUpdateCaregiver = useCallback(() => {
+    if (wasLoadingUpdateInfantCaregiver && !isLoadingUpdateInfantCaregiver) {
+      if (isRejectedUpdateInfantCaregiver) {
+        return errorDialog();
+      }
+
+      onSubmit();
+    }
+  }, [
+    errorDialog,
+    isLoadingUpdateInfantCaregiver,
+    isRejectedUpdateInfantCaregiver,
+    onSubmit,
+    wasLoadingUpdateInfantCaregiver,
+  ]);
+
+  useEffect(() => {
+    handleWithUpdateCaregiver();
+  }, [handleWithUpdateCaregiver]);
 
   useEffect(() => {
     if (wasLoading && isRejected) {
@@ -245,6 +301,15 @@ export const RecordEvent: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getAllInfantEventRecordTypes()).unwrap();
   }, [appDispatch]);
+
+  if (isChangeCaregiver) {
+    return (
+      <ChangeCaregiver
+        infant={infant}
+        goBack={() => setIsChangeCaregiver(false)}
+      />
+    );
+  }
 
   return (
     <BannerWrapper

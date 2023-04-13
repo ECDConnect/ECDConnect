@@ -25,7 +25,13 @@ export const InfantActions = {
   GET_INFANTS_WEEKLY_VISITS: 'getInfantsWeeklyVisits',
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
   GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
+  UPDATE_INFANT_CAREGIVER: 'updateInfantCaregiver',
 };
+
+export interface UpdateInfantCaregiver {
+  infantId: string;
+  input: InfantModelInput;
+}
 
 export const getInfants = createAsyncThunk<
   InfantDto[],
@@ -279,6 +285,31 @@ export const getAllInfantEventRecordTypes = createAsyncThunk<
       }
 
       return eventRecordTypes;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateInfantCaregiver = createAsyncThunk<
+  InfantDto,
+  UpdateInfantCaregiver,
+  ThunkApiType<RootState>
+>(
+  InfantActions.UPDATE_INFANT_CAREGIVER,
+  async ({ infantId, input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new InfantService(
+          userAuth?.auth_token
+        ).updateInfantCaregiver(infantId, input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

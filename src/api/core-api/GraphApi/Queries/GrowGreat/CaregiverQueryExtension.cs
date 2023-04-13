@@ -1,4 +1,3 @@
-using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -14,11 +13,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Security.Policy;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -33,8 +30,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(uId)).ToList();
             if (practitioners.Count > 0)
             {
                 List<Child> children = childRepo.GetAll().Where(x => x.Hierarchy.Contains(practitioners.FirstOrDefault().Hierarchy)).ToList();
@@ -65,8 +62,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var careGiverRepo = repoFactory.CreateRepository<Caregiver>(userContext: uId);
-            var practitionerrRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerrRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            List<Practitioner> practitioners = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).ToList();
 
             if (practitioners.Count > 0)
             {
