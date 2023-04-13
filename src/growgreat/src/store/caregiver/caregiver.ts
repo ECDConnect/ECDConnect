@@ -3,11 +3,13 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   createCaregiver,
+  getCaregiverClients,
   getCaregivers,
   getCaregiversForHealthCareWorker,
   updateCaregiver,
 } from './caregiver.actions';
 import { CaregiverContactHistory, CaregiverState } from './caregiver.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: CaregiverState = {};
 
@@ -49,6 +51,7 @@ const caregiverSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getCaregiverClients);
     builder.addCase(getCaregivers.fulfilled, (state, action) => {
       if (!state.caregivers) {
         const caregivers = Object.assign([], action.payload) as CaregiverDto[];
@@ -100,6 +103,30 @@ const caregiverSlice = createSlice({
           .push(action.payload);
       }
     );
+    builder.addCase(getCaregiverClients.fulfilled, (state, action) => {
+      if (!!state.caregiverClientsList?.length) {
+        if (
+          !state.caregiverClientsList?.find(
+            (item) => item?.caregiverId === action.payload?.caregiverId
+          )
+        ) {
+          state.caregiverClientsList?.push(action.payload);
+        }
+
+        state.caregiverClientsList = state.caregiverClientsList.map(
+          (caregiver) => {
+            if (caregiver.caregiverId === action.payload.caregiverId) {
+              return action.payload;
+            } else {
+              return caregiver;
+            }
+          }
+        );
+      }
+
+      state.caregiverClientsList = [action.payload];
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 

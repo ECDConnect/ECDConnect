@@ -40,6 +40,7 @@ const ROUTES = {
     }),
     INFANT_PROFILE: addPrefix('/infant-profile', {
       ROOT: '/',
+      MULTIPLE_CHILDREN: '/multiple-children/:infantId',
       PROGRESS: {
         ACTIVITIES_FORM: '/:id/activities-form/:visitId',
       },

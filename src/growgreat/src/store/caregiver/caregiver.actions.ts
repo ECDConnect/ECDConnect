@@ -8,13 +8,17 @@ import {
 import { CaregiverService } from '@services/CaregiverService';
 import { SiteAddressService } from '@services/SiteAddressService';
 import { RootState, ThunkApiType } from '../types';
-import { CaregiverContactHistory } from './caregiver.types';
+import {
+  CaregiverClientsState,
+  CaregiverContactHistory,
+} from './caregiver.types';
 
 export const CaregiverActions = {
   GET_CAREGIVERS: 'getCaregivers',
   GET_CAREGIVERS_HEALTH_CARE_WORKER: 'getCaregiversHealthCareWorker',
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
+  GET_CAREGIVER_CLIENTS: 'getCaregiverClients',
 };
 
 export const getCaregivers = createAsyncThunk<
@@ -166,6 +170,39 @@ export const createCaregiver = createAsyncThunk<
     return rejectWithValue(err);
   }
 });
+
+export const getCaregiverClients = createAsyncThunk<
+  CaregiverClientsState,
+  { caregiverId: string },
+  ThunkApiType<RootState>
+>(
+  CaregiverActions.GET_CAREGIVER_CLIENTS,
+  async ({ caregiverId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let caregiverClients = {} as CaregiverClientsState;
+
+      if (userAuth?.auth_token) {
+        const response = await new CaregiverService(
+          userAuth.auth_token
+        ).getCaregiverClients(caregiverId);
+
+        caregiverClients = {
+          clients: response,
+          caregiverId,
+        };
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return caregiverClients;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
 
 export type UpdateCaregiverRequest = {
   id: string;

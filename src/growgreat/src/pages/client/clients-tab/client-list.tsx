@@ -8,6 +8,7 @@ import {
   AlertSeverityType,
   SearchDropDown,
   SearchDropDownOption,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { intervalToDuration } from 'date-fns';
 import { useDialog, getAvatarColor, MotherDto, InfantDto } from '@ecdlink/core';
@@ -46,18 +47,129 @@ import {
 } from './filters';
 import { ClientDashboardRouteState } from '../client-dashboard/class-dashboard.types';
 import { INFANT_PROFILE_TABS } from '@/pages/infant/infant-profile';
+import { caregiverThunkActions } from '@/store/caregiver';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
+import { PayloadAction } from '@reduxjs/toolkit';
+import { generatePath } from 'react-router-dom';
+import { CaregiverClientsState } from '@/store/caregiver/caregiver.types';
+
+export const useClientProfileDialog = () => {
+  const history = useHistory();
+
+  const navigate = useCallback(
+    (
+      activeTabIndex: number,
+      client: MotherDto | InfantDto,
+      clientType: 'mother' | 'infant',
+      onClose: () => void
+    ) => {
+      history.push(
+        `${
+          clientType === 'mother'
+            ? ROUTES.CLIENTS.MOM_PROFILE.ROOT
+            : ROUTES.CLIENTS.INFANT_PROFILE.ROOT
+        }${client.user?.id}`,
+        {
+          activeTabIndex,
+        }
+      );
+      onClose();
+    },
+    [history]
+  );
+
+  const dialog = useDialog();
+
+  const profileDialog = ({
+    client,
+    clientType,
+  }: {
+    client: MotherDto | InfantDto;
+    clientType: 'infant' | 'mother';
+  }) => {
+    const NAVIGATE =
+      clientType === 'infant' ? INFANT_PROFILE_TABS : PREGNANT_PROFILE_TABS;
+
+    return dialog({
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render(onClose) {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title={`What do you want to do on ${client.user?.firstName}’s profile?`}
+            actionButtons={[
+              {
+                text: 'Visit client',
+                colour: 'primary',
+                onClick: () =>
+                  navigate(NAVIGATE.VISITS, client, clientType, onClose),
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'HomeIcon',
+              },
+              {
+                text: 'See client’s progress',
+                colour: 'primary',
+                onClick: () =>
+                  navigate(NAVIGATE.PROGRESS, client, clientType, onClose),
+                type: 'outlined',
+                textColour: 'primary',
+                leadingIcon: 'PresentationChartLineIcon',
+              },
+              {
+                text: 'See referrals',
+                colour: 'primary',
+                onClick: () =>
+                  navigate(NAVIGATE.REFERRALS, client, clientType, onClose),
+                type: 'outlined',
+                textColour: 'primary',
+                leadingIcon: 'ClipboardListIcon',
+              },
+              {
+                text: 'Contact client',
+                colour: 'primary',
+                onClick: () =>
+                  navigate(NAVIGATE.CONTACT, client, clientType, onClose),
+                type: 'outlined',
+                textColour: 'primary',
+                leadingIcon: 'PhoneIcon',
+              },
+              {
+                text: 'Something else',
+                colour: 'primary',
+                onClick: () =>
+                  navigate(NAVIGATE.VISITS, client, clientType, onClose),
+                type: 'outlined',
+                textColour: 'primary',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  return profileDialog;
+};
 
 export const ClientList: React.FC<ComponentBaseProps> = () => {
+  const { isLoading } = useThunkFetchCall(
+    'caregivers',
+    CaregiverActions.GET_CAREGIVER_CLIENTS
+  );
+
   const dialog = useDialog();
 
   const appDispatch = useAppDispatch();
+  const profileDialog = useClientProfileDialog();
 
   const history = useHistory();
   const location = useLocation<ClientDashboardRouteState>();
 
   const infants = useSelector(getInfants);
   const mothers = useSelector(motherSelectors.getMothers);
-
   const [infantsListItems, setInfantsListItems] = useState<
     UserAlertListDataItem<ExtraInfantData>[]
   >([]);
@@ -96,95 +208,6 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     [infants, mothers]
   );
 
-  const navigate = useCallback(
-    (
-      activeTabIndex: number,
-      client: MotherDto | InfantDto,
-      clientType: 'mother' | 'infant',
-      onClose: () => void
-    ) => {
-      history.push(
-        `${
-          clientType === 'mother'
-            ? ROUTES.CLIENTS.MOM_PROFILE.ROOT
-            : ROUTES.CLIENTS.INFANT_PROFILE.ROOT
-        }${client.user?.id}`,
-        {
-          activeTabIndex,
-        }
-      );
-      onClose();
-    },
-    [history]
-  );
-
-  const showClientProfileDialog = useCallback(
-    (client: MotherDto | InfantDto, clientType: 'infant' | 'mother') => {
-      const NAVIGATE =
-        clientType === 'infant' ? INFANT_PROFILE_TABS : PREGNANT_PROFILE_TABS;
-
-      return dialog({
-        position: DialogPosition.Middle,
-        color: 'bg-white',
-        render(onClose) {
-          return (
-            <ActionModal
-              className={'mx-4'}
-              title={`What do you want to do on ${client.user?.firstName}’s profile?`}
-              actionButtons={[
-                {
-                  text: 'Visit client',
-                  colour: 'primary',
-                  onClick: () =>
-                    navigate(NAVIGATE.VISITS, client, clientType, onClose),
-                  type: 'filled',
-                  textColour: 'white',
-                  leadingIcon: 'HomeIcon',
-                },
-                {
-                  text: 'See client’s progress',
-                  colour: 'primary',
-                  onClick: () =>
-                    navigate(NAVIGATE.PROGRESS, client, clientType, onClose),
-                  type: 'outlined',
-                  textColour: 'primary',
-                  leadingIcon: 'PresentationChartLineIcon',
-                },
-                {
-                  text: 'See referrals',
-                  colour: 'primary',
-                  onClick: () =>
-                    navigate(NAVIGATE.REFERRALS, client, clientType, onClose),
-                  type: 'outlined',
-                  textColour: 'primary',
-                  leadingIcon: 'ClipboardListIcon',
-                },
-                {
-                  text: 'Contact client',
-                  colour: 'primary',
-                  onClick: () =>
-                    navigate(NAVIGATE.CONTACT, client, clientType, onClose),
-                  type: 'outlined',
-                  textColour: 'primary',
-                  leadingIcon: 'PhoneIcon',
-                },
-                {
-                  text: 'Something else',
-                  colour: 'primary',
-                  onClick: () =>
-                    navigate(NAVIGATE.VISITS, client, clientType, onClose),
-                  type: 'outlined',
-                  textColour: 'primary',
-                },
-              ]}
-            />
-          );
-        },
-      });
-    },
-    [dialog, navigate]
-  );
-
   useLayoutEffect(() => {
     const infantsList: UserAlertListDataItem<ExtraInfantData>[] = infants.map(
       (infant) => {
@@ -195,7 +218,9 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
 
         return {
           icon: Infant,
-          title: infant?.firstName ?? infant?.user?.firstName!,
+          title: `${infant?.firstName ?? infant?.user?.firstName!} ${
+            !!infant.caregiver?.id ? '& ' + infant.caregiver.firstName : ''
+          }`,
           subTitle: infant?.statusInfo?.subject || 'No visit',
           switchTextStyles: true,
           alertSeverity:
@@ -209,13 +234,36 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             under6Months: !!years || (!!months && months > 6),
             age: `${years}.${months}`,
           },
-          onActionClick: () => showClientProfileDialog(infant, 'infant'),
+          onActionClick: async () => {
+            const caregiverId = infant.caregiver?.id;
+            const response =
+              caregiverId &&
+              ((await appDispatch(
+                caregiverThunkActions.getCaregiverClients({
+                  caregiverId: caregiverId,
+                })
+              )) as PayloadAction<CaregiverClientsState> | undefined);
+
+            if (
+              typeof response !== 'string' &&
+              Number(response?.payload.clients.infants?.length) > 1
+            ) {
+              return history.push(
+                generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {
+                  infantId: infant.user?.id,
+                })
+              );
+            }
+
+            profileDialog({ client: infant, clientType: 'infant' });
+          },
         };
       }
     );
 
     setInfantsListItems(infantsList);
-  }, [infants, navigate, showClientProfileDialog]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [appDispatch, history, infants]);
 
   useLayoutEffect(() => {
     const mothersList: UserAlertListDataItem<ExtraMotherData>[] = mothers.map(
@@ -235,13 +283,15 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             ...mother,
             under6Months: true,
           },
-          onActionClick: () => showClientProfileDialog(mother, 'mother'),
+          onActionClick: () =>
+            profileDialog({ client: mother, clientType: 'mother' }),
         };
       }
     );
 
     setMothersListItems(mothersList);
-  }, [history, mothers, showClientProfileDialog]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [history, mothers]);
 
   const showCompleteProfileBlockingDialog = () => {
     dialog({
@@ -301,6 +351,17 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       setSearchTextActive(true);
     }
   }, [location, isEmptyState]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor={'primary'}
+        backgroundColor={'uiLight'}
+        className="pt-4"
+      />
+    );
+  }
 
   return (
     <div className={styles.overlay}>
