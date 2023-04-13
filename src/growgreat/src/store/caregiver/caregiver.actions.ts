@@ -8,10 +8,7 @@ import {
 import { CaregiverService } from '@services/CaregiverService';
 import { SiteAddressService } from '@services/SiteAddressService';
 import { RootState, ThunkApiType } from '../types';
-import {
-  CaregiverClientsState,
-  CaregiverContactHistory,
-} from './caregiver.types';
+import { CaregiverContactHistory, MergedCaregiver } from './caregiver.types';
 
 export const CaregiverActions = {
   GET_CAREGIVERS: 'getCaregivers',
@@ -19,6 +16,7 @@ export const CaregiverActions = {
   UPDATE_CONTACT_HISTORY: 'updateContactCaregiverHistory',
   ADD_CONTACT_HISTORY: 'addContactCaregiverHistory',
   GET_CAREGIVER_CLIENTS: 'getCaregiverClients',
+  GET_ALL_CAREGIVER_CLIENTS: 'getAllCaregiverClients',
 };
 
 export const getCaregivers = createAsyncThunk<
@@ -172,7 +170,7 @@ export const createCaregiver = createAsyncThunk<
 });
 
 export const getCaregiverClients = createAsyncThunk<
-  CaregiverClientsState,
+  MergedCaregiver,
   { caregiverId: string },
   ThunkApiType<RootState>
 >(
@@ -182,22 +180,54 @@ export const getCaregiverClients = createAsyncThunk<
       auth: { userAuth },
     } = getState();
     try {
-      let caregiverClients = {} as CaregiverClientsState;
+      let caregiverClients = {} as MergedCaregiver;
 
       if (userAuth?.auth_token) {
         const response = await new CaregiverService(
           userAuth.auth_token
         ).getCaregiverClients(caregiverId);
 
+        // @ts-ignore
         caregiverClients = {
-          clients: response,
-          caregiverId,
+          id: caregiverId,
+          ...response,
         };
       } else {
         return rejectWithValue('no access token, profile check required');
       }
 
       return caregiverClients;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getAllCaregiverClients = createAsyncThunk<
+  MergedCaregiver[],
+  { userId: string; recordsPerPage?: number; pageNumber?: number },
+  ThunkApiType<RootState>
+>(
+  CaregiverActions.GET_ALL_CAREGIVER_CLIENTS,
+  async (
+    { userId, pageNumber, recordsPerPage },
+    { getState, rejectWithValue }
+  ) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let caregivers = [] as MergedCaregiver[];
+
+      if (userAuth?.auth_token) {
+        caregivers = await new CaregiverService(
+          userAuth.auth_token
+        ).getAllCaregiverClients(userId, recordsPerPage, pageNumber);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      return caregivers;
     } catch (err) {
       return rejectWithValue(err);
     }

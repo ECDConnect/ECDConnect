@@ -55,6 +55,7 @@ function InitialStoreSetup(props: Props) {
   const clearSiteData = useClearSiteData();
 
   useEffect(() => {
+    setInitLoading(true);
     if (userData) {
       (async () =>
         await appDispatch(
@@ -62,7 +63,12 @@ function InitialStoreSetup(props: Props) {
             userId: userData?.id!,
           })
         ).unwrap())();
+      (async () =>
+        await appDispatch(
+          caregiverThunkActions.getAllCaregiverClients({ userId: userData.id! })
+        ))();
     }
+    setInitLoading(false);
   }, [appDispatch, userData]);
 
   useEffect(() => {

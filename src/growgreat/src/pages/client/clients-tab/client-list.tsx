@@ -52,7 +52,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { generatePath } from 'react-router-dom';
-import { CaregiverClientsState } from '@/store/caregiver/caregiver.types';
+import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
 
 export const useClientProfileDialog = () => {
   const history = useHistory();
@@ -242,11 +242,11 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                 caregiverThunkActions.getCaregiverClients({
                   caregiverId: caregiverId,
                 })
-              )) as PayloadAction<CaregiverClientsState> | undefined);
+              )) as PayloadAction<MergedCaregiver> | undefined);
 
             if (
               typeof response !== 'string' &&
-              Number(response?.payload.clients.infants?.length) > 1
+              Number(response?.payload?.infants?.length) > 1
             ) {
               return history.push(
                 generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {

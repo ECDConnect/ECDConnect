@@ -3,6 +3,7 @@ import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   createCaregiver,
+  getAllCaregiverClients,
   getCaregiverClients,
   getCaregivers,
   getCaregiversForHealthCareWorker,
@@ -107,7 +108,7 @@ const caregiverSlice = createSlice({
       if (!!state.caregiverClientsList?.length) {
         if (
           !state.caregiverClientsList?.find(
-            (item) => item?.caregiverId === action.payload?.caregiverId
+            (item) => item?.id === action.payload?.id
           )
         ) {
           state.caregiverClientsList?.push(action.payload);
@@ -115,7 +116,7 @@ const caregiverSlice = createSlice({
 
         state.caregiverClientsList = state.caregiverClientsList.map(
           (caregiver) => {
-            if (caregiver.caregiverId === action.payload.caregiverId) {
+            if (caregiver.id === action.payload.id) {
               return action.payload;
             } else {
               return caregiver;
@@ -126,6 +127,10 @@ const caregiverSlice = createSlice({
 
       state.caregiverClientsList = [action.payload];
       setFulfilledThunkActionStatus(state, action);
+    });
+
+    builder.addCase(getAllCaregiverClients.fulfilled, (state, action) => {
+      state.caregiverClientsList = action.payload;
     });
   },
 });

@@ -1,15 +1,12 @@
-import { CaregiverClients } from '@ecdlink/graphql';
+import { Caregiver, CaregiverClients } from '@ecdlink/graphql';
 import { CaregiverDto } from '@ecdlink/core';
 
-export interface CaregiverClientsState {
-  caregiverId: string;
-  clients: CaregiverClients;
-}
+export type MergedCaregiver = Caregiver & CaregiverClients;
 
 export interface CaregiverState {
   caregivers?: CaregiverDto[];
   contactHistory?: CaregiverContactHistory[];
-  caregiverClientsList?: CaregiverClientsState[];
+  caregiverClientsList?: MergedCaregiver[];
 }
 
 export interface CaregiverContactHistory {

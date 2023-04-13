@@ -31,7 +31,7 @@ export const MultipleChildren: React.FC = () => {
   );
   const caregiverClients = useSelector((state: RootState) =>
     getCaregiverClientsByIdSelector(state, infant?.caregiver?.id || '')
-  )?.clients;
+  );
 
   const caregiverName = useMemo(() => infant?.caregiver?.firstName, [infant]);
 

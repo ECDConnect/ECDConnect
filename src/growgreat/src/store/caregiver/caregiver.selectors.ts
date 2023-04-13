@@ -22,5 +22,5 @@ export const getCaregiverClientsByIdSelector = (
   caregiverId: string
 ) =>
   state.caregivers.caregiverClientsList?.find(
-    (item) => item.caregiverId === caregiverId
+    (item) => item.id === caregiverId
   );

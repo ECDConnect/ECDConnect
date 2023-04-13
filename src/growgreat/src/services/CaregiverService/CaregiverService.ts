@@ -1,6 +1,7 @@
 import { CaregiverDto, Config } from '@ecdlink/core';
 import { CaregiverInput, CaregiverClients } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
 class CaregiverService {
   _accessToken: string;
 
@@ -276,6 +277,61 @@ class CaregiverService {
     }
 
     return response.data.data.caregiverClients;
+  }
+
+  async getAllCaregiverClients(
+    userId: string,
+    recordsPerPage?: number,
+    pageNumber?: number
+  ): Promise<MergedCaregiver[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allCaregiversForHCW: MergedCaregiver[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetAllCaregiversForHCW($userId: String, $recordsPerPage: int, $pageNumber: int) {        
+          allCaregiversForHCW(userId: $userId, recordsPerPage: $recordsPerPage, pageNumber: $pageNumber) {              
+              id
+              firstName
+              surname
+              mother {
+                id 
+                user {
+                    firstName
+                }
+                statusInfo {
+                    subject
+                    icon
+                    color
+                    notes
+                }
+              }
+              infants {
+                id
+                user {
+                  firstName
+                }
+                statusInfo {
+                      subject
+                      icon
+                      color
+                      notes
+                  }
+              }
+          }
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Get Caregiver Clients - Server connection error');
+    }
+
+    return response.data.data.allCaregiversForHCW;
   }
 }
 
