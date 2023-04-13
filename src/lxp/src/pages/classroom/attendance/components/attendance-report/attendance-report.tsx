@@ -56,7 +56,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       setSuccessMessageVisible(true);
       // localStorage.setItem('lastDate', today);
     } else {
-      console.log(">>>>")
+  
       setSuccessMessageVisible(false);
     }
   },[]);
