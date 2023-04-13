@@ -6,7 +6,6 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using MimeKit.Encodings;
 using System;
 using System.Collections.Generic;
 using System.Linq;
