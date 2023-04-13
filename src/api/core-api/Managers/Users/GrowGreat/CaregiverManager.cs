@@ -26,9 +26,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _caregiverRepo = _repoFactory.CreateGenericRepository<Caregiver>(userContext: _applicationUserId);
         }
 
-        public List<Caregiver> GetAllCaregiversForHCW(string userId)
+        public List<Caregiver> GetAllCaregiversForHCW(string userId, int recordsPerPage, int pageNumber)
         {
-            return _caregiverRepo.GetAll().Where(x => x.HealthCareWorker.User.Id == userId).OrderBy(x => x.Id).ToList();
+            return _caregiverRepo.GetAll().Where(x => x.HealthCareWorker.User.Id == userId).OrderBy(x => x.Id).ToList()
+                .Skip((pageNumber - 1) * recordsPerPage) //Skip Logic
+                .Take(recordsPerPage).ToList(); //Take Logic;
         }
     }
 }

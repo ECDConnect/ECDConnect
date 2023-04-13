@@ -12,6 +12,9 @@ namespace EcdLink.Api.CoreApi {
 
         public static class GGSettings
         {
+            public const int recordsPerPage = 40;
+            public const int pageNumber = 0;
+
             public const string visitType_all = "all";
             public const string visitType_overdue = "overdue";
             public const string visitType_due = "due";
