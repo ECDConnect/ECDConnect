@@ -43,7 +43,7 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
 
-export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
+export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({hidePopup, openReports}) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
   const [classroomName, setClassroomName] = useState<string>('');
@@ -235,15 +235,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         }));
       setAttendanceActionList(actionListToDisplay);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isValidAttendanceDay,
-    missedAttendanceGroups,
-    previousMissedAttendanceGroups,
-    classProgrammesUpdated,
-  ]);
+  });
 
   useEffect(() => {
+
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
       const actionListToDisplay: ActionListDataItem[] = [];
 
@@ -324,6 +319,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         }
       );
 
+   
       const updatedMissedAttendance: MissedAttendanceGroups[] = _.cloneDeep(
         missedAttendanceGroups
       );
@@ -331,6 +327,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
       }
+
+  
+
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
@@ -339,6 +338,13 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           currentEditClassroomGroupId
         );
 
+        if (allMissedAttendanceDays.length === 0) {
+          setAttendanceActionList([]);
+          openReports();
+          console.log(">1>", attendanceActionList)
+          console.log(">2>", allMissedAttendanceDays)
+        }
+    
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
           missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
@@ -391,7 +397,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
         {isValidAttendanceDay ? (
-          !props.hidePopup ?? (
+          !hidePopup ?? (
             <PointsSuccessCard
               visible={successMessageVisible}
               isSmartStartUser={isSmartStartUser}

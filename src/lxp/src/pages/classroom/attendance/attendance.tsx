@@ -37,8 +37,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
-  const todayDate = new Date();
-
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -163,7 +161,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
-
     } else {
       setAttendanceComponentType('summary');
     }
@@ -220,7 +217,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           />
         );
       case 'summary':
-        return <AttendanceSummary  />;
+        return (
+          <AttendanceSummary
+            openReports={() =>{}}
+          />
+        );
       default:
         return null;
     }
@@ -235,6 +236,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
+  const gotToReports = () => {
+    setSeeRegister(false)
+    setAttendanceComponentType('report')
+  }
 
   return (
     <div>
@@ -242,7 +247,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        <AttendanceSummary hidePopup={seeRegister}  />
+        <AttendanceSummary
+          hidePopup={seeRegister}
+          openReports={gotToReports}
+        />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && !seeRegister && (
