@@ -54,8 +54,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     if (lastDate !== today) {
       // Show notification on a new day
       setSuccessMessageVisible(true);
-      localStorage.setItem('lastDate', today);
+      // localStorage.setItem('lastDate', today);
     } else {
+      console.log(">>>>")
       setSuccessMessageVisible(false);
     }
   },[]);
@@ -128,7 +129,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
         <PointsSuccessCard
-          visible={!successStatus ?? successMessageVisible}
+          visible={successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
           message={'Your attendance registers are up to date this week!'}
