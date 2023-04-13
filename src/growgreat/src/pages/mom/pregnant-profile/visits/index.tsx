@@ -29,7 +29,7 @@ import { MotherActions } from '@/store/mother/mother.actions';
 
 const HEADER_HEIGHT = 64;
 
-export const Visits: React.FC = () => {
+export const VisitsTab: React.FC = () => {
   const { height } = useWindowSize();
 
   const history = useHistory();
@@ -126,7 +126,9 @@ export const Visits: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/start-visit`),
+          history.push(
+            `${location.pathname}/activities-form/${currentVisit?.id}`
+          ),
       };
     });
 

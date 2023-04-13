@@ -32,6 +32,7 @@ import PointsSummary from '@/pages/client/highlights-tab/points-summary';
 import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
 import { InfantProfile } from '@/pages/infant/infant-profile';
 import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
+import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
 import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
 import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
 import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
@@ -141,6 +142,11 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.INFANT_PROFILE.PROGRESS.ACTIVITIES_FORM}
         component={ActivityList}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.PROGRESS.ACTIVITIES_FORM}
+        component={MomActivityList}
       />
       <Route
         exact
