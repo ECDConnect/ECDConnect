@@ -24,6 +24,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const appDispatch = useAppDispatch();
   const isOnline = true;
 
+  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
   const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
 
   const successStatus = getStorageItem<boolean>(
@@ -47,9 +48,23 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     );
   };
 
+  useEffect(() => {
+    const lastDate = localStorage.getItem('lastDate');
+    const today = new Date().toDateString();
+    if (lastDate !== today) {
+      // Show notification on a new day
+      setSuccessMessageVisible(true);
+      localStorage.setItem('lastDate', today);
+    } else {
+      setSuccessMessageVisible(false);
+    }
+  },[]);
+
   const closeNotification = () => {
     setSuccessMessageVisible(false);
     setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+    const today = new Date().toDateString();
+    localStorage.setItem('lastDate', today);
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
