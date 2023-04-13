@@ -23,10 +23,14 @@ import { MoreInformation } from '../../components/more-information';
 import { replaceBraces } from '@ecdlink/core';
 import { differenceInWeeks } from 'date-fns';
 import { useSelector } from 'react-redux';
+import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
 import {
-  getPreviousVisitInformationForInfantSelector,
-  getVisitAnswersForInfantSelector,
-} from '@/store/visit/visit.selectors';
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 
 export const DevelopmentalScreeningVisitSection = 'Developmental screening';
 export const noteQuestion =
@@ -86,9 +90,6 @@ export const DevelopmentalScreeningWeeksStep = ({
     [infant?.user?.dateOfBirth]
   );
 
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
-  );
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
   const previousNotes = useMemo(
@@ -96,16 +97,24 @@ export const DevelopmentalScreeningWeeksStep = ({
     [previousAnswers]
   );
 
-  // TODO: get the last visit data, it's necessary check the date from the last visit
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
+
   const previousNote = useMemo(() => {
-    const insertedDate = previousVisit?.visitDataStatus?.[0]?.insertedDate;
+    const insertedDate = previousPlannedVisit?.plannedVisitDate;
     const date = !!insertedDate ? new Date(insertedDate) : undefined;
     const note = previousNotes?.find(
       (item) => item.question === noteQuestion
     )?.questionAnswer;
 
     return { date, note };
-  }, [previousNotes, previousVisit?.visitDataStatus]);
+  }, [previousNotes, previousPlannedVisit?.plannedVisitDate]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
