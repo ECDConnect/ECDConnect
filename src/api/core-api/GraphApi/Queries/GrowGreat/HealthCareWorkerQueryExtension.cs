@@ -80,9 +80,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] CaregiverManager caregiverManager,
             [Service] InfantManager infantManager, 
             [Service] MotherManager motherManager, 
-            string userId)
+            string userId,
+            int recordsPerPage=Constants.GGSettings.recordsPerPage,
+            int pageNumber=Constants.GGSettings.pageNumber)
         {
-            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(userId);
+            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(userId, recordsPerPage, pageNumber);
 
             foreach (var caregiver in caregivers)
             { 
