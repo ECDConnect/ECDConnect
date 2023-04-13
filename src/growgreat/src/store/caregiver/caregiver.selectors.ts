@@ -24,3 +24,6 @@ export const getCaregiverClientsByIdSelector = (
   state.caregivers.caregiverClientsList?.find(
     (item) => item.id === caregiverId
   );
+
+export const getCaregiverClientsSelector = (state: RootState) =>
+  state.caregivers.caregiverClientsList;

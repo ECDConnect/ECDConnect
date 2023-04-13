@@ -105,6 +105,8 @@ const caregiverSlice = createSlice({
       }
     );
     builder.addCase(getCaregiverClients.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
       if (!!state.caregiverClientsList?.length) {
         if (
           !state.caregiverClientsList?.find(
@@ -112,6 +114,7 @@ const caregiverSlice = createSlice({
           )
         ) {
           state.caregiverClientsList?.push(action.payload);
+          return;
         }
 
         state.caregiverClientsList = state.caregiverClientsList.map(
@@ -123,10 +126,10 @@ const caregiverSlice = createSlice({
             }
           }
         );
+        return;
       }
 
       state.caregiverClientsList = [action.payload];
-      setFulfilledThunkActionStatus(state, action);
     });
 
     builder.addCase(getAllCaregiverClients.fulfilled, (state, action) => {

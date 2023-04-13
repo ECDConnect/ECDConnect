@@ -53,6 +53,8 @@ import { CaregiverActions } from '@/store/caregiver/caregiver.actions';
 import { PayloadAction } from '@reduxjs/toolkit';
 import { generatePath } from 'react-router-dom';
 import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { getCaregiverClientsSelector } from '@/store/caregiver/caregiver.selectors';
 
 export const useClientProfileDialog = () => {
   const history = useHistory();
@@ -160,6 +162,8 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     CaregiverActions.GET_CAREGIVER_CLIENTS
   );
 
+  const { isOnline } = useOnlineStatus();
+
   const dialog = useDialog();
 
   const appDispatch = useAppDispatch();
@@ -170,6 +174,8 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
 
   const infants = useSelector(getInfants);
   const mothers = useSelector(motherSelectors.getMothers);
+  const caregiverClients = useSelector(getCaregiverClientsSelector);
+
   const [infantsListItems, setInfantsListItems] = useState<
     UserAlertListDataItem<ExtraInfantData>[]
   >([]);
@@ -238,6 +244,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
             const caregiverId = infant.caregiver?.id;
             const response =
               caregiverId &&
+              isOnline &&
               ((await appDispatch(
                 caregiverThunkActions.getCaregiverClients({
                   caregiverId: caregiverId,
@@ -245,8 +252,11 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
               )) as PayloadAction<MergedCaregiver> | undefined);
 
             if (
-              typeof response !== 'string' &&
-              Number(response?.payload?.infants?.length) > 1
+              (!!response &&
+                isOnline &&
+                typeof response !== 'string' &&
+                Number(response?.payload?.infants?.length) > 1) ||
+              caregiverClients?.find((item) => item.id === caregiverId)
             ) {
               return history.push(
                 generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {
