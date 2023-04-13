@@ -1,6 +1,6 @@
 import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
-import { InfantDto, MotherDto, toCamelCase } from '@ecdlink/core';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import { MotherDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -14,8 +14,6 @@ import P5 from '@/assets/pillar/p5.svg';
 
 import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
-import { Card, CardProps } from './card';
-import { GrowthCard } from './growth-card';
 
 interface FollowUpComponentProps {
   mother: MotherDto;
@@ -34,7 +32,7 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
   const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+    getPreviousVisitInformationForMotherSelector
   );
 
   const getColorAndIcon = useCallback(
@@ -66,33 +64,6 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
     },
     []
   );
-
-  const { weight, length, muac, grow } = useMemo(() => {
-    const weight = {
-      name: 'Weight',
-      value: previousVisit?.weight,
-      color: previousVisit?.weightColor,
-      comment: previousVisit?.weightComment,
-    };
-    const length = {
-      name: 'Length',
-      value: previousVisit?.length,
-      color: previousVisit?.lengthColor,
-      comment: previousVisit?.lengthComment,
-    };
-    const muac = {
-      name: 'MUAC',
-      value: previousVisit?.muac,
-      color: previousVisit?.muacColor,
-      comment: previousVisit?.muacComment,
-    };
-    const grow = {
-      comment: previousVisit?.growComment,
-      color: previousVisit?.growCommentColor,
-    };
-
-    return { weight, length, muac, grow };
-  }, [previousVisit]);
 
   const progressBarOptions = useMemo((): {
     primaryColour: Colours;
@@ -181,24 +152,7 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
         type="h4"
         text={`Here is a summary of how ${name} is doing:`}
       />
-      <GrowthCard
-        text={grow.comment || ''}
-        color={getColorAndIcon(grow.color || '').primaryColour}
-        icon={getColorAndIcon(grow.color || '').icon}
-      />
-      {[weight, length, muac].map((item) => (
-        <Card
-          key={item.name}
-          className="my-4"
-          label={item.name}
-          value={item.value || ''}
-          date={
-            previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-          } /* TODO: add the correct date */
-          message={item.comment || ''}
-          color={item.color as CardProps['color']}
-        />
-      ))}
+
       <Divider dividerType="dashed" className="mt-4 mb-8" />
       {!!groupedData &&
         Object.keys(groupedData).map((item, index) => {

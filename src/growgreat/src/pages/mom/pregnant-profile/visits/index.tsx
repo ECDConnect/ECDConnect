@@ -29,7 +29,7 @@ import { MotherActions } from '@/store/mother/mother.actions';
 
 const HEADER_HEIGHT = 64;
 
-export const Visits: React.FC = () => {
+export const VisitsTab: React.FC = () => {
   const { height } = useWindowSize();
 
   const history = useHistory();

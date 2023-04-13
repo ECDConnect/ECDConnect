@@ -41,3 +41,18 @@ export const getMotherCurrentVisitSelector = (
       )
     : undefined;
 };
+
+export const getMotherLastVisitSelector = (
+  state: RootState
+): VisitDto | undefined => {
+  const visits = state.mothers.visits || [];
+  const lastAttended = visits?.filter((item) => item.attended) || [];
+
+  return lastAttended.length
+    ? lastAttended.reduce((prev, curr) =>
+        (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+          ? prev
+          : curr
+      )
+    : undefined;
+};

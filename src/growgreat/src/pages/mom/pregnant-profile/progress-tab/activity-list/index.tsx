@@ -42,7 +42,7 @@ import { relationshipTypes } from '../../../../infant/components/mother-details/
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
-import { motherThunkActions } from '@/store/mother';
+import { motherSelectors, motherThunkActions } from '@/store/mother';
 import {
   getMotherById,
   getMotherVisits,

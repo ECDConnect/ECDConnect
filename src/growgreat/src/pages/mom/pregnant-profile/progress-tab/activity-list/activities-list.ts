@@ -2,14 +2,19 @@ import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P2 from '@/assets/pillar/p2.svg';
-import P3 from '@/assets/pillar/p3.svg';
-import P4 from '@/assets/pillar/p4.svg';
-import P5 from '@/assets/pillar/p5.svg';
 
 export const activitiesTypes = {
   healthCare: 'Healthcare',
   nutrition: 'Nutrition',
   pregnancyCare: 'Pregnancy care',
+  dangerSigns: 'Danger signs',
+  followUp: 'Follow up',
+};
+
+export const activitiesSectionTypes = {
+  healthCare: 'Clinic visits',
+  nutrition: 'Nutrition',
+  pregnancyCare: 'ID document',
   dangerSigns: 'Danger signs',
   followUp: 'Follow up',
 };

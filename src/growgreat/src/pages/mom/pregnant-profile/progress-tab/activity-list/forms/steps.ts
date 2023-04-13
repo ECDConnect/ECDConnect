@@ -17,7 +17,6 @@ import {
   MaternalDistressSteps,
   MidUpperArmCircumferenceResultStep,
   DrugOrAlcoholUseStep,
-  NutritionStep,
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
@@ -32,8 +31,6 @@ import {
   NextVisitStep,
 } from './follow-up-steps';
 
-import { nutritionAnswers } from './pregnancy-care-steps/nutrition';
-import { Question } from './dynamic-form';
 import { IdDocumentStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
 import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/infant-care';
 
@@ -44,8 +41,6 @@ export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   ExpectedDeliveryStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
-  // MaternalDistressStep,
-  // MaternalDistressScreeningStep,
 ];
 
 export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
@@ -55,37 +50,12 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
   HealthyEatingStep,
 ];
 
-export const getPillar1Steps = ({
-  nutritionAnswer,
-  isToSkipBreastfeedingIssuesRelevantItemsStep,
-  isShowNutritionStep,
-  isFormulaMilkHowBreastfeedingWorks,
-  isFormulaMilkUnsafeFeedingPractices,
-  isMixedFeedingFoodsForm,
-  isMixedFeedingBenefitsOfBreastfeeding,
-  isMixedFeedingHowBreastfeedingWorks,
-  isMixedFeedingUnsafeFeedingPractices,
-  isMixedFeedingFistFoods,
-  isMixedFeedingComplementaryFeeding,
-}: {
-  nutritionAnswer: Question['answer'];
-  isToSkipBreastfeedingIssuesRelevantItemsStep: boolean;
-  isShowNutritionStep: boolean;
-  isFormulaMilkHowBreastfeedingWorks: boolean;
-  isFormulaMilkUnsafeFeedingPractices: boolean;
-  isMixedFeedingFoodsForm: boolean;
-  isMixedFeedingBenefitsOfBreastfeeding: boolean;
-  isMixedFeedingHowBreastfeedingWorks: boolean;
-  isMixedFeedingUnsafeFeedingPractices: boolean;
-  isMixedFeedingFistFoods: boolean;
-  isMixedFeedingComplementaryFeeding: boolean;
-}) => {
+export const getPillar1Steps = () => {
   const defaultScreens = [
     WeightAndLengthResultStep,
     MaternalDistressSteps,
     MidUpperArmCircumferenceResultStep,
     DrugOrAlcoholUseStep,
-    ...(isShowNutritionStep ? [NutritionStep] : []),
   ];
 
   const complementaryFeedingFlow = [
@@ -94,17 +64,6 @@ export const getPillar1Steps = ({
     IdDocumentStep,
     InfantCareStep,
   ];
-
-  if (!!nutritionAnswer) {
-    switch (nutritionAnswer) {
-      case nutritionAnswers.mixedFeeding:
-        return [...defaultScreens, ...complementaryFeedingFlow];
-      case nutritionAnswers.formulaMilkOnly:
-        return [...defaultScreens, ...complementaryFeedingFlow];
-      default:
-        return [...defaultScreens, ...complementaryFeedingFlow];
-    }
-  }
 
   return [...defaultScreens, ...complementaryFeedingFlow];
 };

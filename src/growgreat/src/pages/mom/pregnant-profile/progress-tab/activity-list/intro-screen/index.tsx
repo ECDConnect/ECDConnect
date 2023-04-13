@@ -24,7 +24,7 @@ export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
       />
       <div className="p-4 pt-8">
         <FollowUp mother={mother || {}} />
-        <Button
+        {/* <Button
           className="mt-8 w-full"
           type="filled"
           color="primary"
@@ -32,7 +32,7 @@ export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
           icon="ClipboardListIcon"
           text="Start visit"
           onClick={onStartVisit}
-        />
+        /> */}
       </div>
     </>
   );

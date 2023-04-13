@@ -1,10 +1,8 @@
 import { Alert } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
-import P2 from '@/assets/pillar/p2.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
-import { activitiesColours } from '../../../activities-list';
 import { MoreInformation } from '../../components/more-information';
 import { Video } from '../../components/video';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
@@ -19,7 +17,7 @@ export const AntenatalClinicVideoStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
-  const videoSection = 'Bonding';
+  const videoSection = '';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
