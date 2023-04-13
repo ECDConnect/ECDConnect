@@ -113,8 +113,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     LocalStorageKeys.isSmartStartUser
   );
 
+  
   useEffect(() => {
-    const lastDate = localStorage.getItem('lastDate');
+    const lastDate = localStorage.getItem('summarylastDate');
     const today = new Date().toDateString();
     if (lastDate !== today) {
       // Show notification on a new day
@@ -122,7 +123,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         let date = trackedAttendance[0]?.attendanceDate;
         if (date === today) {
           setSuccessMessageVisible(true);
-          localStorage.setItem('lastDate', today);
+          localStorage.setItem('summarylastDate', today);
         }
       }
     } else {
