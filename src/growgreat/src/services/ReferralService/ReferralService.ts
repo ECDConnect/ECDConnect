@@ -1,6 +1,10 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
-import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
+import {
+  VisitBackReferral,
+  VisitDataStatus,
+  VisitDataStatusFilterInput,
+} from '@ecdlink/graphql';
 
 class Referral {
   _accessToken: string;
@@ -78,6 +82,51 @@ class Referral {
     }
 
     return response.data.data;
+  }
+
+  async GetBackReferralsForInfant(
+    id: string,
+    referralCompleted: boolean,
+    backReferralCompleted: boolean
+  ): Promise<VisitBackReferral[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { backReferralsForInfant: VisitBackReferral[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetBackReferralsForInfant($id: String, $referralCompleted: Boolean!, $backReferralCompleted: Boolean!) {
+          backReferralsForInfant(id: $id, referralCompleted: $referralCompleted, backReferralCompleted: $backReferralCompleted) {
+            id
+            comment
+            answer
+            question
+            visitDataStatus {
+              id
+              comment
+              color
+              type
+              section
+              isCompleted
+              backReferralCompleted
+            }
+          }
+        }
+          `,
+      variables: {
+        id,
+        referralCompleted,
+        backReferralCompleted,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Back Referrals For Infant Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.backReferralsForInfant;
   }
 }
 

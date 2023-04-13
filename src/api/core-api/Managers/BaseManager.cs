@@ -1,9 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.Security.Extensions;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.Managers.Integration
 {
@@ -22,12 +17,12 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
 
         public string FormatBulletList(Array arrData)
         {
-            var result = "<ul>";
+            var result = "";
             foreach (var item in arrData)
             {
                 result = result + "<li>" + item + "</li>";
             }
-            result = result + "<ul>";
+            result = result + "";
 
             return result;
         }

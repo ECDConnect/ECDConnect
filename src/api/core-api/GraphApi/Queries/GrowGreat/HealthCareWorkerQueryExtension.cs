@@ -1,4 +1,3 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
@@ -14,7 +13,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
