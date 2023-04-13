@@ -27,5 +27,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             return infantManager.UpdateInfant(id, input);
         }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Infant UpdateInfantCaregiverContactDetails([Service] InfantManager infantManager, string id, InfantModel input)
+        {
+            return infantManager.UpdateInfantCaregiverContactDetails(id, input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Infant UpdateInfantCaregiverAddress([Service] InfantManager infantManager, string id, InfantModel input)
+        {
+            return infantManager.UpdateInfantCaregiverAddress(id, input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Infant UpdateInfantCaregiver([Service] InfantManager infantManager, string infantId, InfantModel input)
+        {
+            return infantManager.UpdateInfantCaregiver(infantId, input);
+        }
     }
 }

@@ -40,6 +40,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                                                     x.ClassroomGroupId == classgroupId
                                                     && x.ChildId == childId
                                                     && x.ReportDate.Month == reportDate.Month && x.ReportDate.Year == reportDate.Year)
+                                            .OrderBy(x => x.Id)
                                             .FirstOrDefault();
 
             if (progressReportEntity == default)
@@ -51,6 +52,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
 
             var document = dbScope.Documents
                                   .Where(x => string.Equals(x.Name, ReportConstants.ChildProgressReport) && x.IsActive)
+                                  .OrderBy(x => x.Id)
                                   .FirstOrDefault();
 
             return await report.GenerateReport(progressReportEntity, document);

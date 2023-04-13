@@ -6,6 +6,7 @@ import {
   useState,
 } from 'react';
 import { Button } from '@ecdlink/ui';
+import { Header } from '@/pages/infant/infant-profile/components';
 import { InfantDto, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import {
@@ -23,6 +24,14 @@ import { ReferralActions } from '@/store/referral/referral.actions';
 import { GrowthMonitoring } from './pillar-1-steps';
 import { useParams } from 'react-router';
 import { InfantProfileParams } from '../../../infant-profile.types';
+import { useDialog } from '@ecdlink/core';
+import { ActionModal, DialogPosition } from '@ecdlink/ui';
+import ROUTES from '@/routes/routes';
+import { CLIENT_TABS } from '../../../../../client/client-dashboard/class-dashboard';
+import { useHistory } from 'react-router';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
+import P4 from '@/assets/pillar/p4.svg';
+import { activitiesColours } from '../activities-list';
 
 export interface Question {
   question: string;
@@ -56,6 +65,7 @@ export interface DynamicFormProps {
   onPreviousStep?: () => void;
   onClose?: () => void;
   setGrowthMonitoring?: (value: GrowthMonitoring) => void;
+  setRisk?: (value: number) => void;
 }
 
 export const DynamicForm = ({
@@ -75,6 +85,8 @@ export const DynamicForm = ({
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
   const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
+  type Risk = 0 | 1 | 2;
+  const [risk, setRisk] = useState<Risk>(0);
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -88,11 +100,23 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
 
+  const infantName = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
+
   const { visitId } = useParams<InfantProfileParams>();
-
   const { successDialog } = useRequestResponseDialog();
-
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const history = useHistory();
+
+  const goHome = useCallback(() => {
+    history.push(ROUTES.CLIENTS.ROOT, {
+      activeTabIndex: CLIENT_TABS.CLIENT,
+    });
+  }, [history]);
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -158,6 +182,10 @@ export const DynamicForm = ({
     setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
   }, []);
 
+  const handleRisk = useCallback((value: Risk) => {
+    setRisk(value);
+  }, []);
+
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
@@ -193,16 +221,14 @@ export const DynamicForm = ({
       })
     );
 
-    if (!!sections?.length) {
-      appDispatch(visitActions.addVisitFormData(input));
-      await appDispatch(visitThunkActions.addVisitFormData(input));
+    appDispatch(visitActions.addVisitFormData(input));
+    await appDispatch(visitThunkActions.addVisitFormData(input));
 
-      await appDispatch(
-        visitThunkActions.getCompletedVisitsForVisitId({
-          visitId,
-        })
-      );
-    }
+    await appDispatch(
+      visitThunkActions.getCompletedVisitsForVisitId({
+        visitId,
+      })
+    );
 
     if (!!referrals?.length) {
       appDispatch(
@@ -226,6 +252,8 @@ export const DynamicForm = ({
 
     const CurrentStep = steps[Number(currentStep)];
 
+    if (!CurrentStep) return;
+
     return (
       <CurrentStep
         infant={infant}
@@ -238,6 +266,7 @@ export const DynamicForm = ({
         setReferralsInput={handleSetReferrals}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
+        setRisk={handleRisk}
       />
     );
   }, [
@@ -252,13 +281,21 @@ export const DynamicForm = ({
     sectionQuestions,
     setIsTip,
     steps,
+    handleRisk,
   ]);
 
   const renderButton = useMemo(() => {
+    if (Number(steps?.length) === 1) {
+      return {
+        action: onSubmit,
+        text: 'Save',
+        icon: 'SaveIcon',
+      };
+    }
     if (Number(currentStep) === 0) {
       return {
         action: handleOnNext,
-        text: 'Start',
+        text: name?.startsWith('Care for') ? 'Start' : 'Next',
         icon: 'ClipboardListIcon',
       };
     }
@@ -276,15 +313,88 @@ export const DynamicForm = ({
       text: 'Save',
       icon: 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [currentStep, handleOnNext, onSubmit, steps?.length, name]);
 
   useEffect(() => {
     if (
       (wasLoading && !isLoading) ||
       (wasLoadingReferral && !isLoadingReferral)
     ) {
-      successDialog();
-      onClose?.();
+      if (risk === 1) {
+        dialog({
+          blocking: false,
+          position: DialogPosition.Middle,
+          color: 'bg-white',
+          render: (onClose) => {
+            return (
+              <ActionModal
+                icon={'ExclamationCircleIcon'}
+                iconColor="errorMain"
+                iconBorderColor="errorBg"
+                className="z-50"
+                importantText={`Take ${infantName} to the hospital immediately or call an ambulance!`}
+                detailText={`${infantName} is not well and needs urgent care!`}
+                actionButtons={[
+                  {
+                    colour: 'primary',
+                    text: 'Close',
+                    textColour: 'primary',
+                    type: 'outlined',
+                    leadingIcon: 'XIcon',
+                    onClick: onClose,
+                  },
+                ]}
+              />
+            );
+          },
+        });
+        goHome?.();
+      } else if (risk === 2) {
+        dialog({
+          blocking: false,
+          position: DialogPosition.Full,
+          color: 'bg-white',
+          render: (onClose) => {
+            return (
+              <>
+                <Header
+                  customIcon={P4}
+                  title={`${name}`}
+                  subTitle={`Sugar Salt Solution`}
+                  iconHexBackgroundColor={
+                    activitiesColours.pillar4.primaryColor
+                  }
+                  hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
+                />
+                <ActionModal
+                  customIcon={
+                    <div className="rounded-full">
+                      <PollyShock className="h-24 w-24" />
+                    </div>
+                  }
+                  className="z-50"
+                  title={`Take ${infantName} to the hospital immediately or call an ambulance!`}
+                  detailText={`Help ${caregiverName} to make the Sugar Salt Solution on page 30 of the Road to Health Book and give it to ${infantName} on the way to the hospital.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'white',
+                      type: 'filled',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              </>
+            );
+          },
+        });
+        goHome?.();
+      } else {
+        successDialog();
+        onClose?.();
+      }
     }
   }, [
     isLoading,
@@ -293,6 +403,12 @@ export const DynamicForm = ({
     successDialog,
     wasLoading,
     wasLoadingReferral,
+    dialog,
+    risk,
+    infantName,
+    goHome,
+    caregiverName,
+    name,
   ]);
 
   return (

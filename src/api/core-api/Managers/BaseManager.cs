@@ -1,9 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.Security.Extensions;
-using Microsoft.AspNetCore.Http;
-using System;
+﻿using System;
 
 namespace EcdLink.Api.CoreApi.Managers.Integration
 {
@@ -27,7 +22,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             {
                 result = result + "<li>" + item + "</li>";
             }
-            result = result + "<ul>";
+            result = result + "</ul>";
 
             return result;
         }

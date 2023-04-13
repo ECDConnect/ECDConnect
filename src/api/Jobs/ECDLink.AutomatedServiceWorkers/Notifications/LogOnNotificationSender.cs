@@ -84,6 +84,7 @@ namespace ECDLink.AutomatedServiceWorkers.Notifications
 
             var tenant = tenancyRepo.GetAllTenants()
                 .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
+                .OrderBy(x => x.Id)
                 .FirstOrDefault();
 
             TenantExecutionContext.SetTenant(tenant);

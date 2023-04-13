@@ -44,7 +44,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<EventRecordType>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).OrderBy(x => x.Id).FirstOrDefault();
+            var entityToUpdate = repository.GetById(Guid.Parse(id));
 
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = applicationUserId;
@@ -105,7 +105,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<EventRecord>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).OrderBy(x => x.Id).FirstOrDefault();
+            var entityToUpdate = repository.GetById(Guid.Parse(id));
 
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = applicationUserId;
@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             if (input.MotherId != null)
             {
                 var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-                Mother mother = repository.GetAll().Where(x => x.UserId.Equals(input.MotherId.ToString())).FirstOrDefault();
+                Mother mother = repository.GetAll().Where(x => x.UserId.Equals(input.MotherId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
                 input.MotherId = mother?.Id;
             }
 
@@ -169,7 +169,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            Mother mother = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(motherId))).FirstOrDefault();
+            Mother mother = repository.GetById(Guid.Parse(motherId));
             mother.IsActive = false;
             repository.Update(mother);
         }
@@ -178,7 +178,7 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
         {
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
-            Infant infant = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(infantId))).FirstOrDefault();
+            Infant infant = repository.GetById(Guid.Parse(infantId));
             infant.IsActive = false;
             repository.Update(infant);
         }

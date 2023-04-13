@@ -29,6 +29,7 @@ import maternalRecord from '../../../../assets/maternalRecord.png';
 import { getNextDateByDay, getWeeksDiff } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
+import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 
 export const PregnantMaternalCaseRecord: React.FC<
   PregnantMaternalCaseRecordProps
@@ -71,6 +72,10 @@ export const PregnantMaternalCaseRecord: React.FC<
   const [deliveryDate, setDeliveryDate] = useState(tomorrow);
 
   const { isLoading } = useThunkFetchCall('mothers', MotherActions.ADD_MOTHER);
+  const { isLoading: isLoadingEventRecord } = useThunkFetchCall(
+    'eventRecord',
+    EventRecordActions.ADD_EVENT_RECORD
+  );
 
   const setPhotoUrl = (imageUrl: string) => {
     setPregnantMaternalCaseRecordFormValue('maternalCaseRecord', imageUrl);
@@ -295,9 +300,10 @@ export const PregnantMaternalCaseRecord: React.FC<
           onClick={() => {
             onSubmit(getPregnantMaternalCaseRecordFormValues());
           }}
-          isLoading={isLoading}
+          isLoading={isLoading || isLoadingEventRecord}
           disabled={
             isLoading ||
+            isLoadingEventRecord ||
             !isValid ||
             (!hasMaternalCaseRecord &&
               !getPregnantMaternalCaseRecordFormValues()

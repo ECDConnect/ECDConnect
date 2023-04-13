@@ -59,6 +59,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [shouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
+
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
@@ -85,7 +86,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     ? classProgrammesForPrincipal
     : classProgrammes;
 
-  const primaryClassProgramme = classProgrammesUpdated.find(
+  const primaryClassProgramme = classProgrammesUpdated.filter(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
@@ -93,13 +94,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           )
         : classroomGroups.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           );
       setSelectedClassroomGroups(selectedGroups);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editAttendanceRegisterVisible ? attendanceDate : null]);
 
@@ -108,12 +118,17 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceGroups,
       isButtonActive
     );
-
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
     setIsButtonActive(attendanceStatusCheck.isValid);
   };
+  
+
+  useEffect(() => {
+    updateAttendanceState(attendanceGroups ?? []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassroomGroups, attendanceGroups])
+  
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -125,7 +140,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     isPrimaryList: boolean
   ) => {
     const newAttendanceGroups = [...(attendanceGroups || [])];
-
     const groupIndex = newAttendanceGroups.findIndex(
       (x) => x.cacheId === attendanceListId
     );
@@ -136,22 +150,28 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(newAttendanceGroups);
+      updateAttendanceState(newAttendanceGroups);
     } else {
       newAttendanceGroups.splice(groupIndex, 1, {
         cacheId: attendanceListId,
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
+      updateAttendanceState(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
     }
-
-    setAttendanceGroups(newAttendanceGroups);
-    updateAttendanceState(newAttendanceGroups);
   };
 
   const handleFormSubmit = async () => {
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     const currentGroup = classroomGroups.find(
@@ -168,7 +188,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     if (!currentProgramme) return;
@@ -222,7 +243,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         category: 'Attendance tracking click',
       })
     );
-
+    
     onSubmitSuccess({
       attendanceDate,
       classroomGroupId: currentAttendanceGroup.cacheId,
@@ -298,8 +319,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled:
-                          x.id === primaryClassProgramme?.classroomGroupId,
+                        disabled: false,
                       };
                     })
                   : classroomGroups.map((x) => {
@@ -307,22 +327,19 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                         id: x.id ?? '',
                         value: x,
                         label: x.name,
-                        disabled:
-                          x.id === primaryClassProgramme?.classroomGroupId,
+                        disabled: false,
                       };
                     })) || []
               }
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
-              multiple
               color={'secondary'}
               selectedOptions={selectedClassroomGroups.map((x) => {
                 return {
                   id: x.id ?? '',
                   value: x,
                   label: x.name,
-                  disabled: x.id === primaryClassProgramme?.classroomGroupId,
                 };
               })}
               info={{
@@ -359,7 +376,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       <div className={styles.attendanceListsWrapper}>
         {selectedClassroomGroups.map((selectedGroup, idx) => {
           const isPrimaryList =
-            selectedGroup.id === primaryClassProgramme?.classroomGroupId;
+            selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
           return (
             <div id="attendanceList">
               <ClassProgrammeAttendanceList
