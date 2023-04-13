@@ -275,6 +275,35 @@ class InfantService {
 
     return response.data.data.updateInfantCaregiverContactDetails;
   }
+
+  async updateInfantCaregiver(
+    infantId: string,
+    input: InfantModelInput
+  ): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateInfantCaregiver: InfantDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateInfantCaregiver($infantId: String, $input: InfantModelInput) {
+          updateInfantCaregiver(infantId: $infantId, input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        infantId,
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Update Infant Caregiver - Server connection error');
+    }
+
+    return response.data.data.updateInfantCaregiver;
+  }
 }
 
 export default InfantService;
