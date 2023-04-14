@@ -20,10 +20,7 @@ import {
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
-import {
-  DevelopmentalScreeningStep,
-  DangerSignsStep,
-} from './danger-signs-steps';
+import { DangerSignsStep } from './danger-signs-steps';
 import {
   NotesStep,
   ReferralsStep,
@@ -70,7 +67,7 @@ export const getPillar1Steps = () => {
 
 export const dangerSignsSteps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean
-) => [DevelopmentalScreeningStep, DangerSignsStep];
+) => [DangerSignsStep];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

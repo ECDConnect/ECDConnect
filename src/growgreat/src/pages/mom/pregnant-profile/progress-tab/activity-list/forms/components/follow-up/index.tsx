@@ -4,7 +4,7 @@ import { MotherDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import Pregnant from '@/assets/pregnant.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
 import Infant from '@/assets/infant.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P2 from '@/assets/pillar/p2.svg';
@@ -100,7 +100,10 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
       case activitiesTypes.healthCare:
-        return { icon: Pregnant, color: activitiesColours.other.primaryColor };
+        return {
+          icon: BabyHealthcare,
+          color: activitiesColours.other.primaryColor,
+        };
       case activitiesTypes.nutrition:
         return { icon: Infant, color: activitiesColours.other.primaryColor };
       case activitiesTypes.pregnancyCare:
