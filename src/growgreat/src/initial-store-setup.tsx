@@ -55,6 +55,7 @@ function InitialStoreSetup(props: Props) {
   const clearSiteData = useClearSiteData();
 
   useEffect(() => {
+    setInitLoading(true);
     if (userData) {
       (async () =>
         await appDispatch(
@@ -62,7 +63,12 @@ function InitialStoreSetup(props: Props) {
             userId: userData?.id!,
           })
         ).unwrap())();
+      (async () =>
+        await appDispatch(
+          caregiverThunkActions.getAllCaregiverClients({ userId: userData.id! })
+        ))();
     }
+    setInitLoading(false);
   }, [appDispatch, userData]);
 
   useEffect(() => {
@@ -129,37 +135,45 @@ function InitialStoreSetup(props: Props) {
   }
 
   async function initAdditionalStoreSetup() {
+    const promises = [
+      appDispatch(notesThunkActions.getNotes({})).unwrap(),
+      appDispatch(motherThunkActions.getMothers({})),
+      appDispatch(infantThunkActions.getInfants({})),
+      appDispatch(userThunkActions.getUser({})).unwrap(),
+      appDispatch(userThunkActions.getUserConsents({})).unwrap(),
+      appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+    ];
     // SPECIFIC DATA
     setOtherLoading(true);
-    await appDispatch(notesThunkActions.getNotes({})).unwrap();
-    await appDispatch(motherThunkActions.getMothers({}));
-    await appDispatch(infantThunkActions.getInfants({}));
-    await appDispatch(userThunkActions.getUser({})).unwrap();
-    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await Promise.all(promises);
     setOtherLoading(false);
   }
 
   async function initStaticStoreSetup() {
     const today = new Date();
+
+    const promises = [
+      appDispatch(
+        contentConsentThunkActions.getConsent({ locale: 'en-za' })
+      ).unwrap(),
+      appDispatch(settingThunkActions.getSettings({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRelations({})).unwrap(),
+      appDispatch(staticDataThunkActions.getGenders({})).unwrap(),
+      appDispatch(staticDataThunkActions.getRaces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getLanguages({})).unwrap(),
+      appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap(),
+      appDispatch(
+        staticDataThunkActions.getHolidays({ year: today.getFullYear() })
+      ).unwrap(),
+      appDispatch(staticDataThunkActions.getProvinces({})).unwrap(),
+      appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap(),
+      appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap(),
+      appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap(),
+    ];
+
     setStaticDataLoading(true);
-    await appDispatch(
-      contentConsentThunkActions.getConsent({ locale: 'en-za' })
-    ).unwrap();
-    await appDispatch(settingThunkActions.getSettings({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRelations({})).unwrap();
-    await appDispatch(staticDataThunkActions.getGenders({})).unwrap();
-    await appDispatch(staticDataThunkActions.getRaces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getLanguages({})).unwrap();
-    await appDispatch(staticDataThunkActions.getEducationLevels({})).unwrap();
-    await appDispatch(
-      staticDataThunkActions.getHolidays({ year: today.getFullYear() })
-    ).unwrap();
-    await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
-    await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
-    await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
-    await appDispatch(staticDataThunkActions.getWorkflowStatuses({})).unwrap();
+    await Promise.all(promises);
     setStaticDataLoading(false);
   }
 
