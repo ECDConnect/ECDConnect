@@ -1,10 +1,14 @@
 import { Header } from '../../../components';
-import { InfantDto, MotherDto } from '@ecdlink/core';
+import { MotherDto } from '@ecdlink/core';
 import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
 import { FollowUp } from '../forms/components/follow-up';
+import { useSelector } from 'react-redux';
+import { motherSelectors } from '@/store/mother';
+import { getMomCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
+import { RootState } from '@/store/types';
 
 interface IntroScreenProps {
   mother?: MotherDto;
@@ -13,6 +17,13 @@ interface IntroScreenProps {
 
 export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+  const motherVisit = useSelector(
+    motherSelectors?.getMotherCurrentVisitSelector
+  );
+
+  const completedVisits = useSelector((state: RootState) =>
+    getMomCompletedVisitsByVisitIdSelector(state, motherVisit?.id!)
+  )?.visits;
 
   return (
     <>
@@ -24,15 +35,17 @@ export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
       />
       <div className="p-4 pt-8">
         <FollowUp mother={mother || {}} />
-        {/* <Button
-          className="mt-8 w-full"
-          type="filled"
-          color="primary"
-          textColor="white"
-          icon="ClipboardListIcon"
-          text="Start visit"
-          onClick={onStartVisit}
-        /> */}
+        {completedVisits?.length! > 0 && (
+          <Button
+            className="mt-8 w-full"
+            type="filled"
+            color="primary"
+            textColor="white"
+            icon="ClipboardListIcon"
+            text="Start visit"
+            onClick={onStartVisit}
+          />
+        )}
       </div>
     </>
   );
