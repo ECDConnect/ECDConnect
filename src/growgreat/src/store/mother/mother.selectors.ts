@@ -56,3 +56,33 @@ export const getMotherLastVisitSelector = (
       )
     : undefined;
 };
+
+export const getMotherPreviousVisitSelector = (
+  state: RootState,
+  currentPlannedVisitDate: string
+) => {
+  const visits = state.mothers.visits;
+
+  if (!visits) return;
+
+  const filteredVisits = visits.filter((visit) => {
+    const plannedVisitDate = new Date(visit.plannedVisitDate);
+    return plannedVisitDate < new Date(currentPlannedVisitDate);
+  });
+
+  const previousVisit = filteredVisits.reduce(
+    (previous: VisitDto | null, current: VisitDto) => {
+      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
+      if (
+        !previous ||
+        currentPlannedVisitDate > new Date(previous.plannedVisitDate)
+      ) {
+        return current;
+      }
+      return previous;
+    },
+    null
+  );
+
+  return previousVisit;
+};
