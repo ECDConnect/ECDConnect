@@ -8,10 +8,10 @@ import { getMotherById } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import { VisitsTab } from './visits';
 import { PregnantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { Contact } from './contact';
+import { Visits } from './visits';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -49,7 +49,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Visits',
       initActive: true,
-      child: <VisitsTab />,
+      child: <Visits />,
     },
     {
       title: 'Progress',

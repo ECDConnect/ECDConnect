@@ -22,14 +22,14 @@ import {
 } from '@/store/mother/mother.selectors';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
-import { motherThunkActions } from '@/store/mother';
+import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { useDialog, VisitDto } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 
 const HEADER_HEIGHT = 64;
 
-export const VisitsTab: React.FC = () => {
+export const Visits: React.FC = () => {
   const { height } = useWindowSize();
 
   const history = useHistory();
@@ -46,6 +46,10 @@ export const VisitsTab: React.FC = () => {
     getMotherById(state, motherId)
   );
 
+  const motherCurrentVisit = useSelector(
+    motherSelectors.getMotherCurrentVisitSelector
+  );
+  console.log({ motherCurrentVisit });
   const visits = useSelector(getMotherVisits);
 
   const { isLoading } = useThunkFetchCall(
@@ -108,6 +112,8 @@ export const VisitsTab: React.FC = () => {
       const date = new Date(item.plannedVisitDate);
       const isMissedVisit = date < currentDate;
 
+      console.log({ item });
+
       return {
         title: item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
@@ -122,7 +128,8 @@ export const VisitsTab: React.FC = () => {
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
         type: getType(item),
-        showActionButton: getType(item) === 'inProgress',
+        showActionButton:
+          item?.id === motherCurrentVisit?.id || getType(item) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -151,12 +158,14 @@ export const VisitsTab: React.FC = () => {
     return array;
   }, [
     currentDate,
-    currentVisit,
+    currentVisit?.id,
+    currentVisit?.visitType?.id,
     getType,
     history,
     insertedDate,
     isWeekDeadline,
     location.pathname,
+    motherCurrentVisit?.id,
     visits,
   ]);
 
