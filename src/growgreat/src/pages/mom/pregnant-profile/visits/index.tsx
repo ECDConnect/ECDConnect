@@ -49,7 +49,7 @@ export const Visits: React.FC = () => {
   const motherCurrentVisit = useSelector(
     motherSelectors.getMotherCurrentVisitSelector
   );
-  console.log({ motherCurrentVisit });
+
   const visits = useSelector(getMotherVisits);
 
   const { isLoading } = useThunkFetchCall(
@@ -111,8 +111,6 @@ export const Visits: React.FC = () => {
     const array: StepItem[] = sortedVisits.map((item) => {
       const date = new Date(item.plannedVisitDate);
       const isMissedVisit = date < currentDate;
-
-      console.log({ item });
 
       return {
         title: item.visitType?.normalizedName || 'Visit',
