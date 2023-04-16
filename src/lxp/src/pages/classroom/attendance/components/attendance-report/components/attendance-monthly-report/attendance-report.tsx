@@ -2,15 +2,9 @@ import {
   ChildAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
-import {
-  ComponentBaseProps,
-  BannerWrapper,
-  Button,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -19,6 +13,7 @@ import {
   getShape,
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
+import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -142,23 +137,8 @@ export const MonthlyAttendanceReport = ({
           </div>
         );
       })}
-      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {
-          <Button
-            type="filled"
-            color="primary"
-            className={'mt-0'}
-            onClick={() => {}}
-          >
-            {renderIcon('DownloadIcon', 'h-5 w-5 text-primary')}
-            <Typography
-              type="h6"
-              color="white"
-              text={'Download Register'}
-              className="ml-2"
-            ></Typography>
-          </Button>
-        }
+      <div className={'flex h-full w-full flex-1 flex-col py-5'}>
+        {<GeneratePdfReportButton title="Download Register" url="" />}
       </div>
     </BannerWrapper>
   );

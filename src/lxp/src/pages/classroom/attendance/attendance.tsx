@@ -205,6 +205,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
   };
 
+  const gotToReports = () => {
+    setSeeRegister(false);
+    setAttendanceComponentType('report');
+  };
+
   const getComponentToRender = (type?: AttendanceComponentType) => {
     switch (type) {
       case 'attendance':
@@ -219,7 +224,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       case 'summary':
         return (
           <AttendanceSummary
-            openReports={() =>{}}
+            openReports={() => setAttendanceComponentType('report')}
           />
         );
       default:
@@ -236,21 +241,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
-  const gotToReports = () => {
-    setSeeRegister(false)
-    setAttendanceComponentType('report')
-  }
-
   return (
     <div>
       <MultiRouteWrapper />
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        <AttendanceSummary
-          hidePopup={seeRegister}
-          openReports={gotToReports}
-        />
+        <AttendanceSummary hidePopup={seeRegister} openReports={gotToReports} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && !seeRegister && (
