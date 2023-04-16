@@ -1,9 +1,6 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { ThunkActionStatuses } from '../types';
-import {
-  syncOfflineData,
-  syncOfflineDataForPractitioner,
-} from './sync.actions';
+import { syncOfflineData } from './sync.actions';
 import { SyncStates } from './sync.types';
 
 const initialState: SyncStates = {

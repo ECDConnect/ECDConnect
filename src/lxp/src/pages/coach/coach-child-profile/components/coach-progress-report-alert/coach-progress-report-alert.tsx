@@ -27,7 +27,7 @@ const baseProgressReportListItem: ListItemProps = {
   subTitleColor: 'textMid',
   iconName: 'PresentationChartLineIcon',
   iconColor: 'white',
-  showChevronIcon: true,
+  showChevronIcon: false,
   showIcon: true,
   showDivider: true,
   dividerColor: 'uiBg',

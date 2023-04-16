@@ -9,6 +9,7 @@ import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
 import { programmeActions, programmeSelectors } from '@store/programme';
+import { practitionerSelectors } from '@store/practitioner';
 import {
   findConflictingProgramme,
   getProgrammeDaysForInterval,
@@ -28,6 +29,10 @@ export const useProgrammePlanning = () => {
   const programmes = useSelector(programmeSelectors.getProgrammes);
   const holiday = useHolidays();
   const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
+    return item?.userId === practitioner?.userId;
+  });
 
   const createProgramme = async (
     startDate: Date,
@@ -36,13 +41,14 @@ export const useProgrammePlanning = () => {
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
       id: newGuid(),
-      classroomId: classroom?.id || '',
+      classroomId:
+        classroom?.id || practitionerClassroomGroups?.at(0)?.classroomId || '',
       name: theme?.name || 'No theme',
       preferredLanguage: language,
       startDate: startDate.toISOString(),
       endDate: '',
       dailyProgrammes: [],
-      classroomGroupId: classroomGroups.at(0)?.id,
+      classroomGroupId: practitionerClassroomGroups?.at(0)?.id,
     };
 
     const dailyProgrammesResult = createProgrammeDailyProgrammes(
@@ -249,7 +255,7 @@ export const useProgrammePlanning = () => {
         conflictingProgrammeCopy
       );
       dispatch(
-        programmeActions.updateProgramme({
+        programmeActions.upsertProgrammes({
           programme: conflictingProgrammeCopy,
         })
       );

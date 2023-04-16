@@ -49,7 +49,7 @@ import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
-import { programmeThunkActions } from './store/programme';
+import { programmeActions, programmeThunkActions } from './store/programme';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -99,6 +99,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
           ).unwrap())();
       }
     }
+    if (isCoach) {
+      (async () =>
+        await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+      (async () =>
+        await appDispatch(
+          practitionerForCoachThunkActions.getPractitionersForCoach({})
+        ).unwrap())();
+    }
   }, [appDispatch, isCoach, practitioner]);
 
   useEffect(() => {
@@ -107,19 +115,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentPractitioner = practitioners.find(
           (item) => item?.userId === userData?.id!
         );
-        (async () =>
-          await appDispatch(
-            practitionerThunkActions.getPractitionerById({
-              id: currentPractitioner?.id || '',
-            })
-          ).unwrap())();
-      }
-      if (isCoach) {
-        (async () =>
-          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+        if (currentPractitioner) {
+          (async () =>
+            await appDispatch(
+              practitionerThunkActions.getPractitionerById({
+                id: currentPractitioner?.id || '',
+              })
+            ).unwrap())();
+        }
       }
     }
-  }, [appDispatch, userData, practitioners, isCoach]);
+  }, [appDispatch, userData, practitioners]);
 
   useEffect(() => {
     if (userData) {
@@ -148,7 +154,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const resetStaticStoreSetup = async () => {
     appDispatch(staticDataActions.resetStaticDataState());
     appDispatch(progressTrackingActions.resetProgressTrackingState());
-    appDispatch(programmeRoutineActions.resetProgrammeThemeState());
+    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
     appDispatch(activityActions.resetActivityState());
     appDispatch(storyBookActions.resetStoryBookState());
     appDispatch(programmeThemeActions.resetProgrammeThemeState());
@@ -156,6 +162,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(notificationActions.resetNotificationState());
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
+    appDispatch(programmeActions.resetProgrammeState());
   };
 
   const resetAdditionalStoreSetup = async () => {
@@ -199,15 +206,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
-    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-    await appDispatch(
-      practitionerForCoachThunkActions.getPractitionersForCoach({})
-    ).unwrap();
     await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
@@ -217,7 +220,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       contentReportThunkActions.getChildProgressReportSummary(10)
     ).unwrap();
-
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
