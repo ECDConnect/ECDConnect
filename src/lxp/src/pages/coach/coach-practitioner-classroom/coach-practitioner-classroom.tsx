@@ -156,7 +156,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             </div>
             <div className="mr-4 mt-8 h-full">
               <Button
-                color="textMid"
+                color="primary"
                 type="filled"
                 size="small"
                 onClick={() =>

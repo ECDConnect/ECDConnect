@@ -1,7 +1,4 @@
-import {
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-} from '@/../../../packages/core/lib';
+import { IncomeStatementsDto } from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {

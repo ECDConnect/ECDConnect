@@ -6,6 +6,7 @@ import {
   UserAlertListDataItem,
   SearchDropDown,
   LoadingSpinner,
+  SearchDropDownOption,
 } from '@ecdlink/ui';
 import { getAvatarColor } from '@ecdlink/core';
 import SearchHeader from '../../../components/search-header/search-header';
@@ -21,6 +22,43 @@ import { PractitionerDto } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 
+type ListDataItem = UserAlertListDataItem<{
+  firstName: string;
+  surname: string;
+  area: string;
+}>;
+
+const AlertSeverityMapping = {
+  error: 0,
+  warning: 1,
+  success: 2,
+  none: 3,
+};
+
+const sortOptions: SearchSortOptions = {
+  columns: [
+    {
+      id: '1',
+      label: 'Due date',
+      value: 'due date',
+    },
+    {
+      id: '2',
+      label: 'First Name',
+      value: 'firstName',
+    },
+    {
+      id: '3',
+      label: 'Surname',
+      value: 'surname',
+    },
+  ],
+  defaultSort: {
+    column: 'due date',
+    dir: 'asc',
+  },
+};
+
 export const Practitioners: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
@@ -35,16 +73,27 @@ export const Practitioners: React.FC = () => {
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerUserListData, setPractitionerUserListData] =
-    useState<UserAlertListDataItem[]>();
+    useState<ListDataItem[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
-  // const [activeFilters, setActiveFilters] = useState<any[]>([]);
-  const [activeSort, setActiveSort] = useState<any[]>([]);
-  const [filteredChildData, setFilteredChildData] = useState<
-    UserAlertListDataItem[]
+  const [areaFilterOptions, setAreaFilterOptions] = useState<
+    SearchDropDownOption<string>[]
   >([]);
+  const [filterByArea, setFilterByArea] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [taskFilterOptions, setTaskFilterOptions] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [filterByTask, setFilterByTask] = useState<
+    SearchDropDownOption<string>[]
+  >([]);
+  const [activeSort, setActiveSort] = useState<any[]>([sortOptions.columns[0]]);
+  const [filteredChildData, setFilteredChildData] = useState<ListDataItem[]>(
+    []
+  );
   const [loading, setLoading] = useState(false);
 
   const handleClick = (practitionerId: string) => {
@@ -59,25 +108,6 @@ export const Practitioners: React.FC = () => {
     }
   };
 
-  const sortOptions: SearchSortOptions = {
-    columns: [
-      {
-        id: '2',
-        label: 'First Name',
-        value: 'firstName',
-      },
-      {
-        id: '3',
-        label: 'Surname',
-        value: 'surname',
-      },
-    ],
-    defaultSort: {
-      column: 'priority',
-      dir: 'asc',
-    },
-  };
-
   useEffect(() => {
     if (
       practitionersList &&
@@ -85,12 +115,14 @@ export const Practitioners: React.FC = () => {
       practitionersList?.length > 0 &&
       practitionersMessages?.length > 0
     ) {
-      const practitionerListItem: UserAlertListDataItem[] = [];
+      const practitionerListItem: ListDataItem[] = [];
       for (const practitioner of practitionersList) {
         practitionerListItem.push(mapUserListDataItem(practitioner));
       }
       setPractitionerUserListData(practitionerListItem);
       setFilteredChildData(practitionerListItem);
+      setTaskFilterOptions(getTaskFilterOptions(practitionerListItem));
+      setAreaFilterOptions(getAreaFilterOptions(practitionerListItem));
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersMessages]);
@@ -127,48 +159,9 @@ export const Practitioners: React.FC = () => {
     );
   };
 
-  const onSortItemsChanges = (column: string) => {
-    if (practitionersList && practitionersList.length > 0) {
-      const sorted = [...practitionersList].sort(
-        (a: PractitionerDto, b: PractitionerDto) => {
-          const practitionerOne = practitioners?.find(
-            (x) => x.userId === a.userId
-          );
-          const practitionerTwo = practitioners?.find(
-            (x) => x.userId === b.userId
-          );
-
-          switch (column) {
-            case 'surname':
-              return (practitionerOne !== undefined &&
-                practitionerOne?.user?.surname!) >
-                (practitionerTwo !== undefined &&
-                  practitionerTwo?.user?.surname!)
-                ? 1
-                : -1;
-            case 'firstName':
-            default:
-              return (practitionerOne !== undefined &&
-                practitionerOne.user?.firstName!) >
-                (practitionerTwo !== undefined &&
-                  practitionerTwo.user?.firstName!)
-                ? 1
-                : -1;
-          }
-        }
-      );
-
-      const practitionerListItem: UserAlertListDataItem[] = [];
-      for (const practitioner of sorted) {
-        practitionerListItem.push(mapUserListDataItem(practitioner));
-      }
-      setPractitionerUserListData(practitionerListItem || []);
-    }
-  };
-
   const mapUserListDataItem = (
     practitionerRecord: PractitionerDto
-  ): UserAlertListDataItem => {
+  ): ListDataItem => {
     const practitioner = practitionersList?.find(
       (x) => x.userId === practitionerRecord.userId
     );
@@ -193,7 +186,116 @@ export const Practitioners: React.FC = () => {
           : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
+      extraData: {
+        firstName: practitioner?.user?.firstName || '',
+        surname: practitioner?.user?.surname || '',
+        area: practitioner?.siteAddress?.addressLine2 || '',
+      },
     };
+  };
+
+  const getAreaFilterOptions = (
+    items: ListDataItem[]
+  ): SearchDropDownOption<string>[] => {
+    const options: SearchDropDownOption<string>[] = [];
+
+    items.forEach((item) => {
+      if (
+        item.extraData &&
+        item.extraData.area &&
+        options.findIndex((o) => o.id === item.extraData?.area) < 0
+      ) {
+        options.push({
+          id: item.extraData.area,
+          label: item.extraData.area,
+          value: item.extraData.area,
+        });
+      }
+    });
+
+    return options;
+  };
+
+  const getTaskFilterOptions = (
+    items: ListDataItem[]
+  ): SearchDropDownOption<string>[] => {
+    const options: SearchDropDownOption<string>[] = [];
+
+    items.forEach((item) => {
+      if (
+        item.subTitle &&
+        options.findIndex((o) => o.id === item.subTitle) < 0
+      ) {
+        options.push({
+          id: item.subTitle,
+          label: item.subTitle,
+          value: item.subTitle,
+        });
+      }
+    });
+
+    return options;
+  };
+
+  const filterAndSort = (list: ListDataItem[]): ListDataItem[] => {
+    const result: ListDataItem[] = [];
+
+    list.forEach((item) => {
+      if (filterByArea.length === 0 && filterByTask.length === 0) {
+        result.push(item);
+      } else {
+        let add = 0;
+        if (filterByArea.length > 0) {
+          if (
+            item.extraData &&
+            item.extraData.area &&
+            filterByArea.findIndex((o) => o.id === item.extraData?.area) >= 0
+          )
+            add++;
+        } else {
+          add++;
+        }
+        if (filterByTask.length > 0) {
+          if (
+            item.subTitle &&
+            filterByTask.findIndex((o) => o.id === item.subTitle) >= 0
+          )
+            add++;
+        } else {
+          add++;
+        }
+        if (add === 2) result.push(item);
+      }
+    });
+
+    if (activeSort.length > 0) {
+      const sortBy = activeSort[0].value;
+      result.sort((a, b) => {
+        switch (sortBy) {
+          case 'due date':
+            const as = AlertSeverityMapping[a.alertSeverity] || 4;
+            const bs = AlertSeverityMapping[b.alertSeverity] || 4;
+            if (as > bs) return 1;
+            if (bs < as) return -1;
+            return (a.extraData?.firstName || '') >
+              (b.extraData?.firstName || '')
+              ? 1
+              : -1;
+          case 'surname':
+            return (a.extraData?.surname || '') > (b.extraData?.surname || '')
+              ? 1
+              : -1;
+          case 'firstName':
+          default:
+            return (a.extraData?.firstName || '') >
+              (b.extraData?.firstName || '')
+              ? 1
+              : -1;
+        }
+      });
+    }
+
+    return result;
   };
 
   return (
@@ -206,7 +308,7 @@ export const Practitioners: React.FC = () => {
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}
       >
-        <SearchHeader<UserAlertListDataItem>
+        <SearchHeader<ListDataItem>
           searchItems={filteredChildData || []}
           onScroll={handleListScroll}
           onSearchChange={onSearchChange}
@@ -217,17 +319,54 @@ export const Practitioners: React.FC = () => {
           <SearchDropDown<string>
             displayMenuOverlay={true}
             menuItemClassName={styles.dropdownStyles}
+            className={'mr-1'}
+            options={taskFilterOptions}
+            selectedOptions={filterByTask}
+            onChange={(value) => {
+              setFilterByTask(value);
+            }}
+            multiple
+            placeholder={'Task'}
+            pluralSelectionText={'Tasks'}
+            color={'secondary'}
+            info={{
+              name: 'Task',
+              hint: 'You can select multiple tasks',
+            }}
+          />
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
+            className={'mr-1'}
+            options={areaFilterOptions}
+            selectedOptions={filterByArea}
+            onChange={(value) => {
+              setFilterByArea(value);
+            }}
+            multiple
+            placeholder={'Area'}
+            pluralSelectionText={'Areas'}
+            color={'secondary'}
+            info={{
+              name: 'Area',
+              hint: 'You can select multiple areas',
+            }}
+          />
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={styles.dropdownStyles}
             options={sortOptions.columns}
             selectedOptions={activeSort}
             onChange={(selectedColumns) => {
-              setActiveSort(selectedColumns);
-              onSortItemsChanges(selectedColumns[0].value);
+              if (selectedColumns.length > 0) {
+                setActiveSort(selectedColumns);
+              }
             }}
-            placeholder={'Sort'}
+            placeholder={'Sort by'}
             multiple={false}
             color={'secondary'}
             info={{
-              name: `Sort`,
+              name: `Sort by`,
             }}
           />
         </SearchHeader>
@@ -245,7 +384,9 @@ export const Practitioners: React.FC = () => {
                 <StackedList
                   className={styles.stackedList}
                   listItems={
-                    practitionerUserListData ? practitionerUserListData : []
+                    practitionerUserListData
+                      ? filterAndSort(practitionerUserListData)
+                      : []
                   }
                   type={'UserAlertList'}
                 ></StackedList>
