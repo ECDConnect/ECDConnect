@@ -14,7 +14,14 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getDay, getTime, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  format,
+  getDay,
+  getTime,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -103,7 +110,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const trackedAttendance = useSelector(attendanceSelectors.getTrackedAttendance)
+  const trackedAttendance = useSelector(
+    attendanceSelectors.getTrackedAttendance
+  );
 
   const previousMissedAttendanceGroups =
     usePrevious(missedAttendanceGroups) || [];
@@ -113,7 +122,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     LocalStorageKeys.isSmartStartUser
   );
 
-  
   useEffect(() => {
     const lastDate = localStorage.getItem('summarylastDate');
     const today = new Date().toDateString();

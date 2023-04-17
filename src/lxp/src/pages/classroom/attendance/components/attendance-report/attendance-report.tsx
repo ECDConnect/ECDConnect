@@ -19,7 +19,7 @@ import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
-  currentClassroomGroup
+  currentClassroomGroup,
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
@@ -56,10 +56,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       setSuccessMessageVisible(true);
       // localStorage.setItem('lastDate', today);
     } else {
-  
       setSuccessMessageVisible(false);
     }
-  },[]);
+  }, []);
 
   const closeNotification = () => {
     setSuccessMessageVisible(false);

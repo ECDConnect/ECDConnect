@@ -98,10 +98,14 @@ export const MonthlyAttendanceReport = ({
     programme_type: 'ProgrammeType: 46372test',
     programme_days: 'Programmme Days: Monday to Friday',
     site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: "Phone: 0123456789"
+    phone: 'Phone: 0123456789',
   };
 
-  const tableBottomContent = [`Number of children who attended all sessions: 9`, `Total number of sessions: 198`, `Number of children who attended all sessions: 9`]
+  const tableBottomContent = [
+    `Number of children who attended all sessions: 9`,
+    `Total number of sessions: 198`,
+    `Number of children who attended all sessions: 9`,
+  ];
 
   return (
     <BannerWrapper

@@ -8,15 +8,12 @@ import { Video } from '../../components/video';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 
 export const AntenatalClinicVideoStep = ({
-  infant,
+  mother,
   isTipPage,
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+  const name = mother?.user?.firstName;
   const videoSection = '';
 
   useEffect(() => {
@@ -48,7 +45,7 @@ export const AntenatalClinicVideoStep = ({
         />
         <Alert
           type="warning"
-          title={`Watch the Bonding video with ${caregiverName} and answer any questions.`}
+          title={`Watch the Antenatal Clinic video with ${name} and answer any questions she has.`}
           titleColor="textDark"
           customIcon={
             <div className="rounded-full">
