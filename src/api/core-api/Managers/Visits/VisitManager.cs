@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 VisitTypeId = input.VisitType.Id,
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
-                Risk = input.Risk,
+                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId
             };
@@ -86,7 +86,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 VisitTypeId = input.VisitType.Id,
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
-                Risk = input.Risk,
+                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId
             };
