@@ -23,8 +23,7 @@ function generateReport(url: string) {
       10
     );
   };
-
-  doc.setFontSize(8);
+  doc.setFontSize(12);
   doc.setFont('bold');
   doc.text('Name: Anesu ndoro', 10, 20);
   doc.text('Phone Number: +1 123-456-7890', 10, 25);
@@ -32,8 +31,7 @@ function generateReport(url: string) {
   doc.text('Programme Type: XYZ', 100, 20);
   doc.text('Program Days: Monday to Friday', 100, 25);
   doc.text('Site Address: 1234 ABC St, City, State, Country', 100, 30);
-  doc.setFontSize(5);
-
+  doc.setFontSize(8);
   const data = [
     { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
   ];
@@ -95,19 +93,19 @@ function generateReport(url: string) {
   });
 
   let afterTable = (doc as any).lastAutoTable.finalY;
-  doc.setFontSize(8);
-  doc.text('Total Monthly Attendance:', 10, afterTable + 20);
-  doc.text('Total number of sessions: 198', 60, afterTable + 20);
+  doc.setFontSize(14);
+  doc.text('Total Monthly Attendance:', 10, afterTable + 15);
+  doc.text('Total number of sessions: 198', 100, afterTable + 15);
   doc.text(
     'Number of children who attended all sessions: 9',
-    110,
-    afterTable + 20
+    180,
+    afterTable + 15
   );
 
-  doc.text('Sign: ', 10, afterTable + 46);
-  doc.rect(20, afterTable + 40, 65, 10);
-  doc.text('Date: ', 100, afterTable + 46);
-  doc.rect(110, afterTable + 40, 65, 10);
+  doc.text('Sign: ', 10, afterTable + 35);
+  doc.rect(25, afterTable + 28, 65, 10);
+  doc.text('Date: ', 110, afterTable + 35);
+  doc.rect(130, afterTable + 28, 65, 10);
 
   doc.save('report.pdf');
 }
