@@ -1,41 +1,73 @@
 import { Header } from '../../../components';
-import { MotherDto } from '@ecdlink/core';
+import { MotherDto, getWeeksDiff } from '@ecdlink/core';
 import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
 import { FollowUp } from '../forms/components/follow-up';
 import { useSelector } from 'react-redux';
-import { motherSelectors } from '@/store/mother';
-import { getMomCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import {
+  getMotherCurrentVisitSelector,
+  getMotherPreviousVisitSelector,
+} from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 
 interface IntroScreenProps {
   mother?: MotherDto;
-  onStartVisit: () => void;
+  headerText?: string;
+  onStartVisit?: () => void;
 }
 
-export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
+export const IntroScreen = ({
+  mother,
+  headerText,
+  onStartVisit,
+}: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const motherVisit = useSelector(
-    motherSelectors?.getMotherCurrentVisitSelector
-  );
 
-  const completedVisits = useSelector((state: RootState) =>
-    getMomCompletedVisitsByVisitIdSelector(state, motherVisit?.id!)
-  )?.visits;
+  const diffDates = !!mother?.expectedDateOfDelivery
+    ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
+    : '';
+
+  const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
+
+  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
+  );
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForMotherSelector
+  );
 
   return (
     <>
-      {/* TODO(header): add age and date (G5.0.1) */}
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title={`Summary of your last visit with ${name}`}
+        title={headerText ?? `Summary of your last visit with ${name}`}
+        {...(!!actualGestationWeek
+          ? {
+              subTitle: `${actualGestationWeek} ${
+                actualGestationWeek > 1 ? 'weeks' : 'week'
+              }`,
+            }
+          : {})}
+        description={`Your last home visit: ${
+          !!previousVisit?.visitDataStatus?.length
+            ? new Date(
+                String(previousPlannedVisit?.plannedVisitDate)
+              ).toLocaleDateString('en-ZA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            : 'None'
+        }`}
       />
       <div className="p-4 pt-8">
         <FollowUp mother={mother || {}} />
-        {completedVisits?.length! > 0 && (
+        {!!onStartVisit && (
           <Button
             className="mt-8 w-full"
             type="filled"
