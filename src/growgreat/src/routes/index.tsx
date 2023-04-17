@@ -40,6 +40,7 @@ import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-
 import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
 import { ChildContactNumber } from '@/pages/infant/infant-profile/contact/edit-number';
 import { ChildContactAddress } from '@/pages/infant/infant-profile/contact/edit-address';
+import { MultipleChildren } from '@/pages/infant/multiple-children';
 
 function PublicRoutes() {
   return (
@@ -220,6 +221,11 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.INFANT_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
         component={ChildContactNumber}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN}
+        component={MultipleChildren}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />

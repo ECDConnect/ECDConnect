@@ -25,6 +25,7 @@ import { caregiverSelectors } from '@/store/caregiver';
 import { motherSelectors } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 
 export const MOTHER_TYPE_ID = '568a219f-f1b9-41ac-bf38-143d8d749a39';
 
@@ -62,6 +63,14 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const { isLoading: isLoadingInfantCount } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_COUNT_FOR_MONTH
+  );
+  const { isLoading: isLoadingUpdateInfantCaregiver } = useThunkFetchCall(
+    'infants',
+    InfantActions.UPDATE_INFANT_CAREGIVER
+  );
+  const { isLoading: isLoadingEventRecord } = useThunkFetchCall(
+    'eventRecord',
+    EventRecordActions.ADD_EVENT_RECORD
   );
 
   const motherType = relationshipTypes.find((item) => item.label === 'Mother');
@@ -374,10 +383,17 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
           onClick={() => {
             onSubmit(getMotherDetailsFormValues());
           }}
-          isLoading={isLoading || isLoadingInfantCount}
+          isLoading={
+            isLoading ||
+            isLoadingInfantCount ||
+            isLoadingUpdateInfantCaregiver ||
+            isLoadingEventRecord
+          }
           disabled={
             isLoading ||
             isLoadingInfantCount ||
+            isLoadingUpdateInfantCaregiver ||
+            isLoadingEventRecord ||
             (!multipleChildrenArray && !isValid) ||
             (isAlreadyClient && !getMotherDetailsFormValues('id')) ||
             (!isAlreadyClient && !getMotherDetailsFormValues('age')) ||

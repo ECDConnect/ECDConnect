@@ -1,4 +1,4 @@
-import { AttendanceDto, LearnerDto } from '@ecdlink/core';
+import { AttendanceDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
 import {
   ComponentBaseProps,
   Button,
@@ -34,8 +34,8 @@ import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendanc
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
-
-  const todayDate = new Date();
+  const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
+    useState<ClassroomGroupDto>();
 
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
@@ -88,6 +88,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
+
+    setUserCurrentClassroomGroup(currentDayClassroomGroup);
 
     if (!currentDayClassroomGroup) {
       setAttendanceComponentType('summary');
@@ -168,6 +170,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     setSeeRegister(true);
+
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -207,9 +210,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       case 'attendance':
         return <AttendanceList onSubmitSuccess={attendanceSubmitted} />;
       case 'report':
-        return <AttendanceReport classroom={classroom} />;
+        return (
+          <AttendanceReport
+            classroom={classroom}
+            currentClassroomGroup={userCurrentClassroomGroup}
+          />
+        );
       case 'summary':
-        return <AttendanceSummary />;
+        return <AttendanceSummary openReports={() => {}} />;
       default:
         return null;
     }
@@ -224,13 +232,18 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
+  const gotToReports = () => {
+    setSeeRegister(false);
+    setAttendanceComponentType('report');
+  };
+
   return (
     <div>
       <MultiRouteWrapper />
       {attendanceComponentType && !seeRegister ? (
         getComponentToRender(attendanceComponentType)
       ) : (
-        <AttendanceSummary hidePopup={seeRegister} />
+        <AttendanceSummary hidePopup={seeRegister} openReports={gotToReports} />
       )}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
         {attendanceComponentType === 'attendance' && !seeRegister && (

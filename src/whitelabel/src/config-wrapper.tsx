@@ -11,7 +11,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
 import { WalkthroughProvider } from './walkthrougContext';
-import MultiRouteWrapper from './pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
 
@@ -32,6 +31,7 @@ const ConfigWrapper: React.FC = () => {
     return <Loader />;
   } else {
     const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
+    console.log('Theme', Config.themeUrl);
     return (
       <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
         <Provider store={store}>

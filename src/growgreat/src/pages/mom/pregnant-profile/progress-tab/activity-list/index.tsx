@@ -93,8 +93,8 @@ export const MomActivityList: React.FC = () => {
   //     ? activitiesList
   //     : activityListFiltered;
 
-  const isFollowUp = completedVisits?.length === 7;
-  const isAllCompleted = completedVisits?.length === 8;
+  const isFollowUp = completedVisits?.length === 4;
+  const isAllCompleted = completedVisits?.length === 5;
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
@@ -133,6 +133,8 @@ export const MomActivityList: React.FC = () => {
       (item) => !completedVisits?.includes(item.title)
     );
 
+    console.log({ completedActivities });
+
     const completedForms = completedActivities.map(
       (item): MenuListDataItem => ({
         showIcon: true,
@@ -147,6 +149,8 @@ export const MomActivityList: React.FC = () => {
         rightIconClassName: 'h-5 w-5 text-successMain',
       })
     );
+
+    console.log({ completedForms });
 
     const uncompletedForms = uncompletedActivities.map(
       (item): MenuListDataItem => ({

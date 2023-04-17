@@ -13,7 +13,7 @@ export const activitiesTypes = {
 
 export const activitiesSectionTypes = {
   healthCare: 'Clinic visits',
-  nutrition: 'Nutrition',
+  nutrition: 'Mother growth monitoring (Mid-upper arm circumference)',
   pregnancyCare: 'ID document',
   dangerSigns: 'Danger signs',
   followUp: 'Follow up',

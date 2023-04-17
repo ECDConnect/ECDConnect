@@ -1,39 +1,143 @@
 import { motherSelectors } from '@/store/mother';
-import { useLayoutEffect } from 'react';
+import { Button, LoadingSpinner } from '@ecdlink/ui';
+import { useWindowSize } from '@reach/window-size';
+import { useLayoutEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
+import { PregnantProfileParams } from '../index.types';
+import { IntroScreen } from './activity-list/intro-screen';
+import { RootState } from '@/store/types';
+import { PREGNANT_PROFILE_TABS } from '..';
+import {
+  VisitDto,
+  captureAndDownloadComponent,
+  usePrevious,
+} from '@ecdlink/core';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import { visitThunkActions } from '@/store/visit';
+import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import { useAppDispatch } from '@/store';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { VisitActions } from '@/store/visit/visit.actions';
+
+const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
 export const ProgressTab = () => {
-  const history = useHistory();
+  const { height } = useWindowSize();
 
+  const appDispatch = useAppDispatch();
+
+  const history = useHistory();
   const location = useLocation();
 
-  const lasAttendedVisit = useSelector(
-    motherSelectors.getMotherLastVisitSelector
+  const { id: pregnantId } = useParams<PregnantProfileParams>();
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
   );
 
-  useLayoutEffect(() => {
-    if (lasAttendedVisit) {
-      history.push(
-        `${location.pathname}/activities-form/${lasAttendedVisit?.id}`
-      );
+  const mother = useSelector((state: RootState) =>
+    motherSelectors.getMotherById(state, pregnantId)
+  );
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForMotherSelector
+  );
+  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const previousCurrentVisit = usePrevious(currentVisit) as
+    | VisitDto
+    | undefined;
+
+  const introScreenRef = useRef<HTMLDivElement>(null);
+
+  const handleCaptureClick = () => {
+    if (introScreenRef.current) {
+      captureAndDownloadComponent(introScreenRef.current, 'summary');
     }
-  });
+  };
+
+  useLayoutEffect(() => {
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit?.id,
+        })
+      );
+  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+
+  useLayoutEffect(() => {
+    history.push(location.pathname, {
+      activeTabIndex: PREGNANT_PROFILE_TABS.PROGRESS,
+    });
+  }, [history, location.pathname]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        className="pt-20"
+        size="medium"
+        spinnerColor={'primary'}
+        backgroundColor={'uiLight'}
+      />
+    );
+  }
 
   return (
-    <div className="mt-16 p-4">
-      {/* <Button
-        className="w-full"
-        type="filled"
-        color="primary"
-        textColor="white"
-        text="Start visit"
-        onClick={() =>
-          history.push(
-            `${location.pathname}/activities-form/${lasAttendedVisit?.id}`
-          )
-        }
-      /> */}
+    <div
+      className="pt-14"
+      style={{
+        height:
+          height -
+          (!!previousVisit?.visitDataStatus?.length
+            ? HEADER_HEIGHT.filled
+            : HEADER_HEIGHT.empty),
+      }}
+    >
+      <div ref={introScreenRef}>
+        <IntroScreen mother={mother} headerText={mother?.user?.firstName} />
+      </div>
+      <div className="flex h-full flex-col gap-4 px-4">
+        {!!previousVisit?.visitDataStatus?.length ? (
+          <>
+            <Button
+              className="mt-auto"
+              type="filled"
+              color="primary"
+              textColor="white"
+              text="Download client copy"
+              icon="SaveIcon"
+              onClick={handleCaptureClick}
+            />
+            <Button
+              type="outlined"
+              color="primary"
+              textColor="primary"
+              text="Manage referrals"
+              icon="ClipboardListIcon"
+              onClick={() => window.alert('add redirect to referral tab')} // TODO
+            />
+          </>
+        ) : (
+          <Button
+            className="mt-auto"
+            type="filled"
+            color="primary"
+            textColor="white"
+            text="See upcoming visits"
+            icon="HomeIcon"
+            onClick={() =>
+              history.push(location.pathname, {
+                activeTabIndex: PREGNANT_PROFILE_TABS.VISITS,
+              })
+            }
+          />
+        )}
+      </div>
     </div>
   );
 };

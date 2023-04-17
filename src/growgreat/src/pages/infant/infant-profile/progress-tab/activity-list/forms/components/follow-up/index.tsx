@@ -11,6 +11,7 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
 
 import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
@@ -120,33 +121,33 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
-          } ${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
           message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
+            !!caregiverName ? caregiverName + ' &' : ''
           } ${name} need support`,
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${!!caregiverName ? '& ' + caregiverName : ''} ${name} ${
+          message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
             !!caregiverName ? 'are' : 'is'
           } going well`,
           value: 100,
+        };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${
+            !!caregiverName ? caregiverName + ' &' : ''
+          } ${name} need urgent support`,
+          value: 25,
         };
     }
   }, [caregiverName, name, previousVisit?.scoreColor]);
@@ -187,6 +188,21 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     return groupedData;
   }, [previousVisit?.visitDataStatus]) as Status | undefined;
 
+  if (!previousVisit?.visitDataStatus?.length) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven’t visited ${caregiverName} & ${name} yet`}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex gap-4">
@@ -211,7 +227,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         className="mb-8"
         type="h4"
         text={`Here is a summary of how ${name} ${
-          !!caregiverName ? '&' + caregiverName : ''
+          !!caregiverName ? '& ' + caregiverName : ''
         } ${!!caregiverName ? 'are' : 'is'} doing`}
       />
       {grow.comment && (

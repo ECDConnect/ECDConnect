@@ -7,6 +7,7 @@ export const notificationsStacklist = 'bg-white mt-4 mb-4';
 export const profileOptionsWrapper = 'w-full px-4 pb-4';
 export const button = 'w-full mt-4';
 export const buttonIcon = 'w-5 h-5 ml-2';
+export const actionIcon = 'h-4 w-4 text-secondary';
 
 export const dialogContent = 'h-full overflow-y-hidden';
 export const absentWrapper =

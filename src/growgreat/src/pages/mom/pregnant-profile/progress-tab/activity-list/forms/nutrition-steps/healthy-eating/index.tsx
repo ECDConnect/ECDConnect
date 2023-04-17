@@ -13,10 +13,14 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 import NutritionCare from '@/assets/nutritionCare.svg';
 import { getGroupColor } from '../nutrition-eating';
 import { noneOption } from '../nutrition-eating/options';
+import { getPregnancyDay } from '@/utils/mom/pregnant.utils';
+import { ResourcesStep } from '../resources';
+import { DownloadResource } from '../resources/download-resource';
 
 export const HealthyEatingStep = ({
   mother,
-  infant,
+  setIsTip,
+  isTipPage,
   sectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -31,22 +35,34 @@ export const HealthyEatingStep = ({
   );
 
   const isFirstVisit = !previousVisit?.visitDataStatus?.length;
+  const pregnancyDay = getPregnancyDay(mother?.expectedDateOfDelivery!);
+  const showVideo = pregnancyDay >= 98 && pregnancyDay <= 168;
 
   const renderMedia = useMemo(() => {
-    if (isFirstVisit) {
-      return <Video section={videoSection} />;
+    if (isFirstVisit && showVideo) {
+      return (
+        <>
+          <Alert
+            type="warning"
+            title={`Watch the video on Nutrition During Pregnancy with Lethabo and answer any questions.`}
+            titleColor="textDark"
+            customIcon={
+              <div className="rounded-full">
+                <PollyNeutral className="h-14 w-14" />
+              </div>
+            }
+          />
+          <Video section={videoSection} />
+        </>
+      );
     } else {
       return (
         <div>
-          <Typography
-            type="h4"
-            color={getGroupColor(nutritionAnswers.length)}
-            text={'Food groups'}
-          />
+          <ResourcesStep setIsTip={setIsTip} />
         </div>
       );
     }
-  }, [isFirstVisit, nutritionAnswers.length]);
+  }, [isFirstVisit, setIsTip, showVideo]);
 
   const renderHealthyFoodAlerts = useMemo(() => {
     if (nutritionAnswers.length <= 1) {
@@ -210,6 +226,10 @@ export const HealthyEatingStep = ({
     );
   }, [nutritionAnswers.length]);
 
+  if (isTipPage) {
+    return <DownloadResource onClose={() => setIsTip && setIsTip(false)} />;
+  }
+
   return (
     <>
       <Header
@@ -224,19 +244,7 @@ export const HealthyEatingStep = ({
 
       <Divider dividerType="dashed" />
 
-      <div className="flex flex-col gap-4 p-4">
-        <Alert
-          type="warning"
-          title={`Watch the video on Nutrition During Pregnancy with Lethabo and answer any questions.`}
-          titleColor="textDark"
-          customIcon={
-            <div className="rounded-full">
-              <PollyNeutral className="h-14 w-14" />
-            </div>
-          }
-        />
-        {renderMedia}
-      </div>
+      <div className="flex flex-col gap-4 p-4">{renderMedia}</div>
     </>
   );
 };

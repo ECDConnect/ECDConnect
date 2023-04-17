@@ -13,7 +13,7 @@ import {
   careForBabySteps,
   getHealhcareteps,
   followUpSteps,
-  getPillar1Steps,
+  getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
@@ -22,6 +22,7 @@ import { DevelopmentalScreeningVisitSection } from './danger-signs-steps/develop
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 import { getMotherById } from '@/store/mother/mother.selectors';
 import { dangerSignsVisitSection } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/care-for-mom-steps/danger-signs';
+import { getPregnancyDay } from '@/utils/mom/pregnant.utils';
 
 interface FormProps {
   onBack: () => void;
@@ -71,6 +72,10 @@ export const Form = ({ onBack }: FormProps) => {
     },
     [previousVisit?.visitDataStatus]
   );
+
+  const pregnancyDay = getPregnancyDay(mother?.expectedDateOfDelivery!);
+  const isEqualOrAfter98andEqualOrBefore168Days =
+    pregnancyDay >= 98 && pregnancyDay <= 168;
 
   const isDangerSignsFollowUpForMom = isFollowUp(
     dangerSignsVisitSection,
@@ -153,7 +158,7 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pregnancyCare:
-        return getPillar1Steps();
+        return getPregnancyCareSteps(isEqualOrAfter98andEqualOrBefore168Days);
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDevelopmentalScreeningWeeksFollowUp);
       default:
@@ -163,6 +168,7 @@ export const Form = ({ onBack }: FormProps) => {
     activityName,
     isDangerSignsFollowUpForMom,
     isDangerSignsFollowUpForBaby,
+    isEqualOrAfter98andEqualOrBefore168Days,
     isDevelopmentalScreeningWeeksFollowUp,
     referralsForInfant?.length,
   ]);
