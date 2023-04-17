@@ -11,6 +11,8 @@ import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import { format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { monthsList } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { programmeThemeSelectors } from '@/store/content/programme-theme';
 
 export const ProgrammePlanningHeaderUpdated: React.FC<
   ProgrammePlanningHeaderProps
@@ -24,7 +26,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   showChips = true,
   className,
   theme,
-  chosedTheme,
   setSelectedDate,
   selectedDate,
   weekSummary,
@@ -49,8 +50,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const disableSubDay = dailyProgramme?.day === 1;
   const [month, setMonth] = useState<string | undefined>();
   const currentMonth = getMonth(selectedDate || programmeChooseDate);
-  const currentYear = getYear(programmeChooseDate);
+  const currentYear = getYear(programmeChooseDate || new Date());
   const monthDropdownLabel = monthsList[currentMonth]?.label;
+  const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
+  const chosedTheme = themes?.find((item) => item?.name === theme?.name);
 
   useEffect(() => {
     if (subHeaderText) {
@@ -100,6 +103,10 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             list={monthsList}
             selectedValue={month}
             onChange={() => setMonth(monthsList[currentMonth]?.label)}
+            fillColor="secondary"
+            textColor="white"
+            fillType="filled"
+            labelColor="white"
           />
           <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
             {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
@@ -123,31 +130,55 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             borderRaduis={'lg'}
             shadowSize={'lg'}
           >
-            <Typography type="body" text={dayName} color="primary" />
+            <Typography
+              type="body"
+              text={dayName}
+              color="primary"
+              weight={`bold`}
+            />
             <Typography
               type="small"
               color="primary"
               text={String(day)}
               className="mr-1"
+              weight={`bold`}
             />
           </Card>
         </div>
         <div className="flex w-3/4 items-center justify-center">
           {showChips && (
-            <Card
-              className={'bg-infoDark flex w-full items-center rounded-xl p-2'}
-            >
-              <img
-                src={chosedTheme?.imageUrl}
-                alt="theme"
-                className="h-8 w-8"
-              />
-              <Typography
-                type="small"
-                color="white"
-                text={`${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`}
-                className={'p-4'}
-              />
+            <Card className={`flex w-full items-center rounded-xl p-2`}>
+              <div
+                className={`flex w-full items-center rounded-xl p-2`}
+                style={{
+                  backgroundColor: chosedTheme?.color || 'bg-primaryAccent2',
+                }}
+              >
+                {chosedTheme && (
+                  <img
+                    src={chosedTheme?.imageUrl}
+                    alt="theme"
+                    className="h-8 w-8"
+                  />
+                )}
+                {dailyProgramme && theme?.dailyProgrammes?.length ? (
+                  <Typography
+                    type="small"
+                    color={chosedTheme ? 'white' : 'textDark'}
+                    text={`${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`}
+                    className={'p-4'}
+                    weight={`bold`}
+                  />
+                ) : (
+                  <Typography
+                    type="small"
+                    color={chosedTheme ? 'white' : 'textDark'}
+                    text={`${themeName}`}
+                    className={'p-4'}
+                    weight={`bold`}
+                  />
+                )}
+              </div>
             </Card>
           )}
         </div>

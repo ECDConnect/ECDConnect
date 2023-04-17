@@ -38,7 +38,7 @@ export const CoachClassesReassigned: React.FC = () => {
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
-        title={`Classes reassigned`}
+        title={`Playgroups reassigned`}
         color={'primary'}
         size="small"
         renderOverflow={false}
