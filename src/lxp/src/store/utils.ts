@@ -1,0 +1,80 @@
+import { ActionReducerMapBuilder } from '@reduxjs/toolkit';
+import { Status, ThunkActionStatuses } from './types';
+
+export const setThunkActionStatus = (
+  builder: ActionReducerMapBuilder<any>,
+  action: any
+) =>
+  builder
+    .addCase(action.pending, (state, currentAction) => {
+      const actionType = getActionName(currentAction.type);
+
+      const previousStatus =
+        typeof state.status === 'object' ? state.status : [];
+
+      const newStatus = previousStatus?.filter(
+        (currentStatus: Status) => currentStatus?.actionName !== actionType
+      );
+
+      const status = [
+        ...newStatus,
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Pending,
+        },
+      ];
+
+      state.status = status;
+    })
+    .addCase(action.rejected, (state, currentAction) => {
+      const actionType = getActionName(currentAction.type);
+
+      const previousStatus = state.status || [];
+
+      const newStatus = previousStatus.filter(
+        (currentStatus: Status) => currentStatus?.actionName !== actionType
+      );
+
+      const status = [
+        ...newStatus,
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Rejected,
+        },
+      ];
+
+      state.status = status;
+    });
+
+export const getActionName = (actionType: string) => {
+  const [name] = actionType.split('/');
+
+  return name;
+};
+
+export const setFulfilledThunkActionStatus = (state: any, action: any) => {
+  const actionType = getActionName(action.type);
+
+  const previousStatus = typeof state.status === 'object' ? state.status : [];
+
+  const newStatus = previousStatus.filter(
+    (currentStatus: Status) => currentStatus.actionName !== actionType
+  );
+
+  const status = !!newStatus
+    ? [
+        ...newStatus,
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Fulfilled,
+        },
+      ]
+    : [
+        {
+          actionName: actionType,
+          value: ThunkActionStatuses.Fulfilled,
+        },
+      ];
+
+  state.status = status;
+};

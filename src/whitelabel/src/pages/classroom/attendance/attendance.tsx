@@ -34,9 +34,6 @@ import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendanc
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
-
-  const todayDate = new Date();
-
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);

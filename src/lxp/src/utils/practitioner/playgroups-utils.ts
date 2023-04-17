@@ -8,6 +8,8 @@ export enum Weekdays {
   wed = 3,
   thu = 4,
   fri = 5,
+  sat = 6,
+  sun = 7,
 }
 
 export const generateEmptyPlaygroups = (
@@ -42,6 +44,10 @@ export const getWeekdayValue = (weekDay: Weekdays): string => {
       return 'Thursday';
     case Weekdays.fri:
       return 'Friday';
+    case Weekdays.sat:
+      return 'Saturday';
+    case Weekdays.sun:
+      return 'Sunday';
   }
 };
 

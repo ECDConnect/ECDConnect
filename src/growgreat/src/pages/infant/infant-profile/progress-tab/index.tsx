@@ -7,8 +7,6 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { IntroScreen } from './activity-list/intro-screen';
 import { useLayoutEffect, useMemo, useRef } from 'react';
-import html2canvas from 'html2canvas';
-import { saveAs } from 'file-saver';
 import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
@@ -16,24 +14,15 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { VisitDto, usePrevious } from '@ecdlink/core';
+import {
+  VisitDto,
+  captureAndDownloadComponent,
+  usePrevious,
+} from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 540;
-
-const captureAndDownloadComponent = async (element: HTMLElement) => {
-  try {
-    const canvas = await html2canvas(element);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        saveAs(blob, 'summary.png');
-      }
-    });
-  } catch (error) {
-    console.error('Failed to capture component:', error);
-  }
-};
 
 export const ProgressTab = () => {
   const { height } = useWindowSize();
@@ -74,7 +63,7 @@ export const ProgressTab = () => {
 
   const handleCaptureClick = () => {
     if (introScreenRef.current) {
-      captureAndDownloadComponent(introScreenRef.current);
+      captureAndDownloadComponent(introScreenRef.current, 'summary');
     }
   };
 
