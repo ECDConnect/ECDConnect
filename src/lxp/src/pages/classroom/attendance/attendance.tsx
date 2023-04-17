@@ -205,6 +205,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
   };
 
+  const gotToReports = () => {
+    setSeeRegister(false);
+    setAttendanceComponentType('report');
+  };
+
   const getComponentToRender = (type?: AttendanceComponentType) => {
     switch (type) {
       case 'attendance':
@@ -217,7 +222,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           />
         );
       case 'summary':
-        return <AttendanceSummary openReports={() => {}} />;
+        return (
+          <AttendanceSummary
+            openReports={() => setAttendanceComponentType('report')}
+          />
+        );
       default:
         return null;
     }
@@ -231,11 +240,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       />
     );
   }
-
-  const gotToReports = () => {
-    setSeeRegister(false);
-    setAttendanceComponentType('report');
-  };
 
   return (
     <div>
