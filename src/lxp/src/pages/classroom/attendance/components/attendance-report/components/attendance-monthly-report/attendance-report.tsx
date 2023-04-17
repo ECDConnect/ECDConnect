@@ -2,15 +2,9 @@ import {
   ChildAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
-import {
-  ComponentBaseProps,
-  BannerWrapper,
-  Button,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useHistory, useLocation } from 'react-router';
+import { useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -19,6 +13,7 @@ import {
   getShape,
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
+import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -35,20 +30,20 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
 
 export const MonthlyAttendanceReport = ({
   reportMonth,
-  onDownloadReport,
   onBack,
-  classroomGroupId,
   reportData,
 }: MonthlyAttendanceReportProps) => {
-  // const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const { state } = useLocation<ChildAttendanceReportState>();
   const appDispatch = useAppDispatch();
+  const numDays = 29;
 
-  // const downloadReport = (attendanceSuccessList: AttendanceResult) => {
-  //   if (onDownloadReport) {
-  //     onDownloadReport(new Date());
-  //   }
+  // data that must be used to display in report
+  // const dataX = {
+  //   "detailedReport":[{ child: 'John Doe', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }, { child: 'Jack Bauer', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }],
+  //   "todayAttendance": {day1: '10', day2: '21', day3: '10', day4: '4', },
+  //   "totalMonthlyAttendance": 23,
+  //   "totalSessions": 22,
+  //   "totalChildrenAttendedSessions": 53
   // };
 
   useEffect(() => {
@@ -60,8 +55,53 @@ export const MonthlyAttendanceReport = ({
         })
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [isOnline]);
+  }, [appDispatch, isOnline, reportMonth]);
+
+  const data = [
+    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
+  ];
+
+  for (let i = 0; i < 50; i++) {
+    const newArray = {
+      child: 'John Bblocks',
+      id: 'IDTEST2525255',
+      day1: '1',
+      day2: '1',
+      day3: '0',
+      day4: '0',
+      day5: '0',
+    };
+    data.push(newArray);
+  }
+  const tableColumns = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...Array.from({ length: numDays }, (_, i) => ({
+      header: `${i + 1}`, // day number as header
+      dataKey: `day${i + 1}`, // unique key for each day column
+    })),
+  ];
+
+  const footer = [
+    'Child Attendance per Day',
+    '', // Placeholder for ID/Passport column
+    '', // Placeholder for Day 1 column
+    '', // Placeholder for Day 2 column
+    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
+  ];
+
+  const content = {
+    pageTitle: `${reportMonth}`,
+    subtitle: 'Text 2',
+    practitioner_name: 'Name: Jenny Droe',
+    id_number: 'ID: ID23YGH444',
+    programme_type: 'ProgrammeType: 46372test',
+    programme_days: 'Programmme Days: Monday to Friday',
+    site_address: 'Site Address1234 ABC St, City, State, Country',
+    phone: "Phone: 0123456789"
+  };
+
+  const tableBottomContent = [`Number of children who attended all sessions: 9`, `Total number of sessions: 198`, `Number of children who attended all sessions: 9`]
 
   return (
     <BannerWrapper
@@ -142,22 +182,17 @@ export const MonthlyAttendanceReport = ({
           </div>
         );
       })}
-      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
+      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
         {
-          <Button
-            type="filled"
-            color="primary"
-            className={'mt-0'}
-            onClick={() => {}}
-          >
-            {renderIcon('DownloadIcon', 'h-5 w-5 text-primary')}
-            <Typography
-              type="h6"
-              color="white"
-              text={'Download Register'}
-              className="ml-2"
-            ></Typography>
-          </Button>
+          <GeneratePdfReportButton
+            title="Download Register"
+            outputName={`${reportMonth}-attandance-report.pdf`}
+            headerColumns={tableColumns}
+            bodyRows={data}
+            tableFooter={footer}
+            content={content}
+            tableBottomContent={tableBottomContent}
+          />
         }
       </div>
     </BannerWrapper>
