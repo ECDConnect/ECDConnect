@@ -137,8 +137,8 @@ export const MonthlyAttendanceReport = ({
           </div>
         );
       })}
-      <div className={'flex h-full w-full flex-1 flex-col py-5'}>
-        {<GeneratePdfReportButton title="Download Register" url="" />}
+      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
+        {<GeneratePdfReportButton title="Download Register" url=""/>}
       </div>
     </BannerWrapper>
   );
