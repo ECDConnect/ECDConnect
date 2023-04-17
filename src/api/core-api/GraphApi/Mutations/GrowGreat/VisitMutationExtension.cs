@@ -49,11 +49,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            Infant infant = infantRepo.GetAll().Where(x => x.UserId == input.InfantId.ToString()).FirstOrDefault();
+
 
             input.VisitType = visitType;
             input.Attended = false;
             input.MotherId = null;
+            input.InfantId = infant.Id;
 
             return visitManager.AddAdditionalVisit(input);
         }
