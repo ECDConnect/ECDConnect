@@ -216,7 +216,7 @@ export const getAllMissedAttendanceGroupsByClassroomGroupId = (
       }
     }
   });
-  
+
   return missedDays;
 };
 
@@ -334,11 +334,11 @@ export const classroomGroupHasAttendanceOnDate = (
 
 export const classroomGroupHasAttendanceDate = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date,
+  date: Date
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-  ? classProgrammes.find((x) => x.meetingDay === getDay(date))
-  : undefined;
+    ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+    : undefined;
 };
 
 export const getPlaygroup = (

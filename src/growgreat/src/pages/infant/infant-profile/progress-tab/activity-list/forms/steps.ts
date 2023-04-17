@@ -7,6 +7,7 @@ import {
   SelfCareAndSupportStep,
   MaternalDistressStep,
   MaternalDistressScreeningStep,
+  MaternalDistressFollowUpStep,
 } from './care-for-mom-steps';
 import {
   CareForBabyStep,
@@ -71,7 +72,8 @@ export const getCareForMomSteps = (
   isChildBefore49Days: boolean,
   isDangerSignsFollowUp: boolean,
   isShowClinicCheckUps: boolean,
-  isSelfCareAndSupport: boolean
+  isSelfCareAndSupport: boolean,
+  isMaternalDistressFollowUp: boolean
 ) => [
   CareForMomStep,
   ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
@@ -80,6 +82,7 @@ export const getCareForMomSteps = (
   ...(isChildBefore49Days ? [SelfCareStep] : []),
   ...(isSelfCareAndSupport ? [SelfCareAndSupportStep] : []),
   MaternalDistressStep,
+  ...(isMaternalDistressFollowUp ? [MaternalDistressFollowUpStep] : []),
   MaternalDistressScreeningStep,
 ];
 

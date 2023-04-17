@@ -11,11 +11,19 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
 
 import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
+import {
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 
 interface FollowUpComponentProps {
   infant: InfantDto;
@@ -37,6 +45,14 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     [infant?.caregiver?.firstName]
   );
 
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -110,7 +126,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
           primaryColour: 'errorMain',
           secondaryColour: 'errorBg',
           message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
+            !!caregiverName ? caregiverName + ' &' : ''
           } ${name} need urgent support`,
           value: 25,
         };
@@ -119,7 +135,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
           message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
+            !!caregiverName ? caregiverName + ' &' : ''
           } ${name} need support`,
           value: 50,
         };
@@ -128,7 +144,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${!!caregiverName ? '& ' + caregiverName : ''} ${name} ${
+          message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
             !!caregiverName ? 'are' : 'is'
           } going well`,
           value: 100,
@@ -172,6 +188,21 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     return groupedData;
   }, [previousVisit?.visitDataStatus]) as Status | undefined;
 
+  if (!previousVisit?.visitDataStatus?.length) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven’t visited ${caregiverName} & ${name} yet`}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex gap-4">
@@ -196,7 +227,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         className="mb-8"
         type="h4"
         text={`Here is a summary of how ${name} ${
-          !!caregiverName ? '&' + caregiverName : ''
+          !!caregiverName ? '& ' + caregiverName : ''
         } ${!!caregiverName ? 'are' : 'is'} doing`}
       />
       {grow.comment && (
@@ -215,9 +246,7 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
             className="my-4"
             label={item.name}
             value={item.value || ''}
-            date={
-              previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-            } /* TODO: add the correct date */
+            date={previousPlannedVisit?.plannedVisitDate || ''}
             message={item.comment || ''}
             color={item.color as CardProps['color']}
           />

@@ -13,10 +13,14 @@ import {
 } from 'react';
 import { HealthPromotion } from '../../../../components/health-promotion';
 import { useSelector } from 'react-redux';
+import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
 import {
-  getPreviousVisitInformationForInfantSelector,
-  getVisitAnswersForInfantSelector,
-} from '@/store/visit/visit.selectors';
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 
 export const FormulaMilkNotesStep = ({
   infant,
@@ -35,9 +39,15 @@ export const FormulaMilkNotesStep = ({
   const visitSection = 'Formula milk only';
   const noteQuestion = 'Add a note';
 
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
   );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
+
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
   const previousNotes = useMemo(
@@ -45,16 +55,15 @@ export const FormulaMilkNotesStep = ({
     [previousAnswers]
   );
 
-  // TODO: get the last visit data, it's necessary check the date from the last visit
   const previousNote = useMemo(() => {
-    const insertedDate = previousVisit?.visitDataStatus?.[0]?.insertedDate;
+    const insertedDate = previousPlannedVisit?.plannedVisitDate;
     const date = !!insertedDate ? new Date(insertedDate) : undefined;
     const note = previousNotes?.find(
       (item) => item.question === noteQuestion
     )?.questionAnswer;
 
     return { date, note };
-  }, [previousNotes, previousVisit?.visitDataStatus]);
+  }, [previousNotes, previousPlannedVisit?.plannedVisitDate]);
 
   const onOptionSelected = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

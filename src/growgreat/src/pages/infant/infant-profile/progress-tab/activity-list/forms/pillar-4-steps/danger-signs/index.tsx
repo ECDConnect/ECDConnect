@@ -134,7 +134,7 @@ export const DangerSignsStep = ({
       />
     );
   }
-  // TODO: add dialog (G5.6.3)
+
   return (
     <>
       <Header

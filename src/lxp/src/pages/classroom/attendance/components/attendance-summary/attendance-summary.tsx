@@ -14,7 +14,7 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getTime, isSameDay, startOfWeek } from 'date-fns';
+import { addDays, format, getDay, getTime, isSameDay, startOfWeek } from 'date-fns';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -43,7 +43,10 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
 import { AttendanceSummaryState } from './attendance-summary.types';
 
-export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
+export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
+  hidePopup,
+  openReports,
+}) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
   const [classroomName, setClassroomName] = useState<string>('');
@@ -100,6 +103,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
+  const trackedAttendance = useSelector(attendanceSelectors.getTrackedAttendance)
 
   const previousMissedAttendanceGroups =
     usePrevious(missedAttendanceGroups) || [];
@@ -108,6 +112,24 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   let isCurrentSmartStartUser = getStorageItem<boolean>(
     LocalStorageKeys.isSmartStartUser
   );
+
+  
+  useEffect(() => {
+    const lastDate = localStorage.getItem('summarylastDate');
+    const today = new Date().toDateString();
+    if (lastDate !== today) {
+      // Show notification on a new day
+      if (trackedAttendance) {
+        let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
+        if (date === getDay(new Date(today))) {
+          setSuccessMessageVisible(true);
+          localStorage.setItem('summarylastDate', today);
+        }
+      }
+    } else {
+      setSuccessMessageVisible(false);
+    }
+  }, [trackedAttendance]);
 
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
@@ -126,7 +148,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
 
     if (!hasClosedPointsMessage) {
       setDisplaySmartStartMessage(true);
-      setSuccessMessageVisible(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -235,13 +256,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
         }));
       setAttendanceActionList(actionListToDisplay);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isValidAttendanceDay,
-    missedAttendanceGroups,
-    previousMissedAttendanceGroups,
-    classProgrammesUpdated,
-  ]);
+  });
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -331,6 +346,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
       }
+
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
@@ -339,8 +355,10 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
           currentEditClassroomGroupId
         );
 
-      console.log('>>?', updatedMissedAttendance);
-      console.log(currentEditClassroomGroupId);
+      if (allMissedAttendanceDays.length === 0) {
+        setAttendanceActionList([]);
+        openReports();
+      }
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
@@ -388,6 +406,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = (props) => {
   const closeNotification = () => {
     setSuccessMessageVisible(false);
     setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+    const today = new Date().toDateString();
+    localStorage.setItem('summarylastDate', today);
   };
 
   return (

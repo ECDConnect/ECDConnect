@@ -5,6 +5,7 @@ interface HeaderProps {
   icon?: string;
   title: string;
   subTitle?: string;
+  description?: string;
   tag?: string;
   backgroundColor?: Colours;
   iconHexBackgroundColor?: string;
@@ -15,6 +16,7 @@ export const Header = ({
   icon,
   title,
   subTitle,
+  description,
   tag,
   backgroundColor: iconBackgroundColor,
   iconHexBackgroundColor,
@@ -50,6 +52,13 @@ export const Header = ({
           align="left"
           weight="skinny"
           text={subTitle}
+          color="textMid"
+        />
+        <Typography
+          type="body"
+          align="left"
+          weight="skinny"
+          text={description}
           color="textMid"
         />
         <div className="flex">

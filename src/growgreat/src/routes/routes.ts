@@ -37,9 +37,13 @@ const ROUTES = {
         UPDATE_NUMBERS: '/:id/edit-numbers',
         UPDATE_ADDRESS: '/:id/edit-address',
       },
+      PROGRESS: {
+        ACTIVITIES_FORM: '/:id/activities-form/:visitId',
+      },
     }),
     INFANT_PROFILE: addPrefix('/infant-profile', {
       ROOT: '/',
+      MULTIPLE_CHILDREN: '/multiple-children/:infantId',
       PROGRESS: {
         ACTIVITIES_FORM: '/:id/activities-form/:visitId',
       },
