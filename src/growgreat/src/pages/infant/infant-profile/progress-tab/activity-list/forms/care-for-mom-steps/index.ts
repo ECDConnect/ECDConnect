@@ -5,4 +5,5 @@ export { DangerSignsFollowUpStep } from './danger-signs/follow-up';
 export { SelfCareStep } from './self-care';
 export { SelfCareAndSupportStep } from './self-care-&-support';
 export { MaternalDistressStep } from './maternal-distress';
+export { MaternalDistressFollowUpStep } from './maternal-distress-screening/follow-up';
 export { MaternalDistressScreeningStep } from './maternal-distress-screening';
