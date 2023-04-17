@@ -4,11 +4,13 @@ import { Typography, Button, renderIcon } from '@ecdlink/ui';
 
 function generateReport(url: string) {
   const doc = new jsPDF('l');
+  const numDays = 29;
 
   const options = (data: any) => {
     // Add table header to each new page
     // Add left header
-    doc.setFontSize(12);
+    doc.setFontSize(20);
+    doc.setFont('bold');
     doc.text('Left Header Text', 10, 10);
 
     // Add right header
@@ -32,14 +34,20 @@ function generateReport(url: string) {
   doc.text('Site Address: 1234 ABC St, City, State, Country', 100, 30);
   doc.setFontSize(5);
 
-  const numDays = 29;
-
   const data = [
-    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3:'0' },
+    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
   ];
-  
-    for (let i = 0; i < 50; i++) {
-    const newArray = { child: 'John Bblocks', id: 'IDTEST2525255', day1: '1', day2: '1', day3:'0', day4: '0', day5: '0' };
+
+  for (let i = 0; i < 50; i++) {
+    const newArray = {
+      child: 'John Bblocks',
+      id: 'IDTEST2525255',
+      day1: '1',
+      day2: '1',
+      day3: '0',
+      day4: '0',
+      day5: '0',
+    };
     data.push(newArray);
   }
   const tableColumns = [
@@ -47,8 +55,8 @@ function generateReport(url: string) {
     { header: 'ID/Passport', dataKey: 'id' },
     ...Array.from({ length: numDays }, (_, i) => ({
       header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}` // unique key for each day column
-    }))
+      dataKey: `day${i + 1}`, // unique key for each day column
+    })),
   ];
 
   const footer = [
@@ -78,13 +86,12 @@ function generateReport(url: string) {
       lineWidth: 0.1,
       lineColor: 0x000000,
     },
-    // head: [tableHeader],
     columns: tableColumns,
     body: data,
     foot: [footer],
     startY: 40, // Adjust Y coordinate for table placement
     horizontalPageBreak: true, //break table to multiple pages
-    didDrawPage: options
+    didDrawPage: options,
   });
 
   let afterTable = (doc as any).lastAutoTable.finalY;
