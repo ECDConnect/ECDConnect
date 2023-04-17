@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useMemo } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -32,10 +32,6 @@ export const INFANT_PROFILE_TABS = {
 export const InfantProfile: React.FC = () => {
   const { state } = useLocation<InfantProfileRouteState>();
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
-  );
-
   const dialog = useDialog();
 
   const { isOnline } = useOnlineStatus();
@@ -50,10 +46,11 @@ export const InfantProfile: React.FC = () => {
     getInfantById(state, infantId)
   );
 
-  const isLargeName =
-    (infant?.user?.firstName || '').length +
-      (infant?.user?.surname || '').length >
-    22;
+  const infantName = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
 
   const tabItems: TabItem[] = [
     {
@@ -118,9 +115,7 @@ export const InfantProfile: React.FC = () => {
       size="medium"
       renderBorder
       onBack={goBack}
-      title={`${infant?.user?.firstName || ''} ${
-        !isLargeName ? infant?.user?.surname || '' : ''
-      }`}
+      title={`${!!caregiverName ? caregiverName + ' &' : ''} ${infantName}`}
       backgroundColour="white"
       displayOffline={!isOnline}
       displayHelp
@@ -130,10 +125,7 @@ export const InfantProfile: React.FC = () => {
         tabClassName="min-w-0 w-24"
         className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
         tabItems={tabItems}
-        setSelectedIndex={selectedTabIndex}
-        tabSelected={(tab: TabItem, tabIndex: number) =>
-          setSelectedTabIndex(tabIndex)
-        }
+        setSelectedIndex={state.activeTabIndex}
       />
     </BannerWrapper>
   );
