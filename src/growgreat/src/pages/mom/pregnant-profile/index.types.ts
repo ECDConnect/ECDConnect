@@ -1,4 +1,5 @@
 export type PregnantProfileRouteState = {
+  isInfantEvent?: boolean;
   activeTabIndex?: number;
   linkedInfantId?: string;
   recordEventInput?: {

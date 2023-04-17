@@ -32,6 +32,7 @@ const ConfigWrapper: React.FC = () => {
     return <Loader />;
   } else {
     const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
+    console.log('Theme', Config.themeUrl);
     return (
       <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
         <Provider store={store}>

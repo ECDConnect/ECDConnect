@@ -1,9 +1,10 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -13,6 +14,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -73,6 +75,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(userId, false);
 
             return highlights;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Caregiver> GetAllCaregiversForHCW(
+            [Service] CaregiverManager caregiverManager,
+            [Service] InfantManager infantManager, 
+            [Service] MotherManager motherManager, 
+            string userId,
+            int recordsPerPage=Constants.GGSettings.recordsPerPage,
+            int pageNumber=Constants.GGSettings.pageNumber)
+        {
+            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(userId, recordsPerPage, pageNumber);
+
+            foreach (var caregiver in caregivers)
+            { 
+                caregiver.Infants = infantManager.GetAllInfantsForCaregiver(caregiver.Id.ToString());
+                caregiver.Mother = motherManager.GetMotherForCaregiver(caregiver.Id.ToString());
+            }
+
+            return caregivers;
         }
 
     }

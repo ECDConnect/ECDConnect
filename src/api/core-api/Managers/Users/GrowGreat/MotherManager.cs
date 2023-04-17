@@ -10,9 +10,6 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using NPOI.POIFS.Properties;
-using Org.BouncyCastle.Asn1.Ocsp;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -447,6 +444,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
+        }
+    
+        public Mother GetMotherForCaregiver(string caregiverId)
+        {
+            Mother mother = _motherRepo.GetAll().Where(x => x.LinkedCaregiverId.ToString() == caregiverId).FirstOrDefault();
+            if (mother != null)
+            {
+                mother.StatusInfo = GetStatusInfo(mother, true);
+                mother.NextVisitDate = GetClientsNextVisitDate(mother.Id);
+            }
+            return mother;
         }
     }
 }

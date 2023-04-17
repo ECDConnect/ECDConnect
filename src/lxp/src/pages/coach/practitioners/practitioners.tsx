@@ -95,7 +95,7 @@ export const Practitioners: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersMessages]);
 
-  const classroomsDetailsForPractitioner = async () => {
+  const practionersDetailsForPractioner = async () => {
     setLoading(true);
     const practitionersMessageData = await new PractitionerService(
       userAuth?.auth_token!
@@ -107,7 +107,7 @@ export const Practitioners: React.FC = () => {
   };
 
   useEffect(() => {
-    classroomsDetailsForPractitioner();
+    practionersDetailsForPractioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -231,7 +231,7 @@ export const Practitioners: React.FC = () => {
             }}
           />
         </SearchHeader>
-        {practitionersList?.length! > 0 || practitionersList !== undefined ? (
+        {practitionersList !== undefined && practitionersList?.length > 0 ? (
           <div className="flex justify-center">
             {loading ? (
               <LoadingSpinner

@@ -11,6 +11,8 @@ import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { Fragment, useCallback, useState } from 'react';
 
+export const maternalDistressVisitSection = 'Maternal distress screening';
+
 export const MaternalDistressScreeningStep = ({
   infant,
   setSectionQuestions: setQuestions,
@@ -30,8 +32,6 @@ export const MaternalDistressScreeningStep = ({
       answer: '',
     },
   ]);
-
-  const visitSection = 'Maternal distress screening';
 
   const options = [
     { text: 'Yes', value: true },
@@ -55,7 +55,7 @@ export const MaternalDistressScreeningStep = ({
       setAnswers(updatedQuestions);
       setQuestions?.([
         {
-          visitSection,
+          visitSection: maternalDistressVisitSection,
           questions: updatedQuestions,
         },
       ]);
@@ -74,7 +74,7 @@ export const MaternalDistressScreeningStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title={visitSection}
+        title={maternalDistressVisitSection}
       />
       <div className="flex flex-col p-4">
         <Label text="In the last 2 weeks, have you:" />

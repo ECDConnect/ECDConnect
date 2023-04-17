@@ -8,9 +8,10 @@ import { getMotherById } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import { Visits } from './visits';
 import { PregnantProfileRouteState } from './index.types';
+import { ProgressTab } from './progress-tab';
 import { Contact } from './contact';
+import { Visits } from './visits';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -37,6 +38,7 @@ export const PregnantProfile: React.FC = () => {
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+  const [isStartVisit, setIsStartVisit] = useState(false);
 
   const isLargeName =
     (mother?.user?.firstName || '').length +
@@ -52,14 +54,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Progress',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ProgressTab />,
     },
     {
       title: 'Referrals',

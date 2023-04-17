@@ -12,7 +12,7 @@ export type TypographyLineHeight =
   | 5
   | 6
   | '1.56';
-export type TypographyWeight = 'bold' | 'normal' | 'skinny';
+export type TypographyWeight = 'bold' | 'normal' | 'skinny' | 'semibold';
 export type TypographyType =
   | 'h1'
   | 'h2'
