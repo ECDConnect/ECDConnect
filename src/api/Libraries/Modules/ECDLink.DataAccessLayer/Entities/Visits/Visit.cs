@@ -25,6 +25,10 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Infant Infant { get; set; }
         public string Risk { get; set; }
         public string Comment { get; set; }
+        public Guid? LinkedVisitId { get; set; }
+
+        [NotMapped]
+        public DateTime? OrderDate { get; set; }
     }
 
     public interface VisitJoin<TKey>
