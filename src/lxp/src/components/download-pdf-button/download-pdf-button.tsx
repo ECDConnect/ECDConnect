@@ -116,11 +116,11 @@ const GeneratePdfReportButton = ({
           outputName,
           tableHeadStyles,
           tableStyles,
-          tableFootStyles
+          tableFootStyles 
         )
       }
     >
-      {renderIcon('DownloadIcon', 'h-5 w-5 text-primary')}
+      {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
       <Typography
         type="h6"
         color="white"
