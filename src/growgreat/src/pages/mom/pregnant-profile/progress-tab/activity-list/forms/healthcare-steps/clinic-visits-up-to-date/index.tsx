@@ -74,7 +74,7 @@ export const ClinicVisitsUpToDateStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={AntenatalCareSvg}
-        title={sectionName}
+        title={`Clinic visits`}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard
