@@ -14,6 +14,7 @@ import {
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
+import { UserOptions } from 'jspdf-autotable';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -90,18 +91,41 @@ export const MonthlyAttendanceReport = ({
     // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
 
-  const content = {
-    pageTitle: `${reportMonth}`,
+  const tableTopContent = {
+    pageTitle: `${reportMonth} Attendance Report`,
     subtitle: 'Text 2',
     practitioner_name: 'Name: Jenny Droe',
     id_number: 'ID: ID23YGH444',
     programme_type: 'ProgrammeType: 46372test',
     programme_days: 'Programmme Days: Monday to Friday',
     site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: "Phone: 0123456789"
+    phone: 'Phone: 0123456789',
   };
 
-  const tableBottomContent = [`Number of children who attended all sessions: 9`, `Total number of sessions: 198`, `Number of children who attended all sessions: 9`]
+  const tableBottomContent = [
+    `Number of children who attended all sessions: 9`,
+    `Total number of sessions: 198`,
+    `Number of children who attended all sessions: 9`,
+  ];
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
 
   return (
     <BannerWrapper
@@ -147,7 +171,6 @@ export const MonthlyAttendanceReport = ({
         />
       </div>
 
-      {/* TODO: integrate this with backend to get correct data */}
       {reportData?.map((report, idx) => {
         const reportItemColor = getColor(report?.attendancePercentage);
         const reportItemShape = getShape(report?.attendancePercentage);
@@ -182,7 +205,7 @@ export const MonthlyAttendanceReport = ({
           </div>
         );
       })}
-      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4 relative'}>
         {
           <GeneratePdfReportButton
             title="Download Register"
@@ -190,8 +213,11 @@ export const MonthlyAttendanceReport = ({
             headerColumns={tableColumns}
             bodyRows={data}
             tableFooter={footer}
-            content={content}
+            content={tableTopContent}
             tableBottomContent={tableBottomContent}
+            tableHeadStyles={tableHeadStyles}
+            tableFootStyles={tableFootStyles}
+            tableStyles={tableStyles}
           />
         }
       </div>
