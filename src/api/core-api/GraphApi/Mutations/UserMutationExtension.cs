@@ -1,14 +1,19 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 using System;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
@@ -16,8 +21,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     public class UserMutationExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public ApplicationUser AddUser(
-          [Service] UserManager<ApplicationUser> userManager,
+        public async Task<ApplicationUser> AddUser(
+          UserManager<ApplicationUser> userManager,
           UserModel input)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
@@ -43,7 +48,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 LanguageId = input.LanguageId
             };
 
-            var userCreatedResult = userManager.CreateAsync(newUser).Result;
+            var userCreatedResult = await userManager.CreateAsync(newUser);
 
             if (!userCreatedResult.Succeeded)
             {
@@ -52,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (!string.IsNullOrWhiteSpace(input.Password))
             {
-                var passwordCreatedResult = userManager.AddPasswordAsync(newUser, input.Password).Result;
+                var passwordCreatedResult = await userManager.AddPasswordAsync(newUser, input.Password);
 
                 if (!passwordCreatedResult.Succeeded)
                 {
@@ -65,16 +70,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public ApplicationUser UpdateUser(
-          [Service] UserManager<ApplicationUser> userManager,
+        public async Task<ApplicationUser> UpdateUser(
+          UserManager<ApplicationUser> userManager,
+          [Service] SecurityNotificationManager securityNotificationManager,
+          [Service] ILogger<UserMutationExtension> logger,
+          [Service] IHttpContextAccessor httpContextAccessor,
           string id,
           UserModel input)
         {
-            var user = userManager.FindByIdAsync(id).Result;
+            var user = await userManager.FindByIdAsync(id);
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             input.Id = id;
 
-            user.PhoneNumber = input.PhoneNumber;
+            user.PhoneNumber = replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber);
             user.IdNumber = input.IdNumber;
             user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
             user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
@@ -93,9 +101,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.UserName = input.IdNumber;
             }
 
-            if (!string.IsNullOrWhiteSpace(input.Email))
+            // If the user changing the email, is different to the user being changed
+            // Don't allow changing email address without verification first.
+            if (!string.IsNullOrWhiteSpace(input.Email) 
+                && !string.IsNullOrWhiteSpace(user.Email) 
+                && user.Email != input.Email
+                && user.Id != httpContextAccessor.HttpContext.GetUser().Id)
+            {
+                user.PendingEmail = input.Email;
+                try
+                {
+                    var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
+                    await securityNotificationManager.RequestVerifyEmailAsync(user, apiUrl);
+                }
+                catch (Exception exception)
+                {
+                    logger?.LogError("Could not change user email address.", new { userId = user.Id, exception });
+                }
+
+                // Set email back to original so that it must first be verified.
+                input.Email = user.Email;
+            }
+
+            // If the email is different (or will become unconfirmed)
+            // and if there's an email to set,
+            // and if the user is changing their own email (changes from portal must be verified)
+            // allow them to change it without verification
+            if (user.Email != input.Email 
+                && !string.IsNullOrWhiteSpace(input.Email)
+                && user.Id == httpContextAccessor.HttpContext.GetUser().Id)
             {
                 user.Email = input.Email;
+                user.EmailConfirmed = false;
             }
 
             if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
@@ -103,7 +140,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
 
-            var updateResult = userManager.UpdateAsync(user).Result;
+            var updateResult = await userManager.UpdateAsync(user);
 
             if (!updateResult.Succeeded)
             {
@@ -113,12 +150,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return user;
         }
 
+        private static string replaceIfNotNullOrWhiteSpace(string original, string @new)
+        {
+            return string.IsNullOrWhiteSpace(@new) ? original : @new;
+        }
+
+        private static bool replaceIfNotNull(bool original, bool? @new)
+        {
+            return @new is null ? original : @new ?? false;
+        }
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
-        public bool DeleteUser(
-          [Service] UserManager<ApplicationUser> userManager,
+        public async Task<bool> DeleteUser(
+          UserManager<ApplicationUser> userManager,
           string id)
         {
-            var user = userManager.FindByIdAsync(id).Result;
+            var user = await userManager.FindByIdAsync(id);
 
             if (user == default(ApplicationUser))
             {
@@ -127,21 +174,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             user.IsActive = false;
 
-            var updateResult = userManager.UpdateAsync(user).Result;
+            var updateResult = await userManager.UpdateAsync(user);
 
             return updateResult.Succeeded;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
-        public bool ResetUserPassword(
-          [Service] UserManager<ApplicationUser> userManager,
+        public async Task<bool> ResetUserPassword(
+          UserManager<ApplicationUser> userManager,
           string id,
           string newPassword)
         {
-            var user = userManager.FindByIdAsync(id).Result;
+            var user = await userManager.FindByIdAsync(id);
 
-            var passwordToken = userManager.GeneratePasswordResetTokenAsync(user).Result;
-            var updatedPassword = userManager.ResetPasswordAsync(user, passwordToken, newPassword).Result;
+            var passwordToken = await userManager.GeneratePasswordResetTokenAsync(user);
+            var updatedPassword = await userManager.ResetPasswordAsync(user, passwordToken, newPassword);
 
             if (!updatedPassword.Succeeded)
             {

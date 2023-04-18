@@ -65,7 +65,7 @@ namespace ECDLink.Core.Services
                 IntegrationMapping franchisor = new IntegrationMapping();
                 var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
 
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == localFranchisorId).Where(y => y.RemoteEntity == "").FirstOrDefault();
+                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == localFranchisorId).Where(y => y.RemoteEntity == "").OrderBy(x => x.Id).FirstOrDefault();
 
                 if (FranchisorMapped != null)
                 {
@@ -111,7 +111,7 @@ namespace ECDLink.Core.Services
                 IntegrationMapping franchisor = new IntegrationMapping();
                 var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
 
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == remoteCoachId).FirstOrDefault();
+                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == remoteCoachId).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (FranchisorMapped != null)
                 {
@@ -155,7 +155,7 @@ namespace ECDLink.Core.Services
                 IntegrationMapping franchisor = new IntegrationMapping();
                 var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
 
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.RemoteId == remoteFranchiseeId).FirstOrDefault();
+                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.RemoteId == remoteFranchiseeId).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (FranchisorMapped != null)
                 {

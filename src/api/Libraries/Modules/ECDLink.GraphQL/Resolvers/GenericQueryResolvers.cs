@@ -5,12 +5,13 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 
 namespace ECDLink.EGraphQL.Resolvers
 {
     public class GenericQueryResolvers<T> where T : EntityBase<Guid>
     {
-        public T Get(
+        public async Task<T> Get(
           IGenericRepositoryFactory repositoryFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
           Guid id)
@@ -18,7 +19,7 @@ namespace ECDLink.EGraphQL.Resolvers
             var repository = repositoryFactory.CreateRepository<T>();
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
 
-            return repository.GetById(id);
+            return await repository.GetByIdAsync(id);
         }
 
         public IEnumerable<T> GetAll(

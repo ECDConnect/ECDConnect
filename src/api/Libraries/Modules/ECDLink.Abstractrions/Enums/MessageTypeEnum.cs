@@ -1,6 +1,6 @@
 namespace ECDLink.Abstractrions.Enums
 {
-    public enum MessageTypeEnum
+    public enum MessageProtocolEnum
     {
         Sms,
         Email

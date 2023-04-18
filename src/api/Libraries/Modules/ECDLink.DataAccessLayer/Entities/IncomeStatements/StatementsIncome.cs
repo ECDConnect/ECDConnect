@@ -1,6 +1,7 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -28,7 +29,10 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public string ChildUserId { get; set; }
         public string? IncomeStatementId { get; set; }
         public string UserId { get; set; }
-        public DateTime? DateReceived { get; set; }
+        public DateTime DateReceived { get; set; }
+        public string? FeeTypeId { get; set; }
+        //[GraphQLIgnore]
+        //public bool AutoSubmitted { get; set; }
 
     }
 

@@ -6,6 +6,7 @@ import { DocumentDto } from '../Documents/document.dto';
 import { CaregiverDto } from './care-giver.dto';
 import { LanguageDto } from '../StaticData/language.dto';
 import { HealthCareWorkerDto } from './health-care-worker.dto';
+import { GenderDto } from '../StaticData';
 
 export interface InfantDto extends EntityBase {
   user?: UserDto;
@@ -23,4 +24,12 @@ export interface InfantDto extends EntityBase {
   weightAtBirth?: number;
   lengthAtBirth?: number;
   nextVisitDate?: string;
+  gender?: GenderDto;
+  completed24MonthVisits?: boolean;
+  statusInfo?: {
+    icon?: string;
+    color?: string;
+    notes?: string;
+    subject?: string;
+  };
 }

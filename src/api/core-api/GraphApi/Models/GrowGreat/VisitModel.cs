@@ -1,5 +1,4 @@
-﻿using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
+﻿using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
@@ -15,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? InfantId { get; set; }
         public InfantModel Infant { get; set; }
         public string Risk { get; set; }  // high or normal
+        public string Comment { get; set; }
         public bool Attended { get; set; }
     }
 }

@@ -121,10 +121,18 @@ namespace ECDLink.DataAccessLayer.Context
         // Visits
         public DbSet<VisitType> VisitTypes { get; set; }
         public DbSet<Visit> Visits { get; set; }
+        public DbSet<VisitData> VisitData { get; set; }
+        public DbSet<VisitDataStatus> VisitDataStatus { get; set; }
+        public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
+        public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
+        public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
 
         // Event Records
         public DbSet<EventRecordType> EventRecordTypes { get; set; }
         public DbSet<EventRecord> EventRecords { get; set; }
+
+        // Clubs
+        public DbSet<Club> Clubs { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

@@ -11,6 +11,8 @@ import {
   getMothers,
   getMothersWeeklyVisits,
   getMotherVisits,
+  updateMotherAddress,
+  updateMotherContactDetails,
 } from './mother.actions';
 import { MotherState } from './mother.types';
 
@@ -38,6 +40,8 @@ const motherSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addMother);
+    setThunkActionStatus(builder, updateMotherAddress);
+    setThunkActionStatus(builder, updateMotherContactDetails);
     setThunkActionStatus(builder, getMotherCountForMonth);
     setThunkActionStatus(builder, getMotherVisits);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {

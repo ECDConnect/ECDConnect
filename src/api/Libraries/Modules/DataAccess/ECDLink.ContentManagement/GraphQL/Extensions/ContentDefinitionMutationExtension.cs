@@ -79,7 +79,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
                     if (id != null)
                     {
                         var locale = ExcelHelper.GetCellValue(currentRow.GetCell(1));
-                        var localeEntity = languages.Where(x => x.Locale == locale).FirstOrDefault();
+                        var localeEntity = languages.Where(x => x.Locale == locale).OrderBy(x => x.Id).FirstOrDefault();
                         var currentItem = contentImportList.Where(x => x.TempId == id).FirstOrDefault();
 
                         var item = currentItem != null ? currentItem : new ContentTypeImportItem();

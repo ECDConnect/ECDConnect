@@ -4,5 +4,6 @@ namespace ECDLink.Abstractrions.Notifications.Message
     {
         string TemplateType { get; set; }
         string Message { get; set; }
+        string Subject { get; set; }
     }
 }

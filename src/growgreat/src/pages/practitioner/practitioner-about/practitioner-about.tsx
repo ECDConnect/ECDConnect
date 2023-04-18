@@ -45,6 +45,7 @@ import {
   healthCareWorkerThunkActions,
 } from '@/store/healthCareWorker';
 import { ClinicDetails } from './components/clinicDetails/clinic-details';
+import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
@@ -63,7 +64,7 @@ export const PractitionerAbout: React.FC = () => {
   const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
-
+  const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
   const user = useSelector(userSelectors.getUser);
 
   const healthCareWorker = useSelector(
@@ -126,11 +127,7 @@ export const PractitionerAbout: React.FC = () => {
         actionIcon: currentUser?.phoneNumber ? 'PencilIcon' : 'PlusIcon',
         buttonType: currentUser?.phoneNumber ? 'outlined' : 'filled',
         onActionClick: () => {
-          editField({
-            label: 'Cellphone Number',
-            formFieldName: 'cellphone',
-            value: practitionerAboutFormGetValues().cellphone,
-          });
+          setEditiCellPhoneNumber(true);
         },
       },
       {
@@ -310,6 +307,16 @@ export const PractitionerAbout: React.FC = () => {
         <ClinicDetails
           healthCareWorker={healthCareWorker}
           setClinicDetails={setClinicDetails}
+        />
+      </Dialog>
+      <Dialog
+        fullScreen
+        visible={editiCellPhoneNumber}
+        position={DialogPosition.Top}
+      >
+        <EditCellPhoneNumber
+          setEditiCellPhoneNumber={setEditiCellPhoneNumber}
+          user={user}
         />
       </Dialog>
       <BannerWrapper

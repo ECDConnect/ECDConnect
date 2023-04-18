@@ -36,7 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            notificationManager.SendInvitation(userToInvite, token);
+            await notificationManager.SendInvitationAsync(userToInvite, token);
 
             return true;
         }

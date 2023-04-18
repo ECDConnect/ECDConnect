@@ -1,10 +1,12 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -14,39 +16,55 @@ using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 {
-    public class MotherManager
+    public class MotherManager : BaseManager
     {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private HealthCareWorkerManager _healthCareWorkerManager;
         private InfantManager _infantManager;
         private VisitManager _visitManager;
+        private VisitDataStatusManager _visitDataStatusManager;
+
+        private string _applicationUserId;
+        private IGenericRepository<Mother, Guid> _motherRepo;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             HealthCareWorkerManager healthCareWorkerManager,
             InfantManager infantManager,
-            VisitManager visitManager)
+            VisitManager visitManager,
+            VisitDataStatusManager visitDataStatusManager
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _healthCareWorkerManager = healthCareWorkerManager;
             _infantManager = infantManager;
             _visitManager = visitManager;
+            _visitDataStatusManager = visitDataStatusManager;
+
+            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
         }
 
         // GG BUSINESS RULES FOR CREATING A MOTHER AND SELECTING AN EXISTING CAREGIVER
 
-        // We save the caregiver's id to column LinkedCaregiverId on the Mother table to indicate that this mother is linked to an exisiting caregiver.
+        // We save the caregiver's id to column LinkedCaregiverId on the Mother table to indicate that this mother is linked to an existing caregiver.
         // When a caregiver is 'marked/linked' to a mother, we mark the caregiver with a boolean 'isMother' for the FE to exclude from step 2 of 5.
 
         public Mother AddMother(MotherModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var mother = GetMotherFromInputModel(input);
-            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var createdMom = repository.Insert(mother);
+            var createdMom = _motherRepo.Insert(mother);
+
+            // When the linkedInfantId is available and contains a guid, then we know that a mother is created from 'Record an event' - EC-246 (post conditions)
+            // and we need to link the newly created mother to an existing child.
+            if (input.LinkedInfantId != null)
+            {
+                _infantManager.UpdateInfantCaregiverToMother(input.LinkedInfantId, mother.Id);
+            }
+
             if (createdMom != null)
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
@@ -56,13 +74,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother UpdateMother(string id, MotherModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
-            var entityToUpdate = repository.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = applicationUserId;
+            entityToUpdate.UpdatedBy = _applicationUserId;
             entityToUpdate.UserId = input.UserId;
             entityToUpdate.User = motherUser;
             entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
@@ -70,7 +86,33 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
             entityToUpdate.SiteAddress = input.SiteAddress;
 
-            return repository.Update(entityToUpdate);
+            return _motherRepo.Update(entityToUpdate);
+        }
+
+        public Mother UpdateContactDetails(string id, MotherModel input) {
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+
+            var user = entityToUpdate.User;
+            user.Id = input.UserId;
+            user.PhoneNumber = input.PhoneNumber;
+
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            entityToUpdate.UserId = user.Id;
+            entityToUpdate.User = user;
+            return _motherRepo.Update(entityToUpdate);
+        }
+       
+
+        public Mother UpdateMotherAddress(string id, MotherModel input)
+        {
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.SiteAddress = input.SiteAddress;
+            return _motherRepo.Update(entityToUpdate);
         }
 
         public Mother GetMotherFromInputModel(MotherModel input)
@@ -80,14 +122,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 return null;
             }
 
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(applicationUserId);
+            var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
             var motherUser = GetUserFromInputModel(input);
 
             // Populate province id with N/A option when site address is null
             if (input.SiteAddressId == null)
             {
-                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: applicationUserId);
+                var repository = _repoFactory.CreateGenericRepository<Province>(userContext: _applicationUserId);
                 var naProvince = repository.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
                 input.SiteAddress.ProvinceId = naProvince.Id;
             }
@@ -98,7 +139,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 IsActive = true,
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = _applicationUserId,
                 UserId = input.UserId,
                 User = motherUser,
                 Age = input.Age,
@@ -138,10 +179,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            var _type = "mother";
 
             // Get all visit types linked to mother excluding additional_visits
-            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(_type) && x.Name != Constants.GrowGreatSettings.additional_visits).OrderBy(x => x.Order).ToList();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
             List<VisitModel> visits = getVisitDates(ExpectedDateOfDelivery, InsertedDate, visitTypes);
@@ -294,21 +334,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return dateList;
         }
 
-        public DisplaySet GetStatusInfo(Guid motherId, Boolean withinWeek)
+        public DisplaySet GetStatusInfo(Mother mother, Boolean withinWeek)
         {
             DisplaySet statusInfo = new DisplaySet();
             DateTime today = DateTime.Today;
 
+            var totalMonths = ((today.Year - mother.InsertedDate.Year) * 12) + today.Month - mother.InsertedDate.Month;
+
             // Determine note display for mother
-            var note = Constants.GrowGreatSettings.client_pregnant_mom;
-            var childrenCount = _infantManager.GetChildCountForMother(motherId);
+            var note = Constants.GGSettings.client_pregnant_mom;
+            var childrenCount = _infantManager.GetChildCountForMother(mother.Id);
             if (childrenCount == 1)
             {
-                note = Constants.GrowGreatSettings.client_pregnant_mom_and_child;
+                note = Constants.GGSettings.client_pregnant_mom_and_child;
             }
             else if (childrenCount > 1)
             {
-                note = Constants.GrowGreatSettings.client_pregnant_mom_multiple_children;
+                note = Constants.GGSettings.client_pregnant_mom_multiple_children;
             }
 
             statusInfo.Notes = note;
@@ -322,13 +364,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // 3. don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING
             // 4. Healthy:- for pregnant mom clients only, show if there are no alerts/flags raised for the mom.
 
-            // Default green status
-            statusInfo.Icon = MetricsIconEnum.Success.ToString();
-            statusInfo.Color = MetricsColorEnum.Success.ToString();
-            statusInfo.Subject = "Healthy";
-
             // No color alert notification
-            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother);
+            var nextVisitAfter7Days = _visitManager.GetNextVisitMoreThan7DaysAway(mother.Id, Constants.GGSettings.client_mother);
             if (nextVisitAfter7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.None.ToString();
@@ -337,11 +374,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             //
+            // Green Alerts
+            //
+            var healthMom = _visitDataStatusManager.GetAlertsForMother(mother.Id.ToString());
+            if (healthMom == "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                statusInfo.Color = MetricsColorEnum.Success.ToString();
+                statusInfo.Subject = "Healthy";
+            }
+
+            //
             // Orange Alerts
             //
 
             // 1. show if the visit deadline is less than 7 days away
-            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(motherId, Constants.GrowGreatSettings.client_mother, withinWeek);
+            var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Warning.ToString();
@@ -354,7 +402,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
 
             // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
-            var missedVisit = _visitManager.GetFirstMissedVisit(motherId, Constants.GrowGreatSettings.client_mother);
+            var missedVisit = _visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
             if (missedVisit != "")
             {
                 statusInfo.Icon = MetricsIconEnum.Error.ToString();
@@ -362,12 +410,51 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = missedVisit;
             }
 
+            if (totalMonths <= 3)
+            {
+                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
+                if (lastVisit == Guid.Empty)
+                {
+                    statusInfo.Color = MetricsIconEnum.None.ToString();
+                    statusInfo.Icon = MetricsIconEnum.None.ToString();
+                    statusInfo.Subject = Constants.GGSettings.client_new;
+                }
+            }
+
             return statusInfo;
         }
 
         public DateTime? GetClientsNextVisitDate(Guid motherId)
         {
-            return _visitManager.GetClientsNextVisitDate(motherId, Constants.GrowGreatSettings.client_mother);
+            return _visitManager.GetClientsNextVisitDate(motherId, Constants.GGSettings.client_mother);
+        }
+
+        public int GetTotalNewMothersForWeek(string id, Boolean currentWeek)
+        {
+            DateTime today = DateTime.Today;
+            var monday = StartOfWeek(today, DayOfWeek.Monday);
+            var next7Days = monday.AddDays(6);
+
+            if (!currentWeek)
+            {
+                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
+                DateTime pastDate = DateTime.Now.AddDays(-days);
+                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
+                next7Days = monday.AddDays(6);
+            }
+
+            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
+        }
+    
+        public Mother GetMotherForCaregiver(string caregiverId)
+        {
+            Mother mother = _motherRepo.GetAll().Where(x => x.LinkedCaregiverId.ToString() == caregiverId).FirstOrDefault();
+            if (mother != null)
+            {
+                mother.StatusInfo = GetStatusInfo(mother, true);
+                mother.NextVisitDate = GetClientsNextVisitDate(mother.Id);
+            }
+            return mother;
         }
     }
 }

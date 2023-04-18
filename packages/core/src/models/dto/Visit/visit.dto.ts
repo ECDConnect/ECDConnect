@@ -1,4 +1,5 @@
 export interface VisitDto {
+  id: string;
   actualVisitDate: string;
   attended: boolean;
   plannedVisitDate: string;
@@ -11,6 +12,8 @@ export interface VisitDto {
     order: number;
     type?: string;
     updatedBy?: string;
+    insertedDate?: string;
+    updatedDate?: string;
   };
 }
 

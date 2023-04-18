@@ -52,10 +52,12 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             // Multiple to be added in the future
             var hierarchyType = HierarchyCache
                                     .Where(x => string.Equals(x.SystemType, childType))
+                                    .OrderBy(x => x.Id)
                                     .FirstOrDefault();
 
             var parentHierarchyType = HierarchyCache
                                         .Where(x => x.Id == hierarchyType.ParentId)
+                                        .OrderBy(x => x.Id)
                                         .FirstOrDefault();
 
 
@@ -73,6 +75,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                 parentEntity = userHierarchyRepo.GetAll()
                                     .Where(x => string.Equals(x.UserId, parentId))
                                     .Where(x => string.Equals(x.UserType, parentHierarchyType.Type))
+                                    .OrderBy(x => x.Id)
                                     .FirstOrDefault();
             }
 
@@ -227,8 +230,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
         private static List<string> GetCoachIds(IGenericRepository<Practitioner, Guid> practRepo, Guid userIdGuid)
         {
             var coachPractitioners = practRepo.GetAll()
-                .Where(c => c.CoachHierarchy == userIdGuid
-                    && c != null)?
+                .Where(c => c.CoachHierarchy.HasValue == true && c.CoachHierarchy == userIdGuid)?
                 .Select(p => p.UserId)?
                 .ToList();
 
@@ -261,6 +263,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             var hierarchyType = HierarchyCache
                                     .Where(x => string.Equals(x.SystemType, childType))
+                                    .OrderBy(x => x.Id)
                                     .FirstOrDefault();
 
             if (hierarchyType == default)
@@ -274,6 +277,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
                                .Where(x => string.Equals(x.UserId, childId))
                                .Where(x => string.Equals(x.ParentId, parentId))
                                .Where(x => string.Equals(x.UserType, hierarchyType.Type))
+                               .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
             return entity.Hierarchy;
@@ -290,6 +294,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             var entity = userHierarchyRepo.GetAll()
                                .Where(x => string.Equals(x.UserId, userId))
+                               .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
             return entity?.Hierarchy;
@@ -337,6 +342,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             var entity = userHierarchyRepo.GetAll()
                                .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator"))
+                               .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
             return entity?.UserId;
@@ -353,6 +359,7 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             var entity = userHierarchyRepo.GetAll()
                                .Where(x => string.Equals(x.UserId, userId))
+                               .OrderBy(x => x.Id)
                                .FirstOrDefault();
 
             entity.IsActive = false;

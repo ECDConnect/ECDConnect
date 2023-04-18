@@ -13,6 +13,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public string PractitionerName { get; set; }
         public DateTime DateOfBirth { get; set; }
         public string ProfileImageUrl { get; set; }
+        public string ProgrammeName { get; set; }
+        public string PractitionerUserId { get; set; }
 
     }
 }

@@ -1,41 +1,15 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.IncomeExpense;
-using EcdLink.Api.CoreApi.Managers.Notifications;
-using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Helpers;
-using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Caregiver;
-using ECDLink.DataAccessLayer.Entities.Classroom;
-using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Workflow;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Security.Managers;
-using ECDLink.Tenancy.Context;
-using ECDLink.UrlShortner.Managers;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
-using NPOI.SS.UserModel;
-using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Security;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
-
+using Newtonsoft.Json;
+using ECDLink.Core.Services;
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
@@ -54,45 +28,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementIncome([Service] IncomeExpenseManager incomeManager,
-              StatementsIncome model)
+        public ResultReturnObject UpdateIncome([Service] IncomeExpenseService incomeManager, string id,
+              StatementsIncome input)
         {
 
-            return incomeManager.CreateStatementIncome(model);
+            var retObj = incomeManager.UpdateIncome(input);
+            return (retObj != null ? new ResultReturnObject() { Result = true, ResultMessage = "Income Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Income line could not be processed for criteria" });
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementExpense([Service] IncomeExpenseManager incomeManager,
-      StatementsExpenses model)
+        public ResultReturnObject UpdateExpense([Service] IncomeExpenseService incomeManager, string id,
+      StatementsExpenses input)
         {
-
-            return incomeManager.CreateStatementExpense(model);
+            if (input != null)
+            {
+                var retObj = incomeManager.UpdateExpense(input);
+                return (retObj != null ? new ResultReturnObject() { ResultMessage = "Expense Submitted",  ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Expense line could not be processed for criteria" });
+            }
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsIncomeStatement CreateStatementIncomeStatement(IGenericRepositoryFactory repoFactory,
-      [Service] IHttpContextAccessor httpContextAccessor,
-      StatementsIncomeStatement model)
+        public ResultReturnObject UpdateStartupSupport([Service] IncomeExpenseService incomeManager, string id,
+StatementsStartupSupport input)
         {
-
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsIncomeStatement();
+            if (input != null)
+            {
+                var retObj = incomeManager.UpdateStartupSupport(input);
+                return (retObj != null ? new ResultReturnObject() { ResultMessage = "Startup Support Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Startup Support could not be processed for criteria" });
+            }
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
-        public StatementsStartupSupport CreateStatementStartupSupport(IGenericRepositoryFactory repoFactory,
-[Service] IHttpContextAccessor httpContextAccessor,
-StatementsStartupSupport model)
+        public ResultReturnObject SubmitStatement([Service] IncomeExpenseService incomeManager, string id,
+StatementsSubmit input)
         {
-
-            string userId = Guid.NewGuid().ToString();
-            var _applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var incomeRepo = repoFactory.CreateGenericRepository<StatementsStartupSupport>(userContext: _applicationUserId);
-            //check user dont exist first
-            return new StatementsStartupSupport();
+            if (input != null)
+            {
+                var retObj = incomeManager.SubmitStatement(input);
+                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
+            }
+            else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
     }
 }

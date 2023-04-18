@@ -1,5 +1,7 @@
 using ECDLink.Core.Extensions;
 using ECDLink.Security.JwtSecurity.Configuration;
+using ECDLink.Tenancy.Context;
+using ECDLink.Tenancy;
 using System;
 using System.Collections.Generic;
 using System.IdentityModel.Tokens.Jwt;
@@ -26,6 +28,7 @@ namespace ECDLink.Security.JwtSecurity.Encoders
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Jti, await Options.JtiGenerator()));
             fullClaims.Add(new Claim(JwtRegisteredClaimNames.Iat, Options.IssuedAt.ToEpochTime().ToString(), ClaimValueTypes.Integer64));
             fullClaims.Add(new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Type, SecurityConstants.Strings.JwtTokenTypes.OneTimeToken));
+            fullClaims.Add(new Claim(TenancyConstants.Jwt.TenantJwtClaim, TenantExecutionContext.Tenant.Id.ToString()));
 
             // Create the JWT security token and encode it.
             var jwt = new JwtSecurityToken(

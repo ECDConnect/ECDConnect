@@ -1,8 +1,10 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -10,9 +12,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -39,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
+            HealthCareWorker healthCareWorker = healthCareWorkerRepo.GetAll().Where(x => x.UserId.Equals(userId)).OrderBy(x => x.Id).FirstOrDefault();
 
             return healthCareWorker;
         }
@@ -48,14 +50,52 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public HCWVisitStatus GetHealthCareWorkerVisitStatus([Service] VisitManager visitManager, string userId)
         {
             HCWVisitStatus visitStatus = new HCWVisitStatus();
-            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, "mother");
-            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, "mother");
-            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, "child");
+            visitStatus.MotherOverDueVisits = visitManager.GetMissedVisitsForHCWCount(userId, Constants.GGSettings.client_mother);
+            visitStatus.MotherDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_mother);
+            visitStatus.ChildDueVisits = visitManager.GetVisitsDueForHCWCount(userId, Constants.GGSettings.client_child);
 
             return visitStatus;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public HCWHighlights GetHealthCareWorkerHighlights(
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            [Service] InfantManager infantManager,
+            [Service] MotherManager motherManager,
+            string userId) {
+            HCWHighlights highlights = new HCWHighlights();
+            
+            highlights.totalThisWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, true) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, true);
+            highlights.totalThisWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, true);
+            highlights.totalThisWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, true) + infantManager.GetTotalNewInfantsForWeek(userId, true);
 
+            highlights.totalLastWeekFamilyVisits = visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_mother, false) + visitManager.GetTotalVisitsForWeek(userId, Constants.GGSettings.client_child, false); ;
+            highlights.totalLastWeekGrowthMonitored = visitDataManager.GetTotalGrowthInfantsForWeek(userId, false);
+            highlights.totalLastWeekNewClients = motherManager.GetTotalNewMothersForWeek(userId, false) + infantManager.GetTotalNewInfantsForWeek(userId, false);
+
+            return highlights;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Caregiver> GetAllCaregiversForHCW(
+            [Service] CaregiverManager caregiverManager,
+            [Service] InfantManager infantManager, 
+            [Service] MotherManager motherManager, 
+            string userId,
+            int recordsPerPage=Constants.GGSettings.recordsPerPage,
+            int pageNumber=Constants.GGSettings.pageNumber)
+        {
+            List<Caregiver> caregivers = caregiverManager.GetAllCaregiversForHCW(userId, recordsPerPage, pageNumber);
+
+            foreach (var caregiver in caregivers)
+            { 
+                caregiver.Infants = infantManager.GetAllInfantsForCaregiver(caregiver.Id.ToString());
+                caregiver.Mother = motherManager.GetMotherForCaregiver(caregiver.Id.ToString());
+            }
+
+            return caregivers;
+        }
 
     }
 }

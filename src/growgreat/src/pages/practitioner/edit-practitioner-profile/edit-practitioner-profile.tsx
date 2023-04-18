@@ -172,7 +172,7 @@ export const EditPractitionerProfile: React.FC = () => {
 
   const exitPrompt = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
           icon={'ExclamationCircleIcon'}

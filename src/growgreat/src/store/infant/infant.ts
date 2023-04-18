@@ -8,6 +8,12 @@ import {
   addInfant,
   getInfantCountForMonth,
   getInfantsWeeklyVisits,
+  getInfantVisits,
+  updateInfant,
+  updateInfantCaregiverAddress,
+  updateInfantCaregiverContactDetails,
+  getAllInfantEventRecordTypes,
+  updateInfantCaregiver,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -38,6 +44,11 @@ const infantSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);
     setThunkActionStatus(builder, getInfantCountForMonth);
+    setThunkActionStatus(builder, getInfantVisits);
+    setThunkActionStatus(builder, updateInfantCaregiverAddress);
+    setThunkActionStatus(builder, updateInfantCaregiverContactDetails);
+    setThunkActionStatus(builder, getAllInfantEventRecordTypes);
+    setThunkActionStatus(builder, updateInfantCaregiver);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.infantCountForMonth = action.payload;
 
@@ -47,15 +58,37 @@ const infantSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getInfants.fulfilled, (state, action) => {
-      if (!state.infants) {
-        const infants = Object.assign([], action.payload) as InfantDto[];
+      const infants = Object.assign([], action.payload) as InfantDto[];
 
-        for (let i = 0; i < infants.length; i++) {
-          infants[i].isActive = true;
-        }
-
-        state.infants = infants;
+      for (let i = 0; i < infants.length; i++) {
+        infants[i].isActive = true;
       }
+
+      state.infants = infants;
+    });
+    builder.addCase(getInfantsWeeklyVisits.fulfilled, (state, action) => {
+      state.infantsWeeklyVisits = action.payload;
+    });
+    builder.addCase(getInfantVisits.fulfilled, (state, action) => {
+      state.visits = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfant.fulfilled, (state, action) => {
+      if (!action.payload || !state.infants) return;
+
+      state.infants = state.infants?.map((item) => {
+        if (item.id === action.payload.id) {
+          return { ...item, ...action };
+        }
+        return item;
+      });
+    });
+    builder.addCase(getAllInfantEventRecordTypes.fulfilled, (state, action) => {
+      state.eventRecordTypes = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfantCaregiver.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getInfantsWeeklyVisits.fulfilled, (state, action) => {
       state.infantsWeeklyVisits = action.payload;

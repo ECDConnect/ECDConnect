@@ -1,5 +1,10 @@
-import { AttendanceDto, LearnerDto } from '@ecdlink/core';
-import { ComponentBaseProps } from '@ecdlink/ui';
+import { AttendanceDto, ClassroomGroupDto, LearnerDto } from '@ecdlink/core';
+import {
+  ComponentBaseProps,
+  Button,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
 import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
@@ -10,7 +15,7 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import {
-  classroomGroupHasAttendanceOnDate,
+  classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
   getMissedClassAttendance,
   isValidAttendableDate,
@@ -24,9 +29,14 @@ import { isWorkingDay } from '@/utils/common/date.utils';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
+import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
+  const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
+    useState<ClassroomGroupDto>();
+
   const [attendanceComponentType, setAttendanceComponentType] =
     useState<AttendanceComponentType>();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -70,13 +80,16 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const currentWeekAttendance: AttendanceDto[] = attendance;
     const _learners: LearnerDto[] = learners;
 
-    const currentClassProgramme = classroomGroupHasAttendanceOnDate(
+    const currentClassProgramme = classroomGroupHasAttendanceDate(
       classProgrammesUpdated,
       currentDate
     );
+
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
+
+    setUserCurrentClassroomGroup(currentDayClassroomGroup);
 
     if (!currentDayClassroomGroup) {
       setAttendanceComponentType('summary');
@@ -151,10 +164,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classroomGroups, attendance]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
+    setSeeRegister(true);
+
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -175,7 +191,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const removeTodaysAttendance = missedClassAttendance.filter(
       (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
     );
-
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
         addDays(startOfWeek(currentDate), x.meetingDay),
@@ -195,9 +210,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       case 'attendance':
         return <AttendanceList onSubmitSuccess={attendanceSubmitted} />;
       case 'report':
-        return <AttendanceReport classroom={classroom} />;
+        return (
+          <AttendanceReport
+            classroom={classroom}
+            currentClassroomGroup={userCurrentClassroomGroup}
+          />
+        );
       case 'summary':
-        return <AttendanceSummary />;
+        return <AttendanceSummary openReports={() => {}} />;
       default:
         return null;
     }
@@ -212,11 +232,39 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
+  const gotToReports = () => {
+    setSeeRegister(false);
+    setAttendanceComponentType('report');
+  };
+
   return (
     <div>
-      {attendanceComponentType
-        ? getComponentToRender(attendanceComponentType)
-        : null}
+      <MultiRouteWrapper />
+      {attendanceComponentType && !seeRegister ? (
+        getComponentToRender(attendanceComponentType)
+      ) : (
+        <AttendanceSummary hidePopup={seeRegister} openReports={gotToReports} />
+      )}
+      <div className={'flex h-full w-full flex-1 flex-col px-4'}>
+        {attendanceComponentType === 'attendance' && !seeRegister && (
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {
+              setSeeRegister(true);
+            }}
+          >
+            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
+              color="primary"
+              text={'See attendance registers'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        )}
+      </div>
     </div>
   );
 };

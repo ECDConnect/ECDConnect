@@ -12,6 +12,17 @@ namespace ECDLink.Abstractrions.Constants
 
         public const string FourWeekNotLoggedOn = "four-week-notification";
 
-        public const string TrackAttendanceWeekly = "attendance-weekly";
+        public const string AttendanceWeekly = "attendance-weekly";
+
+        public const string PasswordChangedByAdmin = "password-changed-by-admin";
+        
+        public const string PasswordChangedBySelf = "password-changed-by-self";
+        
+        public const string EmailChangedByAdmin = "email-changed-by-admin";
+
+        public const string VerifyEmailAddress = "verify-email-address";
+
+        public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
+        
     }
 }

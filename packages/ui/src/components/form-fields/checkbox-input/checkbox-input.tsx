@@ -4,7 +4,7 @@ import { ComponentBaseProps, Colours, CheckboxChange } from '../../../models';
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
 import { classNames } from '../../../utils/style-class.utils';
 import * as styles from './checkbox-input.styles';
-export interface CheckboxProps<T extends FieldValues>
+export interface CheckboxProps<T extends FieldValues = {}>
   extends ComponentBaseProps {
   description?: string;
   descriptionColor?: Colours;
@@ -15,7 +15,8 @@ export interface CheckboxProps<T extends FieldValues>
   disabled?: boolean;
   visible?: boolean;
   register?: UseFormRegister<T>;
-  value?: number;
+  value?: number | string;
+  name?: string;
 }
 
 export const Checkbox = <T extends FieldValues>({
@@ -31,6 +32,8 @@ export const Checkbox = <T extends FieldValues>({
   checked,
   checkboxColor = 'primary',
   value,
+  id,
+  name,
 }: CheckboxProps<T>) => {
   const checkboxChange = (e: any) => {
     if (onCheckboxChange) {
@@ -50,6 +53,7 @@ export const Checkbox = <T extends FieldValues>({
           <div className={styles.inputContainer}>
             {nameProp && register && (
               <input
+                id={id}
                 disabled={disabled}
                 data-testid={testId}
                 type="checkbox"
@@ -62,6 +66,8 @@ export const Checkbox = <T extends FieldValues>({
             )}
             {!nameProp && (
               <input
+                id={id}
+                name={name}
                 disabled={disabled}
                 data-testid={testId}
                 type="checkbox"

@@ -165,7 +165,10 @@ export const RecordEvent: React.FC = () => {
                 type: 'filled',
                 leadingIcon: 'CheckIcon',
                 onClick: () => {
-                  history.push(ROUTES.INFANT_REGISTER, { motherId });
+                  history.push(ROUTES.INFANT_REGISTER, {
+                    bornEventId: eventRecordTypeId,
+                    motherId,
+                  });
                   onClose();
                 },
               },
@@ -176,7 +179,7 @@ export const RecordEvent: React.FC = () => {
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: () => {
-                  history.push(ROUTES.CLIENTS.ROOT);
+                  onSubmit();
                   onClose();
                 },
               },
@@ -185,7 +188,7 @@ export const RecordEvent: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, motherId]);
+  }, [dialog, eventRecordTypeId, history, motherId, onSubmit]);
 
   const displayCloseFolderDialog = useCallback(() => {
     return dialog({
@@ -235,6 +238,24 @@ export const RecordEvent: React.FC = () => {
     });
   }, [dialog, isLoading, mother?.user?.firstName, onSubmit]);
 
+  const handleOnSubmit = useCallback(() => {
+    if (selectedOption?.name === eventNames.close) {
+      return displayCloseFolderDialog();
+    }
+
+    if (selectedOption?.name === eventNames.born && !isFromInfantForm) {
+      return displayNewFolderDialog();
+    }
+
+    return onSubmit();
+  }, [
+    displayCloseFolderDialog,
+    displayNewFolderDialog,
+    isFromInfantForm,
+    onSubmit,
+    selectedOption?.name,
+  ]);
+
   useEffect(() => {
     if (wasLoading && isRejected) {
       errorDialog();
@@ -243,10 +264,6 @@ export const RecordEvent: React.FC = () => {
 
   useEffect(() => {
     if (wasLoading && isFulfilled) {
-      if (selectedOption?.name === eventNames.born && !isFromInfantForm) {
-        return displayNewFolderDialog();
-      }
-
       successDialog();
 
       return history.push(ROUTES.CLIENTS.ROOT);
@@ -365,11 +382,7 @@ export const RecordEvent: React.FC = () => {
             isLoading
           }
           isLoading={isLoading}
-          onClick={() =>
-            selectedOption?.name === eventNames.close
-              ? displayCloseFolderDialog()
-              : onSubmit()
-          }
+          onClick={handleOnSubmit}
         />
       </div>
     </BannerWrapper>

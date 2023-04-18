@@ -1,4 +1,5 @@
-﻿using ECDLink.Abstractrions.Notifications;
+﻿using ECDLink.Abstractrions.Constants;
+using ECDLink.Abstractrions.Notifications;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
@@ -54,13 +55,15 @@ namespace ECDLink.AutomatedJobs.Notifications
                         continue;
                     }
 
+                    var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+                    
                     var notificationProvider = notificationProviderFactory.Create(notification.User);
 
-                    notificationProvider
+                    await notificationProvider
                         .SetMessageTemplate(notification.TemplateType)
-                        .AddFieldReplacement("callback", loginUrl)
-                        .SendMessage()
-                        .Wait();
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.LoginLink, loginUrl)
+                        .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                        .SendMessageAsync();
 
                     dbContext.JobNotifications.Remove(notification);
                     dbContext.SaveChanges();
@@ -76,6 +79,7 @@ namespace ECDLink.AutomatedJobs.Notifications
 
             var tenant = tenancyRepo.GetAllTenants()
                 .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
+                .OrderBy(x => x.Id)
                 .FirstOrDefault();
 
             TenantExecutionContext.SetTenant(tenant);

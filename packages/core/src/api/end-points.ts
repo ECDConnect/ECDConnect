@@ -6,4 +6,5 @@ export const APIs = {
   verifyInvitation: `api/invitation/verify-invitation`,
   sendAuthCode: `api/invitation/send-auth-code`,
   refreshJwtToken: `api/authentication/refresh-token`,
+  onlineCheck: `api/authentication/online-check`,
 };

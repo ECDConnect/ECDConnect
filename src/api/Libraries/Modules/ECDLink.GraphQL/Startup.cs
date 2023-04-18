@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
@@ -28,6 +29,7 @@ namespace ECDLink.EGraphQL
 
             var builder = services
               .AddGraphQLServer()
+              .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
@@ -36,8 +38,9 @@ namespace ECDLink.EGraphQL
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()
-              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Resolver)
-              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Resolver)
+              .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
+              .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Synchronized)
+              .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
               .RegisterService<IDbContextFactory<AuthenticationDbContext>>(ServiceKind.Synchronized)
               .RegisterService<UserManager<ApplicationUser>>(ServiceKind.Synchronized)
               .RegisterService<IGenericRepositoryFactory>(ServiceKind.Synchronized);

@@ -15,8 +15,8 @@ export const initialInfantRoadToHealthValues: InfantRoadToHealthModel = {
 };
 
 export const infantRoadToHealthModelSchema = Yup.object().shape({
-  weightAtBirth: Yup.number().required('Weight date is required'),
-  lengthAtBirth: Yup.number().required('Length is required'),
+  weightAtBirth: Yup.string().required('Weight date is required'),
+  lengthAtBirth: Yup.string().required('Length is required'),
   roadToHealthBook: Yup.string(),
   notRoadToHealthBook: Yup.boolean(),
 });

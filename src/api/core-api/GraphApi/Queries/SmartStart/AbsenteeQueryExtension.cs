@@ -36,12 +36,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (absent.ReassignedClass != null)
                 {
                     var classRepo = repoFactory.CreateRepository<Programme>(userContext: uId);
-                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).FirstOrDefault();
+                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
                 }
                 if (absent.ReassignedToPractitioner != null)
                 {
                     var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.Contains(absent.ReassignedToPractitioner)).FirstOrDefault();
+                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.Contains(absent.ReassignedToPractitioner)).OrderBy(x => x.Id).FirstOrDefault();
                 }
             }
 
@@ -57,6 +57,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Absentees> absents = dbRepo.GetAll().Where(x => x.UserId.Contains(userId)).ToList();
 
             return absents.Count();
+        }
+
+        public List<Absentees> GetAbsentees(
+[Service] IHttpContextAccessor contextAccessor,
+IGenericRepositoryFactory repoFactory,
+string userId,
+DateTime fromDate,
+DateTime toDate)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+
+            var absentees = absenteeRepo.GetAll().Where(x => x.UserId == userId).ToList();
+            return absentees.Where(x => x.AbsentDate >= fromDate && x.AbsentDate <= toDate).ToList();
         }
 
     }

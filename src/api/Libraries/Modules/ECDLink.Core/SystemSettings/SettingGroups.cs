@@ -18,6 +18,21 @@
                     public const string Key = "Notifications.EmailProviders.SendGrid.Key";
                     public const string DefaultEmail = "Notifications.EmailProviders.SendGrid.FromEmail";
                 }
+
+                public static class Smtp
+                {
+                    public const string SmtpGrouping = "Notifications.EmailProviders.Smtp";
+
+                    public const string User = "Notifications.EmailProviders.Smtp.User";
+                    public const string Key = "Notifications.EmailProviders.Smtp.Key";
+                    public const string DefaultEmail = "Notifications.EmailProviders.Smtp.FromEmail";
+                    public const string DefaultEmailDisplayName = "Notifications.EmailProviders.Smtp.FromEmailDisplayName";
+                    public const string SmtpServerAddress = "Notifications.EmailProviders.Smtp.SmtpServerAddress";
+                    public const string SmtpServerPort = "Notifications.EmailProviders.Smtp.SmtpServerPort";
+                    public const string SmtpServerSecondaryAddress = "Notifications.EmailProviders.Smtp.SmtpServerSecondaryAddress";
+                    public const string SmtpServerSecondaryPort = "Notifications.EmailProviders.Smtp.SmtpServerSecondaryPort";
+                    public const string RetryCount = "Notifications.EmailProviders.Smtp.RetryCount";
+                }
             }
 
             public static class SMS
@@ -167,6 +182,12 @@
         public static class Sync
         {
             public const string SyncDelay = "General.SyncDelay";
+        }
+
+        public static class IncomeStatements
+        {
+            public const string IncomeStatementSubmitStart = "General.IncomeStatementSubmitStart";
+            public const string IncomeStatementSubmitEnd = "General.IncomeStatementSubmitEnd";
         }
     }
 }

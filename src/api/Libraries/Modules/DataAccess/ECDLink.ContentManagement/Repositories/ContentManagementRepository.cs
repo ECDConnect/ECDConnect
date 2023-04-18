@@ -1,50 +1,53 @@
+using ECDLink.Abstractrions.Enums;
 using ECDLink.ContentManagement.Entities;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.EGraphQL.Constants;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
+using System.Threading.Tasks;
 
-namespace ECDLink.ContentManagement.Repositories
-{
+namespace ECDLink.ContentManagement.Repositories {
     public class ContentManagementRepository
     {
         private ContentManagementDbContext _context;
+        private IFileService _fileService;
 
-        public ContentManagementRepository(ContentManagementDbContext context)
+        public ContentManagementRepository(ContentManagementDbContext context, IFileService fileService)
         {
             _context = context;
+            _fileService = fileService;
         }
 
         public IEnumerable<object> GetAll(int contentTypeId, Guid localeId)
         {
-            // Can probably inject Id and fields
+            var dynamicContentList = new List<object>();
+
             var contentType = _context.ContentTypes
               .Include(i => i.Content)
               .ThenInclude(ti => ti.ContentValues)
               .ThenInclude(ti => ti.ContentTypeField)
               .Where(x => x.Id == contentTypeId)
+              .OrderBy(x => x.Id)
               .FirstOrDefault();
 
-            if (contentType == null)
+            if (contentType != null)
             {
-                return new List<object>();
-            }
+                foreach (var item in contentType.Content.OrderBy(x => x.Id).Where(x => x.IsActive))
+                {
+                    var objDict = item.ContentValues
+                      .Where(x => x.LocaleId == localeId)
+                      .Where(x => x.ContentTypeField.IsActive)
+                      .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
 
-            var dynamicContentList = new List<object>();
+                    objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
 
-            foreach (var item in contentType.Content.OrderBy(x => x.Id).Where(x => x.IsActive))
-            {
-                var objDict = item.ContentValues
-                  .Where(x => x.LocaleId == localeId)
-                  .Where(x => x.ContentTypeField.IsActive)
-                  .ToDictionary(k => k.ContentTypeField.FieldName, v => v.Value);
-
-                objDict.Add(ObjectFieldConstants.Identifier, item.Id.ToString());
-
-                dynamicContentList.Add(objDict.ToObject());
+                    dynamicContentList.Add(objDict.ToObject());
+                }
             }
 
             return dynamicContentList;
@@ -58,6 +61,7 @@ namespace ECDLink.ContentManagement.Repositories
                             .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId)
                             .Where(x => x.IsActive)
+                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
             if (content == default)
@@ -142,10 +146,10 @@ namespace ECDLink.ContentManagement.Repositories
             var contentType = _context.ContentTypes
                                 .Include(i => i.Fields)
                                 .Where(x => x.Id == contentTypeId)
+                                .OrderBy(x => x.Id)
                                 .FirstOrDefault();
 
-            if (contentType == default)
-            {
+            if (contentType == default) {
                 return default;
             }
 
@@ -157,12 +161,37 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 if (input.TryGetValue(field.FieldName, out var value))
                 {
-                    contentValues.Add(new ContentValue
-                    {
-                        Value = value?.ToString(),
-                        ContentTypeFieldId = field.Id,
-                        LocaleId = localeId
-                    });
+
+                    // if we get the string base64 in the value we know it is a file upload 
+                    var fileIndex = value?.ToString().IndexOf("base64");
+
+                    if (fileIndex != null && fileIndex != -1) {
+
+                        var fileStr = value?.ToString();
+                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
+                        var bytes = Convert.FromBase64String(b64Str);
+                        using MemoryStream fileStream = new MemoryStream(bytes);
+
+                        
+                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+                        fileStream.Dispose();
+
+                        contentValues.Add(new ContentValue {
+                            Value = fileUrl.ToString(),
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId
+                        });
+
+                    } else {
+                        contentValues.Add(new ContentValue
+                        {
+                            Value = value?.ToString(),
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId
+                        });
+                    }
+
                 }
             }
 
@@ -180,6 +209,36 @@ namespace ECDLink.ContentManagement.Repositories
             return newContent.Id;
         }
 
+        private string getFileType(string fileStr) {
+            var fileExt = "";
+
+            if (fileStr.ToLower().IndexOf("svg") != -1) {
+                fileExt = ".svg";
+            }
+            if (fileStr.ToLower().IndexOf("png") != -1) {
+                fileExt = ".png";
+            }
+            if (fileStr.ToLower().IndexOf("jpg") != -1 || fileStr.ToLower().IndexOf("jpeg") != -1) {
+                fileExt = ".jpg";
+            }
+            if (fileStr.ToLower().IndexOf("mov") != -1) {
+                fileExt = ".mov";
+            }
+            if (fileStr.ToLower().IndexOf("mkv") != -1) {
+                fileExt = ".mkv";
+            }
+            if (fileStr.ToLower().IndexOf("mp4") != -1) {
+                fileExt = ".mp4";
+            }
+            if (fileStr.ToLower().IndexOf("mpg") != -1) {
+                fileExt = ".mpg";
+            }
+            if (fileStr.ToLower().IndexOf("webm") != -1) {
+                fileExt = ".webm";
+            }
+            return fileExt;
+        }
+
         public object Update(int contentId, Guid localeId, IDictionary<string, object> input)
         {
             // Can probably inject Id and fields
@@ -190,6 +249,7 @@ namespace ECDLink.ContentManagement.Repositories
                             .ThenInclude(ti => ti.ContentTypeField)
                             .Where(x => x.Id == contentId)
                             .Where(x => x.IsActive)
+                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
             // No Content Found
@@ -210,12 +270,36 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 if (input.TryGetValue(field.FieldName, out var value))
                 {
-                    contentValues.Add(new ContentValue
-                    {
-                        Value = value?.ToString(),
-                        ContentTypeFieldId = field.Id,
-                        LocaleId = localeId
-                    });
+
+                    // if we get the string base64 in the value we know it is a file upload 
+                    var fileIndex = value?.ToString().IndexOf("base64");
+
+                    if (fileIndex != null && fileIndex != -1) {
+
+                        var fileStr = value?.ToString();
+                        var b64Str = fileStr.Substring(fileStr.LastIndexOf(',') + 1);
+                        var bytes = Convert.FromBase64String(b64Str);
+                        using MemoryStream fileStream = new MemoryStream(bytes);
+
+                        var fileName = DateTime.Now.Ticks + "_" + field.FieldName + getFileType(fileStr.Substring(0, fileStr.LastIndexOf(',')));
+                        var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, fileName, FileTypeEnum.ContentImage)).Result;
+                        fileStream.Dispose();
+
+                        contentValues.Add(new ContentValue {
+                            Value = fileUrl.ToString(),
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId
+                        });
+
+                    } else {
+                        contentValues.Add(new ContentValue
+                        {
+                            Value = value?.ToString(),
+                            ContentTypeFieldId = field.Id,
+                            LocaleId = localeId
+                        });
+                    }
+
                 }
             }
 
@@ -238,6 +322,7 @@ namespace ECDLink.ContentManagement.Repositories
         {
             var content = _context.Contents
                           .Where(x => x.Id == contentId)
+                          .OrderBy(x => x.Id)
                           .FirstOrDefault();
 
             if (content == default)

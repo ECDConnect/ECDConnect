@@ -30,6 +30,17 @@ import { PastVisits } from '@/pages/mom/pregnant-profile/visits/past-visits';
 import { AntenatalVisit } from '@/pages/mom/pregnant-profile/visits/antenatal-visit';
 import PointsSummary from '@/pages/client/highlights-tab/points-summary';
 import UpcomingVisit from '@/pages/client/highlights-tab/upcoming-visit';
+import { InfantProfile } from '@/pages/infant/infant-profile';
+import { ActivityList } from '@/pages/infant/infant-profile/progress-tab/activity-list';
+import { MomActivityList } from '@/pages/mom/pregnant-profile/progress-tab/activity-list';
+import { RecordEvent as InfantRecordEvent } from '@/pages/infant/infant-profile/visits-tab/record-event';
+import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visits-tab/book-visit';
+import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
+import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
+import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
+import { ChildContactNumber } from '@/pages/infant/infant-profile/contact/edit-number';
+import { ChildContactAddress } from '@/pages/infant/infant-profile/contact/edit-address';
+import { MultipleChildren } from '@/pages/infant/multiple-children';
 
 function PublicRoutes() {
   return (
@@ -125,6 +136,41 @@ function AuthRoutes() {
       />
       <Route
         exact
+        path={`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}:id`}
+        component={InfantProfile}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.PROGRESS.ACTIVITIES_FORM}
+        component={ActivityList}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.PROGRESS.ACTIVITIES_FORM}
+        component={MomActivityList}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.RECORD_EVENT}
+        component={InfantRecordEvent}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT}
+        component={InfantBookVisit}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.PAST_VISITS}
+        component={InfantPastVisits}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.VISITS.ANTENATAL_VISIT}
+        component={ActivityList}
+      />
+      <Route
+        exact
         path={ROUTES.CLIENTS.VISIT_TAB.START_VISIT}
         component={StartVisitFromVisitDashboard}
       />
@@ -153,6 +199,33 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT}
         component={UpcomingVisit}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
+        component={MotherContactAddress}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
+        component={MotherContactNumber}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.CONTACT_TAB.UPDATE_ADDRESS}
+        component={ChildContactAddress}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.CONTACT_TAB.UPDATE_NUMBERS}
+        component={ChildContactNumber}
+      />
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN}
+        component={MultipleChildren}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />

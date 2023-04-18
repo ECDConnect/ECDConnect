@@ -73,8 +73,8 @@ export const PractitionerProfile: React.FC = () => {
         },
       },
       {
-        title: 'Logout',
-        subTitle: 'Logout & reset data',
+        title: 'Log out',
+        subTitle: 'Log out & reset data',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'primary',
@@ -107,9 +107,9 @@ export const PractitionerProfile: React.FC = () => {
                     },
                     {
                       text: 'Cancel',
-                      textColour: 'white',
+                      textColour: 'primary',
                       colour: 'primary',
-                      type: 'filled',
+                      type: 'outlined',
                       leadingIcon: 'XCircleIcon',
                       onClick() {
                         return onClose && onClose();

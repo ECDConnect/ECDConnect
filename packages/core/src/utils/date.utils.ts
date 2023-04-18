@@ -1,3 +1,12 @@
+import {
+  addMonths,
+  addYears,
+  differenceInCalendarMonths,
+  differenceInDays,
+  differenceInMonths,
+  differenceInYears,
+} from 'date-fns';
+
 export function getWeeksDiff(startDate: Date, endDate: Date) {
   const msInWeek = 1000 * 60 * 60 * 24 * 7;
 
@@ -41,4 +50,42 @@ export function getPreviousAndNextMonths(
   );
 
   return { previousDate, nextDate };
+}
+
+export const monthsList = [
+  { label: 'January', value: '1' },
+  { label: 'February', value: '2' },
+  { label: 'March', value: '3' },
+  { label: 'April', value: '4' },
+  { label: 'May', value: '5' },
+  { label: 'June', value: '6' },
+  { label: 'July', value: '7' },
+  { label: 'August', value: '8' },
+  { label: 'Septembre', value: '9' },
+  { label: 'Octubre', value: '10' },
+  { label: 'November', value: '11' },
+  { label: 'December', value: '12' },
+];
+
+export const getNextDateByDay = (daysLater: number, currentDate?: Date) => {
+  const today = new Date();
+  const date = new Date(currentDate || today);
+  date.setDate(date.getDate() + daysLater);
+
+  return date;
+};
+
+export function getAgeInYearsMonthsAndDays(birthdate: string) {
+  const birthDateObj = new Date(birthdate);
+  const currentDate = new Date();
+
+  const years = differenceInYears(currentDate, birthDateObj);
+  const afterYears = addYears(birthDateObj, years);
+
+  const months = differenceInMonths(currentDate, afterYears);
+  const afterMonths = addMonths(afterYears, months);
+
+  const days = differenceInDays(currentDate, afterMonths);
+
+  return { years, months, days };
 }
