@@ -91,16 +91,6 @@ export const ClinicVisitsStep = ({
           options={options}
           onOptionSelected={onOptionSelected}
         />
-        {!!answer && (
-          <SuccessCard
-            customIcon={<CelebrateIcon className="h-14	w-14" />}
-            text="Well done for keeping up with your clinic visits!"
-            subText="Remember to go back to the clinic at 6 weeks for your baby’s immunisations."
-            textColour="successDark"
-            subTextColours="textDark"
-            color="successBg"
-          />
-        )}
         {answer === false && (
           <Alert
             type="error"

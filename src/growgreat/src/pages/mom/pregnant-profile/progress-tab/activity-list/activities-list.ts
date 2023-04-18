@@ -1,7 +1,7 @@
+import pregnantHealthCare from '@/assets/iconCircleAntenatalSmall.svg';
 import Pregnant from '@/assets/pregnant.svg';
-import Infant from '@/assets/infant.svg';
 import P1 from '@/assets/pillar/p1.svg';
-import P2 from '@/assets/pillar/p2.svg';
+import IconCircleDanger from '@/assets/IconCircleDanger.svg';
 
 export const activitiesTypes = {
   healthCare: 'Healthcare',
@@ -13,7 +13,7 @@ export const activitiesTypes = {
 
 export const activitiesSectionTypes = {
   healthCare: 'Clinic visits',
-  nutrition: 'Nutrition',
+  nutrition: 'Mother growth monitoring (Mid-upper arm circumference)',
   pregnancyCare: 'ID document',
   dangerSigns: 'Danger signs',
   followUp: 'Follow up',
@@ -51,7 +51,7 @@ const activitiesListClassname = 'text-textDark text-lg font-bold';
 export const activitiesList = [
   {
     id: activitiesTypes.healthCare,
-    menuIconUrl: Pregnant,
+    menuIconUrl: pregnantHealthCare,
     title: activitiesTypes.healthCare,
     hexBackgroundColor: '#FEF1E8',
     iconBackgroundColor: 'tertiary',
@@ -59,7 +59,7 @@ export const activitiesList = [
   },
   {
     id: activitiesTypes.nutrition,
-    menuIconUrl: Infant,
+    menuIconUrl: P1,
     title: activitiesTypes.nutrition,
     hexBackgroundColor: '#FEF1E8',
     iconBackgroundColor: 'tertiary',
@@ -67,7 +67,7 @@ export const activitiesList = [
   },
   {
     id: activitiesTypes.pregnancyCare,
-    menuIconUrl: P1,
+    menuIconUrl: Pregnant,
     title: activitiesTypes.pregnancyCare,
     hexBackgroundColor: '#FEF1E8',
     iconBackgroundColor: 'tertiary',
@@ -75,7 +75,7 @@ export const activitiesList = [
   },
   {
     id: activitiesTypes.dangerSigns,
-    menuIconUrl: P2,
+    menuIconUrl: IconCircleDanger,
     title: activitiesTypes.dangerSigns,
     hexBackgroundColor: '#FEF1E8',
     iconBackgroundColor: 'tertiary',
