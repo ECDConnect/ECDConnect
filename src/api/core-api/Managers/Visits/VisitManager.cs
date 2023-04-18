@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
@@ -88,7 +89,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 InfantId = input.InfantId,
                 Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
-                UpdatedBy = _applicationUserId
+                UpdatedBy = _applicationUserId,
+                LinkedVisitId = input.LinkedVisitId
             };
         }
         public string GetFirstMissedVisit(Guid Id, string type)
@@ -277,7 +279,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 allVisits = (
                     from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                    select visit
+                    select visit 
                 ).ToList();
             } else {
                allVisits = (
@@ -286,8 +288,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                    select visit
                ).ToList();
             }
+            foreach (var _visit in allVisits)
+            {
+                _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
+            }
 
-            return allVisits;
+            return allVisits.OrderBy(x => x.OrderDate).ToList();
+
         }
         public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
         {
