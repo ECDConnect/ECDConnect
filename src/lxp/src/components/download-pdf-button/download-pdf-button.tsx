@@ -116,7 +116,7 @@ const GeneratePdfReportButton = ({
           outputName,
           tableHeadStyles,
           tableStyles,
-          tableFootStyles 
+          tableFootStyles
         )
       }
     >

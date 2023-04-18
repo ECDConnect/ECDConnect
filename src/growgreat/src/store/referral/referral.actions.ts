@@ -14,6 +14,7 @@ export interface VisitVideosWithLocale extends VisitVideos {
 export const ReferralActions = {
   GET_REFERRAL_FOR_INFANT: 'getReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
+  GET_REFERRAL_FOR_VISIT_ID: 'getReferralsForVisitId',
 };
 
 export const getReferralsForInfant = createAsyncThunk<
@@ -34,6 +35,39 @@ export const getReferralsForInfant = createAsyncThunk<
         content = await new Referral(
           userAuth?.auth_token ?? ''
         ).getReferralsForInfant(infantId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue('Error getting more information');
+      }
+
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getReferralsForVisitId = createAsyncThunk<
+  VisitDataStatus[],
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  ReferralActions.GET_REFERRAL_FOR_VISIT_ID,
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let content: VisitDataStatus[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new Referral(
+          userAuth?.auth_token ?? ''
+        ).getReferralsForVisitId(visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
