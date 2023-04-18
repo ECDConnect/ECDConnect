@@ -31,6 +31,7 @@ import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { differenceInDays } from 'date-fns';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { VisitModelInput } from '@ecdlink/graphql';
 
 const HEADER_HEIGHT = 64;
 
@@ -214,8 +215,25 @@ export const VisitsTab: React.FC = () => {
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    infantId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+
+                  const response = await appDispatch(
+                    infantThunkActions.addAdditionalVisitForChild(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
                   onClose();
                 },
                 type: 'filled',
@@ -238,7 +256,7 @@ export const VisitsTab: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [appDispatch, dialog, history, infantId, location.pathname]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),

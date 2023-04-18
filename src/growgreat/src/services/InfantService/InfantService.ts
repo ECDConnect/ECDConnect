@@ -1,6 +1,7 @@
 import { InfantDto, Config, VisitDto } from '@ecdlink/core';
-import { InfantModelInput } from '@ecdlink/graphql';
+import { InfantModelInput, VisitModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { Visit } from '../VisitService';
 class InfantService {
   _accessToken: string;
 
@@ -303,6 +304,34 @@ class InfantService {
     }
 
     return response.data.data.updateInfantCaregiver;
+  }
+
+  async addAdditionalVisitForChild(input: VisitModelInput): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addAdditionalVisitForInfant: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddAdditionalVisitForInfant($input: VisitModelInput) {
+          addAdditionalVisitForInfant(input: $input) {
+            id
+            orderDate
+          }
+        }
+        `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'add Additional Visit For Child failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addAdditionalVisitForInfant;
   }
 }
 

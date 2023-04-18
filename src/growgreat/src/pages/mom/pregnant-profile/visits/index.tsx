@@ -26,6 +26,7 @@ import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { useDialog, VisitDto } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
+import { VisitModelInput } from '@/../../../packages/graphql/lib';
 
 const HEADER_HEIGHT = 64;
 
@@ -55,6 +56,11 @@ export const Visits: React.FC = () => {
   const { isLoading } = useThunkFetchCall(
     'mothers',
     MotherActions.GET_MOTHER_VISITS
+  );
+
+  const { isLoading: isLoadingAddAdditionalVisit } = useThunkFetchCall(
+    'mothers',
+    MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER
   );
 
   const currentVisit = useMemo((): VisitDto | undefined => {
@@ -184,8 +190,26 @@ export const Visits: React.FC = () => {
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/start-visit`);
+                isLoading: isLoadingAddAdditionalVisit,
+                disabled: isLoadingAddAdditionalVisit,
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    motherId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+                  const response = await appDispatch(
+                    motherThunkActions.addAdditionalVisitForMother(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
                   onClose();
                 },
                 type: 'filled',
@@ -195,6 +219,8 @@ export const Visits: React.FC = () => {
               {
                 text: 'Book a visit',
                 colour: 'primary',
+                isLoading: isLoadingAddAdditionalVisit,
+                disabled: isLoadingAddAdditionalVisit,
                 onClick: () => {
                   history.push(`${location.pathname}/book-visit`);
                   onClose();
@@ -208,7 +234,14 @@ export const Visits: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [
+    appDispatch,
+    dialog,
+    history,
+    isLoadingAddAdditionalVisit,
+    location.pathname,
+    motherId,
+  ]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),
