@@ -107,7 +107,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
-                // TODO: Global change to Utc.
+                //For integration, trust the FE provided updated date, otherwise set to now.
+                if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
@@ -131,7 +132,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges();
 
             return entity;
-        }
+        }       
 
         public virtual void Delete(Guid id)
         {

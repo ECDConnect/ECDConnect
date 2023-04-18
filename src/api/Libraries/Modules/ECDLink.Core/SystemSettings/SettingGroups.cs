@@ -81,8 +81,9 @@
                 public const string ProxyGroupBase = "General.Proxies.Integration";
 
                 public const string SmartLinkApiGrouping = "General.Proxies.Integration.SmartLinkApi";
-                public const string Url = "General.Proxies.Integration.SmartLinkApi.BaseUrl";
+                public const string BaseUrl = "General.Proxies.Integration.SmartLinkApi.BaseUrl";
                 public const string Key = "General.Proxies.Integration.SmartLinkApi.Key";
+                public const string Mode = "General.Proxies.Integration.SmartLinkApi.Mode";
             }
         }
 
@@ -174,9 +175,9 @@
             public const string AbsenteeCutoffDelay = "General.AbsenteeCutoffDelay";
         }
 
-        public static class Integration
+        public static class IntegrationDelay
         {
-            public const string IntegrationDelay = "General.IntegrationDelay";
+            public const string Delay = "General.IntegrationDelay";
         }
 
         public static class Sync

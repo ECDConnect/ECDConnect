@@ -2,25 +2,26 @@ using ECDLink.DataAccessLayer.Entities.Base;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping
+namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
 {
-    [Table(nameof(IntegrationMapping))]
-    public class IntegrationMapping : IntegrationMapping<Guid>
+    [Table(nameof(IntegrationEntityMapping))]
+    public class IntegrationEntityMapping : IntegrationEntityMapping<Guid>
     {
     }
 
-    public class IntegrationMapping<TKey> : EntityBase<TKey>
+    public class IntegrationEntityMapping<TKey> : EntityBase<TKey>
          where TKey : IEquatable<TKey>
     {
         public string LocalEntity { get; set; }
         public string RemoteEntity { get; set; }
         public string LocalId { get; set; }
         public string RemoteId { get; set; }
-        public string IntegrationSystem { get; set; } = "SmartLink";
+        public string IntegrationSystem { get; set; } = "Smartlink";
         public DateTime LastUpdatedDate { get; set; } = DateTime.Now;
         public DateTime LastCheckedDate { get; set; } = DateTime.Now;
         public string BeforeJSON { get; set; }
         public string AfterJSON { get; set; }
+        public bool? IsComplete { get; set; }
 
 
         public string UserId { get; set; }

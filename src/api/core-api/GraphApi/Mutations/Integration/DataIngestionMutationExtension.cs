@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class DataIngestionMutationExtension
