@@ -43,6 +43,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private string _G4;
         private string _G9;
 
+        private string _visitId;
+
         public VisitDataStatusManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
@@ -74,6 +76,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
 
         public Boolean ManageVisitDataStatus(string id, string clientType, string visitId) {
+
+            _visitId = visitId;
+
             List<VisitData> allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
             var maternalDistressScreening = new List<CMSQuestion>();
@@ -1198,6 +1203,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
+            newVisit.LinkedVisitId = new Guid(_visitId);
             _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }

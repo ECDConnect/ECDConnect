@@ -18,10 +18,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import {
-  getInfantById,
-  getInfantVisitsSelector,
-} from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
@@ -31,22 +27,17 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import {
   getMomCompletedVisitsByVisitIdSelector,
-  getPreviousVisitInformationForInfantSelector,
   getPreviousVisitInformationForMotherSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/danger-signs-steps/developmental-screening-weeks';
-import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
-import { motherSelectors, motherThunkActions } from '@/store/mother';
-import {
-  getMotherById,
-  getMotherVisits,
-} from '@/store/mother/mother.selectors';
+import { getMotherById } from '@/store/mother/mother.selectors';
+import { motherThunkActions } from '@/store/mother';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -81,10 +72,7 @@ export const MomActivityList: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
 
-  const visits2 = useSelector(getMotherVisits);
-
   const MOCKED_VISIT_ID = visitId;
-  // '454686a9-2142-4061-aa47-4e89d46110b9';
 
   const completedVisits = useSelector((state: RootState) =>
     getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -94,30 +82,30 @@ export const MomActivityList: React.FC = () => {
     getPreviousVisitInformationForMotherSelector
   );
 
-  const isFollowUp = completedVisits?.length === 7;
-  const isAllCompleted = completedVisits?.length === 8;
+  //TODO when BE is fixed
+  // const activityListFiltered = activitiesList?.filter(
+  //   (item) => item?.title !== 'Danger signs'
+  // );
+
+  //TODO when BE is fixed
+  // const activityListUpdated =
+  //   previousMotherVisit?.visitDataStatus?.length! > 0
+  //     ? activitiesList
+  //     : activityListFiltered;
+
+  const isFollowUp = completedVisits?.length === 4;
+  const isAllCompleted = completedVisits?.length === 5;
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
 
   const appDispatch = useAppDispatch();
 
-  const infant = useSelector((state: RootState) =>
-    getInfantById(state, infantId)
-  );
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
 
-  const infantName = useMemo(
-    () => infant?.user?.firstName || '',
-    [infant?.user?.firstName]
-  );
-
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+  const name = mother?.user?.firstName;
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -125,9 +113,7 @@ export const MomActivityList: React.FC = () => {
   );
 
   const isLargeName =
-    (infant?.user?.firstName || '').length +
-      (infant?.user?.surname || '').length >
-    22;
+    (name || '').length + (mother?.user?.surname || '').length > 22;
 
   const today = useMemo(() => new Date(), []);
   const options: Intl.DateTimeFormatOptions = useMemo(
@@ -140,16 +126,14 @@ export const MomActivityList: React.FC = () => {
   );
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    const motherType = relationshipTypes.find(
-      (item) => item.label === 'Mother'
-    );
-
     const completedActivities = activitiesList.filter((item) =>
       completedVisits?.includes(item.title)
     );
     const uncompletedActivities = activitiesList.filter(
       (item) => !completedVisits?.includes(item.title)
     );
+
+    console.log({ completedActivities });
 
     const completedForms = completedActivities.map(
       (item): MenuListDataItem => ({
@@ -166,6 +150,8 @@ export const MomActivityList: React.FC = () => {
       })
     );
 
+    console.log({ completedForms });
+
     const uncompletedForms = uncompletedActivities.map(
       (item): MenuListDataItem => ({
         showIcon: true,
@@ -174,8 +160,6 @@ export const MomActivityList: React.FC = () => {
         title: item?.title,
         subTitle: '',
         iconBackgroundColor: item.iconBackgroundColor as Colours,
-        // iconHexBackgroundColor: item.bac,
-        // backgroundColor: (item.backgroundColor as Colours) || '',
         hexBackgroundColor: item.hexBackgroundColor || '',
         className: item.className,
         onActionClick: () => {
@@ -309,7 +293,7 @@ export const MomActivityList: React.FC = () => {
               <Typography
                 type="body"
                 align="center"
-                text={`You supported ${caregiverName} and ${infantName} through their first thousand days by completing all activities. Thank you!`}
+                text={`You supported ${name} through their first thousand days by completing all activities. Thank you!`}
                 color="textMid"
                 className="mb-4"
               />
@@ -409,23 +393,22 @@ export const MomActivityList: React.FC = () => {
       <IntroScreen mother={mother} onStartVisit={() => setIsStartVisit(true)} />
     );
   }, [
-    caregiverName,
-    completedForms,
-    completedVisits?.length,
-    followUpForm,
-    goBack,
-    mother,
-    infantName,
-    isAllCompleted,
-    isFollowUp,
     isLoading,
-    isShowCompletedForms,
     isStartVisit,
-    options,
     previousMotherVisit?.visitDataStatus?.length,
+    mother,
     today,
-    uncompletedForms,
+    options,
+    isAllCompleted,
     user?.firstName,
+    name,
+    goBack,
+    isFollowUp,
+    followUpForm,
+    uncompletedForms,
+    completedVisits?.length,
+    isShowCompletedForms,
+    completedForms,
     width,
   ]);
 
@@ -439,8 +422,8 @@ export const MomActivityList: React.FC = () => {
         size="medium"
         renderBorder
         onBack={goBack}
-        title={`${infant?.user?.firstName || ''} ${
-          !isLargeName ? infant?.user?.surname || '' : ''
+        title={`${name || ''} ${
+          !isLargeName ? mother?.user?.surname || '' : ''
         }`}
         subTitle="Pregnancy activities"
         backgroundColour="white"
