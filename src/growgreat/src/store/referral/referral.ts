@@ -4,6 +4,7 @@ import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   getReferralsForInfant,
+  getReferralsForVisitId,
   updateVisitDataStatus,
 } from './referral.actions';
 import { ReferralState } from './referral.types';
@@ -16,9 +17,15 @@ const referralSlice = createSlice({
   reducers: {},
   extraReducers: (builder) => {
     setThunkActionStatus(builder, getReferralsForInfant);
+    setThunkActionStatus(builder, getReferralsForVisitId);
     setThunkActionStatus(builder, updateVisitDataStatus);
     builder.addCase(getReferralsForInfant.fulfilled, (state, action) => {
       state.referralsForInfant = action.payload;
+
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getReferralsForVisitId.fulfilled, (state, action) => {
+      state.referralsForMother = action.payload;
 
       setFulfilledThunkActionStatus(state, action);
     });

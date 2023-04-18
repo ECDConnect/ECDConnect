@@ -13,7 +13,7 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
-import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
 import { VisitDataStatus } from '@ecdlink/graphql';
 
 interface GroupedData {
@@ -27,8 +27,8 @@ export const ReferralsStep = ({
   setEnableButton,
   setReferralsInput,
 }: DynamicFormProps) => {
-  const referralsForInfant = useSelector(getReferralsForInfantSelector);
-  const referrals = referralsForInfant?.filter((object, index, array) => {
+  const referralsForMother = useSelector(getReferralsForMothertSelector);
+  const referrals = referralsForMother?.filter((object, index, array) => {
     return (
       index ===
       array.findIndex((newObject) => newObject.comment === object.comment)
