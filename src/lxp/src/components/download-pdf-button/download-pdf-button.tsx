@@ -105,7 +105,7 @@ const GeneratePdfReportButton = ({
     <Button
       type="filled"
       color="primary"
-      className={'mt fixed'}
+      className={'mt'}
       onClick={() =>
         generateReport(
           headerColumns,

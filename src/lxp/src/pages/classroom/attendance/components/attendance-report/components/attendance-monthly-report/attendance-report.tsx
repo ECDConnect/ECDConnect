@@ -205,7 +205,7 @@ export const MonthlyAttendanceReport = ({
           </div>
         );
       })}
-      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4 relative'}>
+      <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
         {
           <GeneratePdfReportButton
             title="Download Register"
