@@ -92,6 +92,12 @@ const motherSlice = createSlice({
       }
     });
     builder.addCase(addAdditionalVisitForMother.fulfilled, (state, action) => {
+      if (state.visits) {
+        state.visits = [...state.visits, action.payload];
+      } else {
+        state.visits = [action.payload];
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
   },

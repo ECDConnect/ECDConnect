@@ -174,6 +174,7 @@ class InfantService {
             id
             actualVisitDate,
             plannedVisitDate,
+            orderDate
             attended,
             risk
             visitType{
@@ -315,8 +316,24 @@ class InfantService {
       query: `
         mutation AddAdditionalVisitForInfant($input: VisitModelInput) {
           addAdditionalVisitForInfant(input: $input) {
-            id
+            actualVisitDate,
+            plannedVisitDate,
             orderDate
+            attended,
+            id,
+            risk
+            visitType{
+              id
+              order
+              normalizedName
+              description
+              insertedDate
+              isActive
+              name
+              type
+              updatedBy
+              updatedDate
+            }      
           }
         }
         `,

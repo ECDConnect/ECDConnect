@@ -27,7 +27,7 @@ export const InfantActions = {
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
   GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
   UPDATE_INFANT_CAREGIVER: 'updateInfantCaregiver',
-  ADD_ADDITIONAL_VISIT_FOR_CHILD: 'addAdditionalVisitForChild',
+  ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
 };
 
 export interface UpdateInfantCaregiver {
@@ -318,12 +318,12 @@ export const updateInfantCaregiver = createAsyncThunk<
   }
 );
 
-export const addAdditionalVisitForChild = createAsyncThunk<
+export const addAdditionalVisitForInfant = createAsyncThunk<
   VisitDto,
   VisitModelInput,
   ThunkApiType<RootState>
 >(
-  InfantActions.ADD_ADDITIONAL_VISIT_FOR_CHILD,
+  InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },

@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -23,10 +23,11 @@ import {
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
-import { useDialog, VisitDto } from '@ecdlink/core';
+import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 import { VisitModelInput } from '@/../../../packages/graphql/lib';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 const HEADER_HEIGHT = 64;
 
@@ -40,6 +41,8 @@ export const Visits: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const dialog = useDialog();
+
+  const { errorDialog } = useRequestResponseDialog();
 
   const [, , , motherId] = location.pathname.split('/');
 
@@ -57,11 +60,19 @@ export const Visits: React.FC = () => {
     'mothers',
     MotherActions.GET_MOTHER_VISITS
   );
+  const {
+    isLoading: isAddingAdditionalVisit,
+    isRejected: isRejectedAdditionalVisit,
+  } = useThunkFetchCall(
+    'mothers',
+    MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER
+  );
 
   const { isLoading: isLoadingAddAdditionalVisit } = useThunkFetchCall(
     'mothers',
     MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER
   );
+  const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
 
   const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended = visits.filter((item) => !item.attended) || [];
@@ -77,7 +88,7 @@ export const Visits: React.FC = () => {
 
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
 
   const isWeekDeadline =
     dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
@@ -115,11 +126,16 @@ export const Visits: React.FC = () => {
     );
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.plannedVisitDate);
+      const date = new Date(item.orderDate);
+      currentDate.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
@@ -247,6 +263,21 @@ export const Visits: React.FC = () => {
     () => history.push(`${location.pathname}/record-event`),
     [history, location.pathname]
   );
+
+  useEffect(() => {
+    if (!wasAddingAdditionalVisit && isAddingAdditionalVisit) {
+      return dialog({
+        color: 'transparent',
+        render: () => {},
+      });
+    }
+  }, [dialog, isAddingAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (wasAddingAdditionalVisit && isRejectedAdditionalVisit) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejectedAdditionalVisit, wasAddingAdditionalVisit]);
 
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap();
