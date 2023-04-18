@@ -14,6 +14,7 @@ import {
   getShapeClass,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
+import { UserOptions } from 'jspdf-autotable';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -90,8 +91,8 @@ export const MonthlyAttendanceReport = ({
     // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
 
-  const content = {
-    pageTitle: `${reportMonth}`,
+  const tableTopContent = {
+    pageTitle: `${reportMonth} Attendance Report`,
     subtitle: 'Text 2',
     practitioner_name: 'Name: Jenny Droe',
     id_number: 'ID: ID23YGH444',
@@ -106,6 +107,25 @@ export const MonthlyAttendanceReport = ({
     `Total number of sessions: 198`,
     `Number of children who attended all sessions: 9`,
   ];
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
 
   return (
     <BannerWrapper
@@ -151,7 +171,6 @@ export const MonthlyAttendanceReport = ({
         />
       </div>
 
-      {/* TODO: integrate this with backend to get correct data */}
       {reportData?.map((report, idx) => {
         const reportItemColor = getColor(report?.attendancePercentage);
         const reportItemShape = getShape(report?.attendancePercentage);
@@ -194,8 +213,11 @@ export const MonthlyAttendanceReport = ({
             headerColumns={tableColumns}
             bodyRows={data}
             tableFooter={footer}
-            content={content}
+            content={tableTopContent}
             tableBottomContent={tableBottomContent}
+            tableHeadStyles={tableHeadStyles}
+            tableFootStyles={tableFootStyles}
+            tableStyles={tableStyles}
           />
         }
       </div>

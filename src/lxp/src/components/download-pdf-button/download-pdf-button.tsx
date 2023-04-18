@@ -1,5 +1,5 @@
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import autoTable, { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
 
 function generateReport(
@@ -8,11 +8,15 @@ function generateReport(
   footer: any[],
   content: any,
   tableBottomContent: any,
-  outputName: string
+  outputName: string,
+  tableHeadStyles?: UserOptions['headStyles'],
+  tableStyles?: UserOptions['styles'],
+  tableFootStyles?: UserOptions['footStyles']
 ) {
+  //make landscape document
   const doc = new jsPDF('l');
 
-  const options = (data: any) => {
+  const options = () => {
     // Add table header to each new page
     // Add left header
     doc.setFontSize(20);
@@ -32,6 +36,7 @@ function generateReport(
   doc.setFontSize(12);
   doc.setFont('bold');
 
+  //Document Top text section
   doc.text(content?.practitioner_name, 10, 20);
   doc.text(content?.phone, 10, 25);
   doc.text(content?.id_number, 10, 30);
@@ -40,26 +45,11 @@ function generateReport(
   doc.text(content.site_address, 100, 30);
   doc.setFontSize(8);
 
-  doc.setTextColor(0, 0, 0);
+  //table section with styles
   autoTable(doc, {
-    headStyles: {
-      fillColor: [211, 211, 211], // Light grey
-      textColor: [0, 0, 0],
-      fontSize: 8,
-      lineWidth: 0.1,
-      lineColor: 0x000000,
-    },
-    footStyles: {
-      textColor: [0, 0, 0],
-      fillColor: [211, 211, 211], // Light grey
-      fontSize: 6,
-      lineWidth: 0.1,
-      lineColor: 0x000000,
-    },
-    styles: {
-      lineWidth: 0.1,
-      lineColor: 0x000000,
-    },
+    headStyles: tableHeadStyles,
+    footStyles: tableFootStyles,
+    styles: tableStyles,
     columns: headerColumns,
     body: bodyRows,
     foot: footer,
@@ -68,6 +58,8 @@ function generateReport(
     didDrawPage: options,
   });
 
+  //get Y value after the table end to place info
+  //min 3 items in row
   let afterTable = (doc as any).lastAutoTable.finalY;
   doc.setFontSize(14);
   if (tableBottomContent.length > 0) {
@@ -75,12 +67,12 @@ function generateReport(
     doc.text(tableBottomContent[1], 120, afterTable + 15);
     doc.text(tableBottomContent[2], 190, afterTable + 15);
   }
-
+  //sign section with form on doc
   doc.text('Sign: ', 10, afterTable + 35);
   doc.rect(25, afterTable + 28, 65, 10);
   doc.text('Date: ', 110, afterTable + 35);
   doc.rect(130, afterTable + 28, 65, 10);
-
+  //create pdf document
   doc.save(outputName);
 }
 
@@ -92,6 +84,9 @@ export interface GeneratePdfReportButtonProps {
   tableFooter?: any[];
   content?: any;
   tableBottomContent?: any;
+  tableHeadStyles: UserOptions['headStyles'];
+  tableStyles: UserOptions['styles'];
+  tableFootStyles: UserOptions['footStyles'];
 }
 
 const GeneratePdfReportButton = ({
@@ -102,6 +97,9 @@ const GeneratePdfReportButton = ({
   content,
   tableBottomContent,
   outputName,
+  tableHeadStyles,
+  tableStyles,
+  tableFootStyles,
 }: GeneratePdfReportButtonProps) => {
   return (
     <Button
@@ -115,11 +113,14 @@ const GeneratePdfReportButton = ({
           [tableFooter],
           content,
           tableBottomContent,
-          outputName
+          outputName,
+          tableHeadStyles,
+          tableStyles,
+          tableFootStyles 
         )
       }
     >
-      {renderIcon('DownloadIcon', 'h-5 w-5 text-primary')}
+      {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
       <Typography
         type="h6"
         color="white"
