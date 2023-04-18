@@ -1,8 +1,10 @@
-import { ClassroomGroupDto } from '@ecdlink/core';
+import { ClassroomGroupDto, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   AttendanceListDataItem,
   AttendanceStatus,
   Button,
+  DialogPosition,
   FilterInfo,
   renderIcon,
   SearchDropDown,
@@ -10,7 +12,7 @@ import {
   StatusChip,
   Typography,
 } from '@ecdlink/ui';
-import { getDay } from 'date-fns';
+import { format, getDay } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
@@ -40,6 +42,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   submitText = '',
   attendanceDate = new Date(),
   onSubmitSuccess,
+  editAttendanceRegisterVisible,
+  classroomgroupId,
 }) => {
   const appDispatch = useAppDispatch();
   const [presentChildrenCount, setPresentChildrenCount] = useState<number>(0);
@@ -55,9 +59,12 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const [shouldFilter] = useState<boolean>(true);
 
   const [attendanceGroups, setAttendanceGroups] = useState<AttendanceState[]>();
+
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+
+  const dialog = useDialog();
 
   const user = useSelector(userSelectors.getUser);
   const allClassroomGroups = useSelector(
@@ -78,7 +85,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const classProgrammesUpdated = isPrincipal
     ? classProgrammesForPrincipal
     : classProgrammes;
-  const primaryClassProgramme = classProgrammesUpdated.find(
+
+  const primaryClassProgramme = classProgrammesUpdated.filter(
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
@@ -86,16 +94,39 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           )
         : classroomGroups.filter(
-            (x) => x.id === primaryClassProgramme?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           );
-
       setSelectedClassroomGroups(selectedGroups);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [editAttendanceRegisterVisible ? attendanceDate : null]);
+
+  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
+    const attendanceStatusCheck = getAttendanceStatusCheck(
+      attendanceGroups,
+      isButtonActive
+    );
+    setPresentChildrenCount(attendanceStatusCheck.presentCount);
+    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
+    setIsButtonActive(attendanceStatusCheck.isValid);
+  };
+
+  useEffect(() => {
+    updateAttendanceState(attendanceGroups ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassroomGroups, attendanceGroups]);
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -107,7 +138,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     isPrimaryList: boolean
   ) => {
     const newAttendanceGroups = [...(attendanceGroups || [])];
-
     const groupIndex = newAttendanceGroups.findIndex(
       (x) => x.cacheId === attendanceListId
     );
@@ -118,33 +148,28 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(newAttendanceGroups);
+      updateAttendanceState(newAttendanceGroups);
     } else {
       newAttendanceGroups.splice(groupIndex, 1, {
         cacheId: attendanceListId,
         isRequired: isPrimaryList,
         list: updateList,
       });
+      setAttendanceGroups(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
+      updateAttendanceState(
+        newAttendanceGroups.filter((x) => x.cacheId === attendanceListId)
+      );
     }
-
-    updateAttendanceState(newAttendanceGroups);
-  };
-
-  const updateAttendanceState = (attendanceGroups: AttendanceState[]) => {
-    const attendanceStatusCheck = getAttendanceStatusCheck(
-      attendanceGroups,
-      isButtonActive
-    );
-
-    setPresentChildrenCount(attendanceStatusCheck.presentCount);
-    setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
-    setIsButtonActive(attendanceStatusCheck.isValid);
   };
 
   const handleFormSubmit = async () => {
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     const currentGroup = classroomGroups.find(
@@ -161,7 +186,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     if (!currentProgramme) return;
@@ -176,10 +202,31 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
         attended: x.status === AttendanceStatus.Present,
       })) || [];
 
+    const dateString = attendanceDate.toISOString();
+
+    // Create a new Date object from the date string
+    const dateObj = new Date(dateString);
+
+    // Get the date value (1-31) from the Date object
+    const dateValue = dateObj.getDate();
+
+    // Add 1 day to the date value
+    const newDateValue = dateValue + 1;
+
+    // Set the new date value to the Date object
+    dateObj.setDate(newDateValue);
+
+    // Get the updated date string in ISO format
+    const updatedAttendanceDateString = dateObj.toISOString();
+
+    let newAttDate = !editAttendanceRegisterVisible
+      ? attendanceDate.toISOString()
+      : updatedAttendanceDateString;
+
     const trackAttendanceInput = mapTrackAttendance(
       user?.id || '',
       allAttendedChildren,
-      attendanceDate.toISOString(),
+      newAttDate,
       currentProgramme.id ?? ''
     );
 
@@ -199,109 +246,166 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceDate,
       classroomGroupId: currentAttendanceGroup.cacheId,
     });
-
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
+    updateAttendanceState([]);
+  };
+
+  const submitPrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          textAlignment="center"
+          icon={'InformationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Are you sure you want to submit your ${format(
+            attendanceDate,
+            'EEEE, d LLLL'
+          )} attendance register?`}
+          customDetailText={
+            <Typography
+              type="h4"
+              className="mb-7 mt-4"
+              text={`By submitting this register, you confirm that all the attendance information is accurate. `}
+              color="black"
+              align="center"
+            />
+          }
+          detailText={'Your signature will be added to the monthly register.'}
+          actionButtons={[
+            {
+              text: 'Yes, submit register',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                handleFormSubmit();
+                onCancel();
+              },
+              leadingIcon: 'SaveIcon',
+            },
+            {
+              text: 'No, continue editing',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => onCancel(),
+              leadingIcon: 'PencilIcon',
+            },
+          ]}
+        />
+      ),
+    });
   };
 
   return (
     <div className={styles.wrapper}>
       <div className={styles.contentWrapper}>
-        {shouldFilter && (
-          <SearchDropDown<any>
-            displayMenuOverlay
-            menuItemClassName={styles.dropdownStyles}
-            className={'mr-1'}
-            options={
-              (classroomGroups && isPrincipal
-                ? classroomGroupsForPrincipal.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })
-                : classroomGroups.map((x) => {
-                    return {
-                      id: x.id ?? '',
-                      value: x,
-                      label: x.name,
-                      disabled:
-                        x.id === primaryClassProgramme?.classroomGroupId,
-                    };
-                  })) || []
-            }
-            onChange={(value) => onFilterItemsChanges(value)}
-            placeholder={'Class'}
-            pluralSelectionText={'Classes'}
-            multiple
-            color={'uiMidDark'}
-            selectedOptions={selectedClassroomGroups.map((x) => {
-              return {
-                id: x.id ?? '',
-                value: x,
-                label: x.name,
-                disabled: x.id === primaryClassProgramme?.classroomGroupId,
-              };
-            })}
-            info={{
-              name: `Filter by:${filterInfo?.filterName}`,
-              hint: filterInfo?.filterHint || '',
-            }}
-          />
-        )}
-        <div className={styles.statusChipsWrapper(shouldFilter)}>
+        {shouldFilter &&
+          classroomGroupsForPrincipal.length > 1 &&
+          submitText === '' && (
+            <SearchDropDown<any>
+              displayMenuOverlay
+              menuItemClassName={styles.dropdownStyles}
+              className={'mr-1'}
+              options={
+                (classroomGroups && isPrincipal
+                  ? classroomGroupsForPrincipal.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled: false,
+                      };
+                    })
+                  : classroomGroups.map((x) => {
+                      return {
+                        id: x.id ?? '',
+                        value: x,
+                        label: x.name,
+                        disabled: false,
+                      };
+                    })) || []
+              }
+              onChange={(value) => onFilterItemsChanges(value)}
+              placeholder={'Class'}
+              pluralSelectionText={'Classes'}
+              color={'secondary'}
+              selectedOptions={selectedClassroomGroups.map((x) => {
+                return {
+                  id: x.id ?? '',
+                  value: x,
+                  label: x.name,
+                };
+              })}
+              info={{
+                name: `Filter by:${filterInfo?.filterName}`,
+                hint: filterInfo?.filterHint || '',
+              }}
+            />
+          )}
+      </div>
+
+      <div>
+        <div className={styles.statusChipsWrapper(true)}>
           <StatusChip
-            className={'mr-2'}
+            className={'mr-2 '}
             padding={'px-3 py-1.5'}
-            textColour="white"
-            borderColour="successMain"
-            textType="small"
-            backgroundColour="successMain"
+            textColour="successMain"
+            borderColour="white"
+            textType="h2"
+            backgroundColour="white"
             text={`${presentChildrenCount} present`}
           />
-          <StatusChip
-            textColour="white"
-            padding={'px-3 py-1.5'}
-            borderColour="errorMain"
-            textType="small"
-            backgroundColour="errorMain"
-            text={`${absentChildrenCount} absent`}
-          />
+          <div>
+            <StatusChip
+              textColour="errorMain"
+              padding={'px-3 py-1.5'}
+              borderColour="white"
+              textType="h2"
+              backgroundColour="white"
+              text={`${absentChildrenCount} absent`}
+            />
+          </div>
         </div>
       </div>
       <div className={styles.attendanceListsWrapper}>
         {selectedClassroomGroups.map((selectedGroup, idx) => {
           const isPrimaryList =
-            selectedGroup.id === primaryClassProgramme?.classroomGroupId;
+            selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
           return (
-            <ClassProgrammeAttendanceList
-              key={`class_attencance_list_${idx}`}
-              isPrimaryClass={isPrimaryList}
-              classroomGroup={selectedGroup}
-              attendanceDate={attendanceDate}
-              onAttendanceUpdated={(state) => {
-                validateAttendanceList(
-                  selectedGroup.id ?? '',
-                  state.listItems,
-                  isPrimaryList
-                );
-              }}
-            />
+            <div id="attendanceList">
+              <ClassProgrammeAttendanceList
+                key={`class_attencance_list_${idx}`}
+                isPrimaryClass={isPrimaryList}
+                classroomGroup={selectedGroup}
+                attendanceDate={attendanceDate}
+                onAttendanceUpdated={(state) => {
+                  validateAttendanceList(
+                    editAttendanceRegisterVisible
+                      ? classroomgroupId ?? ''
+                      : selectedGroup.id ?? '',
+                    state.listItems,
+                    isPrimaryList
+                  );
+                }}
+                id="attendance-list"
+              />
+            </div>
           );
         })}
 
         <div className={'px-4'}>
           <Button
             id="gtm-add-attendance"
-            onClick={handleFormSubmit}
+            onClick={submitPrompt}
             className="mt-4 w-full"
             size="small"
             color="primary"
             type="filled"
-            disabled={!isButtonActive}
+            // disabled={isButtonActive}
           >
             {renderIcon('PaperAirplaneIcon', 'h-5 w-5 text-white')}
             <Typography

@@ -29,6 +29,9 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   register?: UseFormRegister<T>;
   maxLength?: number;
   suffixIconAction?: () => void;
+  onChange?: (
+    event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
+  ) => void;
 }
 
 export const FormInput = <T extends FieldValues>({
@@ -88,7 +91,7 @@ export const FormInput = <T extends FieldValues>({
           return (
             <CurrencyInput
               id="validation-example-2-field"
-              allowDecimals={false}
+              allowDecimals={true}
               step={10}
               autoComplete="new-off"
               placeholder={placeholder}

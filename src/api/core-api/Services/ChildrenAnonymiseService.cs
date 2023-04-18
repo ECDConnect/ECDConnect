@@ -36,6 +36,7 @@ namespace EcdLink.Api.CoreApi.Services
             var workflowRepo = _repositoryFactory.CreateRepository<WorkflowStatus>();
             var workflowStatus = workflowRepo.GetAll()
                                         .Where(x => x.EnumId == WorkflowStatusEnum.ChildDeactivated)
+                                        .OrderBy(x => x.Id)
                                         .FirstOrDefault();
 
 

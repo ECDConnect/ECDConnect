@@ -1,0 +1,179 @@
+import { Header, Label } from '@/pages/infant/infant-profile/components';
+import P1 from '@/assets/pillar/p1.svg';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
+import { CheckboxChange, Colours, Divider, Typography } from '@ecdlink/ui';
+import { noneOption, options } from './options';
+import { CheckboxGroup } from '@ecdlink/ui';
+import { DynamicFormProps } from '../../dynamic-form';
+
+export const getGroupColor = (count: number): Colours => {
+  if (count < 4) {
+    return 'errorDark';
+  }
+
+  if (count < 5) {
+    return 'alertMain';
+  }
+
+  return 'successDark';
+};
+
+export const dietFormQuestion = 'What did {client} eat?';
+
+export const NutritonEatingStep = ({
+  mother,
+  infant,
+  setEnableButton,
+  setSectionQuestions: setQuestions,
+}: DynamicFormProps) => {
+  const dateOfBirth = useMemo(
+    () => infant?.user?.dateOfBirth,
+    [infant?.user?.dateOfBirth]
+  ) as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  const isChild6Months = useMemo(
+    () => !ageYears && ageMonths < 7,
+    [ageMonths, ageYears]
+  );
+
+  const [optionList, setOptionList] = useState<
+    {
+      icon?: JSX.Element;
+      title: string;
+      description?: string;
+      disabled?: boolean;
+    }[]
+  >(options(isChild6Months));
+
+  const [question, setAnswers] = useState({
+    question: dietFormQuestion,
+    answer: [] as (string | number | undefined)[],
+  });
+
+  const answers = question.answer as string[];
+
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+
+  const visitSection = `What did {client} eat?`;
+
+  const onCheckboxChange = useCallback(
+    (event: CheckboxChange) => {
+      if (event.checked) {
+        const currentAnswers = answers
+          ? [...answers, event.value]
+          : [event.value];
+
+        const updatedQuestion = { ...question, answer: currentAnswers };
+
+        setAnswers(updatedQuestion);
+        setEnableButton && setEnableButton(true);
+        return (
+          setQuestions &&
+          setQuestions([
+            {
+              visitSection,
+              questions: [updatedQuestion],
+            },
+          ])
+        );
+      }
+      const currentAnswers = answers?.filter((item) => item !== event.value);
+      const updatedQuestion = { ...question, answer: currentAnswers };
+
+      setEnableButton && setEnableButton(!!currentAnswers?.length);
+      setAnswers(updatedQuestion);
+      return (
+        setQuestions &&
+        setQuestions([{ visitSection, questions: [updatedQuestion] }])
+      );
+    },
+    [answers, question, setEnableButton, setQuestions, visitSection]
+  );
+
+  const handleOnChangeSelectedOptions = useCallback(() => {
+    if (!answers?.includes(noneOption) && answers.length) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.title === noneOption) {
+            return { ...item, disabled: true };
+          }
+
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    if (answers?.includes(noneOption)) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.title !== noneOption) {
+            return { ...item, disabled: true };
+          }
+
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    return setOptionList((prevState) =>
+      prevState.map((item) => ({ ...item, disabled: false }))
+    );
+  }, [answers]);
+
+  useEffect(() => {
+    handleOnChangeSelectedOptions();
+  }, [handleOnChangeSelectedOptions]);
+
+  return (
+    <>
+      <Header
+        customIcon={P1}
+        iconHexBackgroundColor="#8CDBDF"
+        hexBackgroundColor="#a2dadd4d"
+        title={replaceBraces(visitSection, name)}
+      />
+      <div className="flex flex-col gap-2 p-4">
+        <Label text={replaceBraces(question.question, name)} />
+        <Divider dividerType="dashed" />
+        <Typography
+          type="h4"
+          color="black"
+          text={`Tick all of the foods ${name} talks about:`}
+        />
+        {optionList.map((item) => (
+          <CheckboxGroup
+            id={item.title}
+            key={item.title}
+            icon={item.icon}
+            title={item.title}
+            description={item.description}
+            checked={answers?.some((option) => option === item.title)}
+            value={item.title}
+            onChange={onCheckboxChange}
+            disabled={item?.disabled}
+          />
+        ))}
+        {!!answers.length && (
+          <div className="mt-4 flex gap-2">
+            <div
+              className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
+                answers.length
+              )} items-center justify-center font-bold text-white`}
+            >
+              {answers.includes(noneOption) ? 0 : answers.length}
+            </div>
+            <Typography
+              type="h4"
+              color={getGroupColor(answers.length)}
+              text={'Food groups'}
+            />
+          </div>
+        )}
+      </div>
+    </>
+  );
+};

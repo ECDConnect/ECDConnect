@@ -1,21 +1,12 @@
-using EcdLink.Api.CoreApi.Managers.IncomeExpense;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.DataAccessLayer.Context;
+using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Users;
-using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
-using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -27,25 +18,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public List<StatementsExpenses> GetAllStatementsExpenses([Service] IncomeExpenseManager incomeManager,
-string userId)
+        public List<StatementsExpenses> GetAllStatementsExpenses([Service] IncomeExpenseService incomeManager,
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsExpenses(userId);
+            return incomeManager.GetAllStatementsExpenses(userId, year, month);
         }
-        public List<StatementsIncome> GetAllStatementsIncome([Service] IncomeExpenseManager incomeManager,
-string userId)
+        public List<StatementsIncome> GetAllStatementsIncome([Service] IncomeExpenseService incomeManager,
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsIncome(userId);
+            return incomeManager.GetAllStatementsIncome(userId, year, month);
         }
-        public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement([Service] IncomeExpenseManager incomeManager,
-string userId)
+        public List<StatementsIncomeStatement> GetAllStatementsIncomeStatement([Service] IncomeExpenseService incomeManager,
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsIncomeStatement(userId);
+            return incomeManager.GetAllStatementsIncomeStatement(userId, year, month);
         }
-        public List<StatementsStartupSupport> GetAllStatementsStartupSupport([Service] IncomeExpenseManager incomeManager,
-string userId)
+        public List<StatementsStartupSupport> GetAllStatementsStartupSupport([Service] IncomeExpenseService incomeManager,
+string userId, int year, int month)
         {
-            return incomeManager.GetAllStatementsStartupSupport(userId);
+            return incomeManager.GetAllStatementsStartupSupport(userId, year, month);
+        }
+        public List<StatementsBalanceSheet> GetAllStatementsBalanceSheet([Service] IncomeExpenseService incomeManager,
+string userId, int year, int month)
+        {
+            return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
     }
 }

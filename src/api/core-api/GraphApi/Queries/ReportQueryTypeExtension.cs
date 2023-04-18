@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
@@ -285,7 +286,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string type)//, DateTime fromDate,DateTime toDate
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            GenericQueryTypeExtension genericQueries = new GenericQueryTypeExtension();
             var notificationList = new List<NotificationDisplay>();
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
@@ -355,7 +355,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     //get absent days count 
                     if (type != "coach")
                     {
-                        absentDays = genericQueries.GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();
+                        absentDays = new AbsenteeQueryExtension().GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();                        
                     }
                     else
                     {

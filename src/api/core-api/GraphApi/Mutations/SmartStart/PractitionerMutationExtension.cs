@@ -1,10 +1,10 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -24,7 +24,6 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -70,10 +69,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
 
-                    if (input.SiteAddressId != null)
+                    if (input.SiteAddressId != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
-                        SiteAddress address = addressRepo.GetAll().Where(x => x.Id.Equals(input.SiteAddressId)).FirstOrDefault();
+                        SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
                         if (input.SiteAddress.AddressLine1 != null)
@@ -168,12 +167,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                     if (idNumber != null)
                     {
-                        var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
+                        var languageEntity = languages.Where(x => x.Description == language).OrderBy(x => x.Id).FirstOrDefault();
                         if (languageEntity == null)
                         {
-                            languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                            languageEntity = languages.Where(x => x.Locale == "en-za").OrderBy(x => x.Id).FirstOrDefault();
                         }
-                        var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).FirstOrDefault();
+                        var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).OrderBy(x => x.FirstName).FirstOrDefault();
 
                         var startDateInt = int.Parse(startDate);
                         var dobDateInt = int.Parse(dob);
@@ -213,7 +212,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         FirstName = practitioner.FirstName,
                         Surname = practitioner.Surname,
                         FullName = $"{practitioner.FirstName} {practitioner.Surname}",
-                        ContactPreference = "sms",
+                        ContactPreference = MessageTypeConstants.SMS,
                         IsActive = true,
                         TenantId = tenantId
                     };
@@ -453,12 +452,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             var surname = nameArr.Count() > 2 ? nameArr[2] : nameArr[1];
 
                             var programmeTypeDesc = user.ECDType;
-                            var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).FirstOrDefault();
+                            var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
 
                             char[] digits = user.IDNumber.ToCharArray();
                             var dob = new DateTime(int.Parse("19" + digits[0] + digits[1]), int.Parse(digits[2].ToString() + digits[3].ToString()), int.Parse(digits[4].ToString() + digits[5].ToString()));
 
-                            var currentItem = practitionerImportList.Where(x => x.IDNumber == user.IDNumber).FirstOrDefault();
+                            var currentItem = practitionerImportList.Where(x => x.IDNumber == user.IDNumber).OrderBy(x => x.UserId).FirstOrDefault();
                             var item = currentItem != null ? currentItem : new ImportAllStaffItem();
                             item.MatchWithSite = user.SameSite != null && user.SameSite == "YES" ? true : false;
                             item.SiteIndicator = user.Indicator;
@@ -488,7 +487,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 if (practitionerImportList.Count > 0)
                 {
                     // Get franchisor overseeing everything
-                    var franchisor = franchisorRepo.GetAll().Where(x => x.User.FullName == practitionerImportList.FirstOrDefault().FranchisorhName).FirstOrDefault();//all is assigned to same franchisor
+                    var franchisor = franchisorRepo.GetAll().Where(x => x.User.FullName == practitionerImportList.FirstOrDefault().FranchisorhName).OrderBy(x => x.Id).FirstOrDefault();//all is assigned to same franchisor
                     franchisorId = franchisor.UserId;
 
                     foreach (var coach in practitionerImportList)
@@ -522,11 +521,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 {
                     foreach (var practitioner in practitionerImportList)
                     {
-                        var existingUser = userManager.Users.Where(x => x.IdNumber == practitioner.IDNumber).FirstOrDefault();
+                        var existingUser = userManager.Users.Where(x => x.IdNumber == practitioner.IDNumber).OrderBy(x => x.Id).FirstOrDefault();
 
                         if (existingUser == null)
                         {
-                            var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).FirstOrDefault();
+                            var coachUser = userManager.Users.Where(x => x.IdNumber == practitioner.CoachID).OrderBy(x => x.Id).FirstOrDefault();
 
                             var parentUser = practitioner.ParentUserIdNumber != null ? userManager.Users.Where(x => x.IdNumber == practitioner.ParentUserIdNumber).FirstOrDefault() : null;
                             string userId = Guid.NewGuid().ToString();
@@ -542,7 +541,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 FirstName = practitioner.FirstName,
                                 Surname = practitioner.Surname,
                                 FullName = practitioner.FullName,
-                                ContactPreference = "sms",
+                                ContactPreference = MessageTypeConstants.SMS,
                                 IsActive = true,
                                 PasswordHash = password,
                                 TenantId = tenantId
@@ -608,7 +607,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             };
                             classroomGenericRepo.Insert(pracClass);
                             //update the SL Ingestion record as processed and save userId
-                            SL_Ingestion_User slUser = dbRepo.GetAll().Where(x => x.IDNumber == practitioner.IDNumber).FirstOrDefault();
+                            SL_Ingestion_User slUser = dbRepo.GetAll().Where(x => x.IDNumber == practitioner.IDNumber).OrderBy(x => x.Id).FirstOrDefault();
                             if (slUser != null)
                             {
                                 slUser.IsActive = true;
@@ -738,11 +737,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     int idx2 = 0;
                     foreach (var childItem in childImportListItem)
                     {
-                        var existingUser = userManager.Users.Where(x => x.IdNumber == childItem.IDNumber).FirstOrDefault();
+                        var existingUser = userManager.Users.Where(x => x.IdNumber == childItem.IDNumber).OrderBy(x => x.Id).FirstOrDefault();
 
                         if (existingUser == null)
                         {
-                            var parentUser = userManager.Users.Where(x => x.IdNumber == childItem.FranchiseeIDNumber).FirstOrDefault();
+                            var parentUser = userManager.Users.Where(x => x.IdNumber == childItem.FranchiseeIDNumber).OrderBy(x => x.Id).FirstOrDefault();
                             if (parentUser != null)
                             {
 
@@ -773,10 +772,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 Guid? languageId = null;
                                 if (childItem.HomeLanguage != null)
                                 {
-                                    var languageEntity = languages.Where(x => x.Description.Contains(childItem.HomeLanguage)).FirstOrDefault();
+                                    var languageEntity = languages.Where(x => x.Description.Contains(childItem.HomeLanguage)).OrderBy(x => x.Id).FirstOrDefault();
                                     if (languageEntity == null)
                                     {
-                                        languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                                        languageEntity = languages.Where(x => x.Locale == "en-za").OrderBy(x => x.Id).FirstOrDefault();
                                     }
                                     languageId = languageEntity.Id;
                                 }
@@ -784,13 +783,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 Guid? relation = null;
                                 if (childItem.CaregiverRelationship != null)
                                 {
-                                    var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverRelationship)).FirstOrDefault();
+                                    var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(childItem.CaregiverRelationship)).OrderBy(x => x.Id).FirstOrDefault();
                                     if (sRelation != null)
                                         relation = sRelation.Id;
                                 }
                                 else
                                 {
-                                    var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).FirstOrDefault();
+                                    var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
                                     if (sRelation != null)
                                         relation = sRelation.Id;
                                 }
@@ -798,13 +797,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 Guid? education = null;
                                 if (childItem.CaregiverEducation != null)
                                 {
-                                    var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverEducation).FirstOrDefault();
+                                    var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == childItem.CaregiverEducation).OrderBy(x => x.Id).FirstOrDefault();
                                     if (sEducation != null)
                                         education = sEducation.Id;
                                 }
                                 if (education == null)
                                 {
-                                    var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == "Matric").FirstOrDefault();
+                                    var sEducation = staticRelationRepo.GetAll().Where(x => x.Description == "Matric").OrderBy(x => x.Id).FirstOrDefault();
                                     if (sEducation != null)
                                         education = sEducation.Id;
                                 }
@@ -812,13 +811,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 Guid? gender = null;
                                 if (childItem.Gender != null)
                                 {
-                                    var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains(childItem.Gender)).FirstOrDefault();
+                                    var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains(childItem.Gender)).OrderBy(x => x.Id).FirstOrDefault();
                                     if (gender != null)
                                         gender = sgender.Id;
                                 }
                                 else
                                 {
-                                    var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains("Boy")).FirstOrDefault();
+                                    var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains("Boy")).OrderBy(x => x.Id).FirstOrDefault();
                                     if (gender != null)
                                         gender = sgender.Id;
                                 }
@@ -827,13 +826,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 Guid? race = null;
                                 if (childItem.EthnicGroup != null)
                                 {
-                                    var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains(childItem.EthnicGroup)).FirstOrDefault();
+                                    var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains(childItem.EthnicGroup)).OrderBy(x => x.Id).FirstOrDefault();
                                     if (srace != null)
                                         race = srace.Id;
                                 }
                                 else
                                 {
-                                    var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).FirstOrDefault();
+                                    var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).OrderBy(x => x.Id).FirstOrDefault();
                                     if (srace != null)
                                         race = srace.Id;
                                 }
@@ -848,7 +847,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     else
                                         sgrantremap = "Child Support Grant";
 
-                                    var sGrant = staticGrantRepo.GetAll().Where(x => x.Description.Contains(sgrantremap)).FirstOrDefault();
+                                    var sGrant = staticGrantRepo.GetAll().Where(x => x.Description.Contains(sgrantremap)).OrderBy(x => x.Id).FirstOrDefault();
                                     if (sGrant != null)
                                         grant = sGrant.Id;
                                 }
@@ -891,7 +890,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     FirstName = childItem.FirstName,
                                     Surname = childItem.Surname,
                                     FullName = childItem.Fullname,
-                                    ContactPreference = "sms",
+                                    ContactPreference = MessageTypeConstants.SMS,
                                     IsActive = true,
                                     TenantId = tenantId
                                 };
@@ -905,7 +904,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 }
                                 userManager.CreateAsync(newUser);
 
-                                var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").FirstOrDefault();
+                                var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").OrderBy(x => x.Id).FirstOrDefault();
                                 //create child record
                                 var newChild = new Child
                                 {
@@ -924,7 +923,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                                 //update the children hierarchy
                                 string childNewHierarchy = "";
-                                UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(userId)).FirstOrDefault();
+                                UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(userId)).OrderBy(x => x.Id).FirstOrDefault();
 
                                 if (childHierarchy != null)
                                 {
@@ -944,12 +943,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                 childGenericRepo.Update(newChildHierarchyUpdate);
 
                                 //get the classroom
-                                Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).FirstOrDefault();
+                                Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).OrderBy(x => x.Id).FirstOrDefault();
                                 if (existingClassroom != null)
                                 {
                                     //map programme type
                                     childItem.ECDType = childItem.ECDType == "ECD Centre" ? "Preschool" : childItem.ECDType == "Full Week (Daymothers)" ? "Day Mother" : childItem.ECDType == "SmartStart ECD" ? "Preschool" : childItem.ECDType == "PlayGroup" ? "Preschool" : childItem.ECDType;
-                                    var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).FirstOrDefault();
+                                    var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).OrderBy(x => x.Id).FirstOrDefault();
 
                                     //check if this specific group exists already
                                     var fullListGroups = classroomGroupGenericRepo.GetAll();
@@ -961,7 +960,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                             parentClassroomGroups.Add(group);
                                         }
                                     }
-                                    var existingGroup = parentClassroomGroups.Where(x => x.Name.Equals(childItem.PlayGroupGroup)).FirstOrDefault();
+                                    var existingGroup = parentClassroomGroups.Where(x => x.Name.Equals(childItem.PlayGroupGroup)).OrderBy(x => x.Id).FirstOrDefault();
                                     string programmeGroupId = null;
                                     if (existingGroup == null)
                                     {
@@ -1020,7 +1019,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                                     }
                                 }
                                 //update the SL Ingestion record as processed and save userId
-                                SL_Ingestion_ChildCaregiver slUser = dbRepo.GetAll().Where(x => x.IDNumber == childItem.IDNumber).FirstOrDefault();
+                                SL_Ingestion_ChildCaregiver slUser = dbRepo.GetAll().Where(x => x.IDNumber == childItem.IDNumber).OrderBy(x => x.Id).FirstOrDefault();
                                 if (slUser != null)
                                 {
                                     slUser.IsActive = true;
@@ -1055,7 +1054,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             var uId = httpContextAccessor.HttpContext.GetUser().Id;
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
             //check user dont exist first
-            var existingUser = userManager.Users.Where(x => x.IdNumber == coach.IdNumber).FirstOrDefault();
+            var existingUser = userManager.Users.Where(x => x.IdNumber == coach.IdNumber).OrderBy(x => x.Id).FirstOrDefault();
 
             if (existingUser == null)
             {
@@ -1074,7 +1073,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     FirstName = coach.FirstName,
                     Surname = coach.Surname,
                     FullName = coach.FullName,//$"{practitioner.FirstName} {practitioner.Surname}",
-                    ContactPreference = "sms",
+                    ContactPreference = MessageTypeConstants.SMS,
                     IsActive = true,
                     PasswordHash = password,
                     SecurityStamp = securityStamp,
@@ -1086,7 +1085,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                 var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: uId);
 
-                var franchisor = franchisorRepo.GetAll().Where(f => f.Id.Equals(franchisorId)).FirstOrDefault();
+                var franchisor = franchisorRepo.GetAll().Where(f => f.Id.Equals(franchisorId)).OrderBy(x => x.Id).FirstOrDefault();
                 //var siteaddressid = addressRepo.GetAll().Where(x => x.AddressLine1 == "Kellner St").FirstOrDefault().Id;
 
                 var cc = new Coach
@@ -1105,7 +1104,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 //    //invite.SendInviteToApplication(invitationManager, notificationManager, userManager, prac.UserId);
                 return cc;
             }
-            else { return coachRepo.GetAll().Where(x => x.UserId == existingUser.Id).FirstOrDefault(); }
+            else { return coachRepo.GetAll().Where(x => x.UserId == existingUser.Id).OrderBy(x => x.Id).FirstOrDefault(); }
 
         }
 
@@ -1117,7 +1116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
             {
                 if (practitioner != null)
                 {
@@ -1137,7 +1136,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
             {
                 if (practitioner != null)
                 {
@@ -1157,7 +1156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             bool bReturn = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
             {
                 if (practitioner != null)
                 {

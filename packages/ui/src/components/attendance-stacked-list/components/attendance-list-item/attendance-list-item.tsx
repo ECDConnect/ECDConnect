@@ -12,27 +12,46 @@ import * as styles from './attendance-list-item.styles';
 export interface AttendanceListItemProps extends ComponentBaseProps {
   item: AttendanceListDataItem;
   onBadgeClick?: (item: AttendanceListDataItem) => void;
+  walkthrough?: boolean;
 }
 
 export const AttendanceListItem = ({
   item,
   onBadgeClick,
   className,
+  walkthrough,
 }: React.PropsWithChildren<AttendanceListItemProps>) => {
   const [attendanceItem, setAttendanceItem] =
     useState<AttendanceListDataItem>(item);
+
   useEffect(() => {
-    item.status = item.status ?? AttendanceStatus.Unknown;
+    item.status = item.status ?? AttendanceStatus.Present;
     setAttendanceItem(item);
   }, [item]);
 
   const onBadgeClicked = () => {
     const currentItem = JSON.parse(JSON.stringify(attendanceItem));
 
+    if (walkthrough) {
+      if (
+        currentItem.status &&
+        currentItem.status === AttendanceStatus.Present
+      ) {
+        currentItem.status = AttendanceStatus.Absent;
+      } else if (currentItem.status === AttendanceStatus.Absent) {
+        currentItem.status = AttendanceStatus.Present;
+      }
+      setAttendanceItem(currentItem);
+      if (onBadgeClick) {
+        onBadgeClick(currentItem);
+      }
+      return;
+    }
+
     if (currentItem.status && currentItem.status !== AttendanceStatus.Absent) {
       currentItem.status = currentItem.status + 1;
     } else {
-      currentItem.status = AttendanceStatus.Unknown;
+      currentItem.status = AttendanceStatus.Present;
     }
 
     setAttendanceItem(currentItem);
@@ -47,20 +66,21 @@ export const AttendanceListItem = ({
         case AttendanceStatus.Absent:
           return 'XCircleIcon';
         case AttendanceStatus.Present:
-          return 'BadgeCheckIcon';
-        case AttendanceStatus.Unknown:
-          return 'BadgeCheckIcon';
+          return 'CheckCircleIcon';
         default:
-          return 'BadgeCheckIcon';
+          return 'CheckCircleIcon';
       }
     } else {
-      return 'BadgeCheckIcon';
+      return 'CheckCircleIcon';
     }
   };
 
   return (
     <div
-      className={classNames(styles.menulistItemContainer, className)}
+      className={classNames(
+        className,
+        styles.menulistItemContainer(attendanceItem.status)
+      )}
       onClick={() => {
         onBadgeClicked();
         attendanceItem.onActionClick && attendanceItem.onActionClick();

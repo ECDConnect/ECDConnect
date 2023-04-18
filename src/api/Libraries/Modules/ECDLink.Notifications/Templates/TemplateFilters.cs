@@ -14,7 +14,7 @@ namespace ECDLink.Notifications.Templates
             _shortenManager = shortenManager;
         }
 
-        public Action<TemplateOverrideModel> ShortenUrl(ApplicationUser user, string messageType)
+        public Action<ITemplateOverrideModel> ShortenUrl(ApplicationUser user, string messageType)
         {
             return (model =>
             {
@@ -38,7 +38,7 @@ namespace ECDLink.Notifications.Templates
 
         }
 
-        public Action<TemplateOverrideModel> ReplaceValue(string replaceValue)
+        public Action<ITemplateOverrideModel> ReplaceValue(string replaceValue)
         {
             return (s) =>
             {

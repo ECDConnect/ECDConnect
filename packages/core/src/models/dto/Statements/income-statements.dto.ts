@@ -15,4 +15,5 @@ export interface IncomeStatementsDto {
   id?: string;
   photoProof?: string;
   insertedDate?: string;
+  isOffline?: boolean;
 }

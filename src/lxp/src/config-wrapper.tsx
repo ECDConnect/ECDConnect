@@ -1,4 +1,5 @@
 import {
+  APIs,
   Config,
   DialogServiceProvider,
   ThemeProvider,
@@ -9,6 +10,9 @@ import { Provider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
+import { WalkthroughProvider } from './walkthrougContext';
+import MultiRouteWrapper from './pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
 
 const ConfigWrapper: React.FC = () => {
@@ -27,16 +31,24 @@ const ConfigWrapper: React.FC = () => {
   if (loader) {
     return <Loader />;
   } else {
+    const pollUrl = new URL(APIs.onlineCheck, Config.authApi).href;
     return (
-      <Provider store={store}>
-        <PersistGate loading={null} persistor={persistor}>
-          <ThemeProvider themeEndPoint={Config.themeUrl} overRideCache={false}>
-            <DialogServiceProvider>
-              <App />
-            </DialogServiceProvider>
-          </ThemeProvider>
-        </PersistGate>
-      </Provider>
+      <OnlineStatusProvider pollUrl={pollUrl} interval={3000} timeout={2000}>
+        <Provider store={store}>
+          <PersistGate loading={null} persistor={persistor}>
+            <ThemeProvider
+              themeEndPoint={Config.themeUrl}
+              overRideCache={false}
+            >
+              <DialogServiceProvider>
+                <WalkthroughProvider>
+                  <App />
+                </WalkthroughProvider>
+              </DialogServiceProvider>
+            </ThemeProvider>
+          </PersistGate>
+        </Provider>
+      </OnlineStatusProvider>
     );
   }
 };

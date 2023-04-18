@@ -17,6 +17,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -29,14 +30,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public IEnumerable<ApplicationUser> GetUsers([Service] UserManager<ApplicationUser> userManager)
+        public async Task<IEnumerable<ApplicationUser>> GetUsers([Service]UserManager<ApplicationUser> userManager)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ApplicationUser GetUserById(
+        public async Task<ApplicationUser> GetUserById(
             [Service] UserManager<ApplicationUser> userManager, 
             [Service] RoleManager<IdentityRole> roleManager, 
             IGenericRepositoryFactory repoFactory, 
@@ -44,7 +45,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var user = userManager.FindByIdAsync(userId).Result;
 
-            var roles = new ObjectTypes.ApplicationUserExtension().GetRoles(user, roleManager, userManager);
+            var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
 
             if (user != null)
             {
@@ -101,7 +102,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 var shortUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: null);
 
-                var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).FirstOrDefault();
+                var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
                 if (tokenusr != null)
                 {
                     var user = userManager.FindByIdAsync(tokenusr.UserId).Result;

@@ -1,0 +1,434 @@
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
+import { Button } from '@ecdlink/ui';
+import { Header } from '@/pages/infant/infant-profile/components';
+import { InfantDto, usePrevious } from '@ecdlink/core';
+import { useAppDispatch } from '@/store';
+import {
+  CmsVisitDataInputModelInput,
+  CmsVisitSectionInput,
+  InputMaybe,
+  VisitDataStatusFilterInput,
+} from '@ecdlink/graphql';
+import { visitActions, visitThunkActions } from '@/store/visit';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { VisitActions } from '@/store/visit/visit.actions';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { referralThunkActions } from '@/store/referral';
+import { ReferralActions } from '@/store/referral/referral.actions';
+import { GrowthMonitoring } from './pillar-1-steps';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '../../../infant-profile.types';
+import { useDialog } from '@ecdlink/core';
+import { ActionModal, DialogPosition } from '@ecdlink/ui';
+import ROUTES from '@/routes/routes';
+import { CLIENT_TABS } from '../../../../../client/client-dashboard/class-dashboard';
+import { useHistory } from 'react-router';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
+import P4 from '@/assets/pillar/p4.svg';
+import { activitiesColours } from '../activities-list';
+
+export interface Question {
+  question: string;
+  answer:
+    | string
+    | string[]
+    | boolean
+    | boolean[]
+    | (string | number | undefined)[]
+    | undefined;
+}
+
+export interface SectionQuestions {
+  visitSection: string;
+  questions: Question[];
+}
+
+export interface DynamicFormProps {
+  name?: string;
+  infant?: InfantDto;
+  currentStep?: number;
+  isTipPage?: boolean;
+  steps?: any[]; // TODO: add type
+  sectionQuestions?: SectionQuestions[];
+  growthMonitoring?: GrowthMonitoring;
+  setIsTip?: (value: boolean) => void;
+  setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  setReferralsInput?: (value?: VisitDataStatusFilterInput[]) => void;
+  setEnableButton?: (value: boolean) => void;
+  onNextStep?: () => void;
+  onPreviousStep?: () => void;
+  onClose?: () => void;
+  setGrowthMonitoring?: (value: GrowthMonitoring) => void;
+  setRisk?: (value: number) => void;
+}
+
+export const DynamicForm = ({
+  name,
+  infant,
+  currentStep,
+  steps,
+  isTipPage,
+  setSectionQuestions: setSectionQuestionsForm,
+  onNextStep,
+  setIsTip,
+  onClose,
+}: DynamicFormProps) => {
+  const [isEnableButton, setIsEnableButton] = useState(false);
+  const [sectionQuestions, setSectionQuestions] =
+    useState<SectionQuestions[]>();
+  const [referralsInput, setReferralsInput] =
+    useState<VisitDataStatusFilterInput[]>();
+  const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
+  type Risk = 0 | 1 | 2;
+  const [risk, setRisk] = useState<Risk>(0);
+
+  const { isLoading } = useThunkFetchCall(
+    'visits',
+    VisitActions.ADD_VISIT_FORM_DATA
+  );
+  const { isLoading: isLoadingReferral } = useThunkFetchCall(
+    'referrals',
+    ReferralActions.UPDATE_VISIT_DATA_STATUS
+  );
+
+  const wasLoading = usePrevious(isLoading);
+  const wasLoadingReferral = usePrevious(isLoadingReferral);
+
+  const infantName = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant?.caregiver?.firstName]
+  );
+
+  const { visitId } = useParams<InfantProfileParams>();
+  const { successDialog } = useRequestResponseDialog();
+  const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const history = useHistory();
+
+  const goHome = useCallback(() => {
+    history.push(ROUTES.CLIENTS.ROOT, {
+      activeTabIndex: CLIENT_TABS.CLIENT,
+    });
+  }, [history]);
+
+  const handleSetQuestions = useCallback(
+    (value: SectionQuestions[]) => {
+      setSectionQuestions((prevSections) => {
+        const updatedQuestions = value.flatMap((newObj) => {
+          const { visitSection: newVisitSection, questions: newQuestions } =
+            newObj;
+          const oldSection = prevSections?.find(
+            (oldObj) => oldObj.visitSection === newVisitSection
+          );
+          const questionsFromOldSection = oldSection?.questions || [];
+
+          const filteredQuestions = newQuestions.filter(
+            (newQuestion) =>
+              !questionsFromOldSection.some(
+                (oldQuestion) => oldQuestion.question === newQuestion.question
+              )
+          );
+
+          const otherSections = prevSections?.filter(
+            (item) => item.visitSection !== newVisitSection
+          );
+
+          const mergedQuestions = filteredQuestions.length
+            ? [...questionsFromOldSection, ...newQuestions]
+            : [...newQuestions];
+
+          return [
+            ...(otherSections?.length ? otherSections : []),
+            {
+              visitSection: newVisitSection,
+              questions: mergedQuestions,
+            },
+          ];
+        }, []);
+
+        setSectionQuestionsForm?.(updatedQuestions);
+        return updatedQuestions;
+      });
+    },
+    [setSectionQuestionsForm]
+  );
+
+  const handleSetReferrals = useCallback(
+    (value: VisitDataStatusFilterInput[]) => {
+      setReferralsInput((prevState) => {
+        const newState = [...(prevState || [])];
+        value.forEach((item) => {
+          const index = newState.findIndex((element) => element.id === item.id);
+          if (index !== -1) {
+            newState[index].isCompleted = item.isCompleted;
+          } else {
+            newState.push(item);
+          }
+        });
+        return newState;
+      });
+    },
+    []
+  );
+
+  const handleGrowthMonitoring = useCallback((value: GrowthMonitoring) => {
+    setGrowthMonitoring?.((prevState) => ({ ...prevState, ...value }));
+  }, []);
+
+  const handleRisk = useCallback((value: Risk) => {
+    setRisk(value);
+  }, []);
+
+  const handleOnNext = useCallback(() => {
+    setIsEnableButton(false);
+    onNextStep?.();
+  }, [onNextStep]);
+
+  const onSubmit = useCallback(async () => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
+    const input: CmsVisitDataInputModelInput = {
+      visitId,
+      infantId: infant?.user?.id,
+      visitData: {
+        visitName: name,
+        sections,
+      },
+    };
+
+    const referrals = referralsInput?.map((item) => ({
+      ...item,
+      isCompleted: String(item.isCompleted),
+    })) as VisitDataStatusFilterInput[];
+
+    appDispatch(
+      visitActions.addCompletedVisitsByVisitId({
+        visitId,
+        visits: [name || ''],
+      })
+    );
+
+    appDispatch(visitActions.addVisitFormData(input));
+    await appDispatch(visitThunkActions.addVisitFormData(input));
+
+    await appDispatch(
+      visitThunkActions.getCompletedVisitsForVisitId({
+        visitId,
+      })
+    );
+
+    if (!!referrals?.length) {
+      appDispatch(
+        referralThunkActions.updateVisitDataStatus({ input: referrals })
+      );
+    }
+  }, [
+    visitId,
+    appDispatch,
+    infant?.user?.id,
+    name,
+    referralsInput,
+    sectionQuestions,
+  ]);
+
+  // TODO: sync visit form
+  useLayoutEffect(() => {}, []);
+
+  const renderContent = useMemo(() => {
+    if (!steps) return;
+
+    const CurrentStep = steps[Number(currentStep)];
+
+    if (!CurrentStep) return;
+
+    return (
+      <CurrentStep
+        infant={infant}
+        isTipPage={isTipPage}
+        setIsTip={setIsTip}
+        growthMonitoring={growthMonitoring}
+        sectionQuestions={sectionQuestions}
+        setSectionQuestions={handleSetQuestions}
+        setGrowthMonitoring={handleGrowthMonitoring}
+        setReferralsInput={handleSetReferrals}
+        setEnableButton={setIsEnableButton}
+        onNextStep={onNextStep}
+        setRisk={handleRisk}
+      />
+    );
+  }, [
+    currentStep,
+    growthMonitoring,
+    handleGrowthMonitoring,
+    handleSetQuestions,
+    handleSetReferrals,
+    infant,
+    isTipPage,
+    onNextStep,
+    sectionQuestions,
+    setIsTip,
+    steps,
+    handleRisk,
+  ]);
+
+  const renderButton = useMemo(() => {
+    if (Number(steps?.length) === 1) {
+      return {
+        action: onSubmit,
+        text: 'Save',
+        icon: 'SaveIcon',
+      };
+    }
+    if (Number(currentStep) === 0) {
+      return {
+        action: handleOnNext,
+        text: name?.startsWith('Care for') ? 'Start' : 'Next',
+        icon: 'ClipboardListIcon',
+      };
+    }
+
+    if (Number(currentStep) < Number(steps?.length) - 1) {
+      return {
+        action: handleOnNext,
+        text: 'Next',
+        icon: 'ArrowCircleRightIcon',
+      };
+    }
+
+    return {
+      action: onSubmit,
+      text: 'Save',
+      icon: 'SaveIcon',
+    };
+  }, [currentStep, handleOnNext, onSubmit, steps?.length, name]);
+
+  useEffect(() => {
+    if (
+      (wasLoading && !isLoading) ||
+      (wasLoadingReferral && !isLoadingReferral)
+    ) {
+      if (risk === 1) {
+        dialog({
+          blocking: false,
+          position: DialogPosition.Middle,
+          color: 'bg-white',
+          render: (onClose) => {
+            return (
+              <ActionModal
+                icon={'ExclamationCircleIcon'}
+                iconColor="errorMain"
+                iconBorderColor="errorBg"
+                className="z-50"
+                importantText={`Take ${infantName} to the hospital immediately or call an ambulance!`}
+                detailText={`${infantName} is not well and needs urgent care!`}
+                actionButtons={[
+                  {
+                    colour: 'primary',
+                    text: 'Close',
+                    textColour: 'primary',
+                    type: 'outlined',
+                    leadingIcon: 'XIcon',
+                    onClick: onClose,
+                  },
+                ]}
+              />
+            );
+          },
+        });
+        goHome?.();
+      } else if (risk === 2) {
+        dialog({
+          blocking: false,
+          position: DialogPosition.Full,
+          color: 'bg-white',
+          render: (onClose) => {
+            return (
+              <>
+                <Header
+                  customIcon={P4}
+                  title={`${name}`}
+                  subTitle={`Sugar Salt Solution`}
+                  iconHexBackgroundColor={
+                    activitiesColours.pillar4.primaryColor
+                  }
+                  hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
+                />
+                <ActionModal
+                  customIcon={
+                    <div className="rounded-full">
+                      <PollyShock className="h-24 w-24" />
+                    </div>
+                  }
+                  className="z-50"
+                  title={`Take ${infantName} to the hospital immediately or call an ambulance!`}
+                  detailText={`Help ${caregiverName} to make the Sugar Salt Solution on page 30 of the Road to Health Book and give it to ${infantName} on the way to the hospital.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'white',
+                      type: 'filled',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              </>
+            );
+          },
+        });
+        goHome?.();
+      } else {
+        successDialog();
+        onClose?.();
+      }
+    }
+  }, [
+    isLoading,
+    isLoadingReferral,
+    onClose,
+    successDialog,
+    wasLoading,
+    wasLoadingReferral,
+    dialog,
+    risk,
+    infantName,
+    goHome,
+    caregiverName,
+    name,
+  ]);
+
+  return (
+    <div className="flex h-full flex-col">
+      {renderContent}
+      {!isTipPage && (
+        <div id="button" className="mx-4 mt-auto flex items-end">
+          <Button
+            type="filled"
+            color="primary"
+            textColor="white"
+            icon={renderButton.icon}
+            className="mb-4 w-full"
+            text={renderButton.text}
+            onClick={renderButton.action}
+            disabled={!isEnableButton || isLoading}
+            isLoading={isLoading}
+          />
+        </div>
+      )}
+    </div>
+  );
+};

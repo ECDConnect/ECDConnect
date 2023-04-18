@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.Tenancy.Context;
@@ -8,6 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 {
@@ -46,6 +48,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             return entities.Where(e => e.TenantId.Equals(tenantId)).SingleOrDefault(s => s.Id == id);
         }
 
+        public async virtual Task<T> GetByIdAsync(Guid id)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return await entities.Where(e => e.TenantId.Equals(tenantId)).SingleOrDefaultAsync(s => s.Id == id);
+        }
+
         public virtual T GetByUserId(string id)
         {
             Type type = typeof(T);
@@ -80,6 +88,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 entity.Id = Guid.NewGuid();
             }
             entity.TenantId = tenantId;
+            // TODO: Global change to Utc.
+            entity.InsertedDate = DateTime.Now;
 
             entities.Add(entity);
             context.SaveChanges();
@@ -91,16 +101,26 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         public virtual T Update(T entity)
         {
             if (entity == null)
-            {
                 throw new ArgumentNullException("entity");
-            }
+
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+
             if (Exists(entity.Id))
             {
+                // TODO: Global change to Utc.
                 entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
-                entity.TenantId = tenantId;
+                // Notify update would get input values without this:
+                entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
+                entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
+
                 entities.Update(entity);
+                // Do not update Inserted Date:
+                entities.Entry(entity).Property(e => e.InsertedDate).IsModified = false;
+                // Do not allow replacing or changing TenantId.
+                entities.Entry(entity).Property(e => e.TenantId).IsModified = false;
+                
+                // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
             else
@@ -118,6 +138,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             T entity = entities.Where(e => e.TenantId == tenantId).SingleOrDefault(s => s.Id == id);
             entity.IsActive = false;
+            // TODO: Global change to Utc.
             entity.UpdatedDate = DateTime.Now;
             entity.UpdatedBy = _userId;
             entities.Update(entity);

@@ -5,7 +5,9 @@ using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
+using ECDLink.Security.Providers;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System.Threading.Tasks;
@@ -124,6 +126,35 @@ namespace ECDLink.Security.Api
             var result = await _securityManager.RefreshJwtToken(authorization);
 
             return new OkObjectResult(result);
+        }
+
+        [Route("online-check")]
+        [AllowAnonymous]
+        [HttpGet]
+        public async ValueTask<IActionResult> OnlineCheckAsync()
+        {
+            return Ok();
+        }
+
+        [Route("verify-email-address")]
+        [AllowAnonymous]
+        [HttpGet]
+        public async Task<IActionResult> VerifyEmailAddress([FromQuery] VerifyEmailAddressModel verifyEmailModel)
+        {
+            var user = await _securityManager.GetUserByNameAsync(verifyEmailModel.Username);
+            var token = TokenHelper.DecodeToken(verifyEmailModel.Token);
+
+            if (user == default(ApplicationUser))
+            {
+                return BadRequest();
+            }
+
+            //RequestVerifyEmailAsync
+            var changeResult = await _securityManager.ChangeEmailAddressAsync(user, token);
+            if (changeResult == true)
+                return new OkObjectResult(user.PendingEmail);
+
+            return Ok(changeResult);
         }
     }
 }

@@ -1,5 +1,5 @@
 import { useTheme } from '@ecdlink/core';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import {
@@ -10,11 +10,13 @@ import {
 import ROUTES from '@/routes/routes';
 import * as styles from '@/pages/mom/pregnant-register/pregnant-register.styles';
 import momImage from '@/assets/momImage.png';
+import { PregnantProfileRouteState } from '../pregnant-profile/index.types';
 
 export const PregnantRegister: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
+  const location = useLocation<PregnantProfileRouteState>();
 
   return (
     <div className={'h-full overflow-y-auto'}>
@@ -108,7 +110,9 @@ export const PregnantRegister: React.FC = () => {
                 text={`Start`}
                 icon={'ArrowCircleRightIcon'}
                 iconPosition={'start'}
-                onClick={() => history.push(ROUTES.MOM_REGISTER_FORM)}
+                onClick={() =>
+                  history.push(ROUTES.MOM_REGISTER_FORM, location.state)
+                }
               />
             </div>
           </div>

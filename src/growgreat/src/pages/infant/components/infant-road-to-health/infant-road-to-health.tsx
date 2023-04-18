@@ -9,6 +9,7 @@ import {
   ImageInput,
   DialogPosition,
   FormInput,
+  renderIcon,
 } from '@ecdlink/ui';
 import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import { useForm, useFormState } from 'react-hook-form';
@@ -21,8 +22,7 @@ import {
   InfantRoadToHealthModel,
   infantRoadToHealthModelSchema,
 } from '@/schemas/infant/infant-road-to-health';
-import { InformationCircleIcon } from '@heroicons/react/outline';
-import roadToHealth from '../../../../assets/roadToHealth.png';
+import { MaternalRecordExample } from './maternalRecordExampleDialog';
 
 export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   onSubmit,
@@ -154,15 +154,9 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 text={'Take a photo of page ii of the Road to Health Book.'}
                 className="w-9/12 pt-2"
               />
-              <div
-                onClick={() => setMaternalRecordExampleVisible(true)}
-                className="bg-infoDark grid h-6 w-6 place-items-center rounded-full"
-              >
-                <InformationCircleIcon
-                  className="h-full w-full bg-transparent text-white"
-                  aria-hidden="true"
-                />
-              </div>
+              <button onClick={() => setMaternalRecordExampleVisible(true)}>
+                {renderIcon('InformationCircleIcon', 'h-6 w-6 text-infoMain')}
+              </button>
             </div>
             <div className={'pt-1'}>
               <ImageInput<InfantRoadToHealthModel>
@@ -266,68 +260,10 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
           }
         ></PhotoPrompt>
       </Dialog>
-      <Dialog
-        visible={maternalRecordExampleVisible}
-        position={DialogPosition.Middle}
-        fullScreen
-        className="m-4 overflow-auto rounded-2xl"
-      >
-        <div className="flex h-full flex-col items-center overflow-auto px-4 pt-7 pb-6">
-          <div className="bg-infoDark flex h-12 w-12 items-center justify-center rounded-full">
-            <InformationCircleIcon className="h-full w-full text-white" />
-          </div>
-          <Typography
-            type="h2"
-            align="center"
-            weight="bold"
-            color={'textDark'}
-            text={'Page ii of the Road to Health Book'}
-            className="pt-4"
-          />
-          <img
-            src={roadToHealth}
-            alt="maternal record"
-            className="h-9/12 w-7/12 py-4"
-          />
-          <Typography
-            type="body"
-            align="center"
-            color={'textMid'}
-            text={
-              "Page ii is the first page you should see when opening the book. It should have the child's basic details."
-            }
-          />
-          <Typography
-            type="body"
-            align="center"
-            color={'textMid'}
-            weight={'bold'}
-            lineHeight={'none'}
-            text={`OR page 4 of the old Road to \n Health Book.`}
-            className="py-6"
-          />
-          <Typography
-            type="body"
-            align="center"
-            color={'textMid'}
-            text={
-              'If your client has an old version of the book, you can see the personal details on page 4.'
-            }
-          />
-          <div className={'mt-4 flex h-full w-full items-end'}>
-            <Button
-              type={'filled'}
-              color={'primary'}
-              className={'w-full'}
-              textColor={'white'}
-              text={`Close`}
-              icon={'XIcon'}
-              iconPosition={'start'}
-              onClick={() => setMaternalRecordExampleVisible(false)}
-            />
-          </div>
-        </div>
-      </Dialog>
+      <MaternalRecordExample
+        isVisible={maternalRecordExampleVisible}
+        onClose={() => setMaternalRecordExampleVisible(false)}
+      />
     </>
   );
 };

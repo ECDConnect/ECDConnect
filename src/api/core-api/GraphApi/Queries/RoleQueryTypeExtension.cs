@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -23,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return roleManager.Roles.ToList();
         }
 
-        public string GetRoleForUser(
+        public async Task<string> GetRoleForUser(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] UserManager<ApplicationUser> userManager,
             IGenericRepositoryFactory repoFactory,
@@ -36,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = userManager.FindByIdAsync(userId).Result;
             if (user != null)
             {
-                var roles = new ObjectTypes.ApplicationUserExtension().GetRoles(user, roleManager, userManager);
+                var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
                 if (roles.Any(x => x.Name.Contains("Admin")))
                 {
                     return "Admin";

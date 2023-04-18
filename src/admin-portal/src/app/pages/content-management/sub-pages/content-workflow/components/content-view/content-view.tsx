@@ -4,12 +4,14 @@ import {
   ContentTypeFieldDto,
   ContentValueDto,
   camelCaseToSentanceCase,
+  getBase64TypeFromBaseString,
 } from '@ecdlink/core';
 import { Typography } from '@ecdlink/ui';
 import DynamicSelector from '../../../../../../components/dynamic-selector/dynamic-selector';
 import { FieldType } from '../../../../content-management-models';
 import DynamicStaticSelector from '../../../../../../components/dynamic-static-selector/dynamic-static-selector';
 import { ContentLoader } from '../../../../../../components/content-loader/content-loader';
+import { videoExtensions } from '../../../../../../utils/constants';
 
 export interface ContentViewProps {
   contentValues: ContentValueDto[];
@@ -83,18 +85,25 @@ export default function ContentView({
           );
         }
         case FieldType.Image: {
+          const type = getBase64TypeFromBaseString(item.value);
+          const isVideoExtension = videoExtensions.includes(type);
+
           return (
             <div className={contentWrapper}>
               {getFieldHeader(field)}
               <div className="bg-uiBg relative">
                 <div className="relative">
-                  <div className="flex h-32 flex-wrap content-center">
-                    <img
-                      src={item.value}
-                      className="mx-auto max-h-24 min-h-full rounded-md"
-                      alt=""
-                    />
-                  </div>
+                  {isVideoExtension ? (
+                    <video src={item.value} controls className="h-60" />
+                  ) : (
+                    <div className="flex h-32 flex-wrap content-center">
+                      <img
+                        src={item.value}
+                        className="mx-auto max-h-24 min-h-full rounded-md"
+                        alt=""
+                      />
+                    </div>
+                  )}
                 </div>
               </div>
             </div>

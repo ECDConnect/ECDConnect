@@ -14,7 +14,14 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getTime, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  format,
+  getDay,
+  getTime,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -41,12 +48,21 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { userSelectors } from '@store/user';
 import { practitionerSelectors } from '@/store/practitioner';
 import { usePrevious } from '@ecdlink/core/lib/hooks/usePrevious';
+import { AttendanceSummaryState } from './attendance-summary.types';
 
-export const AttendanceSummary: React.FC = () => {
+export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
+  hidePopup,
+  openReports,
+}) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
+  const [classroomName, setClassroomName] = useState<string>('');
+
   const [successMessageVisible, setSuccessMessageVisible] =
-    useState<boolean>(true);
+    useState<boolean>(false);
+
+  const [missedAttendanceDays, setMissedAttendanceDays] = useState<Date[]>([]);
+
   const [isSmartStartUser, setIsSmartStartUser] = useState<boolean>(true);
   const [attendanceActionList, setAttendanceActionList] = useState<
     ActionListDataItem[]
@@ -94,17 +110,38 @@ export const AttendanceSummary: React.FC = () => {
       : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
+  const trackedAttendance = useSelector(
+    attendanceSelectors.getTrackedAttendance
+  );
 
   const previousMissedAttendanceGroups =
     usePrevious(missedAttendanceGroups) || [];
   const previousAttendanceData = usePrevious(attendanceData);
 
+  let isCurrentSmartStartUser = getStorageItem<boolean>(
+    LocalStorageKeys.isSmartStartUser
+  );
+
+  useEffect(() => {
+    const lastDate = localStorage.getItem('summarylastDate');
+    const today = new Date().toDateString();
+    if (lastDate !== today) {
+      // Show notification on a new day
+      if (trackedAttendance) {
+        let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
+        if (date === getDay(new Date(today))) {
+          setSuccessMessageVisible(true);
+          localStorage.setItem('summarylastDate', today);
+        }
+      }
+    } else {
+      setSuccessMessageVisible(false);
+    }
+  }, [trackedAttendance]);
+
   useEffect(() => {
     let hasClosedPointsMessage = getStorageItem<boolean>(
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-    );
-    let isCurrentSmartStartUser = getStorageItem<boolean>(
-      LocalStorageKeys.isSmartStartUser
     );
 
     if (hasClosedPointsMessage === undefined) {
@@ -112,12 +149,12 @@ export const AttendanceSummary: React.FC = () => {
     }
 
     if (isCurrentSmartStartUser === undefined) {
-      isCurrentSmartStartUser = true;
+      setStorageItem(true, LocalStorageKeys.isSmartStartUser);
     }
 
-    setIsSmartStartUser(isCurrentSmartStartUser);
+    setIsSmartStartUser(false);
 
-    if (todayDate.getDay() === 1 && !hasClosedPointsMessage) {
+    if (!hasClosedPointsMessage) {
       setDisplaySmartStartMessage(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -222,21 +259,12 @@ export const AttendanceSummary: React.FC = () => {
         .map((x, idx) => ({
           ...x.item,
           onActionClick: () => {
-            openEditRegister(x.group.id ?? '', x.date, true);
+            openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
           },
         }));
       setAttendanceActionList(actionListToDisplay);
-    } else {
-      setAttendanceActionList([]);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [
-    isValidAttendanceDay,
-    missedAttendanceGroups,
-    previousMissedAttendanceGroups,
-    attendanceActionList,
-    classProgrammesUpdated,
-  ]);
+  });
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -253,10 +281,12 @@ export const AttendanceSummary: React.FC = () => {
           actionIcon: 'PencilIcon',
           switchTextStyles: true,
           onActionClick: () => {
+            setCurrentEditClassroomGroupId(group.classroomGroup.id);
             openEditRegister(
               group.classroomGroup.id ?? '',
               group.missedDay,
-              idx === sortedMissedAttendanceGroups.length - 1
+              idx === sortedMissedAttendanceGroups.length - 1,
+              group?.classroomGroup?.name
             );
           },
         });
@@ -269,11 +299,16 @@ export const AttendanceSummary: React.FC = () => {
   const openEditRegister = (
     classroomGroupCacheId: string,
     attendanceDay: Date,
-    isLast: boolean
+    isLast: boolean,
+    classGroupName: string
   ) => {
     if (isValidAttendanceDay) {
+      setClassroomName(classGroupName);
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(missedAttendanceGroups);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          missedAttendanceGroups,
+          classroomGroupCacheId
+        );
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         allMissedAttendanceDays.sort(sortDateFunction);
@@ -285,6 +320,7 @@ export const AttendanceSummary: React.FC = () => {
         if (index >= 0) {
           setCurrentEditClassroomGroupId(classroomGroupCacheId);
           setAttendanceEditDay(allMissedAttendanceDays[index]);
+
           setEditAttendanceRegisterVisible(true);
         }
       }
@@ -318,23 +354,50 @@ export const AttendanceSummary: React.FC = () => {
       if (updatedMissedAttendanceItemIndex >= 0) {
         updatedMissedAttendance.splice(updatedMissedAttendanceItemIndex, 1);
       }
+
       setMissedAttendanceGroups(updatedMissedAttendance);
 
       const allMissedAttendanceDays =
-        getAllMissedAttendanceGroupsByClassroomGroupId(updatedMissedAttendance);
+        getAllMissedAttendanceGroupsByClassroomGroupId(
+          updatedMissedAttendance,
+          currentEditClassroomGroupId
+        );
+
+      if (allMissedAttendanceDays.length === 0) {
+        setAttendanceActionList([]);
+        openReports();
+      }
 
       if (allMissedAttendanceDays && allMissedAttendanceDays.length > 0) {
         setSubmitText(
-          allMissedAttendanceDays.length > 1
-            ? 'Submit & go to next day'
-            : 'Submit'
+          missedAttendanceDays.length > 1 ? 'Submit & go to next day' : 'Submit'
         );
-        setAttendanceEditDay(allMissedAttendanceDays[0]);
+
+        const dateSubmitted = new Date(attendanceResult.attendanceDate);
+
+        if (allMissedAttendanceDays.length !== 0) {
+          const filteredDates = allMissedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        } else {
+          const filteredDates = allMissedAttendanceDays.filter(
+            (date) => new Date(date).getTime() !== dateSubmitted.getTime()
+          );
+          setMissedAttendanceDays(filteredDates);
+        }
       } else {
         setEditAttendanceRegisterVisible(false);
       }
     }
   };
+
+  useEffect(() => {
+    setAttendanceEditDay(missedAttendanceDays[0]);
+    if (missedAttendanceDays.length === 0) {
+      setAttendanceEditDay(missedAttendanceDays[-1]);
+    }
+  }, [missedAttendanceDays]);
 
   const closeMessage = () => {
     setDisplaySmartStartMessage(false);
@@ -348,6 +411,13 @@ export const AttendanceSummary: React.FC = () => {
     setEditAttendanceRegisterVisible(false);
   };
 
+  const closeNotification = () => {
+    setSuccessMessageVisible(false);
+    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+    const today = new Date().toDateString();
+    localStorage.setItem('summarylastDate', today);
+  };
+
   return (
     <>
       <div className={'flex h-full flex-1 flex-col gap-4 px-4 pt-4'}>
@@ -356,9 +426,9 @@ export const AttendanceSummary: React.FC = () => {
             visible={successMessageVisible}
             isSmartStartUser={isSmartStartUser}
             points={100}
-            onClose={() => setSuccessMessageVisible(false)}
+            onClose={() => closeNotification()}
             message={getPointsMessage(isSmartStartUser)}
-            icon={'SparklesIcon'}
+            icon={''}
           />
         ) : (
           <div>
@@ -391,13 +461,6 @@ export const AttendanceSummary: React.FC = () => {
                   color={'alertMain'}
                 />
               </div>
-              <Typography
-                className={'pt-2'}
-                type={'body'}
-                weight={'bold'}
-                text={'Let’s get them done:'}
-                color={'textMid'}
-              />
             </div>
           )}
 
@@ -428,6 +491,9 @@ export const AttendanceSummary: React.FC = () => {
                 goToNextEditAttendanceRegister(attendanceSuccessList)
               }
               onBack={() => closeEditAttendanceRegister()}
+              editAttendanceRegisterVisible={editAttendanceRegisterVisible}
+              classroomName={classroomName ?? ''}
+              classroomgroupId={currentEditClassroomGroupId ?? ''}
             />
           </div>
         </Dialog>

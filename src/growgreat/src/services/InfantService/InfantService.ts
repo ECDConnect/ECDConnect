@@ -1,4 +1,4 @@
-import { InfantDto, Config } from '@ecdlink/core';
+import { InfantDto, Config, VisitDto } from '@ecdlink/core';
 import { InfantModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class InfantService {
@@ -18,12 +18,47 @@ class InfantService {
         query getAllInfantsForHealthCareWorker($id: String, $visitType: String) {
           allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
+            completed24MonthVisits
+            insertedDate
             nextVisitDate
+            gender {
+              description
+            }
+            caregiver {
+              id
+              firstName
+              surname
+              phoneNumber
+              whatsAppNumber
+              relation {
+                id
+                description
+              }
+              siteAddress {
+                id
+                province {
+                  id
+                  description
+                }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+              }
+            }
             user {
               dateOfBirth
               firstName
               genderId
               id
+            }
+            statusInfo {
+              icon
+              color
+              notes
+              subject
             }
             weightAtBirth
             lengthAtBirth
@@ -72,6 +107,38 @@ class InfantService {
     return response.data.data.createInfant;
   }
 
+  async updateInfant(id: string, input: InfantModelInput): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateInfant($input: InfantModelInput, $id: String) {
+          updateInfant(input: $input, id: $id) {
+            user {
+              dateOfBirth
+              firstName
+              genderId
+              id
+            }
+            id
+            weightAtBirth
+            lengthAtBirth
+            completed24MonthVisits
+          }
+        }
+      `,
+      variables: {
+        input,
+        id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating infant failed - Server connection error');
+    }
+
+    return response.data.data.createInfant;
+  }
+
   async getInfantCountForHealthCareWorkerForMonth(id: string): Promise<number> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -93,6 +160,149 @@ class InfantService {
     }
 
     return response.data.data.infantCountForHealthCareWorkerForMonth;
+  }
+
+  async GetInfantVisits(id: string): Promise<VisitDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infantVisits: VisitDto[] };
+    }>(``, {
+      query: `
+        query GetInfantVisits($userId: String) {
+          infantVisits(id: $userId) {
+            id
+            actualVisitDate,
+            plannedVisitDate,
+            attended,
+            risk
+            visitType{
+              id
+              order
+              normalizedName
+              description
+              insertedDate
+              isActive
+              name
+              type
+              updatedBy
+              updatedDate
+            }        
+          }
+        }
+        `,
+      variables: {
+        userId: id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting Mothers visits failed - Server connection error'
+      );
+    }
+
+    return response.data.data.infantVisits;
+  }
+
+  async updateInfantCaregiverAddress(
+    id: string,
+    input: InfantModelInput
+  ): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateInfantCaregiverAddress($input: InfantModelInput, $id: String) {
+          updateInfantCaregiverAddress(input: $input, id: $id) {
+            user {
+              dateOfBirth
+              firstName
+              genderId
+              id
+            }
+            id
+            weightAtBirth
+            lengthAtBirth
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating infant caregiver address failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateInfantCaregiverAddress;
+  }
+
+  async updateInfantCaregiverContactDetails(
+    id: string,
+    input: InfantModelInput
+  ): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateInfantCaregiverContactDetails($input: InfantModelInput, $id: String) {
+          updateInfantCaregiverContactDetails(input: $input, id: $id) {
+            user {
+              dateOfBirth
+              firstName
+              genderId
+              id
+            }
+            id
+            weightAtBirth
+            lengthAtBirth
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        input: input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating infant caregiver contact details failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateInfantCaregiverContactDetails;
+  }
+
+  async updateInfantCaregiver(
+    infantId: string,
+    input: InfantModelInput
+  ): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateInfantCaregiver: InfantDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateInfantCaregiver($infantId: String, $input: InfantModelInput) {
+          updateInfantCaregiver(infantId: $infantId, input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        infantId,
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Update Infant Caregiver - Server connection error');
+    }
+
+    return response.data.data.updateInfantCaregiver;
   }
 }
 

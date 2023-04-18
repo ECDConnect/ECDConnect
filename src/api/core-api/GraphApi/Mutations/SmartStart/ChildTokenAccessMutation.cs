@@ -209,7 +209,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: httpContext.HttpContext.GetUser().Id);
-            var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).FirstOrDefault();
+            var workflowStatus = workflowStatusRepo.GetAll().Where(x => x.EnumId == WorkflowStatusEnum.ChildExternalLink).OrderBy(x => x.Id).FirstOrDefault();
 
             var insertingUser = httpContext.HttpContext.GetUser().FullName;
 
@@ -283,7 +283,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             if (childUserId != null && grantIds != null)
             {
                 //retrieve careGiverId from child
-                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).FirstOrDefault();
+                var childObj = context.Children.Where(x => x.UserId == childUserId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
                 if (childObj != null)
                 {
                     Guid? caregiverId = childObj.CaregiverId;

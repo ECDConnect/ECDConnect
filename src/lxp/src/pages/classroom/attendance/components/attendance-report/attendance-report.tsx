@@ -1,5 +1,5 @@
 import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
-import { MessageModal } from '@ecdlink/ui';
+import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
@@ -8,16 +8,31 @@ import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummar
 import { AttendanceService } from '@services/AttendanceService';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@store';
-import { setStorageItem } from '@utils/common/local-storage.utils';
+import {
+  setStorageItem,
+  getStorageItem,
+} from '@utils/common/local-storage.utils';
 import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
+import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
+  currentClassroomGroup,
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
+
+  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
+  const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
+
+  const successStatus = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
+  );
+  const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
+    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
+  );
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(true);
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -31,6 +46,25 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       true,
       LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
     );
+  };
+
+  useEffect(() => {
+    const lastDate = localStorage.getItem('lastDate');
+    const today = new Date().toDateString();
+    if (lastDate !== today) {
+      // Show notification on a new day
+      setSuccessMessageVisible(true);
+      // localStorage.setItem('lastDate', today);
+    } else {
+      setSuccessMessageVisible(false);
+    }
+  }, []);
+
+  const closeNotification = () => {
+    setSuccessMessageVisible(false);
+    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+    const today = new Date().toDateString();
+    localStorage.setItem('lastDate', today);
   };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
@@ -47,22 +81,25 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const today = new Date();
+
   useEffect(() => {
-    if (!classroom) return;
-    const today = new Date();
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
       today.getMonth() + 1,
       0
     );
-    const startDate = new Date(classroom.insertedDate ?? '');
 
-    if (attendanceTracked) {
+    const firstDay = startOfYear(new Date(today.setUTCHours(0, 0, 0, 0))); // Get the first day of the current year
+
+    const firstDayOfYear = addDays(firstDay, 1);
+
+    if (!attendanceTracked) {
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroom?.classroomId || classroom?.id!,
-          startDate,
+          classroomID!,
+          firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
         .then((data) => {
@@ -70,7 +107,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom, attendanceTracked]);
+  }, [classroom]);
 
   useEffect(() => {
     if (!reportData) return;
@@ -92,18 +129,46 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}
-          onClose={() => setSuccessMessageVisible(false)}
+          onClose={() => closeNotification()}
           className={'mb-4'}
           message={'Your attendance registers are up to date this week!'}
           icon={'SparklesIcon'}
         />
-        <AttendanceMonthlyReport attendanceSummary={attendanceData} />
+        <AttendanceMonthlyReport
+          attendanceSummary={attendanceData}
+          classroomId={classroomID || classroomID!}
+        />
         {!isOnline && <OfflineCard />}
+      </div>
+      <div
+        className={'static bottom-0 flex h-full w-full flex-1 flex-col px-2'}
+      >
+        {attendanceData.length > 6 && (
+          <Button
+            type="outlined"
+            color="primary"
+            className={'mt-0'}
+            onClick={() => {
+              // setSeeRegister(true);
+            }}
+          >
+            {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
+            <Typography
+              type="h6"
+              color="primary"
+              text={'See more registers'}
+              className="ml-2"
+            ></Typography>
+          </Button>
+        )}
       </div>
       <MessageModal
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
-        visible={displaySmartStartMessage}
+        visible={
+          !hasClosedAttendanceSmartStartPointsMessage ??
+          displaySmartStartMessage
+        }
         icon={'GiftIcon'}
         className={'mt-4'}
         onClose={closeMessage}

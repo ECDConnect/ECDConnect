@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
@@ -33,6 +34,12 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
         [GraphIgnoreInput]
         public virtual ICollection<DailyProgramme> DailyProgrammes { get; set; }
+
+        [ForeignKey(nameof(ClassroomGroupId))]
+        [GraphIgnoreInput]
+        public virtual ClassroomGroup ClassroomGroup { get; set; }
+        [GraphQLType(typeof(Nullable<Guid>))]
+        public Guid? ClassroomGroupId { get; set; } = null;
     }
 
     public interface ProgrammeJoin<TKey>

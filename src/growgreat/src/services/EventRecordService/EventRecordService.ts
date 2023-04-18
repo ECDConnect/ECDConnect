@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
-import { EventRecordModelInput } from '@ecdlink/graphql';
+import { EventRecordModelInput, EventRecordType } from '@ecdlink/graphql';
 
 class EventRecord {
   _accessToken: string;
@@ -32,6 +32,46 @@ class EventRecord {
     }
 
     return response.data.data;
+  }
+
+  async getAllEventRecordTypes(
+    type: 'mother' | 'child'
+  ): Promise<EventRecordType[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allEventRecordTypesForType: EventRecordType[] };
+    }>(``, {
+      query: `
+        query GetAllEventRecordTypesForType($type: String) {
+          allEventRecordTypesForType(type: $type) {
+            id
+            name
+            normalizedName
+            description
+            parentId
+            type
+            children {
+                id
+                name
+                normalizedName
+                description
+                type
+            }
+          }
+        }
+        `,
+      variables: {
+        type,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Getting event record types failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allEventRecordTypesForType;
   }
 }
 

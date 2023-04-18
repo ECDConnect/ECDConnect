@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             Practitioner pract = dbRepo.GetByUserId(practitionerId);
             if (pract != null && pract.CoachHierarchy.HasValue)
             {
-                var coachRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
+                var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
                 return coachRepo.GetByUserId(pract.CoachHierarchy.ToString());
             }
             else return null;

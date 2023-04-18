@@ -20,6 +20,7 @@ import {
 import { Address, CustomGoogleMap } from '@/components/google-map/google-map';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
+import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 
 const MARGIN = 16;
 const COMPONENT_HEIGHT = 280;
@@ -62,6 +63,14 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
   const { isLoading: isLoadingInfantCount } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_COUNT_FOR_MONTH
+  );
+  const { isLoading: isLoadingUpdateInfantCaregiver } = useThunkFetchCall(
+    'infants',
+    InfantActions.UPDATE_INFANT_CAREGIVER
+  );
+  const { isLoading: isLoadingEventRecord } = useThunkFetchCall(
+    'eventRecord',
+    EventRecordActions.ADD_EVENT_RECORD
   );
 
   const onToggleMapView = () => setIsMapView((prevState) => !prevState);
@@ -225,8 +234,19 @@ export const InfantAddress: React.FC<InfantAddressProps> = ({
           onClick={() => {
             onSubmit(getInfantAddressFormValues());
           }}
-          isLoading={isLoading || isLoadingInfantCount}
-          disabled={!isValid || isLoading || isLoadingInfantCount}
+          isLoading={
+            isLoading ||
+            isLoadingInfantCount ||
+            isLoadingUpdateInfantCaregiver ||
+            isLoadingEventRecord
+          }
+          disabled={
+            !isValid ||
+            isLoading ||
+            isLoadingInfantCount ||
+            isLoadingUpdateInfantCaregiver ||
+            isLoadingEventRecord
+          }
         />
       </div>
     </>
