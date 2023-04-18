@@ -28,13 +28,13 @@ const coachSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
-      state.coach = { ...state.coach, ...action.payload };
+      state.coach = action.payload;
     });
     builder.addCase(coachNameByUserId.fulfilled, (state, action) => {
-      state.coach = { ...state.coach, ...action.payload };
+      state.coach = action.payload;
     });
     builder.addCase(getCoachByUserId.fulfilled, (state, action) => {
-      state.coach = { ...state.coach, ...action.payload };
+      state.coach = action.payload;
     });
   },
 });
