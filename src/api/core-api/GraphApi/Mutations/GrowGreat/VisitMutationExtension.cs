@@ -36,6 +36,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.Attended = false;
             input.InfantId = null;
             input.MotherId = mother.Id;
+            input.LinkedVisitId = null;
 
             return visitManager.AddAdditionalVisit(input);
         }
@@ -58,6 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.Attended = false;
             input.MotherId = null;
             input.InfantId = infant.Id;
+            input.LinkedVisitId = null;
 
             return visitManager.AddAdditionalVisit(input);
         }
