@@ -101,8 +101,6 @@ export const InfantRegisterForm: React.FC = () => {
 
   const [firstChild] = multipleChildrenArray;
 
-  const [firstChild] = multipleChildrenArray;
-
   const { height } = useWindowSize();
 
   const location = useLocation<InfantRouteState & PregnantProfileRouteState>();

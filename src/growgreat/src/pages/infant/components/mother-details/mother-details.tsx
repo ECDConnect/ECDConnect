@@ -78,8 +78,6 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     (item) => item.value === motherInfo?.relationId
   );
 
-  const motherType = relationshipTypes.find((item) => item.label === 'Mother');
-
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
     firstName: item?.user?.firstName,
     surname: item?.user?.surname,

@@ -6087,14 +6087,6 @@ export type QueryGetAllVisitQuestionnaireQuestionAnswerArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
-export type QueryGetAllVisitTypeArgs = {
-  where?: InputMaybe<VisitTypeFilterInput>;
-};
-
-export type QueryGetAllWorkflowStatusArgs = {
-  where?: InputMaybe<WorkflowStatusFilterInput>;
-};
-
 export type QueryGetAllWorkflowStatusTypeArgs = {
   where?: InputMaybe<WorkflowStatusTypeFilterInput>;
 };
@@ -7900,67 +7892,6 @@ export type StatementsIncomeInput = {
   Submitted: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
-};
-
-export type StatementsIncomeStatement = {
-  __typename?: 'StatementsIncomeStatement';
-  annualSubmittedDate?: Maybe<Scalars['DateTime']>;
-  autoSubmitted: Scalars['Boolean'];
-  balance: Scalars['Float'];
-  expenseTotal: Scalars['Float'];
-  id: Scalars['UUID'];
-  incomeTotal: Scalars['Float'];
-  insertedDate: Scalars['DateTime'];
-  isActive: Scalars['Boolean'];
-  month: Scalars['Int'];
-  notes?: Maybe<Scalars['String']>;
-  period?: Maybe<Scalars['String']>;
-  submitted: Scalars['Boolean'];
-  submittedDate: Scalars['DateTime'];
-  updatedBy?: Maybe<Scalars['String']>;
-  updatedDate: Scalars['DateTime'];
-  userId?: Maybe<Scalars['String']>;
-  year: Scalars['Int'];
-};
-
-export type StatementsIncomeStatementFilterInput = {
-  and?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
-  annualSubmittedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  autoSubmitted?: InputMaybe<BooleanOperationFilterInput>;
-  balance?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  expenseTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  incomeTotal?: InputMaybe<ComparableDoubleOperationFilterInput>;
-  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  isActive?: InputMaybe<BooleanOperationFilterInput>;
-  month?: InputMaybe<ComparableInt32OperationFilterInput>;
-  notes?: InputMaybe<StringOperationFilterInput>;
-  or?: InputMaybe<Array<StatementsIncomeStatementFilterInput>>;
-  period?: InputMaybe<StringOperationFilterInput>;
-  submitted?: InputMaybe<BooleanOperationFilterInput>;
-  submittedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  updatedBy?: InputMaybe<StringOperationFilterInput>;
-  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
-  userId?: InputMaybe<StringOperationFilterInput>;
-  year?: InputMaybe<ComparableInt32OperationFilterInput>;
-};
-
-export type StatementsIncomeStatementInput = {
-  AnnualSubmittedDate?: InputMaybe<Scalars['DateTime']>;
-  AutoSubmitted: Scalars['Boolean'];
-  Balance: Scalars['Float'];
-  ExpenseTotal: Scalars['Float'];
-  Id?: InputMaybe<Scalars['UUID']>;
-  IncomeTotal: Scalars['Float'];
-  IsActive: Scalars['Boolean'];
-  Month: Scalars['Int'];
-  Notes?: InputMaybe<Scalars['String']>;
-  Period?: InputMaybe<Scalars['String']>;
-  Submitted: Scalars['Boolean'];
-  SubmittedDate: Scalars['DateTime'];
-  UpdatedBy?: InputMaybe<Scalars['String']>;
-  UserId?: InputMaybe<Scalars['String']>;
-  Year: Scalars['Int'];
 };
 
 export type StatementsIncomeType = {
