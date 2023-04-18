@@ -90,31 +90,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else
             {
                 //get the users hierarchy to reuse
-                ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
                 if (input.UserId != null)
                 {
                     //update classrooms hierarchy and send through to next function
 
                     if (hierarchy != null)
                     {
-                        classRoomGroup.Hierarchy = hierarchy;
+                        var historyRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
+                        ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
 
                         newReassignment.LoggedBy = uId;
                         newReassignment.IsActive = true;
-                        newReassignment.Reason = "Principal Linked Practitioner";
+                        newReassignment.Reason = "Principal assigned class to practitioner";
                         newReassignment.ReassignedClassroomGroups = id.ToString() + ";";
                         newReassignment.ReassignedToDate = DateTime.Now;
                         newReassignment.ReassignedToUser = input.UserId.ToString();
                         newReassignment.UserId = input.UserId.ToString();
                         newReassignment.ReassignedBackToUserId = uId;
                         newReassignment.ReassignedBackToDate = DateTime.Now;
+                       
+                        historyRepo.Insert(newReassignment);
+
                     }
                 }
+
+                classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
                 classRoomGroup.Name = input.Name;
                 classRoomGroup.IsActive = input.IsActive;
                 classRoomGroup.ProgrammeTypeId = programmeType;
+                classRoomGroup.UpdatedBy = uId; 
+                classRepo.Update(classRoomGroup);
+
 
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
