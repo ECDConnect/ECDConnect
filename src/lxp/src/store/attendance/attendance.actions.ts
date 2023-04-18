@@ -167,7 +167,7 @@ export const trackAttendanceSync = createAsyncThunk<
 
         return await new AttendanceService(
           userAuth?.auth_token
-        ).trackAttendance(trackAttendanceModelInput);
+        ).trackAttendance([trackAttendanceModelInput]);
       });
     }
     return Promise.all(promises);

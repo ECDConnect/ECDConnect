@@ -9,7 +9,7 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { noneOption, options } from './options';
+import { noneOption, riskOption1, riskOption2, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import { activitiesColours } from '../../../activities-list';
@@ -37,6 +37,7 @@ export const DangerSignsStep = ({
   setIsTip,
   setEnableButton,
   setSectionQuestions: setQuestions,
+  setRisk,
 }: DynamicFormProps) => {
   const [optionList, setOptionList] = useState<
     {
@@ -91,12 +92,15 @@ export const DangerSignsStep = ({
 
   const handleOnChangeSelectedOptions = useCallback(() => {
     if (!answers?.includes(noneOption) && answers.length) {
+      setRisk && setRisk(0);
+      if (answers?.includes(riskOption1) || answers.includes(riskOption2)) {
+        setRisk && setRisk(answers?.includes(riskOption2) ? 2 : 1);
+      }
       return setOptionList((prevState) =>
         prevState.map((item) => {
           if (item.title === noneOption) {
             return { ...item, disabled: true };
           }
-
           return { ...item, disabled: false };
         })
       );
@@ -108,7 +112,6 @@ export const DangerSignsStep = ({
           if (item.title !== noneOption) {
             return { ...item, disabled: true };
           }
-
           return { ...item, disabled: false };
         })
       );
@@ -117,7 +120,7 @@ export const DangerSignsStep = ({
     return setOptionList((prevState) =>
       prevState.map((item) => ({ ...item, disabled: false }))
     );
-  }, [answers]);
+  }, [answers, setRisk]);
 
   useEffect(() => {
     handleOnChangeSelectedOptions();
@@ -131,7 +134,7 @@ export const DangerSignsStep = ({
       />
     );
   }
-  // TODO: add dialog (G5.6.3)
+
   return (
     <>
       <Header

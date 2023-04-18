@@ -7,30 +7,30 @@ import { useEffect, useMemo } from 'react';
 import CareForBabyImage from '../../assets/careForBaby.png';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
+export const getAge = (dateOfBirth?: string) => {
+  if (!dateOfBirth) return undefined;
+  const { years, months, days } = getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  if (years === 0 && months < 1) {
+    return `${days} ${days > 1 ? 'days' : 'day'}`;
+  }
+
+  if (years === 0) {
+    return `${months} months ${days} ${days > 1 ? 'days' : 'day'}`;
+  }
+
+  return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
+    months > 1 ? 'months' : 'month'
+  }`;
+};
+
 export const CareForBabyStep = ({
   infant,
   setEnableButton,
 }: DynamicFormProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
-  const age = useMemo(() => {
-    const dateOfBirth = infant?.user?.dateOfBirth as string;
-    const { years, months, days } = getAgeInYearsMonthsAndDays(dateOfBirth);
-
-    if (!dateOfBirth) return undefined;
-
-    if (years === 0 && months < 1) {
-      return `${days}`;
-    }
-
-    if (years === 0) {
-      return `${months} months ${days} ${days > 1 ? 'days' : 'day'}`;
-    }
-
-    return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
-      months > 1 ? 'months' : 'month'
-    }`;
-  }, [infant?.user?.dateOfBirth]);
+  const age = getAge(infant?.user?.dateOfBirth as string);
 
   useEffect(() => {
     setEnableButton?.(true);

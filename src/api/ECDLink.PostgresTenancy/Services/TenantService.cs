@@ -46,6 +46,7 @@ namespace ECDLink.PostgresTenancy.Services
         {
             var tenant = _repository.GetAll()
                             .Where(x => url.Contains(x.SiteAddress) || url.Contains(x.AdminSiteAddress) || url.Contains(x.TestSiteAddress) || url.Contains(x.AdminTestSiteAddress))
+                            .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
             if (tenant == null)

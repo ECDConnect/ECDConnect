@@ -102,7 +102,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 var shortUrlRepo = repoFactory.CreateGenericRepository<ShortenUrlEntity>(userContext: null);
 
-                var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).FirstOrDefault();
+                var tokenusr = shortUrlRepo.GetAll().Where(x => x.URL.Contains(token)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
                 if (tokenusr != null)
                 {
                     var user = userManager.FindByIdAsync(tokenusr.UserId).Result;

@@ -37,12 +37,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 if (absent.ReassignedClass != null)
                 {
                     var classRepo = repoFactory.CreateRepository<Programme>(userContext: uId);
-                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).FirstOrDefault();
+                    absent.Program = classRepo.GetAll().Where(x => x.Id.Equals(absent.ReassignedClass)).OrderBy(x => x.Id).FirstOrDefault();
                 }
                 if (absent.ReassignedToPractitioner != null)
                 {
                     var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.Contains(absent.ReassignedToPractitioner)).FirstOrDefault();
+                    absent.Practitioner = practRepo.GetAll().Where(x => x.UserId.Contains(absent.ReassignedToPractitioner)).OrderBy(x => x.Id).FirstOrDefault();
                 }
             }
 

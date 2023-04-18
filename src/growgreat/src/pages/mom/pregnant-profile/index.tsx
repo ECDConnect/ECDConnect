@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useLayoutEffect } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -8,8 +8,12 @@ import { getMotherById } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import { Visits } from './visits';
 import { PregnantProfileRouteState } from './index.types';
+import { ProgressTab } from './progress-tab';
+import { Contact } from './contact';
+import { useAppDispatch } from '@/store';
+import { motherThunkActions } from '@/store/mother';
+import { Visits } from './visits';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -21,9 +25,7 @@ export const PREGNANT_PROFILE_TABS = {
 export const PregnantProfile: React.FC = () => {
   const { state } = useLocation<PregnantProfileRouteState>();
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
-  );
+  const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
 
@@ -51,14 +53,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Progress',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ProgressTab />,
     },
     {
       title: 'Referrals',
@@ -75,14 +70,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Contact',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <Contact />,
     },
   ];
 
@@ -90,6 +78,11 @@ export const PregnantProfile: React.FC = () => {
     () => history.push(ROUTES.CLIENTS.ROOT),
     [history]
   );
+
+  useLayoutEffect(() => {
+    (async () =>
+      appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap())();
+  }, [appDispatch, motherId]);
 
   return (
     <BannerWrapper
@@ -106,10 +99,7 @@ export const PregnantProfile: React.FC = () => {
         tabClassName="min-w-0 w-24"
         className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
         tabItems={tabItems}
-        setSelectedIndex={selectedTabIndex}
-        tabSelected={(tab: TabItem, tabIndex: number) =>
-          setSelectedTabIndex(tabIndex)
-        }
+        setSelectedIndex={state.activeTabIndex}
       />
     </BannerWrapper>
   );

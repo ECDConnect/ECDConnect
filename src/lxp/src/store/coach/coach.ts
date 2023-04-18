@@ -28,7 +28,7 @@ const coachSlice = createSlice({
   },
   extraReducers: (builder) => {
     builder.addCase(getCoachByCoachId.fulfilled, (state, action) => {
-      state.coach = action.payload;
+      state.coach = { ...state.coach, ...action.payload };
     });
     builder.addCase(coachNameByUserId.fulfilled, (state, action) => {
       state.coach = { ...state.coach, ...action.payload };

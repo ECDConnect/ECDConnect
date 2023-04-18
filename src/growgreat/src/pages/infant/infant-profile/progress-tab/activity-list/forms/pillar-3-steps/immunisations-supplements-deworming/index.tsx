@@ -13,7 +13,13 @@ import { Fragment, useCallback, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import { differenceInDays, differenceInMonths } from 'date-fns';
+import { differenceInDays } from 'date-fns';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { useSelector } from 'react-redux';
+import { RootState } from '@/store/types';
+import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const ImmunisationsSupplementsDewormingStep = ({
   infant,
@@ -40,12 +46,23 @@ export const ImmunisationsSupplementsDewormingStep = ({
     { text: 'No', value: false },
   ];
 
+  const { visitId } = useParams<InfantProfileParams>();
+
   const dateOfBirth = infant?.user?.dateOfBirth as string;
-
+  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
-  const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
-  const isFirstVisit = true;
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || '',
+    [infant]
+  );
+
+  const visitSection = 'Immunisations, supplements & deworming';
+
+  const isFirstVisit = useSelector((state: RootState) =>
+    getIsInfantFirstVisitSelector(state, visitId)
+  );
 
   const is6Week = ageDays >= 49 && ageDays <= 56;
   const is10Week = ageDays >= 57 && ageMonths <= 3;
@@ -71,6 +88,7 @@ export const ImmunisationsSupplementsDewormingStep = ({
       is9Month ||
       is12Month ||
       is18Month);
+
   const isVitaminAQuestion =
     isFirstVisit &&
     (is6Month ||
@@ -83,6 +101,7 @@ export const ImmunisationsSupplementsDewormingStep = ({
       is4Years ||
       is4AHalfYears ||
       is5Years);
+
   const isDewormingQuestion =
     isFirstVisit &&
     (is12Month ||
@@ -94,14 +113,6 @@ export const ImmunisationsSupplementsDewormingStep = ({
       is4Years ||
       is4AHalfYears ||
       is5Years);
-
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant]
-  );
-
-  const visitSection = 'Immunisations, supplements & deworming';
 
   const onOptionSelected = useCallback(
     (value, index) => {

@@ -42,7 +42,6 @@ export const PractitionerSetup = ({
             />
           </div>
           <div>
-            <Divider dividerType="dashed" className="-my-1" />
             <div>
               <label className="text-h3 text-dark  block">
                 What language would you like to use on CHW Connect?

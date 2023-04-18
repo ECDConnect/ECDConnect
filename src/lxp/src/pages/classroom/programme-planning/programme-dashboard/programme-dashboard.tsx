@@ -40,12 +40,6 @@ export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
     });
   };
 
-  const handleViewProgrammeSummary = () => {
-    history.push(ROUTES.PROGRAMMES.SUMMARY, {
-      variation: 'view',
-    });
-  };
-
   if (programmes.length === 0)
     return (
       <IconInformationIndicator

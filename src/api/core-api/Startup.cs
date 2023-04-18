@@ -123,6 +123,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<SecurityNotificationManager>();
             services.AddTransient<InvitationNotificationManager>();
             services.AddTransient<HealthCareWorkerManager>();
+            services.AddTransient<CaregiverManager>();
             services.AddTransient<MotherManager>();
             services.AddTransient<EventRecordManager>();
             services.AddTransient<InfantManager>();

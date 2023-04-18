@@ -9,6 +9,11 @@ import {
   getInfantCountForMonth,
   getInfantsWeeklyVisits,
   getInfantVisits,
+  updateInfant,
+  updateInfantCaregiverAddress,
+  updateInfantCaregiverContactDetails,
+  getAllInfantEventRecordTypes,
+  updateInfantCaregiver,
 } from './infant.actions';
 import { InfantState } from './infant.types';
 
@@ -39,6 +44,11 @@ const infantSlice = createSlice({
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);
     setThunkActionStatus(builder, getInfantCountForMonth);
+    setThunkActionStatus(builder, getInfantVisits);
+    setThunkActionStatus(builder, updateInfantCaregiverAddress);
+    setThunkActionStatus(builder, updateInfantCaregiverContactDetails);
+    setThunkActionStatus(builder, getAllInfantEventRecordTypes);
+    setThunkActionStatus(builder, updateInfantCaregiver);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.infantCountForMonth = action.payload;
 
@@ -61,6 +71,24 @@ const infantSlice = createSlice({
     });
     builder.addCase(getInfantVisits.fulfilled, (state, action) => {
       state.visits = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfant.fulfilled, (state, action) => {
+      if (!action.payload || !state.infants) return;
+
+      state.infants = state.infants?.map((item) => {
+        if (item.id === action.payload.id) {
+          return { ...item, ...action };
+        }
+        return item;
+      });
+    });
+    builder.addCase(getAllInfantEventRecordTypes.fulfilled, (state, action) => {
+      state.eventRecordTypes = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateInfantCaregiver.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

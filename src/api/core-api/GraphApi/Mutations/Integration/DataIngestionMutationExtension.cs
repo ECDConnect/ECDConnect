@@ -76,12 +76,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 
                     if (idNumber != null)
                     {
-                        var languageEntity = languages.Where(x => x.Description == language).FirstOrDefault();
+                        var languageEntity = languages.Where(x => x.Description == language).OrderBy(x => x.Id).FirstOrDefault();
                         if (languageEntity == null)
                         {
-                            languageEntity = languages.Where(x => x.Locale == "en-za").FirstOrDefault();
+                            languageEntity = languages.Where(x => x.Locale == "en-za").OrderBy(x => x.Id).FirstOrDefault();
                         }
-                        var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).FirstOrDefault();
+                        var currentItem = practitionerImportList.Where(x => x.IDNumber == idNumber).OrderBy(x => x.FirstName).FirstOrDefault();
 
                         var startDateInt = int.Parse(startDate);
                         var dobDateInt = int.Parse(dob);

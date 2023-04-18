@@ -1,4 +1,3 @@
-using DotLiquid.Tags;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -18,9 +17,9 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class InfantQueryExtension
     {

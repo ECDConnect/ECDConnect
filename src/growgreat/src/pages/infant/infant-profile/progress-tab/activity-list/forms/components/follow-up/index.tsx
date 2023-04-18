@@ -2,7 +2,7 @@ import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { InfantDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
-import { useCallback, useMemo } from 'react';
+import { Fragment, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import Pregnant from '@/assets/pregnant.svg';
 import Infant from '@/assets/infant.svg';
@@ -11,11 +11,19 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
 
 import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
+import {
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
 
 interface FollowUpComponentProps {
   infant: InfantDto;
@@ -37,6 +45,14 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     [infant?.caregiver?.firstName]
   );
 
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -105,27 +121,33 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${caregiverName} & ${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
-          message: `${caregiverName} & ${name} need support`,
+          message: `${
+            !!caregiverName ? caregiverName + ' &' : ''
+          } ${name} need support`,
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${caregiverName} & ${name} are going well`,
+          message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
+            !!caregiverName ? 'are' : 'is'
+          } going well`,
           value: 100,
+        };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${
+            !!caregiverName ? caregiverName + ' &' : ''
+          } ${name} need urgent support`,
+          value: 25,
         };
     }
   }, [caregiverName, name, previousVisit?.scoreColor]);
@@ -166,6 +188,21 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     return groupedData;
   }, [previousVisit?.visitDataStatus]) as Status | undefined;
 
+  if (!previousVisit?.visitDataStatus?.length) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven’t visited ${caregiverName} & ${name} yet`}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex gap-4">
@@ -189,26 +226,32 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
       <Typography
         className="mb-8"
         type="h4"
-        text={`Here is a summary of how ${name} & ${caregiverName} are doing`}
+        text={`Here is a summary of how ${name} ${
+          !!caregiverName ? '& ' + caregiverName : ''
+        } ${!!caregiverName ? 'are' : 'is'} doing`}
       />
-      <GrowthCard
-        text={grow.comment || ''}
-        color={getColorAndIcon(grow.color || '').primaryColour}
-        icon={getColorAndIcon(grow.color || '').icon}
-      />
-      {[weight, length, muac].map((item) => (
-        <Card
-          key={item.name}
-          className="my-4"
-          label={item.name}
-          value={item.value || ''}
-          date={
-            previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-          } /* TODO: add the correct date */
-          message={item.comment || ''}
-          color={item.color as CardProps['color']}
+      {grow.comment && (
+        <GrowthCard
+          text={grow.comment || ''}
+          color={getColorAndIcon(grow.color || '').primaryColour}
+          icon={getColorAndIcon(grow.color || '').icon}
         />
-      ))}
+      )}
+      {[weight, length, muac].map((item) => {
+        if (!item.value) return <Fragment key={item.name} />;
+
+        return (
+          <Card
+            key={item.name}
+            className="my-4"
+            label={item.name}
+            value={item.value || ''}
+            date={previousPlannedVisit?.plannedVisitDate || ''}
+            message={item.comment || ''}
+            color={item.color as CardProps['color']}
+          />
+        );
+      })}
       <Divider dividerType="dashed" className="mt-4 mb-8" />
       {!!groupedData &&
         Object.keys(groupedData).map((item, index) => {
