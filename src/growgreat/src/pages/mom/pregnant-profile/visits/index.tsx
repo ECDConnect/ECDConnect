@@ -82,22 +82,21 @@ export const Visits: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto): StepItem['type'] => {
+    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
       if (item.attended) {
         return 'completed';
       }
 
       if (
-        currentVisit &&
-        item.visitType?.id === currentVisit.visitType?.id &&
-        mother?.statusInfo?.color !== 'None'
+        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
+        isMissedVisit
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, mother?.statusInfo?.color]
+    [currentVisit, isWeekDeadline]
   );
 
   const visitSteps = useMemo(() => {
@@ -119,15 +118,16 @@ export const Visits: React.FC = () => {
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(((isWeekDeadline &&
-          currentVisit.visitType?.id === item.visitType?.id) ||
-          isMissedVisit) && { subTitleColor: 'alertDark' }),
+        ...(getType(item, isMissedVisit) === 'inProgress' && {
+          subTitleColor: 'alertDark',
+        }),
         inProgressStepIcon: isMissedVisit
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
-        type: getType(item),
+        type: getType(item, isMissedVisit),
         showActionButton:
-          item?.id === motherCurrentVisit?.id || getType(item) === 'inProgress',
+          item?.id === motherCurrentVisit?.id ||
+          getType(item, isMissedVisit) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -157,11 +157,9 @@ export const Visits: React.FC = () => {
   }, [
     currentDate,
     currentVisit?.id,
-    currentVisit?.visitType?.id,
     getType,
     history,
     insertedDate,
-    isWeekDeadline,
     location.pathname,
     motherCurrentVisit?.id,
     visits,
