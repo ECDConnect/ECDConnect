@@ -129,7 +129,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           visible={successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
-          message={`Good job! All your attendance registers are up to date!`}
+          message={`Good job! All your attendance registers are  up to date!`}
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport
