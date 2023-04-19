@@ -50,7 +50,7 @@ export const getUserProgrammes = createAsyncThunk<
   {},
   ThunkApiType<RootState>
 >(
-  'getProgrammes',
+  'getUserProgrammes',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {

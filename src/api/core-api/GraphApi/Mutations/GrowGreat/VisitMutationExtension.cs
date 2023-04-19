@@ -2,6 +2,7 @@
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -27,11 +28,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: applicationUserId);
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_mother) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            Mother mother = motherRepo.GetAll().Where(x => x.UserId == input.MotherId.ToString()).FirstOrDefault();
 
             input.VisitType = visitType;
             input.Attended = false;
             input.InfantId = null;
+            input.MotherId = mother.Id;
+            input.LinkedVisitId = null;
 
             return visitManager.AddAdditionalVisit(input);
         }
@@ -45,11 +50,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var infantRepo = repoFactory.CreateGenericRepository<Infant>(userContext: applicationUserId);
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name == Constants.GGSettings.additional_visits).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            Infant infant = infantRepo.GetAll().Where(x => x.UserId == input.InfantId.ToString()).FirstOrDefault();
+
 
             input.VisitType = visitType;
             input.Attended = false;
             input.MotherId = null;
+            input.InfantId = infant.Id;
+            input.LinkedVisitId = null;
 
             return visitManager.AddAdditionalVisit(input);
         }

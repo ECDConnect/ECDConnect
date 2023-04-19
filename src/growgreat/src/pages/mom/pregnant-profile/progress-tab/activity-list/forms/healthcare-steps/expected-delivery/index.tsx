@@ -31,7 +31,6 @@ import maternalRecord from '../../../../../../../../assets/maternalRecord.png';
 export const ClinicExpectedDeliverySection = 'Expected Delivery';
 
 export const ExpectedDeliveryStep = ({
-  infant,
   mother,
   isTipPage,
   setSectionQuestions: setQuestions,
@@ -74,7 +73,8 @@ export const ExpectedDeliveryStep = ({
   const tomorrow = getNextDateByDay(1);
 
   const dateAfter280days = getNextDateByDay(280);
-  const [deliveryDate, setDeliveryDate] = useState(tomorrow);
+  const expectedDeliveryDate = new Date(mother?.expectedDateOfDelivery!);
+  const [deliveryDate, setDeliveryDate] = useState(expectedDeliveryDate);
 
   const onKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
     event.preventDefault();

@@ -92,6 +92,8 @@
     "i18next": "^20.3.5",
     "inline-style-prefixer": "^6.0.3",
     "ionicons": "^5.4.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.28",
     "jwt-decode": "^3.1.2",
     "learna": "^1.0.1",
     "localforage": "^1.10.0",

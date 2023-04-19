@@ -69,6 +69,7 @@ export const EditPlaygroups: React.FC = () => {
           classroomId: groupedItem.classroomId,
           name: groupedItem.name,
           classroomGroupId: groupedItem.id,
+          userId: groupedItem.userId,
           meetingDays:
             filteredClassProgrammes &&
             filteredClassProgrammes?.map((x) => x.meetingDay).sort(),
@@ -170,6 +171,7 @@ export const EditPlaygroups: React.FC = () => {
               ...currentPlayGroup,
               programmeTypeId: programmeType?.id,
               name: playGroup.name,
+              userId: playGroup.userId,
             })
           );
 

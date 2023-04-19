@@ -11,7 +11,6 @@ import {
   format,
   getDay,
   getDayOfYear,
-  isAfter,
   isBefore,
   isFriday,
   isMonday,

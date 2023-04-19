@@ -51,6 +51,38 @@ class Referral {
     return response.data.data.referralsForInfant;
   }
 
+  async getReferralsForVisitId(visitId: string): Promise<VisitDataStatus[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { referralsForVisitId: VisitDataStatus[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetReferralsForVisitId($visitId: String) {
+        referralsForVisitId(visitId: $visitId) {
+              id
+              comment
+              color
+          type
+              section
+              isCompleted
+        }
+      }
+          `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Referrals For Infant Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.referralsForVisitId;
+  }
+
   async updateVisitDataStatus(
     input: VisitDataStatusFilterInput[]
   ): Promise<{}> {

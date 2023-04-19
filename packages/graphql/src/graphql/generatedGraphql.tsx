@@ -6514,6 +6514,8 @@ export type QueryAllCaregiverByPractitionerArgs = {
 };
 
 export type QueryAllCaregiversForHcwArgs = {
+  pageNumber?: Scalars['Int'];
+  recordsPerPage?: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -7426,6 +7428,7 @@ export type Setting_SmartLinkApi = {
   __typename?: 'Setting_SmartLinkApi';
   BaseUrl: Scalars['String'];
   Key: Scalars['String'];
+  Mode: Scalars['String'];
 };
 
 export type Setting_Smtp = {
@@ -8340,8 +8343,10 @@ export type Visit = {
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  linkedVisitId?: Maybe<Scalars['UUID']>;
   mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
+  orderDate?: Maybe<Scalars['DateTime']>;
   plannedVisitDate: Scalars['DateTime'];
   risk?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -8530,9 +8535,11 @@ export type VisitFilterInput = {
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
+  linkedVisitId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   mother?: InputMaybe<MotherFilterInput>;
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<VisitFilterInput>>;
+  orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   risk?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -8641,8 +8648,10 @@ export type VisitInput = {
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  LinkedVisitId?: InputMaybe<Scalars['UUID']>;
   Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
+  OrderDate?: InputMaybe<Scalars['DateTime']>;
   PlannedVisitDate: Scalars['DateTime'];
   Risk?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -8656,6 +8665,7 @@ export type VisitModelInput = {
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
   mother?: InputMaybe<MotherModelInput>;
   motherId?: InputMaybe<Scalars['UUID']>;
   plannedVisitDate: Scalars['DateTime'];

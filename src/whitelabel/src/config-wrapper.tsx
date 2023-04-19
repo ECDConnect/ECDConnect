@@ -11,7 +11,6 @@ import { PersistGate } from 'redux-persist/integration/react';
 import App from './App';
 import Loader from './components/loader/loader';
 import { WalkthroughProvider } from './walkthrougContext';
-import MultiRouteWrapper from './pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { OnlineStatusProvider } from './hooks/useOnlineStatus';
 import { persistor, store } from './store';
 

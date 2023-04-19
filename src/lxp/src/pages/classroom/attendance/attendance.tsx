@@ -217,7 +217,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           />
         );
       case 'summary':
-        return <AttendanceSummary openReports={() => {}} />;
+        return (
+          <AttendanceSummary
+            openReports={() => setAttendanceComponentType('report')}
+          />
+        );
       default:
         return null;
     }
