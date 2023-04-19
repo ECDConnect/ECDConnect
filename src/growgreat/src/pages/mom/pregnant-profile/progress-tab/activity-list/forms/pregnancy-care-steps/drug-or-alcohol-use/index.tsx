@@ -1,10 +1,8 @@
 import { Alert } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
-import { activitiesColours } from '../../../activities-list';
+import { useCallback, useEffect, useLayoutEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { Video } from '../../components/video';

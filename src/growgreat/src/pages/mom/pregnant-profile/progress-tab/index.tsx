@@ -1,6 +1,4 @@
 import { motherSelectors } from '@/store/mother';
-import { Button, LoadingSpinner } from '@ecdlink/ui';
-import { useWindowSize } from '@reach/window-size';
 import { useLayoutEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
@@ -19,6 +17,8 @@ import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { Button, LoadingSpinner } from '@ecdlink/ui';
+import { useWindowSize } from '@reach/window-size';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 

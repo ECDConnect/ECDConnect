@@ -263,9 +263,8 @@ export const EditPlaygroupForm: React.FC<EditPlaygroupProps> = ({
         <Controller
           name={'userId'}
           control={playgroupFormControl}
-          defaultValue={undefined}
           render={({ field: { onChange, value, ref } }) => (
-            <Dropdown<string>
+            <Dropdown
               inputRef={ref}
               placeholder={'Select a practitioner'}
               list={practitionersList}
