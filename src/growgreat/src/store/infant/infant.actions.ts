@@ -10,6 +10,7 @@ import {
   EventRecordType,
   InfantModelInput,
   SiteAddressInput,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -26,6 +27,7 @@ export const InfantActions = {
   GET_INFANT_COUNT_FOR_MONTH: 'getInfantCountForMonth',
   GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
   UPDATE_INFANT_CAREGIVER: 'updateInfantCaregiver',
+  ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
 };
 
 export interface UpdateInfantCaregiver {
@@ -307,6 +309,33 @@ export const updateInfantCaregiver = createAsyncThunk<
         return await new InfantService(
           userAuth?.auth_token
         ).updateInfantCaregiver(infantId, input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addAdditionalVisitForInfant = createAsyncThunk<
+  VisitDto,
+  VisitModelInput,
+  ThunkApiType<RootState>
+>(
+  InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new InfantService(
+          userAuth?.auth_token
+        ).addAdditionalVisitForChild(input);
+
+        return response;
       } else {
         return rejectWithValue('no access token, profile check required');
       }

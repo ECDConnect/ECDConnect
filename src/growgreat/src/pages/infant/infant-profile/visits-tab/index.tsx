@@ -31,6 +31,8 @@ import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { differenceInDays } from 'date-fns';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { VisitModelInput } from '@ecdlink/graphql';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 const HEADER_HEIGHT = 64;
 
@@ -50,6 +52,8 @@ export const VisitsTab: React.FC = () => {
 
   const dialog = useDialog();
 
+  const { errorDialog } = useRequestResponseDialog();
+
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
@@ -63,7 +67,16 @@ export const VisitsTab: React.FC = () => {
     'infants',
     InfantActions.GET_INFANT_VISITS
   );
+  const {
+    isLoading: isAddingAdditionalVisit,
+    isRejected: isRejectedAdditionalVisit,
+  } = useThunkFetchCall(
+    'infants',
+    InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT
+  );
+
   const wasLoading = usePrevious(isLoading);
+  const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
 
   const { infantName, caregiverName } = useMemo(
     () => ({
@@ -74,7 +87,7 @@ export const VisitsTab: React.FC = () => {
   );
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
   const infantAgeDays = infant?.user?.dateOfBirth
     ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
     : 0;
@@ -137,11 +150,16 @@ export const VisitsTab: React.FC = () => {
     );
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.plannedVisitDate);
+      const date = new Date(item.orderDate);
+      currentDate.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
@@ -205,14 +223,32 @@ export const VisitsTab: React.FC = () => {
       render(onClose) {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'z-10 mx-4'}
             title="Do you want to start the additional visit now or book a time in your calendar?"
             actionButtons={[
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    infantId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+
+                  const response = await appDispatch(
+                    infantThunkActions.addAdditionalVisitForInfant(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
+
                   onClose();
                 },
                 type: 'filled',
@@ -235,7 +271,7 @@ export const VisitsTab: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [appDispatch, dialog, history, infantId, location.pathname]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),
@@ -281,7 +317,7 @@ export const VisitsTab: React.FC = () => {
   );
 
   const renderContent = useMemo(() => {
-    if (isLoading) {
+    if (isLoading || isAddingAdditionalVisit) {
       return (
         <LoadingSpinner
           size="big"
@@ -305,7 +341,22 @@ export const VisitsTab: React.FC = () => {
         <Steps items={visitSteps.slice(0, 3)} />
       </>
     );
-  }, [isCompletedAllVisits, isLoading, visitSteps]);
+  }, [isAddingAdditionalVisit, isCompletedAllVisits, isLoading, visitSteps]);
+
+  useEffect(() => {
+    if (!wasAddingAdditionalVisit && isAddingAdditionalVisit) {
+      return dialog({
+        color: 'transparent',
+        render: () => {},
+      });
+    }
+  }, [dialog, isAddingAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (wasAddingAdditionalVisit && isRejectedAdditionalVisit) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejectedAdditionalVisit, wasAddingAdditionalVisit]);
 
   useEffect(() => {
     if (

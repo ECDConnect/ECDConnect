@@ -3,6 +3,7 @@ import {
   EventRecordType,
   MotherModelInput,
   SiteAddressInput,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -15,10 +16,10 @@ export const MotherActions = {
   GET_MOTHER_VISITS: 'getMotherVisits',
   GET_MOTHER_EVENT_RECORD_TYPES: 'getMotherEventRecordTypes',
   ADD_MOTHER: 'addMother',
-  ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
   GET_MOTHERS_WEEKLY_VISITS: 'getMothersWeeklyVisits',
   UPDATE_MOTHER_ADDRESS: 'updateMotherAddress',
+  ADD_ADDITIONAL_VISIT_FOR_MOTHER: 'addAdditionalVisitForMother',
 };
 
 export const getMothers = createAsyncThunk<
@@ -214,31 +215,6 @@ export const getMotherCountForMonth = createAsyncThunk<
   }
 );
 
-export const addAdditionalVisitForMother = createAsyncThunk<
-  any, // TODO: add type
-  any, // TODO: add type
-  ThunkApiType<RootState>
->(
-  MotherActions.ADD_ADDITIONAL_MOTHER_VISIT,
-  async ({ motherId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        await new MotherService(
-          userAuth?.auth_token
-        ).addAdditionalVisitForMother(motherId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 export const getMotherVisits = createAsyncThunk<
   VisitDto[],
   { motherId: string },
@@ -338,6 +314,33 @@ export const updateMotherContactDetails = createAsyncThunk<
         return await new MotherService(
           userAuth?.auth_token
         ).updateMotherContactDetails(id, mappedMotherInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addAdditionalVisitForMother = createAsyncThunk<
+  VisitDto,
+  VisitModelInput,
+  ThunkApiType<RootState>
+>(
+  MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new MotherService(
+          userAuth?.auth_token
+        ).addAdditionalVisitForMother(input);
+
+        return response;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
