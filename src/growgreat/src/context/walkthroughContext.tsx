@@ -67,10 +67,10 @@ export const useWalkthrough = () => {
 
   const handleCallback = (data: CallBackProps) => {
     const { status, index, action, type } = data;
-
     // @ts-ignore
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: false });
+      setWalkthroughStep(0);
     }
 
     if (type === 'step:after' && (action === 'next' || action === 'prev')) {

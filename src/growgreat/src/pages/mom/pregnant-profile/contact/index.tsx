@@ -141,6 +141,7 @@ export const Contact: React.FC = () => {
 
   return (
     <div
+      id="walkthrough-contact-step-4"
       className="mt-16 flex flex-col p-4 "
       style={{ height: height - HEADER_HEIGHT }}
     >
@@ -152,9 +153,14 @@ export const Contact: React.FC = () => {
           !isLargeName ? mother?.user?.surname || '' : ''
         }`}
       />
-      <Typography type="h5" weight="bold" lineHeight="snug" text="Mother" />
-
-      <div className="mt-4 flex-col">
+      <Typography
+        type="h5"
+        weight="bold"
+        lineHeight="snug"
+        text="Mother"
+        className="mb-4"
+      />
+      <div id="walkthrough-contact-step-1">
         <Typography
           type="h4"
           weight="bold"
@@ -179,9 +185,8 @@ export const Contact: React.FC = () => {
           onClick={callForHelp}
           className="mt-2"
         />
-      </div>
-      <div className="mt-4 flex-col">
         <Typography
+          className="mt-4"
           type="h4"
           weight="bold"
           lineHeight="snug"
@@ -213,15 +218,14 @@ export const Contact: React.FC = () => {
             text={`WhatsApp client`}
           />
         </Button>
-
-        <Alert
-          type={'info'}
-          className="items-left justify-left mt-4 flex"
-          title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
-        />
-        <Divider className="p-4" dividerType="dashed" />
       </div>
-      <div className="flex-col">
+      <Alert
+        type={'info'}
+        className="items-left justify-left mt-4 flex"
+        title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
+      />
+      <Divider className="p-4" dividerType="dashed" />
+      <div id="walkthrough-contact-step-2">
         <Typography type="h4" weight="bold" lineHeight="snug" text="Address" />
         <Typography
           type="h5"
@@ -229,18 +233,18 @@ export const Contact: React.FC = () => {
           lineHeight="snug"
           text={formattedAddress}
         />
-        <Button
-          text="Go to your phone's map"
-          icon="LocationMarkerIcon"
-          type="outlined"
-          size="small"
-          color="primary"
-          textColor="primary"
-          iconPosition="start"
-          onClick={gotomap}
-          className="mt-2"
-        />
       </div>
+      <Button
+        text="Go to your phone's map"
+        icon="LocationMarkerIcon"
+        type="outlined"
+        size="small"
+        color="primary"
+        textColor="primary"
+        iconPosition="start"
+        onClick={gotomap}
+        className="mt-2"
+      />
       <div className="flex h-full flex-col justify-end">
         <Button
           text="Book a visit"
@@ -253,6 +257,7 @@ export const Contact: React.FC = () => {
           onClick={navigate(ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT)}
         />
         <Button
+          id="walkthrough-contact-step-3"
           text="Edit information"
           icon="PencilIcon"
           type="outlined"
