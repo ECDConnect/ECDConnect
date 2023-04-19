@@ -525,7 +525,7 @@ export const MonthStatementsDetails: React.FC = () => {
             onClick={() => {}}
             className="mt-6 rounded-2xl"
           >
-            <Typography type="help" color="white" text="Download" />
+            <Typography type="help" color="white" text="Download test" />
           </Button>
         </div>
       </BannerWrapper>

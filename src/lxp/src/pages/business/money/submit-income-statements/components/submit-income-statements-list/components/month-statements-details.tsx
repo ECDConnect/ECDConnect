@@ -27,6 +27,8 @@ import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
+import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
+import { UserOptions } from 'jspdf-autotable';
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -420,6 +422,77 @@ export const MonthStatementsDetails: React.FC = () => {
     },
   ];
 
+  //demo pdf table setup
+  const numDays = 29;
+  const data = [
+    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
+  ];
+
+  for (let i = 0; i < 50; i++) {
+    const newArray = {
+      child: 'John Bblocks',
+      id: 'IDTEST2525255',
+      day1: '1',
+      day2: '1',
+      day3: '0',
+      day4: '0',
+      day5: '0',
+    };
+    data.push(newArray);
+  }
+  const tableColumns = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...Array.from({ length: numDays }, (_, i) => ({
+      header: `${i + 1}`, // day number as header
+      dataKey: `day${i + 1}`, // unique key for each day column
+    })),
+  ];
+
+  const footer = [
+    'Child Attendance per Day',
+    '', // Placeholder for ID/Passport column
+    '', // Placeholder for Day 1 column
+    '', // Placeholder for Day 2 column
+    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
+  ];
+
+  const tableTopContent = {
+    pageTitle: `Income Statement`,
+    subtitle: 'Text 2',
+    practitioner_name: 'Name: Jenny Droe',
+    id_number: 'ID: ID23YGH444',
+    programme_type: 'ProgrammeType: 46372test',
+    programme_days: 'Programmme Days: Monday to Friday',
+    site_address: 'Site Address1234 ABC St, City, State, Country',
+    phone: 'Phone: 0123456789',
+  };
+
+  const tableBottomContent = [
+    `Number of children who attended all sessions: 9`,
+    `Total number of sessions: 198`,
+    `Number of children who attended all sessions: 9`,
+  ];
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 8,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+
   return (
     <>
       <BannerWrapper
@@ -517,16 +590,22 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-8/12 text-right"
             />
           </Card>
-          <Button
-            shape="normal"
-            color="primary"
-            type="filled"
-            icon="DocumentDownloadIcon"
-            onClick={() => {}}
-            className="mt-6 rounded-2xl"
-          >
-            <Typography type="help" color="white" text="Download" />
-          </Button>
+          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+            {
+              <GeneratePdfReportButton
+                title="Download Register"
+                outputName={`income-statement-report.pdf`}
+                headerColumns={tableColumns}
+                bodyRows={data}
+                tableFooter={footer}
+                content={tableTopContent}
+                tableBottomContent={tableBottomContent}
+                tableHeadStyles={tableHeadStyles}
+                tableFootStyles={tableFootStyles}
+                tableStyles={tableStyles}
+              />
+            }
+          </div>
         </div>
       </BannerWrapper>
       <Dialog
