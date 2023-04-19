@@ -14,7 +14,14 @@ import {
   StackedList,
   Typography,
 } from '@ecdlink/ui';
-import { addDays, format, getDay, getTime, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  format,
+  getDay,
+  getTime,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import _ from 'lodash';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -46,6 +53,7 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
   openReports,
+  currentUserId,
 }) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
@@ -103,7 +111,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       : classProgrammes;
   const publicHolidays = useSelector(staticDataSelectors.getHolidays);
   const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const trackedAttendance = useSelector(attendanceSelectors.getTrackedAttendance)
+  const trackedAttendance = useSelector(
+    attendanceSelectors.getTrackedAttendance
+  );
 
   const previousMissedAttendanceGroups =
     usePrevious(missedAttendanceGroups) || [];
@@ -113,21 +123,27 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     LocalStorageKeys.isSmartStartUser
   );
 
-  
   useEffect(() => {
-    const lastDate = localStorage.getItem('summarylastDate');
-    const today = new Date().toDateString();
-    if (lastDate !== today) {
-      // Show notification on a new day
-      if (trackedAttendance) {
-        let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
-        if (date === getDay(new Date(today))) {
-          setSuccessMessageVisible(true);
-          localStorage.setItem('summarylastDate', today);
-        }
-      }
+    const storedUserId = localStorage.getItem('currentUserId');
+    if (!currentUserId || currentUserId !== storedUserId) {
+      setSuccessMessageVisible(true);
+      localStorage.setItem('currentUserId', currentUserId);
+      localStorage.setItem('summarylastDate', Date());
     } else {
-      setSuccessMessageVisible(false);
+      const lastDate = localStorage.getItem('summarylastDate');
+      const today = new Date().toDateString();
+      if (lastDate !== today) {
+        // Show notification on a new day
+        if (trackedAttendance) {
+          let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
+          if (date === getDay(new Date(today))) {
+            setSuccessMessageVisible(true);
+            localStorage.setItem('summarylastDate', today);
+          }
+        }
+      } else {
+        setSuccessMessageVisible(false);
+      }
     }
   }, [trackedAttendance]);
 

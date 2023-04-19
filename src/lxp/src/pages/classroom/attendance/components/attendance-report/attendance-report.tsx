@@ -19,7 +19,7 @@ import { addDays, startOfYear } from 'date-fns';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
-  currentClassroomGroup
+  currentClassroomGroup,
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
@@ -27,9 +27,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
   const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
 
-  const successStatus = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
-  );
   const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
   );
@@ -56,10 +53,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       setSuccessMessageVisible(true);
       // localStorage.setItem('lastDate', today);
     } else {
-  
       setSuccessMessageVisible(false);
     }
-  },[]);
+  }, []);
 
   const closeNotification = () => {
     setSuccessMessageVisible(false);
@@ -132,7 +128,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           visible={successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
-          message={'Your attendance registers are up to date this week!'}
+          message={`Good job! All your attendance registers are  up to date!`}
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport

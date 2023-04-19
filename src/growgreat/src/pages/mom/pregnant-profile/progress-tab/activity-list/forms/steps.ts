@@ -20,10 +20,7 @@ import {
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
-import {
-  DevelopmentalScreeningStep,
-  DangerSignsStep,
-} from './danger-signs-steps';
+import { DangerSignsStep } from './danger-signs-steps';
 import {
   NotesStep,
   ReferralsStep,
@@ -50,19 +47,21 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
   HealthyEatingStep,
 ];
 
-export const getPillar1Steps = () => {
+export const getPregnancyCareSteps = (
+  isEqualOrAfter98andEqualOrBefore168Days: boolean
+) => {
   const defaultScreens = [
     WeightAndLengthResultStep,
     MaternalDistressSteps,
     MidUpperArmCircumferenceResultStep,
-    DrugOrAlcoholUseStep,
+    ...(isEqualOrAfter98andEqualOrBefore168Days ? [DrugOrAlcoholUseStep] : []),
   ];
 
   const complementaryFeedingFlow = [
     AlcoholUseStep,
     HivCareAndMedicationStep,
     IdDocumentStep,
-    InfantCareStep,
+    ...(isEqualOrAfter98andEqualOrBefore168Days ? [InfantCareStep] : []),
   ];
 
   return [...defaultScreens, ...complementaryFeedingFlow];
@@ -70,7 +69,7 @@ export const getPillar1Steps = () => {
 
 export const dangerSignsSteps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean
-) => [DevelopmentalScreeningStep, DangerSignsStep];
+) => [DangerSignsStep];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

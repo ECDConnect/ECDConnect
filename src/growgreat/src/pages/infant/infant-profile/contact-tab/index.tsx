@@ -26,7 +26,7 @@ export interface Address {
   types: string[];
 }
 
-export const Contact: React.FC = () => {
+export const ContactTab: React.FC = () => {
   const location = useLocation();
   const { height } = useWindowSize();
   const history = useHistory();

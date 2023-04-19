@@ -9,7 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
     public class VisitBackReferralManager
     {
         private IHttpContextAccessor _contextAccessor;
@@ -97,6 +98,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     select visitBackReferralData
                 ).ToList();
             }
+
+            return allReferrals;
+        }
+
+        public List<VisitBackReferral> GetBackReferralDataForId(Guid VisitDataStatusId)
+        {
+            // This data is for the past 6 months
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
+
+            List<VisitBackReferral> allReferrals = (
+                from visitBackReferralData in _visitBackReferralRepo.GetAll().Where(x => x.VisitDataStatusId == VisitDataStatusId)
+                join visitStatusData in _visitDataStatusRepo.GetAll() on visitBackReferralData.VisitDataStatusId equals visitStatusData.Id
+                join visitData in _visitDataRepo.GetAll() on visitStatusData.VisitDataId equals visitData.Id
+                join visit in _visitRepo.GetAll().Where(x => x.PlannedVisitDate >= sixMonthsBack) on visitData.VisitId equals visit.Id
+                select visitBackReferralData
+            ).ToList();
 
             return allReferrals;
         }

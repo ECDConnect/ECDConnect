@@ -13,15 +13,16 @@ import {
   careForBabySteps,
   getHealhcareteps,
   followUpSteps,
-  getPillar1Steps,
+  getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
 import { DevelopmentalScreeningVisitSection } from './danger-signs-steps/developmental-screening-weeks';
-import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
+import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
 import { getMotherById } from '@/store/mother/mother.selectors';
 import { dangerSignsVisitSection } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/care-for-mom-steps/danger-signs';
+import { getPregnancyDay } from '@/utils/mom/pregnant.utils';
 
 interface FormProps {
   onBack: () => void;
@@ -38,7 +39,7 @@ export const Form = ({ onBack }: FormProps) => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const referralsForInfant = useSelector(getReferralsForInfantSelector);
+  const referralsForMother = useSelector(getReferralsForMothertSelector);
 
   const { isOnline } = useOnlineStatus();
 
@@ -58,7 +59,7 @@ export const Form = ({ onBack }: FormProps) => {
   );
 
   // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  // const isFirstVisit = true;
 
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
@@ -71,6 +72,10 @@ export const Form = ({ onBack }: FormProps) => {
     },
     [previousVisit?.visitDataStatus]
   );
+
+  const pregnancyDay = getPregnancyDay(mother?.expectedDateOfDelivery!);
+  const isEqualOrAfter98andEqualOrBefore168Days =
+    pregnancyDay >= 98 && pregnancyDay <= 168;
 
   const isDangerSignsFollowUpForMom = isFollowUp(
     dangerSignsVisitSection,
@@ -153,18 +158,19 @@ export const Form = ({ onBack }: FormProps) => {
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pregnancyCare:
-        return getPillar1Steps();
+        return getPregnancyCareSteps(isEqualOrAfter98andEqualOrBefore168Days);
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDevelopmentalScreeningWeeksFollowUp);
       default:
-        return followUpSteps(!!referralsForInfant?.length);
+        return followUpSteps(!!referralsForMother?.length);
     }
   }, [
     activityName,
     isDangerSignsFollowUpForMom,
     isDangerSignsFollowUpForBaby,
+    isEqualOrAfter98andEqualOrBefore168Days,
     isDevelopmentalScreeningWeeksFollowUp,
-    referralsForInfant?.length,
+    referralsForMother?.length,
   ]);
 
   return (

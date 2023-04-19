@@ -12,7 +12,6 @@ import {
 import { noneOption, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
-import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { Translations } from './translations';
 

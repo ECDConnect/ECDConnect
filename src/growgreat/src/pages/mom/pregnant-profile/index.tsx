@@ -56,6 +56,7 @@ export const PregnantProfile: React.FC = () => {
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+  // const [isStartVisit, setIsStartVisit] = useState(false);
 
   const isLargeName =
     (mother?.user?.firstName || '').length +

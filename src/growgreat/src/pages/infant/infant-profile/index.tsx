@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
+import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
@@ -10,7 +10,6 @@ import { InfantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { VisitsTab } from './visits-tab';
-import { Contact } from './contact';
 import { getJoyrideStyles } from '@/components/walkthrough/styles';
 import { Tooltip } from '@/components/walkthrough/tooltip';
 import Joyride, { Step } from 'react-joyride';
@@ -20,6 +19,9 @@ import {
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
 import { contactSteps } from './contact/walkthrough/steps';
+import { useDialog } from '@ecdlink/core';
+import { ReferralsTab } from './referrals-tab';
+import { ContactTab } from './contact-tab';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -75,20 +77,13 @@ export const InfantProfile: React.FC = () => {
       title: 'Referrals',
       initActive: false,
       index: INFANT_PROFILE_TABS.REFERRALS,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ReferralsTab />,
     },
     {
       title: 'Contact',
       index: INFANT_PROFILE_TABS.CONTACT,
       initActive: false,
-      child: <Contact />,
+      child: <ContactTab />,
     },
   ];
 
