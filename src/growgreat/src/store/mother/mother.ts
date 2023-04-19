@@ -5,6 +5,7 @@ import { addEventRecord } from '../eventRecord/eventRecord.actions';
 import { addInfant, getInfantCountForMonth } from '../infant/infant.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
+  addAdditionalVisitForMother,
   addMother,
   getAllMotherEventRecordTypes,
   getMotherCountForMonth,
@@ -47,6 +48,7 @@ const motherSlice = createSlice({
     setThunkActionStatus(builder, updateMotherContactDetails);
     setThunkActionStatus(builder, getMotherCountForMonth);
     setThunkActionStatus(builder, getMotherVisits);
+    setThunkActionStatus(builder, addAdditionalVisitForMother);
     setThunkActionStatus(builder, getReferralsForMother);
     setThunkActionStatus(builder, getCompletedReferralsForMother);
     setThunkActionStatus(builder, getBackReferralsForMother);
@@ -108,6 +110,15 @@ const motherSlice = createSlice({
     );
     builder.addCase(getBackReferralsForMother.fulfilled, (state, action) => {
       state.backReferralsForMother = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addAdditionalVisitForMother.fulfilled, (state, action) => {
+      if (state.visits) {
+        state.visits = [...state.visits, action.payload];
+      } else {
+        state.visits = [action.payload];
+      }
+
       setFulfilledThunkActionStatus(state, action);
     });
   },

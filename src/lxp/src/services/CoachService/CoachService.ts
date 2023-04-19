@@ -93,7 +93,7 @@ class CoachService {
     const response = await apiInstance.post<any>(``, {
       query: `
       query coachByCoachUserId($userId: String) {
-        GetAllCoach(where: { userId: { eq: $userId } }) {
+        coachByCoachUserId(userId: $userId) {
                signingSignature
                id
                startDate
@@ -165,7 +165,7 @@ class CoachService {
       throw new Error('Get Coach Failed - Server connection error');
     }
 
-    return response.data.data.GetAllCoach[0];
+    return response.data.data.coachByCoachUserId;
   }
 
   async coachNameByUserId(userId: string): Promise<CoachDto> {

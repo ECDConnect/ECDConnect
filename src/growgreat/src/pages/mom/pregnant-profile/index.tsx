@@ -100,7 +100,7 @@ export const PregnantProfile: React.FC = () => {
         tabClassName="min-w-0 w-24"
         className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
         tabItems={tabItems}
-        setSelectedIndex={state.activeTabIndex}
+        setSelectedIndex={state?.activeTabIndex ?? 0}
       />
     </BannerWrapper>
   );

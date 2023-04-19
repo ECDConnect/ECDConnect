@@ -141,8 +141,6 @@ export const MomActivityList: React.FC = () => {
       (item) => !completedVisits?.includes(item.title)
     );
 
-    console.log({ completedActivities });
-
     const completedForms = completedActivities.map(
       (item): MenuListDataItem => ({
         showIcon: true,
@@ -157,8 +155,6 @@ export const MomActivityList: React.FC = () => {
         rightIconClassName: 'h-5 w-5 text-successMain',
       })
     );
-
-    console.log({ completedForms });
 
     const uncompletedForms = uncompletedActivities.map(
       (item): MenuListDataItem => ({
@@ -186,7 +182,9 @@ export const MomActivityList: React.FC = () => {
         menuIconClassName: 'border-0',
         iconColor: 'white',
         title: 'Follow up',
+        titleStyle: 'text-textDark semibold',
         subTitle: 'Schedule your next visit, make referrals & save notes',
+        subTitleStyle: 'text-textMid',
         iconBackgroundColor: 'tertiary' as Colours,
         backgroundColor: 'uiBg' as Colours,
         onActionClick: () => {
@@ -229,9 +227,9 @@ export const MomActivityList: React.FC = () => {
       visitThunkActions.getGrowthDataForInfant({ infantId })
     ).unwrap();
     appDispatch(
-      referralThunkActions.getReferralsForInfant({ infantId })
+      referralThunkActions.getReferralsForVisitId({ visitId })
     ).unwrap();
-  }, [appDispatch, infantId, motherId]);
+  }, [appDispatch, infantId, motherId, visitId]);
 
   useLayoutEffect(() => {
     // TODO: add integration

@@ -13,6 +13,7 @@ import {
   VisitBackReferral,
   VisitDataStatus,
   VisitDataStatusFilterInput,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -34,6 +35,7 @@ export const InfantActions = {
   GET_COMPLETED_REFERRALS_FOR_INFANT: 'getCompletedReferralsForInfant',
   GET_BACK_REFERRALS_FOR_INFANT: 'getBackReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
+  ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
 };
 
 export interface UpdateInfantCaregiver {
@@ -315,6 +317,33 @@ export const updateInfantCaregiver = createAsyncThunk<
         return await new InfantService(
           userAuth?.auth_token
         ).updateInfantCaregiver(infantId, input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addAdditionalVisitForInfant = createAsyncThunk<
+  VisitDto,
+  VisitModelInput,
+  ThunkApiType<RootState>
+>(
+  InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new InfantService(
+          userAuth?.auth_token
+        ).addAdditionalVisitForChild(input);
+
+        return response;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
