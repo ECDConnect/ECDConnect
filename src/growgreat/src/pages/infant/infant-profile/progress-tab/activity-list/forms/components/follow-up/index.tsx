@@ -121,15 +121,6 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${
-            !!caregiverName ? caregiverName + ' &' : ''
-          } ${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -140,7 +131,6 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
@@ -148,6 +138,16 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
             !!caregiverName ? 'are' : 'is'
           } going well`,
           value: 100,
+        };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${
+            !!caregiverName ? caregiverName + ' &' : ''
+          } ${name} need urgent support`,
+          value: 25,
         };
     }
   }, [caregiverName, name, previousVisit?.scoreColor]);

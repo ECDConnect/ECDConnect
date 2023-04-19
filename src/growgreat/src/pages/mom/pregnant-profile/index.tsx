@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -11,6 +11,8 @@ import ROUTES from '@/routes/routes';
 import { PregnantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { Contact } from './contact';
+import { useAppDispatch } from '@/store';
+import { motherThunkActions } from '@/store/mother';
 import { Visits } from './visits';
 
 export const PREGNANT_PROFILE_TABS = {
@@ -23,9 +25,7 @@ export const PREGNANT_PROFILE_TABS = {
 export const PregnantProfile: React.FC = () => {
   const { state } = useLocation<PregnantProfileRouteState>();
 
-  const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
-    state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
-  );
+  const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
 
@@ -38,7 +38,7 @@ export const PregnantProfile: React.FC = () => {
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
-  const [isStartVisit, setIsStartVisit] = useState(false);
+  // const [isStartVisit, setIsStartVisit] = useState(false);
 
   const isLargeName =
     (mother?.user?.firstName || '').length +
@@ -80,6 +80,11 @@ export const PregnantProfile: React.FC = () => {
     [history]
   );
 
+  useLayoutEffect(() => {
+    (async () =>
+      appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap())();
+  }, [appDispatch, motherId]);
+
   return (
     <BannerWrapper
       size="medium"
@@ -95,10 +100,7 @@ export const PregnantProfile: React.FC = () => {
         tabClassName="min-w-0 w-24"
         className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
         tabItems={tabItems}
-        setSelectedIndex={selectedTabIndex}
-        tabSelected={(tab: TabItem, tabIndex: number) =>
-          setSelectedTabIndex(tabIndex)
-        }
+        setSelectedIndex={state?.activeTabIndex ?? 0}
       />
     </BannerWrapper>
   );

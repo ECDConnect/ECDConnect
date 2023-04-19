@@ -1,4 +1,6 @@
 import Compressor from 'compressorjs';
+import html2canvas from 'html2canvas';
+import { saveAs } from 'file-saver';
 
 // DEFAULT 80 % COMPRESSION, 60% CAN ALSO BE USED, BUT NOT RECOMMENDED
 export const getCompressedImage = async (
@@ -20,4 +22,20 @@ export const getCompressedImage = async (
       },
     });
   });
+};
+
+export const captureAndDownloadComponent = async (
+  element: HTMLElement,
+  fileName?: string
+) => {
+  try {
+    const canvas = await html2canvas(element);
+    canvas.toBlob((blob) => {
+      if (blob) {
+        saveAs(blob, `${fileName ?? 'image'}.png`);
+      }
+    });
+  } catch (error) {
+    console.error('Failed to capture component:', error);
+  }
 };

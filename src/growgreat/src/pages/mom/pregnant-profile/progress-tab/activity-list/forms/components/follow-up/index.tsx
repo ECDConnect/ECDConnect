@@ -4,15 +4,17 @@ import { MotherDto, toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
-import Pregnant from '@/assets/pregnant.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
 import Infant from '@/assets/infant.svg';
 import P1 from '@/assets/pillar/p1.svg';
-import P2 from '@/assets/pillar/p2.svg';
-import P3 from '@/assets/pillar/p3.svg';
-import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
 
-import { activitiesColours, activitiesTypes } from '../../../activities-list';
+import {
+  activitiesColours,
+  activitiesSectionTypes,
+  activitiesTypes,
+} from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 
 interface FollowUpComponentProps {
@@ -72,13 +74,6 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -87,23 +82,33 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
           message: `${name} are going well`,
           value: 100,
         };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${name} need urgent support`,
+          value: 25,
+        };
     }
   }, [name, previousVisit?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
-      case activitiesTypes.healthCare:
-        return { icon: Pregnant, color: activitiesColours.other.primaryColor };
-      case activitiesTypes.nutrition:
-        return { icon: Infant, color: activitiesColours.other.primaryColor };
-      case activitiesTypes.pregnancyCare:
+      case activitiesSectionTypes.healthCare:
+        return {
+          icon: BabyHealthcare,
+          color: activitiesColours.other.primaryColor,
+        };
+      case activitiesSectionTypes.nutrition:
+        return { icon: P1, color: '#8CDBDF' };
+      case activitiesSectionTypes.pregnancyCare:
         return { icon: P1, color: activitiesColours.pillar1.primaryColor };
       default:
         return { icon: P5, color: activitiesColours.pillar5.primaryColor };
@@ -127,6 +132,21 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
     return groupedData;
   }, [previousVisit?.visitDataStatus]) as Status | undefined;
 
+  if (!previousVisit?.visitDataStatus?.length) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven't visited ${name} yet`}
+          />
+        </div>
+      </div>
+    );
+  }
+
   return (
     <>
       <div className="flex gap-4">
@@ -135,7 +155,7 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
           type="h4"
           text={progressBarOptions.message}
         />
-        <div className="w-2/4">
+        <div className="h-16 w-2/4">
           <ProgressBar
             className="h-2"
             label={previousVisit?.score || ''}
@@ -175,9 +195,7 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
               className="my-6"
               icon={icon}
               items={uniqueData.map((data): Item => {
-                const { icon, color } = getVisitIcon(
-                  data?.visitData?.visitName || ''
-                );
+                const { icon, color } = getVisitIcon(data?.section || '');
                 return {
                   customIcon: icon,
                   iconHexBackgroundColour: color,

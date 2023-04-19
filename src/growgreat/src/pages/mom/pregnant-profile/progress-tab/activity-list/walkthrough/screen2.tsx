@@ -16,7 +16,7 @@ export const Screen2 = ({ currentStep, className, onClick }: Step) => {
 
   const { width, height } = useWindowSize();
 
-  const isFollowUp = Number(currentStep) >= 6;
+  const isFollowUp = Number(currentStep) >= 5;
 
   const today = useMemo(() => new Date(), []);
   const options: Intl.DateTimeFormatOptions = useMemo(

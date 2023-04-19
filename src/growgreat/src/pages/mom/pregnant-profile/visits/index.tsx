@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -23,9 +23,11 @@ import {
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
-import { useDialog, VisitDto } from '@ecdlink/core';
+import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
+import { VisitModelInput } from '@/../../../packages/graphql/lib';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 const HEADER_HEIGHT = 64;
 
@@ -39,6 +41,8 @@ export const Visits: React.FC = () => {
   const appDispatch = useAppDispatch();
 
   const dialog = useDialog();
+
+  const { errorDialog } = useRequestResponseDialog();
 
   const [, , , motherId] = location.pathname.split('/');
 
@@ -56,6 +60,19 @@ export const Visits: React.FC = () => {
     'mothers',
     MotherActions.GET_MOTHER_VISITS
   );
+  const {
+    isLoading: isAddingAdditionalVisit,
+    isRejected: isRejectedAdditionalVisit,
+  } = useThunkFetchCall(
+    'mothers',
+    MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER
+  );
+
+  const { isLoading: isLoadingAddAdditionalVisit } = useThunkFetchCall(
+    'mothers',
+    MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER
+  );
+  const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
 
   const currentVisit = useMemo((): VisitDto | undefined => {
     const noAttended = visits.filter((item) => !item.attended) || [];
@@ -71,7 +88,7 @@ export const Visits: React.FC = () => {
 
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
 
   const isWeekDeadline =
     dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
@@ -82,22 +99,21 @@ export const Visits: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto): StepItem['type'] => {
+    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
       if (item.attended) {
         return 'completed';
       }
 
       if (
-        currentVisit &&
-        item.visitType?.id === currentVisit.visitType?.id &&
-        mother?.statusInfo?.color !== 'None'
+        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
+        isMissedVisit
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, mother?.statusInfo?.color]
+    [currentVisit, isWeekDeadline]
   );
 
   const visitSteps = useMemo(() => {
@@ -109,25 +125,31 @@ export const Visits: React.FC = () => {
     );
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.plannedVisitDate);
+      const date = new Date(item.orderDate);
+      currentDate.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(((isWeekDeadline &&
-          currentVisit.visitType?.id === item.visitType?.id) ||
-          isMissedVisit) && { subTitleColor: 'alertDark' }),
+        ...(getType(item, isMissedVisit) === 'inProgress' && {
+          subTitleColor: 'alertDark',
+        }),
         inProgressStepIcon: isMissedVisit
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
-        type: getType(item),
+        type: getType(item, isMissedVisit),
         showActionButton:
-          item?.id === motherCurrentVisit?.id || getType(item) === 'inProgress',
+          item?.id === motherCurrentVisit?.id ||
+          getType(item, isMissedVisit) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -157,11 +179,9 @@ export const Visits: React.FC = () => {
   }, [
     currentDate,
     currentVisit?.id,
-    currentVisit?.visitType?.id,
     getType,
     history,
     insertedDate,
-    isWeekDeadline,
     location.pathname,
     motherCurrentVisit?.id,
     visits,
@@ -184,8 +204,26 @@ export const Visits: React.FC = () => {
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/start-visit`);
+                isLoading: isLoadingAddAdditionalVisit,
+                disabled: isLoadingAddAdditionalVisit,
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    motherId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+                  const response = await appDispatch(
+                    motherThunkActions.addAdditionalVisitForMother(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
                   onClose();
                 },
                 type: 'filled',
@@ -195,6 +233,8 @@ export const Visits: React.FC = () => {
               {
                 text: 'Book a visit',
                 colour: 'primary',
+                isLoading: isLoadingAddAdditionalVisit,
+                disabled: isLoadingAddAdditionalVisit,
                 onClick: () => {
                   history.push(`${location.pathname}/book-visit`);
                   onClose();
@@ -208,12 +248,34 @@ export const Visits: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [
+    appDispatch,
+    dialog,
+    history,
+    isLoadingAddAdditionalVisit,
+    location.pathname,
+    motherId,
+  ]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),
     [history, location.pathname]
   );
+
+  useEffect(() => {
+    if (!wasAddingAdditionalVisit && isAddingAdditionalVisit) {
+      return dialog({
+        color: 'transparent',
+        render: () => {},
+      });
+    }
+  }, [dialog, isAddingAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (wasAddingAdditionalVisit && isRejectedAdditionalVisit) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejectedAdditionalVisit, wasAddingAdditionalVisit]);
 
   useLayoutEffect(() => {
     appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap();

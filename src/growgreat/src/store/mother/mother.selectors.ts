@@ -1,4 +1,8 @@
-import { EventRecordType } from '@ecdlink/graphql';
+import {
+  EventRecordType,
+  VisitBackReferral,
+  VisitDataStatus,
+} from '@ecdlink/graphql';
 import { MotherDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 
@@ -56,3 +60,47 @@ export const getMotherLastVisitSelector = (
       )
     : undefined;
 };
+
+export const getMotherPreviousVisitSelector = (
+  state: RootState,
+  currentPlannedVisitDate: string
+) => {
+  const visits = state.mothers.visits;
+
+  if (!visits) return;
+
+  const filteredVisits = visits.filter((visit) => {
+    const plannedVisitDate = new Date(visit.plannedVisitDate);
+    return plannedVisitDate < new Date(currentPlannedVisitDate);
+  });
+
+  const previousVisit = filteredVisits.reduce(
+    (previous: VisitDto | null, current: VisitDto) => {
+      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
+      if (
+        !previous ||
+        currentPlannedVisitDate > new Date(previous.plannedVisitDate)
+      ) {
+        return current;
+      }
+      return previous;
+    },
+    null
+  );
+
+  return previousVisit;
+};
+
+export const getReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined => state.mothers.referralsForMother || [];
+
+export const getCompletedReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined =>
+  state.mothers.completedReferralsForMother || [];
+
+export const getBackReferralsForMotherSelector = (
+  state: RootState
+): VisitBackReferral[] | undefined =>
+  state.mothers.backReferralsForMother || [];

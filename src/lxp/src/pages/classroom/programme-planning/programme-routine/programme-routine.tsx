@@ -165,13 +165,6 @@ export const ProgrammeRoutine: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDay]);
 
-  const handleSummaryView = () => {
-    history.replace(ROUTES.PROGRAMMES.SUMMARY, {
-      programmeId: programme?.id,
-      variation: 'update',
-    });
-  };
-
   const onActivitySelected = (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto,
@@ -568,7 +561,6 @@ export const ProgrammeRoutine: React.FC = () => {
                 }}
               />
             )}
-          // check the necessity of this alert message
           {/* {isDayCompleted &&
             isProgrammeCompleted &&
             isWeekComplete &&

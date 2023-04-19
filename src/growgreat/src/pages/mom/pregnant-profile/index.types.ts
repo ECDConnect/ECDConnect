@@ -8,3 +8,7 @@ export type PregnantProfileRouteState = {
     infantId: string;
   };
 };
+
+export interface PregnantProfileParams {
+  id: string;
+}

@@ -312,7 +312,7 @@ class PractitionerService {
             name
             classroomGroupName
             classroomGroupId
-            classroomId
+            id
             insertedDate
           }
         }

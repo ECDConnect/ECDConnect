@@ -17,7 +17,6 @@ import {
 import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { useParams } from 'react-router';
@@ -90,8 +89,6 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
   const { visitId } = useParams<MotherProfileParams>();
-
-  const { successDialog } = useRequestResponseDialog();
 
   const appDispatch = useAppDispatch();
 
@@ -249,7 +246,10 @@ export const DynamicForm = ({
   ]);
 
   const renderButton = useMemo(() => {
-    if (Number(currentStep) === 0) {
+    if (
+      Number(currentStep) === 0 &&
+      !(Number(currentStep) <= Number(steps?.length) - 1)
+    ) {
       return {
         action: handleOnNext,
         text: 'Start',
@@ -277,17 +277,9 @@ export const DynamicForm = ({
       (wasLoading && !isLoading) ||
       (wasLoadingReferral && !isLoadingReferral)
     ) {
-      successDialog();
       onClose?.();
     }
-  }, [
-    isLoading,
-    isLoadingReferral,
-    onClose,
-    successDialog,
-    wasLoading,
-    wasLoadingReferral,
-  ]);
+  }, [isLoading, isLoadingReferral, onClose, wasLoading, wasLoadingReferral]);
 
   return (
     <div className="flex h-full flex-col">

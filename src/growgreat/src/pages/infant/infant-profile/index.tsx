@@ -8,7 +8,6 @@ import {
   DialogPosition,
   TabItem,
   TabList,
-  Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
@@ -20,7 +19,8 @@ import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { VisitsTab } from './visits-tab';
 import { useDialog } from '@ecdlink/core';
-import { Contact } from './contact';
+import { ReferralsTab } from './referrals-tab';
+import { ContactTab } from './contact-tab';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -66,19 +66,12 @@ export const InfantProfile: React.FC = () => {
     {
       title: 'Referrals',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ReferralsTab />,
     },
     {
       title: 'Contact',
       initActive: false,
-      child: <Contact />,
+      child: <ContactTab />,
     },
   ];
 
@@ -132,7 +125,7 @@ export const InfantProfile: React.FC = () => {
         tabClassName="min-w-0 w-24"
         className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
         tabItems={tabItems}
-        setSelectedIndex={state.activeTabIndex}
+        setSelectedIndex={state?.activeTabIndex ?? 0}
       />
     </BannerWrapper>
   );

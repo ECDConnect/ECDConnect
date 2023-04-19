@@ -132,8 +132,7 @@ export const NutritonEatingStep = ({
     <>
       <Header
         customIcon={P1}
-        iconHexBackgroundColor="#8CDBDF"
-        hexBackgroundColor="#a2dadd4d"
+        backgroundColor="tertiary"
         title={replaceBraces(visitSection, name)}
       />
       <div className="flex flex-col gap-2 p-4">
