@@ -128,6 +128,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitDataStatus> GetCompletedReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        {
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_child);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitBackReferral> GetBackReferralsForInfant([Service] VisitBackReferralManager visitBackReferralManager, string id, Boolean referralCompleted, Boolean backReferralCompleted) {
             return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_child, referralCompleted, backReferralCompleted);
         }

@@ -12,6 +12,7 @@ import {
   SiteAddressInput,
   VisitBackReferral,
   VisitDataStatus,
+  VisitDataStatusFilterInput,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
@@ -30,7 +31,9 @@ export const InfantActions = {
   GET_ALL_INFANT_EVENT_RECORD_TYPES: 'getAllInfantEventRecordTypes',
   UPDATE_INFANT_CAREGIVER: 'updateInfantCaregiver',
   GET_REFERRALS_FOR_INFANT: 'getReferralsForInfant',
+  GET_COMPLETED_REFERRALS_FOR_INFANT: 'getCompletedReferralsForInfant',
   GET_BACK_REFERRALS_FOR_INFANT: 'getBackReferralsForInfant',
+  UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
 };
 
 export interface UpdateInfantCaregiver {
@@ -353,6 +356,38 @@ export const getReferralsForInfant = createAsyncThunk<
   }
 );
 
+export const getCompletedReferralsForInfant = createAsyncThunk<
+  VisitDataStatus[],
+  { infantId: string },
+  ThunkApiType<RootState>
+>(
+  InfantActions.GET_COMPLETED_REFERRALS_FOR_INFANT,
+  async ({ infantId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let referrals: VisitDataStatus[];
+
+      if (userAuth?.auth_token) {
+        referrals = await new Referral(
+          userAuth?.auth_token
+        ).getCompletedReferralsForInfant(infantId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!referrals) {
+        return rejectWithValue('Error getting more information');
+      }
+      return referrals;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getBackReferralsForInfant = createAsyncThunk<
   VisitBackReferral[],
   {
@@ -389,6 +424,29 @@ export const getBackReferralsForInfant = createAsyncThunk<
         return rejectWithValue('Error getting more information');
       }
       return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateVisitDataStatus = createAsyncThunk<
+  {},
+  { input: VisitDataStatusFilterInput[] },
+  ThunkApiType<RootState>
+>(
+  InfantActions.UPDATE_VISIT_DATA_STATUS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        new Referral(userAuth?.auth_token ?? '').updateVisitDataStatus(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
     } catch (err) {
       return rejectWithValue(err);
     }

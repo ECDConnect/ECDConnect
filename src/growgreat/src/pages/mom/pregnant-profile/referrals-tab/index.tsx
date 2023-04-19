@@ -8,7 +8,6 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import { InfantProfileParams } from '../infant-profile.types';
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
@@ -21,13 +20,14 @@ import {
   useState,
 } from 'react';
 import { useAppDispatch } from '@/store';
-import { getInfantById } from '@/store/infant/infant.selectors';
 import thumbsUpImage from '@/assets/thumbsUp.png';
-import { infantSelectors, infantThunkActions } from '@/store/infant';
 import { toCamelCase } from '@ecdlink/core';
 import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
 import { ReactComponent as PollyImpressed } from '@/assets/celebrateIcon.svg';
 import { format } from 'date-fns';
+import { getMotherById } from '@/store/mother/mother.selectors';
+import { PregnantProfileParams } from '../index.types';
+import { motherSelectors, motherThunkActions } from '@/store/mother';
 
 const HEADER_HEIGHT = 64;
 
@@ -40,40 +40,39 @@ interface GroupedData {
 
 export const ReferralsTab: React.FC = () => {
   const { height } = useWindowSize();
-  const { id: infantId } = useParams<InfantProfileParams>();
-  const referralsForInfant = useSelector(
-    infantSelectors.getReferralsForInfantSelector
+  const { id: motherId } = useParams<PregnantProfileParams>();
+  const referralsForMother = useSelector(
+    motherSelectors.getReferralsForMotherSelector
   );
-  const completedReferralsForInfant =
-    useSelector(infantSelectors.getCompletedReferralsForInfantSelector) || [];
+  const completedreferralsForMother =
+    useSelector(motherSelectors.getCompletedReferralsForMotherSelector) || [];
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
   const [showMarkAllButton, setShowMarkAllButton] = useState(true);
-  // const [showBackReferralButton, setShowBackReferralButton] = useState(true);
   const [isReferralsView, setIsReferralsView] = useState(true);
 
   const appDispatch = useAppDispatch();
-  const infant = useSelector((state: RootState) =>
-    getInfantById(state, infantId)
+  const mother = useSelector((state: RootState) =>
+    getMotherById(state, motherId)
   );
 
   // Getting referrals for approval
   useLayoutEffect(() => {
     appDispatch(
-      infantThunkActions.getReferralsForInfant({ infantId })
+      motherThunkActions.getReferralsForMother({ motherId })
     ).unwrap();
-  }, [appDispatch, infantId]);
+  }, [appDispatch, motherId]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
     appDispatch(
-      infantThunkActions.getCompletedReferralsForInfant({ infantId })
+      motherThunkActions.getCompletedReferralsForMother({ motherId })
     ).unwrap();
-  }, [appDispatch, infantId]);
+  }, [appDispatch, motherId]);
 
   // group data under sections
   const groupedData = useMemo(() => {
-    const groupedData = referralsForInfant?.reduce(
+    const groupedData = referralsForMother?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const section = toCamelCase(currentValue?.section || '');
         if (!section) return acc;
@@ -86,7 +85,7 @@ export const ReferralsTab: React.FC = () => {
       {}
     );
     return groupedData;
-  }, [referralsForInfant]) as GroupedData;
+  }, [referralsForMother]) as GroupedData;
 
   // all sections
   const sections =
@@ -124,7 +123,7 @@ export const ReferralsTab: React.FC = () => {
         if (newState.length > 0) {
           // appDispatch(infantActions.addInfantCompleteReferrals(newState));
           appDispatch(
-            infantThunkActions.updateVisitDataStatus({ input: newState })
+            motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
         }
 
@@ -215,14 +214,14 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Referrals for ${infant?.user?.firstName || ''} `}
+              text={`Referrals for ${mother?.user?.firstName || ''} `}
             />
             <Typography
               className="col-span-2 row-span-2"
               type="body"
               align="left"
               weight="skinny"
-              text={`${referralsForInfant?.length} referrals`}
+              text={`${referralsForMother?.length} referrals`}
               color="textMid"
             />
           </div>
@@ -239,14 +238,14 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${infant?.user?.firstName || ''} `}
+              text={`Back-refferals for ${mother?.user?.firstName || ''} `}
             />
             <Typography
               className="col-span-2 row-span-2"
               type="body"
               align="left"
               weight="skinny"
-              text={`${completedReferralsForInfant?.length} back-referrals to update`}
+              text={`${completedreferralsForMother?.length} back-referrals to update`}
               color="textMid"
             />
           </div>
@@ -254,7 +253,7 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* BODY: REFERRALS -----------------------------------------*/}
-      {isReferralsView && referralsForInfant?.length !== 0 && (
+      {isReferralsView && referralsForMother?.length !== 0 && (
         <div className="px-4 pb-4 pt-7">
           <Typography
             type="h4"
@@ -322,7 +321,7 @@ export const ReferralsTab: React.FC = () => {
                 messageColor="successDark"
                 variant="flat"
                 message={`Great job! You have made all referrals for ${
-                  infant?.user?.firstName || ''
+                  mother?.user?.firstName || ''
                 }`}
                 customIcon={
                   <div>
@@ -347,9 +346,9 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedReferralsForInfant?.length > 0 && (
+      {!isReferralsView && completedreferralsForMother?.length > 0 && (
         <div className="px-4 pb-4 pt-7">
-          {completedReferralsForInfant?.map((item: VisitDataStatus) => (
+          {completedreferralsForMother?.map((item: VisitDataStatus) => (
             <div>
               <div className="my-4 flex items-center gap-3">
                 <div className="flex flex-col">
@@ -410,7 +409,7 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* EMPTY BODY: REFERRALS -----------------------------------------*/}
-      {isReferralsView && referralsForInfant?.length === 0 && (
+      {isReferralsView && referralsForMother?.length === 0 && (
         <div className="px-4 pb-4 pt-7">
           <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
             <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
@@ -420,7 +419,7 @@ export const ReferralsTab: React.FC = () => {
               <Typography
                 type="h3"
                 color={'textDark'}
-                text={`No referrals for ${infant?.user?.firstName || ''}! `}
+                text={`No referrals for ${mother?.user?.firstName || ''}! `}
                 className="pt-2"
                 align="center"
               />
@@ -435,7 +434,7 @@ export const ReferralsTab: React.FC = () => {
           </div>
 
           {/* Show back referral button when there are completed referrals  */}
-          {completedReferralsForInfant?.length > 0 && (
+          {completedreferralsForMother?.length > 0 && (
             <Button
               text="Manage back-referrals"
               icon="ClipboardCheckIcon"
@@ -451,7 +450,7 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* EMPTY BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedReferralsForInfant?.length === 0 && (
+      {!isReferralsView && completedreferralsForMother?.length === 0 && (
         <div className="px-4 pb-4 pt-7">
           <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
             <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
@@ -462,7 +461,7 @@ export const ReferralsTab: React.FC = () => {
                 type="h3"
                 color={'textDark'}
                 text={`All back-referrals are complted for ${
-                  infant?.user?.firstName || ''
+                  mother?.user?.firstName || ''
                 }! `}
                 className="pt-2"
                 align="center"

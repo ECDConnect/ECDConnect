@@ -1391,7 +1391,34 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     select visitStatusData
                 ).ToList();
             }
+            return allReferrals;
+        }
 
+        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType)
+        {
+            // This data is for the past 6 months
+            List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
+
+            if (clientType == Constants.GGSettings.client_mother)
+            {
+                allReferrals = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+            }
+            else
+            {
+                allReferrals = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+            }
             return allReferrals;
         }
         public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
@@ -1573,7 +1600,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return allData;
         }
-
         public string GetGrowthStatusForInfant(string id, string firstName, string color)
         {
             var status = "";
@@ -1611,7 +1637,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
             return status;
         }
-
         public string GetRedAlertsForUser(string id, string type)
         {
             var status = "";
@@ -1644,7 +1669,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return status;
         }
-
         public string GetAlertsForMother(string id)
         {
             var status = "";

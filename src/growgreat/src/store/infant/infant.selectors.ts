@@ -123,6 +123,11 @@ export const getReferralsForInfantSelector = (
   state: RootState
 ): VisitDataStatus[] | undefined => state.infants.referralsForInfant || [];
 
+export const getCompletedReferralsForInfantSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined =>
+  state.infants.completedReferralsForInfant || [];
+
 export const getBackReferralsForInfantSelector = (
   state: RootState
 ): VisitBackReferral[] | undefined =>

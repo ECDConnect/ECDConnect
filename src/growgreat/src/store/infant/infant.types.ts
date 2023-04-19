@@ -13,4 +13,5 @@ export interface InfantState {
   eventRecordTypes?: EventRecordType[];
   referralsForInfant?: VisitDataStatus[];
   backReferralsForInfant?: VisitBackReferral[];
+  completedReferralsForInfant?: VisitDataStatus[];
 }
