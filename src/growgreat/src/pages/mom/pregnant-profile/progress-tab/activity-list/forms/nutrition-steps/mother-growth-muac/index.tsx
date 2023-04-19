@@ -1,9 +1,8 @@
 import { Alert, FormInput, Typography } from '@ecdlink/ui';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
 import NutritionCare from '@/assets/nutritionCare.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { replaceBraces } from '@ecdlink/core';

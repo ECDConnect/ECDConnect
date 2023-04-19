@@ -1,6 +1,6 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo } from 'react';
 import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';

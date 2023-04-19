@@ -1,4 +1,8 @@
-import { EventRecordType } from '@ecdlink/graphql';
+import {
+  EventRecordType,
+  VisitBackReferral,
+  VisitDataStatus,
+} from '@ecdlink/graphql';
 import { MotherDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 
@@ -86,3 +90,17 @@ export const getMotherPreviousVisitSelector = (
 
   return previousVisit;
 };
+
+export const getReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined => state.mothers.referralsForMother || [];
+
+export const getCompletedReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined =>
+  state.mothers.completedReferralsForMother || [];
+
+export const getBackReferralsForMotherSelector = (
+  state: RootState
+): VisitBackReferral[] | undefined =>
+  state.mothers.backReferralsForMother || [];

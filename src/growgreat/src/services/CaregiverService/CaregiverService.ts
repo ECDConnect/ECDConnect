@@ -324,8 +324,8 @@ class CaregiverService {
       `,
       variables: {
         userId,
-        recordsPerPage: 1000, // TODO: EC-323
-        pageNumber: 0,
+        recordsPerPage,
+        pageNumber,
       },
     });
 

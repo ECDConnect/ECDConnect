@@ -23,3 +23,22 @@ export interface VisitStatusDto {
   motherDueVisits?: number;
   motherOverDueVisits?: number;
 }
+
+export interface VisitDataStatusDto {
+  id: string;
+  comment: string;
+  color: string;
+  type: string;
+  section: string;
+  isCompleted?: boolean;
+  backReferralCompleted?: boolean;
+  referralDateCompleted?: string;
+  backReferralDateCompleted?: string;
+  visitData?: {
+    id?: string;
+    visitName?: string;
+    visitSection?: string;
+    question?: string;
+    questionAnswer?: string;
+  };
+}
