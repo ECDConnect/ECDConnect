@@ -1,12 +1,6 @@
-import { Alert, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Typography } from '@ecdlink/ui';
 import AntenatalCareImage from '../../assets/antenatalCareImg.png';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import {
-  Label,
-  Header,
-  TipCard,
-} from '@/pages/infant/infant-profile/components';
+import { Header } from '@/pages/infant/infant-profile/components';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';

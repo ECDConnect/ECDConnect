@@ -14,6 +14,9 @@ import {
   getMotherVisits,
   updateMotherAddress,
   updateMotherContactDetails,
+  getReferralsForMother,
+  getCompletedReferralsForMother,
+  getBackReferralsForMother,
 } from './mother.actions';
 import { MotherState } from './mother.types';
 
@@ -46,6 +49,9 @@ const motherSlice = createSlice({
     setThunkActionStatus(builder, getMotherCountForMonth);
     setThunkActionStatus(builder, getMotherVisits);
     setThunkActionStatus(builder, addAdditionalVisitForMother);
+    setThunkActionStatus(builder, getReferralsForMother);
+    setThunkActionStatus(builder, getCompletedReferralsForMother);
+    setThunkActionStatus(builder, getBackReferralsForMother);
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.motherCountForMonth = action.payload;
 
@@ -90,6 +96,21 @@ const motherSlice = createSlice({
           (item) => item.user?.id !== motherId
         );
       }
+    });
+    builder.addCase(getReferralsForMother.fulfilled, (state, action) => {
+      state.referralsForMother = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(
+      getCompletedReferralsForMother.fulfilled,
+      (state, action) => {
+        state.completedReferralsForMother = action.payload;
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+    builder.addCase(getBackReferralsForMother.fulfilled, (state, action) => {
+      state.backReferralsForMother = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addAdditionalVisitForMother.fulfilled, (state, action) => {
       if (state.visits) {

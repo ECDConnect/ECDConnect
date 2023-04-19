@@ -59,7 +59,7 @@ export const Form = ({ onBack }: FormProps) => {
   );
 
   // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  // const isFirstVisit = true;
 
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {

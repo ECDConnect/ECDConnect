@@ -8503,12 +8503,12 @@ export type VisitDataStatusInput = {
 };
 
 export type VisitDataStatusModelInput = {
-  backReferralCompleted?: InputMaybe<Scalars['String']>;
+  backReferralCompleted?: InputMaybe<Scalars['Boolean']>;
   backReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   color?: InputMaybe<Scalars['String']>;
   comment?: InputMaybe<Scalars['String']>;
   id?: InputMaybe<Scalars['String']>;
-  isCompleted?: InputMaybe<Scalars['String']>;
+  isCompleted?: InputMaybe<Scalars['Boolean']>;
   referralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   type?: InputMaybe<Scalars['String']>;
   visitData?: InputMaybe<VisitDataInput>;
