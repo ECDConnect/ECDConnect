@@ -1,0 +1,84 @@
+import { Button, Card, SliderPagination, Typography } from '@ecdlink/ui';
+import { TooltipRenderProps } from 'react-joyride';
+import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
+import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
+import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
+
+type TooltipProps = TooltipRenderProps & {
+  pollySteps?: number[];
+  pollyImpressedSteps?: number[];
+  pollyTimeSteps?: number[];
+  pollyNeutralSteps?: number[];
+};
+
+export function Tooltip({
+  index,
+  isLastStep,
+  primaryProps,
+  size,
+  step,
+  tooltipProps,
+  pollySteps,
+  pollyImpressedSteps,
+  pollyNeutralSteps,
+  pollyTimeSteps,
+}: TooltipProps) {
+  return (
+    <div {...tooltipProps} className={!isLastStep ? 'ml-5' : 'mr-1'}>
+      <Card className="mt-auto rounded-2xl p-6">
+        {step.content && (
+          <div className="flex items-center gap-4 align-middle">
+            {pollySteps?.includes(index) && (
+              <div className="bg-tertiary h-20 w-20 rounded-full">
+                <Polly className="h-20 w-20" />
+              </div>
+            )}
+            {pollyNeutralSteps?.includes(index) && (
+              <div>
+                <PollyNeutral className="h-20 w-20" />
+              </div>
+            )}
+            {pollyImpressedSteps?.includes(index) && (
+              <div>
+                <PollyImpressed className="h-20 w-20" />
+              </div>
+            )}
+            {pollyTimeSteps?.includes(index) && (
+              <div>
+                <PollyTime className="h-20 w-20" />
+              </div>
+            )}
+            <Typography
+              color={'textDark'}
+              type={'h2'}
+              weight={'normal'}
+              text={String(step?.content)}
+            />
+          </div>
+        )}
+        <div className="mt-4 flex justify-between gap-4">
+          {index <= size - 2 && (
+            <SliderPagination
+              totalItems={size - 1}
+              activeIndex={index}
+              className={'py-4'}
+            />
+          )}
+          {!step.spotlightClicks && (
+            <div {...primaryProps} className={'flex w-full justify-end'}>
+              <Button
+                type="filled"
+                color="primary"
+                textColor="white"
+                className="w-full"
+                icon={index < size - 2 ? 'ArrowCircleRightIcon' : 'XIcon'}
+                text={index < size - 2 ? 'Next' : 'Close'}
+              />
+            </div>
+          )}
+        </div>
+      </Card>
+    </div>
+  );
+}
