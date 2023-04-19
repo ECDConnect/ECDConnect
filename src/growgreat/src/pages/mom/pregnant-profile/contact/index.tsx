@@ -141,7 +141,6 @@ export const Contact: React.FC = () => {
 
   return (
     <div
-      id="walkthrough-contact-step-4"
       className="mt-16 flex flex-col p-4 "
       style={{ height: height - HEADER_HEIGHT }}
     >
@@ -233,18 +232,18 @@ export const Contact: React.FC = () => {
           lineHeight="snug"
           text={formattedAddress}
         />
+        <Button
+          text="Go to your phone's map"
+          icon="LocationMarkerIcon"
+          type="outlined"
+          size="small"
+          color="primary"
+          textColor="primary"
+          iconPosition="start"
+          onClick={gotomap}
+          className="mt-2"
+        />
       </div>
-      <Button
-        text="Go to your phone's map"
-        icon="LocationMarkerIcon"
-        type="outlined"
-        size="small"
-        color="primary"
-        textColor="primary"
-        iconPosition="start"
-        onClick={gotomap}
-        className="mt-2"
-      />
       <div className="flex h-full flex-col justify-end">
         <Button
           text="Book a visit"

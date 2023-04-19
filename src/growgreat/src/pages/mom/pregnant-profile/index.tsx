@@ -23,7 +23,6 @@ import {
   WalkthroughInfoPage,
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
-import { capitalizeFirstLetter } from '@ecdlink/core';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -66,17 +65,20 @@ export const PregnantProfile: React.FC = () => {
   const tabItems: TabItem[] = [
     {
       title: 'Visits',
+      index: PREGNANT_PROFILE_TABS.VISITS,
       initActive: true,
       child: <Visits />,
     },
     {
       title: 'Progress',
+      index: PREGNANT_PROFILE_TABS.PROGRESS,
       initActive: false,
       child: <ProgressTab />,
     },
     {
       title: 'Referrals',
       initActive: false,
+      index: PREGNANT_PROFILE_TABS.REFERRALS,
       child: (
         <Typography
           className={'mt-16 p-4'}
@@ -88,27 +90,35 @@ export const PregnantProfile: React.FC = () => {
     },
     {
       title: 'Contact',
+      index: PREGNANT_PROFILE_TABS.CONTACT,
       initActive: false,
       child: <Contact />,
     },
   ];
 
-  const { steps, infoPageSection, hideJoyRideBorders } = useMemo((): {
-    steps: Step[];
-    infoPageSection: WalkthroughInfoPageProps['sectionName'];
-    hideJoyRideBorders?: boolean;
-  } => {
-    switch (state?.activeTabIndex ?? 0) {
-      case PREGNANT_PROFILE_TABS.CONTACT:
-        return {
-          steps: contactSteps,
-          infoPageSection: 'contact',
-          hideJoyRideBorders: walkthroughStepIndex === 3,
-        };
-      default:
-        return { steps: [], infoPageSection: 'visit' };
-    }
-  }, [state?.activeTabIndex, walkthroughStepIndex]);
+  const { steps, infoPageSection, infoPageTitle, hideJoyRideBorders } =
+    useMemo((): {
+      steps: Step[];
+      infoPageTitle: string;
+      infoPageSection: WalkthroughInfoPageProps['sectionName'];
+      hideJoyRideBorders?: boolean;
+    } => {
+      switch (state?.activeTabIndex ?? 0) {
+        case PREGNANT_PROFILE_TABS.CONTACT:
+          return {
+            steps: contactSteps,
+            infoPageTitle: 'Contact',
+            infoPageSection: 'contact tab',
+            hideJoyRideBorders: walkthroughStepIndex === 3,
+          };
+        default:
+          return {
+            steps: [],
+            infoPageSection: 'visit',
+            infoPageTitle: 'Visit',
+          };
+      }
+    }, [state?.activeTabIndex, walkthroughStepIndex]);
 
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
@@ -142,9 +152,10 @@ export const PregnantProfile: React.FC = () => {
         tooltipComponent={({ ...props }) => (
           <Tooltip
             {...props}
-            pollySteps={[0, 2]}
+            pollyInformationalSteps={[0, 2]}
             pollyNeutralSteps={[1]}
             pollyImpressedSteps={[3]}
+            displayCloseButton={props.index < props.size - 1}
           />
         )}
         styles={getJoyrideStyles(hideJoyRideBorders)}
@@ -155,24 +166,31 @@ export const PregnantProfile: React.FC = () => {
         onBack={goBack}
         title={
           isInfoPage
-            ? capitalizeFirstLetter(infoPageSection)
+            ? infoPageTitle
             : `${mother?.user?.firstName || ''} ${
                 !isLargeName ? mother?.user?.surname || '' : ''
               }'s profile`
         }
         backgroundColour="white"
         displayOffline={!isOnline}
-        displayHelp
+        displayHelp={!isInfoPage}
         onHelp={() => setIsInfoPage(true)}
       >
         {isInfoPage ? (
-          <WalkthroughInfoPage sectionName={infoPageSection} onHelp={onHelp} />
+          <WalkthroughInfoPage
+            sectionName={infoPageSection}
+            onHelp={onHelp}
+            onClose={goBack}
+          />
         ) : (
           <TabList
             tabClassName="min-w-0 w-24"
             className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
             tabItems={tabItems}
             setSelectedIndex={state?.activeTabIndex ?? 0}
+            tabSelected={(tab) =>
+              history.push(location.pathname, { activeTabIndex: tab.index })
+            }
           />
         )}
         <div id="walkthrough-last-step" className="w-full"></div>

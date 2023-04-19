@@ -6,10 +6,11 @@ import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 
 type TooltipProps = TooltipRenderProps & {
-  pollySteps?: number[];
+  pollyInformationalSteps?: number[];
   pollyImpressedSteps?: number[];
   pollyTimeSteps?: number[];
   pollyNeutralSteps?: number[];
+  displayCloseButton?: boolean;
 };
 
 export function Tooltip({
@@ -19,17 +20,18 @@ export function Tooltip({
   size,
   step,
   tooltipProps,
-  pollySteps,
+  pollyInformationalSteps,
   pollyImpressedSteps,
   pollyNeutralSteps,
   pollyTimeSteps,
+  displayCloseButton,
 }: TooltipProps) {
   return (
     <div {...tooltipProps} className={!isLastStep ? 'ml-5' : 'mr-1'}>
       <Card className="mt-auto rounded-2xl p-6">
         {step.content && (
           <div className="flex items-center gap-4 align-middle">
-            {pollySteps?.includes(index) && (
+            {pollyInformationalSteps?.includes(index) && (
               <div className="bg-tertiary h-20 w-20 rounded-full">
                 <Polly className="h-20 w-20" />
               </div>
@@ -72,8 +74,8 @@ export function Tooltip({
                 color="primary"
                 textColor="white"
                 className="w-full"
-                icon={index < size - 2 ? 'ArrowCircleRightIcon' : 'XIcon'}
-                text={index < size - 2 ? 'Next' : 'Close'}
+                icon={displayCloseButton ? 'ArrowCircleRightIcon' : 'XIcon'}
+                text={displayCloseButton ? 'Next' : 'Close'}
               />
             </div>
           )}

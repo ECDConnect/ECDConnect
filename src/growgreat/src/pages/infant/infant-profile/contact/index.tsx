@@ -159,9 +159,9 @@ export const Contact: React.FC = () => {
         weight="bold"
         lineHeight="snug"
         text={`Primary Caregiver - ${child?.caregiver?.relation?.description}`}
+        className="mb-4"
       />
-
-      <div className="mt-4 flex-col">
+      <div id="walkthrough-contact-step-1">
         <Typography
           type="h4"
           weight="bold"
@@ -186,9 +186,8 @@ export const Contact: React.FC = () => {
           onClick={callForHelp}
           className="mt-2"
         />
-      </div>
-      <div className="mt-4 flex-col">
         <Typography
+          className="mt-4"
           type="h4"
           weight="bold"
           lineHeight="snug"
@@ -220,15 +219,14 @@ export const Contact: React.FC = () => {
             text={`WhatsApp client`}
           />
         </Button>
-
-        <Alert
-          type={'info'}
-          className="items-left justify-left mt-4 flex"
-          title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
-        />
-        <Divider className="p-4" dividerType="dashed" />
       </div>
-      <div className="flex-col">
+      <Alert
+        type={'info'}
+        className="items-left justify-left mt-4 flex"
+        title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
+      />
+      <Divider className="p-4" dividerType="dashed" />
+      <div id="walkthrough-contact-step-2">
         <Typography type="h4" weight="bold" lineHeight="snug" text="Address" />
         <Typography
           type="h5"
@@ -260,6 +258,7 @@ export const Contact: React.FC = () => {
           onClick={navigate(ROUTES.CLIENTS.INFANT_PROFILE.VISITS.BOOK_VISIT)}
         />
         <Button
+          id="walkthrough-contact-step-3"
           text="Edit information"
           icon="PencilIcon"
           type="outlined"
