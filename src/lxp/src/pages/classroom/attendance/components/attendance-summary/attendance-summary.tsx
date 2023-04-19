@@ -53,6 +53,7 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
   openReports,
+  currentUserId
 }) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
@@ -123,19 +124,26 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   );
 
   useEffect(() => {
-    const lastDate = localStorage.getItem('summarylastDate');
-    const today = new Date().toDateString();
-    if (lastDate !== today) {
-      // Show notification on a new day
-      if (trackedAttendance) {
-        let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
-        if (date === getDay(new Date(today))) {
-          setSuccessMessageVisible(true);
-          localStorage.setItem('summarylastDate', today);
-        }
-      }
+    const storedUserId = localStorage.getItem('currentUserId');
+    if (!currentUserId || currentUserId !== storedUserId) {
+      setSuccessMessageVisible(true);
+      localStorage.setItem('currentUserId', currentUserId);
+      localStorage.setItem('summarylastDate', Date());
     } else {
-      setSuccessMessageVisible(false);
+      const lastDate = localStorage.getItem('summarylastDate');
+      const today = new Date().toDateString();
+      if (lastDate !== today) {
+        // Show notification on a new day
+        if (trackedAttendance) {
+          let date = getDay(new Date(trackedAttendance[0]?.attendanceDate));
+          if (date === getDay(new Date(today))) {
+            setSuccessMessageVisible(true);
+            localStorage.setItem('summarylastDate', today);
+          }
+        }
+      } else {
+        setSuccessMessageVisible(false);
+      }
     }
   }, [trackedAttendance]);
 
