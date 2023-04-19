@@ -19,6 +19,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
+        private VisitBackReferralManager _visitBackReferralManager;
 
         private VisitType _additionalVisitType;
         private string _applicationUserId;
@@ -32,6 +33,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<VisitGrowthDataDay, Guid> _visitGrowthDataDay;
         private IGenericRepository<VisitGrowthDataHeight, Guid> _visitGrowthDataHeight;
+
 
         private string _green;
         private string _amber;
@@ -48,10 +50,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         public VisitDataStatusManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitManager visitManager) {
+            VisitManager visitManager,
+            VisitBackReferralManager visitBackReferralManager) {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitManager = visitManager;
+            _visitBackReferralManager = visitBackReferralManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
 
@@ -1289,8 +1293,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 result = result + "<li>" + Constants.GGSettings.p1_8 + "</li>";
             }
 
-            result = result + "";
-
             return result;
         }
         private string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
@@ -1419,6 +1421,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     select visitStatusData
                 ).ToList();
             }
+
+            foreach (var item in allReferrals)
+            {
+                item.BackReferrals = _visitBackReferralManager.GetBackReferralDataForId(item.VisitDataId); 
+            }
+
             return allReferrals;
         }
         public List<VisitDataStatus> GetReferralDataForVisitId(string visitId) {
