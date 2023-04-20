@@ -1,6 +1,6 @@
-import { ActionModal, Button, LoadingSpinner } from '@ecdlink/ui';
+import { ActionModal, Button, LoadingSpinner, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { ReactElement, useCallback, useEffect, useMemo, useState } from 'react';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useWindowSize } from '@reach/window-size';
 import { useAppDispatch } from '@/store';
@@ -12,18 +12,20 @@ import { useSelector } from 'react-redux';
 import { getMoreInformationSelector } from '@/store/visit/visit.selectors';
 import { replaceBraces } from '@ecdlink/core';
 
-const HEADER_HEIGHT = 140;
+const HEADER_HEIGHT = 120;
 
 export interface WalkthroughInfoPageProps {
   sectionName: string;
   onHelp: () => void;
   onClose: () => void;
+  extraElement?: ReactElement;
 }
 
 export const WalkthroughInfoPage = ({
   sectionName,
   onHelp,
   onClose,
+  extraElement,
 }: WalkthroughInfoPageProps) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
@@ -79,8 +81,40 @@ export const WalkthroughInfoPage = ({
             },
           ]}
         />
+        <Typography
+          type="h4"
+          text={moreInformation?.headerA || ''}
+          className="mt-8"
+        />
+        <Typography
+          type="markdown"
+          text={moreInformation?.descriptionA || ''}
+          className="mt-6"
+        />
+        <Typography
+          type="h4"
+          text={moreInformation?.headerB || ''}
+          className="mt-8"
+        />
+        <Typography
+          type="markdown"
+          text={moreInformation?.descriptionB || ''}
+          className="mt-6"
+        />
+        <Typography
+          type="h4"
+          text={moreInformation?.headerC || ''}
+          className="mt-8"
+        />
+        <Typography
+          type="markdown"
+          text={moreInformation?.descriptionC || ''}
+          className="mt-6"
+        />
+        {extraElement}
+        <span className="mb-5" />
         <Button
-          className="mt-auto"
+          className="mt-auto mb-4"
           type="filled"
           color="primary"
           textColor="white"
@@ -90,7 +124,14 @@ export const WalkthroughInfoPage = ({
         />
       </>
     );
-  }, [isLoading, moreInformationList, onClose, onHelp, sectionName]);
+  }, [
+    extraElement,
+    isLoading,
+    moreInformationList,
+    onClose,
+    onHelp,
+    sectionName,
+  ]);
 
   const getContent = useCallback(async () => {
     if (!isOnline) return;

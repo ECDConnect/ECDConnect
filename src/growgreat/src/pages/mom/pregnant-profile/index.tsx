@@ -23,6 +23,10 @@ import {
   WalkthroughInfoPage,
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
+import { visitSteps } from './visits/walkthrough/steps';
+import { getStringFromClassNameOrId } from '@ecdlink/core';
+import { SuccessCard } from '@/components/success-card/success-card';
+import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -97,29 +101,37 @@ export const PregnantProfile: React.FC = () => {
     },
   ];
 
-  const { steps, infoPageSection, infoPageTitle, hideJoyRideBorders } =
-    useMemo((): {
-      steps: Step[];
-      infoPageTitle: string;
-      infoPageSection: WalkthroughInfoPageProps['sectionName'];
-      hideJoyRideBorders?: boolean;
-    } => {
-      switch (state?.activeTabIndex ?? 0) {
-        case PREGNANT_PROFILE_TABS.CONTACT:
-          return {
-            steps: contactSteps,
-            infoPageTitle: 'Contact',
-            infoPageSection: 'contact tab',
-            hideJoyRideBorders: walkthroughStepIndex === 3,
-          };
-        default:
-          return {
-            steps: [],
-            infoPageSection: 'visit',
-            infoPageTitle: 'Visit',
-          };
-      }
-    }, [state?.activeTabIndex, walkthroughStepIndex]);
+  const {
+    steps,
+    infoPageSection,
+    infoPageTitle,
+    hideJoyRideBorders,
+    displayExtraComponent,
+  } = useMemo((): {
+    steps: Step[];
+    infoPageTitle: string;
+    infoPageSection: WalkthroughInfoPageProps['sectionName'];
+    hideJoyRideBorders?: boolean;
+    displayExtraComponent?: boolean;
+  } => {
+    switch (state?.activeTabIndex ?? 0) {
+      case PREGNANT_PROFILE_TABS.CONTACT:
+        return {
+          steps: contactSteps,
+          infoPageTitle: 'Contact',
+          infoPageSection: 'contact tab',
+          hideJoyRideBorders: walkthroughStepIndex === 3,
+        };
+      default:
+        return {
+          steps: visitSteps,
+          infoPageSection: 'mom visit tab',
+          infoPageTitle: 'Pregnant mom client visits',
+          hideJoyRideBorders: walkthroughStepIndex === 3,
+          displayExtraComponent: true,
+        };
+    }
+  }, [state?.activeTabIndex, walkthroughStepIndex]);
 
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
@@ -182,9 +194,23 @@ export const PregnantProfile: React.FC = () => {
             sectionName={infoPageSection}
             onHelp={onHelp}
             onClose={goBack}
+            extraElement={
+              displayExtraComponent ? (
+                <SuccessCard
+                  className="my-4"
+                  customIcon={<AwardIcon className="h-14	w-14" />}
+                  text={`You can earn points with every visit!`}
+                  textColour="successDark"
+                  color="successBg"
+                />
+              ) : (
+                <></>
+              )
+            }
           />
         ) : (
           <TabList
+            id={getStringFromClassNameOrId(visitSteps[0].target)}
             tabClassName="min-w-0 w-24"
             className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
             tabItems={tabItems}
