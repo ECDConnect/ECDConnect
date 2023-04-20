@@ -422,32 +422,6 @@ export const MonthStatementsDetails: React.FC = () => {
     },
   ];
 
-  //demo pdf table setup
-  const numDays = 29;
-  const data = [
-    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
-  ];
-
-  for (let i = 0; i < 50; i++) {
-    const newArray = {
-      child: 'John Bblocks',
-      id: 'IDTEST2525255',
-      day1: '1',
-      day2: '1',
-      day3: '0',
-      day4: '0',
-      day5: '0',
-    };
-    data.push(newArray);
-  }
-  const tableColumns = [
-    { header: 'Child', dataKey: 'child' },
-    { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
-    })),
-  ];
 
   const footer = [
     'Child Attendance per Day',
@@ -457,22 +431,45 @@ export const MonthStatementsDetails: React.FC = () => {
     // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
 
+  const multipleTableData = [
+    {
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Child', dataKey: 'child' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [{ child: 'John', date: '10/02/2023', amount: 'R 1, 0000' }],
+    },
+    {
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Child', dataKey: 'child' },
+        { header: 'Amount', dataKey: 'amount' },
+        { header: 'Total Amount', dataKey: 'total' },
+      ],
+      data: [
+        {
+          child: 'John',
+          date: '10/02/2023',
+          amount: 'R 1, 0000',
+          total: 'R 1, 0000',
+        },
+      ],
+    },
+  ];
+
   const tableTopContent = {
     pageTitle: `Income Statement`,
     subtitle: 'Text 2',
-    practitioner_name: 'Name: Jenny Droe',
-    id_number: 'ID: ID23YGH444',
-    programme_type: 'ProgrammeType: 46372test',
-    programme_days: 'Programmme Days: Monday to Friday',
-    site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: 'Phone: 0123456789',
+    //column1 with 3 rows of text
+    text_coulumn_one_row_one: '',
+    text_coulumn_one_row_two: '',
+    text_coulumn_one_row_three: '',
+    //column2 with 3 rows of text
+    text_column_two_row_one: 'ProgrammeType: 46372test',
+    text_column_two_row_two: 'Programmme Days: Monday to Friday',
+    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
   };
-
-  const tableBottomContent = [
-    `Number of children who attended all sessions: 9`,
-    `Total number of sessions: 198`,
-    `Number of children who attended all sessions: 9`,
-  ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
     fillColor: [211, 211, 211], // Light grey
@@ -593,16 +590,17 @@ export const MonthStatementsDetails: React.FC = () => {
           <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
             {
               <GeneratePdfReportButton
-                title="Download Register"
-                outputName={`income-statement-report.pdf`}
-                headerColumns={tableColumns}
-                bodyRows={data}
+                title="Download Statement"
+                outputName={`${getMonthName(
+                  Number(statementMonth) - 1
+                )}-income-statement-report.pdf`}
                 tableFooter={footer}
+                tableData={multipleTableData}
                 content={tableTopContent}
-                tableBottomContent={tableBottomContent}
                 tableHeadStyles={tableHeadStyles}
                 tableFootStyles={tableFootStyles}
                 tableStyles={tableStyles}
+                pageOriantations={'portrait'}
               />
             }
           </div>

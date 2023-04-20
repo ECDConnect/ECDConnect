@@ -1,10 +1,8 @@
 import {
-  ChildAttendanceReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -74,13 +72,19 @@ export const MonthlyAttendanceReport = ({
     };
     data.push(newArray);
   }
-  const tableColumns = [
-    { header: 'Child', dataKey: 'child' },
-    { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
-    })),
+
+  const tableData = [
+    {
+      headers: [
+        { header: 'Child', dataKey: 'child' },
+        { header: 'ID/Passport', dataKey: 'id' },
+        ...Array.from({ length: numDays }, (_, i) => ({
+          header: `${i + 1}`, // day number as header
+          dataKey: `day${i + 1}`, // unique key for each day column
+        })),
+      ],
+      data: data,
+    }
   ];
 
   const footer = [
@@ -94,12 +98,14 @@ export const MonthlyAttendanceReport = ({
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: 'Text 2',
-    practitioner_name: 'Name: Jenny Droe',
-    id_number: 'ID: ID23YGH444',
-    programme_type: 'ProgrammeType: 46372test',
-    programme_days: 'Programmme Days: Monday to Friday',
-    site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: 'Phone: 0123456789',
+    //column one top content
+    text_coulumn_one_row_one: 'Name: Jenny Droe',
+    text_coulumn_one_row_two: 'Phone: 0123456789',
+    text_coulumn_one_row_three: 'ID: ID23YGH444',
+    //column two top content
+    text_column_two_row_one: 'ProgrammeType: 46372test',
+    text_column_two_row_two: 'Programmme Days: Monday to Friday',
+    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
   };
 
   const tableBottomContent = [
@@ -111,7 +117,7 @@ export const MonthlyAttendanceReport = ({
   const tableHeadStyles: UserOptions['headStyles'] = {
     fillColor: [211, 211, 211], // Light grey
     textColor: [0, 0, 0],
-    fontSize: 10,
+    fontSize: 8,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
@@ -210,9 +216,8 @@ export const MonthlyAttendanceReport = ({
           <GeneratePdfReportButton
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
-            headerColumns={tableColumns}
-            bodyRows={data}
             tableFooter={footer}
+            tableData={tableData}
             content={tableTopContent}
             tableBottomContent={tableBottomContent}
             tableHeadStyles={tableHeadStyles}

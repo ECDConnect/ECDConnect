@@ -1,20 +1,24 @@
-import { jsPDF } from 'jspdf';
-import autoTable, { UserOptions } from 'jspdf-autotable';
+import { jsPDF, jsPDFOptions } from 'jspdf';
+import autoTable, { ColumnInput, UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
 
+interface jsPDFCustom extends jsPDF {
+  autoTable: (options: UserOptions) => void;
+}
+
 function generateReport(
-  headerColumns: any[],
-  bodyRows: any[],
   footer: any[],
-  content: any,
-  tableBottomContent: any,
-  outputName: string,
+  tableData:any[],
+  content?: any,
+  tableBottomContent?: any,
+  outputName?: string,
   tableHeadStyles?: UserOptions['headStyles'],
   tableStyles?: UserOptions['styles'],
-  tableFootStyles?: UserOptions['footStyles']
+  tableFootStyles?: UserOptions['footStyles'],
+  pageOriantations?: jsPDFOptions['orientation']
 ) {
   //make landscape document
-  const doc = new jsPDF('l');
+  const doc = new jsPDF(pageOriantations ?? 'landscape') as jsPDFCustom;
 
   const options = () => {
     // Add table header to each new page
@@ -32,46 +36,59 @@ function generateReport(
       pageWidth - doc.getStringUnitWidth(content.subtitle) - 50,
       10
     );
+    doc.setFontSize(12);
+    doc.setFont('bold');
+
+    //Document Top text section
+    doc.text(content?.text_coulumn_one_row_one, 10, 20);
+    doc.text(content?.text_coulumn_one_row_two, 10, 25);
+    doc.text(content?.text_coulumn_one_row_three, 10, 30);
+    //column two top content
+    doc.text(content?.text_column_two_row_one, 100, 20);
+    doc.text(content?.text_column_two_row_two, 100, 25);
+    doc.text(content?.text_column_two_row_three, 100, 30);
   };
-  doc.setFontSize(12);
-  doc.setFont('bold');
 
-  //Document Top text section
-  doc.text(content?.practitioner_name, 10, 20);
-  doc.text(content?.phone, 10, 25);
-  doc.text(content?.id_number, 10, 30);
-  doc.text(content.programme_type, 100, 20);
-  doc.text(content.programme_days, 100, 25);
-  doc.text(content.site_address, 100, 30);
   doc.setFontSize(8);
-
-  //table section with styles
-  autoTable(doc, {
-    headStyles: tableHeadStyles,
-    footStyles: tableFootStyles,
-    styles: tableStyles,
-    columns: headerColumns,
-    body: bodyRows,
-    foot: footer,
-    startY: 40, // Adjust Y coordinate for table placement
-    horizontalPageBreak: true, //break table to multiple pages
-    didDrawPage: options,
+  tableData.forEach((table, index) => {
+    const data = table.data;
+    const headers = table.headers;
+    // table section with styles
+    autoTable(doc, {
+      headStyles: tableHeadStyles,
+      footStyles: tableFootStyles,
+      styles: tableStyles,
+      columns: headers,
+      body: data,
+      foot: footer,
+      startY: 35, // Adjust Y coordinate for table placement
+      horizontalPageBreak: true, //break table to multiple pages
+      didDrawPage: options,
+      margin: {
+        bottom: 50,
+        top: 35,
+      },
+    });
   });
 
   //get Y value after the table end to place info
   //min 3 items in row
   let afterTable = (doc as any).lastAutoTable.finalY;
-  doc.setFontSize(14);
-  if (tableBottomContent.length > 0) {
+  doc.setFontSize(10);
+  if (tableBottomContent && tableBottomContent.length > 0) {
     doc.text(tableBottomContent[0], 15, afterTable + 15);
     doc.text(tableBottomContent[1], 120, afterTable + 15);
     doc.text(tableBottomContent[2], 190, afterTable + 15);
   }
-  //sign section with form on doc
-  doc.text('Sign: ', 10, afterTable + 35);
-  doc.rect(25, afterTable + 28, 65, 10);
-  doc.text('Date: ', 110, afterTable + 35);
-  doc.rect(130, afterTable + 28, 65, 10);
+  // Add sign section with form on every page after the last table on page
+  if (afterTable) {
+    //sign section with form on doc
+    doc.text('Sign: ', 10, afterTable + 35);
+    doc.rect(25, afterTable + 28, 65, 10);
+    doc.text('Date: ', 110, afterTable + 35);
+    doc.rect(130, afterTable + 28, 65, 10);
+  }
+
   //create pdf document
   doc.save(outputName);
 }
@@ -79,27 +96,27 @@ function generateReport(
 export interface GeneratePdfReportButtonProps {
   title: string;
   outputName: string;
-  headerColumns: any[];
-  bodyRows: any[];
   tableFooter?: any[];
+  tableData?: any[];
   content?: any;
   tableBottomContent?: any;
   tableHeadStyles: UserOptions['headStyles'];
   tableStyles: UserOptions['styles'];
   tableFootStyles: UserOptions['footStyles'];
+  pageOriantations?: jsPDFOptions['orientation'];
 }
 
 const GeneratePdfReportButton = ({
   title,
-  headerColumns,
-  bodyRows,
   tableFooter,
+  tableData,
   content,
   tableBottomContent,
   outputName,
   tableHeadStyles,
   tableStyles,
   tableFootStyles,
+  pageOriantations
 }: GeneratePdfReportButtonProps) => {
   return (
     <Button
@@ -108,15 +125,15 @@ const GeneratePdfReportButton = ({
       className={'mt'}
       onClick={() =>
         generateReport(
-          headerColumns,
-          bodyRows,
           [tableFooter],
+          tableData ?? [],
           content,
           tableBottomContent,
           outputName,
           tableHeadStyles,
           tableStyles,
-          tableFootStyles
+          tableFootStyles,
+          pageOriantations
         )
       }
     >
