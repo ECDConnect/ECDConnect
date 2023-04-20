@@ -14,7 +14,7 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import { classroomsActions } from '@/store/classroom';
+import { classroomsActions, classroomsSelectors } from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {
@@ -38,6 +38,10 @@ export const AddProgrammeForm: React.FC<{
 }) => {
   const user = useSelector(userSelectors.getUser);
   const appDispatch = useAppDispatch();
+  const classroom = useSelector(classroomsSelectors?.getClassroom);
+  const classroomGroups = useSelector(
+    classroomsSelectors?.getAllClassroomGroups
+  );
 
   const {
     getValues: getProgrammeFormValues,
@@ -65,6 +69,44 @@ export const AddProgrammeForm: React.FC<{
   });
 
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
+
+  const isSmartLinkImported = user?.isImported;
+
+  console.log({ isSmartLinkImported });
+
+  useEffect(() => {
+    if (isSmartLinkImported) {
+      if (classroom?.isPrinciple) {
+        setProgrammeFormValue('isPrincipalOrLeader', true);
+      }
+      if (classroom?.name) {
+        setProgrammeFormValue('name', classroom?.name);
+      }
+      if (classroomGroups?.[0]?.programmeType?.id) {
+        setProgrammeFormValue('type', classroomGroups?.[0]?.programmeType?.id);
+      }
+      if (typeof classroom?.numberPractitioners === 'number') {
+        setProgrammeFormValue(
+          'smartStartPractitioners',
+          classroom?.numberPractitioners
+        );
+      }
+      if (typeof classroom?.numberOfOtherAssistants === 'number') {
+        setProgrammeFormValue(
+          'nonSmartStartPractitioners',
+          classroom?.numberOfOtherAssistants
+        );
+      }
+    }
+  }, [
+    classroom?.isPrinciple,
+    classroom?.name,
+    classroom?.numberOfOtherAssistants,
+    classroom?.numberPractitioners,
+    classroomGroups,
+    isSmartLinkImported,
+    setProgrammeFormValue,
+  ]);
 
   const validationForFundaAdmin =
     name !== undefined &&
@@ -106,6 +148,10 @@ export const AddProgrammeForm: React.FC<{
     }
     const classroomId = newGuid();
     createClassroom(e, classroomId);
+    onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
+  };
+
+  const onSubmitForImportedUser = (e: EditProgrammeModel) => {
     onNext(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
   };
 
@@ -288,7 +334,11 @@ export const AddProgrammeForm: React.FC<{
             color="primary"
             className={styles.button}
             disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
-            onClick={handleSubmit(onSubmit)} // Navigate to a different page if it is principle
+            onClick={
+              isSmartLinkImported
+                ? handleSubmit(onSubmitForImportedUser)
+                : handleSubmit(onSubmit)
+            } // Navigate to a different page if it is principle
           >
             {renderIcon('ArrowCircleRightIcon', styles.icon)}
             <Typography type={'help'} text={'Next'} color={'white'} />

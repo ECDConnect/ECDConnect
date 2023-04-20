@@ -58,7 +58,8 @@ export class IncompletePractitionerInformationNotificationValidator
       const showNotificationForPractitionerFlow =
         (hasPractitionerRole || addedByPrincipal) && notRegistered;
       const showNotificationForPrincipalFlow =
-        hasPrincipalRole && notRegistered && !addedByPrincipal;
+        (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
+        (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
 
       if (showNotificationForPrincipalFlow) {
         return [
