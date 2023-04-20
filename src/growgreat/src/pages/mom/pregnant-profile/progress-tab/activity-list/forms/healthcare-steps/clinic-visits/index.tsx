@@ -1,6 +1,4 @@
 import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import {
   Label,
   Header,

@@ -19,7 +19,6 @@ import {
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
 import { contactSteps } from './contact/walkthrough/steps';
-import { useDialog } from '@ecdlink/core';
 import { ReferralsTab } from './referrals-tab';
 import { ContactTab } from './contact-tab';
 

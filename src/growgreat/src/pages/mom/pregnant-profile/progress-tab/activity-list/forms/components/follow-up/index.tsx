@@ -5,7 +5,6 @@ import { VisitDataStatus } from '@ecdlink/graphql';
 import { useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
-import Infant from '@/assets/infant.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
 import { ReactComponent as Home } from '@/assets/home.svg';
@@ -13,7 +12,6 @@ import { ReactComponent as Home } from '@/assets/home.svg';
 import {
   activitiesColours,
   activitiesSectionTypes,
-  activitiesTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 
