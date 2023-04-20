@@ -1,23 +1,24 @@
-import React, { useCallback, useMemo } from 'react';
+import React, { useCallback, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  ActionModal,
-  BannerWrapper,
-  DialogPosition,
-  TabItem,
-  TabList,
-} from '@ecdlink/ui';
+import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
-import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
-
 import { InfantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { getInfantById } from '@/store/infant/infant.selectors';
 import { VisitsTab } from './visits-tab';
+import { getJoyrideStyles } from '@/components/walkthrough/styles';
+import { Tooltip } from '@/components/walkthrough/tooltip';
+import Joyride, { Step } from 'react-joyride';
+import { useWalkthrough } from '@/context/walkthroughContext';
+import {
+  WalkthroughInfoPage,
+  WalkthroughInfoPageProps,
+} from '@/components/walkthrough/info-page';
+import { contactSteps } from './contact/walkthrough/steps';
 import { useDialog } from '@ecdlink/core';
 import { ReferralsTab } from './referrals-tab';
 import { ContactTab } from './contact-tab';
@@ -30,9 +31,16 @@ export const INFANT_PROFILE_TABS = {
 };
 
 export const InfantProfile: React.FC = () => {
-  const { state } = useLocation<InfantProfileRouteState>();
+  const [isInfoPage, setIsInfoPage] = useState(false);
 
-  const dialog = useDialog();
+  const {
+    handleCallback,
+    walkthroughDispatch,
+    walkthroughState,
+    walkthroughStepIndex,
+  } = useWalkthrough();
+
+  const { state } = useLocation<InfantProfileRouteState>();
 
   const { isOnline } = useOnlineStatus();
 
@@ -56,77 +64,121 @@ export const InfantProfile: React.FC = () => {
     {
       title: 'Visits',
       initActive: true,
+      index: INFANT_PROFILE_TABS.VISITS,
       child: <VisitsTab />,
     },
     {
       title: 'Progress',
       initActive: false,
+      index: INFANT_PROFILE_TABS.PROGRESS,
       child: <ProgressTab />,
     },
     {
       title: 'Referrals',
       initActive: false,
+      index: INFANT_PROFILE_TABS.REFERRALS,
       child: <ReferralsTab />,
     },
     {
       title: 'Contact',
+      index: INFANT_PROFILE_TABS.CONTACT,
       initActive: false,
       child: <ContactTab />,
     },
   ];
 
-  const onWalkThrough = (detailText?: string) => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Hello!"
-            detailText="Coming soon"
-            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Ok',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onClose();
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
-  };
+  const { steps, infoPageSection, hideJoyRideBorders, infoPageTitle } =
+    useMemo((): {
+      steps: Step[];
+      infoPageTitle: string;
+      infoPageSection: WalkthroughInfoPageProps['sectionName'];
+      hideJoyRideBorders?: boolean;
+    } => {
+      switch (state?.activeTabIndex ?? 0) {
+        case INFANT_PROFILE_TABS.CONTACT:
+          return {
+            steps: contactSteps,
+            infoPageTitle: 'Contact',
+            infoPageSection: 'contact tab',
+            hideJoyRideBorders: walkthroughStepIndex === 3,
+          };
+        default:
+          return {
+            steps: [],
+            infoPageSection: 'visit',
+            infoPageTitle: 'Visit',
+          };
+      }
+    }, [state?.activeTabIndex, walkthroughStepIndex]);
 
-  const goBack = useCallback(
-    () => history.push(ROUTES.CLIENTS.ROOT),
-    [history]
-  );
+  const onHelp = useCallback(() => {
+    setIsInfoPage(false);
+    setTimeout(
+      () => walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: true }),
+      200
+    );
+  }, [walkthroughDispatch]);
+
+  const goBack = useCallback(() => {
+    if (isInfoPage) {
+      return setIsInfoPage(false);
+    }
+
+    return history.push(ROUTES.CLIENTS.ROOT);
+  }, [history, isInfoPage]);
 
   return (
-    <BannerWrapper
-      size="medium"
-      renderBorder
-      onBack={goBack}
-      title={`${!!caregiverName ? caregiverName + ' &' : ''} ${infantName}`}
-      backgroundColour="white"
-      displayOffline={!isOnline}
-      displayHelp
-      onHelp={onWalkThrough}
-    >
-      <TabList
-        tabClassName="min-w-0 w-24"
-        className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
-        tabItems={tabItems}
-        setSelectedIndex={state?.activeTabIndex ?? 0}
+    <>
+      <Joyride
+        steps={steps}
+        run={walkthroughState?.isTourActive}
+        stepIndex={walkthroughStepIndex}
+        callback={handleCallback}
+        continuous={true}
+        tooltipComponent={({ ...props }) => (
+          <Tooltip
+            {...props}
+            pollyInformationalSteps={[0, 2]}
+            pollyNeutralSteps={[1]}
+            pollyImpressedSteps={[3]}
+            displayCloseButton={props.index < props.size - 1}
+          />
+        )}
+        styles={getJoyrideStyles(hideJoyRideBorders)}
       />
-    </BannerWrapper>
+      <BannerWrapper
+        size="medium"
+        renderBorder
+        onBack={goBack}
+        title={
+          isInfoPage
+            ? infoPageTitle
+            : `${!!caregiverName ? caregiverName + ' &' : ''} ${infantName}`
+        }
+        backgroundColour="white"
+        displayOffline={!isOnline}
+        displayHelp
+        onHelp={() => setIsInfoPage(true)}
+      >
+        {isInfoPage ? (
+          <WalkthroughInfoPage
+            sectionName={infoPageSection}
+            onHelp={onHelp}
+            onClose={goBack}
+          />
+        ) : (
+          <TabList
+            tabClassName="min-w-0 w-24"
+            className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
+            tabItems={tabItems}
+            setSelectedIndex={state?.activeTabIndex ?? 0}
+            tabSelected={(tab) =>
+              history.push(location.pathname, { activeTabIndex: tab.index })
+            }
+          />
+        )}
+        <div id="walkthrough-last-step" className="w-full"></div>
+      </BannerWrapper>
+    </>
   );
 };
