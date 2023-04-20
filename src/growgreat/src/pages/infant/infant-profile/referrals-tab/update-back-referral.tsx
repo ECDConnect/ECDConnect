@@ -79,7 +79,7 @@ export const InfantBackReferralUpdate: React.FC<
       visitDataStatusId: selectedReferral?.id,
     };
 
-    if (selectedReferral?.backReferrals?.length === 0) {
+    if (selectedReferral?.backReferral) {
       // add back referral
       // appDispatch(infantActions.updateInfantReferrals());
       appDispatch(
