@@ -34,7 +34,7 @@ export const getMotherCurrentVisitSelector = (
   const visits = state.mothers.visits || [];
   const noAttended =
     visits?.filter(
-      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+      (item) => !item.attended && new Date(item.orderDate) >= new Date()
     ) || [];
 
   return noAttended.length

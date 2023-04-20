@@ -65,6 +65,12 @@ export const useWalkthrough = () => {
 
   const [walkthroughStepIndex, setWalkthroughStep] = useState(0);
 
+  const isWalkthroughSession = Boolean(
+    window.sessionStorage.getItem('isWalkthrough')
+  );
+  const setIsWalkthroughSession = (value: 'true' | 'false') =>
+    window.sessionStorage.setItem('isWalkthrough', value);
+
   const handleCallback = (data: CallBackProps) => {
     const { status, index, action, type } = data;
     // @ts-ignore
@@ -81,9 +87,11 @@ export const useWalkthrough = () => {
   };
 
   return {
+    isWalkthroughSession,
     walkthroughState,
     walkthroughStepIndex,
     handleCallback,
     walkthroughDispatch,
+    setIsWalkthroughSession,
   };
 };

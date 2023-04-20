@@ -21,10 +21,15 @@ import {
 } from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
+import { activitiesTypes } from './activity-list/activities-list';
+import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
 const HEADER_HEIGHT = 540;
 
 export const ProgressTab = () => {
+  const { walkthroughState, isWalkthroughSession } = useWalkthrough();
+
   const { height } = useWindowSize();
 
   const { id: infantId } = useParams<InfantProfileParams>();
@@ -61,6 +66,33 @@ export const ProgressTab = () => {
 
   const introScreenRef = useRef<HTMLDivElement>(null);
 
+  const walkthroughData: FollowUpWalkthroughData = {
+    progressBar: {
+      message: `${infantName} need urgent support`,
+      label: '3/7',
+      value: 0,
+      primaryColour: 'errorMain',
+      secondaryColour: 'errorBg',
+    },
+    growCard: {
+      comment: `${infantName} is not growing well`,
+      color: 'error',
+    },
+    weightCard: {
+      value: '4.2',
+      color: 'Error',
+      comment: 'Severely underweight',
+    },
+    infoCard: {
+      error: [
+        {
+          comment: `${infantName} has a fever and is not feeding`,
+          visitData: { visitName: activitiesTypes.pillar4 },
+        },
+      ],
+    },
+  };
+
   const handleCaptureClick = () => {
     if (introScreenRef.current) {
       captureAndDownloadComponent(introScreenRef.current, 'summary');
@@ -68,6 +100,11 @@ export const ProgressTab = () => {
   };
 
   useLayoutEffect(() => {
+    if (isWalkthroughSession) {
+      window.sessionStorage.clear();
+      return;
+    }
+
     if (
       (!previousCurrentVisit ||
         (!!previousCurrentVisit &&
@@ -79,7 +116,13 @@ export const ProgressTab = () => {
           visitId: currentVisit?.id,
         })
       );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+  }, [
+    appDispatch,
+    currentVisit,
+    currentVisit?.id,
+    isWalkthroughSession,
+    previousCurrentVisit,
+  ]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -99,10 +142,18 @@ export const ProgressTab = () => {
   }
 
   return (
-    <div className="pt-14" style={{ height: height - HEADER_HEIGHT }}>
+    <div
+      className="pt-14"
+      style={
+        walkthroughState?.isTourActive ? {} : { height: height - HEADER_HEIGHT }
+      }
+    >
       <div ref={introScreenRef}>
         <IntroScreen
           infant={infant}
+          walkthroughData={
+            walkthroughState?.isTourActive ? walkthroughData : undefined
+          }
           headerText={`${
             !!caregiverName ? caregiverName + ' &' : ''
           } ${infantName}`}

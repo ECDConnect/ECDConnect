@@ -27,6 +27,7 @@ import { visitSteps } from './visits/walkthrough/steps';
 import { getStringFromClassNameOrId } from '@ecdlink/core';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
+import { progressSteps } from './progress-tab/walkthrough/steps';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -60,7 +61,6 @@ export const PregnantProfile: React.FC = () => {
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
-  // const [isStartVisit, setIsStartVisit] = useState(false);
 
   const isLargeName =
     (mother?.user?.firstName || '').length +
@@ -121,6 +121,13 @@ export const PregnantProfile: React.FC = () => {
           infoPageTitle: 'Contact',
           infoPageSection: 'contact tab',
           hideJoyRideBorders: walkthroughStepIndex === 3,
+        };
+      case PREGNANT_PROFILE_TABS.PROGRESS:
+        return {
+          steps: progressSteps,
+          infoPageTitle: 'Client progress summary',
+          infoPageSection: 'progress tab',
+          hideJoyRideBorders: walkthroughStepIndex === 2,
         };
       default:
         return {
