@@ -21,6 +21,8 @@ namespace ECDLink.EGraphQL
     {
         public static void ConfigureGraphQlServices(IServiceCollection services, bool isDevelop = false)
         {
+            const int maxRequestSize = 128 * 1024 * 1024;
+
             var contentReloader = new DynamicContentReload();
 
             services.AddSingleton(contentReloader);
@@ -28,7 +30,7 @@ namespace ECDLink.EGraphQL
             services.AddHttpContextAccessor();
 
             var builder = services
-              .AddGraphQLServer()
+              .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
               .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
