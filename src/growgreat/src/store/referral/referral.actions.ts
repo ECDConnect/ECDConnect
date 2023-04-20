@@ -1,5 +1,6 @@
 import { Referral } from '@/services/ReferralService';
 import {
+  VisitBackReferralModelInput,
   VisitDataStatus,
   VisitDataStatusFilterInput,
   VisitVideos,
@@ -15,6 +16,7 @@ export const ReferralActions = {
   GET_REFERRAL_FOR_INFANT: 'getReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
   GET_REFERRAL_FOR_VISIT_ID: 'getReferralsForVisitId',
+  ADD_VISIT_BACK_REFERRAL: 'addVisitBackReferral',
 };
 
 export const getReferralsForInfant = createAsyncThunk<
@@ -97,6 +99,29 @@ export const updateVisitDataStatus = createAsyncThunk<
     try {
       if (userAuth?.auth_token) {
         new Referral(userAuth?.auth_token ?? '').updateVisitDataStatus(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addVisitBackReferral = createAsyncThunk<
+  {},
+  { input: VisitBackReferralModelInput },
+  ThunkApiType<RootState>
+>(
+  ReferralActions.ADD_VISIT_BACK_REFERRAL,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        new Referral(userAuth?.auth_token ?? '').addVisitBackReferral(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

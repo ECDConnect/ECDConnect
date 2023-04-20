@@ -14,6 +14,7 @@ import { Contact } from './contact';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
 import { Visits } from './visits';
+import { ReferralsTab } from './referrals-tab';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -59,14 +60,7 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Referrals',
       initActive: false,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
+      child: <ReferralsTab />,
     },
     {
       title: 'Contact',
