@@ -17,7 +17,12 @@ import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
-import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  useDialog,
+  usePrevious,
+  VisitDto,
+} from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   getInfantById,
@@ -33,6 +38,7 @@ import { differenceInDays } from 'date-fns';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { VisitModelInput } from '@ecdlink/graphql';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 
 const HEADER_HEIGHT = 64;
 
@@ -397,29 +403,31 @@ export const VisitsTab: React.FC = () => {
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
-      <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
-        <RoundIcon
-          imageUrl={Infant}
-          backgroundColor="tertiary"
-          className="row-span-3"
-        />
-        <div>
-          <Typography
-            type="h2"
-            align="left"
-            weight="bold"
-            text={`${
-              infant?.caregiver?.firstName
-                ? infant?.caregiver?.firstName + ' & '
-                : ''
-            }${infant?.user?.firstName || ''} `}
-            color="textDark"
-            className="col-span-2"
+      <div id={getStringFromClassNameOrId(walkthroughSteps[1].target)}>
+        <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
+          <RoundIcon
+            imageUrl={Infant}
+            backgroundColor="tertiary"
+            className="row-span-3"
           />
+          <div>
+            <Typography
+              type="h2"
+              align="left"
+              weight="bold"
+              text={`${
+                infant?.caregiver?.firstName
+                  ? infant?.caregiver?.firstName + ' & '
+                  : ''
+              }${infant?.user?.firstName || ''} `}
+              color="textDark"
+              className="col-span-2"
+            />
+          </div>
         </div>
+        <div className="px-4 pb-4 pt-7">{renderContent}</div>
       </div>
-      <div className="px-4 pb-4 pt-7">
-        {renderContent}
+      <div className="px-4">
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
@@ -453,6 +461,7 @@ export const VisitsTab: React.FC = () => {
       </div>
       <div className="mx-4 mt-7 mb-4 flex h-full items-end">
         <Button
+          id={getStringFromClassNameOrId(walkthroughSteps[2].target)}
           type="outlined"
           color="primary"
           icon="ClipboardCheckIcon"
