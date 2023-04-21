@@ -15,6 +15,14 @@ export interface GeneratePdfReportButtonProps {
   pageOriantations?: jsPDFOptions['orientation'];
 }
 
+type TableData = {
+  tableName: string;
+  type: string;
+  income?: string;
+  headers: { header: string; dataKey: string }[];
+  data: { [key: string]: any }[];
+};
+
 const GeneratePdfReportButton = ({
   title,
   tableFooter,
@@ -29,7 +37,7 @@ const GeneratePdfReportButton = ({
 }: GeneratePdfReportButtonProps) => {
   const generateReport = (
     footer: any[],
-    tableData: any[],
+    tableData: TableData[],
     content?: any,
     tableBottomContent?: any,
     outputName?: string,
@@ -40,7 +48,16 @@ const GeneratePdfReportButton = ({
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
-    let startY = 35; // initial startY value
+    const tablesByType: { [key: string]: TableData[] } = {};
+
+    // Group tables by type
+    tableData.forEach((table) => {
+      if (table.type in tablesByType) {
+        tablesByType[table.type].push(table);
+      } else {
+        tablesByType[table.type] = [table];
+      }
+    });
 
     const options = () => {
       // Add table header to each new page
@@ -69,53 +86,57 @@ const GeneratePdfReportButton = ({
       doc.text(content?.text_column_two_row_one, 100, 20);
       doc.text(content?.text_column_two_row_two, 100, 25);
       doc.text(content?.text_column_two_row_three, 100, 30);
-
-      // Add table title with grey background on top of table header
-      doc.setFontSize(12);
-      doc.setFont('bold');
-      doc.setTextColor(0, 0, 0);
-      tableData.length > 1 && doc.text('Table Title', 10, 19 + 7);
     };
 
-    doc.setFontSize(8);
+    let lastTableType: string | null = null;
+    Object.entries(tablesByType).forEach(([tableType, tables]) => {
+      if (tableType !== lastTableType) {
+        if (lastTableType !== null) {
+          doc.addPage();
+        }
+        doc.setFontSize(12);
+        doc.setFont('bold');
+        doc.text(tableType, 10, 19 + 7);
+        lastTableType = tableType;
+      }
 
-    tableData.forEach((table, index) => {
-      const data = table.data;
-      const headers = table.headers;
-      // table section with styles
-      autoTable(doc, {
-        headStyles: tableHeadStyles,
-        footStyles: tableFootStyles,
-        styles: tableStyles,
-        head: [
-          table.tableName === undefined
-            ? [
-                {
-                  content: ``,
-                  colSpan: 30,
-                },
-              ]
-            : [
-                {
-                  content: `${table.tableName}`,
-                  colSpan: 5,
-                  styles: { halign: 'left' },
-                },
-              ],
-          headers.map((h: { header: any }) => h.header),
-        ],
-        columns: headers,
-        body: data,
-        foot: footer,
-        startY: startY,
-        rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
-        didDrawPage: options,
-        margin: {
-          top: 35,
-        },
+      tables.forEach((table, index) => {
+        const headers = table.headers;
+        // table section with styles
+        autoTable(doc, {
+          headStyles: tableHeadStyles,
+          footStyles: tableFootStyles,
+          styles: tableStyles,
+          head: [
+            table.tableName === undefined
+              ? [
+                  {
+                    content: ``,
+                    colSpan: 30,
+                  },
+                ]
+              : [
+                  {
+                    content: `${table.tableName}`,
+                    colSpan: 5,
+                    styles: { halign: 'left' },
+                  },
+                ],
+            table.headers.map((h) => h.header),
+          ],
+          columns: headers,
+          body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
+          foot: footer,
+          // startY: startY,
+          rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+          didDrawPage: options,
+          margin: {
+            top: 35,
+          },
+        });
+        // Calculate position for next table
+        startY = (doc as any).lastAutoTable.finalY + 10;
       });
-      // Calculate position for next table
-      startY = (doc as any).lastAutoTable.finalY + 10;
     });
 
     //get Y value after the last table end to place info
@@ -128,14 +149,12 @@ const GeneratePdfReportButton = ({
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
 
-    if (afterTable) {
-      //sign section with form on doc
-      doc.text('Sign: ', 10, afterTable + 35);
-      doc.rect(25, afterTable + 28, 65, 10);
-      doc.text('Date: ', 110, afterTable + 35);
-      doc.rect(130, afterTable + 28, 65, 10);
-      // Add a new page if there is more data for another table
-    }
+    //sign section with form on doc
+    doc.text('Sign: ', 10, afterTable + 35);
+    doc.rect(25, afterTable + 28, 65, 10);
+    doc.text('Date: ', 110, afterTable + 35);
+    doc.rect(130, afterTable + 28, 65, 10);
+    // Add a new page if there is more data for another table
 
     //create pdf document
     doc.save(outputName);

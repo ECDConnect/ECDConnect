@@ -432,7 +432,9 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const multipleTableData = [
     {
-      tableName: 'Donations and Stuff',
+      tableName: 'Donations ',
+      type: 'expenses',
+      income,
       headers: [
         { header: 'Date', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
@@ -447,6 +449,8 @@ export const MonthStatementsDetails: React.FC = () => {
       ],
     },
     {
+      tableName: 'Donations and Stuff',
+      type: 'income',
       headers: [
         { header: 'Date', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
@@ -463,6 +467,8 @@ export const MonthStatementsDetails: React.FC = () => {
       ],
     },
     {
+      tableName: 'Donations ',
+      type: 'expenses',
       headers: [
         { header: 'Date3', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
@@ -479,6 +485,9 @@ export const MonthStatementsDetails: React.FC = () => {
       ],
     },
     {
+      tableName: 'Stuff',
+      type: 'income',
+
       headers: [
         { header: 'Date4', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
