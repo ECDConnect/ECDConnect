@@ -422,7 +422,6 @@ export const MonthStatementsDetails: React.FC = () => {
     },
   ];
 
-
   const footer = [
     'Child Attendance per Day',
     '', // Placeholder for ID/Passport column
@@ -438,7 +437,27 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Child', dataKey: 'child' },
         { header: 'Amount', dataKey: 'amount' },
       ],
-      data: [{ child: 'John', date: '10/02/2023', amount: 'R 1, 0000' }],
+      data: [
+        { child: 'John Doe table 1', date: '10/02/2023', amount: 'R 1, 0000' },
+        {
+          child: 'John Bauer',
+          date: '10/02/2023',
+          amount: 'R 1, 0000',
+          total: 'R 1, 000',
+        },
+        {
+          child: 'John Doe',
+          date: '10/02/2023',
+          amount: 'R 9, 0000',
+          total: 'R 7, 0000',
+        },
+        {
+          child: 'John Depp',
+          date: '10/02/2023',
+          amount: 'R 71, 0000',
+          total: 'R 17, 0000',
+        },
+      ],
     },
     {
       headers: [

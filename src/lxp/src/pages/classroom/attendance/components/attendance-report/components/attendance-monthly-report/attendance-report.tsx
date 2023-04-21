@@ -58,20 +58,8 @@ export const MonthlyAttendanceReport = ({
 
   const data = [
     { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
+    ...Array.from({ length: 40 }, (_, i) => ({ child: 'John Test', id: `${i}IDTEST25`, day1: '1', day2: '1', day3: '0' })),
   ];
-
-  for (let i = 0; i < 50; i++) {
-    const newArray = {
-      child: 'John Bblocks',
-      id: 'IDTEST2525255',
-      day1: '1',
-      day2: '1',
-      day3: '0',
-      day4: '0',
-      day5: '0',
-    };
-    data.push(newArray);
-  }
 
   const tableData = [
     {
