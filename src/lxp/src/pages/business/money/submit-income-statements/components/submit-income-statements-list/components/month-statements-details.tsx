@@ -432,31 +432,18 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const multipleTableData = [
     {
+      tableName: 'Donations and Stuff',
       headers: [
         { header: 'Date', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        { child: 'John Doe table 1', date: '10/02/2023', amount: 'R 1, 0000' },
-        {
-          child: 'John Bauer',
-          date: '10/02/2023',
-          amount: 'R 1, 0000',
-          total: 'R 1, 000',
-        },
-        {
-          child: 'John Doe',
-          date: '10/02/2023',
-          amount: 'R 9, 0000',
-          total: 'R 7, 0000',
-        },
-        {
+        ...Array.from({ length: 10 }, (_, i) => ({
           child: 'John Depp',
           date: '10/02/2023',
           amount: 'R 71, 0000',
-          total: 'R 17, 0000',
-        },
+        })),
       ],
     },
     {
@@ -467,12 +454,44 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        {
-          child: 'John',
+        ...Array.from({ length: 20 }, (_, i) => ({
+          child: 'John doe',
           date: '10/02/2023',
           amount: 'R 1, 0000',
           total: 'R 1, 0000',
-        },
+        })),
+      ],
+    },
+    {
+      headers: [
+        { header: 'Date3', dataKey: 'date' },
+        { header: 'Child', dataKey: 'child' },
+        { header: 'Amount', dataKey: 'amount' },
+        { header: 'Total Amount', dataKey: 'total' },
+      ],
+      data: [
+        ...Array.from({ length: 8 }, (_, i) => ({
+          child: 'John bere',
+          date: '10/02/2023',
+          amount: 'R 1, 0000',
+          total: 'R 1, 0000',
+        })),
+      ],
+    },
+    {
+      headers: [
+        { header: 'Date4', dataKey: 'date' },
+        { header: 'Child', dataKey: 'child' },
+        { header: 'Amount', dataKey: 'amount' },
+        { header: 'Total Amount', dataKey: 'total' },
+      ],
+      data: [
+        ...Array.from({ length: 7 }, (_, i) => ({
+          child: 'John bere',
+          date: '10/02/2023',
+          amount: 'R 1, 0000',
+          total: 'R 1, 0000',
+        })),
       ],
     },
   ];

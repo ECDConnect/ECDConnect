@@ -69,6 +69,12 @@ const GeneratePdfReportButton = ({
       doc.text(content?.text_column_two_row_one, 100, 20);
       doc.text(content?.text_column_two_row_two, 100, 25);
       doc.text(content?.text_column_two_row_three, 100, 30);
+
+      // Add table title with grey background on top of table header
+      doc.setFontSize(12);
+      doc.setFont('bold');
+      doc.setTextColor(0, 0, 0);
+      tableData.length > 1 && doc.text('Table Title', 10, 19 + 7);
     };
 
     doc.setFontSize(8);
@@ -81,6 +87,23 @@ const GeneratePdfReportButton = ({
         headStyles: tableHeadStyles,
         footStyles: tableFootStyles,
         styles: tableStyles,
+        head: [
+          table.tableName === undefined
+            ? [
+                {
+                  content: ``,
+                  colSpan: 30,
+                },
+              ]
+            : [
+                {
+                  content: `${table.tableName}`,
+                  colSpan: 5,
+                  styles: { halign: 'left' },
+                },
+              ],
+          headers.map((h: { header: any }) => h.header),
+        ],
         columns: headers,
         body: data,
         foot: footer,
