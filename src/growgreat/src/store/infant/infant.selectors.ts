@@ -97,9 +97,10 @@ export const getInfantCurrentVisitSelector = (
   state: RootState
 ): VisitDto | undefined => {
   const visits = state.infants.visits || [];
+
   const noAttended =
     visits?.filter(
-      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+      (item) => !item.attended && new Date(item.orderDate) >= new Date()
     ) || [];
 
   return noAttended.length

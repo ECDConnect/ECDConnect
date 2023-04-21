@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -18,13 +18,16 @@ import {
   WalkthroughInfoPage,
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
-import { contactSteps } from './contact/walkthrough/steps';
+import { contactSteps } from './contact-tab/walkthrough/steps';
 import { ReferralsTab } from './referrals-tab';
 import { ContactTab } from './contact-tab';
 import { visitSteps } from './visits-tab/walkthrough/steps';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import { getStringFromClassNameOrId } from '@ecdlink/core';
+import { progressSteps } from './progress-tab/walkthrough/steps';
+import { infantThunkActions } from '@/store/infant';
+import { useAppDispatch } from '@/store';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -41,7 +44,10 @@ export const InfantProfile: React.FC = () => {
     walkthroughDispatch,
     walkthroughState,
     walkthroughStepIndex,
+    setIsWalkthroughSession,
   } = useWalkthrough();
+
+  const appDispatch = useAppDispatch();
 
   const { state } = useLocation<InfantProfileRouteState>();
 
@@ -111,6 +117,13 @@ export const InfantProfile: React.FC = () => {
           infoPageSection: 'contact tab',
           hideJoyRideBorders: walkthroughStepIndex === 3,
         };
+      case INFANT_PROFILE_TABS.PROGRESS:
+        return {
+          steps: progressSteps,
+          infoPageTitle: 'Client progress summary',
+          infoPageSection: 'progress tab',
+          hideJoyRideBorders: walkthroughStepIndex === 2,
+        };
       default:
         return {
           steps: visitSteps,
@@ -124,11 +137,12 @@ export const InfantProfile: React.FC = () => {
 
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
+    setIsWalkthroughSession('true');
     setTimeout(
       () => walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: true }),
       200
     );
-  }, [walkthroughDispatch]);
+  }, [setIsWalkthroughSession, walkthroughDispatch]);
 
   const goBack = useCallback(() => {
     if (isInfoPage) {
@@ -137,6 +151,11 @@ export const InfantProfile: React.FC = () => {
 
     return history.push(ROUTES.CLIENTS.ROOT);
   }, [history, isInfoPage]);
+
+  useLayoutEffect(() => {
+    (async () =>
+      appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap())();
+  }, [appDispatch, infantId]);
 
   return (
     <>
