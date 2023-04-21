@@ -444,8 +444,8 @@ export const MomActivityList: React.FC = () => {
         position={DialogPosition.Full}
       >
         <ActivityInfoPage
-          section="Activity Info"
-          subTitle="Road to health activities"
+          section="Pregnancy activities"
+          subTitle="Pregnancy activities"
           setDisplayHelp={setDisplayHelp}
         />
       </Dialog>
