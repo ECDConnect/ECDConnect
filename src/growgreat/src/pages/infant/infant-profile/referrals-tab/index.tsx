@@ -54,7 +54,6 @@ export const ReferralsTab: React.FC = () => {
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
 
-  console.log('params', useParams());
   const { id: infantId } = useParams<InfantParams>();
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
