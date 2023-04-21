@@ -13,7 +13,7 @@ import {
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { infantSelectors, infantThunkActions } from '@/store/infant';
-import { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/solid';
 import { RootState } from '@/store/types';
 import { getInfantById } from '@/store/infant/infant.selectors';
@@ -36,28 +36,32 @@ export const InfantBackReferralUpdate: React.FC<
   const [hasAnswered, setHasAnswered] = useState(false);
   const [hasReferred, setHasReferred] = useState(false);
   const [isClinicalReferral, setIsClinicalReferral] = useState(false);
+  const [isValid, setIsValid] = useState(false);
   const [referralComment, setReferralComment] = useState<string>();
   const appDispatch = useAppDispatch();
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , , , visitDataStatusId] = location.pathname.split('/');
 
-  const completedReferralsForInfant =
-    useSelector(infantSelectors.getCompletedReferralsForInfantSelector) || [];
+  const completedReferralsForInfant = useSelector(
+    infantSelectors.getCompletedReferralsForInfantSelector
+  );
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
 
   const selectedReferral = useMemo(() => {
-    for (const item of completedReferralsForInfant) {
-      if (item.id === visitDataStatusId) {
-        return item;
+    if (completedReferralsForInfant) {
+      for (const item of completedReferralsForInfant) {
+        if (item.id === visitDataStatusId) {
+          return item;
+        }
       }
     }
-  }, [completedReferralsForInfant]);
+  }, [completedReferralsForInfant, visitDataStatusId]);
 
-  const setQuestion = useMemo(() => {
+  const setVisibility = useCallback(() => {
     var key = toCamelCase(selectedReferral?.section || '').toString();
     if (
       key === 'clinicReferrals' ||
@@ -70,6 +74,8 @@ export const InfantBackReferralUpdate: React.FC<
       setHasReferred(true);
     }
   }, [setIsClinicalReferral, setHasAnswered, setHasReferred, selectedReferral]);
+
+  useEffect(() => setVisibility(), [setVisibility]);
 
   const saveBackReferral = () => {
     const inputModel: VisitBackReferralModelInput = {
@@ -96,12 +102,13 @@ export const InfantBackReferralUpdate: React.FC<
     appDispatch(
       infantThunkActions.getCompletedReferralsForInfant({ infantId })
     ).unwrap();
-  }, [infantId]);
+  }, [infantId, appDispatch]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
       setReferralComment(value);
+      setIsValid(true);
     },
     [setReferralComment]
   );
@@ -112,7 +119,7 @@ export const InfantBackReferralUpdate: React.FC<
       renderBorder={true}
       onBack={() => history.goBack()}
       title="Update back-referral"
-      subTitle={`${selectedReferral?.comment}`}
+      subTitle={`${selectedReferral?.section}`}
       backgroundColour="white"
     >
       <Typography
@@ -241,6 +248,7 @@ export const InfantBackReferralUpdate: React.FC<
             text={'Save'}
             icon={'SaveIcon'}
             iconPosition={'start'}
+            disabled={!isValid}
             onClick={() => saveBackReferral()}
           />
         </div>

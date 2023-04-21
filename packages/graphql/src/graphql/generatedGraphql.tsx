@@ -2054,6 +2054,10 @@ export type Infant = {
   __typename?: 'Infant';
   caregiver?: Maybe<Caregiver>;
   caregiverId?: Maybe<Scalars['UUID']>;
+  clickedContactTab?: Maybe<Scalars['Boolean']>;
+  clickedProgressTab?: Maybe<Scalars['Boolean']>;
+  clickedReferralsTab?: Maybe<Scalars['Boolean']>;
+  clickedVisitTab?: Maybe<Scalars['Boolean']>;
   completed24MonthVisits?: Maybe<Scalars['Boolean']>;
   gender?: Maybe<Gender>;
   genderId?: Maybe<Scalars['UUID']>;
@@ -2076,6 +2080,10 @@ export type InfantFilterInput = {
   and?: InputMaybe<Array<InfantFilterInput>>;
   caregiver?: InputMaybe<CaregiverFilterInput>;
   caregiverId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  clickedContactTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedProgressTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedReferralsTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedVisitTab?: InputMaybe<BooleanOperationFilterInput>;
   completed24MonthVisits?: InputMaybe<BooleanOperationFilterInput>;
   gender?: InputMaybe<GenderFilterInput>;
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -2098,6 +2106,10 @@ export type InfantFilterInput = {
 export type InfantInput = {
   Caregiver?: InputMaybe<CaregiverInput>;
   CaregiverId?: InputMaybe<Scalars['UUID']>;
+  ClickedContactTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedProgressTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedVisitTab?: InputMaybe<Scalars['Boolean']>;
   Completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   Gender?: InputMaybe<GenderInput>;
   GenderId?: InputMaybe<Scalars['UUID']>;
@@ -2117,6 +2129,10 @@ export type InfantInput = {
 export type InfantModelInput = {
   caregiver?: InputMaybe<CaregiverModelInput>;
   caregiverId?: InputMaybe<Scalars['UUID']>;
+  clickedContactTab?: InputMaybe<Scalars['Boolean']>;
+  clickedProgressTab?: InputMaybe<Scalars['Boolean']>;
+  clickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedVisitTab?: InputMaybe<Scalars['Boolean']>;
   completed24MonthVisits?: InputMaybe<Scalars['Boolean']>;
   dateOfBirth: Scalars['DateTime'];
   firstName?: InputMaybe<Scalars['String']>;
@@ -2518,6 +2534,10 @@ export type Mother = {
   __typename?: 'Mother';
   age?: Maybe<Scalars['String']>;
   caregiver?: Maybe<Caregiver>;
+  clickedContactTab?: Maybe<Scalars['Boolean']>;
+  clickedProgressTab?: Maybe<Scalars['Boolean']>;
+  clickedReferralsTab?: Maybe<Scalars['Boolean']>;
+  clickedVisitTab?: Maybe<Scalars['Boolean']>;
   expectedDateOfDelivery?: Maybe<Scalars['DateTime']>;
   healthCareWorker?: Maybe<HealthCareWorker>;
   healthCareWorkerId?: Maybe<Scalars['UUID']>;
@@ -2540,6 +2560,10 @@ export type MotherFilterInput = {
   age?: InputMaybe<StringOperationFilterInput>;
   and?: InputMaybe<Array<MotherFilterInput>>;
   caregiver?: InputMaybe<CaregiverFilterInput>;
+  clickedContactTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedProgressTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedReferralsTab?: InputMaybe<BooleanOperationFilterInput>;
+  clickedVisitTab?: InputMaybe<BooleanOperationFilterInput>;
   expectedDateOfDelivery?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   healthCareWorker?: InputMaybe<HealthCareWorkerFilterInput>;
   healthCareWorkerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -2562,6 +2586,10 @@ export type MotherFilterInput = {
 export type MotherInput = {
   Age?: InputMaybe<Scalars['String']>;
   Caregiver?: InputMaybe<CaregiverInput>;
+  ClickedContactTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedProgressTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
+  ClickedVisitTab?: InputMaybe<Scalars['Boolean']>;
   ExpectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
   HealthCareWorker?: InputMaybe<HealthCareWorkerInput>;
   HealthCareWorkerId?: InputMaybe<Scalars['UUID']>;
@@ -2580,6 +2608,10 @@ export type MotherInput = {
 
 export type MotherModelInput = {
   age?: InputMaybe<Scalars['String']>;
+  clickedContactTab?: InputMaybe<Scalars['Boolean']>;
+  clickedProgressTab?: InputMaybe<Scalars['Boolean']>;
+  clickedReferralsTab?: InputMaybe<Scalars['Boolean']>;
+  clickedVisitTab?: InputMaybe<Scalars['Boolean']>;
   dateOfBirth?: InputMaybe<Scalars['DateTime']>;
   expectedDateOfDelivery?: InputMaybe<Scalars['DateTime']>;
   firstName?: InputMaybe<Scalars['String']>;

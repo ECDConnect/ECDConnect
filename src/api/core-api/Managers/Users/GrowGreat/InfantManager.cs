@@ -94,7 +94,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     GenderId = input.GenderId,
                     WeightAtBirth = input.WeightAtBirth,
                     LengthAtBirth = input.LengthAtBirth,
-                    Completed24MonthVisits = false
+                    Completed24MonthVisits = false,
+                    ClickedVisitTab = false,
+                    ClickedProgressTab = false,
+                    ClickedReferralsTab = false,
+                    ClickedContactTab = false
                 };
             }
             else
@@ -115,7 +119,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
-                        Completed24MonthVisits = false
+                        Completed24MonthVisits = false,
+                        ClickedVisitTab = false,
+                        ClickedProgressTab = false,
+                        ClickedReferralsTab = false,
+                        ClickedContactTab = false
                     };
                 }
                 else
@@ -134,7 +142,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
-                        Completed24MonthVisits = false
+                        Completed24MonthVisits = false,
+                        ClickedVisitTab = false,
+                        ClickedProgressTab = false,
+                        ClickedReferralsTab = false,
+                        ClickedContactTab = false
                     };
                 }
             }
@@ -160,6 +172,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
             infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
+            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+            infantToUpdate.ClickedContactTab = input.ClickedContactTab;
 
             return _infantRepo.Update(infantToUpdate);
         }
@@ -255,6 +271,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 VerifiedByHomeAffairs = false,
                 IsActive = true,
                 LastSeen = DateTime.Now,
+                IsImported = false
             };
 
         }

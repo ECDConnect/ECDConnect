@@ -53,7 +53,7 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
   openReports,
-  currentUserId
+  currentUserId,
 }) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);

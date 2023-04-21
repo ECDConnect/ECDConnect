@@ -8,8 +8,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import { InfantProfileParams } from '../infant-profile.types';
-import { useHistory, useLocation, useParams } from 'react-router';
+import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import Clipboard from '@/assets/clipboardIcon.svg';
@@ -32,7 +31,6 @@ import ROUTES from '@/routes/routes';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 
 const HEADER_HEIGHT = 64;
-
 interface GroupedData {
   [key: string]: VisitDataStatus[];
   clinicReferrals: VisitDataStatus[];
@@ -46,20 +44,12 @@ export const ReferralsTab: React.FC = () => {
   const location = useLocation();
   const appDispatch = useAppDispatch();
 
-  const referralsForInfant = useSelector(
-    infantSelectors.getReferralsForInfantSelector
-  );
-  const completedReferralsForInfant =
-    useSelector(infantSelectors.getCompletedReferralsForInfantSelector) || [];
-  const [referralsInput, setReferralsInput] =
-    useState<VisitDataStatusFilterInput[]>();
   const [showMarkAllButton, setShowMarkAllButton] = useState(true);
-  // const [showBackReferralButton, setShowBackReferralButton] = useState(true);
   const [isReferralsView, setIsReferralsView] = useState(true);
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
 
-  const { id: infantId } = useParams<InfantProfileParams>();
+  const [, , , infantId] = location.pathname.split('/');
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
@@ -78,32 +68,14 @@ export const ReferralsTab: React.FC = () => {
     ).unwrap();
   }, [appDispatch, infantId]);
 
-  // group data under sections
-  const groupedData = useMemo(() => {
-    const groupedData = referralsForInfant?.reduce(
-      (acc: { [key: string]: any }, currentValue) => {
-        const section = toCamelCase(currentValue?.section || '');
-        if (!section) return acc;
-        if (!acc[section]) {
-          acc[section] = [];
-        }
-        acc[section].push(currentValue);
-        return acc;
-      },
-      {}
-    );
-    return groupedData;
-  }, [referralsForInfant]) as GroupedData;
-
-  // all sections
-  const sections =
-    groupedData &&
-    Object.keys(groupedData)?.map((item) => ({
-      label: groupedData[item][0].section,
-      value: item,
-    }));
-
-  const [questions, setAnswers] = useState(groupedData);
+  const referralsForInfant = useSelector(
+    infantSelectors.getReferralsForInfantSelector
+  );
+  const completedReferralsForInfant = useSelector(
+    infantSelectors.getCompletedReferralsForInfantSelector
+  );
+  const [referralsInput, setReferralsInput] =
+    useState<VisitDataStatusFilterInput[]>();
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -140,6 +112,36 @@ export const ReferralsTab: React.FC = () => {
     },
     [setReferralsInput, appDispatch]
   );
+
+  // group data under sections
+  const groupedData = useMemo(() => {
+    const groupedData = referralsForInfant?.reduce(
+      (acc: { [key: string]: any }, currentValue) => {
+        const section = toCamelCase(currentValue?.section || '');
+        if (!section) return acc;
+        if (!acc[section]) {
+          acc[section] = [];
+        }
+        acc[section].push(currentValue);
+        return acc;
+      },
+      {}
+    );
+    return groupedData;
+  }, [referralsForInfant]) as GroupedData;
+
+  // all sections
+  const sections =
+    groupedData &&
+    Object.keys(groupedData)?.map((item) => ({
+      label: groupedData[item][0].section,
+      value: item,
+    }));
+
+  console.log('sections', sections);
+
+  const [questions, setAnswers] = useState(groupedData);
+  console.log('questions', questions);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -199,10 +201,12 @@ export const ReferralsTab: React.FC = () => {
 
   const onShowBackReferrals = useCallback(() => {
     setIsReferralsView(false);
-    for (const item of completedReferralsForInfant) {
-      if (item.backReferralCompleted) {
-        setShowCompletedButton(true);
-        break;
+    if (completedReferralsForInfant) {
+      for (const item of completedReferralsForInfant) {
+        if (item.backReferralCompleted) {
+          setShowCompletedButton(true);
+          break;
+        }
       }
     }
   }, [completedReferralsForInfant]);
@@ -211,11 +215,14 @@ export const ReferralsTab: React.FC = () => {
     setIsReferralsView(true);
   }, []);
 
-  const onUpdateBackReferral = useCallback((id) => {
-    history.push(`${location.pathname}/update-back-referral/${id}`, {
-      activeTabIndex: ROUTES.CLIENTS.MOM_PROFILE.REFERRAL_TAB,
-    });
-  }, []);
+  const onUpdateBackReferral = useCallback(
+    (id) => {
+      history.push(`${location.pathname}/update-back-referral/${id}`, {
+        activeTabIndex: ROUTES.CLIENTS.MOM_PROFILE.REFERRAL_TAB,
+      });
+    },
+    [history, location]
+  );
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
@@ -294,40 +301,31 @@ export const ReferralsTab: React.FC = () => {
             />
           )}
 
-          {sections &&
-            sections?.map((section) => (
-              <Fragment key={section.value}>
-                <Typography
-                  type="h3"
-                  text={section.label || ''}
-                  color="textDark"
+          {sections?.map((section) => (
+            <Fragment key={section?.value}>
+              <Typography
+                type="h3"
+                text={section?.label || ''}
+                color="textDark"
+              />
+              {questions?.[section?.value].map((item: VisitDataStatus) => (
+                <CheckboxGroup
+                  id={item?.id}
+                  key={item?.id}
+                  title={item?.comment || ''}
+                  titleColours="textMid"
+                  checked={item?.isCompleted}
+                  name={section?.value || ''}
+                  value={item?.comment || ''}
+                  description={format(
+                    new Date(item.insertedDate),
+                    'dd MMM yyyy'
+                  )}
+                  onChange={(event) => onCheckboxChange(event)}
                 />
-                {questions?.[section.value].map((item: VisitDataStatus) => (
-                  <>
-                    <CheckboxGroup
-                      id={item?.id}
-                      key={item?.id}
-                      title={item?.comment || ''}
-                      titleColours="textMid"
-                      checked={item?.isCompleted}
-                      name={section?.value || ''}
-                      value={item?.comment || ''}
-                      onChange={(event) => onCheckboxChange(event)}
-                    />
-
-                    <Typography
-                      key={`datekey_${item?.id}`}
-                      type="small"
-                      // text={format(new Date(item.insertedDate), 'dd MMM yyyy')}
-                      text="&nbsp;"
-                      color="textDark"
-                      align="right"
-                      weight="semibold"
-                    />
-                  </>
-                ))}
-              </Fragment>
-            ))}
+              ))}
+            </Fragment>
+          ))}
 
           {/* Show success message when all referrals are selected */}
           {!showMarkAllButton && (
@@ -362,22 +360,66 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* BODY: BACK-REFERRALS -----------------------------------------*/}
-      {!isReferralsView && completedReferralsForInfant?.length > 0 && (
-        <div className="px-4 pb-4 pt-7">
-          {completedReferralsForInfant?.map((item: VisitDataStatus) => (
-            <div key={item?.id}>
-              {/* Not completed back referrals */}
-              {!item.backReferralCompleted && (
-                <>
+      {!isReferralsView &&
+        completedReferralsForInfant &&
+        completedReferralsForInfant?.length > 0 && (
+          <div className="px-4 pb-4 pt-7">
+            {completedReferralsForInfant?.map((item: VisitDataStatus) => (
+              <div key={item?.id}>
+                {/* Not completed back referrals */}
+                {!item.backReferralCompleted && (
+                  <>
+                    <div className="my-4 flex items-center gap-3">
+                      <div className="flex flex-col">
+                        <Typography
+                          type="h4"
+                          align="left"
+                          weight="bold"
+                          text={item?.comment || ''}
+                          className="w-full"
+                          color="textDark"
+                          hasMarkup={true}
+                        />
+                        <Typography
+                          type="body"
+                          align="left"
+                          weight="skinny"
+                          text={`Reffered on ${format(
+                            new Date(item.insertedDate),
+                            'dd MMM yyyy'
+                          )}`}
+                          color="textMid"
+                          className="text-sm"
+                        />
+                      </div>
+
+                      <Button
+                        text="Update"
+                        icon="PencilIcon"
+                        type="filled"
+                        color="secondary"
+                        textColor="white"
+                        className="h-10 w-48"
+                        iconPosition="end"
+                        onClick={() => onUpdateBackReferral(item.id)}
+                      />
+                    </div>
+                    <div>
+                      <Divider className="p-4" dividerType="dashed" />
+                    </div>
+                  </>
+                )}
+                {/* Complted back referrals */}
+                {item.backReferralCompleted && (
                   <div className="my-4 flex items-center gap-3">
-                    <div className="flex flex-col">
+                    <div className="flex w-full flex-col">
                       <Typography
                         type="h4"
                         align="left"
                         weight="bold"
                         text={item?.comment || ''}
-                        className="w-full"
                         color="textDark"
+                        className="w-full"
                         hasMarkup={true}
                       />
                       <Typography
@@ -392,84 +434,46 @@ export const ReferralsTab: React.FC = () => {
                         className="text-sm"
                       />
                     </div>
-
-                    <Button
-                      text="Update"
-                      icon="PencilIcon"
-                      type="filled"
-                      color="secondary"
-                      textColor="white"
-                      className="h-10 w-48"
-                      iconPosition="end"
-                      onClick={() => onUpdateBackReferral(item.id)}
-                    />
+                    <CheckCircleIcon
+                      className="h-12 w-12"
+                      style={{ fill: '#83BC26' }}
+                    ></CheckCircleIcon>
                   </div>
-                  <div>
-                    <Divider className="p-4" dividerType="dashed" />
-                  </div>
-                </>
-              )}
-              {/* Complted back referrals */}
-              {item.backReferralCompleted && (
-                <div className="my-4 flex items-center gap-3">
-                  <div className="flex w-full flex-col">
-                    <Typography
-                      type="h4"
-                      align="left"
-                      weight="bold"
-                      text={item?.comment || ''}
-                      color="textDark"
-                      className="w-full"
-                      hasMarkup={true}
-                    />
-                    <Typography
-                      type="body"
-                      align="left"
-                      weight="skinny"
-                      text={`Reffered on ${format(
-                        new Date(item.insertedDate),
-                        'dd MMM yyyy'
-                      )}`}
-                      color="textMid"
-                      className="text-sm"
-                    />
-                  </div>
-                  <CheckCircleIcon
-                    className="h-12 w-12"
-                    style={{ fill: '#83BC26' }}
-                  ></CheckCircleIcon>
-                </div>
-              )}
-              <Divider className="p-4" dividerType="dashed" />
-            </div>
-          ))}
-          {completedReferralsForInfant?.length > 1 && showCompletedButton && (
+                )}
+                {item.backReferralCompleted && (
+                  <Divider className="p-4" dividerType="dashed" />
+                )}
+              </div>
+            ))}
+            {completedReferralsForInfant?.length > 1 && showCompletedButton && (
+              <Button
+                type="outlined"
+                color="primary"
+                textColor="primary"
+                icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
+                text={
+                  isShowCompletedItems
+                    ? 'Hide completed back-referrals'
+                    : 'See completed back-referrals'
+                }
+                onClick={() =>
+                  setIsShowCompletedItems((prevState) => !prevState)
+                }
+              />
+            )}
+            {/* Show referral button here when there are no back-referral   */}
             <Button
-              type="outlined"
+              text="Manage referrals"
+              icon="ClipboardCheckIcon"
+              type="filled"
               color="primary"
-              textColor="primary"
-              icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
-              text={
-                isShowCompletedItems
-                  ? 'Hide completed back-referrals'
-                  : 'See completed back-referrals'
-              }
-              onClick={() => setIsShowCompletedItems((prevState) => !prevState)}
+              textColor="white"
+              className="mt-4 w-full"
+              iconPosition="start"
+              onClick={onShowReferrals}
             />
-          )}
-          {/* Show referral button here when there are no back-referral   */}
-          <Button
-            text="Manage referrals"
-            icon="ClipboardCheckIcon"
-            type="filled"
-            color="primary"
-            textColor="white"
-            className="mt-4 w-full"
-            iconPosition="start"
-            onClick={onShowReferrals}
-          />
-        </div>
-      )}
+          </div>
+        )}
 
       {/* EMPTY BODY: REFERRALS -----------------------------------------*/}
       {isReferralsView && referralsForInfant?.length === 0 && (
@@ -497,18 +501,19 @@ export const ReferralsTab: React.FC = () => {
           </div>
 
           {/* Show back referral button when there are completed referrals  */}
-          {completedReferralsForInfant?.length > 0 && (
-            <Button
-              text="Manage back-referrals"
-              icon="ClipboardCheckIcon"
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              className="mt-4 w-full"
-              iconPosition="start"
-              onClick={onShowBackReferrals}
-            />
-          )}
+          {completedReferralsForInfant &&
+            completedReferralsForInfant?.length > 0 && (
+              <Button
+                text="Manage back-referrals"
+                icon="ClipboardCheckIcon"
+                type="outlined"
+                color="primary"
+                textColor="primary"
+                className="mt-4 w-full"
+                iconPosition="start"
+                onClick={onShowBackReferrals}
+              />
+            )}
         </div>
       )}
 

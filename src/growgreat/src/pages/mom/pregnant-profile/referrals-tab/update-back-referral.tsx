@@ -12,7 +12,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { ChangeEvent, useCallback, useMemo, useState } from 'react';
+import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/solid';
 import { RootState } from '@/store/types';
 import { format } from 'date-fns';
@@ -36,28 +36,32 @@ export const MotherBackReferralUpdate: React.FC<
   const [hasAnswered, setHasAnswered] = useState(false);
   const [hasReferred, setHasReferred] = useState(false);
   const [isClinicalReferral, setIsClinicalReferral] = useState(false);
+  const [isValid, setIsValid] = useState(false);
   const [referralComment, setReferralComment] = useState<string>();
   const appDispatch = useAppDispatch();
 
   const [, , , motherId] = location.pathname.split('/');
   const [, , , , , visitDataStatusId] = location.pathname.split('/');
 
-  const completedReferralsForMother =
-    useSelector(motherSelectors.getCompletedReferralsForMotherSelector) || [];
+  const completedReferralsForMother = useSelector(
+    motherSelectors.getCompletedReferralsForMotherSelector
+  );
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
 
   const selectedReferral = useMemo(() => {
-    for (const item of completedReferralsForMother) {
-      if (item.id === visitDataStatusId) {
-        return item;
+    if (completedReferralsForMother) {
+      for (const item of completedReferralsForMother) {
+        if (item.id === visitDataStatusId) {
+          return item;
+        }
       }
     }
-  }, [completedReferralsForMother]);
+  }, [completedReferralsForMother, visitDataStatusId]);
 
-  const setQuestion = useMemo(() => {
+  const setVisibility = useCallback(() => {
     var key = toCamelCase(selectedReferral?.section || '').toString();
     if (
       key === 'clinicReferrals' ||
@@ -70,6 +74,8 @@ export const MotherBackReferralUpdate: React.FC<
       setHasReferred(true);
     }
   }, [setIsClinicalReferral, setHasAnswered, setHasReferred, selectedReferral]);
+
+  useEffect(() => setVisibility(), [setVisibility]);
 
   const saveBackReferral = () => {
     const inputModel: VisitBackReferralModelInput = {
@@ -95,12 +101,13 @@ export const MotherBackReferralUpdate: React.FC<
     appDispatch(
       motherThunkActions.getCompletedReferralsForMother({ motherId })
     ).unwrap();
-  }, [motherId]);
+  }, [motherId, appDispatch]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
       const value = event.target.value;
       setReferralComment(value);
+      setIsValid(true);
     },
     [setReferralComment]
   );
@@ -240,6 +247,7 @@ export const MotherBackReferralUpdate: React.FC<
             text={'Save'}
             icon={'SaveIcon'}
             iconPosition={'start'}
+            disabled={!isValid}
             onClick={() => saveBackReferral()}
           />
         </div>

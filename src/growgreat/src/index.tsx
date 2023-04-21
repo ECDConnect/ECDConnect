@@ -6,13 +6,16 @@ import reportWebVitals from '@/reportWebVitals';
 import { defineCustomElements } from '@ionic/pwa-elements/loader';
 import { OnlineStatusProvider } from '@/hooks/useOnlineStatus';
 import * as serviceWorkerRegistration from '@/serviceWorkerRegistration';
+import { WalkthroughProvider } from '@/context/walkthroughContext';
 
 ReactDOM.render(
   <StrictMode>
     <OnlineStatusProvider>
-      <ConfigProvider>
-        <ConfigWrapper />
-      </ConfigProvider>
+      <WalkthroughProvider>
+        <ConfigProvider>
+          <ConfigWrapper />
+        </ConfigProvider>
+      </WalkthroughProvider>
     </OnlineStatusProvider>
   </StrictMode>,
   document.getElementById('root')

@@ -85,6 +85,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
             entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
             entityToUpdate.SiteAddress = input.SiteAddress;
+            entityToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+            entityToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+            entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+            entityToUpdate.ClickedContactTab = input.ClickedContactTab;
 
             return _motherRepo.Update(entityToUpdate);
         }
@@ -147,7 +151,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 ExpectedDateOfDelivery = input.ExpectedDateOfDelivery,
                 HealthCareWorkerId = healthCareWorkerId,
                 SiteAddress = input.SiteAddress,
-                LinkedCaregiverId = input.LinkedCaregiverId
+                LinkedCaregiverId = input.LinkedCaregiverId,
+                ClickedVisitTab = false,
+                ClickedProgressTab = false,
+                ClickedReferralsTab = false,
+                ClickedContactTab = false
             };
         }
 
@@ -166,6 +174,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 VerifiedByHomeAffairs = false,
                 IsActive = true,
                 LastSeen = DateTime.Now,
+                IsImported = false
             };
         }
 
