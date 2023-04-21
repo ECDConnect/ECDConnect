@@ -458,7 +458,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 20 }, (_, i) => ({
+        ...Array.from({ length: 10 }, (_, i) => ({
           child: 'John doe',
           date: '10/02/2023',
           amount: 'R 1, 0000',

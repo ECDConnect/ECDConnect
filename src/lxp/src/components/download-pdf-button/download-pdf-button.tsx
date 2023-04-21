@@ -48,6 +48,8 @@ const GeneratePdfReportButton = ({
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
+    let startY = 35; // initial startY value
+
     const tablesByType: { [key: string]: TableData[] } = {};
 
     // Group tables by type
