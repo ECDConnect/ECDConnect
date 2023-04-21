@@ -10,7 +10,6 @@ import {
   EventRecordType,
   InfantModelInput,
   SiteAddressInput,
-  VisitBackReferral,
   VisitDataStatus,
   VisitDataStatusFilterInput,
   VisitModelInput,
@@ -33,7 +32,6 @@ export const InfantActions = {
   UPDATE_INFANT_CAREGIVER: 'updateInfantCaregiver',
   GET_REFERRALS_FOR_INFANT: 'getReferralsForInfant',
   GET_COMPLETED_REFERRALS_FOR_INFANT: 'getCompletedReferralsForInfant',
-  GET_BACK_REFERRALS_FOR_INFANT: 'getBackReferralsForInfant',
   UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
   ADD_ADDITIONAL_VISIT_FOR_INFANT: 'addAdditionalVisitForInfant',
 };
@@ -411,48 +409,6 @@ export const getCompletedReferralsForInfant = createAsyncThunk<
         return rejectWithValue('Error getting more information');
       }
       return referrals;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const getBackReferralsForInfant = createAsyncThunk<
-  VisitBackReferral[],
-  {
-    infantId: string;
-    referralCompleted: boolean;
-    backReferralCompleted: boolean;
-  },
-  ThunkApiType<RootState>
->(
-  InfantActions.GET_BACK_REFERRALS_FOR_INFANT,
-  async (
-    { infantId, referralCompleted, backReferralCompleted },
-    { getState, rejectWithValue }
-  ) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      let content: VisitBackReferral[] | undefined = undefined;
-
-      if (userAuth?.auth_token) {
-        content = await new Referral(
-          userAuth?.auth_token ?? ''
-        ).GetBackReferralsForInfant(
-          infantId,
-          referralCompleted,
-          backReferralCompleted
-        );
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-      if (!content) {
-        return rejectWithValue('Error getting more information');
-      }
-      return content;
     } catch (err) {
       return rejectWithValue(err);
     }

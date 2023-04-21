@@ -2388,13 +2388,6 @@ export type ListFilterInputTypeOfProgrammeFilterInput = {
   some?: InputMaybe<ProgrammeFilterInput>;
 };
 
-export type ListFilterInputTypeOfVisitBackReferralFilterInput = {
-  all?: InputMaybe<VisitBackReferralFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<VisitBackReferralFilterInput>;
-  some?: InputMaybe<VisitBackReferralFilterInput>;
-};
-
 export type MappedCoach = {
   __typename?: 'MappedCoach';
   contactNumber?: Maybe<Scalars['String']>;
@@ -2656,7 +2649,7 @@ export type Mutation = {
   addTeamLead?: Maybe<TeamLead>;
   addUser?: Maybe<ApplicationUser>;
   addUsersToRole: Scalars['Boolean'];
-  addVisitBackReferralData?: Maybe<VisitBackReferral>;
+  addVisitBackReferral?: Maybe<VisitBackReferral>;
   addVisitData: Scalars['Boolean'];
   contentTypeImport: Scalars['Boolean'];
   createAbsentees?: Maybe<Absentees>;
@@ -3078,7 +3071,7 @@ export type MutationAddUsersToRoleArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationAddVisitBackReferralDataArgs = {
+export type MutationAddVisitBackReferralArgs = {
   input?: InputMaybe<VisitBackReferralModelInput>;
 };
 
@@ -5656,6 +5649,7 @@ export type Query = {
   coachByUserId?: Maybe<Coach>;
   coachNameByUserId?: Maybe<Scalars['String']>;
   completedReferralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  completedReferralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   completedVisitsForVisitId?: Maybe<Array<Maybe<Scalars['String']>>>;
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
@@ -6812,6 +6806,10 @@ export type QueryCompletedReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryCompletedReferralsForMotherArgs = {
+  id?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryCompletedVisitsForVisitIdArgs = {
   visitId?: InputMaybe<Scalars['String']>;
 };
@@ -7490,6 +7488,10 @@ export type Setting_SmartLinkApi = {
   __typename?: 'Setting_SmartLinkApi';
   BaseUrl: Scalars['String'];
   Key: Scalars['String'];
+  MaskDataEmail: Scalars['String'];
+  MaskDataIdNumber: Scalars['String'];
+  MaskDataMode: Scalars['String'];
+  MaskDataNumber: Scalars['String'];
   Mode: Scalars['String'];
 };
 
@@ -8511,9 +8513,9 @@ export type VisitDataInput = {
 
 export type VisitDataStatus = {
   __typename?: 'VisitDataStatus';
+  backReferral?: Maybe<VisitBackReferral>;
   backReferralCompleted: Scalars['Boolean'];
   backReferralDateCompleted?: Maybe<Scalars['DateTime']>;
-  backReferrals?: Maybe<Array<Maybe<VisitBackReferral>>>;
   color?: Maybe<Scalars['String']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
@@ -8531,9 +8533,9 @@ export type VisitDataStatus = {
 
 export type VisitDataStatusFilterInput = {
   and?: InputMaybe<Array<VisitDataStatusFilterInput>>;
+  backReferral?: InputMaybe<VisitBackReferralFilterInput>;
   backReferralCompleted?: InputMaybe<BooleanOperationFilterInput>;
   backReferralDateCompleted?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  backReferrals?: InputMaybe<ListFilterInputTypeOfVisitBackReferralFilterInput>;
   color?: InputMaybe<StringOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
@@ -8551,9 +8553,9 @@ export type VisitDataStatusFilterInput = {
 };
 
 export type VisitDataStatusInput = {
+  BackReferral?: InputMaybe<VisitBackReferralInput>;
   BackReferralCompleted: Scalars['Boolean'];
   BackReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
-  BackReferrals?: InputMaybe<Array<InputMaybe<VisitBackReferralInput>>>;
   Color?: InputMaybe<Scalars['String']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
@@ -8568,6 +8570,7 @@ export type VisitDataStatusInput = {
 };
 
 export type VisitDataStatusModelInput = {
+  backReferral?: InputMaybe<VisitBackReferralInput>;
   backReferralCompleted?: InputMaybe<Scalars['Boolean']>;
   backReferralDateCompleted?: InputMaybe<Scalars['DateTime']>;
   color?: InputMaybe<Scalars['String']>;
