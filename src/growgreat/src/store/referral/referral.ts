@@ -3,6 +3,7 @@ import localForage from 'localforage';
 import { ThunkStateStatus } from '../types';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
+  addVisitBackReferral,
   getReferralsForInfant,
   getReferralsForVisitId,
   updateVisitDataStatus,
@@ -19,6 +20,7 @@ const referralSlice = createSlice({
     setThunkActionStatus(builder, getReferralsForInfant);
     setThunkActionStatus(builder, getReferralsForVisitId);
     setThunkActionStatus(builder, updateVisitDataStatus);
+    setThunkActionStatus(builder, addVisitBackReferral);
     builder.addCase(getReferralsForInfant.fulfilled, (state, action) => {
       state.referralsForInfant = action.payload;
 
@@ -30,6 +32,9 @@ const referralSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(updateVisitDataStatus.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addVisitBackReferral.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

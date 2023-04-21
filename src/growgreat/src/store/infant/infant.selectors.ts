@@ -1,10 +1,6 @@
 import { InfantDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
-import {
-  EventRecordType,
-  VisitBackReferral,
-  VisitDataStatus,
-} from '@ecdlink/graphql';
+import { EventRecordType, VisitDataStatus } from '@ecdlink/graphql';
 
 export const getInfants = (state: RootState): InfantDto[] =>
   state.infants.infants || [];
@@ -127,8 +123,3 @@ export const getCompletedReferralsForInfantSelector = (
   state: RootState
 ): VisitDataStatus[] | undefined =>
   state.infants.completedReferralsForInfant || [];
-
-export const getBackReferralsForInfantSelector = (
-  state: RootState
-): VisitBackReferral[] | undefined =>
-  state.infants.backReferralsForInfant || [];

@@ -14,6 +14,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public DateTime? ReferralDateCompleted { get; set; }
         public Boolean? BackReferralCompleted { get; set; }
         public DateTime? BackReferralDateCompleted { get; set; }
+        public VisitBackReferral BackReferral { get; set; }
 
     }
 

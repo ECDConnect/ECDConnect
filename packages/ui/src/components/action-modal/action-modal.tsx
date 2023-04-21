@@ -1,6 +1,6 @@
 import { ReactElement } from 'react';
 import { Colours, ComponentBaseProps } from '../../models';
-import { renderIcon } from '../../utils';
+import { classNames, renderIcon } from '../../utils';
 import Button from '../button/button';
 import { IconWrapper } from '../icon-wrapper/icon-wrapper';
 import { TypographyWeight } from '../typography/models/TypographyTypes';
@@ -44,15 +44,19 @@ export const ActionModal: React.FC<ActionModalProps> = ({
   textAlignment = 'center',
   children,
   customDetailText,
+  className,
 }) => {
   return (
     <div
-      className={styles.wrapper(
-        textAlignment === 'left'
-          ? 'start'
-          : textAlignment === 'right'
-          ? 'end'
-          : textAlignment
+      className={classNames(
+        className,
+        styles.wrapper(
+          textAlignment === 'left'
+            ? 'start'
+            : textAlignment === 'right'
+            ? 'end'
+            : textAlignment
+        )
       )}
     >
       {customIcon}
@@ -148,7 +152,8 @@ export const ActionModal: React.FC<ActionModalProps> = ({
                 `text-${button.textColour} h-4 w-4 mr-2`
               )}
             <Typography
-              type="button"
+              className={button.textClassName}
+              type={button?.textType || 'button'}
               color={button.textColour}
               text={button.text}
             ></Typography>
