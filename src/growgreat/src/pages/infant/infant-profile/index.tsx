@@ -24,10 +24,11 @@ import { ContactTab } from './contact-tab';
 import { visitSteps } from './visits-tab/walkthrough/steps';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
-import { getStringFromClassNameOrId } from '@ecdlink/core';
+import { getStringFromClassNameOrId, replaceBraces } from '@ecdlink/core';
 import { progressSteps } from './progress-tab/walkthrough/steps';
 import { infantThunkActions } from '@/store/infant';
 import { useAppDispatch } from '@/store';
+import { referralsSteps } from './referrals-tab/walkthrough/steps';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -124,6 +125,13 @@ export const InfantProfile: React.FC = () => {
           infoPageSection: 'progress tab',
           hideJoyRideBorders: walkthroughStepIndex === 2,
         };
+      case INFANT_PROFILE_TABS.REFERRALS:
+        return {
+          steps: referralsSteps,
+          infoPageTitle: 'Referrals',
+          infoPageSection: 'referrals tab',
+          hideJoyRideBorders: walkthroughStepIndex === 3,
+        };
       default:
         return {
           steps: visitSteps,
@@ -160,7 +168,10 @@ export const InfantProfile: React.FC = () => {
   return (
     <>
       <Joyride
-        steps={steps}
+        steps={steps.map((item) => ({
+          ...item,
+          content: replaceBraces(String(item?.content), infantName || ''),
+        }))}
         run={walkthroughState?.isTourActive}
         stepIndex={walkthroughStepIndex}
         callback={handleCallback}
