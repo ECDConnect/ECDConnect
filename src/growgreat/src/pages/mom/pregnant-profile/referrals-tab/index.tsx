@@ -8,13 +8,14 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import Clipboard from '@/assets/clipboardIcon.svg';
 import {
   Fragment,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -39,6 +40,10 @@ interface GroupedData {
   immunisationsSupplementsAndDeworming: VisitDataStatus[];
 }
 
+export interface MotherParams {
+  id: string;
+}
+
 export const ReferralsTab: React.FC = () => {
   const { height } = useWindowSize();
   const history = useHistory();
@@ -57,7 +62,7 @@ export const ReferralsTab: React.FC = () => {
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
 
-  const [, , motherId] = location.pathname.split('/');
+  const { id: motherId } = useParams<MotherParams>();
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
@@ -102,6 +107,9 @@ export const ReferralsTab: React.FC = () => {
     }));
 
   const [questions, setAnswers] = useState(groupedData);
+  useEffect(() => {
+    setAnswers(groupedData);
+  }, [groupedData]);
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -196,6 +204,10 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
+    appDispatch(
+      motherThunkActions.getCompletedReferralsForMother({ motherId })
+    ).unwrap();
+
     setIsReferralsView(false);
     if (completedreferralsForMother)
       for (const item of completedreferralsForMother) {
@@ -204,7 +216,7 @@ export const ReferralsTab: React.FC = () => {
           break;
         }
       }
-  }, [completedreferralsForMother]);
+  }, [completedreferralsForMother, appDispatch, motherId]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -302,23 +314,22 @@ export const ReferralsTab: React.FC = () => {
                   text={section.label || ''}
                   color="textDark"
                 />
-                {questions &&
-                  questions?.[section.value].map((item: VisitDataStatus) => (
-                    <CheckboxGroup
-                      id={item?.id}
-                      key={item?.id}
-                      title={item?.comment || ''}
-                      titleColours="textMid"
-                      checked={item?.isCompleted}
-                      name={section?.value || ''}
-                      value={item?.comment || ''}
-                      description={format(
-                        new Date(item.insertedDate),
-                        'dd MMM yyyy'
-                      )}
-                      onChange={(event) => onCheckboxChange(event)}
-                    />
-                  ))}
+                {questions?.[section.value]?.map((item: VisitDataStatus) => (
+                  <CheckboxGroup
+                    id={item?.id}
+                    key={item?.id}
+                    title={item?.comment || ''}
+                    titleColours="textMid"
+                    checked={item?.isCompleted}
+                    name={section?.value || ''}
+                    value={item?.comment || ''}
+                    description={format(
+                      new Date(item.insertedDate),
+                      'dd MMM yyyy'
+                    )}
+                    onChange={(event) => onCheckboxChange(event)}
+                  />
+                ))}
               </Fragment>
             ))}
 

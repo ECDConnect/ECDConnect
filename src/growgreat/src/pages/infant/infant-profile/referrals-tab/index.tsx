@@ -8,13 +8,14 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
-import { useHistory, useLocation } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import Clipboard from '@/assets/clipboardIcon.svg';
 import {
   Fragment,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
@@ -38,6 +39,10 @@ interface GroupedData {
   immunisationsSupplementsAndDeworming: VisitDataStatus[];
 }
 
+export interface InfantParams {
+  id: string;
+}
+
 export const ReferralsTab: React.FC = () => {
   const { height } = useWindowSize();
   const history = useHistory();
@@ -49,7 +54,8 @@ export const ReferralsTab: React.FC = () => {
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
 
-  const [, , , infantId] = location.pathname.split('/');
+  console.log('params', useParams());
+  const { id: infantId } = useParams<InfantParams>();
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
@@ -71,6 +77,7 @@ export const ReferralsTab: React.FC = () => {
   const referralsForInfant = useSelector(
     infantSelectors.getReferralsForInfantSelector
   );
+
   const completedReferralsForInfant = useSelector(
     infantSelectors.getCompletedReferralsForInfantSelector
   );
@@ -138,10 +145,10 @@ export const ReferralsTab: React.FC = () => {
       value: item,
     }));
 
-  console.log('sections', sections);
-
   const [questions, setAnswers] = useState(groupedData);
-  console.log('questions', questions);
+  useEffect(() => {
+    setAnswers(groupedData);
+  }, [groupedData]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -200,6 +207,10 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
+    appDispatch(
+      infantThunkActions.getCompletedReferralsForInfant({ infantId })
+    ).unwrap();
+
     setIsReferralsView(false);
     if (completedReferralsForInfant) {
       for (const item of completedReferralsForInfant) {
@@ -209,7 +220,7 @@ export const ReferralsTab: React.FC = () => {
         }
       }
     }
-  }, [completedReferralsForInfant]);
+  }, [completedReferralsForInfant, appDispatch, infant]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -308,7 +319,7 @@ export const ReferralsTab: React.FC = () => {
                 text={section?.label || ''}
                 color="textDark"
               />
-              {questions?.[section?.value].map((item: VisitDataStatus) => (
+              {questions?.[section.value]?.map((item: VisitDataStatus) => (
                 <CheckboxGroup
                   id={item?.id}
                   key={item?.id}

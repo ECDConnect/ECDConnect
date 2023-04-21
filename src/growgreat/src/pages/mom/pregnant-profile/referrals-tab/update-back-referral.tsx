@@ -85,16 +85,14 @@ export const MotherBackReferralUpdate: React.FC<
       visitDataStatusId: selectedReferral?.id,
     };
 
-    if (selectedReferral?.backReferral) {
-      // add back referral
-      appDispatch(
-        addVisitBackReferral({
-          input: inputModel,
-        })
-      ).unwrap();
-      refreshList();
-      history.goBack();
-    }
+    // add back referral
+    appDispatch(
+      addVisitBackReferral({
+        input: inputModel,
+      })
+    ).unwrap();
+    refreshList();
+    history.goBack();
   };
 
   const refreshList = useCallback(() => {
