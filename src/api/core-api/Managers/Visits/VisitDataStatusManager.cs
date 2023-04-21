@@ -1424,7 +1424,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             foreach (var item in allReferrals)
             {
-                item.BackReferrals = _visitBackReferralManager.GetBackReferralDataForId(item.VisitDataId); 
+                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id); 
             }
 
             return allReferrals;

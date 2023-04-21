@@ -2,7 +2,7 @@ import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { BannerWrapper, TabItem, TabList, Typography } from '@ecdlink/ui';
+import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getMotherById } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
@@ -27,6 +27,7 @@ import { visitSteps } from './visits/walkthrough/steps';
 import { getStringFromClassNameOrId } from '@ecdlink/core';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
+import { ReferralsTab } from './referrals-tab';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -83,15 +84,8 @@ export const PregnantProfile: React.FC = () => {
     {
       title: 'Referrals',
       initActive: false,
+      child: <ReferralsTab />,
       index: PREGNANT_PROFILE_TABS.REFERRALS,
-      child: (
-        <Typography
-          className={'mt-16 p-4'}
-          type={'body'}
-          color="textDark"
-          text={'Coming soon'}
-        />
-      ),
     },
     {
       title: 'Contact',
