@@ -423,11 +423,9 @@ export const MonthStatementsDetails: React.FC = () => {
   ];
 
   const footer = [
-    'Child Attendance per Day',
-    '', // Placeholder for ID/Passport column
-    '', // Placeholder for Day 1 column
+    'Total',
     '', // Placeholder for Day 2 column
-    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
+
   ];
 
   const multipleTableData = [
@@ -441,7 +439,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        ...Array.from({ length: 10 }, (_, i) => ({
+        ...Array.from({ length: 6 }, (_, i) => ({
           child: 'John Depp',
           date: '10/02/2023',
           amount: 'R 71, 0000',
@@ -458,7 +456,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 10 }, (_, i) => ({
+        ...Array.from({ length: 4 }, (_, i) => ({
           child: 'John doe',
           date: '10/02/2023',
           amount: 'R 1, 0000',
@@ -476,7 +474,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 8 }, (_, i) => ({
+        ...Array.from({ length: 3 }, (_, i) => ({
           child: 'John bere',
           date: '10/02/2023',
           amount: 'R 1, 0000',
@@ -495,7 +493,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 7 }, (_, i) => ({
+        ...Array.from({ length: 4 }, (_, i) => ({
           child: 'John bere',
           date: '10/02/2023',
           amount: 'R 1, 0000',
@@ -637,6 +635,7 @@ export const MonthStatementsDetails: React.FC = () => {
           <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
             {
               <GeneratePdfReportButton
+                component="income-statements"
                 title="Download Statement"
                 outputName={`${getMonthName(
                   Number(statementMonth) - 1
