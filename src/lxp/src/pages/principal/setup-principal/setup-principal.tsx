@@ -159,6 +159,10 @@ export const SetupPrincipal: React.FC = () => {
           status: true,
         })
       );
+
+      await new PractitionerService(
+        userAuth?.auth_token!
+      ).UpdatePractitionerProgress(user?.id!, 2.0);
     }
 
     if (principalPractitioners?.length) {

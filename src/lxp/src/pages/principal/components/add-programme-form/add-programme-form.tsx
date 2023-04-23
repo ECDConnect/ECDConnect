@@ -72,8 +72,6 @@ export const AddProgrammeForm: React.FC<{
 
   const isSmartLinkImported = user?.isImported;
 
-  console.log({ isSmartLinkImported });
-
   useEffect(() => {
     if (isSmartLinkImported) {
       if (classroom?.isPrinciple) {

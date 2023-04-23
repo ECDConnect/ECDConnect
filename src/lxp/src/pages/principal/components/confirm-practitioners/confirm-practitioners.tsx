@@ -44,6 +44,7 @@ export default function ConfirmPractitioners({
   const practitionersForPrincipal = useSelector(
     practitionerSelectors.getPrincipalPractitioners
   );
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const [principalPractitioners, setPrincipalPractitioners] = useState<
     RegisterPractitioner[]
   >([]);
@@ -60,10 +61,44 @@ export default function ConfirmPractitioners({
       subTitleStyle: 'text-textMid font-body text-sm leading-5 ',
     },
   ]);
+  const isSmartLinkImported = user?.isImported;
 
   const callForHelp = () => {
     window.open('tel:+27800014817');
   };
+
+  useEffect(() => {
+    if (isSmartLinkImported) {
+      const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
+      practitioners?.map((item) => {
+        if (item?.userId !== user?.id)
+          listItems.push(
+            createStackItem({
+              firstName: item?.user?.firstName ?? '',
+              surname: item?.user?.surname ?? '',
+              idNumber: item?.user?.idNumber ?? '',
+              userId: item?.user?.id ?? '',
+              passport: '',
+              preferId: !!item?.user?.idNumber,
+              isRegistered: Boolean(item?.isRegistered),
+            })
+          );
+        setListItems(listItems);
+
+        _practitionersList.push({
+          firstName: item?.user?.firstName ?? '',
+          surname: item?.user?.surname ?? '',
+          idNumber: item?.user?.idNumber ?? '',
+          id: item?.user?.id ?? '',
+          userId: item?.user?.id,
+          passport: '',
+          preferId: !!item?.user?.idNumber,
+          isRegistered: Boolean(item?.isRegistered),
+        });
+      });
+      setPrincipalPractitioners(_practitionersList);
+    }
+  }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
