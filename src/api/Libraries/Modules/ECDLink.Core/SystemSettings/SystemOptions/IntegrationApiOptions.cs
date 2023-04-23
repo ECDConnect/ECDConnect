@@ -10,5 +10,9 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
         public string Key { get; set; }
 
         public string Mode { get; set; }
+        public string MaskDataMode { get; set; }
+        public string MaskDataNumber { get; set; }
+        public string MaskDataEmail { get; set; }
+        public string MaskDataIdNumber { get; set; }
     }
 }

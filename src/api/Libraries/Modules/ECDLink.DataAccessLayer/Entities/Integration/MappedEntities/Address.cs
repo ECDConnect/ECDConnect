@@ -13,6 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string Longitude { get; set; }
         public string SharedLatitude { get; set; }
         public string SharedLongitude { get; set; }
+        public string Province { get; set; }
 
     }
 }

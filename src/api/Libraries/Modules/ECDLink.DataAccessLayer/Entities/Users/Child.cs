@@ -25,7 +25,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         LanguageJoin<Guid?>,
         ReasonForLeavingJoin<Guid?>,
         WorkflowStatusJoin<Guid?>,
-        IUserType
+        IUserType,
+        ITrackableType
          where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
@@ -59,8 +60,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         [GraphQLIgnore]
         public string Hierarchy { get; set; }
-
         public string InsertedBy { get; set; }
+        public DateTime? StartDate { get; set; }
+        public string PlaygroupGroup { get; set; }
+        public string InactiveReason { get; set; }
+        public DateTime? InactiveDate { get; set; }
+        public string InactivityComments { get; set; }
     }
 
     public interface ChildJoin<TKey>

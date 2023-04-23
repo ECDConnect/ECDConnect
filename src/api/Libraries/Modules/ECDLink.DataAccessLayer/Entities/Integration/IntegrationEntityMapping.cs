@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string BeforeJSON { get; set; }
         public string AfterJSON { get; set; }
         public bool? IsComplete { get; set; }
-
+        public string Notes { get; set; }
 
         public string UserId { get; set; }
     }

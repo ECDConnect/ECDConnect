@@ -281,8 +281,8 @@ namespace EcdLink.Api.CoreApi {
             public const string SSFranchisor = "Franchisor";
             public const string SLFranchisor = "Franchisor";
             //Child Queries
-            public const string SSChild = "Child ";
-            public const string SLChild = "Child ";
+            public const string SSChild = "Child";
+            public const string SLChild = "Child";
             //Caregiver Queries
             public const string SSCaregiver = "Caregiver";
             public const string SLCaregiver = "Caregiver";

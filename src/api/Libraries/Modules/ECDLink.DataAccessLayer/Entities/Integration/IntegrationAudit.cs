@@ -14,10 +14,11 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
     {
         public string Entity { get; set; }
         public string Property { get; set; }
-        public bool Submitted { get; set; }
+        public DateTime? Submitted { get; set; }
         public string ValueBefore { get; set; }
         public string ValueAfter { get; set; }
         public string ChangeType { get; set; }
         public string UserId { get; set; }
+        public string RelatedId { get; set; }
     }
 }

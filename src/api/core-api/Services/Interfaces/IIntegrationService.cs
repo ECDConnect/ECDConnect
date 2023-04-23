@@ -14,6 +14,7 @@ namespace ECDLink.Core.Services.Interfaces
         //Task<List<MappedChildCaregiver>> GetCareGivers(string remoteFranchiseeId);
 
         Task<bool> IntegrationByMappedCoach();
+        Task<bool> IntegrationByMappedCoachTest();
         //public void ReassignAbsentees();
         //public bool ReassignClassroomsFromHistory(string uId, string userId);
 

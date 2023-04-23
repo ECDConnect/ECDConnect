@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, RaceJoin<Guid?>, GenderJoin<Guid?>
+    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType,ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
         public virtual Race Race { get; set; }
@@ -47,6 +47,13 @@ namespace ECDLink.DataAccessLayer.Entities
         public string EmergencyContactPhoneNumber { get; set; }
         public string EmergencyContactFirstName { get; set; }
         public string EmergencyContactSurname { get; set; }
+        public string EmergencyContactFullName { get; set; }
+        public string WhatsAppNumber { get; set; }
+        public string PreferredCommunicationLanguage { get; set; }
+        public string NextOfKinFirstName { get; set; }
+        public string NextOfKinSurname { get; set; }
+        public string NextOfKinContactNumber { get; set; }
+        public bool IsImported { get; set; }
 
         public virtual Franchisor franchisorObjectData { get; set; }
         public virtual Coach coachObjectData { get; set; }

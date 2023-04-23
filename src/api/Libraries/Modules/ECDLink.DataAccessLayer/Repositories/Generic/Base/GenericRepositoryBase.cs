@@ -1,6 +1,8 @@
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -9,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
 namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
@@ -95,6 +98,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges();
 
             _domainEventService.NotifyCreate<T>(_userId, entity);
+
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                DoAudit(entity, "Insert");
+
             return entity;
         }
 
@@ -107,6 +115,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
+                T beforeUpdate = Retrieve(entity.Id);
                 //For integration, trust the FE provided updated date, otherwise set to now.
                 if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
                 entity.UpdatedDate = DateTime.Now;
@@ -123,6 +132,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 
                 // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
+
+                //Populate Audit records
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                    DoAudit(entity, "Update", beforeUpdate);
+
             }
             else
             {
@@ -146,6 +160,66 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges(true);
             _domainEventService.NotifyUpdate<T>(_userId, entity);
 
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+            DoAudit(entity, "Delete");
+
+        }
+
+        public virtual void DoAudit(T entity, string changeType = "Update", T beforeObj = null)
+        {
+            GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
+            Type tA = typeof(T);
+            //Populate Audit records
+            switch (changeType)
+            {
+                case "Delete":
+                    auditInsertRepo.Insert(new IntegrationAudit()
+                    {
+                        ChangeType = changeType,
+                        Entity = tA.Name,
+                        Property = "IsActive",
+                        ValueAfter = "false",
+                        ValueBefore = "true",
+                        UserId = _userId,
+                        RelatedId = entity.Id.ToString()
+                    });
+
+                    break;
+                case "Insert":
+                    auditInsertRepo.Insert(new IntegrationAudit()
+                    {
+                        ChangeType = changeType,
+                        Entity = tA.Name,
+                        UserId = _userId,
+                        RelatedId = entity.Id.ToString()
+                    });
+
+                    break;
+                default:
+                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
+                    foreach (var prop in tA.GetProperties())
+                    {
+                        if (prop.GetValue(entity, null) != prop.GetValue(beforeObj, null))
+                        {
+                            changesList.Add(new IntegrationAudit()
+                            {
+                                ChangeType = changeType,
+                                Entity = tA.Name,
+                                Property = prop.Name,
+                                ValueBefore = prop.GetValue(entity, null).ToString(),
+                                ValueAfter = prop.GetValue(beforeObj, null).ToString(),
+                                UserId = _userId,
+                                RelatedId = entity.Id.ToString()
+                            });
+                        }
+                    }
+                    foreach (var auditItem in changesList)
+                    {
+                        auditInsertRepo.Insert(auditItem);
+                    }
+                    break;
+            }
         }
 
         public virtual bool Exists(Guid id)
@@ -156,6 +230,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             }
 
             return entities.Any(s => s.Id == id);
+        }
+
+        public virtual T Retrieve(Guid id)
+        {
+            if (id == default(Guid))
+            {
+                return null;
+            }
+
+            return entities.FirstOrDefault(s => s.Id == id);
         }
 
         public bool dbCreated()

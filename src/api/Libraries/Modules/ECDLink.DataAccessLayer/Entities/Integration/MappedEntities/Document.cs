@@ -1,6 +1,6 @@
 namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
 {
-    public class MappedClub : BasicMappedBaseEntity
+    public class MappedDocument : BasicMappedBaseEntity
     {
 
     }
