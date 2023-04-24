@@ -221,7 +221,17 @@ export const ActivityInfoPage = ({
               text={replaceBraces(moreInformation.descriptionC, client || '')}
             />
           )}
+          {!!moreInformation?.showDividerC && (
+            <Divider dividerType="dashed" className="my-2" />
+          )}
           {/* ------- D ------- */}
+          {!!moreInformation.headerD && (
+            <Typography
+              type="h4"
+              text={replaceBraces(moreInformation.headerD, client || '')}
+              className="mb-4"
+            />
+          )}
           {!!moreInformation.descriptionD && (
             <div className="flex gap-2">
               {!!moreInformation?.descriptionDIcon && (
@@ -281,7 +291,7 @@ export const ActivityInfoPage = ({
     <BannerWrapper
       size="small"
       onBack={() => setDisplayHelp(false)}
-      title="Road to health activities"
+      title="Pregnancy activities"
       renderOverflow
     >
       <div className="bg-uiBg border-primary border-t px-4">

@@ -85,10 +85,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
             entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
             entityToUpdate.SiteAddress = input.SiteAddress;
-            entityToUpdate.ClickedVisitTab = input.ClickedVisitTab;
-            entityToUpdate.ClickedProgressTab = input.ClickedProgressTab;
-            entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
-            entityToUpdate.ClickedContactTab = input.ClickedContactTab;
+            entityToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
+            entityToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
+            entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
+            entityToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
 
             return _motherRepo.Update(entityToUpdate);
         }

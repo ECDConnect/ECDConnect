@@ -10,6 +10,7 @@ import { CallBackProps, STATUS } from 'react-joyride';
 
 interface State {
   isTourActive: boolean;
+  stepIndex: number;
 }
 
 interface Action {
@@ -29,6 +30,11 @@ const reducer = (state: State, action: Action): State => {
         ...state,
         isTourActive: action.payload,
       };
+    case 'SET_STEP':
+      return {
+        ...state,
+        stepIndex: action.payload,
+      };
     default:
       throw new Error(`Unknown action: ${action.type}`);
   }
@@ -43,6 +49,7 @@ export const WalkthroughProvider: React.FC<WalkthroughProviderProps> = ({
 }) => {
   const [state, dispatch] = useReducer(reducer, {
     isTourActive: false,
+    stepIndex: 0,
   });
 
   return (
@@ -76,12 +83,15 @@ export const useWalkthrough = () => {
     // @ts-ignore
     if ([STATUS.FINISHED, STATUS.SKIPPED].includes(status)) {
       walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: false });
+      walkthroughDispatch?.({ type: 'SET_STEP', payload: 0 });
       setWalkthroughStep(0);
     }
 
     if (type === 'step:after' && (action === 'next' || action === 'prev')) {
       setTimeout(() => {
-        setWalkthroughStep(index + (action === 'next' ? 1 : -1));
+        const step = index + (action === 'next' ? 1 : -1);
+        setWalkthroughStep(step);
+        walkthroughDispatch?.({ type: 'SET_STEP', payload: step });
       }, 100);
     }
   };
