@@ -27,6 +27,8 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   numberOfChildren,
   multipleChildrenCount,
   motherInfo,
+  name,
+  genderId,
 }) => {
   const {
     getValues: getInfantDetailsFormValues,
@@ -100,6 +102,20 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
       setInfantDetailsFormValue('dateOfBirth', myDay);
     }
   }, [myDay, setInfantDetailsFormValue]);
+
+  useEffect(() => {
+    if (name) {
+      setInfantDetailsFormValue('firstName', name);
+    }
+  }, [name, setInfantDetailsFormValue]);
+
+  useEffect(() => {
+    if (genderId) {
+      setInfantDetailsFormValue('genderId', genderId as string, {
+        shouldValidate: true,
+      });
+    }
+  }, [genderId, setInfantDetailsFormValue]);
 
   const renderDayContents = (day: any, date: any) => {
     if (date < minDate || date > maxDate) {
@@ -244,6 +260,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           className={'w-full'}
+          selectedOptions={genderId!!}
         />
       </div>
       <div className="flex h-full items-end">

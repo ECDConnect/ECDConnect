@@ -1,5 +1,4 @@
-﻿using DotLiquid.Tags;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -14,7 +13,8 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
     public class VisitDataStatusManager: BaseManager {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
@@ -1295,7 +1295,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return result;
         }
-        private string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
+        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
             var indicator = "Normal";
 
             if (isWeightCalc)
@@ -1424,7 +1424,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             foreach (var item in allReferrals)
             {
-                item.BackReferrals = _visitBackReferralManager.GetBackReferralDataForId(item.VisitDataId); 
+                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id); 
             }
 
             return allReferrals;

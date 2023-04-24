@@ -1,20 +1,12 @@
 import { InfantDto } from '@ecdlink/core';
-import JoyRide, { Step as StepType, TooltipRenderProps } from 'react-joyride';
+import JoyRide, { Step as StepType } from 'react-joyride';
 import { useMemo, useRef, useState } from 'react';
 import { Screen1 } from './screen1';
 import { Screen2 } from './screen2';
 import { Screen3 } from './screen3';
-import {
-  BannerWrapper,
-  Button,
-  Card,
-  SliderPagination,
-  Typography,
-} from '@ecdlink/ui';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
-import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
-import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
+import { BannerWrapper } from '@ecdlink/ui';
+import { Tooltip } from '@/components/walkthrough/tooltip';
+import { getJoyrideStyles } from '@/components/walkthrough/styles';
 
 export interface Step {
   infantName?: string;
@@ -23,76 +15,6 @@ export interface Step {
   className?: string;
   showComponent?: boolean;
   onClick?: () => void;
-}
-
-function Tooltip({
-  backProps,
-  continuous,
-  index,
-  isLastStep,
-  primaryProps,
-  skipProps,
-  size,
-  step,
-  tooltipProps,
-}: TooltipRenderProps) {
-  return (
-    <div {...tooltipProps} className={!isLastStep ? 'ml-5' : 'mr-1'}>
-      <Card className="mt-auto rounded-2xl p-6">
-        {step.content && (
-          <div className="flex items-center gap-4 align-middle">
-            {[0, 1, 3, 5, 7].includes(index) && (
-              <div className="bg-tertiary h-20 w-20 rounded-full">
-                <Polly className="h-20 w-20" />
-              </div>
-            )}
-            {[2, 4, 6].includes(index) && (
-              <div>
-                <PollyNeutral className="h-20 w-20" />
-              </div>
-            )}
-            {index === 8 && (
-              <div>
-                <PollyImpressed className="h-20 w-20" />
-              </div>
-            )}
-            {index === 9 && (
-              <div>
-                <PollyTime className="h-20 w-20" />
-              </div>
-            )}
-            <Typography
-              color={'textDark'}
-              type={'h2'}
-              weight={'normal'}
-              text={String(step?.content)}
-            />
-          </div>
-        )}
-        <div className="mt-4 flex justify-between gap-4">
-          {index <= size - 2 && (
-            <SliderPagination
-              totalItems={size - 1}
-              activeIndex={index}
-              className={'py-4'}
-            />
-          )}
-          {!step.spotlightClicks && (
-            <div {...primaryProps} className={'flex w-full justify-end'}>
-              <Button
-                type="filled"
-                color="primary"
-                textColor="white"
-                className="w-full"
-                icon={index < size - 2 ? 'ArrowCircleRightIcon' : 'XIcon'}
-                text={index < size - 2 ? 'Next' : 'Close'}
-              />
-            </div>
-          )}
-        </div>
-      </Card>
-    </div>
-  );
 }
 
 export const Walkthrough = ({
@@ -235,19 +157,17 @@ export const Walkthrough = ({
           e.lifecycle === 'complete' && !e.step.spotlightClicks && onNextStep()
         }
         steps={steps}
-        tooltipComponent={Tooltip}
-        styles={{
-          spotlight: {
-            borderWidth: stepIndex === 8 ? 0 : 4,
-            borderRadius: 20,
-            borderColor: '#FF6C00',
-            borderStyle: 'solid',
-            background: stepIndex === 8 ? 'transparent' : 'gray',
-          },
-          options: {
-            arrowColor: stepIndex === 8 ? 'transparent' : 'white',
-          },
-        }}
+        tooltipComponent={({ ...props }) => (
+          <Tooltip
+            {...props}
+            pollyInformationalSteps={[0, 1, 3, 5, 7]}
+            pollyNeutralSteps={[2, 4, 6]}
+            pollyImpressedSteps={[8]}
+            pollyTimeSteps={[9]}
+            displayCloseButton={props.index < props.size - 2}
+          />
+        )}
+        styles={getJoyrideStyles(stepIndex === 8)}
       />
       <div id="step9" className="h-0 w-full" />
     </div>

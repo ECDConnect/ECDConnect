@@ -2,7 +2,7 @@ import { Alert } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { MoreInformation } from '../../components/more-information';
 import { Video } from '../../components/video';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
@@ -14,7 +14,7 @@ export const AntenatalClinicVideoStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
-  const videoSection = '';
+  const videoSection = 'Antenatal clinic video';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);

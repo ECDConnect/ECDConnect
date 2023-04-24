@@ -1,14 +1,6 @@
 import { useMemo } from 'react';
-import {
-  Button,
-  Dialog,
-  DialogPosition,
-  Divider,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, Divider, Typography } from '@ecdlink/ui';
 import imgMocked from './mocked.png';
-import { dietFormQuestion } from '../nutrition-eating';
-import { noneOption } from '../nutrition-eating/options';
 import { DynamicFormProps } from '../../dynamic-form';
 
 export const ResourcesStep = ({
@@ -18,12 +10,6 @@ export const ResourcesStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const answers = questions
-    ?.flatMap((section) => section.questions)
-    .find((question) => question.question === dietFormQuestion)
-    ?.answer as string[];
-
-  const count = answers?.includes(noneOption) ? 0 : answers?.length;
 
   return (
     <>

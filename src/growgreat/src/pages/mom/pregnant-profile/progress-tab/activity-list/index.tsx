@@ -18,7 +18,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import { getInfantById } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
@@ -445,8 +444,8 @@ export const MomActivityList: React.FC = () => {
         position={DialogPosition.Full}
       >
         <ActivityInfoPage
-          section="Activity Info"
-          subTitle="Road to health activities"
+          section="Pregnancy activities"
+          subTitle="Pregnancy activities"
           setDisplayHelp={setDisplayHelp}
         />
       </Dialog>
