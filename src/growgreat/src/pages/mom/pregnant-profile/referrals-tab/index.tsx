@@ -22,7 +22,11 @@ import {
 } from 'react';
 import { useAppDispatch } from '@/store';
 import thumbsUpImage from '@/assets/thumbsUp.png';
-import { toCamelCase } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  toCamelCase,
+  usePrevious,
+} from '@ecdlink/core';
 import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
 import { ReactComponent as PollyImpressed } from '@/assets/celebrateIcon.svg';
 import { format } from 'date-fns';
@@ -30,6 +34,8 @@ import { getMotherById } from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import ROUTES from '@/routes/routes';
+import { useWalkthrough } from '@/context/walkthroughContext';
+import { referralsSteps } from './walkthrough/steps';
 
 const HEADER_HEIGHT = 64;
 
@@ -62,10 +68,25 @@ export const ReferralsTab: React.FC = () => {
   const [isShowCompletedItems, setIsShowCompletedItems] = useState(false);
   const [showCompletedButton, setShowCompletedButton] = useState(false);
 
+  const { walkthroughState, isWalkthroughSession, walkthroughDispatch } =
+    useWalkthrough();
+
   const { id: motherId } = useParams<MotherParams>();
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+
+  const isWalkthrough =
+    isWalkthroughSession && walkthroughState?.stepIndex !== 4;
+  const wasWalkthrough = usePrevious(isWalkthrough);
+
+  useEffect(() => {
+    if (walkthroughState?.stepIndex === 4) {
+      window.sessionStorage.clear();
+      walkthroughDispatch?.({ type: 'SET_STEP', payload: 0 });
+      return;
+    }
+  }, [walkthroughDispatch, walkthroughState?.stepIndex]);
 
   // Getting referrals for approval
   useLayoutEffect(() => {
@@ -98,18 +119,59 @@ export const ReferralsTab: React.FC = () => {
     return groupedData;
   }, [referralsForMother]) as GroupedData;
 
+  const walkthroughData = {
+    sections: [
+      {
+        label: 'Clinic referrals:',
+        value: 'clinicReferrals',
+      },
+    ],
+    questions: {
+      clinicReferrals: [
+        {
+          id: '01',
+          comment: 'Missed clinic visit',
+          isCompleted: false,
+          insertedDate: new Date(),
+        },
+        {
+          id: '02',
+          comment: 'Immunisations and Vitamin A not up to date',
+          isCompleted: false,
+          insertedDate: new Date(),
+        },
+      ],
+    },
+    completedReferrals: [
+      {
+        id: '01',
+        comment: 'MUAC is less than 22cm',
+        isCompleted: false,
+        insertedDate: new Date(),
+      },
+    ],
+  };
+
   // all sections
   const sections =
-    groupedData &&
-    Object.keys(groupedData)?.map((item) => ({
-      label: groupedData[item][0].section,
-      value: item,
-    }));
+    walkthroughData.sections ||
+    (groupedData &&
+      Object.keys(groupedData)?.map((item) => ({
+        label: groupedData[item][0].section,
+        value: item,
+      })));
 
   const [questions, setAnswers] = useState(groupedData);
+
   useEffect(() => {
-    setAnswers(groupedData);
-  }, [groupedData]);
+    if (!wasWalkthrough && isWalkthrough) {
+      return setAnswers(walkthroughData.questions as GroupedData);
+    }
+
+    if (isWalkthrough) return;
+
+    return setAnswers(groupedData);
+  }, [groupedData, isWalkthrough, walkthroughData.questions, wasWalkthrough]);
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -282,7 +344,8 @@ export const ReferralsTab: React.FC = () => {
       )}
 
       {/* BODY: REFERRALS -----------------------------------------*/}
-      {isReferralsView && referralsForMother?.length !== 0 && (
+      {((isReferralsView && referralsForMother?.length !== 0) ||
+        (isWalkthrough && walkthroughState?.stepIndex !== 2)) && (
         <div className="px-4 pb-4 pt-7">
           <Typography
             type="h4"
@@ -308,50 +371,63 @@ export const ReferralsTab: React.FC = () => {
 
           {sections &&
             sections?.map((section) => (
-              <Fragment key={section.value}>
+              <div className="flex flex-col gap-2" key={section?.value}>
                 <Typography
                   type="h3"
                   text={section.label || ''}
                   color="textDark"
                 />
-                {questions?.[section.value]?.map((item: VisitDataStatus) => (
-                  <CheckboxGroup
-                    id={item?.id}
-                    key={item?.id}
-                    title={item?.comment || ''}
-                    titleColours="textMid"
-                    checked={item?.isCompleted}
-                    name={section?.value || ''}
-                    value={item?.comment || ''}
-                    description={format(
-                      new Date(item.insertedDate),
-                      'dd MMM yyyy'
-                    )}
-                    onChange={(event) => onCheckboxChange(event)}
-                  />
-                ))}
-              </Fragment>
+                {questions?.[section.value]?.map(
+                  (item: VisitDataStatus, index) => (
+                    <div
+                      id={
+                        index === 0
+                          ? getStringFromClassNameOrId(referralsSteps[0].target)
+                          : ''
+                      }
+                    >
+                      <CheckboxGroup
+                        id={item?.id}
+                        key={item?.id}
+                        title={item?.comment || ''}
+                        titleColours="textMid"
+                        checked={item?.isCompleted}
+                        name={section?.value || ''}
+                        value={item?.comment || ''}
+                        description={format(
+                          new Date(item.insertedDate),
+                          'dd MMM yyyy'
+                        )}
+                        onChange={(event) => onCheckboxChange(event)}
+                      />
+                    </div>
+                  )
+                )}
+              </div>
             ))}
 
           {/* Show success message when all referrals are selected */}
-          {!showMarkAllButton && (
+          {(!showMarkAllButton ||
+            (isWalkthrough && walkthroughState?.stepIndex !== 2)) && (
             <>
-              <Alert
-                type="success"
-                className="mt-4"
-                messageColor="successDark"
-                variant="flat"
-                message={`Great job! You have made all referrals for ${
-                  mother?.user?.firstName || ''
-                }`}
-                customIcon={
-                  <div>
-                    <PollyImpressed className="h-14 w-14" />
-                  </div>
-                }
-              />
-
+              {!isWalkthrough && (
+                <Alert
+                  type="success"
+                  className="mt-4"
+                  messageColor="successDark"
+                  variant="flat"
+                  message={`Great job! You have made all referrals for ${
+                    mother?.user?.firstName || ''
+                  }`}
+                  customIcon={
+                    <div>
+                      <PollyImpressed className="h-14 w-14" />
+                    </div>
+                  }
+                />
+              )}
               <Button
+                id={getStringFromClassNameOrId(referralsSteps[1].target)}
                 text="Manage back-referrals"
                 icon="ClipboardCheckIcon"
                 type="outlined"
@@ -366,158 +442,185 @@ export const ReferralsTab: React.FC = () => {
         </div>
       )}
 
-      {!isReferralsView &&
+      {((!isReferralsView &&
         completedreferralsForMother &&
-        completedreferralsForMother?.length > 0 && (
-          <div className="px-4 pb-4 pt-7">
-            {completedreferralsForMother?.map((item: VisitDataStatus) => (
-              <div key={item?.id}>
-                {/* Not completed back referrals */}
-                {!item.backReferralCompleted && (
-                  <div className="my-4 flex items-center gap-3">
-                    <div className="flex flex-col">
-                      <Typography
-                        type="h4"
-                        align="left"
-                        weight="bold"
-                        text={item?.comment || ''}
-                        color="textDark"
-                        hasMarkup={true}
-                      />
-                      <Typography
-                        type="body"
-                        align="left"
-                        weight="skinny"
-                        text={`Reffered on ${format(
-                          new Date(item.insertedDate),
-                          'dd MMM yyyy'
-                        )}`}
-                        color="textMid"
-                        className="text-sm"
-                      />
-                    </div>
-
-                    <Button
-                      text="Update"
-                      icon="PencilIcon"
-                      type="filled"
-                      color="secondary"
-                      textColor="white"
-                      className="h-10 w-48"
-                      iconPosition="end"
-                      onClick={() => onUpdateBackReferral(item.id)}
+        completedreferralsForMother?.length > 0) ||
+        (Number(walkthroughState?.stepIndex) >= 1 &&
+          Number(walkthroughState?.stepIndex) < 3)) && (
+        <div className="px-4 pb-4 pt-7">
+          {(
+            (walkthroughData.completedReferrals as VisitDataStatus[]) ||
+            completedreferralsForMother
+          )?.map((item: VisitDataStatus) => (
+            <div key={item?.id}>
+              {/* Not completed back referrals */}
+              {!item.backReferralCompleted && (
+                <div
+                  id={getStringFromClassNameOrId(referralsSteps[2].target)}
+                  className="my-4 flex items-center justify-between gap-3"
+                >
+                  <div
+                    className="flex flex-col"
+                    style={
+                      isWalkthrough && walkthroughState?.stepIndex !== 2
+                        ? { visibility: 'hidden' }
+                        : {}
+                    }
+                  >
+                    <Typography
+                      type="h4"
+                      align="left"
+                      weight="bold"
+                      text={item?.comment || ''}
+                      color="textDark"
+                    />
+                    <Typography
+                      type="body"
+                      align="left"
+                      weight="skinny"
+                      text={`Reffered on ${format(
+                        new Date(item.insertedDate),
+                        'dd MMM yyyy'
+                      )}`}
+                      color="textMid"
+                      className="text-sm"
                     />
                   </div>
-                )}
-                <Divider className="p-4" dividerType="dashed" />
-                {/* Complted back referrals */}
-                {item.backReferralCompleted && (
-                  <div className="my-4 flex items-center gap-3">
-                    <div className="flex flex-col">
-                      <Typography
-                        type="h4"
-                        align="left"
-                        weight="bold"
-                        text={item?.comment || ''}
-                        color="textDark"
-                        hasMarkup={true}
-                      />
-                      <Typography
-                        type="body"
-                        align="left"
-                        weight="skinny"
-                        text={`Reffered on ${format(
-                          new Date(item.insertedDate),
-                          'dd MMM yyyy'
-                        )}`}
-                        color="textMid"
-                        className="text-sm"
-                      />
-                    </div>
-                    <CheckCircleIcon
-                      className="h-12 w-12"
-                      style={{ fill: '#83BC26' }}
-                    ></CheckCircleIcon>
+
+                  <Button
+                    text="Update"
+                    icon="PencilIcon"
+                    type="filled"
+                    color="secondaryAccent2"
+                    textColor="secondary"
+                    className={`h-10 w-28 ${
+                      isWalkthrough && walkthroughState?.stepIndex !== 2
+                        ? 'hidden'
+                        : ''
+                    }`}
+                    iconPosition="end"
+                    onClick={() => onUpdateBackReferral(item.id)}
+                  />
+                </div>
+              )}
+              <Divider
+                className={`p-4 ${
+                  isWalkthrough && walkthroughState?.stepIndex !== 2
+                    ? 'hidden'
+                    : ''
+                }`}
+                dividerType="dashed"
+              />
+              {/* Complted back referrals */}
+              {item.backReferralCompleted && (
+                <div className="my-4 flex items-center gap-3">
+                  <div className="flex flex-col">
+                    <Typography
+                      type="h4"
+                      align="left"
+                      weight="bold"
+                      text={item?.comment || ''}
+                      color="textDark"
+                      hasMarkup={true}
+                    />
+                    <Typography
+                      type="body"
+                      align="left"
+                      weight="skinny"
+                      text={`Reffered on ${format(
+                        new Date(item.insertedDate),
+                        'dd MMM yyyy'
+                      )}`}
+                      color="textMid"
+                      className="text-sm"
+                    />
                   </div>
-                )}
-                {/* <Divider
+                  <CheckCircleIcon
+                    className="h-12 w-12"
+                    style={{ fill: '#83BC26' }}
+                  ></CheckCircleIcon>
+                </div>
+              )}
+              {/* <Divider
                 className="p-4"
                 dividerType="dashed"
               /> */}
-              </div>
-            ))}
-            {showCompletedButton && (
-              <Button
-                type="outlined"
-                color="primary"
-                textColor="primary"
-                icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
-                text={
-                  isShowCompletedItems
-                    ? 'Hide completed back-referrals'
-                    : 'See completed back-referrals'
-                }
-                onClick={() =>
-                  setIsShowCompletedItems((prevState) => !prevState)
-                }
-              />
-            )}
-
-            {/* Show referral button here when there are no back-referral   */}
+            </div>
+          ))}
+          {!isWalkthrough && showCompletedButton && (
             <Button
-              text="Manage referrals"
-              icon="ClipboardCheckIcon"
-              type="filled"
+              type="outlined"
               color="primary"
-              textColor="white"
-              className="mt-4 w-full"
-              iconPosition="start"
-              onClick={onShowReferrals}
+              textColor="primary"
+              icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
+              text={
+                isShowCompletedItems
+                  ? 'Hide completed back-referrals'
+                  : 'See completed back-referrals'
+              }
+              onClick={() => setIsShowCompletedItems((prevState) => !prevState)}
             />
-          </div>
-        )}
+          )}
 
-      {/* EMPTY BODY: REFERRALS -----------------------------------------*/}
-      {isReferralsView && referralsForMother?.length === 0 && (
-        <div className="px-4 pb-4 pt-7">
-          <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
-            <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
-              <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
-            </div>
-            <div className="flex w-full justify-center">
-              <Typography
-                type="h3"
-                color={'textDark'}
-                text={`No referrals for ${mother?.user?.firstName || ''}! `}
-                className="pt-2"
-                align="center"
-              />
-            </div>
-            <Typography
-              type="body"
-              align="center"
-              weight="skinny"
-              text="You can see and manage all your completed referrals & update back-referrals here."
-              color="textMid"
-            />
-          </div>
-
-          {/* Show back referral button when there are completed referrals  */}
-          {completedreferralsForMother &&
-            completedreferralsForMother?.length > 0 && (
-              <Button
-                text="Manage back-referrals"
-                icon="ClipboardCheckIcon"
-                type="outlined"
-                color="primary"
-                textColor="primary"
-                className="mt-4 w-full"
-                iconPosition="start"
-                onClick={onShowBackReferrals}
-              />
-            )}
+          {/* Show referral button here when there are no back-referral   */}
+          <Button
+            text="Manage referrals"
+            icon="ClipboardCheckIcon"
+            type="filled"
+            color="primary"
+            textColor="white"
+            className={`mt-4 w-full ${
+              isWalkthrough && walkthroughState?.stepIndex !== 2 ? 'hidden' : ''
+            }`}
+            iconPosition="start"
+            onClick={onShowReferrals}
+          />
         </div>
       )}
+
+      {/* EMPTY BODY: REFERRALS -----------------------------------------*/}
+      {!isWalkthrough &&
+        isReferralsView &&
+        referralsForMother?.length === 0 && (
+          <div className="px-4 pb-4 pt-7">
+            <div className="text-textMid flex w-full flex-wrap justify-center rounded-2xl py-6 px-4">
+              <div className="bg-tertiary flex h-24 w-24 items-center justify-center rounded-full">
+                <img src={thumbsUpImage} alt="momImage" className="h-26 w-29" />
+              </div>
+              <div className="flex w-full justify-center">
+                <Typography
+                  type="h3"
+                  color={'textDark'}
+                  text={`No referrals for ${mother?.user?.firstName || ''}! `}
+                  className="pt-2"
+                  align="center"
+                />
+              </div>
+              <Typography
+                type="body"
+                align="center"
+                weight="skinny"
+                text="You can see and manage all your completed referrals & update back-referrals here."
+                color="textMid"
+              />
+            </div>
+
+            {/* Show back referral button when there are completed referrals  */}
+            {completedreferralsForMother &&
+              completedreferralsForMother?.length > 0 && (
+                <Button
+                  text="Manage back-referrals"
+                  icon="ClipboardCheckIcon"
+                  type="outlined"
+                  color="primary"
+                  textColor="primary"
+                  className="mt-4 w-full"
+                  iconPosition="start"
+                  onClick={onShowBackReferrals}
+                />
+              )}
+          </div>
+        )}
 
       {/* EMPTY BODY: BACK-REFERRALS -----------------------------------------*/}
       {!isReferralsView && completedreferralsForMother?.length === 0 && (

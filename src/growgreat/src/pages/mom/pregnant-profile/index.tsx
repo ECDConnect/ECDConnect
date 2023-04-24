@@ -24,11 +24,12 @@ import {
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
 import { visitSteps } from './visits/walkthrough/steps';
-import { getStringFromClassNameOrId } from '@ecdlink/core';
+import { getStringFromClassNameOrId, replaceBraces } from '@ecdlink/core';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import { progressSteps } from './progress-tab/walkthrough/steps';
 import { ReferralsTab } from './referrals-tab';
+import { referralsSteps } from './referrals-tab/walkthrough/steps';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -45,6 +46,7 @@ export const PregnantProfile: React.FC = () => {
     walkthroughDispatch,
     walkthroughState,
     walkthroughStepIndex,
+    setIsWalkthroughSession,
   } = useWalkthrough();
 
   const { state } = useLocation<PregnantProfileRouteState>();
@@ -123,6 +125,13 @@ export const PregnantProfile: React.FC = () => {
           infoPageSection: 'progress tab',
           hideJoyRideBorders: walkthroughStepIndex === 2,
         };
+      case PREGNANT_PROFILE_TABS.REFERRALS:
+        return {
+          steps: referralsSteps,
+          infoPageTitle: 'Referrals',
+          infoPageSection: 'referrals tab',
+          hideJoyRideBorders: walkthroughStepIndex === 3,
+        };
       default:
         return {
           steps: visitSteps,
@@ -136,11 +145,12 @@ export const PregnantProfile: React.FC = () => {
 
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
+    setIsWalkthroughSession('true');
     setTimeout(
       () => walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: true }),
       200
     );
-  }, [walkthroughDispatch]);
+  }, [setIsWalkthroughSession, walkthroughDispatch]);
 
   const goBack = useCallback(() => {
     if (isInfoPage) {
@@ -158,7 +168,13 @@ export const PregnantProfile: React.FC = () => {
   return (
     <>
       <Joyride
-        steps={steps}
+        steps={steps.map((item) => ({
+          ...item,
+          content: replaceBraces(
+            String(item?.content),
+            mother?.user?.firstName || ''
+          ),
+        }))}
         run={walkthroughState?.isTourActive}
         stepIndex={walkthroughStepIndex}
         callback={handleCallback}
