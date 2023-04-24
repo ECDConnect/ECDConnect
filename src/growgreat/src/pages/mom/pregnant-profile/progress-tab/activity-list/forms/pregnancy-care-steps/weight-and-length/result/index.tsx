@@ -1,6 +1,6 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { Alert } from '@ecdlink/ui';
-import { Fragment, useEffect } from 'react';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
+import { useEffect } from 'react';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import Pregnant from '@/assets/pregnant.svg';
@@ -23,13 +23,19 @@ export const WeightAndLengthResultStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${name}`}
-        subTitle={visitSection}
-        section={visitSection}
-        client={name}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${name}`}
+          subTitle={visitSection}
+          section={visitSection}
+          client={name}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

@@ -439,7 +439,7 @@ export const MomActivityList: React.FC = () => {
         {renderContent}
       </BannerWrapper>
       <Dialog
-        fullScreen={false}
+        fullScreen={true}
         visible={displayHelp}
         position={DialogPosition.Full}
       >

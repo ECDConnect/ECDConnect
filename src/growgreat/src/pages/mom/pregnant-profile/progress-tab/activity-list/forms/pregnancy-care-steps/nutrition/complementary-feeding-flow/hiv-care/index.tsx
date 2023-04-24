@@ -1,7 +1,13 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useCallback, useEffect, useMemo } from 'react';
-import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import {
+  ButtonGroup,
+  ButtonGroupTypes,
+  Typography,
+  DialogPosition,
+  Dialog,
+} from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { HealthPromotion } from '../../../../components/health-promotion';
@@ -51,12 +57,18 @@ export const HivCareAndMedicationStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${name}`}
-        subTitle={visitSection}
-        section={visitSection}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${name}`}
+          subTitle={visitSection}
+          section={visitSection}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

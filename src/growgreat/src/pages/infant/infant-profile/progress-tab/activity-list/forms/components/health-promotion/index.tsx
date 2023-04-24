@@ -1,4 +1,10 @@
-import { Button, Divider, LoadingSpinner, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
@@ -129,7 +135,13 @@ export const HealthPromotion = ({
   }, [getContent]);
 
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      onBack={onClose}
+      title={section}
+      renderOverflow
+      onClose={onClose}
+    >
       <Header
         backgroundColor="infoMain"
         icon="ChatIcon"
@@ -151,6 +163,6 @@ export const HealthPromotion = ({
           onClick={onClose}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };

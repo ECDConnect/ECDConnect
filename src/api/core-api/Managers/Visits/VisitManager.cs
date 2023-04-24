@@ -89,7 +89,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
-                LinkedVisitId = input.LinkedVisitId
+                LinkedVisitId = input.LinkedVisitId,
+                PlannedVisitDate = input.PlannedVisitDate,
+                ActualVisitDate = input.ActualVisitDate
             };
         }
         public string GetFirstMissedVisit(Guid Id, string type)

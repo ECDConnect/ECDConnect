@@ -165,7 +165,7 @@ export const VisitsTab: React.FC = () => {
         title:
           item.visitType?.normalizedName === 'Additional visits'
             ? 'Other visit'
-            : item.visitType?.normalizedName || 'Visit',
+            : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {

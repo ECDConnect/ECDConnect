@@ -1,4 +1,4 @@
-import { Alert, Typography } from '@ecdlink/ui';
+import { Alert, Typography, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
@@ -205,12 +205,18 @@ export const BreastMilkOnlyStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle={sectionName}
-        section={sectionName}
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle={sectionName}
+          section={sectionName}
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 
