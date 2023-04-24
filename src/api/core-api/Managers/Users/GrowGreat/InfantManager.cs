@@ -171,11 +171,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
-            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
-            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab;
-            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab;
-            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
-            infantToUpdate.ClickedContactTab = input.ClickedContactTab;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false: input.Completed24MonthVisits;
+            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
+            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
+            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
+            infantToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
 
             return _infantRepo.Update(infantToUpdate);
         }
