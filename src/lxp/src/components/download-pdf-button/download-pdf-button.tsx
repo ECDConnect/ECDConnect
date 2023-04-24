@@ -65,7 +65,7 @@ const GeneratePdfReportButton = ({
 
     let lastTableType: string | null = null;
     Object.entries(tablesByType).forEach(([tableType, tables]) => {
-      if (tableType !== lastTableType) {
+      if (tableType !== lastTableType && tableType !== undefined) {
         if (lastTableType !== null) {
           doc.addPage();
         }
@@ -105,8 +105,6 @@ const GeneratePdfReportButton = ({
           // startY: startY,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
           didDrawPage: (data) => {
-            let afterTable = (doc as any).lastAutoTable.finalY;
-            console.log(afterTable);
             // Add table header to each new page
             // Add left header
             doc.setFontSize(20);
@@ -118,7 +116,7 @@ const GeneratePdfReportButton = ({
             doc.setFont('bold');
             const pageWidth = doc.internal.pageSize.getWidth();
             doc.text(
-              content.subtitle,
+              content.subtitle ?? '',
               pageWidth - doc.getStringUnitWidth(content.subtitle) - 50,
               10
             );
@@ -138,30 +136,41 @@ const GeneratePdfReportButton = ({
             const footerHeight = 15;
             const position = (data.cursor?.y ?? 0) + footerHeight;
 
-            doc.setFillColor(215, 215, 215); // set grey background color
-            doc.rect(
-              15,
-              position,
-              doc.internal.pageSize.width - 30,
-              footerHeight + 5,
-              'F'
-            );
-            // iterate through each table in the data object
-
             if (component === 'income-statements') {
-              // check if the current table type is included in the tablesByType object
+              const columns = ['Additional Notes'];
+              const data = [['']];
+              autoTable(doc, {
+                columns,
+                headStyles: tableHeadStyles,
+                body: data,
+                startY: position + 15,
+                columnStyles: { 0: { minCellHeight: 20 } },
+                margin: { top: position + 30 },
+              });
+              doc.setFillColor(215, 215, 215); // set grey background color
+              doc.rect(
+                15,
+                position - 9,
+                doc.internal.pageSize.width - 30,
+                footerHeight + 5,
+                'F'
+              );
+           
               doc.setDrawColor(0);
               doc.setFontSize(10);
-              doc.text('Level of DBE registration:', 25, position + 10);
-              doc.setFillColor(255, 255, 255);
-              doc.rect(65, position + 5, 30, 10, 'S');
-              doc.text('Number of Children:', 105, position + 10);
-              doc.setFillColor(255, 255, 255);
-              doc.rect(140, position + 5, 30, 10, 'S');
-
-              
+              doc.text('Level of DBE registration:', 25, position);
+              doc.setFillColor(255, 0, 0);
+              doc.rect(65, position - 4, 30, 10, 'S');
+              doc.text('Number of Children:', 105, position);
+              doc.setFillColor(255, 0, 0);
+              doc.rect(140, position - 4, 30, 10, 'S');
             }
-          
+            // add signature and date fields
+
+            doc.text('Sign: ', 20, position + 55);
+            doc.rect(30, position + 50, 65, 10);
+            doc.text('Date: ', 110, position + 55);
+            doc.rect(120, position + 50, 65, 10);
           },
           margin: {
             top: 35,
@@ -182,12 +191,6 @@ const GeneratePdfReportButton = ({
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
 
-    // add signature and date fields
-    doc.text('Sign: ', 20, afterTable + 55);
-    doc.rect(30, afterTable + 50, 65, 10);
-    doc.text('Date: ', 110, afterTable + 55);
-    doc.rect(120, afterTable + 50, 65, 10);
-    //create pdf document
     doc.save(outputName);
   };
 
