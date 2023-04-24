@@ -90,7 +90,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
-                PlannedVisitDate = input.PlannedVisitDate,
                 ActualVisitDate = input.ActualVisitDate
             };
         }
