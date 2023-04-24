@@ -6,6 +6,7 @@ import {
   ChildDto,
   LearnerDto,
   Document,
+  useDialog,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -59,11 +60,13 @@ import { userSelectors } from '@store/user';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const isFromEditClass = location?.state?.isFromEditClass;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -184,6 +187,50 @@ export const EditChildInformation: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, childCaregiver, currentChildLearnerRecord]);
+
+  useEffect(() => {
+    if (isFromEditClass) {
+      setChangeClassroomGroupPromptVisible(true);
+    }
+  }, []);
+
+  const openChildConfirmEditClassPrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'ExclamationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Confirm ${childUser?.firstName}'s class change`}
+          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm. Make sure you submit today's attendance before changing the class.`}
+          actionButtons={[
+            {
+              text: 'Yes, confirmed with caregiver',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                openEditField();
+                onSubmit();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+            {
+              text: 'No, do this later',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onCancel();
+              },
+              leadingIcon: 'ArrowLeftIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const openViewInformation = (
     childInformationViewType: ChildInformationViewType
@@ -789,7 +836,7 @@ export const EditChildInformation: React.FC = () => {
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
-              onClick: () => openEditField(),
+              onClick: () => openChildConfirmEditClassPrompt(),
               leadingIcon: 'PencilIcon',
             },
             {

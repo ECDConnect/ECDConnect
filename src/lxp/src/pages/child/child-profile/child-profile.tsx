@@ -258,6 +258,29 @@ export const ChildProfile: React.FC = () => {
       });
     }
 
+    if (playGroup?.name) {
+      profileOptionsCopy.push({
+        key: 'class',
+        title: 'Class',
+        subTitle: `${playGroup?.name}`,
+        buttonType: 'filled',
+        buttonIcon: 'PencilIcon',
+        buttonText: 'Edit',
+        buttonTextColor: 'white',
+        buttonColor: 'primary',
+        showButton: true,
+        showDivider: true,
+        dividerType: 'dashed',
+        withPaddingY: true,
+        onButtonClick: () => {
+          history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+            childId,
+            isFromEditClass: true,
+          });
+        },
+      });
+    }
+
     const noteOption = getNoteProfileOption();
     profileOptionsCopy.push(noteOption);
 
