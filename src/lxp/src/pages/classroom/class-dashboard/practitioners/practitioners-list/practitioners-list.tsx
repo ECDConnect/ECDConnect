@@ -7,8 +7,10 @@ import {
   renderIcon,
   Button,
   LoadingSpinner,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
-import { getAvatarColor } from '@ecdlink/core';
+import { getAvatarColor, useDialog } from '@ecdlink/core';
 import { useHistory } from 'react-router-dom';
 import * as styles from './practitioners-list.styles';
 import ROUTES from '@routes/routes';
@@ -27,6 +29,7 @@ export const PractitionersList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const history = useHistory();
+  const dialog = useDialog();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -120,6 +123,44 @@ export const PractitionersList: React.FC = () => {
     history.push('principal/practitioner-reassign-class');
   };
 
+  const handleAddPractitionerOrReassignClass = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          importantText={`What would you like to change?`}
+          actionButtons={[
+            {
+              text: 'Add or remove practitioners',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+                history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER);
+                // onClose();
+              },
+              leadingIcon: 'UsersIcon',
+            },
+            {
+              text: 'Change classes or move children',
+              textColour: 'secondary',
+              colour: 'secondary',
+              type: 'outlined',
+              onClick: () => {
+                onCancel();
+                history.push(ROUTES.PRACTITIONER.PROFILE.PLAYGROUPS, {
+                  a: 'hello',
+                });
+              },
+              leadingIcon: 'ViewGridAddIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
   return (
     <>
       {practitionersList?.length! > 0 || practitionersList !== undefined ? (
@@ -182,19 +223,17 @@ export const PractitionersList: React.FC = () => {
                   type="outlined"
                   color="primary"
                   className={'mt-6 mb-6 w-full'}
-                  onClick={() =>
-                    history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER)
-                  }
+                  onClick={handleAddPractitionerOrReassignClass}
                 >
                   {renderIcon(
-                    'UsersIcon',
+                    'ViewGridAddIcon',
                     'w-5 h-5 color-primary text-primary mr-2'
                   )}
                   <Typography
                     type="body"
                     className="mr-4"
                     color="primary"
-                    text={'Add practitioners'}
+                    text={'Manage classes and practitioners'}
                   ></Typography>
                 </Button>
               </div>
