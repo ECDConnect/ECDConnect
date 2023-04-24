@@ -26,8 +26,14 @@ export const Walkthrough = ({
 }) => {
   const [stepIndex, setStepIndex] = useState(0);
 
-  const infantName = useMemo(() => infant?.user?.firstName, [infant]);
-  const caregiverName = useMemo(() => infant?.caregiver?.firstName, [infant]);
+  const infantName = useMemo(
+    () => infant?.user?.firstName || 'Themba',
+    [infant]
+  );
+  const caregiverName = useMemo(
+    () => infant?.caregiver?.firstName || 'Lethabo',
+    [infant]
+  );
 
   const joyrideRef = useRef(null);
 

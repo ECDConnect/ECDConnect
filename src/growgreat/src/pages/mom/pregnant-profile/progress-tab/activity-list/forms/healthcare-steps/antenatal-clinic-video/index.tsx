@@ -14,7 +14,7 @@ export const AntenatalClinicVideoStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
-  const videoSection = '';
+  const videoSection = 'Antenatal clinic video';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
