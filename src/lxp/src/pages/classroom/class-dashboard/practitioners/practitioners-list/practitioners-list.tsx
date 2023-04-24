@@ -129,6 +129,10 @@ export const PractitionersList: React.FC = () => {
       render: (onSubmit, onCancel) => (
         <ActionModal
           importantText={`What would you like to change?`}
+          icon={'QuestionMarkCircleIcon'}
+          iconColor={'infoDark'}
+          iconBorderColor={'infoBb'}
+          iconClassName="h-14 w-14"
           actionButtons={[
             {
               text: 'Add or remove practitioners',
