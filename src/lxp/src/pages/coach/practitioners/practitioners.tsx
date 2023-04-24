@@ -21,6 +21,7 @@ import { EmptyPractitioners } from './components/empty-practitioners/empty-pract
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
+import { userSelectors } from '@store/user';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -62,7 +63,8 @@ const sortOptions: SearchSortOptions = {
 export const Practitioners: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
-  const isCoach = true;
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const practitionersForCoach = useSelector(
     practitionerForCoachSelectors.getPractitionersForCoach
   );
@@ -127,11 +129,11 @@ export const Practitioners: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersMessages]);
 
-  const practionersDetailsForPractioner = async () => {
+  const practionersDetailsFor = async (target = 'practitioner') => {
     setLoading(true);
     const practitionersMessageData = await new PractitionerService(
       userAuth?.auth_token!
-    ).displayMetrics('practitioner');
+    ).displayMetrics(target ?? 'practitioner');
 
     setPractitionersMessages(practitionersMessageData);
     setLoading(false);
@@ -139,7 +141,12 @@ export const Practitioners: React.FC = () => {
   };
 
   useEffect(() => {
-    practionersDetailsForPractioner();
+    if (isCoach) {
+      practionersDetailsFor('coach');
+    }
+    if (!isCoach) {
+      practionersDetailsFor('practitioner');
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
