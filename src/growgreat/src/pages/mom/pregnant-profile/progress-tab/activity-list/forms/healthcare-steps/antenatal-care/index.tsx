@@ -1,4 +1,4 @@
-import { Alert, Typography } from '@ecdlink/ui';
+import { Alert, Typography, DialogPosition, Dialog } from '@ecdlink/ui';
 import AntenatalCareImage from '../../assets/antenatalCareImg.png';
 import { Header } from '@/pages/infant/infant-profile/components';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
@@ -20,11 +20,17 @@ export const AntenatalCare = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        section="Care for mom"
-        subTitle="Care for mom"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Care for mom"
+          subTitle="Care for mom"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

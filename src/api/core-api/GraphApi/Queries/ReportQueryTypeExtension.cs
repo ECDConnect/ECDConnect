@@ -1,27 +1,33 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Reports;
+using ECDLink.SmartStart.Reports.ChildProgressReport;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
-using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
+using System.Text.Json;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -116,7 +122,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             childrenMetricReport.TotalChildren = allChildren.Count();
             childrenMetricReport.TotalChildProgressReports = childProgressReportRepo.GetAll().Count();
-            childrenMetricReport.UnverifiedDocuments = documentRepo.GetAll().Where(x => x.WorkflowStatus.EnumId == ECDLink.Abstractrions.Enums.WorkflowStatusEnum.DocumentPendingVerification).Count();
+            childrenMetricReport.UnverifiedDocuments = documentRepo.GetAll().Where(x => x.WorkflowStatus.EnumId == WorkflowStatusEnum.DocumentPendingVerification).Count();
 
             // TODO: CREATE A CONSTANT ENUM FOR WORKSTATUS TYPES
             foreach (var workflowStatus in allWorkflowStatus.Where(x => x.WorkflowStatusType.Description == "Child"))
@@ -242,7 +248,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<ClassroomMetricReport> GetYearlyClassAttendanceMetricsByUser(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] AttendanceTrackingRepository attendanceRepo, 
+            [Service] AttendanceTrackingRepository attendanceRepo,
             string userId)
         {
 
@@ -280,6 +286,327 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        public async Task<List<NotificationDisplay>> GetClassroomActionItems(
+            IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] IHolidayService<Holiday> holidayService,
+            [Service] ChildAttendanceReport attendanceReportService,
+            HierarchyEngine hierarchyEngine,
+            string practitionerId)
+        {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user.Id;
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var classroomGroup = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId)
+                    .GetAll().Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
+
+            var notifications = new List<NotificationDisplay>();
+
+            // TODO: use this to apply:
+            // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
+            // "Note for all actions:
+            // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
+            //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
+            var coachHasContactedPractitionerThisMonth = false;
+
+            //set basic dates to be last month and before last
+            // TODO: Get reporting interval from: `ChildReportOptions`
+            DateTime currentDate = DateTime.Now;
+
+            DateTime currentMonthStart = currentDate.GetStartOfMonth();
+            DateTime currentMonthEnd = currentDate.GetEndOfMonth();
+
+            DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
+            DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
+
+
+            // Get Missing Attendance
+            // Todo: move to service?
+            var holidays = holidayService.GetHolidays(previousMonthStart, previousMonthEnd, "en-za").ToList();
+            var daysForPeriod = previousMonthStart.DaysBetween(previousMonthEnd);
+
+            var nonHolidayWeekDays = RemoveWeekendDays(RemoveHolidays(daysForPeriod, holidays)).ToList();
+            //var onlyClassDays = nonHolidayWeekDays.
+
+            var attendance = new List<Attendance>();
+
+            if (classroomGroup?.Id is not null)
+                attendance = attendanceRepo.GetAllByDateRangeByClassroom(previousMonthStart, previousMonthEnd, classroomGroup.Id, practitionerId);
+
+            var availableMeetingDays = nonHolidayWeekDays
+                .Select(r => DateOnly.FromDateTime(r))
+                .Except(attendance.Select(a => DateOnly.FromDateTime(a.AttendanceDate)));
+
+
+            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>();
+            var meetingDays = classProgrammeRepo.GetAll()
+                .Where(p => p.ClassroomGroupId == classroomGroup.Id)
+                .Select(cp => (DayOfWeek)cp.MeetingDay)
+                .ToList();
+            var actualMeetingDays = availableMeetingDays.Where(ad => meetingDays.Contains(ad.DayOfWeek));
+            // TODO: Should absentees be subtracted? what happens if a Prac isn't there or the class is just cancelled?
+            var missingRegisterDayCount = actualMeetingDays.Count();
+
+            if (missingRegisterDayCount > 0)
+                notifications.Add(new NotificationDisplay()
+                {
+                    Subject = $"{missingRegisterDayCount} missing attendance registers",
+                    // TODO: Warnings or errors?
+                    Icon = MetricsIconEnum.Error.ToString(),
+                    Color = MetricsColorEnum.Error.ToString(),
+                    Message = previousMonthStart.ToString("MMMM yyyy"),
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner"
+                });
+
+            // Get Attendance Rate
+            if (classroomGroup?.Id is not null)
+            {
+                // The results of this seem wrong?
+                var attendanceReport = attendanceReportService.GetChildAttendance(classroomGroup.Id, practitionerId, previousMonthStart, previousMonthEnd);
+                var attendancePercentage = attendanceReport?.AttendancePercentage ?? 0;
+                if (attendancePercentage < 80)
+                {
+                    notifications.Add(new NotificationDisplay()
+                    {
+                        Subject = $"{attendancePercentage}% attendance rate",
+                        // TODO: Warnings or errors?
+                        Icon = MetricsIconEnum.Error.ToString(),
+                        Color = MetricsColorEnum.Error.ToString(),
+                        Message = $"{classroomGroup?.Name} - {previousMonthStart.ToString("MMMM yyyy")}",
+                        Notes = "",
+                        UserId = Guid.Parse(practitionerId),
+                        // TODO: Principal?
+                        UserType = "practitioner"
+                    });
+                }
+            }
+
+            // Get Due/Overdue Reports
+            // Get Children not progressed
+            var isPeriod1 = previousMonthStart.Month <= 7;
+            var reportPeriodStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 1, 1) : new DateOnly(previousMonthStart.Year, 7, 1))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var reportPeriodEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 30) : new DateOnly(previousMonthStart.Year, 12, 20))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            var reportDueStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 1) : new DateOnly(previousMonthStart.Year, 11, 1))
+                    .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var reportDueEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 30) : new DateOnly(previousMonthStart.Year, 11, 30))
+                .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+
+            var reportOverDueStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 7, 1) : new DateOnly(previousMonthStart.Year, 12, 1))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            var reportOverDueEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 7, 31) : new DateOnly(previousMonthStart.Year, 12, 20))
+                .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            
+            int missedReportCount = 0;
+
+            if (classroomGroup?.Id is not null)
+            {
+                // None of the below is needed if the reports aren't due yet.
+                if (currentDate >= reportPeriodStart)
+                {
+                    var childCount = childRepo.GetAll().Count(c => c.Hierarchy.StartsWith(practitionerHieracry) && c.IsActive == true);
+
+                    var progressReports = repoFactory.CreateRepository<ChildProgressReport>(userContext: user.Id)
+                        .GetAll()
+                        .Where(x =>
+                                x.ClassroomGroupId == classroomGroup.Id
+                                && x.ReportDate.ToUniversalTime() >= reportDueStart
+                                && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
+                                && x.IsActive == true)
+                        .OrderBy(x => x.ReportDate)
+                        .ToList();
+
+                    var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
+                    var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
+                    var unsibmittedOverdueReportsCount = childCount - overdueReportsSubmitted;
+                    missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
+
+                    // Rule:
+                    // Show this action as soon as at least 1 of a practitioner's child progress reports become overdue
+                    // Note: once the reporting deadline has passed (31 July for June reporting period; and 20 December for the November reporting period),
+                    // remove this action item -- if reports were missed, they will show up as the action item in the row below."
+
+                    if (unsibmittedOverdueReportsCount > 0
+                        && currentDate >= reportOverDueEnd)
+                    {
+                        notifications.Add(new NotificationDisplay()
+                        {
+                            Subject = $"{unsibmittedOverdueReportsCount} overdue progress reports",
+                            // TODO: Warnings or errors?
+                            Icon = MetricsIconEnum.Error.ToString(),
+                            Color = MetricsColorEnum.Error.ToString(),
+                            Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
+                            Notes = "",
+                            UserId = Guid.Parse(practitionerId),
+                            // TODO: Principal?
+                            UserType = "practitioner"
+                        });
+                    }
+
+                    // Rule:
+                    // Show only if the practitioner did not submit reports for the
+                    // January to June reporting period by the deadline(31 July) or for the 
+                    // July to November reporting period by the deadline(20 Dec)
+
+                    if (missedReportCount > 0
+                        && currentDate >= reportOverDueEnd)
+                    {
+                        notifications.Add(new NotificationDisplay()
+                        {
+                            Subject = $"{missedReportCount} missed progress reports",
+                            // TODO: Warnings or errors?
+                            Icon = MetricsIconEnum.Error.ToString(),
+                            Color = MetricsColorEnum.Error.ToString(),
+                            Message = $"{reportPeriodStart.ToString("MMMM yyyy")} - {reportPeriodEnd.ToString("MMMM yyyy")}",
+                            Notes = "",
+                            UserId = Guid.Parse(practitionerId),
+                            // TODO: Principal?
+                            UserType = "practitioner"
+                        });
+                    }
+                    // End Get Due/Overdue Reports
+
+
+                }
+            }
+            // Start Get Children not progressed
+            // Get children that haven't progressed for 2 or 3 periods
+            // but only if:
+            // Rule:
+            // Show only if the practitioner did not submit reports for the January to June reporting period by the deadline(31 July)
+            // or for the July to November reporting period by the deadline(20 Dec)"
+            if (missedReportCount > 0
+                        && currentDate >= reportOverDueEnd)
+            {
+                var children = childRepo.GetAll().Where(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHieracry)).Include(c => c.User).ToList();
+                
+                // Get Child Age Groups
+                var childrenOutsideAgeGroupCount = children.Count(c => currentDate >= c.User.DateOfBirth.AddYears(3) 
+                    && currentDate < c.User.DateOfBirth.AddYears(+6));
+                var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount / children.Count() * 100;
+
+                // Get Child Ids
+                var childIds = children
+                    .Select(c => (Guid)c.Id)
+                    .ToList();
+
+                // Get Progress reports for last 2 years (4 periods)
+                // TODO: use settings, what if periods change?
+                var childProgressReportsFor2Years = repoFactory.CreateGenericRepository<ChildProgressReport>()
+                    .GetAll()
+                    .Where(r => childIds.Contains(r.ChildId)
+                        && r.ReportDate >= reportPeriodStart.GetStartOfYear().AddYears(-2))
+                    .OrderBy(r => r.ReportDate);
+                var childProgressReportContents = childProgressReportsFor2Years?.Select(r => r.ReportContent).ToList();
+
+                var progressHistory = new Dictionary<Guid, List<(DateTime, int)>>();
+                foreach (var childReportContent in childProgressReportContents)
+                {
+                    var childReportObject = JsonSerializer.Deserialize<ChildProgressReportDetailedModel>(childReportContent);
+                    // TODO: Use childReportObject.DateCompleted or ReportingDate?
+                    var childId = Guid.Parse(childReportObject.ChildId);
+                    if (progressHistory.TryGetValue(childId, out var childHistory))
+                    {
+                        childHistory.Add(
+                            (DateTime.Parse(childReportObject.ReportingDate), childReportObject.AchievedLevelId));
+                    }
+                    else
+                    {
+                        progressHistory.Add(childId,
+                            new List<(DateTime, int)>() {
+                                        (DateTime.Parse(childReportObject.ReportingDate),
+                                        childReportObject.AchievedLevelId)
+                            });
+                    }
+                }
+                var hasProgressedInLast2Periods = 0;
+                var hasProgressedInLast3Periods = 0;
+
+                foreach (var progressList in progressHistory)
+                {
+                    var ordered = progressList.Value.OrderByDescending(p => p.Item1);
+                    var last2 = ordered?.Take(2).ToList();
+                    var last3 = ordered?.Take(3).ToList();
+
+                    if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
+                        hasProgressedInLast2Periods++;
+
+                    if (last3?.Count() == 3
+                        && (last3[0].Item2 > last3[1].Item2)
+                        || (last3[0].Item2 > last3[2].Item2)
+                        || (last3[1].Item2 > last3[2].Item2))
+                        hasProgressedInLast3Periods++;
+                }
+                // Calculate count of children who haven't progressed
+                var hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
+                var hasNotPorgressed3 = childIds.Count() - hasProgressedInLast3Periods;
+
+                // Rule:
+                // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
+                // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
+                if (hasNotPorgressed2 > 0)
+                {
+                    notifications.Add(new NotificationDisplay()
+                    {
+                        Subject = $"{hasNotPorgressed2} children havent progressed",
+                        // TODO: Warnings or errors?
+                        Icon = MetricsIconEnum.Warning.ToString(),
+                        Color = MetricsColorEnum.Warning.ToString(),
+                        Message = $"For 2 reporting periods.",
+                        Notes = "",
+                        UserId = Guid.Parse(practitionerId),
+                        // TODO: Principal?
+                        UserType = "practitioner"
+                    });
+                }
+
+                // Rule:
+                // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
+                // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
+                if (hasNotPorgressed3 > 0)
+                {
+                    notifications.Add(new NotificationDisplay()
+                    {
+                        Subject = $"{hasNotPorgressed3} children havent progressed",
+                        // TODO: Warnings or errors?
+                        Icon = MetricsIconEnum.Error.ToString(),
+                        Color = MetricsColorEnum.Error.ToString(),
+                        Message = $"For 2 reporting periods.",
+                        Notes = "",
+                        UserId = Guid.Parse(practitionerId),
+                        // TODO: Principal?
+                        UserType = "practitioner"
+                    });
+                }
+            }
+
+            return notifications;
+        }
+
+
+        public IEnumerable<DateTime> RemoveHolidays(IEnumerable<DateTime> days, List<Holiday> holidays)
+        {
+            var holidayDates = holidays.Select(x => x.Day);
+
+            return days.Except(holidayDates);
+        }
+
+        public IEnumerable<DateTime> RemoveWeekendDays(IEnumerable<DateTime> days)
+        {
+            var weekendDays = new List<DayOfWeek>() { DayOfWeek.Saturday, DayOfWeek.Sunday };
+
+            return days.Where(d => !weekendDays.Contains(d.DayOfWeek));
+        }
+
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<NotificationDisplay> GetDisplayMetrics(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
@@ -296,6 +623,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime reference = DateTime.Now;
             DateTime fromDate = reference.GetStartOfPreviousMonth();
             DateTime toDate = reference.GetEndOfPreviousMonth();
+
+            //// report dates for Practitioner for previous week?
+            //{
+            //    fromDatePractitioner = reference.GetStartOfPreviousWeek();
+            //    toDatePractitioner = fromDate.AddDays(7);
+            //}
 
             int avgClassDays = 20;
 
@@ -333,12 +666,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         Notes = "",
                         UserId = Guid.Parse(user.UserId),
                         UserType = "child"
-
                     };
 
                     notificationList.Add(displayChild);
                 }
             }
+
             if (type == "practitioner" || type == "principal" || type == "coach")
             {  //practitioners and principals
                 var practitioners = practRepo.GetAll().ToList();
@@ -352,29 +685,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     int weighting = 0;
                     int absentDays = 0;
 
-
                     //get absent days count 
-                    if (type != "coach")
-                    {
-                        absentDays = new AbsenteeQueryExtension().GetAbsentees(contextAccessor, repoFactory, user.UserId, fromDate, toDate).Count();                        
-                    }
-                    else
-                    {
+                    var absenteeRepo = repoFactory.CreateRepository<Absentees>(userContext: uId);
+                    absentDays = absenteeRepo.GetAll()
+                        .Count(x => x.UserId == user.UserId && x.AbsentDate >= fromDate && x.AbsentDate <= toDate);
 
-                        //TODO - logic to calculate
-                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
-                        weighting10.Color = MetricsColorEnum.Warning.ToString();
-                        weighting10.Subject = 0 + " Children did not progress";
-                        weighting10.Notes = "Improve child progress";
-                        priority = 5;
-                        weighting = 10;
-                    }
                     //get is registered?
-                    bool isRegistered = (user.IsRegistered != null && user.IsRegistered == true ? true : false);
+                    bool isRegistered = user.IsRegistered != null && user.IsRegistered == true;
                     //get is leaving?
-                    bool isLeaving = (user.IsLeaving != null && user.IsLeaving == true ? true : false);
+                    bool isLeaving = user.IsLeaving != null && user.IsLeaving == true;
                     //get is complete?
-                    bool isComplete = (user.IsRegistered != null && user.IsRegistered == true ? true : false);//((double)user.Progress > 0.2 ? true : false); // TODO: when FE is fully integrated to use the progress indicators, then revert and not user IsRegistered
+                    bool isComplete = user.IsRegistered != null && user.IsRegistered == true; //(double)user.Progress > 0.2 ? true : false; // TODO: when FE is fully integrated to use the progress indicators, then revert and not user IsRegistered
 
                     int attendancePercentage = 0;
                     if (isRegistered)
@@ -390,7 +711,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     //TODO
                     //child progress reporting for coach
-
+                    //TODO - logic to calculate "x children did not progress"
 
                     //priority 0
                     if (isComplete)
@@ -417,7 +738,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         //absentees - priority varies betwen 4 and 6
                         int absenteePercentage = (100 - (absentDays / avgClassDays) * 100);
-                        if (absenteePercentage <= 75)
+                        if (absenteePercentage < 75)
                         {
                             weighting30.Icon = MetricsIconEnum.Error.ToString();
                             weighting30.Color = MetricsColorEnum.Error.ToString();
@@ -426,7 +747,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             priority = 6;
                             weighting = 30;
                         }
-                        else if (absenteePercentage > 75 && absenteePercentage < 90)
+                        else if (absenteePercentage >= 75 && absenteePercentage < 90)
                         {
                             weighting20.Icon = MetricsIconEnum.Warning.ToString();
                             weighting20.Color = MetricsColorEnum.Warning.ToString();
@@ -435,7 +756,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             priority = 4;
                             weighting = 20;
                         }
-                        else if (absenteePercentage == 100)
+                        else if (absenteePercentage >= 90)
                         {
                             weighting10.Icon = MetricsIconEnum.Success.ToString();
                             weighting10.Color = MetricsColorEnum.Success.ToString();
@@ -460,7 +781,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     {
                         weighting20.Icon = MetricsIconEnum.Warning.ToString();
                         weighting20.Color = MetricsColorEnum.Warning.ToString();
-                        weighting20.Subject = "Child Attendance > 60% and less than 70%";
+                        weighting20.Subject = "Child Attendance > 60% and less than 79%";
                         weighting20.Notes = "Improve Attendance";
                         priority = 7;
                         weighting = 20;
@@ -500,30 +821,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting = 30;
                     }
 
+
                     /*
                      Working in Priority high to low (in SLA terms, lower digits priority is higher) and weighting low to high (more important carries more weight) in seperate streams so that importance overrides
                     TODO: cleanup and use less code
                      */
-                    if (priority == 9) //basic default
+                    if (weighting == 10)
                     {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
+                        finalMessageToDisplay = weighting10.Subject;
+                        finalIcon = weighting10.Icon;
+                        finalColor = weighting10.Color;
+                        finalNotes = weighting10.Notes;
                     }
 
-                    if (priority == 8)
+                    if (priority >= 0 && priority < 9)
                     {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
                         if (weighting == 20)
                         {
                             finalMessageToDisplay = weighting20.Subject;
@@ -540,205 +852,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         }
                     }
 
-                    if (priority == 7)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-                    if (priority == 6)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-                    if (priority == 5)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-                    if (priority == 4)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-                    if (priority == 3)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-                    if (priority == 2)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-                    if (priority == 1)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
-
-
-                    if (priority == 0)
-                    {
-                        if (weighting == 10)
-                        {
-                            finalMessageToDisplay = weighting10.Subject;
-                            finalIcon = weighting10.Icon;
-                            finalColor = weighting10.Color;
-                            finalNotes = weighting10.Notes;
-                        }
-                        if (weighting == 20)
-                        {
-                            finalMessageToDisplay = weighting20.Subject;
-                            finalIcon = weighting20.Icon;
-                            finalColor = weighting20.Color;
-                            finalNotes = weighting20.Notes;
-                        }
-                        if (weighting == 30)
-                        {
-                            finalMessageToDisplay = weighting30.Subject;
-                            finalIcon = weighting30.Icon;
-                            finalColor = weighting30.Color;
-                            finalNotes = weighting30.Notes;
-                        }
-                    }
 
                     //build up display for this user
                     NotificationDisplay displayPracti = new NotificationDisplay()

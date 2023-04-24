@@ -100,6 +100,7 @@ export const ReferralsTab: React.FC = () => {
   const completedReferralsForInfant = useSelector(
     infantSelectors.getCompletedReferralsForInfantSelector
   );
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
 

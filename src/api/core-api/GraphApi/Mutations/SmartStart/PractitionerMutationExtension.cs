@@ -69,7 +69,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
 
-                    if (input.SiteAddressId != null && input.SiteAddressId.HasValue)
+                    if (input.SiteAddress != null 
+                        && input.SiteAddressId != null && input.SiteAddressId.HasValue)
                     {
                         var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
                         SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
