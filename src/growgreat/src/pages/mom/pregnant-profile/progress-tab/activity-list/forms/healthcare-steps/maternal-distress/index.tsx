@@ -1,4 +1,4 @@
-import { Alert, renderIcon } from '@ecdlink/ui';
+import { Alert, renderIcon, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
@@ -34,11 +34,17 @@ export const MaternalDistressStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        subTitle="Maternal distress"
-        section="Maternal distress"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          subTitle="Maternal distress"
+          section="Maternal distress"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

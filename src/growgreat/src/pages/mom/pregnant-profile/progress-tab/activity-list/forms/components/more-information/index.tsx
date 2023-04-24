@@ -1,7 +1,13 @@
-import { Button, Divider, LoadingSpinner, Typography } from '@ecdlink/ui';
-import { Header } from '@/pages/infant/infant-profile/components';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
+import { Header } from '@/pages/infant/infant-profile/components';
 import { visitThunkActions } from '@/store/visit';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -207,7 +213,13 @@ export const MoreInformation = ({
   }, [getContent]);
 
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      onBack={onClose}
+      title={section}
+      onClose={onClose}
+      renderOverflow
+    >
       <Header
         backgroundColor="infoMain"
         icon="InformationCircleIcon"
@@ -229,6 +241,6 @@ export const MoreInformation = ({
           onClick={onClose}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };

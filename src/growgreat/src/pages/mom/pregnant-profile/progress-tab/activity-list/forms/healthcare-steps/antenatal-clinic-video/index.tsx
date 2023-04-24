@@ -1,4 +1,4 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../dynamic-form';
@@ -22,11 +22,17 @@ export const AntenatalClinicVideoStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        section="Developmental Screening"
-        subTitle="Developmental Screening"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Antenatal clinic video"
+          subTitle="Antenatal clinic video"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

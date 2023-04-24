@@ -262,7 +262,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                 isOnline &&
                 typeof response !== 'string' &&
                 Number(response?.payload?.infants?.length) > 1) ||
-              caregiverClients?.find((item) => item.id === caregiverId)
+              caregiverClients?.find(
+                (item) =>
+                  item.id === caregiverId &&
+                  item.infants?.length &&
+                  item.infants.length > 1
+              )
             ) {
               return history.push(
                 generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {

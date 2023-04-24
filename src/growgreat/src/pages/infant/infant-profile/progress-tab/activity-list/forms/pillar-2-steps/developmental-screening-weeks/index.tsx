@@ -5,6 +5,8 @@ import {
   Divider,
   FormInput,
   Typography,
+  DialogPosition,
+  Dialog,
 } from '@ecdlink/ui';
 import {
   Label,
@@ -171,12 +173,18 @@ export const DevelopmentalScreeningWeeksStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        client={name}
-        section="Developmental screening 2"
-        subTitle="Developmental screening"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          client={name}
+          section="Developmental screening 2"
+          subTitle="Developmental screening"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 
