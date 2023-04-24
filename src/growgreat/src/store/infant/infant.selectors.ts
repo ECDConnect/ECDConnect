@@ -1,6 +1,6 @@
 import { InfantDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
-import { EventRecordType } from '@ecdlink/graphql';
+import { EventRecordType, VisitDataStatus } from '@ecdlink/graphql';
 
 export const getInfants = (state: RootState): InfantDto[] =>
   state.infants.infants || [];
@@ -97,9 +97,10 @@ export const getInfantCurrentVisitSelector = (
   state: RootState
 ): VisitDto | undefined => {
   const visits = state.infants.visits || [];
+
   const noAttended =
     visits?.filter(
-      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+      (item) => !item.attended && new Date(item.orderDate) >= new Date()
     ) || [];
 
   return noAttended.length
@@ -114,3 +115,12 @@ export const getInfantCurrentVisitSelector = (
 export const getAllInfantEventRecordTypesSelector = (
   state: RootState
 ): EventRecordType[] => state.infants.eventRecordTypes || [];
+
+export const getReferralsForInfantSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined => state.infants.referralsForInfant || [];
+
+export const getCompletedReferralsForInfantSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined =>
+  state.infants.completedReferralsForInfant || [];

@@ -68,7 +68,10 @@ export const PastVisits: React.FC = () => {
       };
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: getType() === 'inProgress' ? 'Missed visit' : '',
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',

@@ -1,6 +1,4 @@
 import { motherSelectors } from '@/store/mother';
-import { Button, LoadingSpinner } from '@ecdlink/ui';
-import { useWindowSize } from '@reach/window-size';
 import { useLayoutEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
@@ -19,10 +17,17 @@ import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
+import { Button, LoadingSpinner } from '@ecdlink/ui';
+import { useWindowSize } from '@reach/window-size';
+import { activitiesTypes } from './activity-list/activities-list';
+import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
 export const ProgressTab = () => {
+  const { walkthroughState, isWalkthroughSession } = useWalkthrough();
+
   const { height } = useWindowSize();
 
   const appDispatch = useAppDispatch();
@@ -50,6 +55,24 @@ export const ProgressTab = () => {
 
   const introScreenRef = useRef<HTMLDivElement>(null);
 
+  const walkthroughData: FollowUpWalkthroughData = {
+    progressBar: {
+      message: `${mother?.user?.firstName} is doing well!`,
+      label: '6/6',
+      value: 100,
+      primaryColour: 'successMain',
+      secondaryColour: 'successBg',
+    },
+    infoCard: {
+      success: [
+        {
+          comment: `No danger signs for Lethabo ${mother?.user?.firstName}`,
+          visitData: { visitName: activitiesTypes.dangerSigns },
+        },
+      ],
+    },
+  };
+
   const handleCaptureClick = () => {
     if (introScreenRef.current) {
       captureAndDownloadComponent(introScreenRef.current, 'summary');
@@ -57,6 +80,11 @@ export const ProgressTab = () => {
   };
 
   useLayoutEffect(() => {
+    if (isWalkthroughSession) {
+      window.sessionStorage.clear();
+      return;
+    }
+
     if (
       (!previousCurrentVisit ||
         (!!previousCurrentVisit &&
@@ -68,7 +96,13 @@ export const ProgressTab = () => {
           visitId: currentVisit?.id,
         })
       );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+  }, [
+    appDispatch,
+    currentVisit,
+    currentVisit?.id,
+    isWalkthroughSession,
+    previousCurrentVisit,
+  ]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -90,16 +124,26 @@ export const ProgressTab = () => {
   return (
     <div
       className="pt-14"
-      style={{
-        height:
-          height -
-          (!!previousVisit?.visitDataStatus?.length
-            ? HEADER_HEIGHT.filled
-            : HEADER_HEIGHT.empty),
-      }}
+      style={
+        walkthroughState?.isTourActive
+          ? {}
+          : {
+              height:
+                height -
+                (!!previousVisit?.visitDataStatus?.length
+                  ? HEADER_HEIGHT.filled
+                  : HEADER_HEIGHT.empty),
+            }
+      }
     >
       <div ref={introScreenRef}>
-        <IntroScreen mother={mother} headerText={mother?.user?.firstName} />
+        <IntroScreen
+          mother={mother}
+          walkthroughData={
+            walkthroughState?.isTourActive ? walkthroughData : undefined
+          }
+          headerText={mother?.user?.firstName}
+        />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">
         {!!previousVisit?.visitDataStatus?.length ? (

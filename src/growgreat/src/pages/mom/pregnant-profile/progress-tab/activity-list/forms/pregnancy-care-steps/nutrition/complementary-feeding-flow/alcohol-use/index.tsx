@@ -1,5 +1,4 @@
 import { Header, Label } from '@/pages/infant/infant-profile/components';
-import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { Fragment, useCallback, useMemo, useState } from 'react';
 import {
@@ -17,7 +16,6 @@ import {
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { QuestionMarkCircleIcon } from '@heroicons/react/solid';
-import { noneOption } from './options';
 import { HealthPromotion } from '../../../../components/health-promotion';
 
 export const getGroupColor = (count: number): Colours => {
@@ -172,12 +170,18 @@ export const AlcoholUseStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${name}`}
-        subTitle={visitSection}
-        section={visitSection}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${name}`}
+          subTitle={visitSection}
+          section={visitSection}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

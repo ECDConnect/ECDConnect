@@ -65,6 +65,7 @@ import { eventRecordThunkActions } from '@/store/eventRecord';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { PregnantProfileRouteState } from '@/pages/mom/pregnant-profile/index.types';
+import { CLIENT_TABS } from '../../client/client-dashboard/class-dashboard';
 
 const BANNER_HEIGHT = 64;
 
@@ -181,89 +182,138 @@ export const InfantRegisterForm: React.FC = () => {
         ...infantDetails,
         ...infantRoadToHealthBook,
       };
-      setMultipleChildrenArray([
-        ...multipleChildrenArray,
-        multipleChildrenRecords,
-      ]);
+      if (numberOfChildren && numberOfChildren > 1) {
+        setMultipleChildrenArray([
+          ...multipleChildrenArray,
+          multipleChildrenRecords,
+        ]);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [infantRoadToHealthBook]);
 
-  const handleExistingUser = ({ caregiverDetails }: onSubmit) => {
-    if (isAlreadyClient) {
-      completeAllSteps({ caregiverDetails });
-      return;
-    }
-    setActiveStep(InfantRegisterSteps.pregnantContactInformation);
-  };
+  const completeAllSteps = useCallback(
+    async ({ caregiverDetails, caregiverAddress }: onSubmit) => {
+      const newCaregiverId = newGuid();
+      const siteAddressId = newGuid();
 
-  const handleMultipleChildrenSteps = () => {
-    if (multipleChildrenCount < Number(numberOfChildren)) {
-      setActiveStep(InfantRegisterSteps.infantDetails);
-      setMultipleChildrenCount(multipleChildrenCount + 1);
-      setLabel(`step 2 of 6`);
-      return;
-    }
-    setLabel(`step 4 of 6`);
-    setActiveStep(InfantRegisterSteps.motherDetails);
-  };
+      const siteAddress: SiteAddressDto = {
+        id: siteAddressId,
+        addressLine1: address || caregiverAddress || '',
+      };
 
-  const completeAllSteps = async ({
-    caregiverDetails,
-    caregiverAddress,
-  }: onSubmit) => {
-    const newCaregiverId = newGuid();
-    const siteAddressId = newGuid();
+      const caregiverInput: CaregiverDto = {
+        id:
+          firstChild?.caregiver?.id ||
+          caregiverDetails?.id ||
+          details?.id ||
+          newCaregiverId,
+        firstName: caregiverDetails?.name || details?.name || '',
+        surname: caregiverDetails?.surname || details?.surname || '',
+        phoneNumber: contactInformation?.cellphone ?? '',
+        whatsAppNumber:
+          contactInformation?.whatsapp || contactInformation?.cellphone,
+        age: caregiverDetails?.age || details?.age || '',
+        siteAddress: siteAddress,
+        isActive: true,
+        relationId:
+          caregiverDetails?.relationshipId ||
+          firstChild?.relationshipId ||
+          details?.relationshipId ||
+          '',
+        healthCareWorkerId: user?.id,
+      };
 
-    const siteAddress: SiteAddressDto = {
-      id: siteAddressId,
-      addressLine1: address || caregiverAddress || '',
-    };
-
-    const caregiverInput: CaregiverDto = {
-      id:
-        firstChild.caregiver?.id ||
-        caregiverDetails?.id ||
-        details?.id ||
-        newCaregiverId,
-      firstName: caregiverDetails?.name || details?.name || '',
-      surname: caregiverDetails?.surname || details?.surname || '',
-      phoneNumber: contactInformation?.cellphone ?? '',
-      whatsAppNumber:
-        contactInformation?.whatsapp || contactInformation?.cellphone,
-      age: caregiverDetails?.age || details?.age || '',
-      siteAddress: siteAddress,
-      isActive: true,
-      relationId:
+      setRelationshipId(
         caregiverDetails?.relationshipId ||
-        firstChild?.relationshipId ||
-        details?.relationshipId ||
-        '',
-      healthCareWorkerId: user?.id,
-    };
+          firstChild?.relationshipId ||
+          details?.relationshipId
+      );
 
-    setRelationshipId(
-      caregiverDetails?.relationshipId ||
-        firstChild?.relationshipId ||
-        details?.relationshipId
-    );
+      if (!details?.isMother) {
+        appDispatch(caregiverActions.createCaregiver(caregiverInput));
+      }
 
-    if (!details?.isMother) {
-      appDispatch(caregiverActions.createCaregiver(caregiverInput));
-    }
+      if (multipleChildrenArray?.length >= 1) {
+        for (const child of multipleChildrenArray) {
+          let weightAtBirth = undefined;
+          let lengthAtBirth = undefined;
+          if (child?.roadToHealthBook) {
+            weightAtBirth =
+              (child?.weightAtBirth && +child?.weightAtBirth) ?? 0;
+            lengthAtBirth =
+              (child?.lengthAtBirth && +child?.lengthAtBirth) ?? 0;
+          }
 
-    if (multipleChildrenArray?.length >= 1) {
-      for (const child of multipleChildrenArray) {
+          const childUserId = newGuid();
+
+          const userInput: UserDto = {
+            phoneNumber: contactInformation?.cellphone ?? '',
+            firstName: caregiverDetails?.name || details?.name || '',
+            surname: caregiverDetails?.surname || details?.surname || '',
+            dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
+          };
+
+          const infantInputModel: InfantDto = {
+            dateOfBirth: child?.dateOfBirth?.toISOString(),
+            firstName: child?.firstName,
+            documents: child?.roadToHealthBook,
+            userId: childUserId ?? '',
+            user: userInput,
+            weightAtBirth: weightAtBirth,
+            lengthAtBirth: lengthAtBirth,
+            genderId: child?.genderId ?? '',
+            caregiverId: caregiverInput.id,
+            caregiver: caregiverInput,
+          };
+
+          appDispatch(infantActions.addInfant(infantInputModel));
+          await appDispatch(
+            infantThunkActions.addInfant({ infant: infantInputModel, motherId })
+          ).unwrap();
+
+          if (infantRoadToHealthBook?.roadToHealthBook) {
+            const fileName = 'roadtohealthbook.png';
+            const workflowStatusId = getWorkflowStatusIdByEnum(
+              WorkflowStatusEnum.DocumentPendingVerification
+            );
+            const documentTypeId = getDocumentTypeIdByEnum(
+              FileTypeEnum.RoadToHealthBook
+            );
+            const documentInputModel: Document = {
+              id: newGuid(),
+              userId: childUserId,
+              createdUserId: user?.id ?? '',
+              workflowStatusId: workflowStatusId ?? '',
+              documentTypeId: documentTypeId ?? '',
+              name: fileName,
+              fileName: fileName,
+              file: infantRoadToHealthBook?.roadToHealthBook,
+              fileType: FileTypeEnum.RoadToHealthBook,
+            };
+
+            appDispatch(documentActions.createDocument(documentInputModel));
+            await appDispatch(
+              documentThunkActions.createDocument(documentInputModel)
+            ).unwrap();
+          }
+        }
+      } else {
         let weightAtBirth = undefined;
         let lengthAtBirth = undefined;
-        if (child?.roadToHealthBook) {
-          weightAtBirth = (child?.weightAtBirth && +child?.weightAtBirth) ?? 0;
-          lengthAtBirth = (child?.lengthAtBirth && +child?.lengthAtBirth) ?? 0;
+        if (!infantRoadToHealthBook?.notRoadToHealthBook) {
+          weightAtBirth =
+            (infantRoadToHealthBook?.weightAtBirth &&
+              +infantRoadToHealthBook?.weightAtBirth) ??
+            0;
+          lengthAtBirth =
+            (infantRoadToHealthBook?.lengthAtBirth &&
+              +infantRoadToHealthBook?.lengthAtBirth) ??
+            0;
         }
 
         const childUserId = newGuid();
-
-        const userInput: UserDto = {
+        const user: UserDto = {
           phoneNumber: contactInformation?.cellphone ?? '',
           firstName: caregiverDetails?.name || details?.name || '',
           surname: caregiverDetails?.surname || details?.surname || '',
@@ -271,14 +321,14 @@ export const InfantRegisterForm: React.FC = () => {
         };
 
         const infantInputModel: InfantDto = {
-          dateOfBirth: child?.dateOfBirth?.toISOString(),
-          firstName: child?.firstName,
-          documents: child?.roadToHealthBook,
+          dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
+          firstName: infantDetails?.firstName,
+          genderId: infantDetails?.genderId,
+          documents: infantRoadToHealthBook?.roadToHealthBook,
           userId: childUserId ?? '',
-          user: userInput,
+          user: user,
           weightAtBirth: weightAtBirth,
           lengthAtBirth: lengthAtBirth,
-          genderId: child?.genderId ?? '',
           caregiverId: caregiverInput.id,
           caregiver: caregiverInput,
         };
@@ -314,160 +364,167 @@ export const InfantRegisterForm: React.FC = () => {
           ).unwrap();
         }
       }
-    } else {
-      let weightAtBirth = undefined;
-      let lengthAtBirth = undefined;
-      if (!infantRoadToHealthBook?.notRoadToHealthBook) {
-        weightAtBirth =
-          (infantRoadToHealthBook?.weightAtBirth &&
-            +infantRoadToHealthBook?.weightAtBirth) ??
-          0;
-        lengthAtBirth =
-          (infantRoadToHealthBook?.lengthAtBirth &&
-            +infantRoadToHealthBook?.lengthAtBirth) ??
-          0;
+    },
+    [
+      address,
+      appDispatch,
+      contactInformation?.cellphone,
+      contactInformation?.whatsapp,
+      details?.age,
+      details?.id,
+      details?.isMother,
+      details?.name,
+      details?.relationshipId,
+      details?.surname,
+      firstChild?.caregiver?.id,
+      firstChild?.relationshipId,
+      getDocumentTypeIdByEnum,
+      getWorkflowStatusIdByEnum,
+      infantDetails?.dateOfBirth,
+      infantDetails?.firstName,
+      infantDetails?.genderId,
+      infantRoadToHealthBook?.lengthAtBirth,
+      infantRoadToHealthBook?.notRoadToHealthBook,
+      infantRoadToHealthBook?.roadToHealthBook,
+      infantRoadToHealthBook?.weightAtBirth,
+      motherId,
+      multipleChildrenArray,
+      user?.id,
+    ]
+  );
+
+  const handleExistingUser = useCallback(
+    ({ caregiverDetails }: onSubmit) => {
+      if (isAlreadyClient) {
+        completeAllSteps({ caregiverDetails });
+        return;
       }
+      setActiveStep(InfantRegisterSteps.pregnantContactInformation);
+    },
+    [completeAllSteps, isAlreadyClient]
+  );
 
-      const childUserId = newGuid();
-      const user: UserDto = {
-        phoneNumber: contactInformation?.cellphone ?? '',
-        firstName: caregiverDetails?.name || details?.name || '',
-        surname: caregiverDetails?.surname || details?.surname || '',
-        dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
-      };
+  const handleMultipleChildrenSteps = useCallback(() => {
+    if (multipleChildrenCount < Number(numberOfChildren)) {
+      setActiveStep(InfantRegisterSteps.infantDetails);
+      setMultipleChildrenCount(multipleChildrenCount + 1);
+      setLabel(`step 2 of 6`);
+      return;
+    }
+    setLabel(`step 4 of 6`);
+    setActiveStep(InfantRegisterSteps.motherDetails);
+  }, [multipleChildrenCount, numberOfChildren]);
 
-      const infantInputModel: InfantDto = {
-        dateOfBirth: infantDetails?.dateOfBirth?.toISOString(),
-        firstName: infantDetails?.firstName,
-        genderId: infantDetails?.genderId,
-        documents: infantRoadToHealthBook?.roadToHealthBook,
-        userId: childUserId ?? '',
-        user: user,
-        weightAtBirth: weightAtBirth,
-        lengthAtBirth: lengthAtBirth,
-        caregiverId: caregiverInput.id,
-        caregiver: caregiverInput,
-      };
+  const steps = useCallback(
+    (step: InfantRegisterSteps) => {
+      switch (step) {
+        case InfantRegisterSteps.infantDetails:
+          return (
+            <InfantDetails
+              multipleChildrenCount={multipleChildrenCount}
+              numberOfChildren={numberOfChildren}
+              motherInfo={caregiverInfoFromRecordEvent}
+              name={infantDetails?.firstName}
+              dateOfBirth={infantDetails?.dateOfBirth}
+              genderId={infantDetails?.genderId}
+              onSubmit={(value) => {
+                setLabel(`step 3 of 6`);
+                setInfantDetails(value);
+                setActiveStep(InfantRegisterSteps.infantRoadToHealth);
+              }}
+            />
+          );
+        case InfantRegisterSteps.infantRoadToHealth:
+          return (
+            <InfantRoadToHealth
+              infantDetails={infantDetails}
+              weightAtBirth={infantRoadToHealthBook?.weightAtBirth}
+              lengthAtBirth={infantRoadToHealthBook?.lengthAtBirth}
+              roadToHealthBook={infantRoadToHealthBook?.roadToHealthBook}
+              onSubmit={(value) => {
+                handleMultipleChildrenSteps();
+                setInfantRoadToHealthBook(value);
+              }}
+            />
+          );
+        case InfantRegisterSteps.motherDetails:
+          return (
+            <MotherDetails
+              setMultipleChildrenArray={setMultipleChildrenArray}
+              multipleChildrenArray={multipleChildrenArray}
+              infantDetails={infantDetails}
+              setContactInformation={setContactInformation}
+              setAddress={setAddress}
+              setIsAlreadyClient={setIsAlreadyClient}
+              isAlreadyClient={isAlreadyClient}
+              motherInfo={caregiverInfoFromRecordEvent}
+              onSubmit={(value) => {
+                setDetails(value as any);
+                handleExistingUser({ caregiverDetails: value });
 
-      appDispatch(infantActions.addInfant(infantInputModel));
-      await appDispatch(
-        infantThunkActions.addInfant({ infant: infantInputModel, motherId })
-      ).unwrap();
+                if (isAlreadyClient) {
+                  return setLabel(`step 4 of 4`);
+                }
 
-      if (infantRoadToHealthBook?.roadToHealthBook) {
-        const fileName = 'roadtohealthbook.png';
-        const workflowStatusId = getWorkflowStatusIdByEnum(
-          WorkflowStatusEnum.DocumentPendingVerification
-        );
-        const documentTypeId = getDocumentTypeIdByEnum(
-          FileTypeEnum.RoadToHealthBook
-        );
-        const documentInputModel: Document = {
-          id: newGuid(),
-          userId: childUserId,
-          createdUserId: user?.id ?? '',
-          workflowStatusId: workflowStatusId ?? '',
-          documentTypeId: documentTypeId ?? '',
-          name: fileName,
-          fileName: fileName,
-          file: infantRoadToHealthBook?.roadToHealthBook,
-          fileType: FileTypeEnum.RoadToHealthBook,
-        };
-
-        appDispatch(documentActions.createDocument(documentInputModel));
-        await appDispatch(
-          documentThunkActions.createDocument(documentInputModel)
-        ).unwrap();
+                return setLabel(`step 5 of 6`);
+              }}
+            />
+          );
+        case InfantRegisterSteps.pregnantContactInformation:
+          return (
+            <MotherContactInformation
+              details={details}
+              onSubmit={(value) => {
+                setLabel(`step 6 of 6`);
+                setActiveStep(InfantRegisterSteps.pregnantAddress);
+                setContactInformation(value);
+              }}
+            />
+          );
+        case InfantRegisterSteps.pregnantAddress:
+          return (
+            <InfantAddress
+              details={details}
+              infantDetails={infantDetails}
+              onSubmit={(value) => {
+                setLabel(`step 6 of 6`);
+                setAddress(value.address);
+                completeAllSteps({ caregiverAddress: value.address });
+              }}
+            />
+          );
+        case InfantRegisterSteps.consentAgreement:
+        default:
+          return (
+            <ConsentAgreement
+              multipleChildren={multipleChildren}
+              setMultipleChildren={setMultipleChildren}
+              onSubmit={(value) => {
+                setActiveStep(InfantRegisterSteps.infantDetails);
+                setHasConsent(value as any);
+                setLabel(`step 2 of 6`);
+              }}
+            />
+          );
       }
-    }
-  };
-
-  const steps = (step: InfantRegisterSteps) => {
-    switch (step) {
-      case InfantRegisterSteps.infantDetails:
-        return (
-          <InfantDetails
-            multipleChildrenCount={multipleChildrenCount}
-            numberOfChildren={numberOfChildren}
-            motherInfo={caregiverInfoFromRecordEvent}
-            onSubmit={(value) => {
-              setLabel(`step 3 of 6`);
-              setInfantDetails(value);
-              setActiveStep(InfantRegisterSteps.infantRoadToHealth);
-            }}
-          />
-        );
-      case InfantRegisterSteps.infantRoadToHealth:
-        return (
-          <InfantRoadToHealth
-            infantDetails={infantDetails}
-            onSubmit={(value) => {
-              handleMultipleChildrenSteps();
-              setInfantRoadToHealthBook(value);
-            }}
-          />
-        );
-      case InfantRegisterSteps.motherDetails:
-        return (
-          <MotherDetails
-            setMultipleChildrenArray={setMultipleChildrenArray}
-            multipleChildrenArray={multipleChildrenArray}
-            infantDetails={infantDetails}
-            setContactInformation={setContactInformation}
-            setAddress={setAddress}
-            setIsAlreadyClient={setIsAlreadyClient}
-            isAlreadyClient={isAlreadyClient}
-            motherInfo={caregiverInfoFromRecordEvent}
-            onSubmit={(value) => {
-              setDetails(value as any);
-              handleExistingUser({ caregiverDetails: value });
-
-              if (isAlreadyClient) {
-                return setLabel(`step 4 of 4`);
-              }
-
-              return setLabel(`step 5 of 6`);
-            }}
-          />
-        );
-      case InfantRegisterSteps.pregnantContactInformation:
-        return (
-          <MotherContactInformation
-            details={details}
-            onSubmit={(value) => {
-              setLabel(`step 6 of 6`);
-              setActiveStep(InfantRegisterSteps.pregnantAddress);
-              setContactInformation(value);
-            }}
-          />
-        );
-      case InfantRegisterSteps.pregnantAddress:
-        return (
-          <InfantAddress
-            details={details}
-            infantDetails={infantDetails}
-            onSubmit={(value) => {
-              setLabel(`step 6 of 6`);
-              setAddress(value.address);
-              completeAllSteps({ caregiverAddress: value.address });
-            }}
-          />
-        );
-      case InfantRegisterSteps.consentAgreement:
-      default:
-        return (
-          <ConsentAgreement
-            multipleChildren={multipleChildren}
-            setMultipleChildren={setMultipleChildren}
-            onSubmit={(value) => {
-              setActiveStep(InfantRegisterSteps.infantDetails);
-              setHasConsent(value as any);
-              setLabel(`step 2 of 6`);
-            }}
-          />
-        );
-    }
-  };
+    },
+    [
+      caregiverInfoFromRecordEvent,
+      completeAllSteps,
+      details,
+      handleExistingUser,
+      handleMultipleChildrenSteps,
+      infantDetails,
+      infantRoadToHealthBook?.lengthAtBirth,
+      infantRoadToHealthBook?.roadToHealthBook,
+      infantRoadToHealthBook?.weightAtBirth,
+      isAlreadyClient,
+      multipleChildren,
+      multipleChildrenArray,
+      multipleChildrenCount,
+      numberOfChildren,
+    ]
+  );
 
   const showSuccessMessage = useCallback(
     (count?: number) =>
@@ -702,6 +759,81 @@ export const InfantRegisterForm: React.FC = () => {
     wasLoadingEventRecord,
   ]);
 
+  const handleOnClose = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconClassName="h-10 w-10"
+            title="Are you sure you want to exit?"
+            detailText="If you exit now you will lose your progress."
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Exit',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'LoginIcon',
+                onClick: () => {
+                  history.push(ROUTES.CLIENTS.ROOT, {
+                    activeTabIndex: CLIENT_TABS.CLIENT,
+                  });
+                  onClose();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Continue editing',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'PencilIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog, history]);
+
+  const handleOnBack = useCallback(() => {
+    switch (activeStep) {
+      case InfantRegisterSteps.infantDetails:
+        setLabel(`step 1 of 6`);
+        setActiveStep(InfantRegisterSteps.consentAgreement);
+        break;
+      case InfantRegisterSteps.infantRoadToHealth:
+        setLabel(`step 2 of 6`);
+        setActiveStep(InfantRegisterSteps.infantDetails);
+        break;
+      case InfantRegisterSteps.motherDetails:
+        setLabel(`step 3 of 6`);
+        setActiveStep(InfantRegisterSteps.infantRoadToHealth);
+        break;
+      case InfantRegisterSteps.pregnantContactInformation:
+        setLabel(`step 4 of 6`);
+        setActiveStep(InfantRegisterSteps.motherDetails);
+        break;
+      case InfantRegisterSteps.pregnantAddress:
+        setLabel(`step 5 of 6`);
+        setActiveStep(InfantRegisterSteps.pregnantContactInformation);
+        break;
+      case InfantRegisterSteps.consentAgreement:
+        handleOnClose();
+        break;
+      default:
+        setActiveStep(InfantRegisterSteps.consentAgreement);
+        break;
+    }
+    return steps(activeStep);
+  }, [activeStep, handleOnClose, steps]);
+
   return (
     <div className="text-textMid">
       <BannerWrapper
@@ -709,7 +841,8 @@ export const InfantRegisterForm: React.FC = () => {
         renderBorder={true}
         title={'Child registration'}
         subTitle={label}
-        onBack={() => history.goBack()}
+        onClose={handleOnClose}
+        onBack={handleOnBack}
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div

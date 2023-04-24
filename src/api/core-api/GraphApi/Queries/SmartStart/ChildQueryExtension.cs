@@ -10,8 +10,10 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -59,14 +61,14 @@ string classroomId)
 
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public ChildCreatedByDetail GetChildCreatedByDetail([Service] IHttpContextAccessor contextAccessor,
+        public async Task<ChildCreatedByDetail> GetChildCreatedByDetailAsync([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService personnelManager,
         string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
-            var children = dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).ToList();
+            var children = await dbRepo.GetAll().Where(x => x.User.FirstName.ToLower() == firstName.ToLower() && x.User.Surname.ToLower() == surname.ToLower()).ToListAsync();
             var practitioners = personnelManager.GetPractitionerPeers(practitionerId);
             if (children != null)
             {

@@ -33,11 +33,12 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/danger-signs-steps/developmental-screening-weeks';
+// import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
-import { getMotherById } from '@/store/mother/mother.selectors';
 import { motherThunkActions } from '@/store/mother';
+import { getMotherById } from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -71,6 +72,8 @@ export const MomActivityList: React.FC = () => {
   const location = useLocation();
 
   const user = useSelector(userSelectors.getUser);
+
+  // const visits2 = useSelector(getMotherVisits);
 
   const MOCKED_VISIT_ID = visitId;
 
@@ -126,14 +129,16 @@ export const MomActivityList: React.FC = () => {
   );
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
+    // const motherType = relationshipTypes.find(
+    //   (item) => item.label === 'Mother'
+    // );
+
     const completedActivities = activitiesList.filter((item) =>
       completedVisits?.includes(item.title)
     );
     const uncompletedActivities = activitiesList.filter(
       (item) => !completedVisits?.includes(item.title)
     );
-
-    console.log({ completedActivities });
 
     const completedForms = completedActivities.map(
       (item): MenuListDataItem => ({
@@ -149,8 +154,6 @@ export const MomActivityList: React.FC = () => {
         rightIconClassName: 'h-5 w-5 text-successMain',
       })
     );
-
-    console.log({ completedForms });
 
     const uncompletedForms = uncompletedActivities.map(
       (item): MenuListDataItem => ({
@@ -178,7 +181,9 @@ export const MomActivityList: React.FC = () => {
         menuIconClassName: 'border-0',
         iconColor: 'white',
         title: 'Follow up',
+        titleStyle: 'text-textDark semibold',
         subTitle: 'Schedule your next visit, make referrals & save notes',
+        subTitleStyle: 'text-textMid',
         iconBackgroundColor: 'tertiary' as Colours,
         backgroundColor: 'uiBg' as Colours,
         onActionClick: () => {
@@ -221,9 +226,9 @@ export const MomActivityList: React.FC = () => {
       visitThunkActions.getGrowthDataForInfant({ infantId })
     ).unwrap();
     appDispatch(
-      referralThunkActions.getReferralsForInfant({ infantId })
+      referralThunkActions.getReferralsForVisitId({ visitId })
     ).unwrap();
-  }, [appDispatch, infantId, motherId]);
+  }, [appDispatch, infantId, motherId, visitId]);
 
   useLayoutEffect(() => {
     // TODO: add integration
@@ -434,13 +439,13 @@ export const MomActivityList: React.FC = () => {
         {renderContent}
       </BannerWrapper>
       <Dialog
-        fullScreen={false}
+        fullScreen={true}
         visible={displayHelp}
         position={DialogPosition.Full}
       >
         <ActivityInfoPage
-          section="Activity Info"
-          subTitle="Road to health activities"
+          section="Pregnancy activities"
+          subTitle="Pregnancy activities"
           setDisplayHelp={setDisplayHelp}
         />
       </Dialog>

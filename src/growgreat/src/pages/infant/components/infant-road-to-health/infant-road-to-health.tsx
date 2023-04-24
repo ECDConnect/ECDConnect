@@ -27,6 +27,9 @@ import { MaternalRecordExample } from './maternalRecordExampleDialog';
 export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   onSubmit,
   infantDetails,
+  weightAtBirth,
+  lengthAtBirth,
+  roadToHealthBook,
 }) => {
   const {
     watch,
@@ -71,6 +74,26 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
   };
 
   useEffect(() => {
+    if (roadToHealthBook) {
+      setRoadToHealthFormValue('roadToHealthBook', roadToHealthBook);
+      setRegistrationFormPhotoUrl(roadToHealthBook);
+      setHasMaternalCaseRecord(true);
+    }
+  }, [roadToHealthBook, setRoadToHealthFormValue]);
+
+  useEffect(() => {
+    if (weightAtBirth) {
+      setRoadToHealthFormValue('weightAtBirth', weightAtBirth);
+    }
+  }, [setRoadToHealthFormValue, weightAtBirth]);
+
+  useEffect(() => {
+    if (lengthAtBirth) {
+      setRoadToHealthFormValue('lengthAtBirth', lengthAtBirth);
+    }
+  }, [setRoadToHealthFormValue, lengthAtBirth]);
+
+  useEffect(() => {
     watch();
   }, [watch]);
 
@@ -106,6 +129,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
             color="secondary"
             type={ButtonGroupTypes.Button}
             className={'mt-2 w-full'}
+            selectedOptions={roadToHealthBook ? true : undefined}
           />
         </div>
         {hasMaternalCaseRecord === false && (

@@ -1,8 +1,7 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
+import { useCallback, useEffect, useLayoutEffect } from 'react';
 import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import Pregnant from '@/assets/pregnant.svg';
@@ -41,13 +40,19 @@ export const InfantCareStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${name}`}
-        subTitle={visitSection}
-        section={visitSection}
-        client={name}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${name}`}
+          subTitle={visitSection}
+          section={visitSection}
+          client={name}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

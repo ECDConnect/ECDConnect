@@ -19,7 +19,8 @@ export const CompleteProfile: React.FC = () => {
     Boolean(practitioner?.principalHierarchy) && !practitioner?.isPrincipal;
 
   const showNotificationForPractitionerFlow =
-    (hasPractitionerRole || addedByPrincipal) && notRegistered;
+    ((hasPractitionerRole || addedByPrincipal) && notRegistered) ||
+    practitioner?.progress === 0;
 
   return (
     <div className="px-4">

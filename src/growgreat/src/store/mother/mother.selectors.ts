@@ -1,4 +1,4 @@
-import { EventRecordType } from '@ecdlink/graphql';
+import { EventRecordType, VisitDataStatus } from '@ecdlink/graphql';
 import { MotherDto, VisitDto } from '@ecdlink/core';
 import { RootState } from '../types';
 
@@ -30,7 +30,7 @@ export const getMotherCurrentVisitSelector = (
   const visits = state.mothers.visits || [];
   const noAttended =
     visits?.filter(
-      (item) => !item.attended && new Date(item.plannedVisitDate) >= new Date()
+      (item) => !item.attended && new Date(item.orderDate) >= new Date()
     ) || [];
 
   return noAttended.length
@@ -86,3 +86,12 @@ export const getMotherPreviousVisitSelector = (
 
   return previousVisit;
 };
+
+export const getReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined => state.mothers.referralsForMother || [];
+
+export const getCompletedReferralsForMotherSelector = (
+  state: RootState
+): VisitDataStatus[] | undefined =>
+  state.mothers.completedReferralsForMother || [];

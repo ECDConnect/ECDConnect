@@ -23,11 +23,13 @@ import { useEffect, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@store/auth';
 import { getClassroomGroupSchoolDays } from '@/utils/classroom/attendance/track-attendance-utils';
+import { userSelectors } from '@store/user';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const isCoach = true;
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);

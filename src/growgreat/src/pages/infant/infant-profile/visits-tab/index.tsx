@@ -17,7 +17,12 @@ import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
-import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  useDialog,
+  usePrevious,
+  VisitDto,
+} from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   getInfantById,
@@ -31,6 +36,9 @@ import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { differenceInDays } from 'date-fns';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { VisitModelInput } from '@ecdlink/graphql';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 
 const HEADER_HEIGHT = 64;
 
@@ -50,6 +58,8 @@ export const VisitsTab: React.FC = () => {
 
   const dialog = useDialog();
 
+  const { errorDialog } = useRequestResponseDialog();
+
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
@@ -63,7 +73,16 @@ export const VisitsTab: React.FC = () => {
     'infants',
     InfantActions.GET_INFANT_VISITS
   );
+  const {
+    isLoading: isAddingAdditionalVisit,
+    isRejected: isRejectedAdditionalVisit,
+  } = useThunkFetchCall(
+    'infants',
+    InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT
+  );
+
   const wasLoading = usePrevious(isLoading);
+  const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
 
   const { infantName, caregiverName } = useMemo(
     () => ({
@@ -74,7 +93,7 @@ export const VisitsTab: React.FC = () => {
   );
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
   const infantAgeDays = infant?.user?.dateOfBirth
     ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
     : 0;
@@ -97,22 +116,21 @@ export const VisitsTab: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto): StepItem['type'] => {
+    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
       if (item.attended) {
         return 'completed';
       }
 
       if (
-        currentVisit &&
-        item.visitType?.id === currentVisit.visitType?.id &&
-        infant?.statusInfo?.color !== 'None'
+        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
+        isMissedVisit
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, infant?.statusInfo?.color]
+    [currentVisit, isWeekDeadline]
   );
 
   const filterArrayById = (arr: VisitDto[], id: string) => {
@@ -138,24 +156,29 @@ export const VisitsTab: React.FC = () => {
     );
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.plannedVisitDate);
+      const date = new Date(item.orderDate);
+      currentDate.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(((isWeekDeadline &&
-          currentVisit.visitType?.id === item.visitType?.id) ||
-          isMissedVisit) && { subTitleColor: 'alertDark' }),
+        ...(getType(item, isMissedVisit) === 'inProgress' && {
+          subTitleColor: 'alertDark',
+        }),
         inProgressStepIcon: isMissedVisit
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
-        type: getType(item),
-        showActionButton: getType(item) === 'inProgress',
+        type: getType(item, isMissedVisit),
+        showActionButton: getType(item, isMissedVisit) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -186,12 +209,10 @@ export const VisitsTab: React.FC = () => {
   }, [
     currentDate,
     currentVisit?.id,
-    currentVisit?.visitType?.id,
     filteredVisits,
     getType,
     history,
     infantInsertedDate,
-    isWeekDeadline,
     location.pathname,
     visits,
   ]);
@@ -208,14 +229,32 @@ export const VisitsTab: React.FC = () => {
       render(onClose) {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'z-10 mx-4'}
             title="Do you want to start the additional visit now or book a time in your calendar?"
             actionButtons={[
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    infantId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+
+                  const response = await appDispatch(
+                    infantThunkActions.addAdditionalVisitForInfant(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
+
                   onClose();
                 },
                 type: 'filled',
@@ -238,7 +277,7 @@ export const VisitsTab: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [appDispatch, dialog, history, infantId, location.pathname]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),
@@ -284,7 +323,7 @@ export const VisitsTab: React.FC = () => {
   );
 
   const renderContent = useMemo(() => {
-    if (isLoading) {
+    if (isLoading || isAddingAdditionalVisit) {
       return (
         <LoadingSpinner
           size="big"
@@ -308,7 +347,22 @@ export const VisitsTab: React.FC = () => {
         <Steps items={visitSteps.slice(0, 3)} />
       </>
     );
-  }, [isCompletedAllVisits, isLoading, visitSteps]);
+  }, [isAddingAdditionalVisit, isCompletedAllVisits, isLoading, visitSteps]);
+
+  useEffect(() => {
+    if (!wasAddingAdditionalVisit && isAddingAdditionalVisit) {
+      return dialog({
+        color: 'transparent',
+        render: () => {},
+      });
+    }
+  }, [dialog, isAddingAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (wasAddingAdditionalVisit && isRejectedAdditionalVisit) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejectedAdditionalVisit, wasAddingAdditionalVisit]);
 
   useEffect(() => {
     if (
@@ -349,29 +403,31 @@ export const VisitsTab: React.FC = () => {
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
-      <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
-        <RoundIcon
-          imageUrl={Infant}
-          backgroundColor="tertiary"
-          className="row-span-3"
-        />
-        <div>
-          <Typography
-            type="h2"
-            align="left"
-            weight="bold"
-            text={`${
-              infant?.caregiver?.firstName
-                ? infant?.caregiver?.firstName + ' & '
-                : ''
-            }${infant?.user?.firstName || ''} `}
-            color="textDark"
-            className="col-span-2"
+      <div id={getStringFromClassNameOrId(walkthroughSteps[1].target)}>
+        <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
+          <RoundIcon
+            imageUrl={Infant}
+            backgroundColor="tertiary"
+            className="row-span-3"
           />
+          <div>
+            <Typography
+              type="h2"
+              align="left"
+              weight="bold"
+              text={`${
+                infant?.caregiver?.firstName
+                  ? infant?.caregiver?.firstName + ' & '
+                  : ''
+              }${infant?.user?.firstName || ''} `}
+              color="textDark"
+              className="col-span-2"
+            />
+          </div>
         </div>
+        <div className="px-4 pb-4 pt-7">{renderContent}</div>
       </div>
-      <div className="px-4 pb-4 pt-7">
-        {renderContent}
+      <div className="px-4">
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
@@ -405,6 +461,7 @@ export const VisitsTab: React.FC = () => {
       </div>
       <div className="mx-4 mt-7 mb-4 flex h-full items-end">
         <Button
+          id={getStringFromClassNameOrId(walkthroughSteps[2].target)}
           type="outlined"
           color="primary"
           icon="ClipboardCheckIcon"

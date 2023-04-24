@@ -105,9 +105,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed when all 4 questionnaires are completed
+            // update the visit record to show attended/completed when all 5 questionnaires are completed
             int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId)).Select(y => y.VisitName).Distinct().Count();
-            if (count == 4)
+            if (count == 5)
             {
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;
