@@ -424,9 +424,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
                 if (lastVisit == Guid.Empty)
                 {
-                    statusInfo.Color = MetricsIconEnum.None.ToString();
-                    statusInfo.Icon = MetricsIconEnum.None.ToString();
-                    statusInfo.Subject = Constants.GGSettings.client_new;
+                    if (mother.Age != null && Int32.Parse(mother.Age) < 20)
+                    {
+                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_teenager;
+                    } else
+                    {
+                        statusInfo.Color = MetricsIconEnum.Success.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_new;
+                    }
+
                 }
             }
 
