@@ -22,6 +22,10 @@ class MotherService {
       query: `
         query GetAllMothersForHealthCareWorker($id: String, $visitType: String) {
           allMothersForHealthCareWorker(id: $id, visitType: $visitType) {
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab
             statusInfo {
               icon
               color
@@ -74,6 +78,10 @@ class MotherService {
       query: `
         mutation updateMother($input: MotherModelInput, $id: String) {
           updateMother(input: $input, id: $id) {
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab
             id
             firstName
             surname
