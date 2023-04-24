@@ -118,5 +118,23 @@ INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystem
   	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'IsActive','Status','Smartlink','Coach','Coach',true,NULL,'2022-12-05 00:00:00.000','2022-12-05 00:00:00.000',NULL,'Both'),
  	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'IsActive','Status','Smartlink','SiteAddress','SiteAddress',true,NULL,'2022-12-05 00:00:00.000','2022-12-05 00:00:00.000',NULL,'Both');
 
-
+	 INSERT INTO public."ReasonForLeaving" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Description","TenantId") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Personal reasons',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Franchisee is uncontactable',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'No stipend or income',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Venue problems',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'ECD opportunities',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Not receiving support from coach',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'No children',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Went back to school',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Health problems',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'No longer interested',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Parents dont pay fees',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Other CWP',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Employment',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Relocated',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Red PQA',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Deceased',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Maternity leave',NULL),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Other',NULL);
 	 */

@@ -46,10 +46,11 @@ namespace ECDLink.Core.Services
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
-        private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;        
+        private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
         private MappingMode _apiMode;
         private MappingMaskDataMode _maskMode;
         private readonly HierarchyEngine _hierarchyEngine;
+        List<string> _errorsList = new List<string>();
 
         public static string password = "AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==";//ECDConnect123!
         public static string securityStamp = "7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
@@ -238,7 +239,10 @@ namespace ECDLink.Core.Services
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
 
-                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLPractitionerQueryAll, optionConditions, null);
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLPractitionerQueryAll, optionConditions, relatedConditions);
                 return JsonConvert.DeserializeObject<List<MappedFranchisee>>(responseString);
 
             }
@@ -253,8 +257,14 @@ namespace ECDLink.Core.Services
         {
             try
             {
-                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLPractitionerQueryByGuid.Replace("{{Guid}}", remoteId), null, null);
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLPractitionerQueryByGuid.Replace("{{Guid}}", remoteId), null, relatedConditions);
+
                 var franchisee = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
+
+
 
                 return new List<MappedFranchisee> { franchisee };
 
@@ -275,7 +285,7 @@ namespace ECDLink.Core.Services
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
 
                 List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
-                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = "" });
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = "", JoinType = "Outer" });
 
                 var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
                 return JsonConvert.DeserializeObject<List<MappedChild>>(responseString);
@@ -287,14 +297,14 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<List<MappedChild>> GetChild(string remoteChildId)
+        private async Task<List<MappedChild>> GetChildById(string remoteChildId)
         {
             try
             {
                 List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
                 relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Caregiver", AllColumns = "True", Columns = "" });
 
-                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteChildId), null, relatedConditions);               
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteChildId), null, relatedConditions);
 
                 var child = JsonConvert.DeserializeObject<MappedChild>(responseString);
 
@@ -307,7 +317,7 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<List<MappedCaregiver>> GetCareGivers(string remoteFranchiseeId)
+        private async Task<List<MappedCaregiver>> GetCareGiversByFranchisee(string remoteFranchiseeId)
         {
             try
             {
@@ -342,8 +352,8 @@ namespace ECDLink.Core.Services
             //List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
             //List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
 
-            string remotePracId = "1e1a7352-8efb-ec11-8351-00155d326100";
-            string localPracId = "b2828298-7cd6-4284-bcab-6fbc6181dc48";
+            string remotePracId = "e937e801-54db-ed11-8356-00155d326100";
+            string localPracId = "9146c5e0-df61-411a-84f0-293d7da7e01f";
             //string remoteChildId = "99676639-e24e-ed11-8355-00155d326100";
 
             List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(remotePracId);
@@ -357,12 +367,26 @@ namespace ECDLink.Core.Services
                         List<Child> newChildren = new List<Child>();
                         //Create franchisee and map in SS system
                         var pracRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+                        var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
                         Practitioner newPractitioner = pracRepo.GetByUserId(localPracId); //already mapped and inserted
 
                         //get all elements underneath and map those too
 
-                        //1. Children
-                        List<MappedChild> remoteChildren =  await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
+                        //1. Children, , 
+
+
+                        Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
+                        Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
+                        Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
+                        //Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
+
+                        newChildren.Add(child1);
+                        newChildren.Add(child2);
+                        newChildren.Add(child3);
+                        //newChildren.Add(child4);
+
+                        /*
+                        List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
                         if (remoteChildren != null)
                         {
                             foreach (var remoteChild in remoteChildren)
@@ -372,18 +396,22 @@ namespace ECDLink.Core.Services
                                     var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
                                     if (newChild != null)
                                     {
-                                        newChildren.Add(newChild);
+
+                                        //newChildren.Add(newChild);
+                                        var newChild = 
                                     }
                                 }
                             }
                         }
+                        */
                         //2. Documents
 
                         //3. Notes
 
                         //4. Attendance
                         //5. Income Statements
-                        await AlignChildHierarchy(newPractitioner, newChildren);
+                        //await AlignChildHierarchy(newPractitioner, newChildren);
+                        await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                     }
                 }
             }
@@ -392,232 +420,267 @@ namespace ECDLink.Core.Services
             return returnOK;
         }
 
-            public async Task<bool> IntegrationByMappedCoach()
+        public async Task<bool> IntegrationByMappedCoach()
         {
             bool returnOK = false;
-
-
-            /*
-             * 1) get all mapped coaches done
-            * 2) iterate through franchisees of each remote against what we have and create what we dont have and do same for all child caregiver address document etc IN PROGRESS
-            * 3) interate through franchisees we have and check any column/entity changes from SL and update what we have done
-            * 4) check all changes we had since last r an and push any changes for the entities we had updates to - inserts/updates done
-            * 5) start with updates
-            * 6) start with income statements and attendance and push only to SL
-            */
-            //List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
-            //List<RecordChange> changedRecords = await GetRecordChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
-
-            List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-            List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
-
-            //-------------------
-            //1. - check all changes on known entities marked as changed from SL API and update
-            //-------------------
-            /*           foreach (var change in changedColumns)
-                       {
-                           //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
-                           if (mappedEntities.Where(x => x.RemoteId.Equals(change.RecordChange.RecordGuid) && x.RemoteEntity.Equals(change.Entity)) == null)
-                           {
-                               var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
-                               //kick off change sequence depending on type
-                               foreach (var item in remoteColumnChanges)
-                               {
-                                   UpdateLocalEntity updateEntity = new UpdateLocalEntity() { Guid = change.RecordChange.RecordGuid, 
-                                                                                               EntityColumn = mappedColumns.Where(c => c.RemoteEntity.Equals(item.Entity) && c.RemoteColumn.Equals(item.Column)).Select(cc => cc.LocalColumn).FirstOrDefault().ToString(), 
-                                                                                               EntityType = item.Entity, 
-                                                                                               LastUpdatedDateTime = item.DateTimeStamp, NewData = change.NewValue };
-                                   await this.UpdateEntityColumn(updateEntity);
-                               }                    
-                           }
-                       }
-            */
-
-            //Only allow data pulling when api mode has been set
-            if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
+            DateTime startTime = DateTime.Now;
+            int totalAddedToSS = 0;
+            int totalFranchiseesAddedToSS = 0;
+            int totalChildrenAddedToSS = 0;
+            int totalFranchiseesAddedToSL = 0;
+            int totalChildrenAddedToSL = 0;
+            int totalUpdatedFromSL = 0;
+            int totalUpdatedFromSS = 0;
+            int errors = 0;
+            try
             {
+                //List<string> errorsList = new List<string>();
+                /*
+                 * 1) get all mapped coaches done
+                * 2) iterate through franchisees of each remote against what we have and create what we dont have and do same for all child caregiver address document etc IN PROGRESS
+                * 3) interate through franchisees we have and check any column/entity changes from SL and update what we have done
+                * 4) check all changes we had since last r an and push any changes for the entities we had updates to - inserts/updates done
+                * 5) start with updates
+                * 6) start with income statements and attendance and push only to SL
+                */
 
-                //-------------------
-                //2. Iterate through all known coaches to get information below hierarchy
-                //-------------------
-                foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+                //Only allow data pulling when api mode has been set
+                if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
                 {
-                    /*
-                    if (coach.IsComplete != true)
-                    {
-                        //entity may have been manually mapped for inclusion, pull all details and update
-                        string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
-                        var responseString = await GetAPIHandlerResponse(url, null);
-                        MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
-                        if (entity != null)
-                        {
-                            entity.localId = coach.LocalId;
-                            //update coach against mappedcoachproperties
-                            await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
-                        }
-                    }
+                    List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
+                    List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
 
                     //-------------------
-                    //3. - check all changes on known entities that is not marked complete
+                    //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
-                    //run through all mapped practitioners that is not complete
-                    foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
-                    {
-                        if (practitioner.IsComplete != true)
+                    //List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
+                    //List<RecordChange> changedRecords = await GetRecordChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
+                    /*         
+                    if (changedColumns != null) {
+                        foreach (var change in changedColumns)
                         {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
-                            if (entity != null)
+                            //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
+                            if (mappedEntities.Where(x => x.RemoteId.Equals(change.RecordChange.RecordGuid) && x.RemoteEntity.Equals(change.Entity)) == null)
                             {
-                                entity.localId = coach.LocalId;
-                                await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
-                            }
-                        }
-                    }
-                    //run through all mapped children that is not complete
-                    foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
-                    {
-                        if (child.IsComplete != true)
-                        {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
-                            if (entity != null)
-                            {
-                                entity.localId = coach.LocalId;
-                                await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
-                            }
-                        }
-                    }
-                    //run through all mapped caregivers
-                    foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
-                    {
-                        if (caregiver.IsComplete != true)
-                        {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
-                            if (entity != null)
-                            {
-                                entity.localId = caregiver.LocalId;
-                                await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
-                            }
-                        }
-                    }
-                    //run through all mapped addresses that is not complete
-                    foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
-                    {
-                        if (address.IsComplete != true)
-                        {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
-                            if (entity != null)
-                            {
-                                entity.localId = address.LocalId;
-                                await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
-                            }
-                        }
-                    }
-                    //run through all mapped documents that is not complete
-                    foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
-                    {
-                        if (docs.IsComplete != true)
-                        {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
-                            if (entity != null)
-                            {
-                                entity.localId = docs.LocalId;
-                                await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
+                                var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
+                                //kick off change sequence depending on type
+                                foreach (var item in remoteColumnChanges)
+                                {
+                                    UpdateLocalEntity updateEntity = new UpdateLocalEntity() { Guid = change.RecordChange.RecordGuid, 
+                                                                                                EntityColumn = mappedColumns.Where(c => c.RemoteEntity.Equals(item.Entity) && c.RemoteColumn.Equals(item.Column)).Select(cc => cc.LocalColumn).FirstOrDefault().ToString(), 
+                                                                                                EntityType = item.Entity, 
+                                                                                                LastUpdatedDateTime = item.DateTimeStamp, NewData = change.NewValue };
+                                    await this.UpdateEntityColumn(updateEntity);
+                                }                    
                             }
                         }
                     }
                     */
 
                     //-------------------
-                    //4. - get all data from API and discard whats complete and known to SS
+                    //2. Iterate through all known coaches to get information below hierarchy
                     //-------------------
-                    //4.1) get all frannchisees and map them                
-                    //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                    List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("f2f37d11-35db-ed11-8356-00155d326100");
-                    //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
-                    if (remoteFranchisees != null)
+                    foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
                     {
-                        //order all to load principals first
-                        remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
-
-                        List<Child> newChildren = new List<Child>();
-                        foreach (var franchisee in remoteFranchisees)
+                        /*
+                        if (coach.IsComplete != true)
                         {
-                            if (franchisee != null)
+                            //entity may have been manually mapped for inclusion, pull all details and update
+                            string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
+                            var responseString = await GetAPIHandlerResponse(url, null);
+                            MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
+                            if (entity != null)
                             {
-                                if (mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
-                                {
-
-                                    //Create franchisee and map in SS system
-                                    franchisee.localParentEntityId = coach.LocalId;
-                                    Practitioner newPractitioner = await MapFranchisee(franchisee);
-
-                                    //get all elements underneath and map those too
-
-                                    //1. Children
-                                    List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
-                                    if (remoteChildren != null)
-                                    {
-                                        foreach (var remoteChild in remoteChildren)
-                                        {
-                                            if (remoteChild != null)
-                                            {
-                                                var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                                if (newChild != null)
-                                                {
-                                                    newChildren.Add(newChild);
-                                                }
-                                            }
-                                        }
-                                    }
-                                    //2. Documents
-
-                                    //3. Notes
-
-                                    //4. Attendance
-                                    //5. Income Statements                                    
-
-                                    await AlignChildHierarchy(newPractitioner, newChildren);
-                                    }
+                                entity.localId = coach.LocalId;
+                                //update coach against mappedcoachproperties
+                                await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
                             }
                         }
 
-                        
+                        //-------------------
+                        //3. - check all changes on known entities that is not marked complete
+                        //-------------------
+                        //run through all mapped practitioners that is not complete
+                        foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
+                        {
+                            if (practitioner.IsComplete != true)
+                            {
+                                //entity may have been manually mapped for inclusion, pull all details and update
+                                string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
+                                var responseString = await GetAPIHandlerResponse(url, null);
+                                MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
+                                if (entity != null)
+                                {
+                                    entity.localId = coach.LocalId;
+                                    await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
+                                }
+                            }
+                        }
+                        //run through all mapped children that is not complete
+                        foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
+                        {
+                            if (child.IsComplete != true)
+                            {
+                                //entity may have been manually mapped for inclusion, pull all details and update
+                                string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
+                                var responseString = await GetAPIHandlerResponse(url, null);
+                                MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
+                                if (entity != null)
+                                {
+                                    entity.localId = coach.LocalId;
+                                    await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
+                                }
+                            }
+                        }
+                        //run through all mapped caregivers
+                        foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
+                        {
+                            if (caregiver.IsComplete != true)
+                            {
+                                //entity may have been manually mapped for inclusion, pull all details and update
+                                string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
+                                var responseString = await GetAPIHandlerResponse(url, null);
+                                MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
+                                if (entity != null)
+                                {
+                                    entity.localId = caregiver.LocalId;
+                                    await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
+                                }
+                            }
+                        }
+                        //run through all mapped addresses that is not complete
+                        foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
+                        {
+                            if (address.IsComplete != true)
+                            {
+                                //entity may have been manually mapped for inclusion, pull all details and update
+                                string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
+                                var responseString = await GetAPIHandlerResponse(url, null);
+                                MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
+                                if (entity != null)
+                                {
+                                    entity.localId = address.LocalId;
+                                    await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
+                                }
+                            }
+                        }
+                        //run through all mapped documents that is not complete
+                        foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
+                        {
+                            if (docs.IsComplete != true)
+                            {
+                                //entity may have been manually mapped for inclusion, pull all details and update
+                                string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
+                                var responseString = await GetAPIHandlerResponse(url, null);
+                                MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
+                                if (entity != null)
+                                {
+                                    entity.localId = docs.LocalId;
+                                    await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
+                                }
+                            }
+                        }
+                        */
+
+                        //-------------------
+                        //4. - get all data from API and discard whats complete and known to SS
+                        //-------------------
+                        //4.1) get all frannchisees and map them                
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("1e1a7352-8efb-ec11-8351-00155d326100");
+                        //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        if (remoteFranchisees != null)
+                        {
+                            //order all to load principals first
+                            remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
+                            try
+                            {
+                                foreach (var franchisee in remoteFranchisees)
+                                {
+                                    if (franchisee != null)
+                                    {
+                                        if (mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
+                                        {
+                                            //Create franchisee and map in SS system
+                                            franchisee.localParentEntityId = coach.LocalId;
+                                            Practitioner newPractitioner = await MapFranchisee(franchisee);
+                                            if (newPractitioner != null)
+                                            {
+                                                //get all elements underneath and map those too
+
+                                                //1. Children
+                                                List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
+                                                if (remoteChildren != null)
+                                                {
+                                                    //List of allocated children to new practitioner
+                                                    List<Child> newChildren = new List<Child>();
+
+                                                    foreach (var remoteChild in remoteChildren)
+                                                    {
+                                                        if (remoteChild != null)
+                                                        {
+                                                            var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                            if (newChild != null)
+                                                            {
+                                                                newChildren.Add(newChild);
+                                                            }
+                                                        }
+                                                    }
+
+                                                    //realign hirarchy and learners to Unsure classgroups
+                                                    await AlignChildHierarchy(newPractitioner, newChildren);
+                                                    await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
+                                                }
+
+
+                                                //2. Documents
+
+                                                //3. Notes
+
+                                                //4. Attendance
+
+                                                //5. Income Statements
+
+                                            }
+                                        }
+                                    }
+                                }
+                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
+                                await MatchPrincipals();
+                            }
+                            catch (Exception ex)
+                            {
+                                //TODO: LOG ERROR AND HANDLE
+                            }
+                            returnOK = true;
+                        }
                     }
-
-                    //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
-                    await MatchPrincipals();
-
-
-                    returnOK = true;
-
                 }
+                //Only allow data pushing when api mode has been set
+                if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+                {
+
+                    //TODO: API Data pushes from SS Audit tables
+                    returnOK = true;
+                }
+
+                //update iterations of run into ServiceScheduler as conclusion to run
+                //save how many records updated to SL and from SL, created between SL and to SL and how it completed and when it stopped
+                //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
+                var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
+                ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
+                scheduledRun.Results = String.Join("|",_errorsList.ToArray());
+                scheduledRun.EndTime = DateTime.Now;
+                scheduledRun.StartTime = startTime;
+                scheduledRun.UpdatedDate = DateTime.Now;
+                scheduledRun.UpdatedBy = _uId;
+                schedulerRepo.Update(scheduledRun);
+
             }
-            //Only allow data pushing when api mode has been set
-            if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+            catch (Exception ex)
             {
-
-                //TODO: API Data pushes from SS Audit tables
-
-
-
-                returnOK = true;
+                //TODO: LOG ERROR AND HANDLE
             }
-
             return returnOK;
         }
 
@@ -632,60 +695,114 @@ namespace ECDLink.Core.Services
             List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
             var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
             //find all entries that has problematic principals that could not be matched at the time      
-            foreach (var item in mappedEntities.Where(x => x.Notes != null && x.Notes.StartsWith("REMAP_PRINCIPAL_REMOTE_ID_")).ToList())
+            try
             {
-                //REMAP_PRINCIPAL_REMOTE_ID_f2f37d11-35db-ed11-8356-00155d326100
-                string principalRemoteId = item.Notes.Replace("REMAP_PRINCIPAL_REMOTE_ID_", "");
-                if (mappedEntities.Where(x => x.RemoteId == principalRemoteId && x.LocalId != null).Any())
+                foreach (var item in mappedEntities.Where(x => x.Notes != null && x.Notes.StartsWith("REMAP_PRINCIPAL_REMOTE_ID_")).ToList())
                 {
-                    Practitioner pracToUpdate = practitionerRepo.GetById(Guid.Parse(item.LocalId));
-                    if (pracToUpdate != null)
+                    //REMAP_PRINCIPAL_REMOTE_ID_f2f37d11-35db-ed11-8356-00155d326100
+                    string principalRemoteId = item.Notes.Replace("REMAP_PRINCIPAL_REMOTE_ID_", "");
+                    if (mappedEntities.Where(x => x.RemoteId == principalRemoteId && x.LocalId != null).Any())
                     {
-                        pracToUpdate.PrincipalHierarchy = Guid.Parse(mappedEntities.Where(x => x.RemoteId == principalRemoteId).Select(x => x.LocalId).FirstOrDefault().ToString());
-                        //pracToUpdate.DateLinked = DateTime.Now;
-                        practitionerRepo.Update(pracToUpdate);
+                        Practitioner pracToUpdate = practitionerRepo.GetById(Guid.Parse(item.LocalId));
+                        if (pracToUpdate != null)
+                        {
+                            pracToUpdate.PrincipalHierarchy = Guid.Parse(mappedEntities.Where(x => x.RemoteId == principalRemoteId).Select(x => x.LocalId).FirstOrDefault().ToString());
+                            //pracToUpdate.DateLinked = DateTime.Now;
+                            practitionerRepo.Update(pracToUpdate);
 
-                        //clear the notes
-                        item.Notes = null;
-                        _mapperRepo.Update(item);
-                        returnOK = true;
+                            //clear the notes
+                            item.Notes = null;
+                            _mapperRepo.Update(item);
+                            returnOK = true;
+                        }
                     }
                 }
+            }
+            catch (Exception ex)
+            {
+                //TODO: LOG ERROR AND HANDLE
             }
 
             return returnOK;
         }
 
-        private async Task<bool> AlignChildHierarchy (Practitioner newPractitioner, List<Child> childrenToAlign)
+        private async Task<bool> AlignChildHierarchy(Practitioner newPractitioner, List<Child> childrenToAlign)
         {
             bool returnOK = false;
             if (newPractitioner != null && childrenToAlign.Count > 0)
             {
                 var staticHierarchyRepo = _repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: _uId);
                 var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-                foreach (var child in childrenToAlign)
+                try
                 {
-
-
-                    string childNewHierarchy = "";
-                    UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(child.UserId)).FirstOrDefault();
-
-                    if (childHierarchy != null)
+                    foreach (var child in childrenToAlign)
                     {
-                        //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
-                        childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
-                        //update hierarchy not be 0.466. but 0.1.455.459.
-                        childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
-                        childHierarchy.Hierarchy = childNewHierarchy;
-                        childHierarchy.ParentId = newPractitioner.UserId;
-                        staticHierarchyRepo.Update(childHierarchy);
-                        //uppdate child record Hierarchy
-                        Child updatedChild = childRepo.GetByUserId(child.UserId);
-                        updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy); ;
-                        childRepo.Update(updatedChild);
-                    }
 
-                    returnOK = true;
+
+                        string childNewHierarchy = "";
+                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(child.UserId)).FirstOrDefault();
+
+                        if (childHierarchy != null)
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newPractitioner.UserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(child.UserId);
+                            updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy); ;
+                            childRepo.Update(updatedChild);
+                        }
+
+                        returnOK = true;
+                    }
+                }
+                catch (Exception ex)
+                {
+                    //TODO: LOG ERROR AND HANDLE
+                }
+            }
+
+            return returnOK;
+        }
+
+        private async Task<bool> AlignChildClassgroupToUnsure(Practitioner newPractitioner, List<Child> childrenToAlign)
+        {
+            bool returnOK = false;
+            if (newPractitioner != null && childrenToAlign.Count > 0)
+            {
+                if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin) //only FAA or principals will have classroomgroups
+                {
+                    var classroomgroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+                    var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
+                    try
+                    {
+                        foreach (var child in childrenToAlign)
+                        {
+                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").FirstOrDefault();
+                            Learner newLearner = new Learner()
+                            {
+                                UserId = child.UserId,
+                                StartedAttendance = DateTime.Now,
+                                Hierarchy = newPractitioner.Hierarchy
+                            };
+
+                            if (group != null)
+                            {
+                                newLearner.ClassroomGroupId = group.Id;
+                                learnerRepo.Insert(newLearner);
+
+                                returnOK = true;
+                            }
+                        }
+                    }
+                    catch (Exception ex)
+                    {
+                        //TODO: LOG ERROR AND HANDLE
+                    }
                 }
             }
 
@@ -716,7 +833,7 @@ namespace ECDLink.Core.Services
                     var practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
                     IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
 
-                    var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : entity.ProgrammeType;
+                    var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
                     var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
                     string siteName = "N/A";
                     bool pracCreated = false;
@@ -747,7 +864,7 @@ namespace ECDLink.Core.Services
                         DateOfBirth = dobStr,
                         FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                         Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
-                        FullName = entity.FullName != null ? entity.FullName.Trim() : entity.FullName,
+                        FullName = entity.FirstName + " " + entity.Surname,
                         ContactPreference = MessageTypeConstants.SMS,
                         IsActive = true,
                         PasswordHash = password,
@@ -897,7 +1014,7 @@ namespace ECDLink.Core.Services
 
                     if (pracCreated)
                     {
-                        //create classrooms and classroomgroups and programmes - only map for principals or FAAs
+                        //create classrooms and classroomgroups - only map for principals or FAAs
                         if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
                         {
                             Classroom pracClass = new Classroom()
@@ -913,16 +1030,6 @@ namespace ECDLink.Core.Services
                                 SiteAddressId = insertedAddress ? siteAddressId : null
                             };
                             classroomGenericRepo.Insert(pracClass);
-                            /*
-                            ProgrammeType programme = new ProgrammeType()
-                            {
-                                Id = Guid.NewGuid(),
-                                IsActive = true,
-                                Description = programmeTypeDesc,
-                                TenantId = tenantId,
-                                EnumId = ProgrammeTypeEnum.Unknown
-                            };
-                            programmeTypeGenericRepo.Insert(programme);
 
                             //create UNSURE classroomgroup to assign children to
                             ClassroomGroup pracUnsureClass = new ClassroomGroup()
@@ -932,11 +1039,11 @@ namespace ECDLink.Core.Services
                                 IsActive = true,
                                 Name = "Unsure",
                                 TenantId = tenantId,
-                                Hierarchy = newPractitioner.Hierarchy, 
-                                ProgrammeTypeId = programme.Id
+                                Hierarchy = newPractitioner.Hierarchy,
+                                ProgrammeTypeId = programmeType.Id,
+                                ClassroomId = pracClass.Id
                             };
                             classroomGroupGenericRepo.Insert(pracUnsureClass);
-                            */
                         }
 
                         mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
@@ -964,7 +1071,7 @@ namespace ECDLink.Core.Services
         }
 
         private async Task<Child> MapChildCaregiverOfFranchisee(MappedChild entity, Practitioner ownerPractitioner)
-        {            
+        {
             try
             {
                 if (entity != null)
@@ -999,12 +1106,13 @@ namespace ECDLink.Core.Services
                             IdNumber = entity.IdNumber,
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
                             VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
-                            FirstName = entity.FirstName,
-                            Surname = entity.Surname,
-                            FullName = entity.FullName,
+                            FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                            Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                            FullName = entity.FirstName + " " + entity.Surname,
                             ContactPreference = MessageTypeConstants.SMS,
                             IsActive = true,
-                            TenantId = tenantId
+                            TenantId = tenantId,
+                            IsImported = true,
                         };
 
                         if (entity.BirthDate != null)
@@ -1016,7 +1124,6 @@ namespace ECDLink.Core.Services
                         {
                             Id = Guid.NewGuid(),
                             UserId = userId,
-                            //CaregiverId = newCaregiver.Id,
                             IsActive = true,
                             TenantId = tenantId,
                             Allergies = entity.AllergyType,
@@ -1038,34 +1145,6 @@ namespace ECDLink.Core.Services
                             }
                         }
 
-                        //Check relation
-                        Guid? relation = null;
-                        if (entity.Caregiver.RelationshipType != null)
-                        {
-                            var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(entity.Caregiver.RelationshipType)).OrderBy(x => x.Id).FirstOrDefault();
-                            if (sRelation != null)
-                                relation = sRelation.Id;
-                        }
-                        else
-                        {
-                            var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
-                            if (sRelation != null)
-                                relation = sRelation.Id;
-                        }
-                        //Check education
-                        Guid? education = null;
-                        if (entity.Caregiver.HighestEducationLevel != null)
-                        {
-                            var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == entity.Caregiver.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
-                            if (sEducation != null)
-                                education = sEducation.Id;
-                        }
-                        if (education == null)
-                        {
-                            var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == "N/A").OrderBy(x => x.Id).FirstOrDefault();
-                            if (sEducation != null)
-                                education = sEducation.Id;
-                        }
                         //Check Gender
                         if (entity.Gender != null)
                         {
@@ -1100,68 +1179,112 @@ namespace ECDLink.Core.Services
                             await _userManager.AddToRoleAsync(newUser, Roles.CHILD);
                             if (childRepo.Insert(newChild) != null)
                             {
-                                //save caregiver and update child with caregiver detail
-                                if (entity.Caregiver.FullName != null)
+                                if (entity.Caregiver != null)
                                 {
-                                    //create caregiver record
-                                    var newCaregiver = new Caregiver
+                                    //check language
+                                    Guid? caregiverLanguage = null;
+                                    if (entity.Caregiver.Language != null)
                                     {
-                                        Id = Guid.NewGuid(),
-                                        IsActive = true,
-                                        TenantId = tenantId,
-                                        IdNumber = entity.Caregiver.IdNumber,
-                                        FirstName = entity.Caregiver.FirstName,
-                                        Surname = entity.Caregiver.Surname,
-                                        FullName = entity.Caregiver.FullName,
-                                        PhoneNumber = entity.Caregiver.ContactNumber,
-                                        EmergencyContactFirstName = entity.Caregiver.EmergencyContactFirstName,
-                                        EmergencyContactSurname = entity.Caregiver.EmergencyContactSurname,
-                                        EmergencyContactPhoneNumber = entity.Caregiver.EmergencyContactPhoneNumber,
-                                        //JoinReferencePanel = entity.Caregiver.,
-                                        //Contribution = false,
-                                        RelationId = relation,
-                                        EducationId = education,
-                                    };
-
-                                    //Create caregiver siteaddress
-                                    if (entity.Caregiver.HomeAddressLine1 != null)
-                                    {
-                                        SiteAddress newEntityAddress = new SiteAddress();
-
-                                        newEntityAddress.AddressLine1 = entity.Caregiver.HomeAddressLine1 ?? string.Empty;
-                                        newEntityAddress.AddressLine2 = entity.Caregiver.HomeAddressLine2 ?? string.Empty;
-                                        newEntityAddress.AddressLine3 = entity.Caregiver?.HomeAddressLine3 ?? string.Empty;
-                                        newEntityAddress.PostalCode = entity.Caregiver.HomeAddressPostalCode ?? string.Empty;
-
-                                        var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
-                                        //check province
-                                        if (entity.Caregiver.Province != null)
+                                        var language = staticLanguageRepo.GetAll().Where(x => x.Description == entity.Caregiver.Language).OrderBy(x => x.Id).FirstOrDefault();
+                                        if (language != null)
                                         {
-
-                                            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.Caregiver.Province).FirstOrDefault();
-                                            if (prov != null)
-                                            {
-                                                newEntityAddress.ProvinceId = prov.Id;
-                                            }
+                                            caregiverLanguage = language.Id;
                                         }
-                                        else
-                                        {
-                                            var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
-                                            if (naProv != null)
-                                            {
-                                                newEntityAddress.ProvinceId = naProv.Id;
-                                            }
-                                        }
-                                        newEntityAddress.Id = Guid.NewGuid();
-                                        newEntityAddress.UpdatedBy = _uId;
-                                        newEntityAddress.UpdatedDate = DateTime.Now;
-                                        _siteAddressRepo.Insert(newEntityAddress);
-
-                                        newCaregiver.SiteAddressId = newEntityAddress.Id;
                                     }
+                                    //Check relation
+                                    Guid? relation = null;
+                                    if (entity.Caregiver.RelationshipType != null)
+                                    {
+                                        var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(entity.Caregiver.RelationshipType)).OrderBy(x => x.Id).FirstOrDefault();
+                                        if (sRelation != null)
+                                            relation = sRelation.Id;
+                                    }
+                                    else
+                                    {
+                                        var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
+                                        if (sRelation != null)
+                                            relation = sRelation.Id;
+                                    }
+                                    //Check education
+                                    Guid? education = null;
+                                    if (entity.Caregiver.HighestEducationLevel != null)
+                                    {
+                                        var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == entity.Caregiver.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
+                                        if (sEducation != null)
+                                            education = sEducation.Id;
+                                    }
+                                    if (education == null)
+                                    {
+                                        var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == "N/A").OrderBy(x => x.Id).FirstOrDefault();
+                                        if (sEducation != null)
+                                            education = sEducation.Id;
+                                    }
+                                    //save caregiver and update child with caregiver detail
+                                    if (entity.Caregiver.FirstName != null)
+                                    {
+                                        //create caregiver record
+                                        var newCaregiver = new Caregiver
+                                        {
+                                            Id = Guid.NewGuid(),
+                                            IsActive = true,
+                                            TenantId = tenantId,
+                                            IdNumber = entity.Caregiver.IdNumber,
+                                            FirstName = entity.Caregiver.FirstName,
+                                            Surname = entity.Caregiver.Surname,
+                                            FullName = entity.Caregiver.FirstName + " " + entity.Caregiver.Surname,
+                                            PhoneNumber = entity.Caregiver.ContactNumber,
+                                            EmergencyContactFirstName = entity.Caregiver.EmergencyContactFirstName,
+                                            EmergencyContactSurname = entity.Caregiver.EmergencyContactSurname,
+                                            EmergencyContactPhoneNumber = entity.Caregiver.EmergencyContactPhoneNumber,
+                                            //JoinReferencePanel = entity.Caregiver.,
+                                            //Contribution = false,
+                                            AdditionalFirstName = entity.AlternativePickupFirstName,
+                                            AdditionalSurname = entity.AlternativePickupSurname,
+                                            AdditionalPhoneNumber = entity.AlternativePickupContactNumber,
+                                            RelationId = relation,
+                                            EducationId = education,
+                                            LanguageId = caregiverLanguage
+                                        };
 
-                                    caregiverRepo.Insert(newCaregiver);
-                                    newChild.CaregiverId = newCaregiver.Id;
+                                        //Create caregiver siteaddress
+                                        if (entity.Caregiver.HomeAddressLine1 != null)
+                                        {
+                                            SiteAddress newEntityAddress = new SiteAddress();
+
+                                            newEntityAddress.AddressLine1 = entity.Caregiver.HomeAddressLine1 ?? string.Empty;
+                                            newEntityAddress.AddressLine2 = entity.Caregiver.HomeAddressLine2 ?? string.Empty;
+                                            newEntityAddress.AddressLine3 = entity.Caregiver?.HomeAddressLine3 ?? string.Empty;
+                                            newEntityAddress.PostalCode = entity.Caregiver.HomeAddressPostalCode ?? string.Empty;
+
+                                            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                                            //check province
+                                            if (entity.Caregiver.Province != null)
+                                            {
+                                                var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.Caregiver.Province).FirstOrDefault();
+                                                if (prov != null)
+                                                {
+                                                    newEntityAddress.ProvinceId = prov.Id;
+                                                }
+                                            }
+                                            else
+                                            {
+                                                var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                                                if (naProv != null)
+                                                {
+                                                    newEntityAddress.ProvinceId = naProv.Id;
+                                                }
+                                            }
+                                            newEntityAddress.Id = Guid.NewGuid();
+                                            newEntityAddress.UpdatedBy = _uId;
+                                            newEntityAddress.UpdatedDate = DateTime.Now;
+                                            _siteAddressRepo.Insert(newEntityAddress);
+
+                                            newCaregiver.SiteAddressId = newEntityAddress.Id;
+                                        }
+
+                                        caregiverRepo.Insert(newCaregiver);
+                                        newChild.CaregiverId = newCaregiver.Id;
+                                    }
                                 }
                                 childRepo.Update(newChild);
                                 childCreated = true;
@@ -1172,7 +1295,8 @@ namespace ECDLink.Core.Services
                             //TODO: LOG ERROR AND HANDLE
                         }
 
-                        if (childCreated) { 
+                        if (childCreated)
+                        {
                             //Create additional table entries
 
                             //1) Grants
@@ -1216,7 +1340,8 @@ namespace ECDLink.Core.Services
                             return newChild;
                         }
                     }
-                } else return null;
+                }
+                else return null;
             }
             catch (Exception ex)
             {
@@ -2236,7 +2361,7 @@ namespace ECDLink.Core.Services
         }
 
 
-            #endregion
+        #endregion
 
-        }
+    }
 }
