@@ -584,8 +584,8 @@ namespace ECDLink.Core.Services
                         //4. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //4.1) get all frannchisees and map them                
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("1e1a7352-8efb-ec11-8351-00155d326100");
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("1e1a7352-8efb-ec11-8351-00155d326100");
                         //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
