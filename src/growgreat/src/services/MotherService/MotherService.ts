@@ -82,10 +82,12 @@ class MotherService {
             clickedProgressTab
             clickedReferralsTab
             clickedContactTab
-            id
-            firstName
-            surname
-            phoneNumber
+            user {
+              id
+              firstName
+              surname
+              phoneNumber
+            }
             siteAddress {
               id
               province {
