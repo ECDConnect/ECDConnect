@@ -237,6 +237,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
+  const gotToReports = () => {
+    setSeeRegister(false);
+    setAttendanceComponentType('report');
+  };
+
   return (
     <div>
       <MultiRouteWrapper />
