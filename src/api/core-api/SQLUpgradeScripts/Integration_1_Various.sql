@@ -60,6 +60,8 @@ INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystem
 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'General.Proxies.Integration.SmartLinkApi','General.Proxies.Integration.SmartLinkApi.MaskDataIdNumber','MaskDataIdNumber','0000000000081',true,true,'2022-10-31 07:39:37.330','2022-10-31 07:39:37.330',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8');
 	
 
+	ALTER TABLE public."AspNetUsers" ADD "ReasonForLeaving" text NULL;
+ALTER TABLE public."AspNetUsers" ADD "ReasonForLeavingComments" text NULL;
 
 
 
