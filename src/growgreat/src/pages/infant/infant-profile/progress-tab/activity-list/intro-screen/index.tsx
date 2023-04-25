@@ -4,7 +4,10 @@ import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
-import { FollowUp } from '../forms/components/follow-up';
+import {
+  FollowUp,
+  FollowUpWalkthroughData,
+} from '../forms/components/follow-up';
 import { getAge } from '../forms/care-for-baby-steps/care-for-baby';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
@@ -16,12 +19,14 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 
 interface IntroScreenProps {
   infant?: InfantDto;
+  walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
 }
 
 export const IntroScreen = ({
   infant,
+  walkthroughData,
   headerText,
   onStartVisit,
 }: IntroScreenProps) => {
@@ -55,7 +60,7 @@ export const IntroScreen = ({
         }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp infant={infant || {}} />
+        <FollowUp infant={infant || {}} walkthroughData={walkthroughData} />
         {!!onStartVisit && (
           <Button
             className="mt-8 w-full"

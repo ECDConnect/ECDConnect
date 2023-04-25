@@ -1,7 +1,7 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 import {
-  VisitBackReferral,
+  VisitBackReferralModelInput,
   VisitDataStatus,
   VisitDataStatusFilterInput,
 } from '@ecdlink/graphql';
@@ -113,53 +113,7 @@ class Referral {
         'Update Visit Data Status Failed - Server connection error'
       );
     }
-
     return response.data.data;
-  }
-
-  async GetBackReferralsForInfant(
-    id: string,
-    referralCompleted: boolean,
-    backReferralCompleted: boolean
-  ): Promise<VisitBackReferral[]> {
-    const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<{
-      data: { backReferralsForInfant: VisitBackReferral[] };
-      errors?: {};
-    }>(``, {
-      query: `
-        query GetBackReferralsForInfant($id: String, $referralCompleted: Boolean!, $backReferralCompleted: Boolean!) {
-          backReferralsForInfant(id: $id, referralCompleted: $referralCompleted, backReferralCompleted: $backReferralCompleted) {
-            id
-            comment
-            answer
-            question
-            visitDataStatus {
-              id
-              comment
-              color
-              type
-              section
-              isCompleted
-              backReferralCompleted
-            }
-          }
-        }
-          `,
-      variables: {
-        id,
-        referralCompleted,
-        backReferralCompleted,
-      },
-    });
-
-    if (response.status !== 200 || response.data.errors) {
-      throw new Error(
-        'Get Back Referrals For Infant Failed - Server connection error'
-      );
-    }
-
-    return response.data.data.backReferralsForInfant;
   }
 
   async getCompletedReferralsForInfant(id: string): Promise<VisitDataStatus[]> {
@@ -177,12 +131,17 @@ class Referral {
             type
             section
             isCompleted
+            backReferralCompleted
             referralDateCompleted
             insertedDate
             visitData {
               visitName
               visitSection
               question
+            }
+            backReferral {
+              id
+              comment
             }
           }
         }
@@ -263,6 +222,10 @@ class Referral {
               visitSection
               question
             }
+            backReferral {
+              id
+              comment
+            }
           }
         }
           `,
@@ -279,49 +242,31 @@ class Referral {
     return response.data.data.completedReferralsForMother;
   }
 
-  async GetBackReferralsForMother(
-    id: string,
-    referralCompleted: boolean,
-    backReferralCompleted: boolean
-  ): Promise<VisitBackReferral[]> {
+  async addVisitBackReferral(input: VisitBackReferralModelInput): Promise<{}> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { backReferralsForMother: VisitBackReferral[] };
+      data: {};
       errors?: {};
     }>(``, {
       query: `
-        query GetBackReferralsForMother($id: String, $referralCompleted: Boolean!, $backReferralCompleted: Boolean!) {
-          backReferralsForMother(id: $id, referralCompleted: $referralCompleted, backReferralCompleted: $backReferralCompleted) {
-            id
+        mutation AddVisitBackReferral($input: VisitBackReferralModelInput) {
+          addVisitBackReferral(input: $input) {
+            id,
             comment
-            answer
-            question
-            visitDataStatus {
-              id
-              comment
-              color
-              type
-              section
-              isCompleted
-              backReferralCompleted
-            }
           }
         }
           `,
       variables: {
-        id,
-        referralCompleted,
-        backReferralCompleted,
+        input,
       },
     });
 
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
-        'Get Back Referrals For Mother Failed - Server connection error'
+        'Add Visit Back Referral Data Status Failed - Server connection error'
       );
     }
-
-    return response.data.data.backReferralsForMother;
+    return response.data.data;
   }
 }
 

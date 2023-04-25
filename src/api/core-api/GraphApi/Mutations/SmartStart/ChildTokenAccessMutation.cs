@@ -202,7 +202,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 FirstName = firstname,
                 Surname = surname,
-                UserName = $"External_Edit_{Guid.NewGuid()}"
+                UserName = $"External_Edit_{Guid.NewGuid()}",
+                IsImported = false
             };
             appUser.TenantId = tenantId;
             await userManager.CreateAsync(appUser);

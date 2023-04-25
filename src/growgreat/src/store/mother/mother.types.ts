@@ -12,6 +12,5 @@ export interface MotherState {
   motherCountForMonth?: number;
   eventRecordTypes?: EventRecordType[];
   referralsForMother?: VisitDataStatus[];
-  backReferralsForMother?: VisitBackReferral[];
   completedReferralsForMother?: VisitDataStatus[];
 }

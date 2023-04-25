@@ -13,6 +13,7 @@ export interface TabListProps extends ComponentBaseProps {
 }
 
 export const TabList: React.FC<TabListProps> = ({
+  id,
   tabItems,
   tabSelected,
   setSelectedIndex,
@@ -54,7 +55,7 @@ export const TabList: React.FC<TabListProps> = ({
 
   return (
     <>
-      <div className={classNames(styles.tabScrollBar, className)}>
+      <div id={id} className={classNames(styles.tabScrollBar, className)}>
         <div>
           <div className={styles.navContainer}>
             <nav className={styles.navStyle} aria-label="Tabs">

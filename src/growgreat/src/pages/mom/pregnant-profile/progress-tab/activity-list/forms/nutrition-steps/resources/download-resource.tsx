@@ -1,11 +1,11 @@
 import { Button } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import LanguageSelector from '@/components/language-selector/language-selector';
-import imgMocked from './mocked.jpg';
+import eggInfographic from './eggInfographic.png';
 
 export const DownloadResource = ({ onClose }: { onClose: () => void }) => {
   const onDownloadImage = () => {
-    const imageUrl = imgMocked;
+    const imageUrl = eggInfographic;
     const link = document.createElement('a');
     link.href = imageUrl;
     link.setAttribute('download', 'infographic.jpg');
@@ -27,7 +27,7 @@ export const DownloadResource = ({ onClose }: { onClose: () => void }) => {
         <img
           alt="infographic"
           className="mb-8 h-auto w-full object-cover"
-          src={imgMocked}
+          src={eggInfographic}
         />
         <Button
           className="mt-auto mb-4"

@@ -281,12 +281,12 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          {!!visit?.visitType?.insertedDate && (
+          {!!visit?.actualVisitDate && (
             <Typography
               type="body"
               align="left"
               weight="skinny"
-              text={new Date(visit?.visitType?.insertedDate).toLocaleDateString(
+              text={new Date(visit?.actualVisitDate).toLocaleDateString(
                 'en-ZA',
                 options
               )}
@@ -423,7 +423,7 @@ export const ActivityList: React.FC = () => {
     previousVisit?.visitDataStatus?.length,
     uncompletedForms,
     user?.firstName,
-    visit?.visitType?.insertedDate,
+    visit?.actualVisitDate,
     width,
   ]);
 
@@ -449,7 +449,7 @@ export const ActivityList: React.FC = () => {
         {renderContent}
       </BannerWrapper>
       <Dialog
-        fullScreen={false}
+        fullScreen={true}
         visible={displayHelp}
         position={DialogPosition.Full}
       >

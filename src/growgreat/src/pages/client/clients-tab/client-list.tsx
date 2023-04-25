@@ -232,8 +232,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           alertSeverity:
             (infant.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
             'none',
-          alertSeverityNoneIcon: 'CalendarIcon',
-          alertSeverityNoneColor: 'black',
+          alertSeverityNoneIcon:
+            infant?.statusInfo?.subject === 'New client'
+              ? 'CheckCircleIcon'
+              : 'CalendarIcon',
+          alertSeverityNoneColor:
+            infant?.statusInfo?.subject === 'New client'
+              ? 'successDark'
+              : 'black',
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...infant,
@@ -256,7 +262,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                 isOnline &&
                 typeof response !== 'string' &&
                 Number(response?.payload?.infants?.length) > 1) ||
-              caregiverClients?.find((item) => item.id === caregiverId)
+              caregiverClients?.find(
+                (item) =>
+                  item.id === caregiverId &&
+                  item.infants?.length &&
+                  item.infants.length > 1
+              )
             ) {
               return history.push(
                 generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {
@@ -286,8 +297,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           alertSeverity:
             (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
             'none',
-          alertSeverityNoneIcon: 'CalendarIcon',
-          alertSeverityNoneColor: 'black',
+          alertSeverityNoneIcon:
+            mother?.statusInfo?.subject === 'New client'
+              ? 'CheckCircleIcon'
+              : 'CalendarIcon',
+          alertSeverityNoneColor:
+            mother?.statusInfo?.subject === 'New client'
+              ? 'successDark'
+              : 'black',
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...mother,
