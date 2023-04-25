@@ -41,6 +41,8 @@ import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-n
 import { ChildContactNumber } from '@/pages/infant/infant-profile/contact-tab/edit-number';
 import { ChildContactAddress } from '@/pages/infant/infant-profile/contact-tab/edit-address';
 import { MultipleChildren } from '@/pages/infant/multiple-children';
+import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
+import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
 
 function PublicRoutes() {
   return (
@@ -226,6 +228,18 @@ function AuthRoutes() {
         exact
         path={ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN}
         component={MultipleChildren}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.REFERRAL_TAB.UPDATE_BACK_REFERRAL}
+        component={InfantBackReferralUpdate}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.REFERRAL_TAB.UPDATE_BACK_REFERRAL}
+        component={MotherBackReferralUpdate}
       />
 
       <Route path={ROUTES.MESSAGES} component={Messages} />

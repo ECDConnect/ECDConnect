@@ -23,11 +23,17 @@ import {
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
-import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  useDialog,
+  usePrevious,
+  VisitDto,
+} from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 import { VisitModelInput } from '@/../../../packages/graphql/lib';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 
 const HEADER_HEIGHT = 64;
 
@@ -134,7 +140,7 @@ export const Visits: React.FC = () => {
         title:
           item.visitType?.normalizedName === 'Additional visits'
             ? 'Other visit'
-            : item.visitType?.normalizedName || 'Visit',
+            : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
@@ -283,46 +289,50 @@ export const Visits: React.FC = () => {
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
-      <div className="bg-uiBg mt-14 flex gap-2 p-4">
-        <RoundIcon
-          imageUrl={Pregnant}
-          backgroundColor="tertiary"
-          className="row-span-3"
-        />
-        <div>
-          <Typography
-            type="h2"
-            align="left"
-            weight="bold"
-            text={`${mother?.user?.firstName || ''} ${
-              mother?.user?.surname || ''
-            }`}
-            color="textDark"
-            className="col-span-2"
+      <div id={getStringFromClassNameOrId(walkthroughSteps[1].target)}>
+        <div className="bg-uiBg mt-14 flex gap-2 p-4">
+          <RoundIcon
+            imageUrl={Pregnant}
+            backgroundColor="tertiary"
+            className="row-span-3"
           />
-          <Typography
-            className="col-span-2 row-span-2"
-            type="body"
-            align="left"
-            weight="skinny"
-            text={`${weeksPregnant} ${
-              weeksPregnant > 1 ? 'weeks' : 'week'
-            } pregnant`}
-            color="textMid"
-          />
+          <div>
+            <Typography
+              type="h2"
+              align="left"
+              weight="bold"
+              text={`${mother?.user?.firstName || ''} ${
+                mother?.user?.surname || ''
+              }`}
+              color="textDark"
+              className="col-span-2"
+            />
+            <Typography
+              className="col-span-2 row-span-2"
+              type="body"
+              align="left"
+              weight="skinny"
+              text={`${weeksPregnant} ${
+                weeksPregnant > 1 ? 'weeks' : 'week'
+              } pregnant`}
+              color="textMid"
+            />
+          </div>
+        </div>
+        <div className="px-4 pb-4 pt-7">
+          {isLoading ? (
+            <LoadingSpinner
+              size="big"
+              spinnerColor="white"
+              backgroundColor="secondary"
+              className="mb-7"
+            />
+          ) : (
+            <Steps items={visitSteps.slice(0, 3)} />
+          )}
         </div>
       </div>
-      <div className="px-4 pb-4 pt-7">
-        {isLoading ? (
-          <LoadingSpinner
-            size="big"
-            spinnerColor="white"
-            backgroundColor="secondary"
-            className="mb-7"
-          />
-        ) : (
-          <Steps items={visitSteps.slice(0, 3)} />
-        )}
+      <div className="px-4">
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
@@ -356,6 +366,7 @@ export const Visits: React.FC = () => {
       </div>
       <div className="mx-4 mt-7 mb-4 flex h-full items-end">
         <Button
+          id={getStringFromClassNameOrId(walkthroughSteps[2].target)}
           type="outlined"
           color="primary"
           icon="ClipboardCheckIcon"

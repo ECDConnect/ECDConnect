@@ -9,7 +9,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
     public class VisitBackReferralManager
     {
         private IHttpContextAccessor _contextAccessor;
@@ -38,9 +39,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
         public VisitBackReferral AddVisitBackReferral(VisitBackReferralModel input)
         {
-            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            var repository = _repoFactory.CreateGenericRepository<VisitBackReferral>(userContext: applicationUserId);
-            var visit = GetVisitBackReferralFromInputModel(input, applicationUserId);
+            var referral = GetVisitBackReferralFromInputModel(input, _applicationUserId);
 
             // update the status record
             var entityToUpdate = _visitDataStatusRepo.GetById(Guid.Parse(input.VisitDataStatusId));
@@ -50,7 +49,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             entityToUpdate.BackReferralDateCompleted = DateTime.Now;
             _visitDataStatusRepo.Update(entityToUpdate);
 
-            return repository.Insert(visit);
+            return _visitBackReferralRepo.Insert(referral);
         }
 
         private VisitBackReferral GetVisitBackReferralFromInputModel(VisitBackReferralModel input, string applicationUserId)
@@ -65,7 +64,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 Id = Guid.NewGuid(),
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
-                UpdatedBy = applicationUserId,
+                UpdatedBy = _applicationUserId,
                 Question = input.Question,
                 Answer = input.Answer,
                 Comment = input.Comment,
@@ -99,6 +98,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
 
             return allReferrals;
+        }
+
+        public VisitBackReferral GetBackReferralDataForId(Guid VisitDataStatusId)
+        {
+            // This data is for the past 6 months
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
+
+            return (
+                from visitBackReferralData in _visitBackReferralRepo.GetAll().Where(x => x.VisitDataStatusId == VisitDataStatusId)
+                join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.InsertedDate >= sixMonthsBack) on visitBackReferralData.VisitDataStatusId equals visitStatusData.Id
+                select visitBackReferralData
+            ).FirstOrDefault();
+
         }
 
 

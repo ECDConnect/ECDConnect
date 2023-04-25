@@ -7,6 +7,7 @@ import {
   Header,
   TipCard,
 } from '@/pages/infant/infant-profile/components';
+import { DialogPosition, Dialog } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
@@ -22,15 +23,9 @@ export const CareForMomStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
-  if (isTipPage) {
-    return (
-      <MoreInformation
-        section="Care for mom"
-        subTitle="Care for mom"
-        onClose={() => setIsTip?.(false)}
-      />
-    );
-  }
+  const onHelp = () => {
+    setIsTip && setIsTip(true);
+  };
 
   return (
     <>
@@ -65,6 +60,17 @@ export const CareForMomStep = ({
         />
         <Divider dividerType="dashed" />
       </div>
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage ? isTipPage : false}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Care for mom"
+          subTitle="Care for mom"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     </>
   );
 };

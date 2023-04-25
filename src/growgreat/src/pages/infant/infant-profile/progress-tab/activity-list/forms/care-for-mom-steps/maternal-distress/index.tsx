@@ -6,6 +6,7 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
 import { MoreInformation } from '../../components/more-information';
 import { Video } from '../../components/video';
+import { DialogPosition, Dialog } from '@ecdlink/ui';
 
 export const MaternalDistressStep = ({
   infant,
@@ -21,11 +22,17 @@ export const MaternalDistressStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        subTitle="Maternal distress"
-        section="Maternal distress"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          subTitle="Maternal distress"
+          section="Maternal distress"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

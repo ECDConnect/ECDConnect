@@ -17,10 +17,8 @@ import {
   addAdditionalVisitForInfant,
   getReferralsForInfant,
   getCompletedReferralsForInfant,
-  getBackReferralsForInfant,
 } from './infant.actions';
 import { InfantState } from './infant.types';
-import { VisitDataStatus } from '@ecdlink/graphql/lib';
 
 const initialState: InfantState & ThunkStateStatus = {
   status: [],
@@ -45,14 +43,6 @@ const infantSlice = createSlice({
         }
       }
     },
-    addInfantCompleteReferrals: (
-      state,
-      action: PayloadAction<VisitDataStatus>
-    ) => {
-      if (!state.completedReferralsForInfant)
-        state.completedReferralsForInfant = [];
-      state.completedReferralsForInfant?.push(action.payload);
-    },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addInfant);
@@ -65,7 +55,7 @@ const infantSlice = createSlice({
     setThunkActionStatus(builder, addAdditionalVisitForInfant);
     setThunkActionStatus(builder, getReferralsForInfant);
     setThunkActionStatus(builder, getCompletedReferralsForInfant);
-    setThunkActionStatus(builder, getBackReferralsForInfant);
+
     builder.addCase(getInfantCountForMonth.fulfilled, (state, action) => {
       state.infantCountForMonth = action.payload;
 
@@ -115,10 +105,6 @@ const infantSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
-    builder.addCase(getBackReferralsForInfant.fulfilled, (state, action) => {
-      state.backReferralsForInfant = action.payload;
-      setFulfilledThunkActionStatus(state, action);
-    });
     builder.addCase(updateInfantCaregiver.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });

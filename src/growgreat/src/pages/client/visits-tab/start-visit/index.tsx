@@ -125,7 +125,7 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Client Folders'}
+      title={'Client folders'}
       subTitle={date}
       color={'primary'}
       onBack={goBack}

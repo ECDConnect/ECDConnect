@@ -1,4 +1,10 @@
-import { Button, Divider, LoadingSpinner, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
@@ -159,6 +165,17 @@ export const MoreInformation = ({
               text={replaceBraces(moreInformation.descriptionC, client || '')}
             />
           )}
+          {!!moreInformation?.showDividerC && (
+            <Divider dividerType="dashed" className="my-2" />
+          )}
+          {/* ------- C ------- */}
+          {!!moreInformation.headerD && (
+            <Typography
+              type="h4"
+              text={replaceBraces(moreInformation.headerD, client || '')}
+              className="mb-4"
+            />
+          )}
           {/* ------- D ------- */}
           {!!moreInformation.descriptionD && (
             <div className="flex gap-2">
@@ -207,7 +224,13 @@ export const MoreInformation = ({
   }, [getContent]);
 
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      onBack={onClose}
+      title={section}
+      renderOverflow
+      onClose={onClose}
+    >
       <Header
         backgroundColor="infoMain"
         icon="InformationCircleIcon"
@@ -229,6 +252,6 @@ export const MoreInformation = ({
           onClick={onClose}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };

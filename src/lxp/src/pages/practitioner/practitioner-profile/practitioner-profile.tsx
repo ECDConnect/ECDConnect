@@ -237,7 +237,8 @@ export const PractitionerProfile: React.FC = () => {
       child: (
         <div>
           {principalPractitioner?.isRegistered ||
-          practitioner?.isRegistered ? null : (
+          practitioner?.isRegistered ||
+          practitioner?.progress !== 0 ? null : (
             <CompleteProfile />
           )}
           <StackedList
