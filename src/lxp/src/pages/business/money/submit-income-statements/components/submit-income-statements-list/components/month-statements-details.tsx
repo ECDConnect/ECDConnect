@@ -126,6 +126,10 @@ export const MonthStatementsDetails: React.FC = () => {
   },
   0);
 
+  //income
+  console.log(income);
+  console.log('ex', rentExpense);
+
   const totalExpenses = isSameMonth
     ? expenses?.reduce(function (prev: any, current: any) {
         return prev + +current.amount;
@@ -277,6 +281,14 @@ export const MonthStatementsDetails: React.FC = () => {
         userAuth?.auth_token!
       ).allStatementsExpenses(userAuth?.id!, statementMonth, statementYear);
 
+      const report = await new IncomeStatementsService(
+        userAuth?.auth_token!
+      ).getMonthsIncomeExpensesReport(
+        userAuth?.id!,
+        statementMonth,
+        statementYear
+      );
+
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -425,38 +437,39 @@ export const MonthStatementsDetails: React.FC = () => {
   const footer = [
     'Total',
     '', // Placeholder for Day 2 column
-
   ];
 
   const multipleTableData = [
     {
-      tableName: 'Donations ',
-      type: 'expenses',
-      income,
+      tableName: 'Rent & Utilities',
+      type: 'Expenses',
+      total: 'R 100',
       headers: [
         { header: 'Date', dataKey: 'date' },
-        { header: 'Child', dataKey: 'child' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        ...Array.from({ length: 6 }, (_, i) => ({
-          child: 'John Depp',
+        ...Array.from({ length: 18 }, (_, i) => ({
           date: '10/02/2023',
-          amount: 'R 71, 0000',
+          description: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
         })),
       ],
     },
     {
-      tableName: 'Donations and Stuff',
-      type: 'income',
+      tableName: 'Pre-School Fees: monetary contributions',
+      type: 'Income',
+      total: 'R 100',
       headers: [
         { header: 'Date', dataKey: 'date' },
         { header: 'Child', dataKey: 'child' },
         { header: 'Amount', dataKey: 'amount' },
-        { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 4 }, (_, i) => ({
+        ...Array.from({ length: 8 }, (_, i) => ({
           child: 'John doe',
           date: '10/02/2023',
           amount: 'R 1, 0000',
@@ -465,40 +478,156 @@ export const MonthStatementsDetails: React.FC = () => {
       ],
     },
     {
-      tableName: 'Donations ',
-      type: 'expenses',
+      tableName: 'Salary & Wages',
+      type: 'Expenses',
+      total: 'R 100',
+
       headers: [
-        { header: 'Date3', dataKey: 'date' },
-        { header: 'Child', dataKey: 'child' },
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
         { header: 'Amount', dataKey: 'amount' },
-        { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 3 }, (_, i) => ({
-          child: 'John bere',
+        ...Array.from({ length: 10 }, (_, i) => ({
           date: '10/02/2023',
-          amount: 'R 1, 0000',
-          total: 'R 1, 0000',
+          description: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
         })),
       ],
     },
     {
-      tableName: 'Stuff',
-      type: 'income',
+      tableName: 'Food',
+      type: 'Expenses',
+      total: 'R 100',
 
       headers: [
-        { header: 'Date4', dataKey: 'date' },
-        { header: 'Child', dataKey: 'child' },
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
         { header: 'Amount', dataKey: 'amount' },
-        { header: 'Total Amount', dataKey: 'total' },
       ],
       data: [
-        ...Array.from({ length: 4 }, (_, i) => ({
-          child: 'John bere',
+        {
           date: '10/02/2023',
-          amount: 'R 1, 0000',
-          total: 'R 1, 0000',
+          item: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
+        },
+      ],
+    },
+    {
+      tableName: 'Learning Materials',
+      type: 'Expenses',
+      total: 'R 100',
+
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [
+        {
+          date: '10/02/2023',
+          description: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
+        },
+      ],
+    },
+    {
+      tableName: 'Annual Maintanance & purchases',
+      type: 'Expenses',
+      total: 'R 100',
+
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [
+        {
+          date: '10/02/2023',
+          description: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
+        },
+      ],
+    },
+    {
+      tableName: 'Annual Maintanance & purchases',
+      type: 'Expenses',
+      total: 'R 100',
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [
+        {
+          date: '10/02/2023',
+          description: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+          invoice: 'XXXXX-XX-XXX',
+        },
+      ],
+    },
+    {
+      tableName: 'Pre-School Fees: non-monetary contributions',
+      type: 'Income',
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Child', dataKey: 'child' },
+        { header: 'Item', dataKey: 'item' },
+      ],
+      data: [
+        ...Array.from({ length: 5 }, (_, i) => ({
+          child: 'Jane bere',
+          date: '10/02/2023',
+          item: 'Tissue Paper',
         })),
+      ],
+    },
+    {
+      tableName: 'Subsidies, Donations, Contributions',
+      type: 'Income',
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Item', dataKey: 'item' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [
+        {
+          date: '10/02/2023',
+          item: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+        },
+        {
+          date: '10/02/2023',
+          item: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+        },
+      ],
+    },
+    {
+      tableName: 'Other',
+      type: 'Income',
+      total: 'R 100',
+      headers: [
+        { header: 'Date', dataKey: 'date' },
+        { header: 'Description', dataKey: 'description' },
+        { header: 'Amount', dataKey: 'amount' },
+      ],
+      data: [
+        {
+          date: '10/02/2023',
+          item: 'Tissue Paper, Test One text',
+          amount: 'R 500',
+        },
       ],
     },
   ];

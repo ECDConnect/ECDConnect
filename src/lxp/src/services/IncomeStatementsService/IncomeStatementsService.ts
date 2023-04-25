@@ -163,6 +163,30 @@ class IncomeStatementsService {
     return response.data.data.updateStatementsIncome;
   }
 
+  async getMonthsIncomeExpensesReport(
+    userId: string,
+    month: Number,
+    year: Number
+  ): Promise<IncomeStatementsDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: ` `,
+      variables: {
+        userId,
+        month,
+        year,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get all income statementsreports Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.allStatementsIncome;
+  }
+
   async allStatementsIncome(
     userId: string,
     month: Number,
