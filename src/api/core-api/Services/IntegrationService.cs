@@ -352,8 +352,8 @@ namespace ECDLink.Core.Services
             //List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
             //List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
 
-            string remotePracId = "e937e801-54db-ed11-8356-00155d326100";
-            string localPracId = "9146c5e0-df61-411a-84f0-293d7da7e01f";
+            string remotePracId = "93224ae2-ea56-ea11-833a-00155d326100";
+            string localPracId = "040bb9d7-e96f-49ee-b045-1ec04e3e19ab";
             //string remoteChildId = "99676639-e24e-ed11-8355-00155d326100";
 
             List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(remotePracId);
@@ -375,17 +375,17 @@ namespace ECDLink.Core.Services
                         //1. Children, , 
 
 
-                        Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
-                        Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
-                        Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
-                        //Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
+                        //Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
+                        //Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
+                        //Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
+                        ////Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
 
-                        newChildren.Add(child1);
-                        newChildren.Add(child2);
-                        newChildren.Add(child3);
+                        //newChildren.Add(child1);
+                        //newChildren.Add(child2);
+                        //newChildren.Add(child3);
                         //newChildren.Add(child4);
 
-                        /*
+                        
                         List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
                         if (remoteChildren != null)
                         {
@@ -397,20 +397,19 @@ namespace ECDLink.Core.Services
                                     if (newChild != null)
                                     {
 
-                                        //newChildren.Add(newChild);
-                                        var newChild = 
+                                        newChildren.Add(newChild);
                                     }
                                 }
                             }
                         }
-                        */
+                        
                         //2. Documents
 
                         //3. Notes
 
                         //4. Attendance
                         //5. Income Statements
-                        //await AlignChildHierarchy(newPractitioner, newChildren);
+                        await AlignChildHierarchy(newPractitioner, newChildren);
                         await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                     }
                 }
@@ -453,9 +452,8 @@ namespace ECDLink.Core.Services
                     //-------------------
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
-                    //List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
-                    //List<RecordChange> changedRecords = await GetRecordChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);
-                    /*         
+                    List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
+                            
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -475,14 +473,14 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                    */
+                    
 
                     //-------------------
                     //2. Iterate through all known coaches to get information below hierarchy
                     //-------------------
                     foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
                     {
-                        /*
+                        
                         if (coach.IsComplete != true)
                         {
                             //entity may have been manually mapped for inclusion, pull all details and update
@@ -580,7 +578,7 @@ namespace ECDLink.Core.Services
                                 }
                             }
                         }
-                        */
+                        
 
                         //-------------------
                         //4. - get all data from API and discard whats complete and known to SS
@@ -606,6 +604,7 @@ namespace ECDLink.Core.Services
                                             Practitioner newPractitioner = await MapFranchisee(franchisee);
                                             if (newPractitioner != null)
                                             {
+                                                totalFranchiseesAddedToSS++;
                                                 //get all elements underneath and map those too
 
                                                 //1. Children
@@ -623,6 +622,7 @@ namespace ECDLink.Core.Services
                                                             if (newChild != null)
                                                             {
                                                                 newChildren.Add(newChild);
+                                                                totalChildrenAddedToSS++;
                                                             }
                                                         }
                                                     }
@@ -669,7 +669,7 @@ namespace ECDLink.Core.Services
                 //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
                 var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
                 ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
-                scheduledRun.Results = String.Join("|",_errorsList.ToArray());
+                scheduledRun.Results = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|",_errorsList.ToArray());
                 scheduledRun.EndTime = DateTime.Now;
                 scheduledRun.StartTime = startTime;
                 scheduledRun.UpdatedDate = DateTime.Now;
@@ -699,7 +699,6 @@ namespace ECDLink.Core.Services
             {
                 foreach (var item in mappedEntities.Where(x => x.Notes != null && x.Notes.StartsWith("REMAP_PRINCIPAL_REMOTE_ID_")).ToList())
                 {
-                    //REMAP_PRINCIPAL_REMOTE_ID_f2f37d11-35db-ed11-8356-00155d326100
                     string principalRemoteId = item.Notes.Replace("REMAP_PRINCIPAL_REMOTE_ID_", "");
                     if (mappedEntities.Where(x => x.RemoteId == principalRemoteId && x.LocalId != null).Any())
                     {
@@ -753,7 +752,7 @@ namespace ECDLink.Core.Services
                             staticHierarchyRepo.Update(childHierarchy);
                             //uppdate child record Hierarchy
                             Child updatedChild = childRepo.GetByUserId(child.UserId);
-                            updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy); ;
+                            updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy);
                             childRepo.Update(updatedChild);
                         }
 
@@ -782,7 +781,7 @@ namespace ECDLink.Core.Services
                     {
                         foreach (var child in childrenToAlign)
                         {
-                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").FirstOrDefault();
+                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
                             Learner newLearner = new Learner()
                             {
                                 UserId = child.UserId,
@@ -1090,7 +1089,8 @@ namespace ECDLink.Core.Services
                     var staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
                     IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
 
-                    var existingUser = _userManager.Users.Where(x => x.IdNumber == entity.IdNumber).OrderBy(x => x.Id).FirstOrDefault();
+                    //Check on childs IdNumber as well as Surname
+                    var existingUser = _userManager.Users.Where(x => x.IdNumber == entity.IdNumber && x.Surname == entity.Surname).OrderBy(x => x.Id).FirstOrDefault();
 
                     if (existingUser == null)
                     {
