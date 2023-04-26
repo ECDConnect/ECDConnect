@@ -277,21 +277,36 @@ namespace ECDLink.SmartStart.Reports
                             allAttendance.Add(attendance);
                         }
                         var reports = GetMonthlyReport(monthlyAttendance);
+                        //for (int i = startMonth.Month; i <= endMonth.Month; i++)
+                        //{
+
+
+                        //}
+                        //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
+                        SortedDictionary<int, int> attendanceDays = new SortedDictionary<int, int>();
+                        int daysInMonth = DateTime.DaysInMonth(startMonth.Year, startMonth.Month);
+                        for (int i = 1; i <= daysInMonth; i++)
+                        {
+                            DateTime dtCheck = Convert.ToDateTime(startMonth.Year + "-" + startMonth.Month + "-" + i.ToString());
+                            if (dtCheck.DayOfWeek != DayOfWeek.Sunday && dtCheck.DayOfWeek != DayOfWeek.Saturday)
+                            {
+                                if (!attendanceDays.ContainsKey(i))
+                                    attendanceDays[i] = 0;
+                            }
+
+                        }
 
                         if (reports != null)
                         {
                             foreach (var report in reports.OrderByDescending(x => x.MonthNumber))
                             {
-                                SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
+                                SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
 
                                 List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
-                                    if (!totalAttendance.ContainsKey(attendance.AttendanceDate.Day))
-                                        totalAttendance.Add(attendance.AttendanceDate.Day, (attendance.Attended ? 1 : 0));
-                                    else
-                                        totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
+                                    totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
                                 classReports.Add(new ClassroomGroupChildAttendanceReportModel()
@@ -324,7 +339,6 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var report in overviewReport.ClassroomAttendanceReport)
             {
-
                 foreach (var dayAttendance in report.Attendance)
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))
