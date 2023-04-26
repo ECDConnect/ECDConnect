@@ -12,10 +12,7 @@ import { Video } from '../../../../components/video';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useParams } from 'react-router';
-import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const BreastMilkOnlyStep = ({
@@ -26,8 +23,6 @@ export const BreastMilkOnlyStep = ({
   onNextStep,
 }: DynamicFormProps) => {
   const { isOnline } = useOnlineStatus();
-
-  const { visitId } = useParams<InfantProfileParams>();
 
   const name = useMemo(
     () => infant?.user?.firstName || '',
@@ -45,9 +40,7 @@ export const BreastMilkOnlyStep = ({
     getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
-  const isFirstVisit = useSelector((state: RootState) =>
-    getIsInfantFirstVisitSelector(state, visitId)
-  );
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
 
   const isBenefitsOfBreastfeeding = useMemo(
     () => isFirstVisit && ageDays < 7,

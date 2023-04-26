@@ -55,15 +55,14 @@ export interface ClassRoomChildAttendanceMonthlyReportModel {
   childUserId: string;
   month: number;
   year: number;
-  classroomAttendanceReport: ChildAttendanceOverallReportModel[],
-  totalAttendance:  {
+  classroomAttendanceReport: ChildAttendanceOverallReportModel[];
+  totalAttendance: {
     key: number;
     value: number;
-  }[],
-  totalAttendanceStatsReport:  {
-      totalSessions: number;
-      totalMonthlyAttendance: number;
-      totalChildrenAttendedSessions: number
-    },
-
+  }[];
+  totalAttendanceStatsReport: {
+    totalSessions: number;
+    totalMonthlyAttendance: number;
+    totalChildrenAttendedSessions: number;
+  };
 }

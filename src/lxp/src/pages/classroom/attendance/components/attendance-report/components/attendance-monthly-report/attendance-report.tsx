@@ -1,7 +1,4 @@
-import {
-  ChildAttendanceOverallReportModel,
-  ClassRoomChildAttendanceMonthlyReportModel,
-} from '@ecdlink/core';
+import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';

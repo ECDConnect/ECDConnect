@@ -73,7 +73,9 @@ export const getCareForMomSteps = (
   isDangerSignsFollowUp: boolean,
   isShowClinicCheckUps: boolean,
   isSelfCareAndSupport: boolean,
-  isMaternalDistressFollowUp: boolean
+  isMaternalDistress: boolean,
+  isMaternalDistressFollowUp: boolean,
+  isMaternalDistressScreening: boolean
 ) => [
   CareForMomStep,
   ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
@@ -81,9 +83,9 @@ export const getCareForMomSteps = (
   ...(isChildBefore49Days ? [DangerSignsStep] : []),
   ...(isChildBefore49Days ? [SelfCareStep] : []),
   ...(isSelfCareAndSupport ? [SelfCareAndSupportStep] : []),
-  MaternalDistressStep,
+  ...(isMaternalDistress ? [MaternalDistressStep] : []),
   ...(isMaternalDistressFollowUp ? [MaternalDistressFollowUpStep] : []),
-  MaternalDistressScreeningStep,
+  ...(isMaternalDistressScreening ? [MaternalDistressScreeningStep] : []),
 ];
 
 export const careForBabySteps = (
@@ -209,13 +211,14 @@ export const getPillar1Steps = ({
 
 export const pillar2Steps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean,
-  isDevelopmentalScreening: boolean
+  isDevelopmentalScreening: boolean,
+  isDevelopmentalScreeningWeeks: boolean
 ) => [
   ...(isDevelopmentalScreening ? [DevelopmentalScreeningStep] : []),
   ...(isDevelopmentalScreeningWeeksFollowUp
     ? [DevelopmentalScreeningWeeksFollowUpStep]
     : []),
-  DevelopmentalScreeningWeeksStep,
+  ...(isDevelopmentalScreeningWeeks ? [DevelopmentalScreeningWeeksStep] : []),
 ];
 
 export const pillar3Steps = (
