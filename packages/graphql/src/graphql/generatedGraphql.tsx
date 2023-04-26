@@ -2040,6 +2040,32 @@ export type IdentityRole = {
   permissions?: Maybe<Array<Maybe<Permission>>>;
 };
 
+export type IncomeExpensePdfDataModel = {
+  __typename?: 'IncomeExpensePDFDataModel';
+  amount: Scalars['Float'];
+  child?: Maybe<Scalars['String']>;
+  date?: Maybe<Scalars['DateTime']>;
+  description?: Maybe<Scalars['String']>;
+  invoiceNr: Scalars['Int'];
+  photoProof?: Maybe<Scalars['String']>;
+  type?: Maybe<Scalars['String']>;
+};
+
+export type IncomeExpensePdfHeaderModel = {
+  __typename?: 'IncomeExpensePDFHeaderModel';
+  dataKey?: Maybe<Scalars['String']>;
+  header?: Maybe<Scalars['String']>;
+};
+
+export type IncomeExpensePdfTableModel = {
+  __typename?: 'IncomeExpensePDFTableModel';
+  data?: Maybe<Array<Maybe<IncomeExpensePdfDataModel>>>;
+  headers?: Maybe<Array<Maybe<IncomeExpensePdfHeaderModel>>>;
+  tableName?: Maybe<Scalars['String']>;
+  total: Scalars['Float'];
+  type?: Maybe<Scalars['String']>;
+};
+
 export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
@@ -5704,6 +5730,9 @@ export type Query = {
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
+  statementsIncomeExpensesPDFData?: Maybe<
+    Array<Maybe<IncomeExpensePdfTableModel>>
+  >;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   userById?: Maybe<ApplicationUser>;
@@ -7002,6 +7031,12 @@ export type QueryReferralsForVisitIdArgs = {
 
 export type QueryRoleForUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryStatementsIncomeExpensesPdfDataArgs = {
+  month: Scalars['Int'];
+  userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
 };
 
 export type QueryTotalDaysAbsentArgs = {
