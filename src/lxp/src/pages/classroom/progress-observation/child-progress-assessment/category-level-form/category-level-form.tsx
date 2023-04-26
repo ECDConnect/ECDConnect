@@ -23,6 +23,7 @@ import { ProgressTrackingSkillDto } from '@ecdlink/core';
 export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
   progressTrackingCategoryId,
   levelId,
+  level,
   childId,
   optionSelected = () => {},
   onSubmit,
@@ -129,7 +130,7 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
 
   return (
     <>
-      <ProgressLevelBar currentLevelId={levelId} />
+      <ProgressLevelBar currentLevelId={levelId} currentLevel={level} />
       <div className={'bg-uiBg px-4 pt-2'}>
         <Typography
           type={'h1'}

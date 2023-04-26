@@ -22,6 +22,9 @@ import { contentReportSelectors } from '@store/content/report';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { analyticsActions } from '@store/analytics';
 import { ChildCompletedObservsationReportsState } from './child-completed-observation-reports.types';
+import NoProgressEmoticon from '../../../../assets/no-progress-emoticon.png';
+import ROUTES from '@/routes/routes';
+import { getReportingPeriod } from '@/utils/child/child-profile-utils';
 
 export const ChildCompletedObservationReports: React.FC = () => {
   const history = useHistory();
@@ -46,10 +49,14 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const childReportSummaries = useSelector(
     contentReportSelectors.getChildProgressReportSummaries(routeState?.childId)
   );
+  const childProgressReports = useSelector(
+    contentReportSelectors.getChildProgressObservationReports(
+      routeState?.childId
+    )
+  );
   const allCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
   );
-
   const allLevels = useSelector(
     progressTrackingSelectors.getProgressTrackingLevels
   );
@@ -89,6 +96,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const startTrackingProgress = () => {
+    history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
+      childId: routeState?.childId,
+      reportingDate: getReportingPeriod(new Date()),
+    });
+  };
 
   const downloadReports = () => {
     if (isOnline) {
@@ -133,172 +147,227 @@ export const ChildCompletedObservationReports: React.FC = () => {
           color={'primary'}
           text={`How has ${currentChildUser?.firstName} grown?`}
         />
-        <Alert
+        {/* <Alert
           className={'mt-4'}
           type={'info'}
           title={`Don't worry if ${currentChildUser?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
-        />
-
-        <div
-          className={'border-uiLight mt-4 flex flex-col items-stretch border-b'}
-        >
-          <div
-            className={
-              'border-uiLight flex flex-row items-center justify-between border-b pl-4'
-            }
-          >
-            <Typography type={'body'} className={'w-1/2'} text={''} />
-            <div className={'flex flex-shrink-0 flex-row'}>
-              {latestCompletedSummary && (
-                <Typography
-                  type={'small'}
-                  className={`mr-8 uppercase`}
-                  align="center"
-                  text={`${new Date(
-                    latestCompletedSummary?.reportDate
-                  ).toLocaleString(
-                    'en-za',
-                    DateFormats.shortMonthNameAndYear
-                  )}`}
-                  color={'textMid'}
-                />
-              )}
-              {previouslyCompletedSummary && (
-                <Typography
-                  type={'small'}
-                  className={'mr-5 uppercase'}
-                  align="center"
-                  text={`${new Date(
-                    previouslyCompletedSummary.reportDate
-                  ).toLocaleString(
-                    'en-za',
-                    DateFormats.shortMonthNameAndYear
-                  )}`}
-                  color={'textMid'}
-                />
-              )}
-            </div>
-          </div>
-          {latestCompletedSummary &&
-            latestCompletedSummary.categories.map((cat, idx) => {
-              const categoryDetails = allCategories.find(
-                (aCat) => aCat.id === cat.categoryId
-              );
-              const achievedLevel = allLevels.find(
-                (level) => level.id === cat.achievedLevelId
-              );
-              const prevAchievedLevel = allLevels.find(
-                (level) =>
-                  level.id ===
-                  previouslyCompletedSummary?.categories.find(
-                    (pCat) => pCat.categoryId === cat.categoryId
-                  )?.achievedLevelId
-              );
-              return (
-                <div
-                  key={cat.categoryId}
-                  className={`flex min-w-0 flex-row items-center justify-between p-4 bg-${
-                    idx % 2 === 0 ? 'white' : 'transparent'
-                  }`}
-                >
-                  <Typography
-                    type={'body'}
-                    className={'w-1/2 overflow-ellipsis'}
-                    text={categoryDetails?.name || ''}
+        /> */}
+        {!childProgressReports ||
+          (childProgressReports.length === 0 && (
+            <div
+              className={
+                'border-uiLight mt-4 flex flex-col items-stretch border-b'
+              }
+            >
+              <div className="grid grid-cols-1 justify-center gap-4">
+                <div className="flex justify-center">
+                  <img
+                    width={'30%'}
+                    src={NoProgressEmoticon}
+                    alt="No progress reports"
                   />
-                  <div className={'flex flex-shrink-0 flex-row'}>
-                    {achievedLevel && (
-                      <div
-                        className={'flex flex-shrink-0 flex-row items-center'}
-                      >
-                        <img
-                          className={'m-auto'}
-                          src={achievedLevel.imageUrl}
-                          alt="achieved level"
-                        />
-
-                        <Typography
-                          type={'small'}
-                          color={'textMid'}
-                          text={achievedLevel.name}
-                          className={'ml-2'}
-                        />
-                      </div>
-                    )}
-                    {prevAchievedLevel && (
-                      <div
-                        className={
-                          'mx-1 flex flex-shrink-0 flex-row items-center'
-                        }
-                      >
-                        <img
-                          className={'m-auto'}
-                          src={prevAchievedLevel.imageUrl}
-                          alt="previous level"
-                        />
-
-                        <Typography
-                          type={'small'}
-                          color={'textMid'}
-                          text={prevAchievedLevel.name}
-                          className={'ml-2'}
-                        />
-                      </div>
-                    )}
+                </div>
+                <div className="flex justify-center">
+                  <div className="flex w-8/12 justify-center">
+                    <Typography
+                      type="h3"
+                      color="textDark"
+                      text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
+                      className={'text-center'}
+                    />
                   </div>
                 </div>
-              );
-            })}
-
-          <Divider className={'mb-4'} />
-
-          {childReportSummaries && childReportSummaries.length > 1 && (
-            <div className={'flex flex-col'}>
-              <Typography text={'See a report:'} type={'body'} />
-              {childReportSummaries.map((report, idx) => {
-                return (
-                  <ListItem
-                    key={idx.toString()}
-                    title={`${new Date(report.reportDate).toLocaleString(
+                <div className="flex justify-center">
+                  <Typography
+                    type="body"
+                    color="textMid"
+                    text={'Tap the button below to start'}
+                    className={'mb-4'}
+                  />
+                </div>
+              </div>
+              <Button
+                onClick={startTrackingProgress}
+                disabled={false}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+              >
+                {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Start tracking progress"
+                  color="white"
+                />
+              </Button>
+            </div>
+          ))}
+        {childProgressReports && childProgressReports.length > 0 && (
+          <div
+            className={
+              'border-uiLight mt-4 flex flex-col items-stretch border-b'
+            }
+          >
+            <div
+              className={
+                'border-uiLight flex flex-row items-center justify-between border-b pl-4'
+              }
+            >
+              <Typography type={'body'} className={'w-1/2'} text={''} />
+              <div className={'flex flex-shrink-0 flex-row'}>
+                {latestCompletedSummary && (
+                  <Typography
+                    type={'small'}
+                    className={`mr-8 uppercase`}
+                    align="center"
+                    text={`${new Date(
+                      latestCompletedSummary?.reportDate
+                    ).toLocaleString(
                       'en-za',
                       DateFormats.shortMonthNameAndYear
                     )}`}
-                    showButton
-                    buttonColor={'primary'}
-                    buttonType={'outlined'}
-                    buttonIcon={'EyeIcon'}
-                    buttonText={'View'}
-                    buttonTextColor={'primary'}
-                    withPaddingY
-                    showDivider={idx > 0}
-                    dividerType={'dashed'}
-                    dividerColor={'uiLight'}
-                    onButtonClick={() => {
-                      viewReport(report.reportId);
-                    }}
+                    color={'textMid'}
                   />
+                )}
+                {previouslyCompletedSummary && (
+                  <Typography
+                    type={'small'}
+                    className={'mr-5 uppercase'}
+                    align="center"
+                    text={`${new Date(
+                      previouslyCompletedSummary.reportDate
+                    ).toLocaleString(
+                      'en-za',
+                      DateFormats.shortMonthNameAndYear
+                    )}`}
+                    color={'textMid'}
+                  />
+                )}
+              </div>
+            </div>
+            {latestCompletedSummary &&
+              latestCompletedSummary.categories.map((cat, idx) => {
+                const categoryDetails = allCategories.find(
+                  (aCat) => aCat.id === cat.categoryId
+                );
+                const achievedLevel = allLevels.find(
+                  (level) => level.id === cat.achievedLevelId
+                );
+                const prevAchievedLevel = allLevels.find(
+                  (level) =>
+                    level.id ===
+                    previouslyCompletedSummary?.categories.find(
+                      (pCat) => pCat.categoryId === cat.categoryId
+                    )?.achievedLevelId
+                );
+                return (
+                  <div
+                    key={cat.categoryId}
+                    className={`flex min-w-0 flex-row items-center justify-between p-4 bg-${
+                      idx % 2 === 0 ? 'white' : 'transparent'
+                    }`}
+                  >
+                    <Typography
+                      type={'body'}
+                      className={'w-1/2 overflow-ellipsis'}
+                      text={categoryDetails?.name || ''}
+                    />
+                    <div className={'flex flex-shrink-0 flex-row'}>
+                      {achievedLevel && (
+                        <div
+                          className={'flex flex-shrink-0 flex-row items-center'}
+                        >
+                          <img
+                            className={'m-auto'}
+                            src={achievedLevel.imageUrl}
+                            alt="achieved level"
+                          />
+
+                          <Typography
+                            type={'small'}
+                            color={'textMid'}
+                            text={achievedLevel.name}
+                            className={'ml-2'}
+                          />
+                        </div>
+                      )}
+                      {prevAchievedLevel && (
+                        <div
+                          className={
+                            'mx-1 flex flex-shrink-0 flex-row items-center'
+                          }
+                        >
+                          <img
+                            className={'m-auto'}
+                            src={prevAchievedLevel.imageUrl}
+                            alt="previous level"
+                          />
+
+                          <Typography
+                            type={'small'}
+                            color={'textMid'}
+                            text={prevAchievedLevel.name}
+                            className={'ml-2'}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  </div>
                 );
               })}
-            </div>
-          )}
 
-          <Button
-            onClick={downloadReports}
-            disabled={childReportSummaries.length === 0}
-            className="w-full"
-            size="small"
-            color="primary"
-            type="filled"
-          >
-            {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-            <Typography
-              type="h6"
-              className="ml-2"
-              text="Download a report"
-              color="white"
-            />
-          </Button>
-        </div>
+            <Divider className={'mb-4'} />
+
+            {childReportSummaries && childReportSummaries.length > 1 && (
+              <div className={'flex flex-col'}>
+                <Typography text={'See a report:'} type={'body'} />
+                {childReportSummaries.map((report, idx) => {
+                  return (
+                    <ListItem
+                      key={idx.toString()}
+                      title={`${new Date(report.reportDate).toLocaleString(
+                        'en-za',
+                        DateFormats.shortMonthNameAndYear
+                      )}`}
+                      showButton
+                      buttonColor={'primary'}
+                      buttonType={'outlined'}
+                      buttonIcon={'EyeIcon'}
+                      buttonText={'View'}
+                      buttonTextColor={'primary'}
+                      withPaddingY
+                      showDivider={idx > 0}
+                      dividerType={'dashed'}
+                      dividerColor={'uiLight'}
+                      onButtonClick={() => {
+                        viewReport(report.reportId);
+                      }}
+                    />
+                  );
+                })}
+              </div>
+            )}
+
+            <Button
+              onClick={downloadReports}
+              disabled={childReportSummaries.length === 0}
+              className="w-full"
+              size="small"
+              color="primary"
+              type="filled"
+            >
+              {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
+              <Typography
+                type="h6"
+                className="ml-2"
+                text="Download a report"
+                color="white"
+              />
+            </Button>
+          </div>
+        )}
       </div>
     </BannerWrapper>
   );
