@@ -378,20 +378,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             // Get Due/Overdue Reports
             // Get Children not progressed
             var isPeriod1 = previousMonthStart.Month <= 7;
-            var reportPeriodStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 1, 1) : new DateOnly(previousMonthStart.Year, 7, 1))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var reportPeriodEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 30) : new DateOnly(previousMonthStart.Year, 12, 20))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportPeriodEnd = GetReportPeriodEnd(previousMonthStart.Year, isPeriod1);
 
-            var reportDueStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 1) : new DateOnly(previousMonthStart.Year, 11, 1))
-                    .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var reportDueEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 6, 30) : new DateOnly(previousMonthStart.Year, 11, 30))
-                .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            DateTime reportDueStart = GetReportDueStart(previousMonthStart.Year, isPeriod1);
+            DateTime reportDueEnd = GetReportDueEnd(previousMonthStart.Year, isPeriod1);
 
-            var reportOverDueStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 7, 1) : new DateOnly(previousMonthStart.Year, 12, 1))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
-            var reportOverDueEnd = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 7, 31) : new DateOnly(previousMonthStart.Year, 12, 20))
-                .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+            var reportOverDueStart = GetReportOverDueStart(previousMonthStart.Year, isPeriod1);
+            var reportOverDueEnd = GetReportOverDueEnd(previousMonthStart.Year, isPeriod1);
 
             int missedReportCount = 0;
 
@@ -513,6 +507,43 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return notifications;
         }
 
+
+        private static DateTime GetReportPeriodStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 1, 1) : new DateOnly(year, 7, 1))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetReportDueStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 1) : new DateOnly(year, 11, 1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetReportDueEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 11, 30))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetReportOverDueStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 7, 1) : new DateOnly(year, 12, 1))
+                            .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetReportOverDueEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 7, 31) : new DateOnly(year, 12, 20))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
         private static (int notProgressedFor2Periods, int notProgressedFor3Periods) GetChildProgress(
             IGenericRepositoryFactory repoFactory,
             DateTime reportPeriodStart,
@@ -579,8 +610,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
 
             var isPeriod1 = previousMonthStart.Month <= 7;
-            var reportPeriodStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 1, 1) : new DateOnly(previousMonthStart.Year, 7, 1))
-                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+            DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
