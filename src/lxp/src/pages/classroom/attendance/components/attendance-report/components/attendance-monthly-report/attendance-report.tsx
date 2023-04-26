@@ -1,4 +1,5 @@
 import {
+  ChildAttendanceOverallReportModel,
   ClassRoomChildAttendanceMonthlyReportModel,
 } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
@@ -24,26 +25,22 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
-  reportData: ClassRoomChildAttendanceMonthlyReportModel[];
+  reportData: ChildAttendanceOverallReportModel[];
+  totalAttendance: any[];
+  totalAttendanceStatsReport: any;
 }
 
 export const MonthlyAttendanceReport = ({
   reportMonth,
   onBack,
   reportData,
+  totalAttendance,
+  totalAttendanceStatsReport,
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const numDays = 29;
 
-  // data that must be used to display in report
-  // const dataX = {
-  //   "detailedReport":[{ child: 'John Doe', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }, { child: 'Jack Bauer', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }],
-  //   "todayAttendance": {day1: '10', day2: '21', day3: '10', day4: '4', },
-  //   "totalMonthlyAttendance": 23,
-  //   "totalSessions": 22,
-  //   "totalChildrenAttendedSessions": 53
-  // };
 
   useEffect(() => {
     if (!isOnline) {
@@ -56,56 +53,63 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-  const data = [
-    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
-    ...Array.from({ length: 40 }, (_, i) => ({ child: 'John Test', id: `${i}IDTEST25`, day1: '1', day2: '1', day3: '0' })),
+  
+  const tableColumns = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...Array.from({ length: numDays }, (_, i) => ({
+      header: `${i + 1}`, // day number as header
+      dataKey: `day${i + 1}`, // unique key for each day column
+    })),
   ];
 
-  const tableData = [
-    {
-      headers: [
-        { header: 'Child', dataKey: 'child' },
-        { header: 'ID/Passport', dataKey: 'id' },
-        ...Array.from({ length: numDays }, (_, i) => ({
-          header: `${i + 1}`, // day number as header
-          dataKey: `day${i + 1}`, // unique key for each day column
-        })),
-      ],
-      data: data,
+  const tableData = reportData.map(
+    (item: { attendance?: any; childFullName?: any; childUserId?: any }) => {
+      const { childFullName, childUserId } = item;
+      const attendance = item.attendance.reduce(
+        (obj: { [x: string]: any }, { key, value }: any, i: number) => {
+          obj[`day${i + 1}`] = value;
+          return obj;
+        },
+        {}
+      );
+      //to be updated when api is updated
+      //test name too long
+      return { child: childFullName.slice(0, 14), id: 'XXSS', ...attendance };
     }
-  ];
+  );
+
 
   const footer = [
     'Child Attendance per Day',
     '', // Placeholder for ID/Passport column
-    '', // Placeholder for Day 1 column
-    '', // Placeholder for Day 2 column
-    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
+
+  totalAttendance.forEach(obj => {
+    footer.push(obj.value.toString());
+  });
 
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: 'Text 2',
-    //column one top content
-    text_coulumn_one_row_one: 'Name: Jenny Droe',
-    text_coulumn_one_row_two: 'Phone: 0123456789',
-    text_coulumn_one_row_three: 'ID: ID23YGH444',
-    //column two top content
-    text_column_two_row_one: 'ProgrammeType: 46372test',
-    text_column_two_row_two: 'Programmme Days: Monday to Friday',
-    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
+    practitioner_name: 'Name: Jenny Droe',
+    id_number: 'ID: ID23YGH444',
+    programme_type: 'ProgrammeType: 46372test',
+    programme_days: 'Programmme Days: Monday to Friday',
+    site_address: 'Site Address1234 ABC St, City, State, Country',
+    phone: 'Phone: 0123456789',
   };
 
   const tableBottomContent = [
-    `Number of children who attended all sessions: 9`,
-    `Total number of sessions: 198`,
-    `Number of children who attended all sessions: 9`,
+    `Total monthly attendance: ${ totalAttendanceStatsReport?.totalMonthlyAttendance}`,
+    `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
+    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions }`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
     fillColor: [211, 211, 211], // Light grey
     textColor: [0, 0, 0],
-    fontSize: 8,
+    fontSize: 10,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
@@ -204,8 +208,8 @@ export const MonthlyAttendanceReport = ({
           <GeneratePdfReportButton
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
-            tableFooter={footer}
             tableData={tableData}
+            tableFooter={footer}
             content={tableTopContent}
             tableBottomContent={tableBottomContent}
             tableHeadStyles={tableHeadStyles}

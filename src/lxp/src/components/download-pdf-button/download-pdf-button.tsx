@@ -1,5 +1,5 @@
 import { jsPDF, jsPDFOptions } from 'jspdf';
-import autoTable, { ColumnInput, UserOptions } from 'jspdf-autotable';
+import autoTable, { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
 
 export interface GeneratePdfReportButtonProps {

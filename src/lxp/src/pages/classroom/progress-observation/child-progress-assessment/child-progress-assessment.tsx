@@ -250,6 +250,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelTwo}
+            level={2}
             childId={currentChild?.id || ''}
             optionSelected={validateLevelOneSelection}
             onSubmit={(result: CategoryLevelFormResult) => {
@@ -267,6 +268,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelThree}
+            level={3}
             optionSelected={validateLevelOneAndTwoSelection}
             childId={currentChild?.id || ''}
             onSubmit={(result: CategoryLevelFormResult) => {
@@ -325,6 +327,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelOne}
+            level={1}
             childId={currentChild?.id || ''}
             onSubmit={(result: CategoryLevelFormResult) => {
               submitLevelSkills(
