@@ -118,6 +118,7 @@ export const ChildProfile: React.FC = () => {
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
+
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -258,28 +259,26 @@ export const ChildProfile: React.FC = () => {
       });
     }
 
-    if (playGroup?.name) {
-      profileOptionsCopy.push({
-        key: 'class',
-        title: 'Class',
-        subTitle: `${playGroup?.name}`,
-        buttonType: 'filled',
-        buttonIcon: 'PencilIcon',
-        buttonText: 'Edit',
-        buttonTextColor: 'white',
-        buttonColor: 'primary',
-        showButton: true,
-        showDivider: true,
-        dividerType: 'dashed',
-        withPaddingY: true,
-        onButtonClick: () => {
-          history.push(ROUTES.CHILD.INFORMATION.EDIT, {
-            childId,
-            isFromEditClass: true,
-          });
-        },
-      });
-    }
+    profileOptionsCopy.push({
+      key: 'class',
+      title: 'Class',
+      subTitle: `${playGroup?.name}`,
+      buttonType: 'filled',
+      buttonIcon: 'PencilIcon',
+      buttonText: 'Edit',
+      buttonTextColor: 'white',
+      buttonColor: 'primary',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+      onButtonClick: () => {
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+          childId,
+          isFromEditClass: true,
+        });
+      },
+    });
 
     const noteOption = getNoteProfileOption();
     profileOptionsCopy.push(noteOption);
@@ -558,7 +557,7 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM)}
+        onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>

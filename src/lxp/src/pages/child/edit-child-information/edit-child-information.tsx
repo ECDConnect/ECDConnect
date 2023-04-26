@@ -513,7 +513,7 @@ export const EditChildInformation: React.FC = () => {
         currentChildLearnerRecord?.otherAttendanceReason ?? '',
       startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
       stoppedAttendance: new Date().toISOString(),
-      isActive: currentChildLearnerRecord?.isActive,
+      isActive: false,
     };
 
     appDispatch(
