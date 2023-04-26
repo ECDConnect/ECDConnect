@@ -1,0 +1,10 @@
+namespace ECDLink.SmartStart.Reports.Models
+{
+    public class TotalAttendanceStatsReport
+    {
+
+        public int TotalMonthlyAttendance { get; set; }
+        public int TotalSessions { get; set; }
+        public int TotalChildrenAttendedSessions { get; set; }
+    }
+}

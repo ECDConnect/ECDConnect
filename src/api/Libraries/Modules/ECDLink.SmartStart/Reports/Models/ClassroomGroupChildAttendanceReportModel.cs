@@ -19,5 +19,7 @@ namespace ECDLink.SmartStart.Reports.Models
         public int Year { get; set; }
 
         public string ChildFullName { get; set; }
+
+        public SortedDictionary<int, int> Attendance { get; set; }
     }
 }

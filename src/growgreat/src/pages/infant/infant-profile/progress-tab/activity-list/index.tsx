@@ -21,6 +21,8 @@ import ROUTES from '@/routes/routes';
 import {
   getInfantById,
   getInfantVisitByVisitIdSelector,
+  getIsInfantFirstVisitSelector,
+  getIsInfantSecondVisitSelector,
 } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
@@ -42,7 +44,8 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, differenceInMonths } from 'date-fns';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -102,6 +105,9 @@ export const ActivityList: React.FC = () => {
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+  const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  const fullAgeInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
 
   const { isLoading } = useThunkFetchCall(
@@ -113,6 +119,44 @@ export const ActivityList: React.FC = () => {
     (infant?.user?.firstName || '').length +
       (infant?.user?.surname || '').length >
     22;
+
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
+  const isSecondVisit = useSelector(getIsInfantSecondVisitSelector);
+
+  const getIsFollowUp = useCallback(
+    (section: string, visitName: string) => {
+      return !!previousVisit?.visitDataStatus?.some(
+        (item) =>
+          item?.section === section &&
+          item.visitData?.visitName === visitName &&
+          item.color !== 'Success'
+      );
+    },
+    [previousVisit?.visitDataStatus]
+  );
+
+  const isDevelopmentalScreening = useMemo(
+    () =>
+      ((isFirstVisit || isSecondVisit) && ageDays >= 4 && ageDays <= 27) ||
+      (isFirstVisit && ageDays >= 49 && ageDays <= 56),
+    [ageDays, isFirstVisit, isSecondVisit]
+  );
+
+  const isDevelopmentalScreeningWeeksFollowUp = getIsFollowUp(
+    DevelopmentalScreeningVisitSection,
+    activitiesTypes.pillar2
+  );
+
+  const isDevelopmentalScreeningWeeks = useMemo(
+    () => isFirstVisit && ageMonths >= 14 && fullAgeInMonths < 21,
+    [ageMonths, fullAgeInMonths, isFirstVisit]
+  );
+
+  const isDisplayPillar2 = [
+    isDevelopmentalScreening,
+    isDevelopmentalScreeningWeeks,
+    isDevelopmentalScreeningWeeksFollowUp,
+  ].some((item) => item!!);
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
@@ -134,11 +178,16 @@ export const ActivityList: React.FC = () => {
           item.id !== activitiesTypes.pillar4) ||
         (item.id === activitiesTypes.careForMom &&
           infant?.caregiver?.relation?.description === motherType?.label) ||
-        (item.id === activitiesTypes.pillar4 && isChildAfter49Days)
+        (item.id === activitiesTypes.pillar4 && isChildAfter49Days) ||
+        (item.id === activitiesTypes.pillar2 && isDisplayPillar2)
     );
 
     return { visibleActivities };
-  }, [infant?.caregiver?.relation?.description, isChildAfter49Days]);
+  }, [
+    infant?.caregiver?.relation?.description,
+    isChildAfter49Days,
+    isDisplayPillar2,
+  ]);
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
     const completedActivities = visibleActivities.filter((item) =>
@@ -281,18 +330,32 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          {!!visit?.actualVisitDate && (
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text={new Date(visit?.actualVisitDate).toLocaleDateString(
-                'en-ZA',
-                options
-              )}
-              color="textMid"
-            />
-          )}
+          {!!visit?.actualVisitDate &&
+            visit?.visitType?.normalizedName === 'Additional visits' && (
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text={new Date(visit?.actualVisitDate).toLocaleDateString(
+                  'en-ZA',
+                  options
+                )}
+                color="textMid"
+              />
+            )}
+          {!!visit?.plannedVisitDate &&
+            visit?.visitType?.normalizedName !== 'Additional visits' && (
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text={new Date(visit?.plannedVisitDate).toLocaleDateString(
+                  'en-ZA',
+                  options
+                )}
+                color="textMid"
+              />
+            )}
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />
@@ -428,7 +491,17 @@ export const ActivityList: React.FC = () => {
   ]);
 
   if (showForm && selectedOption) {
-    return <Form onBack={onFormBack} />;
+    return (
+      <Form
+        stepsRules={{
+          isDevelopmentalScreening,
+          isDevelopmentalScreeningWeeks,
+          isDevelopmentalScreeningWeeksFollowUp,
+        }}
+        onBack={onFormBack}
+        getIsFollowUp={getIsFollowUp}
+      />
+    );
   }
 
   return (

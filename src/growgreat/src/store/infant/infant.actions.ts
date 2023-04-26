@@ -137,7 +137,7 @@ export const addInfant = createAsyncThunk<
 );
 
 export const updateInfant = createAsyncThunk<
-  InfantModelInput & { id: string },
+  InfantDto,
   { input: InfantModelInput; id: string },
   ThunkApiType<RootState>
 >(
@@ -148,9 +148,11 @@ export const updateInfant = createAsyncThunk<
     } = getState();
     try {
       if (userAuth?.auth_token) {
-        await new InfantService(userAuth?.auth_token).updateInfant(id, input);
+        const response = await new InfantService(
+          userAuth?.auth_token
+        ).updateInfant(id, input);
 
-        return { id, ...input };
+        return response;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
