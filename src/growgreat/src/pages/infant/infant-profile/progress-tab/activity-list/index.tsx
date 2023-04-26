@@ -480,8 +480,8 @@ export const ActivityList: React.FC = () => {
     return (
       <Form
         stepsRules={{
-          isDevelopmentalScreening: false,
-          isDevelopmentalScreeningWeeks: true,
+          isDevelopmentalScreening,
+          isDevelopmentalScreeningWeeks,
           isDevelopmentalScreeningWeeksFollowUp,
         }}
         onBack={onFormBack}
