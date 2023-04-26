@@ -22,6 +22,10 @@ export interface MotherDto extends EntityBase {
   whatsAppNumber?: string;
   nextVisitDate?: string;
   linkedInfantId?: string;
+  clickedVisitTab?: boolean;
+  clickedProgressTab?: boolean;
+  clickedReferralsTab?: boolean;
+  clickedContactTab?: boolean;
   statusInfo?: {
     icon?: string;
     color?: string;

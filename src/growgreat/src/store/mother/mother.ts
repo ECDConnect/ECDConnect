@@ -16,6 +16,7 @@ import {
   updateMotherContactDetails,
   getReferralsForMother,
   getCompletedReferralsForMother,
+  updateMother,
 } from './mother.actions';
 import { MotherState } from './mother.types';
 
@@ -114,6 +115,16 @@ const motherSlice = createSlice({
       }
 
       setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateMother.fulfilled, (state, action) => {
+      if (!action.payload || !state.mothers) return;
+
+      state.mothers = state.mothers?.map((item) => {
+        if (item?.user?.id === action.payload?.user?.id) {
+          return { ...item, ...action.payload };
+        }
+        return item;
+      });
     });
   },
 });
