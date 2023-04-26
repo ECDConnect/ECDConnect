@@ -176,12 +176,10 @@ export const updateMother = createAsyncThunk<
     auth: { userAuth },
   } = getState();
   try {
-    let mappedMotherInput = mapMother(mother);
-
     if (userAuth?.auth_token) {
       return await new MotherService(userAuth?.auth_token).updateMother(
         id,
-        mappedMotherInput
+        mother as MotherModelInput
       );
     } else {
       return rejectWithValue('no access token, profile check required');
