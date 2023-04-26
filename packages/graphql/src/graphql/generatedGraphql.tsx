@@ -946,6 +946,7 @@ export type ClassroomGroup = {
 
 export type ClassroomGroupChildAttendanceReportModel = {
   __typename?: 'ClassroomGroupChildAttendanceReportModel';
+  attendance?: Maybe<Array<KeyValuePairOfInt32AndInt32>>;
   attendancePercentage: Scalars['Int'];
   childFullName?: Maybe<Scalars['String']>;
   childUserId?: Maybe<Scalars['String']>;
@@ -954,6 +955,15 @@ export type ClassroomGroupChildAttendanceReportModel = {
   totalActualAttendance: Scalars['Int'];
   totalExpectedAttendance: Scalars['Int'];
   year: Scalars['Int'];
+};
+
+export type ClassroomGroupChildAttendanceReportOverviewModel = {
+  __typename?: 'ClassroomGroupChildAttendanceReportOverviewModel';
+  classroomAttendanceReport?: Maybe<
+    Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
+  >;
+  totalAttendance?: Maybe<Array<KeyValuePairOfInt32AndInt32>>;
+  totalAttendanceStatsReport?: Maybe<TotalAttendanceStatsReport>;
 };
 
 export type ClassroomGroupFilterInput = {
@@ -2031,6 +2041,10 @@ export type Holiday = {
   day: Scalars['DateTime'];
 };
 
+export type HolidayInput = {
+  day: Scalars['DateTime'];
+};
+
 export type IdentityRole = {
   __typename?: 'IdentityRole';
   concurrencyStamp?: Maybe<Scalars['String']>;
@@ -2261,6 +2275,12 @@ export type IntegrationMappingInput = {
   RemoteId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type KeyValuePairOfInt32AndInt32 = {
+  __typename?: 'KeyValuePairOfInt32AndInt32';
+  key: Scalars['Int'];
+  value: Scalars['Int'];
 };
 
 export type Language = {
@@ -5662,6 +5682,8 @@ export type Query = {
   childrenMetrics?: Maybe<ChildrenMetricReport>;
   classAttendanceMetrics?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
   classAttendanceMetricsByUser?: Maybe<Array<Maybe<ClassroomMetricReport>>>;
+  classroomActionItems?: Maybe<Array<Maybe<NotificationDisplay>>>;
+  classroomAttendanceOverviewReport?: Maybe<ClassroomGroupChildAttendanceReportOverviewModel>;
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
@@ -5681,6 +5703,7 @@ export type Query = {
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
+  documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
@@ -5727,6 +5750,8 @@ export type Query = {
   referralsForInfant?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForMother?: Maybe<Array<Maybe<VisitDataStatus>>>;
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
+  removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -6796,6 +6821,17 @@ export type QueryClassAttendanceMetricsByUserArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClassroomActionItemsArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassroomAttendanceOverviewReportArgs = {
+  classgroupId: Scalars['UUID'];
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryClassroomAttendanceReportArgs = {
   classgroupId: Scalars['UUID'];
   endDate: Scalars['DateTime'];
@@ -6849,6 +6885,10 @@ export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
 
 export type QueryDisplayMetricsArgs = {
   type?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryDocumentsForHcwArgs = {
+  createdUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryFranchisorByUserIdArgs = {
@@ -7027,6 +7067,15 @@ export type QueryReferralsForMotherArgs = {
 
 export type QueryReferralsForVisitIdArgs = {
   visitId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryRemoveHolidaysArgs = {
+  days?: InputMaybe<Array<Scalars['DateTime']>>;
+  holidays?: InputMaybe<Array<InputMaybe<HolidayInput>>>;
+};
+
+export type QueryRemoveWeekendDaysArgs = {
+  days?: InputMaybe<Array<Scalars['DateTime']>>;
 };
 
 export type QueryRoleForUserArgs = {
@@ -8302,6 +8351,13 @@ export type TokenAccessPractitionerDetailModel = {
   firstname?: Maybe<Scalars['String']>;
   phoneNumber?: Maybe<Scalars['String']>;
   surname?: Maybe<Scalars['String']>;
+};
+
+export type TotalAttendanceStatsReport = {
+  __typename?: 'TotalAttendanceStatsReport';
+  totalChildrenAttendedSessions: Scalars['Int'];
+  totalMonthlyAttendance: Scalars['Int'];
+  totalSessions: Scalars['Int'];
 };
 
 export type TrackAttendanceAttendeeModelInput = {
