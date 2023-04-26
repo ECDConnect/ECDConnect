@@ -107,13 +107,6 @@ export const HealthPromotion = ({
       return formattedHealthPromotion?.header?.map((item) => (
         <Fragment key={item}>
           <div className="flex items-start gap-2">
-            {!!formattedHealthPromotion?.descriptionListIcon && (
-              <img
-                alt="icon"
-                src={formattedHealthPromotion?.descriptionListIcon}
-                className="h-9 w-9"
-              />
-            )}
             <ul className="list-none">
               <Typography
                 type="markdown"
@@ -126,11 +119,7 @@ export const HealthPromotion = ({
         </Fragment>
       ));
     }
-  }, [
-    client,
-    formattedHealthPromotion?.descriptionListIcon,
-    formattedHealthPromotion?.header,
-  ]);
+  }, [client, formattedHealthPromotion?.header]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
