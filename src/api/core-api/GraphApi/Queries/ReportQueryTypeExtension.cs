@@ -415,6 +415,30 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     missedReportCount);
             }
 
+                var children = childRepo.GetAll().Where(c => c.IsActive == true 
+                    && c.Hierarchy.StartsWith(practitionerHieracry))
+                    .Include(c => c.User)
+                    .ToList();
+
+                // Get Child Age Groups
+                var childrenOutsideAgeGroupCount = children?.Count(c => currentDate >= c.User?.DateOfBirth.AddYears(3)
+                    && currentDate < c.User?.DateOfBirth.AddYears(+6));
+            var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount ?? 1 / (children?.Count ?? 1) * 100;
+
+                if (percentOfChildrenOutsideAgeGroup > 50)
+                {
+                    notifications.Add(new NotificationDisplay()
+                    {
+                        Subject = $"{percentOfChildrenOutsideAgeGroup} of children in incorrect age group",
+                        Icon = MetricsIconEnum.Warning.ToString(),
+                        Color = MetricsColorEnum.Warning.ToString(),
+                        Message = $"SmartStart programmes are designed for 3 to 5 year olds.",
+                        Notes = "",
+                        UserId = Guid.Parse(practitionerId),
+                        UserType = "practitioner"
+                    });
+                }
+
             // Start Get Children not progressed
             // Get children that haven't progressed for 2 or 3 periods
             // but only if:
@@ -424,16 +448,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (missedReportCount > 0
                         && currentDate >= reportOverDueEnd)
             {
-                var children = childRepo.GetAll().Where(c => c.IsActive == true 
-                    && c.Hierarchy.StartsWith(practitionerHieracry))
-                    .Include(c => c.User)
-                    .ToList();
-
-                // Get Child Age Groups
-                var childrenOutsideAgeGroupCount = children.Count(c => currentDate >= c.User.DateOfBirth.AddYears(3)
-                    && currentDate < c.User.DateOfBirth.AddYears(+6));
-                var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount / children.Count() * 100;
-
                 // Get Child Ids
                 var childIds = children
                     .Select(c => (Guid)c.Id)
