@@ -275,7 +275,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var c in classes)
                 {
                     //calculate attendance
-                    var attendedVsAbsent = new List<MetricReportStatItem>(); 
+                    var attendedVsAbsent = new List<MetricReportStatItem>();
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Attended", Value = attendanceAttended.ToString() });
                     attendedVsAbsent.Add(new MetricReportStatItem() { Name = "Absent", Value = attendanceUnAttended.ToString() });
 
@@ -298,7 +298,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string practitionerId)
         {
             var user = contextAccessor.HttpContext.GetUser();
-            var uId = user.Id;
+            var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
@@ -415,29 +415,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     missedReportCount);
             }
 
-                var children = childRepo.GetAll().Where(c => c.IsActive == true 
+            var children = childRepo.GetAll().Where(c => c.IsActive == true
                     && c.Hierarchy.StartsWith(practitionerHieracry))
                     .Include(c => c.User)
                     .ToList();
 
-                // Get Child Age Groups
-                var childrenOutsideAgeGroupCount = children?.Count(c => currentDate >= c.User?.DateOfBirth.AddYears(3)
-                    && currentDate < c.User?.DateOfBirth.AddYears(+6));
-            var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount ?? 1 / (children?.Count ?? 1) * 100;
+            // Get Child Age Groups
+            int percentOfChildrenOutsideAgeGroup = GetPercentChildrenOutsideAgeGroup(currentDate, children);
 
-                if (percentOfChildrenOutsideAgeGroup > 50)
+            if (percentOfChildrenOutsideAgeGroup > 50)
+            {
+                notifications.Add(new NotificationDisplay()
                 {
-                    notifications.Add(new NotificationDisplay()
-                    {
-                        Subject = $"{percentOfChildrenOutsideAgeGroup} of children in incorrect age group",
-                        Icon = MetricsIconEnum.Warning.ToString(),
-                        Color = MetricsColorEnum.Warning.ToString(),
-                        Message = $"SmartStart programmes are designed for 3 to 5 year olds.",
-                        Notes = "",
-                        UserId = Guid.Parse(practitionerId),
-                        UserType = "practitioner"
-                    });
-                }
+                    Subject = $"{percentOfChildrenOutsideAgeGroup} of children in incorrect age group",
+                    Icon = MetricsIconEnum.Warning.ToString(),
+                    Color = MetricsColorEnum.Warning.ToString(),
+                    Message = $"SmartStart programmes are designed for 3 to 5 year olds.",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner"
+                });
+            }
 
             // Start Get Children not progressed
             // Get children that haven't progressed for 2 or 3 periods
@@ -448,50 +446,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (missedReportCount > 0
                         && currentDate >= reportOverDueEnd)
             {
-                // Get Child Ids
-                var childIds = children
-                    .Select(c => (Guid)c.Id)
-                    .ToList();
-
-                // Get Progress reports for last 2 years (4 periods)
-                // TODO: use settings, what if periods change?
-                var childProgressReportsFor2Years = repoFactory.CreateGenericRepository<ChildProgressReport>()
-                    .GetAll()
-                    .Where(r => childIds.Contains(r.ChildId)
-                        && r.ReportDate >= reportPeriodStart.GetStartOfYear().AddYears(-2))
-                    .OrderBy(r => r.ReportDate);
-                Dictionary<Guid, List<(DateTime, int)>> childProgressHistory = GetChildProgressHistory(childProgressReportsFor2Years);
-
-                var hasProgressedInLast2Periods = 0;
-                var hasProgressedInLast3Periods = 0;
-
-                foreach (var childProgressList in childProgressHistory)
-                {
-                    var ordered = childProgressList.Value.OrderByDescending(p => p.Item1);
-                    var last2 = ordered?.Take(2).ToList();
-                    var last3 = ordered?.Take(3).ToList();
-
-                    if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
-                        hasProgressedInLast2Periods++;
-
-                    if (last3?.Count() == 3
-                        && (last3[0].Item2 > last3[1].Item2)
-                        || (last3[0].Item2 > last3[2].Item2)
-                        || (last3[1].Item2 > last3[2].Item2))
-                        hasProgressedInLast3Periods++;
-                }
-                // Calculate count of children who haven't progressed
-                var hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
-                var hasNotPorgressed3 = childIds.Count() - hasProgressedInLast3Periods;
+                var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
 
                 // Rule:
                 // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
                 // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
-                if (hasNotPorgressed2 > 0)
+                if (childProgress.notProgressedFor2Periods > 0)
                 {
                     notifications.Add(new NotificationDisplay()
                     {
-                        Subject = $"{hasNotPorgressed2} children havent progressed",
+                        Subject = $"{childProgress.notProgressedFor2Periods} children havent progressed",
                         // TODO: Warnings or errors?
                         Icon = MetricsIconEnum.Warning.ToString(),
                         Color = MetricsColorEnum.Warning.ToString(),
@@ -506,11 +470,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 // Rule:
                 // Only show this action if there is at least 1 child who did not progress from one reporting period to the next
                 // (for e.g.from Jan-Jun 2021 to Jul to Nov 2021) "
-                if (hasNotPorgressed3 > 0)
+                if (childProgress.notProgressedFor3Periods > 0)
                 {
                     notifications.Add(new NotificationDisplay()
                     {
-                        Subject = $"{hasNotPorgressed3} children havent progressed",
+                        Subject = $"{childProgress.notProgressedFor3Periods} children havent progressed",
                         // TODO: Warnings or errors?
                         Icon = MetricsIconEnum.Error.ToString(),
                         Color = MetricsColorEnum.Error.ToString(),
@@ -523,11 +487,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 }
             }
 
-            var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive 
+            var classReassignmentHistoryCount = classReassignmentHistoryRepo.GetAll().Count(ch => ch.IsActive
                 && ch.ReassignedToUser == practitionerId
-                && ch.ReassignedToDate >= previousMonthStart 
+                && ch.ReassignedToDate >= previousMonthStart
                 && ch.ReassignedToDate <= previousMonthEnd);
-            
+
             if (classReassignmentHistoryCount > 0)
             {
                 notifications.Add(new NotificationDisplay()
@@ -536,8 +500,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     // TODO: Warnings or errors?
                     Icon = MetricsIconEnum.Error.ToString(),
                     Color = MetricsColorEnum.Error.ToString(),
-                    Message = classReassignmentHistoryCount > 1 
-                        ? $"{classReassignmentHistoryCount} classes have been reassigned to other practitioners." 
+                    Message = classReassignmentHistoryCount > 1
+                        ? $"{classReassignmentHistoryCount} classes have been reassigned to other practitioners."
                         : $"A class has been assigned to a different practitioner.",
                     Notes = "",
                     UserId = Guid.Parse(practitionerId),
@@ -549,17 +513,63 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return notifications;
         }
 
+        private static (int notProgressedFor2Periods, int notProgressedFor3Periods) GetChildProgress(
+            IGenericRepositoryFactory repoFactory,
+            DateTime reportPeriodStart,
+            List<Child> children)
+        {
+            // Get Child Ids
+            var childIds = children
+                .Select(c => (Guid)c.Id)
+                .ToList();
+
+            // Get Progress reports for last 2 years (4 periods)
+            // TODO: use settings, what if periods change?
+            var childProgressReportsFor2Years = repoFactory.CreateGenericRepository<ChildProgressReport>()
+                .GetAll()
+                .Where(r => childIds.Contains(r.ChildId)
+                    && r.ReportDate >= reportPeriodStart.GetStartOfYear().AddYears(-2))
+                .OrderBy(r => r.ReportDate);
+            Dictionary<Guid, List<(DateTime, int)>> childProgressHistory = GetChildProgressHistory(childProgressReportsFor2Years);
+
+            var hasProgressedInLast2Periods = 0;
+            var hasProgressedInLast3Periods = 0;
+
+            foreach (var childProgressList in childProgressHistory)
+            {
+                var ordered = childProgressList.Value.OrderByDescending(p => p.Item1);
+                var last2 = ordered?.Take(2).ToList();
+                var last3 = ordered?.Take(3).ToList();
+
+                if (last2?.Count() == 2 && last2[0].Item2 > last2[1].Item2)
+                    hasProgressedInLast2Periods++;
+
+                if (last3?.Count() == 3
+                    && (last3[0].Item2 > last3[1].Item2)
+                    || (last3[0].Item2 > last3[2].Item2)
+                    || (last3[1].Item2 > last3[2].Item2))
+                    hasProgressedInLast3Periods++;
+            }
+            // Calculate count of children who haven't progressed
+            int hasNotPorgressed2 = childIds.Count() - hasProgressedInLast2Periods;
+            int hasNotPorgressed3 = childIds.Count() - hasProgressedInLast3Periods;
+
+            return (hasNotPorgressed2, hasNotPorgressed3);
+        }
+
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
-        public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
+        public async Task<List<ChildProgressDisplay>> GetActionItemChildProgress(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] AttendanceTrackingRepository attendanceRepo,
-            [Service] IHolidayService<Holiday> holidayService,
-            [Service] ChildAttendanceReport attendanceReportService,
             HierarchyEngine hierarchyEngine,
-            [Service] UserManager<ApplicationUser> userManager,
             string practitionerId)
         {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
+
+            if (uId == null)
+                throw new ArgumentNullException(nameof(uId));
+
             DateTime currentDate = DateTime.Now;
 
             DateTime currentMonthStart = currentDate.GetStartOfMonth();
@@ -567,9 +577,106 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
             DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
+
+            var isPeriod1 = previousMonthStart.Month <= 7;
+            var reportPeriodStart = (isPeriod1 ? new DateOnly(previousMonthStart.Year, 1, 1) : new DateOnly(previousMonthStart.Year, 7, 1))
+                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+
+            var children = await childRepo.GetAll().Where(c => c.IsActive == true
+                    && c.Hierarchy.StartsWith(practitionerHieracry))
+                    .Include(c => c.User)
+                    .ToListAsync();
+
+            var childProgress = GetChildProgress(repoFactory, reportPeriodStart, children);
+            var notifications = new List<ChildProgressDisplay>();
+
+            if (childProgress.notProgressedFor2Periods > 0)
+                notifications.Add(new ChildProgressDisplay()
+                {
+                    Subject = $"{childProgress.notProgressedFor2Periods} children haven't progressed",
+                    Icon = MetricsIconEnum.Warning.ToString(),
+                    Color = MetricsColorEnum.Warning.ToString(),
+                    Message = $"For 2 reporting periods.",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner",
+                    numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods,
+                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor2Periods/ children?.Count ?? 1,
+                    totalChildren = children?.Count ?? 0,
+                    numberOfPeriods = 2
+                });
+
+            if (childProgress.notProgressedFor3Periods > 0)
+                notifications.Add(new ChildProgressDisplay()
+                {
+                    Subject = $"{childProgress.notProgressedFor3Periods} children haven't progressed",
+                    Icon = MetricsIconEnum.Warning.ToString(),
+                    Color = MetricsColorEnum.Warning.ToString(),
+                    Message = $"For 3 reporting periods.",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner",
+                    numberOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods,
+                    percentageOfChildrenNotProgressedForPeriod = childProgress.notProgressedFor3Periods / children?.Count ?? 1,
+                    totalChildren = children?.Count ?? 0,
+                    numberOfPeriods = 3
+                });
+
+            return notifications;
         }
 
             [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        public async Task<AgeSpreadDisplay> GetActionItemAgeSpread(
+            IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor contextAccessor,
+            HierarchyEngine hierarchyEngine,
+            string practitionerId)
+        {
+            DateTime currentDate = DateTime.Now;
+
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user.Id;
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+
+            var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
+            var children = childRepo.GetAll().Where(c => c.IsActive == true
+                    && c.Hierarchy.StartsWith(practitionerHieracry))
+                    .Include(c => c.User)
+                    .ToList();
+
+            // Get Child Age Groups
+            int percentOfChildrenOutsideAgeGroup = GetPercentChildrenOutsideAgeGroup(currentDate, children);
+
+            if (percentOfChildrenOutsideAgeGroup > 50)
+            {
+                return new AgeSpreadDisplay()
+                {
+                    Subject = $"{percentOfChildrenOutsideAgeGroup} of children in incorrect age group",
+                    Icon = MetricsIconEnum.Warning.ToString(),
+                    Color = MetricsColorEnum.Warning.ToString(),
+                    Message = $"SmartStart programmes are designed for 3 to 5 year olds.",
+                    Notes = "",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner",
+                    PercentChildrenOutsideAgeGroup = percentOfChildrenOutsideAgeGroup
+                };
+            }
+
+            return null;
+        }
+
+        private static int GetPercentChildrenOutsideAgeGroup(DateTime currentDate, List<Child> children)
+        {
+            var childrenOutsideAgeGroupCount = children?.Count(c => currentDate >= c.User?.DateOfBirth.AddYears(3)
+                            && currentDate < c.User?.DateOfBirth.AddYears(+6));
+            var percentOfChildrenOutsideAgeGroup = childrenOutsideAgeGroupCount ?? 1 / (children?.Count ?? 1) * 100;
+            return percentOfChildrenOutsideAgeGroup;
+        }
+
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ClassReassignmentDisplay>> GetActionItemClassReassignmentHistory(
             IGenericRepositoryFactory repoFactory,
             [Service] UserManager<ApplicationUser> userManager,

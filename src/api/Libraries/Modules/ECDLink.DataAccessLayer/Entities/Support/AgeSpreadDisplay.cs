@@ -7,11 +7,8 @@ using System.Collections.Generic;
 namespace ECDLink.DataAccessLayer.Entities
 {
     [EntityPermission(PermissionGroups.REPORTING)]
-    public class ClassReassignmentDisplay : NotificationDisplay
+    public class AgeSpreadDisplay : NotificationDisplay
     {
-        public ClassroomGroup ReassignedClassroomGroup { get; set; }
-        public ApplicationUser ReassignedFromUser { get; set; }
-        public ApplicationUser ReassignedToUser { get; set; }
-
+        public int PercentChildrenOutsideAgeGroup { get; set; }
     }
 }
