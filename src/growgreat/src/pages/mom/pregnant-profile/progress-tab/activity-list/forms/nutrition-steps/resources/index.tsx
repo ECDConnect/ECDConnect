@@ -14,7 +14,6 @@ export const ResourcesStep = ({
   return (
     <>
       <div className="flex flex-col gap-4 p-4">
-        <Divider dividerType="dashed" />
         <Typography
           type="h4"
           color="black"
