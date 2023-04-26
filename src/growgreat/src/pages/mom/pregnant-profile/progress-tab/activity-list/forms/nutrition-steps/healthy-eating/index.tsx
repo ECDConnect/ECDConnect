@@ -160,22 +160,28 @@ export const HealthyEatingStep = ({
   }, [setEnableButton]);
 
   const renderFoodGroupsNumber = useMemo(() => {
-    return (
-      <div className="flex gap-2 px-4">
-        <div
-          className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
-            nutritionAnswers.length
-          )} items-center justify-center font-bold text-white`}
-        >
-          {nutritionAnswers.includes(noneOption) ? 0 : nutritionAnswers.length}
+    if (!!nutritionAnswers.length && !nutritionAnswers.includes(noneOption)) {
+      return (
+        <div className="flex gap-2 px-4">
+          <div
+            className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
+              nutritionAnswers.length
+            )} items-center justify-center font-bold text-white`}
+          >
+            {nutritionAnswers.includes(noneOption)
+              ? 0
+              : nutritionAnswers.length}
+          </div>
+          <Typography
+            type="h4"
+            color={getGroupColor(nutritionAnswers.length)}
+            text={'Food groups'}
+          />
         </div>
-        <Typography
-          type="h4"
-          color={getGroupColor(nutritionAnswers.length)}
-          text={'Food groups'}
-        />
-      </div>
-    );
+      );
+    } else {
+      return <></>;
+    }
   }, [nutritionAnswers]);
 
   const renderDietarySentence = useMemo(() => {
@@ -215,15 +221,19 @@ export const HealthyEatingStep = ({
       );
     }
 
-    return (
-      <Typography
-        color="textDark"
-        text="Dietary diversity is great!"
-        type={'body'}
-        weight="semibold"
-        className={'p-4'}
-      />
-    );
+    if (nutritionAnswers.length > 6) {
+      return (
+        <Typography
+          color="textDark"
+          text="Dietary diversity is great!"
+          type={'body'}
+          weight="semibold"
+          className={'p-4'}
+        />
+      );
+    }
+
+    return <></>;
   }, [nutritionAnswers.length]);
 
   if (isTipPage) {

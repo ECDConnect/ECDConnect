@@ -281,18 +281,32 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          {!!visit?.actualVisitDate && (
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text={new Date(visit?.actualVisitDate).toLocaleDateString(
-                'en-ZA',
-                options
-              )}
-              color="textMid"
-            />
-          )}
+          {!!visit?.actualVisitDate &&
+            visit?.visitType?.normalizedName === 'Additional visits' && (
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text={new Date(visit?.actualVisitDate).toLocaleDateString(
+                  'en-ZA',
+                  options
+                )}
+                color="textMid"
+              />
+            )}
+          {!!visit?.plannedVisitDate &&
+            visit?.visitType?.normalizedName !== 'Additional visits' && (
+              <Typography
+                type="body"
+                align="left"
+                weight="skinny"
+                text={new Date(visit?.plannedVisitDate).toLocaleDateString(
+                  'en-ZA',
+                  options
+                )}
+                color="textMid"
+              />
+            )}
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />

@@ -1,4 +1,4 @@
-import { Alert, Divider } from '@ecdlink/ui';
+import { Alert, Divider, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
@@ -27,12 +27,18 @@ export const ComplementaryFeedingStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="Mixed feeding"
-        section="Mixed feeding"
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="Mixed feeding"
+          section="Mixed feeding"
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

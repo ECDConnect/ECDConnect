@@ -1,4 +1,4 @@
-import { Alert, Divider } from '@ecdlink/ui';
+import { Alert, Divider, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
@@ -28,12 +28,18 @@ export const MixedBenefitsOfBreastfeedingStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="Mixed feeding"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="Mixed feeding"
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

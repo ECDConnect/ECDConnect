@@ -1,4 +1,11 @@
-import { Alert, Button, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  DialogPosition,
+  Dialog,
+  Button,
+  FormInput,
+  Typography,
+} from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
@@ -107,13 +114,19 @@ export const FormulaMilkNotesStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle={visitSection}
-        section={visitSection}
-        client={caregiverName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle={visitSection}
+          section={visitSection}
+          client={caregiverName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
