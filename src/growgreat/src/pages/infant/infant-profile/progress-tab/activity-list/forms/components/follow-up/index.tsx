@@ -1,6 +1,10 @@
 import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
-import { InfantDto, toCamelCase } from '@ecdlink/core';
+import {
+  InfantDto,
+  getStringFromClassNameOrId,
+  toCamelCase,
+} from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import { Fragment, useCallback, useMemo } from 'react';
 import { useSelector } from 'react-redux';
@@ -11,14 +15,49 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
 
 import { activitiesColours, activitiesTypes } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
+import {
+  getInfantPreviousVisitSelector,
+  getInfantVisitByVisitIdSelector,
+} from '@/store/infant/infant.selectors';
+import { progressSteps } from '../../../../walkthrough/steps';
+
+export interface FollowUpWalkthroughData {
+  progressBar: {
+    message: string;
+    label: string;
+    value: number;
+    primaryColour: Colours;
+    secondaryColour: Colours;
+  };
+  growCard: {
+    comment: string;
+    color: string;
+  };
+  weightCard: {
+    value: string;
+    color: string;
+    comment: string;
+  };
+  infoCard: {
+    [key: string]: {
+      comment: string;
+      visitData: { visitName: string };
+    }[];
+  };
+}
 
 interface FollowUpComponentProps {
   infant: InfantDto;
+  walkthroughData?: FollowUpWalkthroughData;
 }
 
 interface Status {
@@ -30,13 +69,24 @@ interface Status {
 
 type StatusType = keyof Status;
 
-export const FollowUp = ({ infant }: FollowUpComponentProps) => {
+export const FollowUp = ({
+  infant,
+  walkthroughData,
+}: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
   );
 
+  const { visitId } = useParams<InfantProfileParams>();
+
+  const visit = useSelector((state: RootState) =>
+    getInfantVisitByVisitIdSelector(state, visitId)
+  );
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
+  );
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -74,9 +124,10 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
   const { weight, length, muac, grow } = useMemo(() => {
     const weight = {
       name: 'Weight',
-      value: previousVisit?.weight,
-      color: previousVisit?.weightColor,
-      comment: previousVisit?.weightComment,
+      value: walkthroughData?.weightCard.value || previousVisit?.weight,
+      color: walkthroughData?.weightCard.color || previousVisit?.weightColor,
+      comment:
+        walkthroughData?.weightCard.comment || previousVisit?.weightComment,
     };
     const length = {
       name: 'Length',
@@ -96,7 +147,22 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     };
 
     return { weight, length, muac, grow };
-  }, [previousVisit]);
+  }, [
+    previousVisit?.growComment,
+    previousVisit?.growCommentColor,
+    previousVisit?.length,
+    previousVisit?.lengthColor,
+    previousVisit?.lengthComment,
+    previousVisit?.muac,
+    previousVisit?.muacColor,
+    previousVisit?.muacComment,
+    previousVisit?.weight,
+    previousVisit?.weightColor,
+    previousVisit?.weightComment,
+    walkthroughData?.weightCard.color,
+    walkthroughData?.weightCard.comment,
+    walkthroughData?.weightCard.value,
+  ]);
 
   const progressBarOptions = useMemo((): {
     primaryColour: Colours;
@@ -105,33 +171,33 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
-          } ${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
           message: `${
-            !!caregiverName ? '& ' + caregiverName : ''
+            !!caregiverName ? caregiverName + ' &' : ''
           } ${name} need support`,
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
-          message: `${!!caregiverName ? '& ' + caregiverName : ''} ${name} ${
+          message: `${!!caregiverName ? caregiverName + ' &' : ''} ${name} ${
             !!caregiverName ? 'are' : 'is'
           } going well`,
           value: 100,
+        };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${
+            !!caregiverName ? caregiverName + ' &' : ''
+          } ${name} need urgent support`,
+          value: 25,
         };
     }
   }, [caregiverName, name, previousVisit?.scoreColor]);
@@ -156,6 +222,8 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
   };
 
   const groupedData = useMemo(() => {
+    if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
+
     const groupedData = previousVisit?.visitDataStatus?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const color = toCamelCase(currentValue?.color || '');
@@ -170,24 +238,54 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
     );
 
     return groupedData;
-  }, [previousVisit?.visitDataStatus]) as Status | undefined;
+  }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
+
+  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven’t visited ${caregiverName} & ${name} yet`}
+          />
+        </div>
+      </div>
+    );
+  }
 
   return (
     <>
-      <div className="flex gap-4">
+      <div
+        className="flex h-16 gap-4"
+        id={getStringFromClassNameOrId(progressSteps[0].target)}
+      >
         <Typography
           className="w-2/4"
           type="h4"
-          text={progressBarOptions.message}
+          text={
+            walkthroughData?.progressBar.message || progressBarOptions.message
+          }
         />
         <div className="w-2/4">
           <ProgressBar
             className="h-2"
-            label={previousVisit?.score || ''}
+            label={
+              walkthroughData?.progressBar.label || previousVisit?.score || ''
+            }
             subLabel="score"
-            value={progressBarOptions.value}
-            primaryColour={progressBarOptions.primaryColour}
-            secondaryColour={progressBarOptions.secondaryColour}
+            value={
+              walkthroughData?.progressBar.value || progressBarOptions.value
+            }
+            primaryColour={
+              walkthroughData?.progressBar.primaryColour ||
+              progressBarOptions.primaryColour
+            }
+            secondaryColour={
+              walkthroughData?.progressBar.secondaryColour ||
+              progressBarOptions.secondaryColour
+            }
           />
         </div>
       </div>
@@ -196,69 +294,77 @@ export const FollowUp = ({ infant }: FollowUpComponentProps) => {
         className="mb-8"
         type="h4"
         text={`Here is a summary of how ${name} ${
-          !!caregiverName ? '&' + caregiverName : ''
+          !!caregiverName ? '& ' + caregiverName : ''
         } ${!!caregiverName ? 'are' : 'is'} doing`}
       />
-      {grow.comment && (
-        <GrowthCard
-          text={grow.comment || ''}
-          color={getColorAndIcon(grow.color || '').primaryColour}
-          icon={getColorAndIcon(grow.color || '').icon}
-        />
-      )}
-      {[weight, length, muac].map((item) => {
-        if (!item.value) return <Fragment key={item.name} />;
-
-        return (
-          <Card
-            key={item.name}
-            className="my-4"
-            label={item.name}
-            value={item.value || ''}
-            date={
-              previousVisit?.visitDataStatus?.[0]?.insertedDate || ''
-            } /* TODO: add the correct date */
-            message={item.comment || ''}
-            color={item.color as CardProps['color']}
+      <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
+        {(!!walkthroughData?.growCard || !!grow?.comment) && (
+          <GrowthCard
+            text={walkthroughData?.growCard.comment || grow?.comment || ''}
+            color={
+              getColorAndIcon(
+                walkthroughData?.growCard.color || grow.color || ''
+              ).primaryColour
+            }
+            icon={
+              getColorAndIcon(
+                walkthroughData?.growCard.color || grow.color || ''
+              ).icon
+            }
           />
-        );
-      })}
-      <Divider dividerType="dashed" className="mt-4 mb-8" />
-      {!!groupedData &&
-        Object.keys(groupedData).map((item, index) => {
-          const { icon, primaryColour, secondaryColour } =
-            getColorAndIcon(item);
-
-          const dataByStatus = groupedData[item as StatusType];
-          const uniqueData = dataByStatus.filter((object, index, array) => {
-            return (
-              index ===
-              array.findIndex(
-                (newObject) => newObject.comment === object.comment
-              )
-            );
-          });
+        )}
+        {[weight, length, muac].map((item) => {
+          if (!item.value) return <Fragment key={item.name} />;
 
           return (
-            <InfoCard
-              key={index}
-              className="my-6"
-              icon={icon}
-              items={uniqueData.map((data): Item => {
-                const { icon, color } = getVisitIcon(
-                  data?.visitData?.visitName || ''
-                );
-                return {
-                  customIcon: icon,
-                  iconHexBackgroundColour: color,
-                  title: `${data.comment}`,
-                };
-              })}
-              primaryColour={primaryColour}
-              secondaryColour={secondaryColour}
+            <Card
+              key={item.name}
+              className="my-4"
+              label={item.name}
+              value={item.value || ''}
+              date={previousPlannedVisit?.plannedVisitDate || ''}
+              message={item.comment || ''}
+              color={item.color as CardProps['color']}
             />
           );
         })}
+        <Divider dividerType="dashed" className="mt-4 mb-8" />
+        {!!groupedData &&
+          Object.keys(groupedData).map((item, index) => {
+            const { icon, primaryColour, secondaryColour } =
+              getColorAndIcon(item);
+
+            const dataByStatus = groupedData[item as StatusType];
+            const uniqueData = dataByStatus.filter((object, index, array) => {
+              return (
+                index ===
+                array.findIndex(
+                  (newObject) => newObject.comment === object.comment
+                )
+              );
+            });
+
+            return (
+              <InfoCard
+                key={index}
+                className="my-6"
+                icon={icon}
+                items={uniqueData.map((data): Item => {
+                  const { icon, color } = getVisitIcon(
+                    data?.visitData?.visitName || ''
+                  );
+                  return {
+                    customIcon: icon,
+                    iconHexBackgroundColour: color,
+                    title: `${data.comment}`,
+                  };
+                })}
+                primaryColour={primaryColour}
+                secondaryColour={secondaryColour}
+              />
+            );
+          })}
+      </div>
     </>
   );
 };

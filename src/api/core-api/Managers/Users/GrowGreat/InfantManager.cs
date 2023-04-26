@@ -94,7 +94,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     GenderId = input.GenderId,
                     WeightAtBirth = input.WeightAtBirth,
                     LengthAtBirth = input.LengthAtBirth,
-                    Completed24MonthVisits = false
+                    Completed24MonthVisits = false,
+                    ClickedVisitTab = false,
+                    ClickedProgressTab = false,
+                    ClickedReferralsTab = false,
+                    ClickedContactTab = false
                 };
             }
             else
@@ -115,7 +119,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
-                        Completed24MonthVisits = false
+                        Completed24MonthVisits = false,
+                        ClickedVisitTab = false,
+                        ClickedProgressTab = false,
+                        ClickedReferralsTab = false,
+                        ClickedContactTab = false
                     };
                 }
                 else
@@ -134,7 +142,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         GenderId = input.GenderId,
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
-                        Completed24MonthVisits = false
+                        Completed24MonthVisits = false,
+                        ClickedVisitTab = false,
+                        ClickedProgressTab = false,
+                        ClickedReferralsTab = false,
+                        ClickedContactTab = false
                     };
                 }
             }
@@ -151,7 +163,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         public Infant UpdateInfant(string id, InfantModel input)
         {
             var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
-            
+
             var infantUser = infantToUpdate.User;
             infantUser.DateOfBirth = (DateTime)input.DateOfBirth;
 
@@ -159,7 +171,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
-            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false: input.Completed24MonthVisits;
+            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
+            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
+            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
+            infantToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
 
             return _infantRepo.Update(infantToUpdate);
         }
@@ -177,6 +193,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
         }
 
+        public Boolean UpdateInfantCaregiverToMother(string infantId, Guid motherId)
+        {
+            // Called from add mother in mother manager.
+            // Business Rule scenario 1 at the top of this file is enforced
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
+            infantToUpdate.MotherCaregiverId = motherId;
+            infantToUpdate.CaregiverId = null;
+            infantToUpdate.UpdatedDate = DateTime.Now;
+            infantToUpdate.UpdatedBy = _applicationUserId;
+            _infantRepo.Update(infantToUpdate);
+            return true;
+        }
+
         public Infant UpdateInfantCaregiverAddress(string id, InfantModel input)
         {
             var entityToUpdate = _addressRepo.GetAll().Where(x => x.Id == input.Caregiver.SiteAddress.Id).FirstOrDefault();
@@ -187,6 +216,45 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _addressRepo.Update(entityToUpdate);
 
             return _infantRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
+        }
+
+        public Infant UpdateInfantCaregiver(string infantId, InfantModel input)
+        {
+            // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
+            Caregiver caregiver = _caregiverRepo.GetAll().Where(x => x.Id == input.CaregiverId).OrderBy(x => x.Id).FirstOrDefault();
+            Mother mother = _motherRepo.GetAll().Where(x => x.UserId == input.CaregiverId.ToString()).OrderBy(x => x.Id).FirstOrDefault();
+
+            var infantToUpdate = _infantRepo.GetAll().Where(x => x.User.Id == infantId).FirstOrDefault();
+            infantToUpdate.UpdatedDate = DateTime.Now;
+            infantToUpdate.UpdatedBy = _applicationUserId;
+
+            if (mother == null && caregiver == null)
+            {
+                caregiver = GetCaregiverFromInput(input);
+                caregiver = _caregiverRepo.Insert(caregiver);
+
+                infantToUpdate.MotherCaregiverId = null;
+                infantToUpdate.CaregiverId = caregiver.Id;
+                infantToUpdate.Caregiver = caregiver;
+            }
+            else
+            {
+                if (mother != null)
+                {
+                    infantToUpdate.MotherCaregiverId = input.CaregiverId;
+                    infantToUpdate.CaregiverId = null;
+                    infantToUpdate.MotherCaregiverId = mother.Id;
+                    infantToUpdate.Mother = mother;
+                }
+                else
+                {
+                    infantToUpdate.MotherCaregiverId = null;
+                    infantToUpdate.CaregiverId = caregiver.Id;
+                    infantToUpdate.Caregiver = caregiver;
+                }
+            }
+
+            return _infantRepo.Update(infantToUpdate);
         }
 
         private ApplicationUser GetUserFromInputModel(InfantModel input)
@@ -203,6 +271,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 VerifiedByHomeAffairs = false,
                 IsActive = true,
                 LastSeen = DateTime.Now,
+                IsImported = false
             };
 
         }
@@ -282,7 +351,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
             // Green or neutral Alerts
             //
-            
+
 
             // show "booked" if a visit has been scheduled in the calendar -> DEVELOPMENT PENDING 
             // don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING 
@@ -363,11 +432,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (totalMonths <= 3)
             {
                 var lastVisit = _visitManager.GetLastCompletedVisitId(child.Id.ToString(), Constants.GGSettings.client_child);
+
                 if (lastVisit == Guid.Empty)
                 {
-                    statusInfo.Color = MetricsIconEnum.None.ToString();
-                    statusInfo.Icon = MetricsIconEnum.None.ToString();
-                    statusInfo.Subject = Constants.GGSettings.client_new;
+                    if (child.WeightAtBirth != null && (double)child.WeightAtBirth < 2.5)
+                    {
+                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Subject = Constants.GGSettings.low_birth_weight;
+                    } else
+                    {
+                        statusInfo.Color = MetricsIconEnum.Success.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_new;
+                    }
                 }
             }
 
@@ -511,5 +589,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
+        public List<Infant> GetAllInfantsForCaregiver(string caregiverId)
+        {
+            List<Infant> infants = _infantRepo.GetAll().Where(x => x.CaregiverId.ToString() == caregiverId && x.IsActive == true).OrderBy(y => y.User.FirstName).ToList();
+            foreach (var infant in infants)
+            {
+                infant.StatusInfo = GetStatusInfo(infant, true);
+                infant.NextVisitDate = GetClientsNextVisitDate(infant.Id);
+            }
+
+            return infants;
+        }
+
+       
     }
 }

@@ -1,12 +1,10 @@
 import {
-  ActionModal,
   BannerWrapper,
   Button,
   Card,
   Divider,
   LoadingSpinner,
   Typography,
-  DialogPosition,
 } from '@ecdlink/ui';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
@@ -23,7 +21,6 @@ import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { Walkthrough } from './walkthrough';
 import { RootState } from '@/store/types';
 import { getInfantById } from '@/store/infant/infant.selectors';
-import { useDialog } from '@ecdlink/core';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 
@@ -43,8 +40,6 @@ export const ActivityInfoPage = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
-  const dialog = useDialog();
-
   const { isLoading } = useThunkFetchCall(
     'visits',
     VisitActions.GET_MORE_INFORMATION
@@ -58,43 +53,8 @@ export const ActivityInfoPage = ({
     getInfantById(state, infantId)
   );
 
-  const OnWalkThrough = (detailText?: string) => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => {
-        return (
-          <ActionModal
-            className="z-50"
-            title="Hello!"
-            detailText="Would you like me to show you how to use this screen?"
-            customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Yes, help me!',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onClose();
-                  setIsDisplayWalkthrough(true);
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'No, skip',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'ClockIcon',
-                onClick: onClose,
-              },
-            ]}
-          />
-        );
-      },
-    });
+  const OnWalkThrough = () => {
+    setIsDisplayWalkthrough(true);
   };
 
   const renderContent = useMemo(() => {
@@ -221,7 +181,17 @@ export const ActivityInfoPage = ({
               text={replaceBraces(moreInformation.descriptionC, client || '')}
             />
           )}
+          {!!moreInformation?.showDividerC && (
+            <Divider dividerType="dashed" className="my-2" />
+          )}
           {/* ------- D ------- */}
+          {!!moreInformation.headerD && (
+            <Typography
+              type="h4"
+              text={replaceBraces(moreInformation.headerD, client || '')}
+              className="mb-4"
+            />
+          )}
           {!!moreInformation.descriptionD && (
             <div className="flex gap-2">
               {!!moreInformation?.descriptionDIcon && (
@@ -327,7 +297,7 @@ export const ActivityInfoPage = ({
             textColor={'white'}
             className={'bottom-10 mt-2 max-h-10 w-full'}
             iconPosition={'start'}
-            onClick={OnWalkThrough}
+            onClick={() => setDisplayHelp(false)}
           />
         </div>
       </div>

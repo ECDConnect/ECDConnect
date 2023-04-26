@@ -16,3 +16,14 @@ export const getCaregiverById = (id?: string) =>
       return caregivers.find((caregiver) => caregiver.id === id);
     }
   );
+
+export const getCaregiverClientsByIdSelector = (
+  state: RootState,
+  caregiverId: string
+) =>
+  state.caregivers.caregiverClientsList?.find(
+    (item) => item.id === caregiverId
+  );
+
+export const getCaregiverClientsSelector = (state: RootState) =>
+  state.caregivers.caregiverClientsList;

@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.SmartStart.Reports.Models;
+using HotChocolate.Data.Sorting.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -248,7 +249,7 @@ namespace ECDLink.SmartStart.Reports
                     foreach (var learner in learners)
                     {
                         var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
-
+                        var allAttendance = new List<List<Tuple<int, int>>>();
                         var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
                         // Do monthly Tracking here
@@ -273,13 +274,41 @@ namespace ECDLink.SmartStart.Reports
                                 attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
                             }
                             monthlyAttendance.Add(dt, attendance);
+                            allAttendance.Add(attendance);
                         }
                         var reports = GetMonthlyReport(monthlyAttendance);
+                        //for (int i = startMonth.Month; i <= endMonth.Month; i++)
+                        //{
+
+
+                        //}
+                        //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
+                        SortedDictionary<int, int> attendanceDays = new SortedDictionary<int, int>();
+                        int daysInMonth = DateTime.DaysInMonth(startMonth.Year, startMonth.Month);
+                        for (int i = 1; i <= daysInMonth; i++)
+                        {
+                            DateTime dtCheck = Convert.ToDateTime(startMonth.Year + "-" + startMonth.Month + "-" + i.ToString());
+                            if (dtCheck.DayOfWeek != DayOfWeek.Sunday && dtCheck.DayOfWeek != DayOfWeek.Saturday)
+                            {
+                                if (!attendanceDays.ContainsKey(i))
+                                    attendanceDays[i] = 0;
+                            }
+
+                        }
 
                         if (reports != null)
                         {
                             foreach (var report in reports.OrderByDescending(x => x.MonthNumber))
                             {
+                                SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
+
+                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId).OrderBy(p => p.AttendanceDate).ToList();
+
+                                foreach (var attendance in attendances)
+                                {
+                                    totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
+                                }
+
                                 classReports.Add(new ClassroomGroupChildAttendanceReportModel()
                                 {
                                     ChildUserId = learner.UserId,
@@ -289,7 +318,8 @@ namespace ECDLink.SmartStart.Reports
                                     TotalExpectedAttendance = report.ExpectedAttendance,
                                     AttendancePercentage = report.AttendancePercentage,
                                     Month = report.MonthNumber,
-                                    Year = report.Year
+                                    Year = report.Year, 
+                                    Attendance = totalAttendance
                                 });
                             }
                         }
@@ -300,6 +330,34 @@ namespace ECDLink.SmartStart.Reports
             return classReports;
         }
 
+        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        {
+            ClassroomGroupChildAttendanceReportOverviewModel overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
+            overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
 
-    }
+            SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
+
+            foreach (var report in overviewReport.ClassroomAttendanceReport)
+            {
+                foreach (var dayAttendance in report.Attendance)
+                {
+                    if (totalAttendance.ContainsKey(dayAttendance.Key))
+                        totalAttendance[dayAttendance.Key] = totalAttendance[dayAttendance.Key] + dayAttendance.Value;
+                    else
+                        totalAttendance.Add(dayAttendance.Key, dayAttendance.Value);
+                }
+
+            }
+            overviewReport.TotalAttendance = totalAttendance;
+            TotalAttendanceStatsReport stats = new TotalAttendanceStatsReport();
+            stats.TotalSessions = totalAttendance.Count;
+            stats.TotalChildrenAttendedSessions = overviewReport.ClassroomAttendanceReport.Count();
+            stats.TotalMonthlyAttendance = totalAttendance.Count();
+            overviewReport.TotalAttendanceStatsReport = stats;
+
+            return overviewReport;
+        }
+
+
+        }
 }

@@ -16,6 +16,7 @@ import { LogoSvgs } from '@/utils/common/svg.utils';
 import { useCallback, useEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useDialog } from '@ecdlink/core';
+import { PREGNANT_PROFILE_TABS } from '..';
 
 const HEADER_HEIGHT = 122;
 
@@ -113,7 +114,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'PhoneIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-numbers`);
+                  history.push(`${location.pathname}/edit-numbers`, {
+                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
               {
@@ -124,7 +127,9 @@ export const Contact: React.FC = () => {
                 leadingIcon: 'LocationMarkerIcon',
                 onClick: () => {
                   onSubmit();
-                  history.push(`${location.pathname}/edit-address`);
+                  history.push(`${location.pathname}/edit-address`, {
+                    activeTabIndex: PREGNANT_PROFILE_TABS.CONTACT,
+                  });
                 },
               },
             ]}
@@ -147,9 +152,14 @@ export const Contact: React.FC = () => {
           !isLargeName ? mother?.user?.surname || '' : ''
         }`}
       />
-      <Typography type="h5" weight="bold" lineHeight="snug" text="Mother" />
-
-      <div className="mt-4 flex-col">
+      <Typography
+        type="h5"
+        weight="bold"
+        lineHeight="snug"
+        text="Mother"
+        className="mb-4"
+      />
+      <div id="walkthrough-contact-step-1">
         <Typography
           type="h4"
           weight="bold"
@@ -174,9 +184,8 @@ export const Contact: React.FC = () => {
           onClick={callForHelp}
           className="mt-2"
         />
-      </div>
-      <div className="mt-4 flex-col">
         <Typography
+          className="mt-4"
           type="h4"
           weight="bold"
           lineHeight="snug"
@@ -208,15 +217,14 @@ export const Contact: React.FC = () => {
             text={`WhatsApp client`}
           />
         </Button>
-
-        <Alert
-          type={'info'}
-          className="items-left justify-left mt-4 flex"
-          title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
-        />
-        <Divider className="p-4" dividerType="dashed" />
       </div>
-      <div className="flex-col">
+      <Alert
+        type={'info'}
+        className="items-left justify-left mt-4 flex"
+        title={`WhatsApp and phone calls will be charged at your standard carrier rates.`}
+      />
+      <Divider className="p-4" dividerType="dashed" />
+      <div id="walkthrough-contact-step-2">
         <Typography type="h4" weight="bold" lineHeight="snug" text="Address" />
         <Typography
           type="h5"
@@ -248,6 +256,7 @@ export const Contact: React.FC = () => {
           onClick={navigate(ROUTES.CLIENTS.MOM_PROFILE.VISITS.BOOK_VISIT)}
         />
         <Button
+          id="walkthrough-contact-step-3"
           text="Edit information"
           icon="PencilIcon"
           type="outlined"

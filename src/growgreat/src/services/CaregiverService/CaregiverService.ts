@@ -1,6 +1,7 @@
 import { CaregiverDto, Config } from '@ecdlink/core';
-import { CaregiverInput } from '@ecdlink/graphql';
+import { CaregiverInput, CaregiverClients } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
 class CaregiverService {
   _accessToken: string;
 
@@ -226,6 +227,113 @@ class CaregiverService {
     }
 
     return response.data.data.createCaregiver;
+  }
+
+  async getCaregiverClients(caregiverId: string): Promise<CaregiverClients> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { caregiverClients: CaregiverClients };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetCaregiverClients($caregiverId: String) {
+          caregiverClients(caregiverId: $caregiverId) {
+              mother {
+                  id
+                  user {
+                    id
+                    firstName
+                  }
+                  statusInfo {
+                      subject
+                      icon
+                      color
+                      notes
+                  }
+              }
+              infants {
+                  id 
+                  user {
+                    id
+                    firstName
+                  }
+                  statusInfo {
+                      subject
+                      icon
+                      color
+                      notes
+                  }
+              }
+          }
+        }
+      `,
+      variables: {
+        caregiverId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Get Caregiver Clients - Server connection error');
+    }
+
+    return response.data.data.caregiverClients;
+  }
+
+  async getAllCaregiverClients(
+    userId: string,
+    recordsPerPage?: number,
+    pageNumber?: number
+  ): Promise<MergedCaregiver[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { allCaregiversForHCW: MergedCaregiver[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetAllCaregiversForHCW($userId: String, $recordsPerPage: Int, $pageNumber: Int) {        
+          allCaregiversForHCW(userId: $userId, recordsPerPage: $recordsPerPage, pageNumber: $pageNumber) {              
+              id
+              firstName
+              surname
+              mother {
+                id 
+                user {
+                    firstName
+                }
+                statusInfo {
+                    subject
+                    icon
+                    color
+                    notes
+                }
+              }
+              infants {
+                id
+                user {
+                  firstName
+                }
+                statusInfo {
+                      subject
+                      icon
+                      color
+                      notes
+                  }
+              }
+          }
+        }
+      `,
+      variables: {
+        userId,
+        recordsPerPage,
+        pageNumber,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Get Caregiver Clients - Server connection error');
+    }
+
+    return response.data.data.allCaregiversForHCW;
   }
 }
 

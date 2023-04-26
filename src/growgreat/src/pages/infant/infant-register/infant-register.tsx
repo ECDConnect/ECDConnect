@@ -192,6 +192,7 @@ export const InfantRegister: React.FC = () => {
                   history.push(ROUTES.INFANT_REGISTER_FORM, {
                     motherId: location.state?.motherId,
                     bornEventId: location.state?.bornEventId,
+                    ...location.state,
                   })
                 }
               />

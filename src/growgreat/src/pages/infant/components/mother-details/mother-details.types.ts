@@ -1,4 +1,4 @@
-import { FormComponentProps, MotherDto } from '@ecdlink/core';
+import { CaregiverDto, FormComponentProps, MotherDto } from '@ecdlink/core';
 import { PregnantRegisterModel } from '@/schemas/pregnant/pregnant-register-form';
 import { InfantDetailsModel } from '@/schemas/infant/infant-details';
 import { MultipleChildrenProps } from '../../infant-register-form/infant-register-form.types';
@@ -17,7 +17,7 @@ export interface MotherDetailsProps
   multipleChildrenArray?: MultipleChildrenProps[];
   setMultipleChildrenArray?: any;
   isMother?: boolean;
-  motherInfo?: MotherDto;
+  motherInfo?: MotherDto & CaregiverDto;
 }
 
 export const yesNoOptions = [

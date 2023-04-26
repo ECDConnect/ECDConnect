@@ -17,6 +17,8 @@ import { muacFormSection, muacQuestion } from '../form';
 import { useSelector } from 'react-redux';
 import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
 import { GrowthMonitoring } from '../..';
+import { usePrevious } from '@ecdlink/core';
+import { VisitData } from '@ecdlink/graphql';
 
 interface MUACData {
   date: string;
@@ -85,6 +87,9 @@ export const MidUpperArmCircumferenceResultStep = ({
   const previousMuacs = uniqueGrowthData?.filter(
     (item) => item.question === muacQuestion
   );
+  const previousOfPreviousMuacs = usePrevious(previousMuacs) as
+    | VisitData[]
+    | undefined;
 
   const muacMonitoring = useMemo((): GrowthMonitoring['muac'] => {
     if (Number(muac) < 11.5) {
@@ -108,7 +113,10 @@ export const MidUpperArmCircumferenceResultStep = ({
   }, [muacMonitoring, setGrowthMonitoring]);
 
   useEffect(() => {
-    if (!!previousMuacs?.length) {
+    if (
+      !!previousMuacs?.length &&
+      previousMuacs?.length !== previousOfPreviousMuacs?.length
+    ) {
       const formattedMuacs = previousMuacs.map(
         (item): MUACData => ({
           actionTaken: Number(item.questionAnswer) < 12.5 ? 'Referred' : 'None',
@@ -127,7 +135,7 @@ export const MidUpperArmCircumferenceResultStep = ({
 
       setMUACs((prevState) => [...prevState, ...formattedMuacs]);
     }
-  }, [previousMuacs]);
+  }, [previousMuacs, previousOfPreviousMuacs?.length]);
 
   useEffect(() => {
     setEnableButton?.(true);

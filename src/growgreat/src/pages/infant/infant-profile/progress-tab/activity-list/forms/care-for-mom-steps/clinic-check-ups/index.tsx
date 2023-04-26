@@ -1,4 +1,11 @@
-import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
+import {
+  Alert,
+  DialogPosition,
+  Dialog,
+  ButtonGroup,
+  ButtonGroupTypes,
+  renderIcon,
+} from '@ecdlink/ui';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import {
@@ -60,12 +67,18 @@ export const ClinicCheckupStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="Clinic check-ups"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="Clinic check-ups"
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

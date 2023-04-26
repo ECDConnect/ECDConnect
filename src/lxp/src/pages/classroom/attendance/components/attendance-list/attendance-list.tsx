@@ -94,13 +94,22 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     if (classroomGroups) {
       const selectedGroups = isPrincipal
         ? classroomGroupsForPrincipal.filter(
-            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           )
         : classroomGroups.filter(
-            (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
+            (x) =>
+              x.id ===
+              (editAttendanceRegisterVisible
+                ? classroomgroupId
+                : primaryClassProgramme[0]?.classroomGroupId)
           );
       setSelectedClassroomGroups(selectedGroups);
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [editAttendanceRegisterVisible ? attendanceDate : null]);
 
@@ -109,12 +118,15 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       attendanceGroups,
       isButtonActive
     );
-
     setPresentChildrenCount(attendanceStatusCheck.presentCount);
     setAbsentChildrenCount(attendanceStatusCheck.absentCount);
-    setAttendanceGroups(attendanceGroups);
     setIsButtonActive(attendanceStatusCheck.isValid);
   };
+
+  useEffect(() => {
+    updateAttendanceState(attendanceGroups ?? []);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [selectedClassroomGroups, attendanceGroups]);
 
   const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
     setSelectedClassroomGroups(value.map((x) => x.value));
@@ -126,7 +138,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     isPrimaryList: boolean
   ) => {
     const newAttendanceGroups = [...(attendanceGroups || [])];
-
     const groupIndex = newAttendanceGroups.findIndex(
       (x) => x.cacheId === attendanceListId
     );
@@ -157,7 +168,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
   const handleFormSubmit = async () => {
     const currentClassProgramme = classroomGroupHasAttendanceOnDate(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     const currentGroup = classroomGroups.find(
@@ -174,7 +186,8 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
-      attendanceDate
+      attendanceDate,
+      editAttendanceRegisterVisible ? classroomgroupId : ''
     );
 
     if (!currentProgramme) return;
@@ -319,7 +332,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
               onChange={(value) => onFilterItemsChanges(value)}
               placeholder={'Class'}
               pluralSelectionText={'Classes'}
-              multiple
               color={'secondary'}
               selectedOptions={selectedClassroomGroups.map((x) => {
                 return {

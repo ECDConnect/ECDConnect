@@ -19,6 +19,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Relation Relation { get; set; }
         public SiteAddress SiteAddress { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
+        public string LinkedInfantId { get; set; }
+        public Boolean? ClickedVisitTab { get; set; }
+        public Boolean? ClickedProgressTab { get; set; }
+        public Boolean? ClickedReferralsTab { get; set; }
+        public Boolean? ClickedContactTab { get; set; }
 
     }
 }

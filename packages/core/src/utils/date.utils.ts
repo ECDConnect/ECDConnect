@@ -1,6 +1,9 @@
 import {
+  addMonths,
+  addYears,
   differenceInCalendarMonths,
   differenceInDays,
+  differenceInMonths,
   differenceInYears,
 } from 'date-fns';
 
@@ -72,20 +75,17 @@ export const getNextDateByDay = (daysLater: number, currentDate?: Date) => {
   return date;
 };
 
-export const getAgeInYearsMonthsAndDays = (
-  dateString: string
-): { years: number; months: number; days: number } => {
-  const birthDate = new Date(dateString);
+export function getAgeInYearsMonthsAndDays(birthdate: string) {
+  const birthDateObj = new Date(birthdate);
   const currentDate = new Date();
-  const years = differenceInYears(currentDate, birthDate);
-  const months = differenceInCalendarMonths(currentDate, birthDate);
-  const days = differenceInDays(
-    currentDate,
-    new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth(),
-      birthDate.getDate()
-    )
-  );
+
+  const years = differenceInYears(currentDate, birthDateObj);
+  const afterYears = addYears(birthDateObj, years);
+
+  const months = differenceInMonths(currentDate, afterYears);
+  const afterMonths = addMonths(afterYears, months);
+
+  const days = differenceInDays(currentDate, afterMonths);
+
   return { years, months, days };
-};
+}

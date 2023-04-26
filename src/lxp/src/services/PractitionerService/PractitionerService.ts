@@ -312,7 +312,6 @@ class PractitionerService {
             name
             classroomGroupName
             classroomGroupId
-            classroomId
             insertedDate
           }
         }
@@ -602,6 +601,30 @@ class PractitionerService {
       `,
       variables: {
         type,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Display metrics Failed - Server connection error');
+    }
+
+    return response.data.data.displayMetrics;
+  }
+
+  async classroomActionItems(
+    practitionerId: string
+  ): Promise<PractitionerDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query classroomActionItems($practitionerId: String) {
+        classroomActionItems(practitionerId: $practitionerId) {
+          subject icon color message notes userId userType
+        }
+      }
+      `,
+      variables: {
+        practitionerId,
       },
     });
 

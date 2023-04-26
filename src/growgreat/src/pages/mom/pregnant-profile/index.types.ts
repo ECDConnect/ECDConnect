@@ -1,4 +1,5 @@
 export type PregnantProfileRouteState = {
+  isInfantEvent?: boolean;
   activeTabIndex?: number;
   linkedInfantId?: string;
   recordEventInput?: {
@@ -7,3 +8,7 @@ export type PregnantProfileRouteState = {
     infantId: string;
   };
 };
+
+export interface PregnantProfileParams {
+  id: string;
+}

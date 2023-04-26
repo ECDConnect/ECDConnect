@@ -1,12 +1,13 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Divider, renderIcon, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import imgMocked from './mocked.png';
+import imgDietaryDiversity from './dietarydiversity.jpg';
+import eggInfographic from './eggInfographic.png';
 import { alerts } from './alerts';
 import { replaceBraces } from '@ecdlink/core';
 import { dietFormQuestion, getGroupColor } from '../diet-form';
@@ -54,6 +55,7 @@ export const ResourcesStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant]
   );
+  const [resource, setResource] = useState('');
 
   const answers = questions
     ?.flatMap((section) => section.questions)
@@ -152,7 +154,12 @@ export const ResourcesStep = ({
   }, [setEnableButton]);
 
   if (isTipPage) {
-    return <DownloadResource onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <DownloadResource
+        resource={resource}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (
@@ -176,7 +183,7 @@ export const ResourcesStep = ({
           <img
             alt="infographic"
             className="h-32 w-32 rounded-2xl object-cover"
-            src={imgMocked}
+            src={imgDietaryDiversity}
           />
           <Button
             type="filled"
@@ -186,7 +193,10 @@ export const ResourcesStep = ({
             textColor="secondary"
             iconPosition="end"
             className="h-8"
-            onClick={() => setIsTip && setIsTip(true)}
+            onClick={() => {
+              setResource(imgDietaryDiversity);
+              setIsTip && setIsTip(true);
+            }}
           />
         </div>
         <Divider dividerType="dashed" />
@@ -199,7 +209,7 @@ export const ResourcesStep = ({
           <img
             alt="infographic"
             className="h-32 w-32 rounded-2xl object-cover"
-            src={imgMocked}
+            src={eggInfographic}
           />
           <Button
             type="filled"
@@ -209,7 +219,10 @@ export const ResourcesStep = ({
             textColor="secondary"
             iconPosition="end"
             className="h-8"
-            onClick={() => setIsTip && setIsTip(true)}
+            onClick={() => {
+              setResource(eggInfographic);
+              setIsTip && setIsTip(true);
+            }}
           />
         </div>
       </div>

@@ -12,6 +12,9 @@ namespace EcdLink.Api.CoreApi {
 
         public static class GGSettings
         {
+            public const int recordsPerPage = 40;
+            public const int pageNumber = 0;
+
             public const string visitType_all = "all";
             public const string visitType_overdue = "overdue";
             public const string visitType_due = "due";
@@ -19,6 +22,7 @@ namespace EcdLink.Api.CoreApi {
             public const string client_mother = "mother";
             public const string client_child = "child";
             public const string client_new = "New client";
+            public const string client_teenager = "Teenager";
 
             public const string client_pregnant_mom = "Pregnant mom";
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
@@ -38,7 +42,7 @@ namespace EcdLink.Api.CoreApi {
             // Mother Questions
             public const string q_first_antenatal_visit = "Has {client} gone to the clinic for her first antenatal visit?";
             public const string q_antenatal_visits = "Is {client} up to date with their antenatal clinic visits?";
-            public const string q_measurement = "MUAC measurement";
+            public const string q_measurement = "What is {client} mid-upper arm circumference (MUAC) today?";
             public const string q_danger_signs = "Tick the danger signs {client} is experiencing:";
 
             public const string q_stop_worry = "Felt unable to stop worrying or thinking too much?";
@@ -46,9 +50,9 @@ namespace EcdLink.Api.CoreApi {
             public const string q_suicide = "Had thoughts and plans to harm yourself or commit suicide?";
 
             public const string q_T = "(T) Tolerance: how many drinks does it take to make you high?";
-            public const string q_A = "(A) Have people annoyed you by critizing your drinking?";
+            public const string q_A = "(A) Have people annoyed you by criticizing your drinking?";
             public const string q_C = "(C) Have you ever felt you need to cut down on your drinking?";
-            public const string q_E = "(E) Eye - opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
+            public const string q_E = "(E) Eye-opener: have you ever had a drink the first thing in the morning to steady your nerves or get rid of a hangover?";
 
             public const string q_ID_doc = "Does {client} have an ID document?";
             public const string q_citizen = "Is {client} a South African citizen or permanent resident?";
@@ -144,6 +148,7 @@ namespace EcdLink.Api.CoreApi {
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
             public const string p4_name = "Pillar 4: Healthcare";
+            public const string low_birth_weight = "Low birth weight";
 
             // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
             public const string infant_missed_clinic_visit = "Missed clinic visit";
@@ -188,7 +193,6 @@ namespace EcdLink.Api.CoreApi {
             public const string p1_7 = "Vitamin A rich fruit & vegetables";
             public const string p1_8 = "Other fruits & vegetables";
 
-
             // Answers
             public const string answer_yes = "true";
             public const string answer_no = "false";
@@ -201,7 +205,6 @@ namespace EcdLink.Api.CoreApi {
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
-           
 
             // Growth names
             public const string weightForAgeBoys = "weight-for-age-boys";
@@ -226,6 +229,7 @@ namespace EcdLink.Api.CoreApi {
 
             public const string pillar3_report = "Protection";
             public const string pillar3_db = "Pillar 3: Protection";
+            public const string pillar3_section = "Immunisations, supplements & deworming";
 
             public const string pillar4_report = "Healthcare";
             public const string pillar4_db = "Pillar 4: Healthcare";

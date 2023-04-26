@@ -40,6 +40,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(LinkedCaregiverId))]
         public virtual Caregiver.Caregiver Caregiver { get; set; }
         public Guid? LinkedCaregiverId { get; set; }
+        public Boolean? ClickedVisitTab { get; set; }
+        public Boolean? ClickedProgressTab { get; set; }
+        public Boolean? ClickedReferralsTab { get; set; }
+        public Boolean? ClickedContactTab { get; set; }
 
         [NotMapped]
         public virtual DisplaySet StatusInfo { get; set; }

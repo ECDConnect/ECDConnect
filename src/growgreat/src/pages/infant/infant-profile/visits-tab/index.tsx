@@ -1,4 +1,4 @@
-import React, { useCallback, useLayoutEffect, useMemo } from 'react';
+import React, { useCallback, useEffect, useLayoutEffect, useMemo } from 'react';
 import { useWindowSize } from '@reach/window-size';
 
 import {
@@ -12,14 +12,18 @@ import {
   Steps,
   Typography,
 } from '@ecdlink/ui';
-import Pregnant from '@/assets/pregnant.svg';
+import Infant from '@/assets/infant.svg';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
-import { useDialog, VisitDto } from '@ecdlink/core';
+import {
+  getStringFromClassNameOrId,
+  useDialog,
+  usePrevious,
+  VisitDto,
+} from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { MotherActions } from '@/store/mother/mother.actions';
 import {
   getInfantById,
   getInfantCurrentVisitSelector,
@@ -27,6 +31,14 @@ import {
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
 import { InfantProfileParams } from '../infant-profile.types';
+import { SuccessCard } from '@/components/success-card/success-card';
+import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import { InfantActions } from '@/store/infant/infant.actions';
+import { differenceInDays } from 'date-fns';
+import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
+import { VisitModelInput } from '@ecdlink/graphql';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 
 const HEADER_HEIGHT = 64;
 
@@ -46,6 +58,8 @@ export const VisitsTab: React.FC = () => {
 
   const dialog = useDialog();
 
+  const { errorDialog } = useRequestResponseDialog();
+
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
@@ -56,13 +70,33 @@ export const VisitsTab: React.FC = () => {
   const currentVisit = useSelector(getInfantCurrentVisitSelector);
 
   const { isLoading } = useThunkFetchCall(
-    'mothers',
-    MotherActions.GET_MOTHER_VISITS
+    'infants',
+    InfantActions.GET_INFANT_VISITS
+  );
+  const {
+    isLoading: isAddingAdditionalVisit,
+    isRejected: isRejectedAdditionalVisit,
+  } = useThunkFetchCall(
+    'infants',
+    InfantActions.ADD_ADDITIONAL_VISIT_FOR_INFANT
   );
 
+  const wasLoading = usePrevious(isLoading);
+  const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
+
+  const { infantName, caregiverName } = useMemo(
+    () => ({
+      infantName: infant?.user?.firstName,
+      caregiverName: infant?.caregiver?.firstName,
+    }),
+    [infant?.caregiver?.firstName, infant?.user?.firstName]
+  );
   const currentDate = useMemo(() => new Date(), []);
   const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.plannedVisitDate);
+  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
+  const infantAgeDays = infant?.user?.dateOfBirth
+    ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
+    : 0;
 
   const isWeekDeadline =
     dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
@@ -82,22 +116,21 @@ export const VisitsTab: React.FC = () => {
   );
 
   const getType = useCallback(
-    (item: VisitDto): StepItem['type'] => {
+    (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
       if (item.attended) {
         return 'completed';
       }
 
       if (
-        currentVisit &&
-        item.visitType?.id === currentVisit.visitType?.id &&
-        infant?.statusInfo?.color !== 'None'
+        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
+        isMissedVisit
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, infant?.statusInfo?.color]
+    [currentVisit, isWeekDeadline]
   );
 
   const filterArrayById = (arr: VisitDto[], id: string) => {
@@ -123,24 +156,29 @@ export const VisitsTab: React.FC = () => {
     );
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.plannedVisitDate);
+      const date = new Date(item.orderDate);
+      currentDate.setHours(0, 0, 0, 0);
+      date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
 
       return {
-        title: item.visitType?.normalizedName || 'Visit',
+        title:
+          item.visitType?.normalizedName === 'Additional visits'
+            ? 'Other visit'
+            : item.visitType?.normalizedName + ' visit' || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(((isWeekDeadline &&
-          currentVisit.visitType?.id === item.visitType?.id) ||
-          isMissedVisit) && { subTitleColor: 'alertDark' }),
+        ...(getType(item, isMissedVisit) === 'inProgress' && {
+          subTitleColor: 'alertDark',
+        }),
         inProgressStepIcon: isMissedVisit
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
-        type: getType(item),
-        showActionButton: getType(item) === 'inProgress',
+        type: getType(item, isMissedVisit),
+        showActionButton: getType(item, isMissedVisit) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -171,15 +209,18 @@ export const VisitsTab: React.FC = () => {
   }, [
     currentDate,
     currentVisit?.id,
-    currentVisit?.visitType?.id,
     filteredVisits,
     getType,
     history,
     infantInsertedDate,
-    isWeekDeadline,
     location.pathname,
     visits,
   ]);
+
+  const isCompletedAllVisits = useMemo(
+    () => visitSteps.length === 1,
+    [visitSteps.length]
+  );
 
   const onAddVisit = useCallback(() => {
     return dialog({
@@ -188,14 +229,32 @@ export const VisitsTab: React.FC = () => {
       render(onClose) {
         return (
           <ActionModal
-            className={'mx-4'}
+            className={'z-10 mx-4'}
             title="Do you want to start the additional visit now or book a time in your calendar?"
             actionButtons={[
               {
                 text: 'Start visit now',
                 colour: 'primary',
-                onClick: () => {
-                  history.push(`${location.pathname}/book-visit`);
+                onClick: async () => {
+                  const input: VisitModelInput = {
+                    infantId,
+                    plannedVisitDate: new Date().toISOString(),
+                    actualVisitDate: new Date().toISOString(),
+                    attended: false,
+                  };
+
+                  const response = await appDispatch(
+                    infantThunkActions.addAdditionalVisitForInfant(input)
+                  );
+
+                  const otherVisit =
+                    (response.payload as VisitDto) || undefined;
+                  if (otherVisit?.id) {
+                    history.push(
+                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                    );
+                  }
+
                   onClose();
                 },
                 type: 'filled',
@@ -218,12 +277,125 @@ export const VisitsTab: React.FC = () => {
         );
       },
     });
-  }, [dialog, history, location.pathname]);
+  }, [appDispatch, dialog, history, infantId, location.pathname]);
 
   const onRecordEvent = useCallback(
     () => history.push(`${location.pathname}/record-event`),
     [history, location.pathname]
   );
+
+  const on1000days = useCallback(
+    () =>
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => {
+          return (
+            <ActionModal
+              className="z-50"
+              title="Great job!"
+              detailText={`You supported ${infantName} ${
+                !caregiverName ? 'and' + caregiverName : ''
+              } through the First 1000 Days and ensured ${infantName} has the best possible start in life.
+
+          You can continue to visit and support this family.`}
+              customIcon={
+                <div>
+                  <PollyImpressed className="mb-3 h-24 w-24" />
+                </div>
+              }
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Close',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      }),
+    [caregiverName, dialog, infantName]
+  );
+
+  const renderContent = useMemo(() => {
+    if (isLoading || isAddingAdditionalVisit) {
+      return (
+        <LoadingSpinner
+          size="big"
+          spinnerColor="white"
+          backgroundColor="secondary"
+          className="mb-7"
+        />
+      );
+    }
+
+    return (
+      <>
+        {isCompletedAllVisits && (
+          <SuccessCard
+            className="mb-7"
+            customIcon={<CelebrateIcon className="h-14	w-14" />}
+            text="Finished all visits!"
+            color="successMain"
+          />
+        )}
+        <Steps items={visitSteps.slice(0, 3)} />
+      </>
+    );
+  }, [isAddingAdditionalVisit, isCompletedAllVisits, isLoading, visitSteps]);
+
+  useEffect(() => {
+    if (!wasAddingAdditionalVisit && isAddingAdditionalVisit) {
+      return dialog({
+        color: 'transparent',
+        render: () => {},
+      });
+    }
+  }, [dialog, isAddingAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (wasAddingAdditionalVisit && isRejectedAdditionalVisit) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejectedAdditionalVisit, wasAddingAdditionalVisit]);
+
+  useEffect(() => {
+    if (
+      wasLoading &&
+      !isLoading &&
+      infantAgeDays >= 1000 &&
+      !infant?.completed24MonthVisits
+    ) {
+      if (isCompletedAllVisits) {
+        on1000days();
+      }
+
+      appDispatch(
+        infantThunkActions.updateInfant({
+          id: infantId,
+          input: {
+            completed24MonthVisits: true,
+            dateOfBirth: infant?.user?.dateOfBirth,
+          },
+        })
+      );
+    }
+  }, [
+    appDispatch,
+    infant?.completed24MonthVisits,
+    infant?.user?.dateOfBirth,
+    infantAgeDays,
+    infantId,
+    isCompletedAllVisits,
+    isLoading,
+    on1000days,
+    wasLoading,
+  ]);
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
@@ -231,38 +403,31 @@ export const VisitsTab: React.FC = () => {
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>
-      <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
-        <RoundIcon
-          imageUrl={Pregnant}
-          backgroundColor="tertiary"
-          className="row-span-3"
-        />
-        <div>
-          <Typography
-            type="h2"
-            align="left"
-            weight="bold"
-            text={`${
-              infant?.caregiver?.firstName
-                ? infant?.caregiver?.firstName + ' & '
-                : ''
-            }${infant?.user?.firstName || ''} `}
-            color="textDark"
-            className="col-span-2"
+      <div id={getStringFromClassNameOrId(walkthroughSteps[1].target)}>
+        <div className="bg-uiBg mt-14 flex items-center gap-2 p-4">
+          <RoundIcon
+            imageUrl={Infant}
+            backgroundColor="tertiary"
+            className="row-span-3"
           />
+          <div>
+            <Typography
+              type="h2"
+              align="left"
+              weight="bold"
+              text={`${
+                infant?.caregiver?.firstName
+                  ? infant?.caregiver?.firstName + ' & '
+                  : ''
+              }${infant?.user?.firstName || ''} `}
+              color="textDark"
+              className="col-span-2"
+            />
+          </div>
         </div>
+        <div className="px-4 pb-4 pt-7">{renderContent}</div>
       </div>
-      <div className="px-4 pb-4 pt-7">
-        {isLoading ? (
-          <LoadingSpinner
-            size="big"
-            spinnerColor="white"
-            backgroundColor="secondary"
-            className="mb-7"
-          />
-        ) : (
-          <Steps items={visitSteps.slice(0, 3)} />
-        )}
+      <div className="px-4">
         <Divider dividerType="dashed" />
         <div className="my-4 flex items-center gap-3">
           <div className="flex flex-col">
@@ -296,6 +461,7 @@ export const VisitsTab: React.FC = () => {
       </div>
       <div className="mx-4 mt-7 mb-4 flex h-full items-end">
         <Button
+          id={getStringFromClassNameOrId(walkthroughSteps[2].target)}
           type="outlined"
           color="primary"
           icon="ClipboardCheckIcon"

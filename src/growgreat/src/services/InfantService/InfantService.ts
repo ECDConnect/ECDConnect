@@ -1,6 +1,7 @@
 import { InfantDto, Config, VisitDto } from '@ecdlink/core';
-import { InfantModelInput } from '@ecdlink/graphql';
+import { InfantModelInput, VisitModelInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
+import { Visit } from '../VisitService';
 class InfantService {
   _accessToken: string;
 
@@ -18,6 +19,7 @@ class InfantService {
         query getAllInfantsForHealthCareWorker($id: String, $visitType: String) {
           allInfantsForHealthCareWorker(id: $id, visitType: $visitType) {
             id
+            completed24MonthVisits
             insertedDate
             nextVisitDate
             gender {
@@ -106,6 +108,38 @@ class InfantService {
     return response.data.data.createInfant;
   }
 
+  async updateInfant(id: string, input: InfantModelInput): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateInfant($input: InfantModelInput, $id: String) {
+          updateInfant(input: $input, id: $id) {
+            user {
+              dateOfBirth
+              firstName
+              genderId
+              id
+            }
+            id
+            weightAtBirth
+            lengthAtBirth
+            completed24MonthVisits
+          }
+        }
+      `,
+      variables: {
+        input,
+        id,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating infant failed - Server connection error');
+    }
+
+    return response.data.data.createInfant;
+  }
+
   async getInfantCountForHealthCareWorkerForMonth(id: string): Promise<number> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -140,6 +174,7 @@ class InfantService {
             id
             actualVisitDate,
             plannedVisitDate,
+            orderDate
             attended,
             risk
             visitType{
@@ -241,6 +276,79 @@ class InfantService {
     }
 
     return response.data.data.updateInfantCaregiverContactDetails;
+  }
+
+  async updateInfantCaregiver(
+    infantId: string,
+    input: InfantModelInput
+  ): Promise<InfantDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateInfantCaregiver: InfantDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateInfantCaregiver($infantId: String, $input: InfantModelInput) {
+          updateInfantCaregiver(infantId: $infantId, input: $input) {
+            id
+          }
+        }
+      `,
+      variables: {
+        infantId,
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Update Infant Caregiver - Server connection error');
+    }
+
+    return response.data.data.updateInfantCaregiver;
+  }
+
+  async addAdditionalVisitForChild(input: VisitModelInput): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addAdditionalVisitForInfant: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddAdditionalVisitForInfant($input: VisitModelInput) {
+          addAdditionalVisitForInfant(input: $input) {
+            actualVisitDate,
+            plannedVisitDate,
+            orderDate
+            attended,
+            id,
+            risk
+            visitType{
+              id
+              order
+              normalizedName
+              description
+              insertedDate
+              isActive
+              name
+              type
+              updatedBy
+              updatedDate
+            }      
+          }
+        }
+        `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'add Additional Visit For Child failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addAdditionalVisitForInfant;
   }
 }
 

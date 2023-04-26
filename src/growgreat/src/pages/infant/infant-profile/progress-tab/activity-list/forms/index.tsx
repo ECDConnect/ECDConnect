@@ -1,11 +1,13 @@
 import { useCallback, useMemo, useState } from 'react';
 import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getInfantById } from '@/store/infant/infant.selectors';
+import {
+  getInfantById,
+  getIsInfantFirstVisitSelector,
+} from '@/store/infant/infant.selectors';
 import { RootState } from '@/store/types';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
@@ -30,6 +32,9 @@ import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-sig
 import { DevelopmentalScreeningVisitSection } from './pillar-2-steps/developmental-screening-weeks';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 import { differenceInDays } from 'date-fns';
+import { InfantProfileParams } from '../../../infant-profile.types';
+import { useParams } from 'react-router';
+import { maternalDistressVisitSection } from './care-for-mom-steps/maternal-distress-screening';
 
 interface FormProps {
   onBack: () => void;
@@ -52,9 +57,7 @@ export const Form = ({ onBack }: FormProps) => {
 
   const dialog = useDialog();
 
-  const location = useLocation();
-
-  const [, , , infantId] = location.pathname.split('/');
+  const { id: infantId, visitId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -71,8 +74,9 @@ export const Form = ({ onBack }: FormProps) => {
     [ageMonths, ageYears]
   );
 
-  // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  const isFirstVisit = useSelector((state: RootState) =>
+    getIsInfantFirstVisitSelector(state, visitId)
+  );
 
   const isFormulaMilkHowBreastfeedingWorks = useMemo(
     () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
@@ -144,6 +148,11 @@ export const Form = ({ onBack }: FormProps) => {
     activitiesTypes.pillar2
   );
 
+  const isMaternalDistressFollowUp = isFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.careForMom
+  );
+
   const isDevelopmentalScreening = useMemo(
     () => (ageDays >= 4 && ageDays <= 27) || (ageDays >= 49 && ageDays <= 56),
     [ageDays]
@@ -191,6 +200,56 @@ export const Form = ({ onBack }: FormProps) => {
     () => !ageYears && ageMonths >= 6 && ageMonths <= 9,
     [ageMonths, ageYears]
   );
+
+  const is6Week = ageDays >= 49 && ageDays <= 56;
+  const is10Week = ageDays >= 57 && ageMonths <= 3;
+  const is14Week = ageMonths === 4;
+  const is6Month = ageMonths >= 6 && ageMonths < 9;
+  const is9Month = ageMonths >= 9 && ageMonths < 12;
+  const is12Month = ageMonths >= 12 && ageMonths < 15;
+  const is18Month = ageMonths >= 18 && ageMonths < 21;
+  const is2Years = ageMonths >= 24 && ageMonths < 30;
+  const is2YearsAHalfYears = ageMonths >= 30 && ageMonths < 36;
+  const is3Years = ageMonths >= 36 && ageMonths < 42;
+  const is3YearsAHalfYears = ageMonths >= 42 && ageMonths < 48;
+  const is4Years = ageMonths >= 48 && ageMonths < 54;
+  const is4AHalfYears = ageMonths >= 54 && ageMonths < 60;
+  const is5Years = ageMonths >= 60;
+
+  const isImmunisationQuestion =
+    isFirstVisit &&
+    (is6Week ||
+      is10Week ||
+      is14Week ||
+      is6Month ||
+      is9Month ||
+      is12Month ||
+      is18Month);
+
+  const isVitaminAQuestion =
+    isFirstVisit &&
+    (is6Month ||
+      is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
+
+  const isDewormingQuestion =
+    isFirstVisit &&
+    (is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -257,7 +316,8 @@ export const Form = ({ onBack }: FormProps) => {
           isChildBefore49Days,
           isDangerSignsFollowUpForMom,
           isShowClinicCheckUps,
-          isSelfCareAndSupport
+          isSelfCareAndSupport,
+          isMaternalDistressFollowUp
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
@@ -290,9 +350,13 @@ export const Form = ({ onBack }: FormProps) => {
           isDevelopmentalScreening
         );
       case activitiesTypes.pillar3:
-        return pillar3Steps;
+        return pillar3Steps(
+          isImmunisationQuestion,
+          isVitaminAQuestion,
+          isDewormingQuestion
+        );
       case activitiesTypes.pillar4:
-        return getPillar4Steps(isPillar4FollowUp, !isKangarooMotherCare);
+        return getPillar4Steps(isPillar4FollowUp, !isChildBefore49Days);
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
@@ -300,8 +364,14 @@ export const Form = ({ onBack }: FormProps) => {
     }
   }, [
     activityName,
+    isChildBefore49Days,
     isDangerSignsFollowUpForMom,
+    isShowClinicCheckUps,
+    isSelfCareAndSupport,
+    isMaternalDistressFollowUp,
     isDangerSignsFollowUpForBaby,
+    isNewBornCare,
+    isKangarooMotherCare,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,
@@ -314,17 +384,15 @@ export const Form = ({ onBack }: FormProps) => {
     isMixedFeedingFoodsForm,
     isMixedFeedingHowBreastfeedingWorks,
     isMixedFeedingUnsafeFeedingPractices,
-    isDevelopmentalScreeningWeeksFollowUp,
-    isPillar4FollowUp,
-    referralsForInfant?.length,
-    isShowClinicCheckUps,
-    isChildBefore49Days,
-    isSelfCareAndSupport,
-    isNewBornCare,
-    isKangarooMotherCare,
     ageDays,
     isDietFormStep,
+    isDevelopmentalScreeningWeeksFollowUp,
     isDevelopmentalScreening,
+    isImmunisationQuestion,
+    isVitaminAQuestion,
+    isDewormingQuestion,
+    isPillar4FollowUp,
+    referralsForInfant?.length,
   ]);
 
   return (
