@@ -85,16 +85,14 @@ export const MomActivityList: React.FC = () => {
     getPreviousVisitInformationForMotherSelector
   );
 
-  //TODO when BE is fixed
-  // const activityListFiltered = activitiesList?.filter(
-  //   (item) => item?.title !== 'Danger signs'
-  // );
+  const activityListFiltered = activitiesList?.filter(
+    (item) => item?.title !== 'Danger signs'
+  );
 
-  //TODO when BE is fixed
-  // const activityListUpdated =
-  //   previousMotherVisit?.visitDataStatus?.length! > 0
-  //     ? activitiesList
-  //     : activityListFiltered;
+  const activityListUpdated =
+    previousMotherVisit?.visitDataStatus?.length! > 0
+      ? activitiesList
+      : activityListFiltered;
 
   const isFollowUp = completedVisits?.length === 4;
   const isAllCompleted = completedVisits?.length === 5;
@@ -133,10 +131,10 @@ export const MomActivityList: React.FC = () => {
     //   (item) => item.label === 'Mother'
     // );
 
-    const completedActivities = activitiesList.filter((item) =>
+    const completedActivities = activityListUpdated.filter((item) =>
       completedVisits?.includes(item.title)
     );
-    const uncompletedActivities = activitiesList.filter(
+    const uncompletedActivities = activityListUpdated.filter(
       (item) => !completedVisits?.includes(item.title)
     );
 
@@ -194,14 +192,14 @@ export const MomActivityList: React.FC = () => {
     ];
 
     return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits]);
+  }, [activityListUpdated, completedVisits]);
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
       return setIsStartVisit(false);
     }
-    return history.push(ROUTES.CLIENTS.ROOT);
-  }, [history, isStartVisit]);
+    history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);
+  }, [history, isStartVisit, motherId]);
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
