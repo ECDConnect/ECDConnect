@@ -1,10 +1,6 @@
-import {
-  ChildAttendanceReportModel,
-  ClassRoomChildAttendanceMonthlyReportModel,
-} from '@ecdlink/core';
+import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
 import { useEffect } from 'react';
-import { useLocation } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -26,26 +22,21 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
-  reportData: ClassRoomChildAttendanceMonthlyReportModel[];
+  reportData: ChildAttendanceOverallReportModel[];
+  totalAttendance: any[];
+  totalAttendanceStatsReport: any;
 }
 
 export const MonthlyAttendanceReport = ({
   reportMonth,
   onBack,
   reportData,
+  totalAttendance,
+  totalAttendanceStatsReport,
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const numDays = 29;
-
-  // data that must be used to display in report
-  // const dataX = {
-  //   "detailedReport":[{ child: 'John Doe', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }, { child: 'Jack Bauer', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }],
-  //   "todayAttendance": {day1: '10', day2: '21', day3: '10', day4: '4', },
-  //   "totalMonthlyAttendance": 23,
-  //   "totalSessions": 22,
-  //   "totalChildrenAttendedSessions": 53
-  // };
 
   useEffect(() => {
     if (!isOnline) {
@@ -58,22 +49,6 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-  const data = [
-    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
-  ];
-
-  for (let i = 0; i < 50; i++) {
-    const newArray = {
-      child: 'John Bblocks',
-      id: 'IDTEST2525255',
-      day1: '1',
-      day2: '1',
-      day3: '0',
-      day4: '0',
-      day5: '0',
-    };
-    data.push(newArray);
-  }
   const tableColumns = [
     { header: 'Child', dataKey: 'child' },
     { header: 'ID/Passport', dataKey: 'id' },
@@ -83,13 +58,31 @@ export const MonthlyAttendanceReport = ({
     })),
   ];
 
+  const tableData = reportData.map(
+    (item: { attendance?: any; childFullName?: any; childUserId?: any }) => {
+      const { childFullName, childUserId } = item;
+      const attendance = item.attendance.reduce(
+        (obj: { [x: string]: any }, { key, value }: any, i: number) => {
+          obj[`day${i + 1}`] = value;
+          return obj;
+        },
+        {}
+      );
+      //to be updated when api is updated
+      //test name too long
+      return { child: childFullName.slice(0, 14), id: 'XXSS', ...attendance };
+    }
+  );
+
+
   const footer = [
     'Child Attendance per Day',
     '', // Placeholder for ID/Passport column
-    '', // Placeholder for Day 1 column
-    '', // Placeholder for Day 2 column
-    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
+
+  totalAttendance.forEach(obj => {
+    footer.push(obj.value.toString());
+  });
 
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
@@ -103,9 +96,9 @@ export const MonthlyAttendanceReport = ({
   };
 
   const tableBottomContent = [
-    `Number of children who attended all sessions: 9`,
-    `Total number of sessions: 198`,
-    `Number of children who attended all sessions: 9`,
+    `Total monthly attendance: ${ totalAttendanceStatsReport?.totalMonthlyAttendance}`,
+    `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
+    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions }`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -211,7 +204,7 @@ export const MonthlyAttendanceReport = ({
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
             headerColumns={tableColumns}
-            bodyRows={data}
+            bodyRows={tableData}
             tableFooter={footer}
             content={tableTopContent}
             tableBottomContent={tableBottomContent}
