@@ -1,7 +1,12 @@
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
-
+type TableData = {
+  tableName: string;
+  type: string;
+  headers: { header: string; dataKey: string }[];
+  data: { [key: string]: any }[];
+};
 export interface GeneratePdfReportButtonProps {
   title: string;
   outputName: string;
@@ -14,14 +19,10 @@ export interface GeneratePdfReportButtonProps {
   tableStyles: UserOptions['styles'];
   tableFootStyles: UserOptions['footStyles'];
   pageOriantations?: jsPDFOptions['orientation'];
+  
 }
 
-type TableData = {
-  tableName: string;
-  type: string;
-  headers: { header: string; dataKey: string }[];
-  data: { [key: string]: any }[];
-};
+
 
 const GeneratePdfReportButton = ({
   title,
@@ -124,13 +125,13 @@ const GeneratePdfReportButton = ({
             doc.setFont('bold');
 
             //Document Top text section
-            doc.text(content?.text_coulumn_one_row_one, 10, 20);
-            doc.text(content?.text_coulumn_one_row_two, 10, 25);
-            doc.text(content?.text_coulumn_one_row_three, 10, 30);
+            doc.text(content.text_coulumn_one_row_one ?? '', 10, 20);
+            doc.text(content.text_coulumn_one_row_two ?? '', 10, 25);
+            doc.text(content.text_coulumn_one_row_three ?? '', 10, 30);
             //column two top content
-            doc.text(content?.text_column_two_row_one, 100, 20);
-            doc.text(content?.text_column_two_row_two, 100, 25);
-            doc.text(content?.text_column_two_row_three, 100, 30);
+            doc.text(content.text_column_two_row_one ?? '', 100, 20);
+            doc.text(content.text_column_two_row_two ?? '', 100, 25);
+            doc.text(content.text_column_two_row_three ?? '', 100, 30);
 
             // Add signature and date fields to the bottom of the page
             const footerHeight = 15;

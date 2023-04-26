@@ -31,6 +31,12 @@ import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
 
+type TableData = {
+  tableName: string;
+  type: string;
+  headers: { header: string; dataKey: string }[];
+  data: { [key: string]: any }[];
+};
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -461,104 +467,6 @@ export const MonthStatementsDetails: React.FC = () => {
       ],
     },
     {
-      tableName: 'Pre-School Fees: monetary contributions',
-      type: 'Income',
-      total: 'R 100',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Child', dataKey: 'child' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        ...Array.from({ length: 8 }, (_, i) => ({
-          child: 'John doe',
-          date: '10/02/2023',
-          amount: 'R 1, 0000',
-          total: 'R 1, 0000',
-        })),
-      ],
-    },
-    {
-      tableName: 'Salary & Wages',
-      type: 'Expenses',
-      total: 'R 100',
-
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        ...Array.from({ length: 10 }, (_, i) => ({
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        })),
-      ],
-    },
-    {
-      tableName: 'Food',
-      type: 'Expenses',
-      total: 'R 100',
-
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        {
-          date: '10/02/2023',
-          item: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        },
-      ],
-    },
-    {
-      tableName: 'Learning Materials',
-      type: 'Expenses',
-      total: 'R 100',
-
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        {
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        },
-      ],
-    },
-    {
-      tableName: 'Annual Maintanance & purchases',
-      type: 'Expenses',
-      total: 'R 100',
-
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        {
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        },
-      ],
-    },
-    {
       tableName: 'Annual Maintanance & purchases',
       type: 'Expenses',
       total: 'R 100',
@@ -577,43 +485,8 @@ export const MonthStatementsDetails: React.FC = () => {
         },
       ],
     },
-    {
-      tableName: 'Pre-School Fees: non-monetary contributions',
-      type: 'Income',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Child', dataKey: 'child' },
-        { header: 'Item', dataKey: 'item' },
-      ],
-      data: [
-        ...Array.from({ length: 5 }, (_, i) => ({
-          child: 'Jane bere',
-          date: '10/02/2023',
-          item: 'Tissue Paper',
-        })),
-      ],
-    },
-    {
-      tableName: 'Subsidies, Donations, Contributions',
-      type: 'Income',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Item', dataKey: 'item' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        {
-          date: '10/02/2023',
-          item: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-        },
-        {
-          date: '10/02/2023',
-          item: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-        },
-      ],
-    },
+   
+   
     {
       tableName: 'Other',
       type: 'Income',
@@ -635,11 +508,7 @@ export const MonthStatementsDetails: React.FC = () => {
 
   const tableTopContent = {
     pageTitle: `Income Statement`,
-    subtitle: 'Text 2',
-    //column1 with 3 rows of text
-    text_coulumn_one_row_one: '',
-    text_coulumn_one_row_two: '',
-    text_coulumn_one_row_three: '',
+    subtitle: '',
     //column2 with 3 rows of text
     text_column_two_row_one: 'ProgrammeType: 46372test',
     text_column_two_row_two: 'Programmme Days: Monday to Friday',

@@ -15,7 +15,9 @@ import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummar
 import { getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { ChildAttendanceOverallReportModel, ClassRoomChildAttendanceMonthlyReportModel } from '@ecdlink/core';
+import {
+  ChildAttendanceOverallReportModel,
+} from '@ecdlink/core';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -41,8 +43,8 @@ export const AttendanceMonthlyReport: React.FC<
 
   const [viewReportDate, setViewReportDate] = useState<string>();
   const [reportData, setReportData] = useState<
-  ChildAttendanceOverallReportModel[]
->([]);
+    ChildAttendanceOverallReportModel[]
+  >([]);
   const authUser = useSelector(authSelectors.getAuthUser);
 
   const closeReport = () => {
