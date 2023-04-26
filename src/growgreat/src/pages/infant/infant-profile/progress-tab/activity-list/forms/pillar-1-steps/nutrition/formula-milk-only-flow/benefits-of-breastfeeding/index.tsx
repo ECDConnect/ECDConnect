@@ -1,4 +1,10 @@
-import { Alert, Divider, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  DialogPosition,
+  Dialog,
+  Divider,
+  Typography,
+} from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
@@ -100,12 +106,18 @@ export const BenefitsOfBreastfeedingStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="Formula milk only"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="Formula milk only"
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
