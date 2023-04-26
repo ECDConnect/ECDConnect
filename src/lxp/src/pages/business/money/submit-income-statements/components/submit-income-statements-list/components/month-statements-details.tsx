@@ -16,7 +16,7 @@ import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
-  ReportTableDataDto
+  ReportTableDataDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -31,12 +31,6 @@ import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
 
-type TableData = {
-  tableName: string;
-  type: string;
-  headers: { header: string; dataKey: string }[];
-  data: { [key: string]: any }[];
-};
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -77,6 +71,7 @@ export const MonthStatementsDetails: React.FC = () => {
     () => income?.filter((item) => item?.submitted === true),
     [income]
   );
+
   const today = new Date();
 
   const isSameMonth =
@@ -290,12 +285,12 @@ export const MonthStatementsDetails: React.FC = () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token!
       ).getMonthsIncomeExpensesReport(
-        "5b821f79-a6ec-4cd9-846c-fe0f09ef8cdd",
-        1,
+        userAuth?.auth_token!,
+        statementMonth,
         statementYear
       );
-      console.log('>>', pdfReportData);
-      setPdfReportData(report)
+      
+      setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -446,7 +441,8 @@ export const MonthStatementsDetails: React.FC = () => {
     '', // Placeholder for Day 2 column
   ];
 
-  const multipleTableData = [
+  //TODO: to be removed
+  const multipleTestTableData = [
     {
       tableName: 'Rent & Utilities',
       type: 'Expenses',
@@ -458,7 +454,7 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        ...Array.from({ length: 18 }, (_, i) => ({
+        ...Array.from({ length: 5 }, (_, i) => ({
           date: '10/02/2023',
           description: 'Tissue Paper, Test One text',
           amount: 'R 500',
@@ -477,16 +473,15 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        {
+        ...Array.from({ length: 5 }, (_, i) => ({
           date: '10/02/2023',
           description: 'Tissue Paper, Test One text',
           amount: 'R 500',
           invoice: 'XXXXX-XX-XXX',
-        },
+        })),
       ],
     },
-   
-   
+
     {
       tableName: 'Other',
       type: 'Income',
@@ -497,11 +492,12 @@ export const MonthStatementsDetails: React.FC = () => {
         { header: 'Amount', dataKey: 'amount' },
       ],
       data: [
-        {
+        ...Array.from({ length: 5 }, (_, i) => ({
           date: '10/02/2023',
-          item: 'Tissue Paper, Test One text',
+          description: 'Tissue Paper, Test One text',
           amount: 'R 500',
-        },
+          invoice: 'XXXXX-XX-XXX',
+        })),
       ],
     },
   ];
@@ -632,7 +628,7 @@ export const MonthStatementsDetails: React.FC = () => {
             />
           </Card>
           <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {submittedExpenses && submittedIncome && (
+            {(submittedExpenses && submittedIncome) && (
               <GeneratePdfReportButton
                 component="income-statements"
                 title="Download Statement"
@@ -640,7 +636,7 @@ export const MonthStatementsDetails: React.FC = () => {
                   Number(statementMonth) - 1
                 )}-income-statement-report.pdf`}
                 tableFooter={footer}
-                tableData={multipleTableData}
+                tableData={pdfReportData.length > 0 ? pdfReportData : multipleTestTableData}
                 content={tableTopContent}
                 tableHeadStyles={tableHeadStyles}
                 tableFootStyles={tableFootStyles}

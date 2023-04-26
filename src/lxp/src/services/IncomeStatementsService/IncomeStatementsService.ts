@@ -202,7 +202,9 @@ class IncomeStatementsService {
         'Get all income statementsreports Failed - Server connection error'
       );
     }
-    return response.data.data.statementsIncomeExpensesPDFData    ;
+    console.log('>>', response.data.data.statementsIncomeExpensesPDFData );
+
+    return response.data.data.statementsIncomeExpensesPDFData;
   }
 
   async allStatementsIncome(
