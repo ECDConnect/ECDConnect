@@ -16,6 +16,7 @@ import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
+  ReportTableDataDto
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -29,6 +30,7 @@ import ExpensesStatementsService from '@/services/ExpensesStatementsService/Expe
 import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
+
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -62,7 +64,9 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [offlineExpenses]);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
+  const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
+
   const submittedIncome = useMemo(
     () => income?.filter((item) => item?.submitted === true),
     [income]
@@ -125,10 +129,6 @@ export const MonthStatementsDetails: React.FC = () => {
     return prev + +current.amount;
   },
   0);
-
-  //income
-  console.log(income);
-  console.log('ex', rentExpense);
 
   const totalExpenses = isSameMonth
     ? expenses?.reduce(function (prev: any, current: any) {
@@ -284,11 +284,12 @@ export const MonthStatementsDetails: React.FC = () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token!
       ).getMonthsIncomeExpensesReport(
-        userAuth?.id!,
-        statementMonth,
+        "5b821f79-a6ec-4cd9-846c-fe0f09ef8cdd",
+        1,
         statementYear
       );
-
+      console.log('>>', pdfReportData);
+      setPdfReportData(report)
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -762,7 +763,7 @@ export const MonthStatementsDetails: React.FC = () => {
             />
           </Card>
           <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {
+            {submittedExpenses && submittedIncome && (
               <GeneratePdfReportButton
                 component="income-statements"
                 title="Download Statement"
@@ -777,7 +778,7 @@ export const MonthStatementsDetails: React.FC = () => {
                 tableStyles={tableStyles}
                 pageOriantations={'portrait'}
               />
-            }
+            )}
           </div>
         </div>
       </BannerWrapper>

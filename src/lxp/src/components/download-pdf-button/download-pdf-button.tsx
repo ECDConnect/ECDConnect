@@ -139,14 +139,14 @@ const GeneratePdfReportButton = ({
             if (component === 'income-statements') {
               const columns = ['Additional Notes'];
               const data = [['']];
-              autoTable(doc, {
-                columns,
-                headStyles: tableHeadStyles,
-                body: data,
-                startY: position + 15,
-                columnStyles: { 0: { minCellHeight: 20 } },
-                margin: { top: position + 30 },
-              });
+              // autoTable(doc, {
+              //   columns,
+              //   headStyles: tableHeadStyles,
+              //   body: data,
+              //   startY: position + 15,
+              //   columnStyles: { 0: { minCellHeight: 20 } },
+              //   margin: { top: position + 30 },
+              // });
               doc.setFillColor(215, 215, 215); // set grey background color
               doc.rect(
                 15,

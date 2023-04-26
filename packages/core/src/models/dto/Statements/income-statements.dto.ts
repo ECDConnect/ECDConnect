@@ -17,3 +17,9 @@ export interface IncomeStatementsDto {
   insertedDate?: string;
   isOffline?: boolean;
 }
+export interface ReportTableDataDto{
+  tableName: string;
+  type: string;
+  headers: { header: string; dataKey: string }[];
+  data: { [key: string]: any }[];
+}

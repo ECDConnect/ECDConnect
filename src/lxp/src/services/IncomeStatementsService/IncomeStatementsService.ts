@@ -1,5 +1,5 @@
 import { api } from '../axios.helper';
-import { BalanceSheetDto, Config, IncomeStatementsDto } from '@ecdlink/core';
+import { BalanceSheetDto, Config, IncomeStatementsDto, ReportTableDataDto } from '@ecdlink/core';
 import {
   StatementsIncomeInput,
   StatementsSubmitInput,
@@ -167,10 +167,29 @@ class IncomeStatementsService {
     userId: string,
     month: Number,
     year: Number
-  ): Promise<IncomeStatementsDto[]> {
+  ): Promise<ReportTableDataDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
-      query: ` `,
+      query: `query GetStatementsIncomeExpensesPDFData($userId: String, $month: Int!, $year: Int!) {
+                statementsIncomeExpensesPDFData(userId: $userId, month: $month, year: $year) {
+                tableName
+                type
+                total
+                headers {
+                    header
+                    dataKey
+                }
+                data {
+                    child
+                    date
+                    description
+                    amount
+                    invoiceNr
+                    photoProof
+                    type
+                }
+            }
+    }`,
       variables: {
         userId,
         month,
@@ -183,8 +202,7 @@ class IncomeStatementsService {
         'Get all income statementsreports Failed - Server connection error'
       );
     }
-
-    return response.data.data.allStatementsIncome;
+    return response.data.data.statementsIncomeExpensesPDFData    ;
   }
 
   async allStatementsIncome(
