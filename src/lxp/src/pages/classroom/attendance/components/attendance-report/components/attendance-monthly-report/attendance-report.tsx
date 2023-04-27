@@ -11,6 +11,8 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -37,6 +39,7 @@ export const MonthlyAttendanceReport = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const numDays = 29;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   useEffect(() => {
     if (!isOnline) {
@@ -96,13 +99,13 @@ export const MonthlyAttendanceReport = ({
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: '',
-    text_coulumn_one_row_one: 'Name: Test Data 1',
-    text_coulumn_one_row_two: 'ID: data 2',
-    text_coulumn_one_row_three: 'Phone: 0123456789',
+    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_coulumn_one_row_two: `ID: ${practitioner?.user?.idNumber}`,
+    text_coulumn_one_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
     //column2 with 3 rows of text
-    text_column_two_row_one: 'ProgrammeType: 46372test',
+    text_column_two_row_one:`ProgrammeType: `,
     text_column_two_row_two: 'Programmme Days: Monday to Friday',
-    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
+    text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
   };
 
   const tableBottomContent = [
