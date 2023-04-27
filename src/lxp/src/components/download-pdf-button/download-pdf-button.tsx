@@ -49,7 +49,7 @@ const GeneratePdfReportButton = ({
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
-    let startY = 35; // initial startY value
+    let startY = 30; // initial startY value
 
     const tablesByType: { [key: string]: TableData[] } = {};
 
@@ -88,7 +88,7 @@ const GeneratePdfReportButton = ({
                   `R ${table.total}`,
                 ],
               ];
-
+        console.log('>', table);
         // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,
@@ -114,9 +114,11 @@ const GeneratePdfReportButton = ({
           columns: headers,
           body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
-          startY: tableType === 'Expenses' ? startY : 40,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
           horizontalPageBreakRepeat: 'avoid',
+          margin: {
+            top: 35,
+          },
           didDrawPage: (data) => {
             // Add table header to each new page
             // Add left header
@@ -158,6 +160,9 @@ const GeneratePdfReportButton = ({
           body: data,
           columnStyles: { 0: { minCellHeight: 20 } },
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+          // margin: {
+          //   top: 55,
+          // },
         });
         doc.setFillColor(200, 200, 200); // set grey background color
         doc.rect(
@@ -204,11 +209,11 @@ const GeneratePdfReportButton = ({
         doc.setFillColor(255, 0, 0);
         doc.rect(140, (doc as any).lastAutoTable.finalY + 42, 25, 10, 'S');
 
-        //sig
-        doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 66);
-        doc.rect(30, (doc as any).lastAutoTable.finalY + 60, 65, 10);
-        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 66);
-        doc.rect(120, (doc as any).lastAutoTable.finalY + 60, 65, 10);
+        //sign document section
+        doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 95);
+        doc.rect(30, (doc as any).lastAutoTable.finalY + 90, 65, 10);
+        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 95);
+        doc.rect(120, (doc as any).lastAutoTable.finalY + 90, 65, 10);
       }
     });
     doc.setFillColor(255, 255, 255); // set grey background color
