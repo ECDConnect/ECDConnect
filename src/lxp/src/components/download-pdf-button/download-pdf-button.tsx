@@ -114,7 +114,7 @@ const GeneratePdfReportButton = ({
           columns: headers,
           body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
           foot: finalFooter,
-          startY: startY,
+          startY: tableType === 'Expenses' ? startY : 40,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
           horizontalPageBreakRepeat: 'avoid',
           didDrawPage: (data) => {
