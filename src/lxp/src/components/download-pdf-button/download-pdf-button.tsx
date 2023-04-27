@@ -19,10 +19,7 @@ export interface GeneratePdfReportButtonProps {
   tableStyles: UserOptions['styles'];
   tableFootStyles: UserOptions['footStyles'];
   pageOriantations?: jsPDFOptions['orientation'];
-  
 }
-
-
 
 const GeneratePdfReportButton = ({
   title,
@@ -137,41 +134,12 @@ const GeneratePdfReportButton = ({
             const footerHeight = 15;
             const position = (data.cursor?.y ?? 0) + footerHeight;
 
-            if (component === 'income-statements') {
-              const columns = ['Additional Notes'];
-              const data = [['']];
-              // autoTable(doc, {
-              //   columns,
-              //   headStyles: tableHeadStyles,
-              //   body: data,
-              //   startY: position + 15,
-              //   columnStyles: { 0: { minCellHeight: 20 } },
-              //   margin: { top: position + 30 },
-              // });
-              doc.setFillColor(215, 215, 215); // set grey background color
-              doc.rect(
-                15,
-                position - 9,
-                doc.internal.pageSize.width - 30,
-                footerHeight + 5,
-                'F'
-              );
-           
-              doc.setDrawColor(0);
-              doc.setFontSize(10);
-              doc.text('Level of DBE registration:', 25, position);
-              doc.setFillColor(255, 0, 0);
-              doc.rect(65, position - 4, 30, 10, 'S');
-              doc.text('Number of Children:', 105, position);
-              doc.setFillColor(255, 0, 0);
-              doc.rect(140, position - 4, 30, 10, 'S');
-            }
             // add signature and date fields
 
-            doc.text('Sign: ', 20, position + 55);
-            doc.rect(30, position + 50, 65, 10);
-            doc.text('Date: ', 110, position + 55);
-            doc.rect(120, position + 50, 65, 10);
+            // doc.text('Sign: ', 20, position + 55);
+            // doc.rect(30, position + 50, 65, 10);
+            // doc.text('Date: ', 110, position + 55);
+            // doc.rect(120, position + 50, 65, 10);
           },
           margin: {
             top: 35,
@@ -180,6 +148,28 @@ const GeneratePdfReportButton = ({
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
+      if (component === 'income-statements') {
+        const columns = ['Additional Notes'];
+        const data = [['']];
+        autoTable(doc, {
+          columns,
+          headStyles: tableHeadStyles,
+          body: data,
+          columnStyles: { 0: { minCellHeight: 20 } },
+          rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+        });
+        doc.setFillColor(215, 215, 215); // set grey background color
+        doc.rect(15, (doc as any).lastAutoTable.finalY + 4, doc.internal.pageSize.width - 30, 15 , 'F');
+
+        doc.setDrawColor(0);
+        doc.setFontSize(10);
+        doc.text('Level of DBE registration:', 25, (doc as any).lastAutoTable.finalY + 12);
+        doc.setFillColor(255, 0, 0);
+        doc.rect(65, (doc as any).lastAutoTable.finalY + 6, 25, 10, 'S');
+        doc.text('Number of Children:', 105, (doc as any).lastAutoTable.finalY + 12);
+        doc.setFillColor(255, 0, 0);
+        doc.rect(140, (doc as any).lastAutoTable.finalY + 6, 25, 10, 'S');
+      }
     });
     doc.setFillColor(255, 255, 255); // set grey background color
     //get Y value after the last table end to place info
@@ -191,7 +181,10 @@ const GeneratePdfReportButton = ({
       doc.text(tableBottomContent[1], 120, afterTable + 15);
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
-
+    doc.text('Sign: ', 20, afterTable + 45);
+    doc.rect(30, afterTable + 40, 65, 10);
+    doc.text('Date: ', 110, afterTable + 45);
+    doc.rect(120, afterTable + 40, 65, 10);
     doc.save(outputName);
   };
 

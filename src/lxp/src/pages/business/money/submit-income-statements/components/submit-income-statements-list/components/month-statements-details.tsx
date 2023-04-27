@@ -31,7 +31,7 @@ import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
 import { practitionerSelectors } from '@/store/practitioner';
-
+import { setDate } from 'date-fns';
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -170,6 +170,10 @@ export const MonthStatementsDetails: React.FC = () => {
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
 
+  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
+  const enableDownload = lastDayToSubmit < today;
+  const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
+
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
     const startupValue: IncomeStatementsDto[] = [];
@@ -288,11 +292,11 @@ export const MonthStatementsDetails: React.FC = () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token!
       ).getMonthsIncomeExpensesReport(
-        userAuth?.auth_token!,
+        "5b821f79-a6ec-4cd9-846c-fe0f09ef8cdd",
         statementMonth,
         statementYear
       );
-      
+
       setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
@@ -444,68 +448,6 @@ export const MonthStatementsDetails: React.FC = () => {
     '', // Placeholder for Day 2 column
   ];
 
-  console.log(practitioner);
-  //TODO: to be removed
-  const multipleTestTableData = [
-    {
-      tableName: 'Rent & Utilities',
-      type: 'Expenses',
-      total: 'R 100',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        ...Array.from({ length: 5 }, (_, i) => ({
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        })),
-      ],
-    },
-    {
-      tableName: 'Annual Maintanance & purchases',
-      type: 'Expenses',
-      total: 'R 100',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Invoice/Reciept #', dataKey: 'invoice' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        ...Array.from({ length: 5 }, (_, i) => ({
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        })),
-      ],
-    },
-
-    {
-      tableName: 'Other',
-      type: 'Income',
-      total: 'R 100',
-      headers: [
-        { header: 'Date', dataKey: 'date' },
-        { header: 'Description', dataKey: 'description' },
-        { header: 'Amount', dataKey: 'amount' },
-      ],
-      data: [
-        ...Array.from({ length: 5 }, (_, i) => ({
-          date: '10/02/2023',
-          description: 'Tissue Paper, Test One text',
-          amount: 'R 500',
-          invoice: 'XXXXX-XX-XXX',
-        })),
-      ],
-    },
-  ];
-
   const tableTopContent = {
     pageTitle: `Income Statement`,
     subtitle: '',
@@ -632,7 +574,7 @@ export const MonthStatementsDetails: React.FC = () => {
             />
           </Card>
           <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-            {(submittedExpenses && submittedIncome) && (
+            {enableDownload && isIncomeSubmitted && (
               <GeneratePdfReportButton
                 component="income-statements"
                 title="Download Statement"
@@ -640,7 +582,7 @@ export const MonthStatementsDetails: React.FC = () => {
                   Number(statementMonth) - 1
                 )}-income-statement-report.pdf`}
                 tableFooter={footer}
-                tableData={pdfReportData.length > 0 ? pdfReportData : multipleTestTableData}
+                tableData={pdfReportData}
                 content={tableTopContent}
                 tableHeadStyles={tableHeadStyles}
                 tableFootStyles={tableFootStyles}
