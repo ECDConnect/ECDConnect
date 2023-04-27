@@ -1236,7 +1236,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
