@@ -74,31 +74,41 @@ export const MonthlyAttendanceReport = ({
     }
   );
 
+  const finalTableData = [
+    {
+      tableName: '',
+      type: '',
+      total: '',
+      headers: tableColumns,
+      data: tableData,
+    },
+  ];
 
   const footer = [
     'Child Attendance per Day',
     '', // Placeholder for ID/Passport column
   ];
 
-  totalAttendance.forEach(obj => {
+  totalAttendance.forEach((obj) => {
     footer.push(obj.value.toString());
   });
 
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
-    subtitle: 'Text 2',
-    practitioner_name: 'Name: Jenny Droe',
-    id_number: 'ID: ID23YGH444',
-    programme_type: 'ProgrammeType: 46372test',
-    programme_days: 'Programmme Days: Monday to Friday',
-    site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: 'Phone: 0123456789',
+    subtitle: '',
+    text_coulumn_one_row_one: 'Name: Test Data 1',
+    text_coulumn_one_row_two: 'ID: data 2',
+    text_coulumn_one_row_three: 'Phone: 0123456789',
+    //column2 with 3 rows of text
+    text_column_two_row_one: 'ProgrammeType: 46372test',
+    text_column_two_row_two: 'Programmme Days: Monday to Friday',
+    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
   };
 
   const tableBottomContent = [
-    `Total monthly attendance: ${ totalAttendanceStatsReport?.totalMonthlyAttendance}`,
+    `Total monthly attendance: ${totalAttendanceStatsReport?.totalMonthlyAttendance}`,
     `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
-    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions }`,
+    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions}`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -203,8 +213,7 @@ export const MonthlyAttendanceReport = ({
           <GeneratePdfReportButton
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
-            headerColumns={tableColumns}
-            bodyRows={tableData}
+            tableData={finalTableData}
             tableFooter={footer}
             content={tableTopContent}
             tableBottomContent={tableBottomContent}

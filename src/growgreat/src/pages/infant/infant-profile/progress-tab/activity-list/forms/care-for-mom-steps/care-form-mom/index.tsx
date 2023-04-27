@@ -23,10 +23,6 @@ export const CareForMomStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
-  const onHelp = () => {
-    setIsTip && setIsTip(true);
-  };
-
   return (
     <>
       <Header

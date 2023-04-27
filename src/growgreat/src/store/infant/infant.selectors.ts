@@ -28,16 +28,13 @@ export const getInfantFirstVisitSelector = (
   if (!visits) return null;
 
   const filteredVisits = visits.filter((visit) => {
-    const plannedVisitDate = new Date(visit.plannedVisitDate);
-    return plannedVisitDate.getFullYear() !== 0;
+    const orderDate = new Date(visit.orderDate);
+    return orderDate.getFullYear() !== 0;
   });
   const firstVisit = filteredVisits.reduce(
     (oldest: VisitDto | null, current: VisitDto) => {
-      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
-      if (
-        !oldest ||
-        currentPlannedVisitDate < new Date(oldest.plannedVisitDate)
-      ) {
+      const currentPlannedVisitDate = new Date(current.orderDate);
+      if (!oldest || currentPlannedVisitDate < new Date(oldest.orderDate)) {
         return current;
       }
       return oldest;
@@ -57,17 +54,14 @@ export const getInfantPreviousVisitSelector = (
   if (!visits) return;
 
   const filteredVisits = visits.filter((visit) => {
-    const plannedVisitDate = new Date(visit.plannedVisitDate);
-    return plannedVisitDate < new Date(currentPlannedVisitDate);
+    const orderDate = new Date(visit.orderDate);
+    return orderDate < new Date(currentPlannedVisitDate);
   });
 
   const previousVisit = filteredVisits.reduce(
     (previous: VisitDto | null, current: VisitDto) => {
-      const currentPlannedVisitDate = new Date(current.plannedVisitDate);
-      if (
-        !previous ||
-        currentPlannedVisitDate > new Date(previous.plannedVisitDate)
-      ) {
+      const currentPlannedVisitDate = new Date(current.orderDate);
+      if (!previous || currentPlannedVisitDate > new Date(previous.orderDate)) {
         return current;
       }
       return previous;
@@ -78,13 +72,20 @@ export const getInfantPreviousVisitSelector = (
   return previousVisit;
 };
 
-export const getIsInfantFirstVisitSelector = (
-  state: RootState,
-  currentVisitId: string
-): boolean => {
-  const firstVisit = getInfantFirstVisitSelector(state);
+export const getIsInfantFirstVisitSelector = (state: RootState): boolean => {
+  const visits = state.infants.visits;
 
-  return currentVisitId === firstVisit?.id;
+  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+
+  return attendedVisitsCount === 0;
+};
+
+export const getIsInfantSecondVisitSelector = (state: RootState): boolean => {
+  const visits = state.infants.visits;
+
+  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+
+  return attendedVisitsCount === 1;
 };
 
 export const getInfantVisitByVisitIdSelector = (
