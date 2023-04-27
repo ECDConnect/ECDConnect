@@ -292,7 +292,7 @@ export const MonthStatementsDetails: React.FC = () => {
       const report = await new IncomeStatementsService(
         userAuth?.auth_token!
       ).getMonthsIncomeExpensesReport(
-        "5b821f79-a6ec-4cd9-846c-fe0f09ef8cdd",
+        userAuth?.id!,
         statementMonth,
         statementYear
       );
