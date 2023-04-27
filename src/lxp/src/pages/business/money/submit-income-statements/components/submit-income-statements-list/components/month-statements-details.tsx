@@ -30,6 +30,7 @@ import ExpensesStatementsService from '@/services/ExpensesStatementsService/Expe
 import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
 
 
 export const MonthStatementsDetails: React.FC = () => {
@@ -81,6 +82,8 @@ export const MonthStatementsDetails: React.FC = () => {
     () => expenses?.filter((item) => item?.submitted === true),
     [expenses]
   );
+
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -441,6 +444,7 @@ export const MonthStatementsDetails: React.FC = () => {
     '', // Placeholder for Day 2 column
   ];
 
+  console.log(practitioner);
   //TODO: to be removed
   const multipleTestTableData = [
     {
@@ -506,9 +510,9 @@ export const MonthStatementsDetails: React.FC = () => {
     pageTitle: `Income Statement`,
     subtitle: '',
     //column2 with 3 rows of text
-    text_column_two_row_one: 'ProgrammeType: 46372test',
-    text_column_two_row_two: 'Programmme Days: Monday to Friday',
-    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
+    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_column_two_row_two: `Phone: ${practitioner?.user?.phoneNumber}`,
+    text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
   };
 
   const tableHeadStyles: UserOptions['headStyles'] = {
