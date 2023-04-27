@@ -88,7 +88,12 @@ export const EditClass = ({
       });
     }
 
-    setPractitionersList(_list);
+    const filteredList = _list.filter(
+      (value, index, self) =>
+        index === self.findIndex((t) => t.value === value.value)
+    );
+
+    setPractitionersList(filteredList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -107,6 +112,7 @@ export const EditClass = ({
   }, [meetEveryday, setValue, trigger]);
 
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+
   const classProgrammes = useSelector(
     classroomsSelectors.getClassProgrammesByClassGroupId(classToEdit.id)
   );
