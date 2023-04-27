@@ -32,6 +32,21 @@ export interface ChildAttendanceMonthlyReportModel {
   attendancePercentage: number;
 }
 
+export interface ChildAttendanceOverallReportModel {
+  totalActualAttendance: number;
+  totalExpectedAttendance: number;
+  attendancePercentage: number;
+  classgroupId: string;
+  childFullName: string;
+  childUserId: string;
+  month: number;
+  year: number;
+  attendance: {
+    key: number;
+    value: number;
+  }[];
+}
+
 export interface ClassRoomChildAttendanceMonthlyReportModel {
   totalExpectedAttendance: number;
   attendancePercentage: number;
@@ -40,4 +55,14 @@ export interface ClassRoomChildAttendanceMonthlyReportModel {
   childUserId: string;
   month: number;
   year: number;
+  classroomAttendanceReport: ChildAttendanceOverallReportModel[];
+  totalAttendance: {
+    key: number;
+    value: number;
+  }[];
+  totalAttendanceStatsReport: {
+    totalSessions: number;
+    totalMonthlyAttendance: number;
+    totalChildrenAttendedSessions: number;
+  };
 }

@@ -1,8 +1,20 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useHistory, useLocation } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { BannerWrapper, TabItem, TabList } from '@ecdlink/ui';
+import {
+  ActionModal,
+  BannerWrapper,
+  DialogPosition,
+  TabItem,
+  TabList,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { getMotherById } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
@@ -24,12 +36,19 @@ import {
   WalkthroughInfoPageProps,
 } from '@/components/walkthrough/info-page';
 import { visitSteps } from './visits/walkthrough/steps';
-import { getStringFromClassNameOrId, replaceBraces } from '@ecdlink/core';
+import {
+  MotherDto,
+  getStringFromClassNameOrId,
+  replaceBraces,
+  useDialog,
+  usePrevious,
+} from '@ecdlink/core';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as AwardIcon } from '@/assets/awardIcon.svg';
 import { progressSteps } from './progress-tab/walkthrough/steps';
 import { ReferralsTab } from './referrals-tab';
 import { referralsSteps } from './referrals-tab/walkthrough/steps';
+import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -51,9 +70,13 @@ export const PregnantProfile: React.FC = () => {
 
   const { state } = useLocation<PregnantProfileRouteState>();
 
+  const previousActiveTab = usePrevious(state?.activeTabIndex);
+
   const appDispatch = useAppDispatch();
 
   const { isOnline } = useOnlineStatus();
+
+  const dialog = useDialog();
 
   const history = useHistory();
 
@@ -146,11 +169,131 @@ export const PregnantProfile: React.FC = () => {
   const onHelp = useCallback(() => {
     setIsInfoPage(false);
     setIsWalkthroughSession('true');
+    walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: true });
     setTimeout(
       () => walkthroughDispatch?.({ type: 'SET_TOUR_ACTIVE', payload: true }),
       200
     );
   }, [setIsWalkthroughSession, walkthroughDispatch]);
+
+  const updateClickedTab = useCallback(() => {
+    let input: MotherDto = {
+      clickedProgressTab: mother?.clickedProgressTab,
+      clickedContactTab: mother?.clickedContactTab,
+      clickedReferralsTab: mother?.clickedReferralsTab,
+      clickedVisitTab: mother?.clickedVisitTab,
+    };
+
+    switch (state?.activeTabIndex) {
+      case PREGNANT_PROFILE_TABS.PROGRESS:
+        input = {
+          ...input,
+          clickedProgressTab: true,
+        };
+        break;
+      case PREGNANT_PROFILE_TABS.REFERRALS:
+        input = {
+          ...input,
+          clickedReferralsTab: true,
+        };
+        break;
+      case PREGNANT_PROFILE_TABS.CONTACT:
+        input = {
+          ...input,
+          clickedContactTab: true,
+        };
+        break;
+      default:
+        input = {
+          ...input,
+          clickedVisitTab: true,
+        };
+        break;
+    }
+
+    appDispatch(
+      motherThunkActions.updateMother({ mother: input, id: motherId })
+    );
+  }, [appDispatch, mother, motherId, state?.activeTabIndex]);
+
+  const handleWelcomeDialog = useCallback(() => {
+    const currentTab = state?.activeTabIndex ?? 0;
+    if (
+      (currentTab === PREGNANT_PROFILE_TABS.VISITS &&
+        !mother?.clickedVisitTab) ||
+      (currentTab === PREGNANT_PROFILE_TABS.PROGRESS &&
+        !mother?.clickedProgressTab) ||
+      (currentTab === PREGNANT_PROFILE_TABS.REFERRALS &&
+        !mother?.clickedReferralsTab) ||
+      (currentTab === PREGNANT_PROFILE_TABS.CONTACT &&
+        !mother?.clickedContactTab)
+    ) {
+      let tabName = '';
+
+      switch (currentTab) {
+        case PREGNANT_PROFILE_TABS.PROGRESS:
+          tabName = 'progress';
+          break;
+        case PREGNANT_PROFILE_TABS.REFERRALS:
+          tabName = 'referrals';
+          break;
+        case PREGNANT_PROFILE_TABS.CONTACT:
+          tabName = 'contact';
+          break;
+
+        default:
+          tabName = 'visits';
+          break;
+      }
+
+      return dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render(onClose) {
+          return (
+            <ActionModal
+              customIcon={<PollyNeutral className="mb-3 h-24 w-24" />}
+              title={` Welcome to the ${tabName} tab!`}
+              detailText="Can I show you how this works?"
+              actionButtons={[
+                {
+                  colour: 'primary',
+                  text: 'Yes, help me!',
+                  textColour: 'white',
+                  type: 'filled',
+                  leadingIcon: 'CheckCircleIcon',
+                  onClick: () => {
+                    updateClickedTab();
+                    setIsWalkthroughSession('true');
+                    onHelp();
+                    onClose();
+                  },
+                },
+                {
+                  colour: 'primary',
+                  text: 'No, skip',
+                  textColour: 'primary',
+                  type: 'outlined',
+                  leadingIcon: 'ClockIcon',
+                  onClick: () => {
+                    updateClickedTab();
+                    onClose();
+                  },
+                },
+              ]}
+            />
+          );
+        },
+      });
+    }
+  }, [
+    dialog,
+    mother,
+    onHelp,
+    setIsWalkthroughSession,
+    state?.activeTabIndex,
+    updateClickedTab,
+  ]);
 
   const goBack = useCallback(() => {
     if (isInfoPage) {
@@ -164,6 +307,12 @@ export const PregnantProfile: React.FC = () => {
     (async () =>
       appDispatch(motherThunkActions.getMotherVisits({ motherId })).unwrap())();
   }, [appDispatch, motherId]);
+
+  useEffect(() => {
+    if (previousActiveTab !== state?.activeTabIndex) {
+      handleWelcomeDialog();
+    }
+  }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
 
   return (
     <>

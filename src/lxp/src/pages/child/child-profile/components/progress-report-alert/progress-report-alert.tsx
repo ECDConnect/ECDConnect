@@ -90,11 +90,11 @@ export const ChildProgressReportAlert: React.FC<
     if (requiresInitialReport) {
       return {
         ...baseProgressReportListItem,
-        title: 'First Observations',
-        subTitle: `Track progress by ${addDays(
+        title: 'Start tracking progress',
+        subTitle: `First observations by <b>${addDays(
           childInsertedDate,
           childRegistrationConstants.firstProgressReportPeriod
-        ).toLocaleString('en-za', DateFormats.standardDate)}`,
+        ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}</b>`,
         subTitleColor: 'black',
         onButtonClick: navigateToChildProgressObservation,
       };

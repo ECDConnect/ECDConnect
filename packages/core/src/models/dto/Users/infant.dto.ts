@@ -26,6 +26,10 @@ export interface InfantDto extends EntityBase {
   nextVisitDate?: string;
   gender?: GenderDto;
   completed24MonthVisits?: boolean;
+  clickedVisitTab?: boolean;
+  clickedProgressTab?: boolean;
+  clickedReferralsTab?: boolean;
+  clickedContactTab?: boolean;
   statusInfo?: {
     icon?: string;
     color?: string;
