@@ -74,21 +74,48 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother UpdateMother(string id, MotherModel input)
         {
-            var entityToUpdate = _motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.UserId = input.UserId;
-            entityToUpdate.User = motherUser;
-            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
-            entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
-            entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
-            entityToUpdate.SiteAddress = input.SiteAddress;
-            entityToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
-            entityToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
-            entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
-            entityToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
+
+            if (input.UserId != null)
+            {
+                entityToUpdate.UserId = input.UserId;
+                entityToUpdate.User = motherUser;
+            }
+            if (input.WhatsAppNumber != null) { 
+                entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            }
+            if (input.ExpectedDateOfDelivery != null)
+            {
+                entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
+            }
+            if (input.HealthCareWorkerId != null)
+            {
+                entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
+            }
+            if (input.SiteAddress != null)
+            {
+                entityToUpdate.SiteAddress = input.SiteAddress;
+            }
+            if (input.ClickedVisitTab != null)
+            {
+                entityToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+            }
+            if (input.ClickedProgressTab != null)
+            {
+                entityToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+            }
+            if (input.ClickedReferralsTab != null)
+            {
+                entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+            }
+            if (input.ClickedContactTab != null)
+            {
+                entityToUpdate.ClickedContactTab = input.ClickedContactTab;
+            }
 
             return _motherRepo.Update(entityToUpdate);
         }
