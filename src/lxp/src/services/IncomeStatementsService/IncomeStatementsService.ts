@@ -202,8 +202,6 @@ class IncomeStatementsService {
         'Get all income statementsreports Failed - Server connection error'
       );
     }
-    console.log('>>', response.data.data.statementsIncomeExpensesPDFData );
-
     return response.data.data.statementsIncomeExpensesPDFData;
   }
 

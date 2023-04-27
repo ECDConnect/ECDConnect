@@ -6,6 +6,7 @@ type TableData = {
   type: string;
   headers: { header: string; dataKey: string }[];
   data: { [key: string]: any }[];
+  total: number;
 };
 export interface GeneratePdfReportButtonProps {
   title: string;
@@ -72,9 +73,19 @@ const GeneratePdfReportButton = ({
         doc.text(tableType, 10, 19 + 7);
         lastTableType = tableType;
       }
-
       tables.forEach((table, index) => {
         const headers = table.headers;
+        let finalFooter =
+          component !== 'income-statements'
+            ? footer
+            : [
+                [
+                  'Total',
+                  ...new Array(headers.length - 2).fill(''),
+                  `${table.total}`,
+                ],
+              ];
+console.log(table)
         // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,
@@ -99,9 +110,10 @@ const GeneratePdfReportButton = ({
           ],
           columns: headers,
           body: table.data.map((d) => table.headers.map((h) => d[h.dataKey])),
-          foot: footer,
-          // startY: startY,
+          foot: finalFooter,
+          startY: startY,
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
+          horizontalPageBreakRepeat: 'avoid',
           didDrawPage: (data) => {
             // Add table header to each new page
             // Add left header
@@ -129,21 +141,7 @@ const GeneratePdfReportButton = ({
             doc.text(content.text_column_two_row_one ?? '', 100, 20);
             doc.text(content.text_column_two_row_two ?? '', 100, 25);
             doc.text(content.text_column_two_row_three ?? '', 100, 30);
-
-            // Add signature and date fields to the bottom of the page
-            const footerHeight = 15;
-            const position = (data.cursor?.y ?? 0) + footerHeight;
-
-            // add signature and date fields
-
-            // doc.text('Sign: ', 20, position + 55);
-            // doc.rect(30, position + 50, 65, 10);
-            // doc.text('Date: ', 110, position + 55);
-            // doc.rect(120, position + 50, 65, 10);
-          },
-          margin: {
-            top: 35,
-          },
+          }
         });
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
@@ -151,6 +149,14 @@ const GeneratePdfReportButton = ({
       if (component === 'income-statements') {
         const columns = ['Additional Notes'];
         const data = [['']];
+        doc.setFillColor(200, 200, 200); // set grey background color
+        doc.rect(
+          15,
+          (doc as any).lastAutoTable.finalY + 4,
+          doc.internal.pageSize.width - 30,
+          10,
+          'F'
+        );
         autoTable(doc, {
           columns,
           headStyles: tableHeadStyles,
@@ -159,16 +165,36 @@ const GeneratePdfReportButton = ({
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
         });
         doc.setFillColor(215, 215, 215); // set grey background color
-        doc.rect(15, (doc as any).lastAutoTable.finalY + 4, doc.internal.pageSize.width - 30, 15 , 'F');
+        doc.rect(
+          15,
+          (doc as any).lastAutoTable.finalY + 4,
+          doc.internal.pageSize.width - 30,
+          15,
+          'F'
+        );
 
         doc.setDrawColor(0);
         doc.setFontSize(10);
-        doc.text('Level of DBE registration:', 25, (doc as any).lastAutoTable.finalY + 12);
+        doc.text(
+          'Level of DBE registration:',
+          25,
+          (doc as any).lastAutoTable.finalY + 12
+        );
         doc.setFillColor(255, 0, 0);
         doc.rect(65, (doc as any).lastAutoTable.finalY + 6, 25, 10, 'S');
-        doc.text('Number of Children:', 105, (doc as any).lastAutoTable.finalY + 12);
+        doc.text(
+          'Number of Children:',
+          105,
+          (doc as any).lastAutoTable.finalY + 12
+        );
         doc.setFillColor(255, 0, 0);
         doc.rect(140, (doc as any).lastAutoTable.finalY + 6, 25, 10, 'S');
+
+        //sig
+        doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 45);
+        doc.rect(30, (doc as any).lastAutoTable.finalY + 40, 65, 10);
+        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 45);
+        doc.rect(120, (doc as any).lastAutoTable.finalY + 40, 65, 10);
       }
     });
     doc.setFillColor(255, 255, 255); // set grey background color
@@ -181,10 +207,13 @@ const GeneratePdfReportButton = ({
       doc.text(tableBottomContent[1], 120, afterTable + 15);
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
+    //add signature at end of document
     doc.text('Sign: ', 20, afterTable + 45);
     doc.rect(30, afterTable + 40, 65, 10);
     doc.text('Date: ', 110, afterTable + 45);
     doc.rect(120, afterTable + 40, 65, 10);
+
+    //export pdf report
     doc.save(outputName);
   };
 
