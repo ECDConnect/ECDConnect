@@ -379,14 +379,8 @@ export const Dashboard: React.FC = () => {
               title: 'Training',
               titleIcon: 'BriefcaseIcon',
               titleIconClassName: styles.businessIcon,
-              onActionClick: () => ({}),
-              chipConfig: {
-                colorPalette: {
-                  backgroundColour: 'successMain',
-                  borderColour: 'successMain',
-                  textColour: 'white',
-                },
-                text: 'Coming soon',
+              onActionClick: () => {
+                history.push(ROUTES.TRAINING);
               },
               classNames: 'bg-uiBg',
             },

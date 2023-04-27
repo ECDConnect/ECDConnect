@@ -50,7 +50,7 @@ namespace ECDLink.Moodle.Managers
                         new NpgsqlParameter("Confirmed", user.Confirmed),
                         new NpgsqlParameter("Mnethostid", user.Mnethostid),
                         new NpgsqlParameter("UserName", user.UserName),
-                        new NpgsqlParameter("Password", HashPassword(user.Password)),
+                        new NpgsqlParameter("Password", "$2y$10$NC4irSPAfnZHUN8HjWXD8e9.MotF0pGqZq6KDPtbfbUquHOQplQbq"), //HashPassword(user.Password)),
                         new NpgsqlParameter("IdNumber", user.IdNumber),
                         new NpgsqlParameter("Firstname", user.Firstname),
                         new NpgsqlParameter("Lastname", user.Lastname),

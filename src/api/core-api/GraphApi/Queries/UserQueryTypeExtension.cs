@@ -136,7 +136,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 cohortName = "Smart Start";
             }
 
-
             // create the moodle user
             var moodleUser = new MoodleUser()
             {
@@ -149,9 +148,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Phone1 = user.PhoneNumber
             };
             // create user for moodle
-            moodleManager.CreateUserAsync(moodleUser, cohortName).Wait();
+            return moodleManager.CreateUserAsync(moodleUser, cohortName).Result.ToString();
             // create session for moodle user
-            return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
+            // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }
 
     }
