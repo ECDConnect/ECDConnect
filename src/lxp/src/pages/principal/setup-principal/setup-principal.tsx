@@ -39,6 +39,7 @@ import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { notificationActions } from '@/store/notifications';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -164,6 +165,8 @@ export const SetupPrincipal: React.FC = () => {
         userAuth?.auth_token!
       ).UpdatePractitionerProgress(user?.id!, 2.0);
     }
+
+    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
