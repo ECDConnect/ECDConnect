@@ -65,7 +65,7 @@ export const MonthlyAttendanceReport = ({
         {}
       );
       //test name too long so i sliced it
-      return { child: childFullName.slice(0, 18), id: childIdNumber, ...attendance };
+      return { child: childFullName, id: childIdNumber, ...attendance };
     }
   );
 
