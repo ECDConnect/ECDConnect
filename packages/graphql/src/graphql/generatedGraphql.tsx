@@ -949,6 +949,7 @@ export type ClassroomGroupChildAttendanceReportModel = {
   attendance?: Maybe<Array<KeyValuePairOfInt32AndInt32>>;
   attendancePercentage: Scalars['Int'];
   childFullName?: Maybe<Scalars['String']>;
+  childIdNumber?: Maybe<Scalars['String']>;
   childUserId?: Maybe<Scalars['String']>;
   classgroupId: Scalars['UUID'];
   month: Scalars['Int'];
@@ -8288,6 +8289,7 @@ export type TenantModel = {
   adminTestSiteAddress?: Maybe<Scalars['String']>;
   applicationName?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  moodleConfigVar?: Maybe<Scalars['String']>;
   moodleUrlVar?: Maybe<Scalars['String']>;
   organisationName?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<Scalars['String']>;
