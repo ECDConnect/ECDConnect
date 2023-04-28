@@ -88,7 +88,7 @@ const GeneratePdfReportButton = ({
                   `R ${table.total}`,
                 ],
               ];
-        console.log('>', table);
+              
         // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,

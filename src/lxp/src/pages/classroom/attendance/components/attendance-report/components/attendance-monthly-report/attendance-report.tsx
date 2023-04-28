@@ -62,8 +62,8 @@ export const MonthlyAttendanceReport = ({
   ];
 
   const tableData = reportData.map(
-    (item: { attendance?: any; childFullName?: any; childUserId?: any }) => {
-      const { childFullName, childUserId } = item;
+    (item: { attendance?: any; childFullName?: any; childIdNumber?: string }) => {
+      const { childFullName, childIdNumber } = item;
       const attendance = item.attendance.reduce(
         (obj: { [x: string]: any }, { key, value }: any, i: number) => {
           obj[`day${i + 1}`] = value;
@@ -71,9 +71,8 @@ export const MonthlyAttendanceReport = ({
         },
         {}
       );
-      //to be updated when api is updated
-      //test name too long
-      return { child: childFullName.slice(0, 14), id: 'XXSS', ...attendance };
+      //test name too long so i sliced it
+      return { child: childFullName.slice(0, 18), id: childIdNumber, ...attendance };
     }
   );
 
