@@ -68,7 +68,7 @@ const GeneratePdfReportButton = ({
         if (lastTableType !== null) {
           doc.addPage();
         }
-        doc.setFontSize(12);
+        doc.setFontSize(16);
         doc.setFont('bold');
         doc.text(tableType, 10, 19 + 7);
         lastTableType = tableType;
@@ -218,10 +218,10 @@ const GeneratePdfReportButton = ({
     //get Y value after the last table end to place info
     //min 3 items in row
     let afterTable = (doc as any).lastAutoTable.finalY;
-    doc.setFontSize(10);
+    doc.setFontSize(13);
     if (tableBottomContent && tableBottomContent.length > 0) {
       doc.text(tableBottomContent[0], 15, afterTable + 15);
-      doc.text(tableBottomContent[1], 120, afterTable + 15);
+      doc.text(tableBottomContent[1], 110, afterTable + 15);
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
 

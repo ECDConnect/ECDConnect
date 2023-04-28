@@ -127,11 +127,12 @@ export const MonthlyAttendanceReport = ({
   const tableStyles: UserOptions['styles'] = {
     lineWidth: 0.1,
     lineColor: 0x000000,
+    fontSize: 8,
   };
   const tableFootStyles: UserOptions['footStyles'] = {
     textColor: [0, 0, 0],
     fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
+    fontSize: 8,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
