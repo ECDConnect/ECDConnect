@@ -62,35 +62,35 @@ class AttendanceService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query classroomAttendanceOverviewReport(          
-        $userId: String          
-        $classgroupId: UUID!          
-        $startDate: DateTime!          
-        $endDate: DateTime!) {            
-        classroomAttendanceOverviewReport(              
-            userId: $userId              
-    classgroupId: $classgroupId              
-    startDate: $startDate              
-    endDate: $endDate            ) {  
-        classroomAttendanceReport{     
-            totalActualAttendance           
+      query classroomAttendanceOverviewReport(
+        $userId: String
+        $classgroupId: UUID!
+        $startDate: DateTime!
+        $endDate: DateTime!) {
+        classroomAttendanceOverviewReport(
+            userId: $userId
+            classgroupId: $classgroupId
+            startDate: $startDate
+            endDate: $endDate) {
+        classroomAttendanceReport{
+            totalActualAttendance
             totalExpectedAttendance
-            attendancePercentage    
-            classgroupId          
+            attendancePercentage
+            classgroupId
             childFullName
-            childUserId       
+            childIdNumber
+            childUserId
             month
-            year   
-            attendance{ key value } 
-        }  
+            year
+            attendance{ key value }
+        }
         totalAttendance { key value }
-        totalAttendanceStatsReport { 
+        totalAttendanceStatsReport {
         totalSessions
         totalMonthlyAttendance
         totalChildrenAttendedSessions
-        }     
-                      
-    }          
+        }
+    }
     }
       `,
       variables: {

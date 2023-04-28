@@ -68,7 +68,7 @@ const GeneratePdfReportButton = ({
         if (lastTableType !== null) {
           doc.addPage();
         }
-        doc.setFontSize(12);
+        doc.setFontSize(16);
         doc.setFont('bold');
         doc.text(tableType, 10, 19 + 7);
         lastTableType = tableType;
@@ -88,7 +88,7 @@ const GeneratePdfReportButton = ({
                   `R ${table.total}`,
                 ],
               ];
-        console.log('>', table);
+
         // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,
@@ -151,7 +151,7 @@ const GeneratePdfReportButton = ({
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
-      if (component === 'income-statements') {
+      if (component === 'income-statements' && tableData.length > 1) {
         const columns = ['Additional Notes'];
         const data = [['']];
         autoTable(doc, {
@@ -160,9 +160,7 @@ const GeneratePdfReportButton = ({
           body: data,
           columnStyles: { 0: { minCellHeight: 20 } },
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
-          // margin: {
-          //   top: 55,
-          // },
+
         });
         doc.setFillColor(200, 200, 200); // set grey background color
         doc.rect(
@@ -220,13 +218,19 @@ const GeneratePdfReportButton = ({
     //get Y value after the last table end to place info
     //min 3 items in row
     let afterTable = (doc as any).lastAutoTable.finalY;
-    doc.setFontSize(10);
+    doc.setFontSize(13);
     if (tableBottomContent && tableBottomContent.length > 0) {
       doc.text(tableBottomContent[0], 15, afterTable + 15);
-      doc.text(tableBottomContent[1], 120, afterTable + 15);
+      doc.text(tableBottomContent[1], 110, afterTable + 15);
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
 
+    if (tableData.length === 1) {
+      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30);
+        doc.rect(30, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
+        doc.rect(120, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+    }
     //export pdf report
     doc.save(outputName);
   };
