@@ -89,13 +89,14 @@ export const getCareForMomSteps = (
 ];
 
 export const careForBabySteps = (
+  isRoadToHeathBookStep: boolean,
   isDangerSignsFollowUp: boolean,
   isChildBefore49Days: boolean,
   isNewBornCare: boolean,
   isKangarooMotherCare: boolean
 ) => [
   CareForBabyStep,
-  RoadToHeathBookStep,
+  ...(isRoadToHeathBookStep ? [RoadToHeathBookStep] : []),
   ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
   ...(isChildBefore49Days ? [BabyDangerSignsStep] : []),
   ...(isNewBornCare ? [NewbornCareStep] : []),

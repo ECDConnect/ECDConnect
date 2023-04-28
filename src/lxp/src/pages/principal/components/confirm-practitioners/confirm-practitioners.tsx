@@ -83,7 +83,13 @@ export default function ConfirmPractitioners({
               isRegistered: Boolean(item?.isRegistered),
             })
           );
-        setListItems(listItems);
+
+        const filteredList = listItems.filter(
+          (value, index, self) =>
+            index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+        );
+
+        setListItems(filteredList);
 
         _practitionersList.push({
           firstName: item?.user?.firstName ?? '',
@@ -96,7 +102,12 @@ export default function ConfirmPractitioners({
           isRegistered: Boolean(item?.isRegistered),
         });
       });
-      setPrincipalPractitioners(_practitionersList);
+
+      const principalFilteredList = _practitionersList.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+      );
+      setPrincipalPractitioners(principalFilteredList);
     }
   }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
 
@@ -116,7 +127,12 @@ export default function ConfirmPractitioners({
               isRegistered: Boolean(isRegistered),
             })
           );
-          setListItems(listItems);
+
+          const filteredList = listItems.filter(
+            (value, index, self) =>
+              index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+          );
+          setListItems(filteredList);
 
           _practitionersList.push({
             firstName: firstName ?? '',
@@ -130,7 +146,12 @@ export default function ConfirmPractitioners({
           });
         }
       );
-      setPrincipalPractitioners(_practitionersList);
+
+      const principalFilteredList = _practitionersList.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+      );
+      setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersForPrincipal]);

@@ -402,7 +402,7 @@ namespace ECDLink.Core.Services
                 from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.DatePaid.Year.Equals(year) && y.DatePaid.Month.Equals(month) && y.Submitted.Equals(true))
                 join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
                 select statementExpenseType
-            ).ToList();
+            ).Distinct().ToList();
         }
 
         public List<IncomeExpensePDFDataModel> GetAllStatementsExpensesForType(string userId, int year, int month, string expenseTypeId)
@@ -440,7 +440,7 @@ namespace ECDLink.Core.Services
                 from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
                 join statementIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.IncomeTypeId equals statementIncomeType.Id.ToString()
                 select statementIncomeType
-            ).ToList();
+            ).Distinct().ToList();
         }
 
         public List<StatementsContributionType> GetAllStatementContributionTypes(string userId, int year, int month)
@@ -451,7 +451,7 @@ namespace ECDLink.Core.Services
                 from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
                 join statementContributionType in _statementsContributionTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.ContributionTypeId equals statementContributionType.Id.ToString()
                 select statementContributionType
-            ).ToList();
+            ).Distinct().ToList();
         }
 
         public List<IncomeExpensePDFDataModel> getMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)

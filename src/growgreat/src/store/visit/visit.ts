@@ -148,18 +148,34 @@ const visitSlice = createSlice({
       }
     );
     builder.addCase(getHealthPromotion.fulfilled, (state, action) => {
-      state.healthPromotion = state.healthPromotion?.length
-        ? [...state.healthPromotion, ...action.payload]
-        : action.payload;
-
       setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.healthPromotion?.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (updatedDataIndex !== undefined && !!state.healthPromotion) {
+        state.healthPromotion[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.healthPromotion = state.healthPromotion?.length
+        ? [...state.healthPromotion, ...[action.payload]]
+        : [action.payload];
     });
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
-      state.moreInformation = state.moreInformation?.length
-        ? [...state.moreInformation, ...action.payload]
-        : action.payload;
-
       setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.moreInformation?.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (updatedDataIndex !== undefined && !!state.moreInformation) {
+        state.moreInformation[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.moreInformation = state.moreInformation?.length
+        ? [...state.moreInformation, ...[action.payload]]
+        : [action.payload];
     });
     builder.addCase(getCompletedVisitsForVisitId.fulfilled, (state, action) => {
       state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
