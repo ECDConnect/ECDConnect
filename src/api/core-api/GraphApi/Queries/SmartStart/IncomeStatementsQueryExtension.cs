@@ -103,9 +103,9 @@ string userId, int year, int month)
             table.TableName = IncomeExpensePDF.NON_MONETARY_CONTRIBUTIONS;
             table.Type = IncomeExpensePDF.INCOME;
             table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
+            table.Data = incomeManager.getNonMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
             if (table.Data != null && table.Data.Count > 0)
             {
-                table.Data = incomeManager.getNonMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
                 tables.Add(table);
             }
 
