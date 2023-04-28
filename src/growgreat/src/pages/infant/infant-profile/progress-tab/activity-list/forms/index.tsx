@@ -27,13 +27,11 @@ import {
   breastfeedingIssuesCheckboxOptions,
 } from './pillar-1-steps/nutrition/breast-milk-only-flow/breastfeeding-issues';
 import { dangerSignsVisitSection } from './care-for-mom-steps/danger-signs';
-import { dangerSignsVisitSectionForBaby } from './care-for-baby-steps/danger-signs';
 import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
 import { differenceInDays } from 'date-fns';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useParams } from 'react-router';
 import { maternalDistressVisitSection } from './care-for-mom-steps/maternal-distress-screening';
-import { documentSelectors } from '@/store/document';
 
 interface FormProps {
   onBack: () => void;
@@ -42,6 +40,11 @@ interface FormProps {
     isDevelopmentalScreening: boolean;
     isDevelopmentalScreeningWeeksFollowUp: boolean;
     isDevelopmentalScreeningWeeks: boolean;
+    isRoadToHeathBookStep: boolean;
+    isDangerSignsFollowUpForBaby: boolean;
+    isChildBefore49Days: boolean;
+    isNewBornCare: boolean;
+    isKangarooMotherCare: boolean;
   };
 }
 
@@ -59,10 +62,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
 
   const dialog = useDialog();
 
-  const documents = useSelector(documentSelectors.getDocuments);
-
-  // TODO: add integration (use case 13, row 270)
-  console.log({ documents });
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const infant = useSelector((state: RootState) =>
@@ -139,15 +138,9 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     [ageDays, isFirstVisit]
   );
 
-  const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
-
   const isDangerSignsFollowUpForMom = getIsFollowUp(
     dangerSignsVisitSection,
     activitiesTypes.careForMom
-  );
-  const isDangerSignsFollowUpForBaby = getIsFollowUp(
-    dangerSignsVisitSectionForBaby,
-    activitiesTypes.careForBaby
   );
 
   const isMaternalDistressFollowUp = getIsFollowUp(
@@ -180,16 +173,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     () =>
       (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
       (isFirstVisit && ageDays >= 49 && ageDays <= 56),
-    [ageDays, isFirstVisit]
-  );
-
-  const isNewBornCare = useMemo(
-    () => !isFirstVisit && ageDays <= 28,
-    [ageDays, isFirstVisit]
-  );
-
-  const isKangarooMotherCare = useMemo(
-    () => isFirstVisit && ageDays <= 49,
     [ageDays, isFirstVisit]
   );
 
@@ -310,7 +293,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     switch (activityName) {
       case activitiesTypes.careForMom:
         return getCareForMomSteps(
-          isChildBefore49Days,
+          stepsRules.isChildBefore49Days,
           isDangerSignsFollowUpForMom,
           isShowClinicCheckUps,
           isSelfCareAndSupport,
@@ -320,10 +303,11 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
-          isDangerSignsFollowUpForBaby,
-          isChildBefore49Days,
-          isNewBornCare,
-          isKangarooMotherCare
+          stepsRules.isRoadToHeathBookStep,
+          stepsRules.isDangerSignsFollowUpForBaby,
+          stepsRules.isChildBefore49Days,
+          stepsRules.isNewBornCare,
+          stepsRules.isKangarooMotherCare
         );
       case activitiesTypes.pillar1:
         return getPillar1Steps({
@@ -356,7 +340,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isDewormingQuestion
         );
       case activitiesTypes.pillar4:
-        return getPillar4Steps(isPillar4FollowUp, !isChildBefore49Days);
+        return getPillar4Steps(
+          isPillar4FollowUp,
+          !stepsRules.isChildBefore49Days
+        );
       case activitiesTypes.pillar5:
         return pillar5Steps;
       default:
@@ -366,14 +353,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMaternalDistressScreening,
     isMaternalDistress,
     activityName,
-    isChildBefore49Days,
     isDangerSignsFollowUpForMom,
     isShowClinicCheckUps,
     isSelfCareAndSupport,
     isMaternalDistressFollowUp,
-    isDangerSignsFollowUpForBaby,
-    isNewBornCare,
-    isKangarooMotherCare,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,
