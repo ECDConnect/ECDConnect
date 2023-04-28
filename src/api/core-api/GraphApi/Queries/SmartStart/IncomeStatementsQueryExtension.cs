@@ -63,7 +63,7 @@ string userId, int year, int month)
                 table.Headers = getExpensePDFHeader();
                 table.Data = incomeManager.GetAllStatementsExpensesForType(userId, year, month, type.Id.ToString());
                 table.Total = table.Data.Select(x => x.Amount).Sum();
-                if (table.Data.Count > 0)
+                if (table.Data != null && table.Data.Count > 0)
                 {
                     tables.Add(table);
                 }
@@ -92,7 +92,7 @@ string userId, int year, int month)
             table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
             table.Data = incomeManager.getMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
             table.Total = table.Data.Select(x => x.Amount).Sum();
-            if (table.Data.Count > 0)
+            if (table.Data != null && table.Data.Count > 0)
             {
                 tables.Add(table);
             }
@@ -104,7 +104,7 @@ string userId, int year, int month)
             table.Type = IncomeExpensePDF.INCOME;
             table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
             table.Data = incomeManager.getNonMonetaryContributions(userId, year, month, preschoolFeeId.ToString(), moneyId.ToString());
-            if (table.Data.Count > 0)
+            if (table.Data != null && table.Data.Count > 0)
             {
                 tables.Add(table);
             }
@@ -117,7 +117,7 @@ string userId, int year, int month)
             table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
             table.Data = incomeManager.getSubsidiesDonationsContributions(userId, year, month, otherId.ToString(), incomeTypes);
             table.Total = table.Data.Select(x => x.Amount).Sum();
-            if (table.Data.Count > 0)
+            if (table.Data != null && table.Data.Count > 0)
             {
                 tables.Add(table);
             }
@@ -130,7 +130,7 @@ string userId, int year, int month)
             table.Headers = getIncomePDFHeader(includeChild, includeAmount, includeDescription, includeType, includeItem);
             table.Data = incomeManager.getOtherIncome(userId, year, month, otherId.ToString());
             table.Total = table.Data.Select(x => x.Amount).Sum();
-            if (table.Data.Count > 0)
+            if (table.Data != null && table.Data.Count > 0)
             {
                 tables.Add(table);
             }
@@ -154,7 +154,7 @@ string userId, int year, int month)
 
             header = new IncomeExpensePDFHeaderModel();
             header.Header = "Invoice/Receipt #";
-            header.DataKey = "invoice";
+            header.DataKey = "invoiceNr";
             headers.Add(header);
 
             header = new IncomeExpensePDFHeaderModel();
