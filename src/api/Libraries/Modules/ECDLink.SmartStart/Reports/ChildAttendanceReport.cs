@@ -4,12 +4,10 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.SmartStart.Reports.Models;
-using HotChocolate.Data.Sorting.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.Reports
 {
