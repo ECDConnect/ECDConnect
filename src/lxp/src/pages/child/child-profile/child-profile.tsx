@@ -294,6 +294,7 @@ export const ChildProfile: React.FC = () => {
         history.push(ROUTES.CHILD.INFORMATION.EDIT, {
           childId,
           isFromEditClass: true,
+          playgroupEdit: true,
         });
       },
     });

@@ -1,5 +1,5 @@
 import { DocumentDto, getBase64FromBaseString } from '@ecdlink/core';
-import { DocumentInput } from '@ecdlink/graphql';
+import { Document, DocumentInput } from '@ecdlink/graphql';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { DocumentService } from '@services/DocumentService';
 import { RootState, ThunkApiType } from '../types';
@@ -37,6 +37,28 @@ export const getDocuments = createAsyncThunk<
     }
   } else {
     return documentCache;
+  }
+});
+
+export const getDocumentsForHCW = createAsyncThunk<
+  Document[],
+  undefined,
+  ThunkApiType<RootState>
+>('getDocumentsForHCW', async (_, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
+
+  try {
+    if (userAuth?.auth_token) {
+      return await new DocumentService(userAuth?.auth_token).getDocumentsForHCW(
+        userAuth.id
+      );
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+  } catch (err) {
+    return rejectWithValue(err);
   }
 });
 

@@ -47,6 +47,7 @@ export const DevelopmentalScreeningWeeksStep = ({
   setIsTip,
 }: DynamicFormProps) => {
   const [isPreviousNotes, setIsPreviousNotes] = useState(false);
+  const [sectionName, setSectionName] = useState('');
   const [questions, setAnswers] = useState<
     {
       icon?: JSX.Element;
@@ -158,21 +159,26 @@ export const DevelopmentalScreeningWeeksStep = ({
     const numberOfAgeInMonths = Number(ageInMonths);
 
     if (numberOfAgeInMonths >= 18) {
+      setSectionName('DevelopmentalScreenEighteenMonths');
       return setAnswers(getQuestions('eighteenMonths'));
     }
 
     if (numberOfAgeInMonths >= 12) {
+      setSectionName('DevelopmentalScreenTwelveMonths');
       return setAnswers(getQuestions('twelveMonths'));
     }
 
     if (numberOfAgeInMonths >= 9) {
+      setSectionName('DevelopmentalScreenNineMonths');
       return setAnswers(getQuestions('nineMonths'));
     }
 
     if (numberOfAgeInMonths >= 6) {
+      setSectionName('DevelopmentalScreenSixMonths');
       return setAnswers(getQuestions('sixMonths'));
     }
 
+    setSectionName('DevelopmentalScreenFourteenWeeks');
     return setAnswers(getQuestions('fourteenWeeks'));
   }, [ageInMonths, getQuestions, previousAgeInMonths]);
 
@@ -244,7 +250,7 @@ export const DevelopmentalScreeningWeeksStep = ({
       >
         <MoreInformation
           client={name}
-          section="Developmental screening 2"
+          section={sectionName}
           subTitle="Developmental screening"
           onClose={() => setIsTip?.(false)}
         />
