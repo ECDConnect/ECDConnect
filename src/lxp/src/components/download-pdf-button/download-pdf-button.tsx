@@ -88,7 +88,7 @@ const GeneratePdfReportButton = ({
                   `R ${table.total}`,
                 ],
               ];
-              
+
         // table section with styles
         autoTable(doc, {
           headStyles: tableHeadStyles,
@@ -151,7 +151,7 @@ const GeneratePdfReportButton = ({
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
-      if (component === 'income-statements') {
+      if (component === 'income-statements' && tableData.length > 1) {
         const columns = ['Additional Notes'];
         const data = [['']];
         autoTable(doc, {
@@ -160,9 +160,7 @@ const GeneratePdfReportButton = ({
           body: data,
           columnStyles: { 0: { minCellHeight: 20 } },
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
-          // margin: {
-          //   top: 55,
-          // },
+
         });
         doc.setFillColor(200, 200, 200); // set grey background color
         doc.rect(
@@ -227,6 +225,12 @@ const GeneratePdfReportButton = ({
       doc.text(tableBottomContent[2], 190, afterTable + 15);
     }
 
+    if (tableData.length === 1) {
+      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30);
+        doc.rect(30, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
+        doc.rect(120, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+    }
     //export pdf report
     doc.save(outputName);
   };

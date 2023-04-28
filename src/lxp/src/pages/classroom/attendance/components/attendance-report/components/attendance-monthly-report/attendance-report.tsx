@@ -52,14 +52,16 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-
-
   const tableBody = reportData.map(
-    (item: { attendance?: any; childFullName?: any; childIdNumber?: string }) => {
+    (item: {
+      attendance?: any;
+      childFullName?: any;
+      childIdNumber?: string;
+    }) => {
       const { childFullName, childIdNumber } = item;
       const attendance = item.attendance.reduce(
         (obj: { [x: string]: any }, { key, value }: any, i: number) => {
-          obj[`day${i + 1}`] = value;
+          obj[`day${key}`] = value;
           return obj;
         },
         {}
@@ -72,9 +74,9 @@ export const MonthlyAttendanceReport = ({
   const tableHeaders = [
     { header: 'Child', dataKey: 'child' },
     { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
+    ...totalAttendance.slice(0, numDays).map(({ key }) => ({
+      header: `${key}`,
+      dataKey: `day${key}`, // using key value as dataKey
     })),
   ];
 
@@ -104,7 +106,7 @@ export const MonthlyAttendanceReport = ({
     text_coulumn_one_row_two: `ID: ${practitioner?.user?.idNumber}`,
     text_coulumn_one_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
     //column2 with 3 rows of text
-    text_column_two_row_one:`ProgrammeType: `,
+    text_column_two_row_one: `ProgrammeType: `,
     text_column_two_row_two: 'Programmme Days: Monday to Friday',
     text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
   };
