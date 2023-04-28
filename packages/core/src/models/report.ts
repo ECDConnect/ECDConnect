@@ -52,6 +52,7 @@ export interface ClassRoomChildAttendanceMonthlyReportModel {
   attendancePercentage: number;
   classgroupId: string;
   childFullName: string;
+  childIdNumber: string;
   childUserId: string;
   month: number;
   year: number;
