@@ -46,6 +46,8 @@ import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
 import { differenceInDays, differenceInMonths } from 'date-fns';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { documentSelectors } from '@/store/document';
+import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -73,6 +75,9 @@ export const ActivityList: React.FC = () => {
   const { visitId, id: infantId } = useParams<InfantProfileParams>();
 
   const user = useSelector(userSelectors.getUser);
+  const documents = useSelector(
+    documentSelectors.getDocumentsByUserId(infantId)
+  );
 
   const visit = useSelector((state: RootState) =>
     getInfantVisitByVisitIdSelector(state, visitId)
@@ -135,6 +140,31 @@ export const ActivityList: React.FC = () => {
     [previousVisit?.visitDataStatus]
   );
 
+  const isRoadToHeathBookStep = useMemo(
+    () =>
+      !documents?.some(
+        (item) => item.documentType?.name === 'RoadToHealthBook'
+      ),
+    [documents]
+  );
+
+  const isDangerSignsFollowUpForBaby = getIsFollowUp(
+    dangerSignsVisitSectionForBaby,
+    activitiesTypes.careForBaby
+  );
+
+  const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
+
+  const isNewBornCare = useMemo(
+    () => !isFirstVisit && ageDays <= 28,
+    [ageDays, isFirstVisit]
+  );
+
+  const isKangarooMotherCare = useMemo(
+    () => isFirstVisit && ageDays <= 49,
+    [ageDays, isFirstVisit]
+  );
+
   const isDevelopmentalScreening = useMemo(
     () =>
       ((isFirstVisit || isSecondVisit) && ageDays >= 4 && ageDays <= 27) ||
@@ -156,7 +186,15 @@ export const ActivityList: React.FC = () => {
     isDevelopmentalScreening,
     isDevelopmentalScreeningWeeks,
     isDevelopmentalScreeningWeeksFollowUp,
-  ].some((item) => item!!);
+  ].some((item) => !!item);
+
+  const isDisplayCareForBaby = [
+    isRoadToHeathBookStep,
+    isDangerSignsFollowUpForBaby,
+    isChildBefore49Days,
+    isNewBornCare,
+    isKangarooMotherCare,
+  ].some((item) => !!item);
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
@@ -179,7 +217,8 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.careForMom &&
           infant?.caregiver?.relation?.description === motherType?.label) ||
         (item.id === activitiesTypes.pillar4 && isChildAfter49Days) ||
-        (item.id === activitiesTypes.pillar2 && isDisplayPillar2)
+        (item.id === activitiesTypes.pillar2 && isDisplayPillar2) ||
+        (item.id === activitiesTypes.careForBaby && isDisplayCareForBaby)
     );
 
     return { visibleActivities };
@@ -187,6 +226,7 @@ export const ActivityList: React.FC = () => {
     infant?.caregiver?.relation?.description,
     isChildAfter49Days,
     isDisplayPillar2,
+    isDisplayCareForBaby,
   ]);
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
@@ -487,6 +527,8 @@ export const ActivityList: React.FC = () => {
     uncompletedForms,
     user?.firstName,
     visit?.actualVisitDate,
+    visit?.plannedVisitDate,
+    visit?.visitType?.normalizedName,
     width,
   ]);
 
@@ -494,9 +536,14 @@ export const ActivityList: React.FC = () => {
     return (
       <Form
         stepsRules={{
+          isRoadToHeathBookStep,
           isDevelopmentalScreening,
           isDevelopmentalScreeningWeeks,
           isDevelopmentalScreeningWeeksFollowUp,
+          isChildBefore49Days,
+          isDangerSignsFollowUpForBaby,
+          isKangarooMotherCare,
+          isNewBornCare,
         }}
         onBack={onFormBack}
         getIsFollowUp={getIsFollowUp}

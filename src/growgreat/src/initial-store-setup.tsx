@@ -141,7 +141,7 @@ function InitialStoreSetup(props: Props) {
       appDispatch(infantThunkActions.getInfants({})),
       appDispatch(userThunkActions.getUser({})).unwrap(),
       appDispatch(userThunkActions.getUserConsents({})).unwrap(),
-      appDispatch(documentThunkActions.getDocuments({})).unwrap(),
+      appDispatch(documentThunkActions.getDocumentsForHCW()).unwrap(),
     ];
     // SPECIFIC DATA
     setOtherLoading(true);
