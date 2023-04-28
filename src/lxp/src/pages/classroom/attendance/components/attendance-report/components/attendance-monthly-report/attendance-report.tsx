@@ -38,7 +38,7 @@ export const MonthlyAttendanceReport = ({
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const numDays = 29;
+  const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   useEffect(() => {
@@ -52,16 +52,9 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-  const tableColumns = [
-    { header: 'Child', dataKey: 'child' },
-    { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
-    })),
-  ];
 
-  const tableData = reportData.map(
+
+  const tableBody = reportData.map(
     (item: { attendance?: any; childFullName?: any; childIdNumber?: string }) => {
       const { childFullName, childIdNumber } = item;
       const attendance = item.attendance.reduce(
@@ -76,13 +69,22 @@ export const MonthlyAttendanceReport = ({
     }
   );
 
+  const tableHeaders = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...Array.from({ length: numDays }, (_, i) => ({
+      header: `${i + 1}`, // day number as header
+      dataKey: `day${i + 1}`, // unique key for each day column
+    })),
+  ];
+
   const finalTableData = [
     {
       tableName: '',
       type: '',
       total: '',
-      headers: tableColumns,
-      data: tableData,
+      headers: tableHeaders,
+      data: tableBody,
     },
   ];
 
