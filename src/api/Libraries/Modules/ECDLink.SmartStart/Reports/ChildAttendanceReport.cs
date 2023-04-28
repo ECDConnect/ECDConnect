@@ -4,12 +4,10 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.SmartStart.Reports.Models;
-using HotChocolate.Data.Sorting.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.Reports
 {
@@ -298,11 +296,12 @@ namespace ECDLink.SmartStart.Reports
 
                         if (reports != null)
                         {
+                            var keyDays = attendanceDays.Keys.ToList();
                             foreach (var report in reports.OrderByDescending(x => x.MonthNumber))
                             {
                                 SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
 
-                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId).OrderBy(p => p.AttendanceDate).ToList();
+                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day)).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
@@ -314,6 +313,7 @@ namespace ECDLink.SmartStart.Reports
                                     ChildUserId = learner.UserId,
                                     ClassgroupId = classgroupId,
                                     ChildFullName = learner.User.FullName,
+                                    ChildIdNumber = learner.User.IdNumber,
                                     TotalActualAttendance = report.ActualAttendance,
                                     TotalExpectedAttendance = report.ExpectedAttendance,
                                     AttendancePercentage = report.AttendancePercentage,

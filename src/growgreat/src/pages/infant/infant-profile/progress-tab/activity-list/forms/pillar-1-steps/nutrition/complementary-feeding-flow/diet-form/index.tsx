@@ -49,6 +49,10 @@ export const DietFormStep = ({
     }[]
   >(options(isChild6Months));
 
+  useEffect(() => {
+    setOptionList(options(isChild6Months));
+  }, [isChild6Months]);
+
   const [question, setAnswers] = useState({
     question: dietFormQuestion,
     answer: [] as (string | number | undefined)[],

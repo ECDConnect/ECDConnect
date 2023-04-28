@@ -1,5 +1,10 @@
 import { api } from '../axios.helper';
-import { BalanceSheetDto, Config, IncomeStatementsDto, ReportTableDataDto } from '@ecdlink/core';
+import {
+  BalanceSheetDto,
+  Config,
+  IncomeStatementsDto,
+  ReportTableDataDto,
+} from '@ecdlink/core';
 import {
   StatementsIncomeInput,
   StatementsSubmitInput,
@@ -202,8 +207,6 @@ class IncomeStatementsService {
         'Get all income statementsreports Failed - Server connection error'
       );
     }
-    console.log('>>', response.data.data.statementsIncomeExpensesPDFData );
-
     return response.data.data.statementsIncomeExpensesPDFData;
   }
 

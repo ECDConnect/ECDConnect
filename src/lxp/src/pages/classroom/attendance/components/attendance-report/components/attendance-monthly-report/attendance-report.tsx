@@ -11,6 +11,8 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -36,7 +38,8 @@ export const MonthlyAttendanceReport = ({
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const numDays = 29;
+  const numDays = totalAttendance.length;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   useEffect(() => {
     if (!isOnline) {
@@ -49,38 +52,41 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-  const tableColumns = [
-    { header: 'Child', dataKey: 'child' },
-    { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
-    })),
-  ];
-
-  const tableData = reportData.map(
-    (item: { attendance?: any; childFullName?: any; childUserId?: any }) => {
-      const { childFullName, childUserId } = item;
+  const tableBody = reportData.map(
+    (item: {
+      attendance?: any;
+      childFullName?: any;
+      childIdNumber?: string;
+    }) => {
+      const { childFullName, childIdNumber } = item;
       const attendance = item.attendance.reduce(
         (obj: { [x: string]: any }, { key, value }: any, i: number) => {
-          obj[`day${i + 1}`] = value;
+          obj[`day${key}`] = value;
           return obj;
         },
         {}
       );
-      //to be updated when api is updated
-      //test name too long
-      return { child: childFullName.slice(0, 14), id: 'XXSS', ...attendance };
+      //test name too long so i sliced it
+      return { child: childFullName, id: childIdNumber, ...attendance };
     }
   );
+
+  const tableHeaders = [
+    { header: 'Child', dataKey: 'child' },
+    { header: 'ID/Passport', dataKey: 'id' },
+    ...totalAttendance.slice(0, numDays).map(({ key }) => ({
+      header: `${key}`,
+      dataKey: `day${key}`, // using key value as dataKey
+    })),
+  ];
 
   const finalTableData = [
     {
       tableName: '',
       type: '',
       total: '',
-      headers: tableColumns,
-      data: tableData,
+      headers: tableHeaders,
+      data: tableBody,
     },
   ];
 
@@ -96,13 +102,13 @@ export const MonthlyAttendanceReport = ({
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: '',
-    text_coulumn_one_row_one: 'Name: Test Data 1',
-    text_coulumn_one_row_two: 'ID: data 2',
-    text_coulumn_one_row_three: 'Phone: 0123456789',
+    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_coulumn_one_row_two: `ID: ${practitioner?.user?.idNumber}`,
+    text_coulumn_one_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
     //column2 with 3 rows of text
-    text_column_two_row_one: 'ProgrammeType: 46372test',
+    text_column_two_row_one: `ProgrammeType: `,
     text_column_two_row_two: 'Programmme Days: Monday to Friday',
-    text_column_two_row_three: 'Site Address1234 ABC St, City, State, Country',
+    text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
   };
 
   const tableBottomContent = [
@@ -121,11 +127,12 @@ export const MonthlyAttendanceReport = ({
   const tableStyles: UserOptions['styles'] = {
     lineWidth: 0.1,
     lineColor: 0x000000,
+    fontSize: 8,
   };
   const tableFootStyles: UserOptions['footStyles'] = {
     textColor: [0, 0, 0],
     fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
+    fontSize: 8,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };

@@ -22,7 +22,10 @@ import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
-import { notificationsSelectors } from '@store/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@store/notifications';
 import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
@@ -141,6 +144,12 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     initStaticStoreSetup();
+  }, []);
+
+  useEffect(() => {
+    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+      appDispatch(notificationActions.resetNotificationState());
+    }
   }, []);
 
   useEffect(() => {

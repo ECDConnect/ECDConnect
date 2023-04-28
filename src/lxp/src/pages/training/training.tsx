@@ -1,4 +1,4 @@
-import { useMemo, useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { BannerWrapper, LoadingSpinner } from '@ecdlink/ui';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -13,68 +13,48 @@ import { PractitionerService } from '@/services/PractitionerService';
 export const Training: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [token, setToken] = useState<any>('');
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
-  const [loading, setLoading] = useState(false);
   const userData = useSelector(userSelectors.getUser);
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const [userSessionId, setUserSessionId] = useState('');
+  const [moodleUserCreated, setMoodleUserCreated] = useState(false);
+  const [loginPosted, setLoginPosted] = useState(false);
+  const [moodleUrl, setMoodleUrl] = useState('');
 
-  const getUserSessionId = async () => {
+  const formRef = useRef(null);
+
+  const createMoodleUser = async () => {
     if (userData?.id) {
       const data = await new PractitionerService(
         userAuth?.auth_token!
       ).getMoodleSessionForUserId(userData?.id);
-      setUserSessionId(data);
+      const bData = Boolean(data);
+      setMoodleUserCreated(bData);
     }
   };
 
   useEffect(() => {
     if (userData?.id) {
-      getUserSessionId();
+      // creating user in moodle database if doesn't exist.
+      createMoodleUser();
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.id]);
-
-  const renderIframe = useMemo(() => {
-    if (loading) {
-      return (
-        <LoadingSpinner
-          className="mt-6"
-          size={'medium'}
-          spinnerColor={'primary'}
-          backgroundColor={'uiLight'}
-        />
-      );
-    } else {
-      document.cookie = `MoodleSession=${userSessionId};path=/;domain=moodle.ecdlink.co.za`;
-      document.cookie =
-        'teste=1; Max-Age=2600000; Path=/; SameSite=None; Secure';
-      return (
-        <iframe
-          src={`https://moodle.ecdlink.co.za/?service=moodle_mobile_app`}
-          title="ECD Moodle"
-          height="800px"
-          width="90%"
-          className="divide-uiLight mx-auto divide-y-2 divide-dashed"
-        ></iframe>
-      );
-    }
-  }, [loading, userSessionId]);
-  const [url, setUrl] = useState('');
 
   useEffect(() => {
     getContext();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const getContext = async () => {
     const data = await new ContextService(
       userAuth?.auth_token!
     ).tenantContext();
-    setUrl(data?.moodleUrlVar);
+    setMoodleUrl(data?.moodleUrlVar);
   };
+
+  useEffect(() => {
+    if (formRef && formRef.current && !!moodleUserCreated && !!moodleUrl) {
+      (formRef.current as any).submit();
+      setLoginPosted(true);
+    }
+  }, [moodleUserCreated, moodleUrl]);
 
   return (
     <BannerWrapper
@@ -85,8 +65,52 @@ export const Training: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
     >
-      <div className="divide-uiLight divide-y-2 divide-dashed">
-        <div>{renderIframe}</div>
+      {!loginPosted && (
+        <div className="divide-uiLight divide-y-2 divide-dashed">
+          <LoadingSpinner
+            className="mt-6"
+            size={'medium'}
+            spinnerColor={'primary'}
+            backgroundColor={'uiLight'}
+          />
+        </div>
+      )}
+      <form
+        style={{ display: 'none' }}
+        ref={formRef}
+        method="post"
+        name="moodle-training-login-form"
+        id="moodle-training-login-form"
+        target="moodle-training"
+        action={`${moodleUrl}/login/index.php?service=moodle_mobile_app`}
+      >
+        <input
+          type="text"
+          name="username"
+          title="username"
+          defaultValue={userData?.idNumber + '@ecdconnect.co.za'}
+        />
+        <input
+          type="password"
+          name="password"
+          title="password"
+          defaultValue={'Test@1234'}
+        />
+        <input type="submit" name="Submit" value="Login" />
+      </form>
+      <div
+        className="divide-uiLight divide-y-2 divide-dashed"
+        style={loginPosted ? undefined : { display: 'none' }}
+      >
+        <iframe
+          id="moodle-training"
+          name="moodle-training"
+          src=""
+          title="ECD Moodle"
+          height="800px"
+          width="90%"
+          className="divide-uiLight mx-auto divide-y-2 divide-dashed"
+        ></iframe>
       </div>
     </BannerWrapper>
   );

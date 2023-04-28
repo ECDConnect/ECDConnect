@@ -75,7 +75,12 @@ export default function ConfirmPractitioner({
               isRegistered: Boolean(isRegistered),
             })
           );
-          setListItems(listItems);
+
+          const filteredList = listItems.filter(
+            (value, index, self) =>
+              index === self.findIndex((t) => t.id === value.id)
+          );
+          setListItems(filteredList);
 
           _practitionersList.push({
             firstName: firstName ?? '',
@@ -89,7 +94,12 @@ export default function ConfirmPractitioner({
           });
         }
       );
-      setPrincipalPractitioners(_practitionersList);
+
+      const principalFilteredList = _practitionersList.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t.id === value.id)
+      );
+      setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersForPrincipal]);

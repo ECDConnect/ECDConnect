@@ -88,6 +88,8 @@ export const MoreInformation = ({
               </div>
             </div>
           )}
+          <Typography type="h4" text="Share these activities:" />
+          <Divider dividerType="dashed" className="my-2" />
           {/* ------- A ------- */}
           {!!moreInformation.headerA && (
             <Typography
@@ -99,9 +101,10 @@ export const MoreInformation = ({
           {!!moreInformation?.descriptionA && (
             <Typography
               type="markdown"
-              className={`text-${
-                moreInformation?.descriptionAColor || 'textDark'
-              } font-normal`}
+              style={{
+                color: moreInformation?.descriptionAColor || '#231F20',
+                fontWeight: !!moreInformation.descriptionAColor ? '500' : '400',
+              }}
               color="infoDark"
               text={replaceBraces(moreInformation.descriptionA, client || '')}
             />
@@ -118,7 +121,7 @@ export const MoreInformation = ({
             />
           )}
           {!!moreInformation.descriptionB && (
-            <div className="flex gap-2">
+            <div className="my-4 flex gap-2">
               {!!moreInformation?.descriptionBIcon && (
                 <img
                   alt="icon"
@@ -135,7 +138,7 @@ export const MoreInformation = ({
                     client || ''
                   )}
                   style={{
-                    color: moreInformation?.descriptionBColor || '#5A5A5A',
+                    color: moreInformation?.descriptionBColor || '#231F20',
                     fontWeight: !!moreInformation.descriptionBColor
                       ? '500'
                       : '400',
@@ -158,11 +161,12 @@ export const MoreInformation = ({
           {!!moreInformation?.descriptionC && (
             <Typography
               type="markdown"
-              className={`text-${
-                moreInformation?.descriptionCColor || 'textDark'
-              } font-normal`}
               color="infoDark"
               text={replaceBraces(moreInformation.descriptionC, client || '')}
+              style={{
+                color: moreInformation?.descriptionCColor || '#231F20',
+                fontWeight: !!moreInformation.descriptionCColor ? '500' : '400',
+              }}
             />
           )}
           {!!moreInformation?.showDividerC && (
@@ -178,7 +182,7 @@ export const MoreInformation = ({
           )}
           {/* ------- D ------- */}
           {!!moreInformation.descriptionD && (
-            <div className="flex gap-2">
+            <div className="my-4 flex gap-2">
               {!!moreInformation?.descriptionDIcon && (
                 <img
                   alt="icon"
@@ -189,14 +193,17 @@ export const MoreInformation = ({
               {!!moreInformation?.descriptionD && (
                 <Typography
                   type="markdown"
-                  className={`text-${
-                    moreInformation?.descriptionDColor || 'textDark'
-                  } font-normal`}
                   color="infoDark"
                   text={replaceBraces(
                     moreInformation.descriptionD,
                     client || ''
                   )}
+                  style={{
+                    color: moreInformation?.descriptionDColor || '#231F20',
+                    fontWeight: !!moreInformation.descriptionDColor
+                      ? '500'
+                      : '400',
+                  }}
                 />
               )}
             </div>
