@@ -14,6 +14,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -128,13 +129,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var user = userManager.FindByIdAsync(userId).Result;
             var moodleUserName = user.IdNumber + "@ecdconnect.co.za";
             var moodlePassword = "Test@1234";
-            var cohortName = "Grow Great";
-            string orgName = TenantExecutionContext.Tenant.OrganisationName;
 
-            if (orgName == "SmartStart")
+            var cohorts = new List<string>();
+
+            string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
+            if (!string.IsNullOrEmpty(moodleConfigVar))
             {
-                cohortName = "Smart Start";
+                var moodleConfig = JsonConvert.DeserializeObject<dynamic>(moodleConfigVar);
+                var cohort = moodleConfig["default"].cohort;
+                cohorts.Add(cohort.ToString());
             }
+
+
+            //string cohortName = "Grow Great";
+            //string orgName = TenantExecutionContext.Tenant.OrganisationName;
+            //if (orgName == "SmartStart")
+            //{
+            //    cohortName = "Smart Start";
+            //}
 
             // create the moodle user
             var moodleUser = new MoodleUser()
@@ -148,7 +160,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 Phone1 = user.PhoneNumber
             };
             // create user for moodle
-            return moodleManager.CreateUserAsync(moodleUser, cohortName).Result.ToString();
+            return moodleManager.CreateUserAsync(moodleUser, cohorts).Result.ToString();
             // create session for moodle user
             // return moodleManager.CreateUserSessionAsync(moodleUserName).Result;
         }
