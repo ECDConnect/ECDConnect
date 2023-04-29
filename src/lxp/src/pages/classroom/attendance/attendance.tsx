@@ -72,6 +72,22 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const currentDate = new Date();
 
+  function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
+    const filteredArray: boolean[] = studentsArray.map((student) => {
+      const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
+      return insertedDate < currentDate;
+    });
+    return filteredArray.every((value) => value === true);
+  }
+
+  const allChildrenInsertedBeforeToday = isAllStudentsInsertedBeforeToday(
+    children ?? []
+  );
+
+  const practitionerInsertedBeforeToday =
+    new Date(practitioner?.startDate ?? '') < currentDate;
+
+
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
 
@@ -91,11 +107,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     setUserCurrentClassroomGroup(currentDayClassroomGroup);
 
-    if (!currentDayClassroomGroup) {
-      setAttendanceComponentType('summary');
-      return;
-    }
-
     const currentLearners = [];
     const programmeStartDate =
       typeof currentClassProgramme?.programmeStartDate != 'undefined'
@@ -109,14 +120,26 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
       const showChildInRegister =
         startedAttendanceDay >= getDayOfYear(programmeStartDate);
+
       if (showChildInRegister) {
         currentLearners.push(learner);
       }
     }
 
-    if (!currentLearners.length) {
+    if (!currentDayClassroomGroup) {
+      if (allChildrenInsertedBeforeToday || practitionerInsertedBeforeToday) {
+        setAttendanceComponentType('summary');
+      } else {
+        setAttendanceComponentType('report');
+      }
+      return;
+    }
+
+    if (!currentLearners.length && allChildrenInsertedBeforeToday && practitionerInsertedBeforeToday) {
       setAttendanceComponentType('summary');
       return;
+    } else {
+      setAttendanceComponentType('report');
     }
 
     const currentClassProgrammes = classProgrammesUpdated.filter(
