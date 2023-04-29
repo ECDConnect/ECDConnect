@@ -31,7 +31,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const notificationServiceRef = useRef<NotificationService | undefined>(
     undefined
   );
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   useEffect(() => {
     initializeServices();
@@ -74,12 +73,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     notificationServiceRef.current.initialEvaluate();
     notificationServiceRef.current.start();
   }, [initloading, notificationPollInterval, onNotificationsRecieved]);
-
-  useEffect(() => {
-    if (practitioner) {
-      initializeServices();
-    }
-  }, [initializeServices, practitioner]);
 
   const stopService = () => {
     if (notificationServiceRef.current) {
