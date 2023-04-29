@@ -5,6 +5,7 @@ import {
   getAllPractitioners,
   getPractitionerById,
   updatePractitionerRegistered,
+  updatePractitionerProgress,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -47,6 +48,9 @@ const practitionerSlice = createSlice({
     });
     builder.addCase(updatePractitionerRegistered.fulfilled, (state) => {
       state.practitioner = { ...state.practitioner, isRegistered: true };
+    });
+    builder.addCase(updatePractitionerProgress.fulfilled, (state) => {
+      state.practitioner = { ...state.practitioner };
     });
   },
 });
