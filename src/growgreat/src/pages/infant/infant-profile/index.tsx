@@ -311,6 +311,12 @@ export const InfantProfile: React.FC = () => {
     }
   }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
 
+  useLayoutEffect(() => {
+    appDispatch(
+      infantThunkActions.getReferralsForInfant({ infantId })
+    ).unwrap();
+  }, [appDispatch, infantId]);
+
   return (
     <>
       <Joyride

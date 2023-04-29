@@ -494,7 +494,7 @@ export const WeightAndLengthResultStep = ({
       ] || [];
     const lengthHistory =
       [
-        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.length] : []),
+        ...(groupedGrowthData?.length ? [...groupedGrowthData?.length] : []),
         ...[
           { visit: { plannedVisitDate: new Date() }, questionAnswer: length },
         ],
@@ -661,7 +661,7 @@ export const WeightAndLengthResultStep = ({
       return (
         <>
           <WeightAlert />
-          <LengthOrHeightAlert />
+          {(!!length || !!height) && <LengthOrHeightAlert />}
         </>
       );
     }
@@ -677,6 +677,8 @@ export const WeightAndLengthResultStep = ({
     LengthOrHeightAlert,
     WeightAlert,
     caregiverName,
+    height,
+    length,
     lengthOrHeightAlertResult,
     name,
     weightAlertResult,

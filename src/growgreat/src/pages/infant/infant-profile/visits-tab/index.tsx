@@ -178,7 +178,8 @@ export const VisitsTab: React.FC = () => {
           ? 'ExclamationCircleIcon'
           : 'CalendarIcon',
         type: getType(item, isMissedVisit),
-        showActionButton: getType(item, isMissedVisit) === 'inProgress',
+        // showActionButton: getType(item, isMissedVisit) === 'inProgress',
+        showActionButton: true,
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
