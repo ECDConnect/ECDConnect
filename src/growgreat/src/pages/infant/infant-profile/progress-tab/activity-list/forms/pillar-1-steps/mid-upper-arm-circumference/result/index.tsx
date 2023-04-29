@@ -129,7 +129,7 @@ export const MidUpperArmCircumferenceResultStep = ({
         );
 
         return {
-          actionTaken: !!muacReferral?.isCompleted ? 'Referred' : 'None',
+          actionTaken: Boolean(muacReferral?.isCompleted) ? 'Referred' : 'None',
           date: new Date(item.visit?.plannedVisitDate).toLocaleDateString(
             'en-ZA',
             {
