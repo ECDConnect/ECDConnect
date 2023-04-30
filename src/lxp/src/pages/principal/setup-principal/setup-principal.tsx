@@ -161,9 +161,12 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
 
-      await new PractitionerService(
-        userAuth?.auth_token!
-      ).UpdatePractitionerProgress(user?.id!, 2.0);
+      await appDispatch(
+        practitionerThunkActions.updatePractitionerProgress({
+          practitionerId: user.id,
+          progress: 2.0,
+        })
+      );
     }
 
     appDispatch(notificationActions.resetNotificationState());
@@ -193,7 +196,7 @@ export const SetupPrincipal: React.FC = () => {
 
   const exitPrompt = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
           icon={'XCircleIcon'}
