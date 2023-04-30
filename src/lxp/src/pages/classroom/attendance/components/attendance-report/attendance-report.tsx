@@ -96,7 +96,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const today = new Date();
 
   useEffect(() => {
-    console.log(classroomID)
     setSelectedClassroomGroups(
       classroomGroups
         ?.filter((x) => x.classroomId === classroomID)
@@ -105,7 +104,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, [classroomGroups, classroomID])
 
   useEffect(() => {
-
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
       today.getMonth() + 1,
@@ -153,40 +151,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
-        <SearchDropDown<any>
-          displayMenuOverlay
-          menuItemClassName={'w-11/12 left-4'}
-          className={'mr-1'}
-          options={
-            (classroomGroups &&
-              classroomGroups.map((x) => {
-                return {
-                  id: x.id ?? '',
-                  value: x,
-                  label: x.name,
-                  disabled: false,
-                  default: true,
-                };
-              })) ||
-            []
-          }
-          onChange={(value) => {
-            onFilterItemsChanges(value);
-          }}
-          placeholder={'Class'}
-          pluralSelectionText={'Classes'}
-          color={'secondary'}
-          selectedOptions={selectedClassroomGroups.map((x) => {
-            return {
-              id: x.id ?? '',
-              value: x,
-              label: x.name,
-            };
-          })}
-          info={{
-            name: `Filter by:`,
-          }}
-        />
+        
 
         <PointsSuccessCard
           visible={successMessageVisible}
