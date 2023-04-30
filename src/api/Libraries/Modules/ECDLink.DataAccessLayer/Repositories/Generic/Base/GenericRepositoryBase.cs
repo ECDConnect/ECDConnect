@@ -11,6 +11,7 @@ using Microsoft.EntityFrameworkCore.Storage;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Intrinsics.X86;
 using System.Threading.Tasks;
 
@@ -107,18 +108,24 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         }
 
         public virtual T Update(T entity)
+
         {
             if (entity == null)
                 throw new ArgumentNullException("entity");
+
+            //T oneMoreCheck = GetById(entity.Id);
+            //T onemoreprecheck = entities.Find(entity.Id);
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             if (Exists(entity.Id))
             {
+                //T anotehrtest = entities.Where((s => s.Id == entity.Id)).FirstOrDefault();
+                //T checkBefore = entities.FirstOrDefault(s => s.Id == entity.Id);
                 T beforeUpdate = Retrieve(entity.Id);
                 //For integration, trust the FE provided updated date, otherwise set to now.
                 if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
-                entity.UpdatedDate = DateTime.Now;
+                //entity.UpdatedDate = DateTime.Now;
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
@@ -198,22 +205,52 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                     break;
                 default:
                     List<IntegrationAudit> changesList = new List<IntegrationAudit>();
+
+                    //var beforeCheck = entities.Entry(entities.FirstOrDefault(s => s.Id == beforeObj.Id)).OriginalValues; 
+                    //foreach (var olp in beforeCheck.Properties)
+                    //{
+                    //    if (olp != null)
+                    //    {
+                    //        if (!entities.Entry(beforeObj).Property(olp.Name).OriginalValue.Equals(entities.Entry(beforeObj).Property(olp.Name).CurrentValue))
+                    //        {
+                    //            //foreach (var prop in tA.GetProperties())//flags
+                    //            //{
+                    //            //    if (prop.GetValue(entity, null) != null)
+                    //            //    {
+                    //            //        if (!prop.GetValue(entity, null).Equals(prop.GetValue(beforeObj, null)))
+                    //            changesList.Add(new IntegrationAudit()
+                    //            {
+                    //                ChangeType = changeType,
+                    //                Entity = tA.Name,
+                    //                Property = olp.Name,
+                    //                ValueBefore = entities.Entry(beforeObj).Property(olp.Name).OriginalValue.ToString(),//prop.GetValue(beforeObj, null).ToString(),
+                    //                ValueAfter = entities.Entry(beforeObj).Property(olp.Name).CurrentValue.ToString(),//prop.GetValue(entity, null).ToString(),
+                    //                UserId = _userId,
+                    //                RelatedId = entity.Id.ToString()
+                    //            });
+                    //            //}
+                    //            //}
+                    //        }
+                    //    }
+                    //}
+
                     foreach (var prop in tA.GetProperties())
                     {
-                        if (prop.GetValue(entity, null) != prop.GetValue(beforeObj, null))
+                        if (prop.GetValue(entity, null) != entities.Entry(beforeObj).Property(prop.Name).OriginalValue) //prop.GetValue(beforeObj, null))
                         {
                             changesList.Add(new IntegrationAudit()
                             {
                                 ChangeType = changeType,
                                 Entity = tA.Name,
                                 Property = prop.Name,
-                                ValueBefore = prop.GetValue(entity, null).ToString(),
+                                ValueBefore = entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString(),//prop.GetValue(entity, null).ToString(),
                                 ValueAfter = prop.GetValue(beforeObj, null).ToString(),
                                 UserId = _userId,
                                 RelatedId = entity.Id.ToString()
                             });
                         }
                     }
+
                     foreach (var auditItem in changesList)
                     {
                         auditInsertRepo.Insert(auditItem);

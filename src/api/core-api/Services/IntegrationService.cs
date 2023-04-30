@@ -47,6 +47,24 @@ namespace ECDLink.Core.Services
         private UserManager<ApplicationUser> _userManager;
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
+
+        private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
+        private IGenericRepository<ClassroomGroup, Guid> _classroomGroupGenericRepo;
+        private IGenericRepository<ProgrammeType, Guid> _programmeTypeGenericRepo;
+        private IGenericRepository<Language, Guid> _staticLanguageRepo;
+        private IGenericRepository<Gender, Guid> _staticGenderRepo;
+        private IGenericRepository<Race, Guid> _staticRaceRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerGenericRepo;
+        private IGenericRepository<Child, Guid> _childRepo;
+        private IGenericRepository<Child, Guid> _childGenericRepo;
+        private IGenericRepository<Caregiver, Guid> _caregiverRepo;
+        private IGenericRepository<Relation, Guid> _staticRelationRepo;
+        private IGenericRepository<Education, Guid> _staticEducationRepo;
+        private IGenericRepository<Grant, Guid> _staticGrantRepo;
+        private IGenericRepository<WorkflowStatus, Guid> _staticWorkflowRepo;
+
+
         private MappingMode _apiMode;
         private MappingMaskDataMode _maskMode;
         private readonly HierarchyEngine _hierarchyEngine;
@@ -82,6 +100,23 @@ namespace ECDLink.Core.Services
             //Generic static repos
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
             _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+
+            _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupGenericRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeTypeGenericRepo = _repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
+            _staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
+            _staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
+            _staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
+            _practitionerGenericRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+
+            _childRepo = _repositoryFactory.CreateRepository<Child>(userContext: _uId);
+            _childGenericRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+            _staticRelationRepo = _repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
+            _staticEducationRepo = _repositoryFactory.CreateGenericRepository<Education>(userContext: _uId);;
+            _staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
+            _staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
         }
 
         #region Utilities
@@ -444,6 +479,7 @@ namespace ECDLink.Core.Services
                 */
 
                 //Only allow data pulling when api mode has been set
+                
                 if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
                 {
                     List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
@@ -453,7 +489,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                            
+                   /*         
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -473,14 +509,16 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
+                */
                     
 
                     //-------------------
                     //2. Iterate through all known coaches to get information below hierarchy
                     //-------------------
+                    
                     foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
                     {
-                        
+                     /*   
                         if (coach.IsComplete != true)
                         {
                             //entity may have been manually mapped for inclusion, pull all details and update
@@ -579,13 +617,13 @@ namespace ECDLink.Core.Services
                             }
                         }
                         
-
+                    */
                         //-------------------
                         //4. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //4.1) get all frannchisees and map them                
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("1e1a7352-8efb-ec11-8351-00155d326100");
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("74736c48-1ae4-ed11-8356-00155d326100");
                         //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -705,7 +743,7 @@ namespace ECDLink.Core.Services
                         Practitioner pracToUpdate = practitionerRepo.GetById(Guid.Parse(item.LocalId));
                         if (pracToUpdate != null)
                         {
-                            pracToUpdate.PrincipalHierarchy = Guid.Parse(mappedEntities.Where(x => x.RemoteId == principalRemoteId).Select(x => x.LocalId).FirstOrDefault().ToString());
+                            pracToUpdate.PrincipalHierarchy = Guid.Parse(mappedEntities.Where(x => x.RemoteId == principalRemoteId).Select(x => x.UserId).FirstOrDefault().ToString());
                             //pracToUpdate.DateLinked = DateTime.Now;
                             practitionerRepo.Update(pracToUpdate);
 
@@ -812,252 +850,263 @@ namespace ECDLink.Core.Services
         {
             try
             {
+                IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
                 if (entity != null)
                 {
-                    string userId = Guid.NewGuid().ToString();
-                    Guid siteAddressId = Guid.NewGuid();
-                    //start creating the practitioner mapped
-
-
-                    //a) create franchisee, b) create children, c) create caregivers, d) create integration mapping, e) create documents, f) notes
-                    var classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
-                    var classroomGroupGenericRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
-                    var programmeTypeGenericRepo = _repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-                    var staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
-                    var staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
-                    var staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
-                    var staticAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
-
-                    var programmeTypeRepo = _repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-                    var practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
-                    IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
-
-                    var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
-                    var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
-                    string siteName = "N/A";
-                    bool pracCreated = false;
-
-                    char[] digits = entity.IdNumber.ToCharArray();
-                    var dob = new DateTime(int.Parse("19" + digits[0] + digits[1]), int.Parse(digits[2].ToString() + digits[3].ToString()), int.Parse(digits[4].ToString() + digits[5].ToString()));
-                    DateTime dobStr = (entity.BirthDate != null ? Convert.ToDateTime(entity.BirthDate) : dob);
-
-                    var newPractitioner = new Practitioner
+                    //basic checks to allow child to be imported
+                    if (entity.IdNumber != null && entity.FirstName != null && entity.Surname != null && entity.PersonalNumber != null)
                     {
-                        Id = Guid.NewGuid(),
-                        UserId = userId,
-                        CoachHierarchy = Guid.Parse(entity.localParentEntityId),
-                        IsActive = true,
-                        ProgrammeType = programmeTypeDesc,
-                        IsClubOwner = entity.IsClubLeader
-                    };
+                        string userId = Guid.NewGuid().ToString();
+                        Guid siteAddressId = Guid.NewGuid();
+                        //start creating the practitioner mapped
 
-                    var newUser = new ApplicationUser
-                    {
-                        Id = userId.ToString(),
-                        PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : entity.PersonalNumber),
-                        UserName = entity.IdNumber,
-                        IdNumber = entity.IdNumber,
-                        Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
-                        IsSouthAfricanCitizen = entity.IsSouthAfricanCitizen,
-                        VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
-                        DateOfBirth = dobStr,
-                        FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
-                        Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
-                        FullName = entity.FirstName + " " + entity.Surname,
-                        ContactPreference = MessageTypeConstants.SMS,
-                        IsActive = true,
-                        PasswordHash = password,
-                        NextOfKinFirstName = entity.NextOfKinFirstName,
-                        NextOfKinSurname = entity.NextOfKinSurname,
-                        NextOfKinContactNumber = entity.NextOfKinContactNumber,
-                        EmergencyContactFirstName = entity.EmergencyContactFirstName,
-                        EmergencyContactSurname = entity.EmergencyContactSurname,
-                        EmergencyContactFullName = (entity.EmergencyContactFirstName != null ? entity.EmergencyContactFirstName + " " + entity.EmergencyContactSurname : null),
-                        TenantId = tenantId,
-                        IsImported = true,
+                        //a) create franchisee, b) create children, c) create caregivers, d) create integration mapping, e) create documents, f) notes
 
-                        //ProfileImageUrl = ""
+                        var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
+                        var programmeType = _programmeTypeGenericRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
+                        string siteName = "N/A";
+                        bool pracCreated = false;
 
-                    };
+                        //char[] digits = entity.IdNumber.ToCharArray();
+                        //var dob = new DateTime(int.Parse("19" + digits[0] + digits[1]), int.Parse(digits[2].ToString() + digits[3].ToString()), int.Parse(digits[4].ToString() + digits[5].ToString()));
+                        //DateTime dobStr = (entity.BirthDate != null ? Convert.ToDateTime(entity.BirthDate) : dob);
 
-                    //check language
-                    if (entity.PreferredCommunicationLanguage != null)
-                    {
-                        var language = staticLanguageRepo.GetAll().Where(x => x.Description == entity.PreferredCommunicationLanguage).OrderBy(x => x.Id).FirstOrDefault();
-                        if (language != null)
+                        var newPractitioner = new Practitioner
                         {
-                            newUser.PreferredCommunicationLanguage = language.Id.ToString();
-                            newUser.LanguageId = language.Id;
-                            newPractitioner.LanguageUsedInGroups = language.Id.ToString();
-                        }
-                    }
-                    //check gender
-                    if (entity.Gender != null)
-                    {
-                        var gender = staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
-                        if (gender != null)
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityId),
+                            IsActive = true,
+                            ProgrammeType = programmeTypeDesc,
+                            IsClubOwner = entity.IsClubLeader
+                        };
+
+                        var newUser = new ApplicationUser
                         {
-                            newUser.GenderId = gender.Id;
-                        }
-                    }
-                    //check race
-                    if (entity.EthnicGroup != null)
-                    {
-                        var race = staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
-                        if (race != null)
+                            Id = userId.ToString(),
+                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : entity.PersonalNumber),
+                            UserName = entity.IdNumber,
+                            IdNumber = entity.IdNumber,
+                            Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
+                            IsSouthAfricanCitizen = entity.IsSouthAfricanCitizen,
+                            VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
+                            DateOfBirth = Convert.ToDateTime(entity.BirthDate),
+                            FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                            Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                            FullName = entity.FirstName + " " + entity.Surname,
+                            ContactPreference = MessageTypeConstants.SMS,
+                            IsActive = true,
+                            PasswordHash = password,
+                            NextOfKinFirstName = entity.NextOfKinFirstName,
+                            NextOfKinSurname = entity.NextOfKinSurname,
+                            NextOfKinContactNumber = entity.NextOfKinContactNumber,
+                            EmergencyContactFirstName = entity.EmergencyContactFirstName,
+                            EmergencyContactSurname = entity.EmergencyContactSurname,
+                            EmergencyContactFullName = (entity.EmergencyContactFirstName != null ? entity.EmergencyContactFirstName + " " + entity.EmergencyContactSurname : null),
+                            TenantId = tenantId,
+                            IsImported = true,
+
+                            //ProfileImageUrl = ""
+
+                        };
+
+                        //check language
+                        if (entity.PreferredCommunicationLanguage != null)
                         {
-                            newUser.RaceId = race.Id;
-                        }
-                    }
-
-                    await _userManager.CreateAsync(newUser);
-
-                    //Create siteaddress
-                    bool insertedAddress = false;
-                    if (entity.SiteAddress != null)
-                    {
-                        SiteAddress newEntityAddress = new SiteAddress();
-
-                        newEntityAddress.Ward = entity.SiteAddress.Ward;
-                        newEntityAddress.Name = entity.SiteAddress.Name;
-                        siteName = entity.SiteAddress.Name;
-                        newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
-                        newEntityAddress.Municipality = entity.SiteAddress.Municipality;
-                        newEntityAddress.Area = entity.SiteAddress.Area;
-                        newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
-                        newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
-                        newEntityAddress.Longitude = entity.SiteAddress.Longitude;
-                        newEntityAddress.Latitude = entity.SiteAddress.Latitude;
-
-                        //check province
-                        if (entity.SiteAddress.Province != null)
-                        {
-                            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
-                            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
-                            if (prov != null)
+                            var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.PreferredCommunicationLanguage).OrderBy(x => x.Id).FirstOrDefault();
+                            if (language != null)
                             {
-                                newEntityAddress.ProvinceId = prov.Id;
+                                newUser.PreferredCommunicationLanguage = language.Id.ToString();
+                                newUser.LanguageId = language.Id;
+                                newPractitioner.LanguageUsedInGroups = language.Id.ToString();
                             }
-                            else
+                        }
+                        //check gender
+                        if (entity.Gender != null)
+                        {
+                            var gender = _staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
+                            if (gender != null)
                             {
-                                var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
-                                if (naProv != null)
+                                newUser.GenderId = gender.Id;
+                            }
+                        }
+                        //check race
+                        if (entity.EthnicGroup != null)
+                        {
+                            var race = _staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
+                            if (race != null)
+                            {
+                                newUser.RaceId = race.Id;
+                            }
+                        }
+
+                        await _userManager.CreateAsync(newUser);
+
+                        //Create siteaddress
+                        bool insertedAddress = false;
+                        if (entity.SiteAddress != null)
+                        {
+                            SiteAddress newEntityAddress = new SiteAddress();
+
+                            newEntityAddress.Ward = entity.SiteAddress.Ward;
+                            newEntityAddress.Name = entity.SiteAddress.Name;
+                            siteName = entity.SiteAddress.Name;
+                            newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
+                            newEntityAddress.Municipality = entity.SiteAddress.Municipality;
+                            newEntityAddress.Area = entity.SiteAddress.Area;
+                            newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
+                            newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
+                            newEntityAddress.Longitude = entity.SiteAddress.Longitude;
+                            newEntityAddress.Latitude = entity.SiteAddress.Latitude;
+
+                            //check province
+                            if (entity.SiteAddress.Province != null)
+                            {
+                                var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                                var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
+                                if (prov != null)
                                 {
-                                    newEntityAddress.ProvinceId = naProv.Id;
+                                    newEntityAddress.ProvinceId = prov.Id;
+                                }
+                                else
+                                {
+                                    var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                                    if (naProv != null)
+                                    {
+                                        newEntityAddress.ProvinceId = naProv.Id;
+                                    }
                                 }
                             }
+                            newEntityAddress.Id = siteAddressId;
+                            newEntityAddress.UpdatedBy = _uId;
+                            newEntityAddress.UpdatedDate = DateTime.Now;
+                            _siteAddressRepo.Insert(newEntityAddress);
+
+                            newPractitioner.SiteAddressId = siteAddressId;
+                            insertedAddress = true;
                         }
-                        newEntityAddress.Id = siteAddressId;
-                        newEntityAddress.UpdatedBy = _uId;
-                        newEntityAddress.UpdatedDate = DateTime.Now;
-                        _siteAddressRepo.Insert(newEntityAddress);
 
-                        newPractitioner.SiteAddressId = siteAddressId;
-                        insertedAddress = true;
-                    }
-
-                    //Mark Principal/FAA/Linekd Practitioner
-                    if (!(bool)entity.IsPrincipal && entity.Principal != null)
-                    {
-                        string principalRemoteId = entity.Principal.Guid.ToString();
-                        //find the principal if they have been mapped already, else flag to add principals at the end
-                        List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-                        if (mappedEntities.Count > 0)
+                        //Mark Principal/FAA/Linekd Practitioner
+                        if (!(bool)entity.IsPrincipal && entity.Principal != null)
                         {
-                            var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
-                            if (principalExistsCheck != null)
+                            string principalRemoteId = entity.Principal.Guid.ToString();
+                            //find the principal if they have been mapped already, else flag to add principals at the end
+                            List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
+                            if (mappedEntities.Count > 0)
                             {
-                                newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
-                                newPractitioner.DateLinked = DateTime.Now;
+                                var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
+                                if (principalExistsCheck != null)
+                                {
+                                    newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
+                                    newPractitioner.DateLinked = DateTime.Now;
+                                }
+                                else
+                                {
+                                    //add note in mappingline to return and resolve
+                                    mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
+                                }
                             }
-                            else
-                            {
-                                //add note in mappingline to return and resolve
-                                mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
-                            }
+                            newPractitioner.IsFundaAppAdmin = false;
+                            newPractitioner.IsPrincipal = false;
+                            //newPractitioner.DateLinked = DateTime.Now;
+                            //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
+
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
-                        newPractitioner.IsFundaAppAdmin = false;
-                        newPractitioner.IsPrincipal = false;
-                        //newPractitioner.DateLinked = DateTime.Now;
-                        //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
-
-                        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                    }
-                    else if (!(bool)entity.IsPrincipal && entity.Principal == null)
-                    {
-                        newPractitioner.IsFundaAppAdmin = true;
-                        newPractitioner.IsPrincipal = false;
-
-                        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                    }
-                    else if ((bool)entity.IsPrincipal)
-                    {
-                        newPractitioner.IsPrincipal = true;
-                        newPractitioner.IsFundaAppAdmin = true;
-
-                        await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
-                    }
-
-
-                    //insert the new Practitioner
-                    try
-                    {
-                        practitionerRepo.Insert(newPractitioner);
-                        pracCreated = true;
-                    }
-                    catch (Exception ex)
-                    {
-                        //TODO: LOG ERROR AND HANDLE
-                        RemoveImportedAndFlag(userId, true, false);
-                    }
-
-                    if (pracCreated)
-                    {
-                        //create classrooms and classroomgroups - only map for principals or FAAs
-                        if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
+                        else if (!(bool)entity.IsPrincipal && entity.Principal == null)
                         {
-                            Classroom pracClass = new Classroom()
-                            {
-                                Id = Guid.NewGuid(),
-                                UserId = userId,
-                                IsActive = true,
-                                Name = siteName,
-                                IsPrinciple = true,
-                                NumberPractitioners = 1,
-                                Hierarchy = newPractitioner.Hierarchy,
-                                TenantId = tenantId,
-                                SiteAddressId = insertedAddress ? siteAddressId : null
-                            };
-                            classroomGenericRepo.Insert(pracClass);
+                            newPractitioner.IsFundaAppAdmin = true;
+                            newPractitioner.IsPrincipal = false;
 
-                            //create UNSURE classroomgroup to assign children to
-                            ClassroomGroup pracUnsureClass = new ClassroomGroup()
-                            {
-                                Id = Guid.NewGuid(),
-                                UserId = Guid.Parse(userId),
-                                IsActive = true,
-                                Name = "Unsure",
-                                TenantId = tenantId,
-                                Hierarchy = newPractitioner.Hierarchy,
-                                ProgrammeTypeId = programmeType.Id,
-                                ClassroomId = pracClass.Id
-                            };
-                            classroomGroupGenericRepo.Insert(pracUnsureClass);
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                        }
+                        else if ((bool)entity.IsPrincipal)
+                        {
+                            newPractitioner.IsPrincipal = true;
+                            newPractitioner.IsFundaAppAdmin = true;
+
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
                         }
 
-                        mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
-                        mapperLine.RemoteEntity = SSIntegrationSettings.SLPractitioner;
-                        mapperLine.LocalId = newPractitioner.Id.ToString();
+
+                        //insert the new Practitioner
+                        try
+                        {
+                            _practitionerRepo.Insert(newPractitioner);
+                            pracCreated = true;
+                        }
+                        catch (Exception ex)
+                        {
+                            //TODO: LOG ERROR AND HANDLE
+                            RemoveImportedAndFlag(userId, true, false);
+                        }
+
+                        if (pracCreated)
+                        {
+                            //create classrooms and classroomgroups - only map for principals or FAAs
+                            if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
+                            {
+                                Classroom pracClass = new Classroom()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = userId,
+                                    IsActive = true,
+                                    Name = siteName,
+                                    IsPrinciple = true,
+                                    NumberPractitioners = 1,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    TenantId = tenantId,
+                                    SiteAddressId = insertedAddress ? siteAddressId : null
+                                };
+                                _classroomGenericRepo.Insert(pracClass);
+
+                                //create UNSURE classroomgroup to assign children to
+                                ClassroomGroup pracUnsureClass = new ClassroomGroup()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = Guid.Parse(userId),
+                                    IsActive = true,
+                                    Name = "Unsure",
+                                    TenantId = tenantId,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    ProgrammeTypeId = programmeType.Id,
+                                    ClassroomId = pracClass.Id
+                                };
+                                _classroomGroupGenericRepo.Insert(pracUnsureClass);
+                            }
+
+                            mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
+                            mapperLine.RemoteEntity = SSIntegrationSettings.SLPractitioner;
+                            mapperLine.LocalId = newPractitioner.Id.ToString();
+                            mapperLine.RemoteId = entity.Guid;
+                            mapperLine.UserId = userId;
+                            mapperLine.UpdatedBy = _uId;
+                            mapperLine.UpdatedDate = DateTime.Now;
+                            mapperLine.IsComplete = true;
+                            mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                            //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                            _mapperRepo.Insert(mapperLine);
+
+                            return newPractitioner;
+                        }
+                    }
+                    else
+                    {
+                        //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
+
+                        mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
+                        mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                        mapperLine.LocalId = null;
                         mapperLine.RemoteId = entity.Guid;
-                        mapperLine.UserId = userId;
+                        mapperLine.UserId = null;
                         mapperLine.UpdatedBy = _uId;
                         mapperLine.UpdatedDate = DateTime.Now;
                         mapperLine.IsComplete = true;
                         mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                        mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+
                         //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                         _mapperRepo.Insert(mapperLine);
-
-                        return newPractitioner;
                     }
                 }
             }
@@ -1075,18 +1124,6 @@ namespace ECDLink.Core.Services
             {
                 if (entity != null)
                 {
-
-                    var staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
-                    var practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
-                    var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: _uId);
-                    var childGenericRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-                    var caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
-                    var staticRelationRepo = _repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
-                    var staticEducationRepo = _repositoryFactory.CreateGenericRepository<Education>(userContext: _uId);
-                    var staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
-                    var staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
-                    var staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
-                    var staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
                     IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
 
                     //Check on childs IdNumber as well as Surname
@@ -1094,250 +1131,271 @@ namespace ECDLink.Core.Services
 
                     if (existingUser == null)
                     {
-                        bool childCreated = false;
-                        var workflow = staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").OrderBy(x => x.Id).FirstOrDefault();
-                        //create child user
-                        string userId = Guid.NewGuid().ToString();
-
-                        var newUser = new ApplicationUser
+                        //basic checks to allow child to be imported
+                        if (entity.CaregiverPopiaConsent == true && entity.Caregiver != null && entity.Gender != null && entity.Surname != null && entity.FirstName != null && entity.Caregiver.ContactNumber != null && (entity.BirthDate != null || entity.IdNumber != null))
                         {
-                            Id = userId.ToString(),
-                            UserName = userId,//entity?.IdNumber,
-                            IdNumber = entity.IdNumber,
-                            IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                            VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
-                            FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
-                            Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
-                            FullName = entity.FirstName + " " + entity.Surname,
-                            ContactPreference = MessageTypeConstants.SMS,
-                            IsActive = true,
-                            TenantId = tenantId,
-                            IsImported = true,
-                        };
 
-                        if (entity.BirthDate != null)
-                        {
-                            newUser.DateOfBirth = (DateTime)entity.BirthDate;
-                        }
+                            bool childCreated = false;
+                            var workflow = _staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").OrderBy(x => x.Id).FirstOrDefault();
+                            //create child user
+                            string userId = Guid.NewGuid().ToString();
 
-                        var newChild = new Child
-                        {
-                            Id = Guid.NewGuid(),
-                            UserId = userId,
-                            IsActive = true,
-                            TenantId = tenantId,
-                            Allergies = entity.AllergyType,
-                            Disabilities = entity.DisabilityType,
-                            WorkflowStatusId = workflow.Id
-                        };
-
-                        //check language
-                        Guid? languageId = null;
-                        if (entity.HomeLanguage != null)
-                        {
-                            var language = staticLanguageRepo.GetAll().Where(x => x.Description == entity.HomeLanguage).OrderBy(x => x.Id).FirstOrDefault();
-                            if (language != null)
+                            var newUser = new ApplicationUser
                             {
-                                newUser.PreferredCommunicationLanguage = language.Id.ToString();
-                                newUser.LanguageId = language.Id;
-                                newChild.LanguageId = language.Id;
-                                languageId = language.Id;
+                                Id = userId.ToString(),
+                                UserName = userId,//entity?.IdNumber,
+                                IdNumber = entity.IdNumber,
+                                IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
+                                VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
+                                FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                                Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                                FullName = entity.FirstName + " " + entity.Surname,
+                                ContactPreference = MessageTypeConstants.SMS,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                IsImported = true,
+                            };
+
+                            if (entity.BirthDate != null)
+                            {
+                                newUser.DateOfBirth = (DateTime)entity.BirthDate;
                             }
-                        }
 
-                        //Check Gender
-                        if (entity.Gender != null)
-                        {
-                            var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains(entity.Gender)).OrderBy(x => x.Id).FirstOrDefault();
-                            if (sgender != null)
-                                newUser.GenderId = sgender.Id;
-                        }
-                        else
-                        {
-                            var sgender = staticGenderRepo.GetAll().Where(x => x.Description.Contains("N/A")).OrderBy(x => x.Id).FirstOrDefault();
-                            if (sgender != null)
-                                newUser.GenderId = sgender.Id;
-                        }
-                        //Check Race
-                        if (entity.EthnicGroup != null)
-                        {
-                            var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains(entity.EthnicGroup)).OrderBy(x => x.Id).FirstOrDefault();
-                            if (srace != null)
-                                newUser.RaceId = srace.Id;
-                        }
-                        else
-                        {
-                            var srace = staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).OrderBy(x => x.Id).FirstOrDefault();
-                            if (srace != null)
-                                newUser.RaceId = srace.Id;
-                        }
-
-                        //create child record with caregiver details set
-                        try
-                        {
-                            await _userManager.CreateAsync(newUser);
-                            await _userManager.AddToRoleAsync(newUser, Roles.CHILD);
-                            if (childRepo.Insert(newChild) != null)
+                            var newChild = new Child
                             {
-                                if (entity.Caregiver != null)
-                                {
-                                    //check language
-                                    Guid? caregiverLanguage = null;
-                                    if (entity.Caregiver.Language != null)
-                                    {
-                                        var language = staticLanguageRepo.GetAll().Where(x => x.Description == entity.Caregiver.Language).OrderBy(x => x.Id).FirstOrDefault();
-                                        if (language != null)
-                                        {
-                                            caregiverLanguage = language.Id;
-                                        }
-                                    }
-                                    //Check relation
-                                    Guid? relation = null;
-                                    if (entity.Caregiver.RelationshipType != null)
-                                    {
-                                        var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains(entity.Caregiver.RelationshipType)).OrderBy(x => x.Id).FirstOrDefault();
-                                        if (sRelation != null)
-                                            relation = sRelation.Id;
-                                    }
-                                    else
-                                    {
-                                        var sRelation = staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
-                                        if (sRelation != null)
-                                            relation = sRelation.Id;
-                                    }
-                                    //Check education
-                                    Guid? education = null;
-                                    if (entity.Caregiver.HighestEducationLevel != null)
-                                    {
-                                        var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == entity.Caregiver.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
-                                        if (sEducation != null)
-                                            education = sEducation.Id;
-                                    }
-                                    if (education == null)
-                                    {
-                                        var sEducation = staticEducationRepo.GetAll().Where(x => x.Description == "N/A").OrderBy(x => x.Id).FirstOrDefault();
-                                        if (sEducation != null)
-                                            education = sEducation.Id;
-                                    }
-                                    //save caregiver and update child with caregiver detail
-                                    if (entity.Caregiver.FirstName != null)
-                                    {
-                                        //create caregiver record
-                                        var newCaregiver = new Caregiver
-                                        {
-                                            Id = Guid.NewGuid(),
-                                            IsActive = true,
-                                            TenantId = tenantId,
-                                            IdNumber = entity.Caregiver.IdNumber,
-                                            FirstName = entity.Caregiver.FirstName,
-                                            Surname = entity.Caregiver.Surname,
-                                            FullName = entity.Caregiver.FirstName + " " + entity.Caregiver.Surname,
-                                            PhoneNumber = entity.Caregiver.ContactNumber,
-                                            EmergencyContactFirstName = entity.Caregiver.EmergencyContactFirstName,
-                                            EmergencyContactSurname = entity.Caregiver.EmergencyContactSurname,
-                                            EmergencyContactPhoneNumber = entity.Caregiver.EmergencyContactPhoneNumber,
-                                            //JoinReferencePanel = entity.Caregiver.,
-                                            //Contribution = false,
-                                            AdditionalFirstName = entity.AlternativePickupFirstName,
-                                            AdditionalSurname = entity.AlternativePickupSurname,
-                                            AdditionalPhoneNumber = entity.AlternativePickupContactNumber,
-                                            RelationId = relation,
-                                            EducationId = education,
-                                            LanguageId = caregiverLanguage
-                                        };
+                                Id = Guid.NewGuid(),
+                                UserId = userId,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                Allergies = entity.AllergyType,
+                                Disabilities = entity.DisabilityType,
+                                WorkflowStatusId = workflow.Id
+                            };
 
-                                        //Create caregiver siteaddress
-                                        if (entity.Caregiver.HomeAddressLine1 != null)
-                                        {
-                                            SiteAddress newEntityAddress = new SiteAddress();
-
-                                            newEntityAddress.AddressLine1 = entity.Caregiver.HomeAddressLine1 ?? string.Empty;
-                                            newEntityAddress.AddressLine2 = entity.Caregiver.HomeAddressLine2 ?? string.Empty;
-                                            newEntityAddress.AddressLine3 = entity.Caregiver?.HomeAddressLine3 ?? string.Empty;
-                                            newEntityAddress.PostalCode = entity.Caregiver.HomeAddressPostalCode ?? string.Empty;
-
-                                            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
-                                            //check province
-                                            if (entity.Caregiver.Province != null)
-                                            {
-                                                var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.Caregiver.Province).FirstOrDefault();
-                                                if (prov != null)
-                                                {
-                                                    newEntityAddress.ProvinceId = prov.Id;
-                                                }
-                                            }
-                                            else
-                                            {
-                                                var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
-                                                if (naProv != null)
-                                                {
-                                                    newEntityAddress.ProvinceId = naProv.Id;
-                                                }
-                                            }
-                                            newEntityAddress.Id = Guid.NewGuid();
-                                            newEntityAddress.UpdatedBy = _uId;
-                                            newEntityAddress.UpdatedDate = DateTime.Now;
-                                            _siteAddressRepo.Insert(newEntityAddress);
-
-                                            newCaregiver.SiteAddressId = newEntityAddress.Id;
-                                        }
-
-                                        caregiverRepo.Insert(newCaregiver);
-                                        newChild.CaregiverId = newCaregiver.Id;
-                                    }
-                                }
-                                childRepo.Update(newChild);
-                                childCreated = true;
-                            }
-                        }
-                        catch (Exception ex)
-                        {
-                            //TODO: LOG ERROR AND HANDLE
-                        }
-
-                        if (childCreated)
-                        {
-                            //Create additional table entries
-
-                            //1) Grants
-                            if (entity.GrantType != null)
+                            //check language
+                            Guid? languageId = null;
+                            if (entity.HomeLanguage != null)
                             {
-                                var sGrant = staticGrantRepo.GetAll().Where(x => x.Description.Contains(entity.GrantType)).OrderBy(x => x.Id).FirstOrDefault();
-                                if (sGrant != null)
+                                var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.HomeLanguage).OrderBy(x => x.Id).FirstOrDefault();
+                                if (language != null)
                                 {
-                                    //insert new grant
-                                    List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = tenantId, UserId = userId } };
-
-                                    GrantInterfaceExtension grantObj = new GrantInterfaceExtension() { };
-                                    //grantObj.AddGrants(_context, new List<UserGrant>(grants));
+                                    newUser.PreferredCommunicationLanguage = language.Id.ToString();
+                                    newUser.LanguageId = language.Id;
+                                    newChild.LanguageId = language.Id;
+                                    languageId = language.Id;
                                 }
                             }
-                            //2) Consent
-                            //TODO: Build consent logic to insert to new table
-                            if (entity.CaregiverPhotographyAndFilmingConsent != null)
+
+                            //Check Gender
+                            if (entity.Gender != null)
                             {
-                                //create consent
-
-
+                                var sgender = _staticGenderRepo.GetAll().Where(x => x.Description.Contains(entity.Gender)).OrderBy(x => x.Id).FirstOrDefault();
+                                if (sgender != null)
+                                    newUser.GenderId = sgender.Id;
+                            }
+                            else
+                            {
+                                var sgender = _staticGenderRepo.GetAll().Where(x => x.Description.Contains("N/A")).OrderBy(x => x.Id).FirstOrDefault();
+                                if (sgender != null)
+                                    newUser.GenderId = sgender.Id;
+                            }
+                            //Check Race
+                            if (entity.EthnicGroup != null)
+                            {
+                                var srace = _staticRaceRepo.GetAll().Where(x => x.Description.Contains(entity.EthnicGroup)).OrderBy(x => x.Id).FirstOrDefault();
+                                if (srace != null)
+                                    newUser.RaceId = srace.Id;
+                            }
+                            else
+                            {
+                                var srace = _staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).OrderBy(x => x.Id).FirstOrDefault();
+                                if (srace != null)
+                                    newUser.RaceId = srace.Id;
                             }
 
+                            //create child record with caregiver details set
+                            try
+                            {
+                                await _userManager.CreateAsync(newUser);
+                                await _userManager.AddToRoleAsync(newUser, Roles.CHILD);
+                                if (_childRepo.Insert(newChild) != null)
+                                {
+                                    if (entity.Caregiver != null)
+                                    {
+                                        //check language
+                                        Guid? caregiverLanguage = null;
+                                        if (entity.Caregiver.Language != null)
+                                        {
+                                            var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.Caregiver.Language).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (language != null)
+                                            {
+                                                caregiverLanguage = language.Id;
+                                            }
+                                        }
+                                        //Check relation
+                                        Guid? relation = null;
+                                        if (entity.Caregiver.RelationshipType != null)
+                                        {
+                                            var sRelation = _staticRelationRepo.GetAll().Where(x => x.Description.Contains(entity.Caregiver.RelationshipType)).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sRelation != null)
+                                                relation = sRelation.Id;
+                                        }
+                                        else
+                                        {
+                                            var sRelation = _staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sRelation != null)
+                                                relation = sRelation.Id;
+                                        }
+                                        //Check education
+                                        Guid? education = null;
+                                        if (entity.Caregiver.HighestEducationLevel != null)
+                                        {
+                                            var sEducation = _staticEducationRepo.GetAll().Where(x => x.Description == entity.Caregiver.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sEducation != null)
+                                                education = sEducation.Id;
+                                        }
+                                        if (education == null)
+                                        {
+                                            var sEducation = _staticEducationRepo.GetAll().Where(x => x.Description == "N/A").OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sEducation != null)
+                                                education = sEducation.Id;
+                                        }
+                                        //save caregiver and update child with caregiver detail
+                                        if (entity.Caregiver.FirstName != null)
+                                        {
+                                            //create caregiver record
+                                            var newCaregiver = new Caregiver
+                                            {
+                                                Id = Guid.NewGuid(),
+                                                IsActive = true,
+                                                TenantId = tenantId,
+                                                IdNumber = entity.Caregiver.IdNumber,
+                                                FirstName = entity.Caregiver.FirstName,
+                                                Surname = entity.Caregiver.Surname,
+                                                FullName = entity.Caregiver.FirstName + " " + entity.Caregiver.Surname,
+                                                PhoneNumber = entity.Caregiver.ContactNumber,
+                                                EmergencyContactFirstName = entity.Caregiver.EmergencyContactFirstName,
+                                                EmergencyContactSurname = entity.Caregiver.EmergencyContactSurname,
+                                                EmergencyContactPhoneNumber = entity.Caregiver.EmergencyContactPhoneNumber,
+                                                //JoinReferencePanel = entity.Caregiver.,
+                                                //Contribution = false,
+                                                AdditionalFirstName = entity.AlternativePickupFirstName,
+                                                AdditionalSurname = entity.AlternativePickupSurname,
+                                                AdditionalPhoneNumber = entity.AlternativePickupContactNumber,
+                                                RelationId = relation,
+                                                EducationId = education,
+                                                LanguageId = caregiverLanguage
+                                            };
 
-                            //ManageChildClassrooms();
+                                            //Create caregiver siteaddress
+                                            if (entity.Caregiver.HomeAddressLine1 != null)
+                                            {
+                                                SiteAddress newEntityAddress = new SiteAddress();
+
+                                                newEntityAddress.AddressLine1 = entity.Caregiver.HomeAddressLine1 ?? string.Empty;
+                                                newEntityAddress.AddressLine2 = entity.Caregiver.HomeAddressLine2 ?? string.Empty;
+                                                newEntityAddress.AddressLine3 = entity.Caregiver?.HomeAddressLine3 ?? string.Empty;
+                                                newEntityAddress.PostalCode = entity.Caregiver.HomeAddressPostalCode ?? string.Empty;
+
+                                                var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                                                //check province
+                                                if (entity.Caregiver.Province != null)
+                                                {
+                                                    var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.Caregiver.Province).FirstOrDefault();
+                                                    if (prov != null)
+                                                    {
+                                                        newEntityAddress.ProvinceId = prov.Id;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
+                                                    if (naProv != null)
+                                                    {
+                                                        newEntityAddress.ProvinceId = naProv.Id;
+                                                    }
+                                                }
+                                                newEntityAddress.Id = Guid.NewGuid();
+                                                newEntityAddress.UpdatedBy = _uId;
+                                                newEntityAddress.UpdatedDate = DateTime.Now;
+                                                _siteAddressRepo.Insert(newEntityAddress);
+
+                                                newCaregiver.SiteAddressId = newEntityAddress.Id;
+                                            }
+
+                                            _caregiverRepo.Insert(newCaregiver);
+                                            newChild.CaregiverId = newCaregiver.Id;
+                                        }
+                                    }
+                                    _childRepo.Update(newChild);
+                                    childCreated = true;
+                                }
+
+                            }
+                            catch (Exception ex)
+                            {
+                                //TODO: LOG ERROR AND HANDLE
+                            }
+
+                            if (childCreated)
+                            {
+                                //Create additional table entries
+
+                                //1) Grants
+                                if (entity.GrantType != null)
+                                {
+                                    var sGrant = _staticGrantRepo.GetAll().Where(x => x.Description.Contains(entity.GrantType)).OrderBy(x => x.Id).FirstOrDefault();
+                                    if (sGrant != null)
+                                    {
+                                        //insert new grant
+                                        List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = tenantId, UserId = userId } };
+
+                                        GrantInterfaceExtension grantObj = new GrantInterfaceExtension() { };
+                                        //grantObj.AddGrants(_context, new List<UserGrant>(grants));
+                                    }
+                                }
+                                //2) Consent
+                                //TODO: Build consent logic to insert to new table
+                                if (entity.CaregiverPopiaConsent != null)
+                                {
+                                    //create consent
 
 
+                                }
+
+                                //ManageChildClassrooms();
+
+                                mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
+                                mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                                mapperLine.LocalId = newChild.Id.ToString();
+                                mapperLine.RemoteId = entity.Guid;
+                                mapperLine.UserId = userId;
+                                mapperLine.UpdatedBy = _uId;
+                                mapperLine.UpdatedDate = DateTime.Now;
+                                mapperLine.IsComplete = true;
+                                mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                                //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                                _mapperRepo.Insert(mapperLine);
+
+                                return newChild;
+                            }
+                        }
+                        else {
+                            //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
+                            
                             mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
                             mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
-                            mapperLine.LocalId = newChild.Id.ToString();
+                            mapperLine.LocalId = null;
                             mapperLine.RemoteId = entity.Guid;
-                            mapperLine.UserId = userId;
+                            mapperLine.UserId = null;
                             mapperLine.UpdatedBy = _uId;
                             mapperLine.UpdatedDate = DateTime.Now;
                             mapperLine.IsComplete = true;
                             mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                            mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
-
-                            return newChild;
                         }
                     }
                 }
