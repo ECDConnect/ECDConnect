@@ -7,7 +7,7 @@ import {
   SA_PASSPORT_REGEX,
 } from '@ecdlink/ui';
 import { UserDto } from '@ecdlink/core';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -40,7 +40,7 @@ export const AddOrEditPractitioner = ({
     getValues,
     setValue,
     reset,
-  } = useForm({
+  } = useForm<AddPractitionerModel>({
     resolver: yupResolver(addPractitionerSchema),
     defaultValues: Boolean(formData) ? formData : initialAddPractitionerValues,
     mode: 'onChange',
@@ -110,6 +110,17 @@ export const AddOrEditPractitioner = ({
     }
   };
 
+  useEffect(() => {
+    if (isValidPractitioner && newPractitioner) {
+      setValue('firstName', newPractitioner.firstName || '', {
+        shouldValidate: true,
+      });
+      setValue('surname', newPractitioner.surname || '', {
+        shouldValidate: true,
+      });
+    }
+  }, [isValidPractitioner, newPractitioner, setValue]);
+
   const handleReset = () => {
     reset(initialAddPractitionerValues);
     setIsValidPractitioner(undefined);
@@ -127,10 +138,13 @@ export const AddOrEditPractitioner = ({
       idNumber: idNumber || passport,
       firstName: newPractitioner?.firstName || firstName,
       surname: newPractitioner?.surname || surname,
-      passport: '',
+      passport: passport,
       preferId: !!idNumber,
       isRegistered: Boolean(
         practitionerUserDetails?.appUser?.practitionerObjectData?.isRegistered
+      ),
+      isTrainee: Boolean(
+        practitionerUserDetails?.appUser?.practitionerObjectData?.isTrainee
       ),
     });
   };
