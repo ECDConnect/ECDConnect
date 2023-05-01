@@ -17,12 +17,13 @@ import { useStoreSetup } from '@hooks/useStoreSetup';
 import { OfflineSyncModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
-import { settingSelectors } from '@store/settings';
+import { settingActions, settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -42,6 +43,15 @@ export const PractitionerProfile: React.FC = () => {
   const principalPractitioner = practitioners?.find(
     (item) => item?.userId === user?.id
   );
+
+  const sync = async () => {
+    if (practitioner?.isPrincipal === true) {
+      await appDispatch(syncThunkActions.syncOfflineData({}));
+    } else {
+      await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
+    await appDispatch(settingActions.setLastDataSync());
+  };
 
   useEffect(() => {
     if (!isOnline) {
@@ -202,6 +212,7 @@ export const PractitionerProfile: React.FC = () => {
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
+                        await sync();
                         await resetAuth();
                         await resetAppStore();
                         history.push('/');
