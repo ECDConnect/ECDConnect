@@ -346,8 +346,20 @@ export const SetupPrincipal: React.FC = () => {
         size={page === PractitionerSetupSteps.WELCOME ? 'large' : 'medium'}
         renderBorder={true}
         showBackground={page === PractitionerSetupSteps.WELCOME}
-        title={'Edit Profile'}
-        subTitle={label}
+        title={
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+            ? 'Add Practitioners'
+            : 'Edit Profile'
+        }
+        subTitle={
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+            ? ''
+            : label
+        }
         onBack={
           !isFundaAppAdmin && isNotPrincipal
             ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)

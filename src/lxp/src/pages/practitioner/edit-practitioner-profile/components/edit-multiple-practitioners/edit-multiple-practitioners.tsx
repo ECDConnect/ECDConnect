@@ -187,7 +187,7 @@ export default function EditMultiplePractitioners({
               {allInFundaApp !== undefined && (
                 <div>
                   <Alert
-                    type={allInFundaApp ? 'success' : 'error'}
+                    type={allInFundaApp ? 'success' : 'warning'}
                     title={
                       allInFundaApp
                         ? 'All practitioners at your programme are registered on Funda app.'
