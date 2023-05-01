@@ -91,7 +91,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
 
     setChildId(result.ChildId);
 
-    copyToClip(caregiverChildregUrl);
+    await copyToClip(caregiverChildregUrl);
     setLoadingLink(false);
     dialog({
       render: (onSubmit, onCancel) => {
@@ -101,6 +101,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
             onCancel={onCancel}
             childDetails={childDetails}
             caregiverUrl={caregiverChildregUrl}
+            couldCopyToClipboard={true}
           />
         );
       },
