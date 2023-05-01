@@ -19,6 +19,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 
+export const clinicCheckupQuestion = `Has {client} been to the clinic for a postnatal check-up?`;
+
 export const ClinicCheckupStep = ({
   infant,
   isTipPage,
@@ -40,11 +42,6 @@ export const ClinicCheckupStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(
-    () => `Has {client} been to the clinic for a postnatal check-up?`,
-    []
-  );
-
   const onOptionSelected = useCallback(
     (value) => {
       setAnswer(value);
@@ -54,15 +51,15 @@ export const ClinicCheckupStep = ({
             visitSection: sectionName,
             questions: [
               {
-                question,
+                question: clinicCheckupQuestion,
                 answer: value,
               },
             ],
           },
         ]);
-      setEnableButton && setEnableButton(true);
+      setEnableButton?.(true);
     },
-    [question, setEnableButton, setQuestions]
+    [setEnableButton, setQuestions]
   );
 
   if (isTipPage) {
@@ -97,7 +94,10 @@ export const ClinicCheckupStep = ({
         />
 
         <Label
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+          text={replaceBraces(
+            clinicCheckupQuestion,
+            infant?.caregiver?.firstName || ''
+          )}
         />
         <ButtonGroup<boolean>
           color="secondary"
