@@ -11,9 +11,9 @@ export const ChildDevelopmentLevelsDisplay = ({
     <div className={classNames(className, 'flex flex-col bg-white p-4')}>
       <Typography
         color={'textDark'}
-        type={'body'}
+        type={'h3'}
         weight={'bold'}
-        text={'Developmental levels'}
+        text={'Developmental stages'}
       />
       <ChildDevelopmentLevelsList />
       <Button

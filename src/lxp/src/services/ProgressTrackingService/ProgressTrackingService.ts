@@ -92,6 +92,7 @@ class ProgressTrackingService {
           level {
             id
           }
+          value
         }
       }         
       `,
