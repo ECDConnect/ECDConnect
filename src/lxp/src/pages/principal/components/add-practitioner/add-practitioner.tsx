@@ -9,7 +9,7 @@ import {
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto } from '@ecdlink/core';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -28,6 +28,7 @@ import {
   AddNewPractitionerModel,
 } from './add-practitioner.types';
 import { userSelectors } from '@store/user';
+import { SearchIcon } from '@heroicons/react/solid';
 
 export const AddPractitioner = ({
   onSubmit,
@@ -62,7 +63,25 @@ export const AddPractitioner = ({
     control,
   });
 
-  useEffect(() => {
+  const getPractitionerDetailsByIdNumber = async () => {
+    // Check if the practitioner exists
+    let _practitioner: UserDto = {} as UserDto;
+
+    if (userAuth && idNumber) {
+      _practitioner = await new PractitionerService(
+        userAuth.auth_token
+      ).getPractitionerByIdNumber(idNumber);
+    }
+
+    if (userAuth && passport) {
+      _practitioner = await new PractitionerService(
+        userAuth.auth_token
+      ).getPractitionerByIdNumber(passport);
+    }
+    return _practitioner;
+  };
+
+  const handleSearch = () => {
     let validPassportOrIdNumber = false;
     if (idNumber) {
       setIsValidPractitioner(undefined);
@@ -98,21 +117,6 @@ export const AddPractitioner = ({
         });
       });
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [idNumber, passport]);
-
-  const getPractitionerDetailsByIdNumber = async () => {
-    // Check if the practitioner exists
-    let _practitioner: UserDto = {} as UserDto;
-
-    if (userAuth && idNumber) {
-      _practitioner = await new PractitionerService(
-        userAuth.auth_token
-      ).getPractitionerByIdNumber(idNumber);
-    }
-
-    return _practitioner;
   };
 
   const handleReset = () => {
@@ -152,24 +156,46 @@ export const AddPractitioner = ({
           <div className="mt-4 flex w-11/12 flex-col gap-4">
             <div>
               {preferId && (
-                <FormInput<AddPractitionerModel>
-                  label={'ID number'}
-                  visible={true}
-                  nameProp={'idNumber'}
-                  register={register}
-                  error={errors['idNumber']}
-                  placeholder={'E.g. 7601010338089'}
-                />
+                <div className="mt-4 flex items-center justify-between">
+                  <FormInput<AddPractitionerModel>
+                    label={'Practitioner ID number'}
+                    visible={true}
+                    nameProp={'idNumber'}
+                    register={register}
+                    error={errors['idNumber']}
+                    placeholder={'E.g. 7601010338089'}
+                    className="mr-2 w-full pb-2"
+                  />
+                  <div
+                    className={
+                      'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
+                    }
+                    onClick={handleSearch}
+                  >
+                    <SearchIcon className={'w-4 cursor-pointer text-white'} />
+                  </div>
+                </div>
               )}
               <div>
                 {!preferId && (
-                  <FormInput<AddPractitionerModel>
-                    label={'Passport number'}
-                    visible={true}
-                    nameProp={'passport'}
-                    error={errors['passport']}
-                    register={register}
-                  />
+                  <div className="mt-4 flex items-center justify-between">
+                    <FormInput<AddPractitionerModel>
+                      label={'Practitioner Passport number'}
+                      visible={true}
+                      nameProp={'passport'}
+                      error={errors['passport']}
+                      register={register}
+                      className="mr-2 w-full pb-2"
+                    />
+                    <div
+                      className={
+                        'round bg-primary border-primary mt-4 mr-2 inline-flex cursor-pointer items-center rounded-full border-2 p-2'
+                      }
+                      onClick={handleSearch}
+                    >
+                      <SearchIcon className={'w-4 cursor-pointer text-white'} />
+                    </div>
+                  </div>
                 )}
                 {!preferId && (
                   <Button
@@ -235,7 +261,11 @@ export const AddPractitioner = ({
                 />
               </div>
             )}
-
+            {isValidPractitioner === true && (
+              <div className="mb-8">
+                <Alert type={'success'} title={'Practitioner found!'} />
+              </div>
+            )}
             {addNote && (
               <div>
                 <Alert
