@@ -9,7 +9,7 @@ import {
 import { MutationAddPractitionerToPrincipalArgs } from '@ecdlink/graphql';
 import { useHistory } from 'react-router-dom';
 import { UserDto } from '@ecdlink/core';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -118,6 +118,17 @@ export const AddPractitioner = ({
       });
     }
   };
+
+  useEffect(() => {
+    if (isValidPractitioner && newPractitioner) {
+      setValue('firstName', newPractitioner.firstName || '', {
+        shouldValidate: true,
+      });
+      setValue('surname', newPractitioner.surname || '', {
+        shouldValidate: true,
+      });
+    }
+  }, [isValidPractitioner, newPractitioner, setValue]);
 
   const handleReset = () => {
     reset(initialAddPractitionerValues);

@@ -200,7 +200,7 @@ export default function ConfirmPractitioner({
                   color={'textMid'}
                 />
               </div>
-              {hasTrainees !== undefined && (
+              {!!hasTrainees && (
                 <div>
                   <Alert
                     type={'info'}
