@@ -11,8 +11,6 @@ const appState = {
   enableButton: true,
 };
 
-console.log({ appState });
-
 export const AppContext = createContext({
   state: appState,
   setState: () => undefined,
