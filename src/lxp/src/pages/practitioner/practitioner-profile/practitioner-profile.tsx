@@ -179,7 +179,7 @@ export const PractitionerProfile: React.FC = () => {
         title: 'Logout',
         titleStyle,
         subTitleStyle,
-        subTitle: 'Logout & reset data',
+        subTitle: 'Logout',
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
         iconBackgroundColor: 'tertiary',
