@@ -85,7 +85,7 @@ export const CoachProfile: React.FC = () => {
       {
         title: 'Logout',
         titleStyle,
-        subTitle: 'Logout & reset data',
+        subTitle: 'Logout',
         subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
