@@ -509,7 +509,7 @@ export const Dashboard: React.FC = () => {
             iconColor="errorMain"
             title="Missing programme information"
             paragraphs={[
-              `Before you begin, please fill in your type of ECD service and programme name.`,
+              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
             ]}
             actionButtons={[
               {
