@@ -72,6 +72,20 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const currentDate = new Date();
 
+  function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
+    const filteredArray: boolean[] = studentsArray.map((student) => {
+      const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
+
+      return getDay(insertedDate) < getDay(currentDate);
+    });
+
+    return filteredArray.every((value) => value === true);
+  }
+
+  const allChildrenInsertedBeforeToday = isAllStudentsInsertedBeforeToday(
+    children ?? []
+  );
+
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
 
@@ -89,12 +103,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
 
+    //this must be updated for user with multiple classes
     setUserCurrentClassroomGroup(currentDayClassroomGroup);
-
-    if (!currentDayClassroomGroup) {
-      setAttendanceComponentType('summary');
-      return;
-    }
 
     const currentLearners = [];
     const programmeStartDate =
@@ -109,14 +119,30 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
       const showChildInRegister =
         startedAttendanceDay >= getDayOfYear(programmeStartDate);
+
       if (showChildInRegister) {
         currentLearners.push(learner);
       }
     }
 
-    if (!currentLearners.length) {
+    if (!currentDayClassroomGroup) {
+      if (allChildrenInsertedBeforeToday) {
+        setAttendanceComponentType('summary');
+      } else {
+        setAttendanceComponentType('report');
+      }
+      return;
+    }
+
+
+    if (
+      !currentLearners.length &&
+      allChildrenInsertedBeforeToday 
+    ) {
       setAttendanceComponentType('summary');
       return;
+    } else {
+      setAttendanceComponentType('report');
     }
 
     const currentClassProgrammes = classProgrammesUpdated.filter(
@@ -158,7 +184,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
-
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
@@ -169,7 +194,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   }, [classroomGroups, attendance]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
-    setSeeRegister(true);
+    // setSeeRegister(true);
 
     // is attendance complete for whole weeek?
     if (!classroom) return;
@@ -206,8 +231,12 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   };
 
   const gotToReports = () => {
-    setSeeRegister(false);
-    setAttendanceComponentType('report');
+    if (seeRegister) {
+      setSeeRegister(!seeRegister);
+      setAttendanceComponentType('report');
+    } else {
+      setAttendanceComponentType('report');
+    }
   };
 
   const getComponentToRender = (type?: AttendanceComponentType) => {
@@ -219,6 +248,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           <AttendanceReport
             classroom={classroom}
             currentClassroomGroup={userCurrentClassroomGroup}
+            classroomGroups={classroomGroups}
           />
         );
       case 'summary':
