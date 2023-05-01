@@ -129,104 +129,107 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
   SyncOfflineDataProps,
   SyncOfflineDataReturnType,
   ThunkApiType<RootState>
->('sync/offlineData', async (any, { rejectWithValue, dispatch }) => {
-  const syncSteps: SyncStep[] = [
-    {
-      title: 'User',
-      action: userThunkActions.updateUser,
-    },
-    {
-      title: 'Practitioner',
-      action: practitionerThunkActions.updatePractitionerById,
-    },
-    // {
-    //   title: 'Coach',
-    //   action: coachThunkActions.updateCoach,
-    // },
-    {
-      title: 'Care givers',
-      action: caregiverThunkActions.upsertCareGivers,
-    },
-    {
-      title: 'Child users',
-      action: childrenThunkActions.upsertChildUsers,
-    },
-    {
-      title: 'Children',
-      action: childrenThunkActions.upsertChildren,
-    },
-    // {
-    //   title: 'Classrooms',
-    //   action: classroomsThunkActions.upsertClassroom,
-    // },
-    {
-      title: 'Classroom groups',
-      action: classroomsThunkActions.upsertClassroomGroups,
-    },
-    {
-      title: 'Classroom group programmes',
-      action: classroomsThunkActions.upsertClassroomGroupProgrammes,
-    },
-    {
-      title: 'Classroom group learners',
-      action: classroomsThunkActions.upsertClassroomGroupLearners,
-    },
-    {
-      title: 'Child progress reports',
-      action: contentReportThunkActions.syncChildProgressReports,
-    },
-    {
-      title: 'Attendance',
-      action: attendanceThunkActions.trackAttendanceSync,
-    },
-    {
-      title: 'Notes',
-      action: notesThunkActions.upsertNotes,
-    },
-    {
-      title: 'Programmes',
-      action: programmeThunkActions.upsertProgrammes,
-    },
-    {
-      title: 'Documents',
-      action: documentThunkActions.createDocument,
-    },
-    {
-      title: 'User Consent',
-      action: userThunkActions.upsertUserConsents,
-    },
-    {
-      title: 'Analytics',
-      action: analyticsThunkActions.pushAnalytics,
-    },
-  ];
+>(
+  'sync/offlineDataForPractitioner',
+  async (any, { rejectWithValue, dispatch }) => {
+    const syncSteps: SyncStep[] = [
+      {
+        title: 'User',
+        action: userThunkActions.updateUser,
+      },
+      {
+        title: 'Practitioner',
+        action: practitionerThunkActions.updatePractitionerById,
+      },
+      // {
+      //   title: 'Coach',
+      //   action: coachThunkActions.updateCoach,
+      // },
+      {
+        title: 'Care givers',
+        action: caregiverThunkActions.upsertCareGivers,
+      },
+      {
+        title: 'Child users',
+        action: childrenThunkActions.upsertChildUsers,
+      },
+      {
+        title: 'Children',
+        action: childrenThunkActions.upsertChildren,
+      },
+      // {
+      //   title: 'Classrooms',
+      //   action: classroomsThunkActions.upsertClassroom,
+      // },
+      {
+        title: 'Classroom groups',
+        action: classroomsThunkActions.upsertClassroomGroups,
+      },
+      {
+        title: 'Classroom group programmes',
+        action: classroomsThunkActions.upsertClassroomGroupProgrammes,
+      },
+      {
+        title: 'Classroom group learners',
+        action: classroomsThunkActions.upsertClassroomGroupLearners,
+      },
+      {
+        title: 'Child progress reports',
+        action: contentReportThunkActions.syncChildProgressReports,
+      },
+      {
+        title: 'Attendance',
+        action: attendanceThunkActions.trackAttendanceSync,
+      },
+      {
+        title: 'Notes',
+        action: notesThunkActions.upsertNotes,
+      },
+      {
+        title: 'Programmes',
+        action: programmeThunkActions.upsertProgrammes,
+      },
+      {
+        title: 'Documents',
+        action: documentThunkActions.createDocument,
+      },
+      {
+        title: 'User Consent',
+        action: userThunkActions.upsertUserConsents,
+      },
+      {
+        title: 'Analytics',
+        action: analyticsThunkActions.pushAnalytics,
+      },
+    ];
 
-  let error: Error | null = null;
+    let error: Error | null = null;
 
-  for (let i = 0; i < syncSteps.length; i++) {
-    const step = syncSteps[i];
+    for (let i = 0; i < syncSteps.length; i++) {
+      const step = syncSteps[i];
 
-    dispatch(
-      syncActions.setCurrentActionState({
-        title: step.title,
-        step: i + 1,
-        stepTotal: syncSteps.length,
-      })
-    );
+      dispatch(
+        syncActions.setCurrentActionState({
+          title: step.title,
+          step: i + 1,
+          stepTotal: syncSteps.length,
+        })
+      );
 
-    try {
-      await dispatch(step.action({})).unwrap();
-    } catch (err) {
-      console.error(err);
-      dispatch(syncActions.setError((err as Error).message));
-      error = err as Error;
-      break;
+      try {
+        await dispatch(step.action({})).unwrap();
+      } catch (err) {
+        console.error(err);
+        dispatch(syncActions.setError((err as Error).message));
+        error = err as Error;
+        break;
+      }
     }
-  }
 
-  if (error) {
-    return rejectWithValue(error.message);
-  }
+    if (error) {
+      return rejectWithValue(error.message);
+    }
 
-  return;
-});
+    return;
+  }
+);
