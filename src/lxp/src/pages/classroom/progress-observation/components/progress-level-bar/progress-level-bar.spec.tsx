@@ -3,7 +3,9 @@ import ProgressLevelBar from './progress-level-bar';
 
 describe('ProgressLevelBar', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<ProgressLevelBar currentLevelId={2} />);
+    const { baseElement } = render(
+      <ProgressLevelBar currentLevelId={2} currentLevel={2} />
+    );
     expect(baseElement).toBeTruthy();
   });
 });

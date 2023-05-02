@@ -17,26 +17,21 @@ import {
   MothertContactInformationModel,
   motherContactInformationModelSchema,
 } from '@/schemas/infant/mother-contact-information';
+
 export const MotherContactInformation: React.FC<
   MotherContactInformationProps
 > = ({ onSubmit, details }) => {
   const {
     getValues: getMotherContactInformationFormValues,
-    // formState: motherContactInformationFormState,
-    // setValue: setMotherContactInformationFormValue,
+    formState: motherContactInformationFormState,
     register: motherFormRegister,
-    // reset: resetMomContactInformationFormValue,
-    control: motherContactInformationControl,
   } = useForm<MothertContactInformationModel>({
     resolver: yupResolver(motherContactInformationModelSchema),
     mode: 'onBlur',
-    // defaultValues: playgroup,
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = useFormState({
-    control: motherContactInformationControl,
-  });
+  const { isValid } = motherContactInformationFormState;
 
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 

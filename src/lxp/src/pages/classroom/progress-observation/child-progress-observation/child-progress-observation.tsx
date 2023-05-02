@@ -7,10 +7,14 @@ import {
 import {
   Alert,
   BannerWrapper,
+  Button,
   Dialog,
   DialogPosition,
+  Divider,
   ListItem,
   Typography,
+  classNames,
+  renderIcon,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
@@ -35,6 +39,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { classroomsSelectors } from '@store/classroom';
 import {
   getCategoryFromCurrentReport,
+  isChildInitialRegistrationPeriod,
   seperateCategoriesByStatus,
 } from '@utils/child/child-progress-report.utils';
 import { contentReportSelectors } from '@store/content/report';
@@ -46,6 +51,9 @@ import { documentSelectors } from '@store/document';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
+import { childRegistrationConstants } from '@/constants/Child';
+import { DateFormats } from '@/constants/Dates';
+import { addDays } from 'date-fns';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
@@ -55,6 +63,8 @@ export const ChildProgressObservationPage: React.FC = () => {
     useLocation<ChildProgressObservationPageState>();
   const { getDocumentTypeIdByEnum } = useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
+  const [hideCompletedSection, setHideCompletedSection] =
+    useState<boolean>(false);
 
   const reportingDate = routeState.reportingDate
     ? new Date(routeState.reportingDate)
@@ -79,12 +89,24 @@ export const ChildProgressObservationPage: React.FC = () => {
     contentReportSelectors.getChildProgressReportSummaries()
   );
 
+  const reportSummaries = useSelector(
+    contentReportSelectors.getChildLatestCompletedReports(routeState.childId)
+  );
+  const [latestCompletedSummary] = reportSummaries;
+
   const report = useSelector(
     contentReportSelectors.getChildProgressObservationReportByReportingPeriod(
       reportingDate,
       routeState.childId
     )
   );
+
+  const childInsertedDate =
+    child && child.insertedDate ? new Date(child.insertedDate) : new Date();
+
+  const requiresInitialReport = !child
+    ? false
+    : !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
 
   useEffect(() => {
     if (!isOnline) {
@@ -205,7 +227,12 @@ export const ChildProgressObservationPage: React.FC = () => {
             history.push(ROUTES.CHILD_PROFILE, { childId: routeState.childId });
           }
         }}
-        title={`Track ${childUser?.firstName}'s progress`}
+        title={
+          requiresInitialReport
+            ? 'First observations'
+            : `${reportingPeriod.monthName} progress observations`
+        }
+        subTitle={`${childUser?.firstName} ${childUser?.surname}`}
         data-testId={'child-progress-observation-banner-wrapper'}
         renderOverflow
         displayOffline={!isOnline}
@@ -218,13 +245,24 @@ export const ChildProgressObservationPage: React.FC = () => {
         >
           <div className={styles.contentWrapper}>
             <Typography
-              text={'Progress Observations'}
-              type={'h1'}
-              color="primary"
+              text={
+                requiresInitialReport
+                  ? 'First progress observations'
+                  : `${reportingPeriod.monthName} progress observations`
+              }
+              type={'body'}
+              weight={'bold'}
             />
             <Typography
               text={
-                reportingPeriod.monthName === 'June'
+                requiresInitialReport
+                  ? `Observe ${
+                      childUser?.firstName
+                    } and track progress by ${addDays(
+                      childInsertedDate,
+                      childRegistrationConstants.firstProgressReportPeriod
+                    ).toLocaleString('en-za', DateFormats.dayFullMonthYear)}`
+                  : reportingPeriod.monthName === 'June'
                   ? `January to June ${reportingPeriod.year}`
                   : `July to December ${reportingPeriod.year}`
               }
@@ -248,21 +286,13 @@ export const ChildProgressObservationPage: React.FC = () => {
               onButtonClick={finalizeReport}
             />
           )}
-          {isReturningUser && notStartedCategories.length > 0 && (
-            <Typography
-              text={'Not started'}
-              color={'textLight'}
-              lineHeight={'snug'}
-              type={'body'}
-              className={'ml-4 mt-2 mb-2'}
-            />
-          )}
           {notStartedCategories &&
             notStartedCategories.length > 0 &&
             notStartedCategories.map((cat: ProgressTrackingCategoryDto) => {
               return (
                 <ListItem
-                  backgroundColor={'white'}
+                  className="ml-2 mr-2 mt-1"
+                  backgroundColor={'uiBg'}
                   withPaddingX={true}
                   withPaddingY={true}
                   key={`not-started-${cat.id}`}
@@ -281,7 +311,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                   }
                   showChevronIcon
                   showDivider
-                  dividerColor={'uiBg'}
+                  dividerColor={'white'}
                   dividerType={'solid'}
                   onButtonClick={() => {
                     onCategoryNavigation(
@@ -296,7 +326,7 @@ export const ChildProgressObservationPage: React.FC = () => {
             <>
               <Typography
                 text={'Started'}
-                color={'textLight'}
+                color={'textDark'}
                 lineHeight={'snug'}
                 type={'body'}
                 className={'ml-4 mt-2 mb-2'}
@@ -304,7 +334,8 @@ export const ChildProgressObservationPage: React.FC = () => {
               {inProgressCategories.map((cat: ProgressTrackingCategoryDto) => {
                 return (
                   <ListItem
-                    backgroundColor={'white'}
+                    className="ml-2 mr-2 mt-1"
+                    backgroundColor={'uiBg'}
                     withPaddingX={true}
                     withPaddingY={true}
                     key={`started-${cat.id}`}
@@ -315,7 +346,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                     subTitle={capitalizeFirstLetter(cat.subTitle.toLowerCase())}
                     showChevronIcon
                     showDivider
-                    dividerColor={'uiBg'}
+                    dividerColor={'white'}
                     dividerType={'solid'}
                     onButtonClick={() => {
                       onCategoryNavigation(
@@ -328,56 +359,14 @@ export const ChildProgressObservationPage: React.FC = () => {
               })}
             </>
           )}
-          {isReturningUser && completedCategories.length > 0 && (
-            <div className={'px-4'}>
-              <Typography
-                text={'Completed'}
-                color={'textLight'}
-                lineHeight={'snug'}
-                type={'body'}
-                className={'mt-4 mb-2'}
-              />
-              {completedCategories.map((cat: ProgressTrackingCategoryDto) => {
-                const categoryFromReport = getCategoryFromCurrentReport(
-                  cat.id,
-                  report
-                );
-
-                return (
-                  <ObservationCategoryCard
-                    key={`completed-${cat.id}`}
-                    className={'mt-4'}
-                    categoryName={cat.name}
-                    categoryColour={cat.color}
-                    isCompetentWithCategory={
-                      [
-                        ProgressTrackingLevels.LevelThree,
-                        ProgressTrackingLevels.LevelTwo,
-                      ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
-                      !categoryFromReport?.supportingTask
-                    }
-                    levelId={categoryFromReport?.achievedLevelId || 0}
-                    childName={`${childUser?.firstName} ${childUser?.surname}`}
-                    helpingSkillId={
-                      categoryFromReport?.supportingTask?.taskId || 0
-                    }
-                    toDoNote={
-                      categoryFromReport?.supportingTask?.todoText || ''
-                    }
-                    onEdit={() =>
-                      onCategoryNavigation(
-                        cat.id,
-                        ChildProgressObservationStatus.Completed
-                      )
-                    }
-                  />
-                );
-              })}
-            </div>
-          )}
+          <div>
+            <Divider dividerType={'dashed'} className="m-2" />
+          </div>
           {!reportNote && (
             <ListItem
               key="notes"
+              titleColor="textDark"
+              subTitleColor="textDark"
               backgroundColor={'transparent'}
               withPaddingX={true}
               withPaddingY={true}
@@ -400,11 +389,75 @@ export const ChildProgressObservationPage: React.FC = () => {
               className={'m-4'}
             />
           )}
+          {isReturningUser && completedCategories.length > 0 && (
+            <div className="mr-2 ml-2 mt-3">
+              <Button
+                onClick={() => setHideCompletedSection(!hideCompletedSection)}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+              >
+                {renderIcon('EyeIcon', classNames('h-5 w-5 text-white'))}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text={`${
+                    hideCompletedSection ? 'Show' : 'Hide'
+                  } completed sections`}
+                  color="white"
+                />
+              </Button>
+            </div>
+          )}
+          {isReturningUser &&
+            completedCategories.length > 0 &&
+            !hideCompletedSection && (
+              <div className={'px-4'}>
+                {completedCategories.map((cat: ProgressTrackingCategoryDto) => {
+                  const categoryFromReport = getCategoryFromCurrentReport(
+                    cat.id,
+                    report
+                  );
+
+                  return (
+                    <ObservationCategoryCard
+                      key={`completed-${cat.id}`}
+                      className={'mt-4'}
+                      categoryName={cat.name}
+                      categoryColour={cat.color}
+                      isCompetentWithCategory={
+                        [
+                          ProgressTrackingLevels.LevelThree,
+                          ProgressTrackingLevels.LevelTwo,
+                        ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
+                        !categoryFromReport?.supportingTask
+                      }
+                      levelId={categoryFromReport?.achievedLevelId || 0}
+                      childName={`${childUser?.firstName} ${childUser?.surname}`}
+                      helpingSkillId={
+                        categoryFromReport?.supportingTask?.taskId || 0
+                      }
+                      toDoNote={
+                        categoryFromReport?.supportingTask?.todoText || ''
+                      }
+                      onEdit={() =>
+                        onCategoryNavigation(
+                          cat.id,
+                          ChildProgressObservationStatus.Completed
+                        )
+                      }
+                    />
+                  );
+                })}
+              </div>
+            )}
           {!isComplete && (
             <div className={'mt-4 px-4'}>
               <Alert
                 type={'info'}
-                title="Each child is unique!"
+                title="Remember, each child is unique!"
+                messageColor="textDark"
                 message="Observe children carefully to see what they can do."
               />
             </div>

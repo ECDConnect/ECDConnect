@@ -172,7 +172,6 @@ export const ChildBirthCertificateForm: React.FC<
             ></Typography>
             <div>
               <Dropdown
-                showSearch
                 placeholder="Tap to choose a document"
                 list={birthDocumentationDropdownOptions}
                 selectedValue={selectedBirthDocumentType}

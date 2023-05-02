@@ -1,13 +1,16 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ECDLink.Security.Extensions;
-using ECDLink.Core.SystemSettings.SystemOptions;
 
 namespace ECDLink.Core.Services
 {
@@ -18,6 +21,12 @@ namespace ECDLink.Core.Services
         private string _applicationUserId;
         private readonly ISystemSetting<IncomeStatementSubmitStartOptions> _submitStartDate;
         private readonly ISystemSetting<IncomeStatementSubmitEndOptions> _submitEndDate;
+        private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
+        private IGenericRepository<StatementsExpenses, Guid> _statementsExpensesRepo;
+        private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
+        private IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
+        private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
+        private IGenericRepository<Child, Guid> _childRepo;
 
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
@@ -29,6 +38,13 @@ namespace ECDLink.Core.Services
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _submitStartDate = submitStartDate;
             _submitEndDate = submitEndDate;
+
+            _statementsExpenseTypeRepo = _repoFactory.CreateGenericRepository<StatementsExpenseType>(userContext: _applicationUserId);
+            _statementsExpensesRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
+            _statementsIncomeTypeRepo = _repoFactory.CreateGenericRepository<StatementsIncomeType>(userContext: _applicationUserId);
+            _statementsIncomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
+            _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
+            _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
         }
 
         #region Statement Queries
@@ -376,6 +392,161 @@ namespace ECDLink.Core.Services
                 isStatementSubmitted = true;
             }
             return isStatementSubmitted;
+        }
+
+        public List<StatementsExpenseType> GetAllStatementExpenseTypes(string userId, int year, int month)
+        {
+            // Only return types linked to expenses for params
+            return 
+            (
+                from statementsExpenses in _statementsExpensesRepo.GetAll().Where(y => string.Equals(y.UserId, userId) && y.IsActive == true && y.DatePaid.Year.Equals(year) && y.DatePaid.Month.Equals(month) && y.Submitted.Equals(true))
+                join statementExpenseType in _statementsExpenseTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsExpenses.ExpenseTypeId equals statementExpenseType.Id.ToString()
+                select statementExpenseType
+            ).Distinct().ToList();
+        }
+
+        public List<IncomeExpensePDFDataModel> GetAllStatementsExpensesForType(string userId, int year, int month, string expenseTypeId)
+        {
+            List<StatementsExpenses> expenseRows = _statementsExpensesRepo.GetAll()
+                    .Where(x => string.Equals(x.UserId, userId)
+                        && x.IsActive == true
+                        && x.DatePaid.Year.Equals(year)
+                        && x.DatePaid.Month.Equals(month)
+                        && string.Equals(x.ExpenseTypeId, expenseTypeId)
+                        && x.Submitted.Equals(true))
+                    .ToList();
+
+            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
+            var invoiceNr = 1;
+            foreach (var expense in expenseRows)
+            {
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = expense.Notes;
+                result.Date = expense.DatePaid;
+                result.Amount = expense.Amount;
+                result.PhotoProof = expense.PhotoProof;
+                result.InvoiceNr = invoiceNr;
+                results.Add(result);
+                invoiceNr++;
+            }
+            return results;
+        }
+
+        public List<StatementsIncomeType> GetAllStatementIncomeTypes(string userId, int year, int month)
+        {
+            // Only return types linked to incomes for params
+            return
+            (
+                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
+                join statementIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.IncomeTypeId equals statementIncomeType.Id.ToString()
+                select statementIncomeType
+            ).Distinct().ToList();
+        }
+
+        public List<StatementsContributionType> GetAllStatementContributionTypes(string userId, int year, int month)
+        {
+            // Only return types linked to incomes for params
+            return
+            (
+                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
+                join statementContributionType in _statementsContributionTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.ContributionTypeId equals statementContributionType.Id.ToString()
+                select statementContributionType
+            ).Distinct().ToList();
+        }
+
+        public List<IncomeExpensePDFDataModel> getMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
+        {
+            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
+                        && x.DateReceived.Year.Equals(year)
+                        && x.DateReceived.Month.Equals(month)
+                        && x.Submitted.Equals(true)
+                        && x.IncomeTypeId == preschoolFeeId
+                        && x.ContributionTypeId == moneyId)
+                    .ToList();
+
+            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
+            foreach (var income in incomeRows)
+            {
+                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = income.Notes;
+                result.Date = income.DateReceived;
+                result.Amount = income.Amount;
+                result.PhotoProof = income.PhotoProof;
+                result.Child = child?.FirstName + " " + child?.Surname;
+                results.Add(result);
+            }
+            return results;
+        }
+
+        public List<IncomeExpensePDFDataModel> getNonMonetaryContributions(string userId, int year, int month, string preschoolFeeId, string moneyId)
+        {
+            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
+                        && x.DateReceived.Year.Equals(year)
+                        && x.DateReceived.Month.Equals(month)
+                        && x.Submitted.Equals(true)
+                        && x.IncomeTypeId == preschoolFeeId
+                        && x.ContributionTypeId != moneyId)
+                    .ToList();
+
+            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
+            foreach (var income in incomeRows)
+            {
+                var child = _childRepo.GetAll().Where(x => x.Id.ToString() == income.ChildUserId).Select(x => x.User).FirstOrDefault();
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = income.Notes;
+                result.Date = income.DateReceived;
+                result.Amount = income.Amount;
+                result.PhotoProof = income.PhotoProof;
+                result.Child = child?.FirstName + " " + child?.Surname;
+                results.Add(result);
+            }
+            return results;
+        }
+
+        public List<IncomeExpensePDFDataModel> getSubsidiesDonationsContributions(string userId, int year, int month, string otherId, List<StatementsIncomeType> incomeTypes)
+        {
+            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true 
+                        && x.DateReceived.Year.Equals(year) 
+                        && x.DateReceived.Month.Equals(month) 
+                        && x.Submitted.Equals(true) 
+                        && x.IncomeTypeId != otherId)
+                    .ToList();
+
+            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
+            foreach (var income in incomeRows)
+            {
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = income.Notes;
+                result.Date = income.DateReceived;
+                result.Amount = income.Amount;
+                result.PhotoProof = income.PhotoProof;
+                result.Type = incomeTypes.Where(x => x.Id.ToString() == income.IncomeTypeId).Select(y => y.Description).FirstOrDefault();
+                results.Add(result);
+            }
+            return results;
+
+        }
+        public List<IncomeExpensePDFDataModel> getOtherIncome(string userId, int year, int month, string otherId)
+        {
+            List<StatementsIncome> incomeRows = _statementsIncomeRepo.GetAll()
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true) && x.IncomeTypeId.Equals(otherId))
+                    .ToList();
+
+            List<IncomeExpensePDFDataModel> results = new List<IncomeExpensePDFDataModel>();
+            foreach (var income in incomeRows)
+            {
+                var result = new IncomeExpensePDFDataModel();
+                result.Description = income.Notes;
+                result.Date = income.DateReceived;
+                result.Amount = income.Amount;
+                result.PhotoProof = income.PhotoProof;
+                results.Add(result);
+            }
+            return results;
         }
 
         #endregion

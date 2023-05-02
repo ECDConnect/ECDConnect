@@ -15,10 +15,7 @@ import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { differenceInDays } from 'date-fns';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
-import { useParams } from 'react-router';
-import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const ImmunisationsSupplementsDewormingStep = ({
@@ -46,8 +43,6 @@ export const ImmunisationsSupplementsDewormingStep = ({
     { text: 'No', value: false },
   ];
 
-  const { visitId } = useParams<InfantProfileParams>();
-
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
@@ -60,9 +55,7 @@ export const ImmunisationsSupplementsDewormingStep = ({
 
   const visitSection = 'Immunisations, supplements & deworming';
 
-  const isFirstVisit = useSelector((state: RootState) =>
-    getIsInfantFirstVisitSelector(state, visitId)
-  );
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
 
   const is6Week = ageDays >= 49 && ageDays <= 56;
   const is10Week = ageDays >= 57 && ageMonths <= 3;
@@ -140,18 +133,23 @@ export const ImmunisationsSupplementsDewormingStep = ({
         (item) => item.answer === undefined
       ).length;
 
+      const questionsCount = [
+        isImmunisationQuestion,
+        isVitaminAQuestion,
+        isDewormingQuestion,
+      ].filter((item) => !!item).length;
+
       if (
-        (undefinedAnswersCount === 2 &&
-          !isVitaminAQuestion &&
-          !isDewormingQuestion) ||
-        (undefinedAnswersCount === 1 && !isDewormingQuestion) ||
-        undefinedAnswersCount === 0
+        (questionsCount === 1 && undefinedAnswersCount === 2) ||
+        (questionsCount === 2 && undefinedAnswersCount === 1) ||
+        (questionsCount === 3 && undefinedAnswersCount === 0)
       ) {
         setEnableButton?.(true);
       }
     },
     [
       isDewormingQuestion,
+      isImmunisationQuestion,
       isVitaminAQuestion,
       questions,
       setEnableButton,

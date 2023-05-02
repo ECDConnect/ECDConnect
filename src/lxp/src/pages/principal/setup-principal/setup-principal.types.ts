@@ -27,4 +27,5 @@ export type OnNext = React.Dispatch<
 
 export type RegisterPractitioner = AddPractitionerModel & {
   isRegistered?: boolean;
+  isTrainee?: boolean;
 };

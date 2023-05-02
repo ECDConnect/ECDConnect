@@ -5,10 +5,12 @@ import { RootState, ThunkApiType } from '../types';
 import {
   MutationUpdatePractitionerRegisteredArgs,
   PractitionerInput,
+  MutationUpdatePractitionerProgressArgs,
 } from '@ecdlink/graphql';
 
 export const practitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
+  UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -195,6 +197,30 @@ export const updatePractitionerRegistered = createAsyncThunk<
         await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerRegistered(id, input.status);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerProgress = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerProgressArgs,
+  ThunkApiType<RootState>
+>(
+  practitionerActions.UPDATE_PRACTITIONER_PROGRESS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+
+    try {
+      if (userAuth?.auth_token && id) {
+        await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerProgress(id, input.progress);
       }
     } catch (err) {
       return rejectWithValue(err);

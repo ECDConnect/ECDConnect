@@ -16,6 +16,7 @@ import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
+  ReportTableDataDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -27,6 +28,10 @@ import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
+import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
+import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
+import { setDate } from 'date-fns';
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -60,11 +65,14 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [offlineExpenses]);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
+  const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
+
   const submittedIncome = useMemo(
     () => income?.filter((item) => item?.submitted === true),
     [income]
   );
+
   const today = new Date();
 
   const isSameMonth =
@@ -74,6 +82,8 @@ export const MonthStatementsDetails: React.FC = () => {
     () => expenses?.filter((item) => item?.submitted === true),
     [expenses]
   );
+
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -159,6 +169,10 @@ export const MonthStatementsDetails: React.FC = () => {
   const [otherExpenseValues, setOtherExpenseValues] = useState<any>([]);
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
+
+  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
+  const enableDownload = lastDayToSubmit < today;
+  const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -275,6 +289,15 @@ export const MonthStatementsDetails: React.FC = () => {
         userAuth?.auth_token!
       ).allStatementsExpenses(userAuth?.id!, statementMonth, statementYear);
 
+      const report = await new IncomeStatementsService(
+        userAuth?.auth_token!
+      ).getMonthsIncomeExpensesReport(
+        userAuth?.id!,
+        statementMonth,
+        statementYear
+      );
+
+      setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
     };
@@ -420,6 +443,39 @@ export const MonthStatementsDetails: React.FC = () => {
     },
   ];
 
+  const footer = [
+    'Total',
+    '', // Placeholder for Day 2 column
+  ];
+
+  const tableTopContent = {
+    pageTitle: `Income Statement`,
+    subtitle: '',
+    //column2 with 3 rows of text
+    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_column_two_row_two: `Phone: ${practitioner?.user?.phoneNumber}`,
+    text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
+  };
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 8,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+
   return (
     <>
       <BannerWrapper
@@ -517,16 +573,24 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-8/12 text-right"
             />
           </Card>
-          <Button
-            shape="normal"
-            color="primary"
-            type="filled"
-            icon="DocumentDownloadIcon"
-            onClick={() => {}}
-            className="mt-6 rounded-2xl"
-          >
-            <Typography type="help" color="white" text="Download" />
-          </Button>
+          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+            {enableDownload && isIncomeSubmitted && (
+              <GeneratePdfReportButton
+                component="income-statements"
+                title="Download Statement"
+                outputName={`${getMonthName(
+                  Number(statementMonth) - 1
+                )}-income-statement-report.pdf`}
+                tableFooter={footer}
+                tableData={pdfReportData}
+                content={tableTopContent}
+                tableHeadStyles={tableHeadStyles}
+                tableFootStyles={tableFootStyles}
+                tableStyles={tableStyles}
+                pageOriantations={'portrait'}
+              />
+            )}
+          </div>
         </div>
       </BannerWrapper>
       <Dialog

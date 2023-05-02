@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
 import { DocumentDto, FileReturnModel, Config } from '@ecdlink/core';
-import { DocumentInput } from '@ecdlink/graphql';
+import { Document, DocumentInput } from '@ecdlink/graphql';
 class DocumentService {
   _accessToken: string;
 
@@ -47,6 +47,47 @@ class DocumentService {
     }
 
     return response.data.data.GetAllDocument;
+  }
+
+  async getDocumentsForHCW(userId: string): Promise<Document[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { documentsForHCW: Document[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetDocumentsForHCW($createdUserId: String) {
+        documentsForHCW (createdUserId: $createdUserId){
+          id
+          isActive
+          user {
+            id
+            firstName
+            surname
+          }
+          userId
+          reference
+          name
+          workflowStatusId
+          documentTypeId
+          documentType {
+              id
+              name
+              description
+          }
+        }
+      }
+      `,
+      variables: {
+        createdUserId: userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Getting Documents failed - Server connection error');
+    }
+
+    return response.data.data.documentsForHCW;
   }
 
   async updateDocument(id: string, input: DocumentInput): Promise<boolean> {

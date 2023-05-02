@@ -118,6 +118,7 @@ export const ChildProfile: React.FC = () => {
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
+
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -218,6 +219,24 @@ export const ChildProfile: React.FC = () => {
     const profileOptionsCopy = [...profileOptions];
 
     profileOptionsCopy.unshift({
+      key: 'progress',
+      title: 'Progress',
+      subTitle: 'See observations & reports',
+      buttonType: 'outlined',
+      buttonIcon: 'EyeIcon',
+      buttonText: 'View',
+      buttonTextColor: 'secondary',
+      buttonColor: 'secondaryAccent2',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+      onButtonClick: () => {
+        viewChildProgressObservationReports();
+      },
+    });
+
+    profileOptionsCopy.unshift({
       key: 'attendance-record',
       title: 'Attendance Record',
       buttonType: 'outlined',
@@ -257,6 +276,28 @@ export const ChildProfile: React.FC = () => {
         },
       });
     }
+
+    profileOptionsCopy.push({
+      key: 'class',
+      title: 'Class',
+      subTitle: `${playGroup?.name}`,
+      buttonType: 'filled',
+      buttonIcon: 'PencilIcon',
+      buttonText: 'Edit',
+      buttonTextColor: 'white',
+      buttonColor: 'primary',
+      showButton: true,
+      showDivider: true,
+      dividerType: 'dashed',
+      withPaddingY: true,
+      onButtonClick: () => {
+        history.push(ROUTES.CHILD.INFORMATION.EDIT, {
+          childId,
+          isFromEditClass: true,
+          playgroupEdit: true,
+        });
+      },
+    });
 
     const noteOption = getNoteProfileOption();
     profileOptionsCopy.push(noteOption);
@@ -535,7 +576,7 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM)}
+        onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
         displayOffline={!isOnline}
       >
         <div className={styles.avatarWrapper}>

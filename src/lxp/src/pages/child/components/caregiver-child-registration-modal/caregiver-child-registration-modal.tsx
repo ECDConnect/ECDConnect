@@ -4,19 +4,26 @@ import { ChildBasicInfoModel } from '@schemas/child/child-registration/child-bas
 interface CaregiverChildRegistrationModalProps extends ComponentBaseProps {
   caregiverUrl: string;
   childDetails: Omit<ChildBasicInfoModel, 'playgroupId'>;
+  couldCopyToClipboard: boolean;
   onSubmit: () => void;
   onCancel: () => void;
 }
 
 export const CaregiverChildRegistrationModal: React.FC<
   CaregiverChildRegistrationModalProps
-> = ({ childDetails, caregiverUrl, onSubmit, onCancel }) => {
+> = ({
+  childDetails,
+  caregiverUrl,
+  couldCopyToClipboard,
+  onSubmit,
+  onCancel,
+}) => {
   return (
     <ActionModal
-      icon="CheckCircleIcon"
-      iconBorderColor="successBg"
-      iconColor="successMain"
-      title="Link Copied"
+      icon={couldCopyToClipboard ? 'CheckCircleIcon' : 'InformationCircleIcon'}
+      iconBorderColor={couldCopyToClipboard ? 'successBg' : 'alertBg'}
+      iconColor={couldCopyToClipboard ? 'successMain' : 'infoMain'}
+      title={couldCopyToClipboard ? 'Link Copied' : 'Please Copy Link'}
       paragraphs={[
         `You can send this link to ${childDetails.firstName}'s caregiver by pasting it in WhatsApp or in an SMS.`,
         `You can also access this link on ${childDetails.firstName}'s profile.`,

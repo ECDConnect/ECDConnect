@@ -281,6 +281,8 @@ class Visit {
             question
             questionAnswer
             visit {
+              id
+              orderDate
               plannedVisitDate
             }
           }
