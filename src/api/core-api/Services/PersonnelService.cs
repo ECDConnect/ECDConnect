@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -17,6 +18,13 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private IGenericRepository<Practitioner, Guid> _practiGenericRepo;
+        private IGenericRepository<Practitioner, Guid> _practiRepo;
+        private IGenericRepository<ClassroomGroup, Guid> _classGroupRepo;
+        private IGenericRepository<Classroom, Guid> _classRepo;
+        private IGenericRepository<SiteAddress, Guid> _addressRepo;
+        private IGenericRepository<ProgrammeType, Guid> _programmeRepo;
+        private IGenericRepository<Child, Guid> _childRepo;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -25,31 +33,37 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+
+            _practiGenericRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            _practiRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
+            _classGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
+            _classRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
+            _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
+            _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
+            _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
         }
 
 
         #region Practitioners
         public List<Practitioner> GetPractitionerPeers(string practitionerId)
         {
-            var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-
             List<Practitioner> peers = new List<Practitioner>();
-            Practitioner practitioner = practiRepo.GetByUserId(practitionerId.ToString());
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId.ToString());
             if (practitioner != null)
             {
                 if (practitioner.PrincipalHierarchy.HasValue || (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true))
                 {
-                    peers = practiRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practitioner.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(practitionerId) : x.UserId.Equals(practitionerId)).ToList();
+                    peers = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.HasValue ? x.PrincipalHierarchy.Equals(practitioner.PrincipalHierarchy) : x.IsPrincipal == true ? x.UserId.Equals(practitionerId) : x.UserId.Equals(practitionerId)).ToList();
                     //also add principal
                     if (practitioner.IsPrincipal == true || practitioner.IsFundaAppAdmin == true)
                     {
-                        Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.UserId.ToString());
+                        Practitioner practiPrincipal = _practiGenericRepo.GetByUserId(practitioner.UserId.ToString());
                         if (practiPrincipal != null && !peers.Contains(practiPrincipal))
                         {
                             peers.Add(practiPrincipal);
                         }
                         //now add principal's practitioners
-                        List<Practitioner> practiList = practiRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
                         if (practiList != null)
                         {
                             foreach (Practitioner practi in practiList)
@@ -63,7 +77,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (practitioner.PrincipalHierarchy.HasValue)
                     {
-                        List<Practitioner> practiList = practiRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
+                        List<Practitioner> practiList = _practiGenericRepo.GetAll().Where(x => string.Equals(x.PrincipalHierarchy.ToString(), practitioner.UserId)).ToList();
                         if (practiList != null)
                         {
                             foreach (Practitioner practi in practiList)
@@ -74,7 +88,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                                 }
                             }
                             //add principal
-                            Practitioner practiPrincipal = practiRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
+                            Practitioner practiPrincipal = _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
                             if (practiPrincipal != null && !peers.Contains(practiPrincipal))
                             {
                                 peers.Add(practiPrincipal);
@@ -93,67 +107,58 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public List<Child> GetAllChildrenForPractitioner(
         string practitionerId)
         {
-            var practiRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            Practitioner practitioner = practiRepo.GetByUserId(practitionerId);
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
-                var childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
-                var children = childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
                 return children;
             }
             else return new List<Child>();
         }
 
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId)
-        {
-            var classRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
-            return classRepo.GetListByUserId(practitionerId.ToString());
+        {            
+            return _classGroupRepo.GetListByUserId(practitionerId.ToString());
         }
 
         public List<Classroom> GetAllClassroomsForPractitioner(string userIdOfPractitioner)
         {
-            var classRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-            return classRepo.GetListByUserId(userIdOfPractitioner);
+            return _classRepo.GetListByUserId(userIdOfPractitioner);
         }
 
         public PrincipalClassroom GetClassroomDetailsForPractitioner(
     string userId)
-        {
-            var classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
-            var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-            var ptypeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
-            var practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
+        {                       
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
-            var practitioner = practitionerRepo.GetByUserId(userId);
+            var practitioner = _practiGenericRepo.GetByUserId(userId);
             if (practitioner != null)
             {
-                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin ? practitioner : practitionerRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
+                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin ? practitioner : _practiGenericRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
                 if (principal != null)
                 {
                     principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
-                    ClassroomGroup classroomGroup = classroomGroupRepo.GetByUserId(userId);
+                    ClassroomGroup classroomGroup = _classGroupRepo.GetByUserId(userId);
                     Classroom classroom = null;
 
                     if (classroomGroup != null)
                     {
-                        classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
+                        classroom = _classRepo.GetById(classroomGroup.ClassroomId);
                         principalClassroom.ClassroomGroupName = classroomGroup.Name;
                         principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
-                        ProgrammeType ptype = ptypeRepo.GetAll().Where(p => p.Id.Equals(classroomGroup.ProgrammeTypeId)).FirstOrDefault();
+                        ProgrammeType ptype = _programmeRepo.GetAll().Where(p => p.Id.Equals(classroomGroup.ProgrammeTypeId)).FirstOrDefault();
                         principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
                     }
                     else
                     {
                         //if no classroomgroup is available to look at, use the classroom for principal
-                        classroom = classroomRepo.GetByUserId(principal.UserId);
+                        classroom = _classRepo.GetByUserId(principal.UserId);
                     }
                     principalClassroom.Name = classroom.Name;
                     principalClassroom.Id = classroom.Id.ToString();
                     principalClassroom.InsertedDate = classroom.InsertedDate;
                     if (classroom.SiteAddressId != null)
                     {
-                        var addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
-                        SiteAddress classAddress = addressRepo.GetById((Guid)classroom.SiteAddressId);
+                        SiteAddress classAddress = _addressRepo.GetById((Guid)classroom.SiteAddressId);
                         principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
                     }
                 }
@@ -162,9 +167,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         }
 
         public List<Practitioner> GetAllPractitionersForPrincipal(string userId)
-        {
-            var principalRepo = _repoFactory.CreateRepository<Practitioner>(userContext: _applicationUserId);
-            List<Practitioner> practitioners = principalRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+        {            
+            List<Practitioner> practitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
 
             return practitioners;
         }
@@ -172,17 +176,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public string GetSiteNameForPractitioner(string userId)
         {
             string siteName = "N/A";
-            var classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
-            var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
-
-            var classroomgroup = classroomGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).FirstOrDefault();
+            var classroomgroup = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).FirstOrDefault();
             if (classroomgroup != null) //principals and practitioners are assigned to classroom groups
             {
-                siteName = classroomRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).OrderBy(x => x.Id).Select(x => x.Name).FirstOrDefault();
+                siteName = _classRepo.GetAll().Where(x => x.Id.Equals(classroomgroup.ClassroomId)).OrderBy(x => x.Id).Select(x => x.Name).FirstOrDefault();
             }
-            else //only principals/FAA are assigfne dto classrooms only
+            else //only principals/FAA are assigned to classrooms only
             {
-                siteName = classroomRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).Select(y => y.Name).FirstOrDefault();
+                siteName = _classRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).Select(y => y.Name).FirstOrDefault();
             }
 
             return siteName;
