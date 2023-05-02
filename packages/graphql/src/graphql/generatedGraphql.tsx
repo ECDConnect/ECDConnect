@@ -549,6 +549,7 @@ export type CategoryTask = {
   description?: Maybe<Scalars['String']>;
   levelId: Scalars['Int'];
   skillId: Scalars['Int'];
+  value?: Maybe<Scalars['String']>;
 };
 
 export type Child = {
@@ -5001,6 +5002,21 @@ export type PractitionerMetricReport = {
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
 };
 
+export type PractitionerReportDetails = {
+  __typename?: 'PractitionerReportDetails';
+  classSiteAddress?: Maybe<Scalars['String']>;
+  classroomGroupId?: Maybe<Scalars['String']>;
+  classroomGroupName?: Maybe<Scalars['String']>;
+  id?: Maybe<Scalars['String']>;
+  idNumber?: Maybe<Scalars['String']>;
+  insertedDate: Scalars['DateTime'];
+  name?: Maybe<Scalars['String']>;
+  phone?: Maybe<Scalars['String']>;
+  principalName?: Maybe<Scalars['String']>;
+  programmeDays?: Maybe<Scalars['String']>;
+  programmeTypeName?: Maybe<Scalars['String']>;
+};
+
 export type PractitionerUserAndNote = {
   __typename?: 'PractitionerUserAndNote';
   appUser?: Maybe<ApplicationUser>;
@@ -5050,12 +5066,14 @@ export type PrincipalFilterDocumentsByTypeArgs = {
 
 export type PrincipalClassroom = {
   __typename?: 'PrincipalClassroom';
+  classSiteAddress?: Maybe<Scalars['String']>;
   classroomGroupId?: Maybe<Scalars['String']>;
   classroomGroupName?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   insertedDate: Scalars['DateTime'];
   name?: Maybe<Scalars['String']>;
   principalName?: Maybe<Scalars['String']>;
+  programmeTypeName?: Maybe<Scalars['String']>;
 };
 
 export type PrincipalFilterInput = {
@@ -5366,11 +5384,13 @@ export type ProgressTrackingSkill = {
   id?: Maybe<Scalars['Int']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
+  value?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSkillInput = {
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  value?: InputMaybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSubCategory = {
@@ -5753,6 +5773,7 @@ export type Query = {
   referralsForVisitId?: Maybe<Array<Maybe<VisitDataStatus>>>;
   removeHolidays?: Maybe<Array<Scalars['DateTime']>>;
   removeWeekendDays?: Maybe<Array<Scalars['DateTime']>>;
+  reportDetailsForPractitioner?: Maybe<PractitionerReportDetails>;
   roleForUser?: Maybe<Scalars['String']>;
   roles?: Maybe<Array<Maybe<IdentityRole>>>;
   settings?: Maybe<SettingsType>;
@@ -7077,6 +7098,10 @@ export type QueryRemoveHolidaysArgs = {
 
 export type QueryRemoveWeekendDaysArgs = {
   days?: InputMaybe<Array<Scalars['DateTime']>>;
+};
+
+export type QueryReportDetailsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryRoleForUserArgs = {

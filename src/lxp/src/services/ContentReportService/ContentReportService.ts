@@ -212,6 +212,7 @@ class ContentReportService {
               description
               levelId
               skillId
+              value
             }
             supportingTask {
               taskDescription
@@ -222,6 +223,7 @@ class ContentReportService {
               description
               levelId
               skillId
+              value
             }
           }
           childId

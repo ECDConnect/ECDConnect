@@ -1,10 +1,4 @@
-import {
-  BannerWrapper,
-  Button,
-  Divider,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './progress-tracking-category.styles';
 import { useSelector } from 'react-redux';
@@ -122,9 +116,7 @@ export const ProgressObservationCategory = () => {
             text={category?.description || ''}
           />
 
-          <div className={styles.spaceTop}>
-            <Divider />
-          </div>
+          <div className={styles.spaceTop}></div>
           <Button
             id="gtm-progress-tracking"
             color={'primary'}
