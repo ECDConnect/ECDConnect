@@ -5,7 +5,7 @@ using System;
 namespace ECDLink.DataAccessLayer.Entities
 {
     [EntityPermission(PermissionGroups.CLASSROOM)]
-    public class PrincipalClassroom
+    public class PractitionerReportDetails
     {
         public string PrincipalName { get; set; }
 
@@ -15,9 +15,16 @@ namespace ECDLink.DataAccessLayer.Entities
 
         public string Id { get; set; }
 
+        public string IdNumber { get; set; }
+
         public string ClassroomGroupId { get; set; }
 
         public DateTime InsertedDate { get; set; }
+
         public string ProgrammeTypeName { get; set; }
+
+        public string ProgrammeDays { get; set; }
+
+        public string Phone { get; set;}
     }
 }

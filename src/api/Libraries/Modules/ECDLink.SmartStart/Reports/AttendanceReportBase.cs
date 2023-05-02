@@ -25,6 +25,9 @@ namespace ECDLink.SmartStart.Reports
         {
             var holidays = _holidayService.GetHolidays(startMonth, endMonth, "en-za").ToList();
 
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
+
             var datesBetween = startMonth.DaysBetween(endMonth);
 
             return RemoveHolidays(datesBetween, holidays);
@@ -75,7 +78,8 @@ namespace ECDLink.SmartStart.Reports
                 }
             }
 
-            var actualEnd = actualStart.GetEndOfMonth();
+            //if endmonth is same as current month, prevent projections and use current date as endbound - if the endbound is the same day as today (ie the 1st of month) then add 1 day
+            var actualEnd = (actualStart.Month == DateTime.Now.Month ? (actualStart.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now.Date) : actualStart.GetEndOfMonth());
             if (endBound.HasValue && endBound.Value < actualEnd)
             {
                 if (actualEnd.IsInSameMonth(endBound))
@@ -88,7 +92,7 @@ namespace ECDLink.SmartStart.Reports
                 }
             }
 
-            var monthRange = validClassdays.Where(x => x.Date >= actualStart.Date && x <= actualEnd.Date).ToList();
+            var monthRange = validClassdays.Where(x => x.Date >= actualStart.Date && x.Date <= actualEnd.Date).ToList();
 
             return monthRange.Where(x => (int)x.DayOfWeek == day).ToList();
         }
