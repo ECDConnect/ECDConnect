@@ -1,7 +1,7 @@
 import { Typography, FADButton } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
@@ -17,6 +17,7 @@ import {
   StatementsIncomeInput,
 } from '@/../../../packages/graphql/lib';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
+import { useAppContext } from '@/walkthrougContext';
 
 export const Money = () => {
   const history = useHistory();
@@ -103,9 +104,11 @@ export const Money = () => {
     }
   }, [income, expense, balanceSheet]);
 
+  const { state } = useAppContext();
+
   return (
     <>
-      {hasIncomeStatements ? (
+      {hasIncomeStatements || state?.run ? (
         <SubmitIncomeStatements />
       ) : (
         <div className="h-full pt-7">

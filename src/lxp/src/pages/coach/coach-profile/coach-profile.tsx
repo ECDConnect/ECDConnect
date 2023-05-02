@@ -20,6 +20,8 @@ import {
   TabItem,
   TabList,
 } from '@ecdlink/ui';
+import { syncThunkActions } from '@/store/sync';
+import { settingActions } from '@/store/settings';
 
 export const CoachProfile: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
@@ -31,6 +33,11 @@ export const CoachProfile: React.FC = () => {
   const dialog = useDialog();
 
   const coach = useSelector(coachSelectors.getCoach);
+
+  const sync = async () => {
+    await appDispatch(syncThunkActions.syncOfflineData({}));
+    await appDispatch(settingActions.setLastDataSync());
+  };
 
   useEffect(() => {
     if (!isOnline) {
@@ -85,7 +92,7 @@ export const CoachProfile: React.FC = () => {
       {
         title: 'Logout',
         titleStyle,
-        subTitle: 'Logout & reset data',
+        subTitle: 'Logout',
         subTitleStyle,
         menuIcon: 'LogoutIcon',
         iconColor: 'white',
@@ -109,6 +116,7 @@ export const CoachProfile: React.FC = () => {
                       colour: 'primary',
                       onClick: async () => {
                         onSubmit();
+                        await sync();
                         await resetAuth();
                         await resetAppStore();
                         history.push('/');

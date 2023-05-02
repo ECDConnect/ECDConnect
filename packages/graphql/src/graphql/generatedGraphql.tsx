@@ -549,6 +549,7 @@ export type CategoryTask = {
   description?: Maybe<Scalars['String']>;
   levelId: Scalars['Int'];
   skillId: Scalars['Int'];
+  value?: Maybe<Scalars['String']>;
 };
 
 export type Child = {
@@ -5366,11 +5367,13 @@ export type ProgressTrackingSkill = {
   id?: Maybe<Scalars['Int']>;
   level?: Maybe<Array<Maybe<ProgressTrackingLevel>>>;
   name?: Maybe<Scalars['String']>;
+  value?: Maybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSkillInput = {
   level?: InputMaybe<Scalars['String']>;
   name?: InputMaybe<Scalars['String']>;
+  value?: InputMaybe<Scalars['String']>;
 };
 
 export type ProgressTrackingSubCategory = {

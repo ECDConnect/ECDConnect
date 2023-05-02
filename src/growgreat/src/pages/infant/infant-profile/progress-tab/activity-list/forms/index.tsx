@@ -31,7 +31,6 @@ import { getReferralsForInfantSelector } from '@/store/referral/referral.selecto
 import { differenceInDays } from 'date-fns';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useParams } from 'react-router';
-import { maternalDistressVisitSection } from './care-for-mom-steps/maternal-distress-screening';
 
 interface FormProps {
   onBack: () => void;
@@ -45,6 +44,12 @@ interface FormProps {
     isChildBefore49Days: boolean;
     isNewBornCare: boolean;
     isKangarooMotherCare: boolean;
+    isDangerSignsFollowUpForMom: boolean;
+    isShowClinicCheckUps: boolean;
+    isSelfCareAndSupport: boolean;
+    isMaternalDistress: boolean;
+    isMaternalDistressFollowUp: boolean;
+    isMaternalDistressScreening: boolean;
   };
 }
 
@@ -68,11 +73,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     getInfantById(state, infantId)
   );
 
-  const isMotherCaregiver = useMemo(
-    () => infant?.caregiver?.relation?.description === 'Mother',
-    [infant?.caregiver?.relation?.description]
-  );
-
   const dateOfBirth = infant?.user?.dateOfBirth as string;
 
   const { years: ageYears, months: ageMonths } =
@@ -85,16 +85,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   );
 
   const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
-
-  const isMaternalDistress = useMemo(
-    () => isFirstVisit && ageDays >= 49 && !ageYears && ageMonths < 9,
-    [ageDays, ageMonths, ageYears, isFirstVisit]
-  );
-
-  const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
-    [ageDays, isFirstVisit, isMotherCaregiver]
-  );
 
   const isFormulaMilkHowBreastfeedingWorks = useMemo(
     () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
@@ -133,21 +123,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     [ageMonths, ageYears]
   );
 
-  const isSelfCareAndSupport = useMemo(
-    () => isFirstVisit && ageDays >= 48 && ageDays <= 57,
-    [ageDays, isFirstVisit]
-  );
-
-  const isDangerSignsFollowUpForMom = getIsFollowUp(
-    dangerSignsVisitSection,
-    activitiesTypes.careForMom
-  );
-
-  const isMaternalDistressFollowUp = getIsFollowUp(
-    maternalDistressVisitSection,
-    activitiesTypes.careForMom
-  );
-
   const nutritionAnswer = sectionQuestions
     ?.flatMap((section) => section.questions)
     .find((item) => item.question === nutritionQuestion)?.answer;
@@ -167,13 +142,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   const isPillar4FollowUp = getIsFollowUp(
     dangerSignsVisitSection,
     activitiesTypes.pillar4
-  );
-
-  const isShowClinicCheckUps = useMemo(
-    () =>
-      (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
-      (isFirstVisit && ageDays >= 49 && ageDays <= 56),
-    [ageDays, isFirstVisit]
   );
 
   const isDietFormStep = useMemo(
@@ -294,12 +262,12 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
       case activitiesTypes.careForMom:
         return getCareForMomSteps(
           stepsRules.isChildBefore49Days,
-          isDangerSignsFollowUpForMom,
-          isShowClinicCheckUps,
-          isSelfCareAndSupport,
-          isMaternalDistress,
-          isMaternalDistressFollowUp,
-          isMaternalDistressScreening
+          stepsRules.isDangerSignsFollowUpForMom,
+          stepsRules.isShowClinicCheckUps,
+          stepsRules.isSelfCareAndSupport,
+          stepsRules.isMaternalDistress,
+          stepsRules.isMaternalDistressFollowUp,
+          stepsRules.isMaternalDistressScreening
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
@@ -350,13 +318,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
-    isMaternalDistressScreening,
-    isMaternalDistress,
     activityName,
-    isDangerSignsFollowUpForMom,
-    isShowClinicCheckUps,
-    isSelfCareAndSupport,
-    isMaternalDistressFollowUp,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
     isChild6Months,

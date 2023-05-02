@@ -65,15 +65,18 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         private static void AddPhysicalDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 15).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == 686).FirstOrDefault();
 
-            if (category.MissingTasks.Any())
+            var tasks = GetCategoryTasks(category);
+            var missingTasks = GetCategoryMissingTasks(category);
+
+            if (missingTasks.Any())
             {
                 desc.Add(ChildProgressReportTags.PDText, new PdfFieldDescriptor
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextListBulletPoints,
-                    Value = category.MissingTasks.Select(x => x.Description)
+                    Value = missingTasks.Select(x => x.Description)
                 });
             }
             else
@@ -114,7 +117,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 });
             }
 
-            if (!category.Tasks.Any())
+            if (!tasks.Any())
             {
                 desc.Add(ChildProgressReportTags.PDParagraphFallaback, new PdfFieldDescriptor
                 {
@@ -129,22 +132,25 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextColumnSplit,
-                    Value = category.Tasks.Select(x => x.Description)
+                    Value = tasks.Select(x => x.Description)
                 });
             }
         }
 
         private static void AddCognitiveDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 14).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == 685).FirstOrDefault();
 
-            if (category.MissingTasks.Any())
+            var tasks = GetCategoryTasks(category);
+            var missingTasks = GetCategoryMissingTasks(category);
+
+            if (missingTasks.Any())
             {
                 desc.Add(ChildProgressReportTags.CDText, new PdfFieldDescriptor
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextListBulletPoints,
-                    Value = category.MissingTasks.Select(x => x.Description)
+                    Value = missingTasks.Select(x => x.Description)
                 });
             }
             else
@@ -185,7 +191,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 });
             }
 
-            if (!category.Tasks.Any())
+            if (!tasks.Any())
             {
                 desc.Add(ChildProgressReportTags.CDParagraphFallback, new PdfFieldDescriptor
                 {
@@ -200,14 +206,14 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextColumnSplit,
-                    Value = category.Tasks.Select(x => x.Description)
+                    Value = tasks.Select(x => x.Description)
                 });
             }
         }
 
         private static void AddLanguageDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
-            var category = model.Categories.Where(x => x.CategoryId == 13).FirstOrDefault();
+            var category = model.Categories.Where(x => x.CategoryId == 686).FirstOrDefault();
 
             if (category.SupportingTask != null)
             {
@@ -237,7 +243,10 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 });
             }
 
-            if (!category.Tasks.Any())
+            var tasks = GetCategoryTasks(category);
+            var missingTasks = GetCategoryMissingTasks(category);
+
+            if (!tasks.Any())
             {
                 desc.Add(ChildProgressReportTags.LDParagraphFallback, new PdfFieldDescriptor
                 {
@@ -252,17 +261,17 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextColumnSplit,
-                    Value = category.Tasks.Select(x => x.Description)
+                    Value = tasks.Select(x => x.Description)
                 });
             }
 
-            if (category.MissingTasks.Any())
+            if (missingTasks.Any())
             {
                 desc.Add(ChildProgressReportTags.LDText, new PdfFieldDescriptor
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextListBulletPoints,
-                    Value = category.MissingTasks.Select(x => x.Description)
+                    Value = missingTasks.Select(x => x.Description)
                 });
             }
             else
@@ -275,6 +284,28 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 });
             }
         }
+
+        private static IEnumerable<CategoryTask> GetCategoryTasks(ObservationCategory category)
+        {
+            var tasks = category.Tasks.Where(x => x.Value == "Yes").ToList();
+            return tasks;
+        }
+
+        private static IEnumerable<CategoryTask> GetCategoryMissingTasks(ObservationCategory category)
+        {
+            var noTasks = category.Tasks.Where(x => x.Value != "Yes");
+            var missingTasks = new List<CategoryTask>();
+            missingTasks.AddRange(category.MissingTasks);
+            foreach (var noTask in noTasks)
+            {
+                if (missingTasks.Find(x => x.SkillId == noTask.SkillId) == null)
+                {
+                    missingTasks.Add(noTask);
+                }
+            }
+            return missingTasks;
+        }
+
 
         private static void AddSocialDevelopment(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
         {
@@ -313,7 +344,10 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 });
             }
 
-            if (!category.Tasks.Any())
+            var tasks = GetCategoryTasks(category);
+            var missingTasks = GetCategoryMissingTasks(category);
+
+            if (!tasks.Any())
             {
                 desc.Add(ChildProgressReportTags.SEDParagraphFallback, new PdfFieldDescriptor
                 {
@@ -328,17 +362,17 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextColumnSplit,
-                    Value = category.Tasks.Select(x => x.Description)
+                    Value = tasks.Select(x => x.Description)
                 });
             }
 
-            if (category.MissingTasks.Any())
+            if (missingTasks.Any())
             {
                 desc.Add(ChildProgressReportTags.SEDText, new PdfFieldDescriptor
                 {
                     IsDuplicateKey = false,
                     Type = PdfFieldTypeEnum.TextListBulletPoints,
-                    Value = category.MissingTasks.Select(x => x.Description)
+                    Value = missingTasks.Select(x => x.Description)
                 });
             }
             else

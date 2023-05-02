@@ -34,6 +34,7 @@ import { visitThunkActions } from '@/store/visit';
 import {
   getCompletedVisitsByVisitIdSelector,
   getPreviousVisitInformationForInfantSelector,
+  getVisitAnswersForInfantSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -48,6 +49,9 @@ import { differenceInDays, differenceInMonths } from 'date-fns';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
+import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
+import { clinicCheckupQuestion } from './forms/care-for-mom-steps/clinic-check-ups';
+import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -110,7 +114,8 @@ export const ActivityList: React.FC = () => {
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
-  const { months: ageMonths } = getAgeInYearsMonthsAndDays(dateOfBirth);
+  const { months: ageMonths, years: ageYears } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
   const fullAgeInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
@@ -182,6 +187,50 @@ export const ActivityList: React.FC = () => {
     [ageMonths, fullAgeInMonths, isFirstVisit]
   );
 
+  const isDangerSignsFollowUpForMom = getIsFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.careForMom
+  );
+
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+
+  const previousClinicCheckUpAnswer = previousAnswers?.find(
+    (item) => item.question === clinicCheckupQuestion
+  )?.questionAnswer;
+
+  const isShowClinicCheckUps = useMemo(
+    () =>
+      (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
+      (isFirstVisit && ageDays >= 49 && ageDays <= 56) ||
+      (Boolean(previousClinicCheckUpAnswer) === false && ageDays <= 56),
+    [ageDays, previousClinicCheckUpAnswer, isFirstVisit]
+  );
+
+  const isSelfCareAndSupport = useMemo(
+    () => isFirstVisit && ageDays >= 48 && ageDays <= 57,
+    [ageDays, isFirstVisit]
+  );
+
+  const isMaternalDistress = useMemo(
+    () => isFirstVisit && ageDays >= 49 && !ageYears && ageMonths < 9,
+    [ageDays, ageMonths, ageYears, isFirstVisit]
+  );
+
+  const isMaternalDistressFollowUp = getIsFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.careForMom
+  );
+
+  const isMotherCaregiver = useMemo(
+    () => infant?.caregiver?.relation?.description === 'Mother',
+    [infant?.caregiver?.relation?.description]
+  );
+
+  const isMaternalDistressScreening = useMemo(
+    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
+    [ageDays, isFirstVisit, isMotherCaregiver]
+  );
+
   const isDisplayPillar2 = [
     isDevelopmentalScreening,
     isDevelopmentalScreeningWeeks,
@@ -210,16 +259,18 @@ export const ActivityList: React.FC = () => {
       (item) => item.label === 'Mother'
     );
 
-    const visibleActivities = activitiesList.filter(
-      (item) =>
-        (item.id !== activitiesTypes.careForMom &&
-          item.id !== activitiesTypes.pillar4) ||
+    const visibleActivities = activitiesList.filter((item) => {
+      if (
+        (item.id === activitiesTypes.pillar4 && !isChildAfter49Days) ||
+        (item.id === activitiesTypes.pillar2 && !isDisplayPillar2) ||
+        (item.id === activitiesTypes.careForBaby && !isDisplayCareForBaby) ||
         (item.id === activitiesTypes.careForMom &&
-          infant?.caregiver?.relation?.description === motherType?.label) ||
-        (item.id === activitiesTypes.pillar4 && isChildAfter49Days) ||
-        (item.id === activitiesTypes.pillar2 && isDisplayPillar2) ||
-        (item.id === activitiesTypes.careForBaby && isDisplayCareForBaby)
-    );
+          infant?.caregiver?.relation?.description !== motherType?.label)
+      )
+        return undefined;
+
+      return item;
+    });
 
     return { visibleActivities };
   }, [
@@ -544,6 +595,12 @@ export const ActivityList: React.FC = () => {
           isDangerSignsFollowUpForBaby,
           isKangarooMotherCare,
           isNewBornCare,
+          isDangerSignsFollowUpForMom,
+          isShowClinicCheckUps,
+          isSelfCareAndSupport,
+          isMaternalDistress,
+          isMaternalDistressFollowUp,
+          isMaternalDistressScreening,
         }}
         onBack={onFormBack}
         getIsFollowUp={getIsFollowUp}
