@@ -45,7 +45,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         format(new Date(selectedDate! || programmeChooseDate), 'd MMM yyyy')
       );
     });
-  console.log({ theme });
 
   const [chooseDayIndex, setChooseDayIndex] = useState(dailyProgramme?.day);
   const disableAddDay = dailyProgramme?.day === theme?.dailyProgrammes.length;
@@ -87,6 +86,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
     }
   };
 
+  const setDayCurrentDate = () => {
+    setProgrammeChooseDate(new Date());
+    setSelectedDate(new Date());
+  };
+
   return (
     <div>
       {!weekSummary && (
@@ -108,8 +112,12 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             textColor="white"
             fillType="filled"
             labelColor="white"
+            className="w-36"
           />
-          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+          <div
+            className="bg-primary flex h-8 w-8 items-center justify-center rounded-full"
+            onClick={setDayCurrentDate}
+          >
             {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
           </div>
           <div

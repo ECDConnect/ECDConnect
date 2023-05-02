@@ -110,6 +110,22 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
           </div>
         </Card>
       );
+    }
+    if (!activity?.name) {
+      return (
+        <Card className="border-secondary w-full rounded-xl border-2 bg-white py-4 px-2">
+          <div
+            className={
+              'ml-4 flex w-full flex-row items-center justify-start gap-4'
+            }
+          >
+            <Typography type={'h1'} text={'+'} color={'secondary'} />
+            <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
+
+            {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
+          </div>
+        </Card>
+      );
     } else {
       return (
         <Card className="bg-secondary w-full rounded-xl py-4 px-2">
