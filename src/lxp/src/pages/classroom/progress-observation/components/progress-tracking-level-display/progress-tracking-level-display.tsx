@@ -6,17 +6,19 @@ export const ProgressTrackingLevelDisplay: React.FC<
 > = ({ level, className }) => {
   return (
     <div className={classNames('flex flex-1 flex-row items-center', className)}>
-      <img
-        className={'mr-1'}
-        alt={`progress-tracking-level-${level?.id}`}
-        src={level?.imageUrl}
-      />
+      {level && level.imageUrl && (
+        <img
+          className={'mr-1'}
+          alt={`progress-tracking-level-${level?.id}`}
+          src={level?.imageUrl}
+        />
+      )}
       <Typography
         type="small"
         weight="normal"
         color={'textMid'}
         text={level?.name || ''}
-        className="font-medium"
+        className="font-medium uppercase"
       />
     </div>
   );
