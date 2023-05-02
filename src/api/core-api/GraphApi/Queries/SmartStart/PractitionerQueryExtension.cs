@@ -181,6 +181,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practiManager.GetAllClassroomGroupsForPractitioner(userId);
         }
 
+        public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practi = practiRepo.GetByUserId(userId);
+            PrincipalClassroom classDetails = practiManager.GetClassroomDetailsForPractitioner(userId);
+            PractitionerReportDetails details = new PractitionerReportDetails() { 
+                ClassroomGroupId = classDetails.ClassroomGroupId, 
+                ClassroomGroupName = classDetails.ClassroomGroupName, 
+                Id = classDetails.Id, 
+                IdNumber = practi.User.IdNumber, 
+                InsertedDate = classDetails.InsertedDate, 
+                Name = practi.User.FullName, 
+                Phone = practi.User.PhoneNumber, 
+                PrincipalName = classDetails.PrincipalName, 
+                ProgrammeDays = "Monday to Friday", 
+                ProgrammeTypeName = classDetails.ProgrammeTypeName,
+                ClassSiteAddress = classDetails.ClassSiteAddress
+            };
+            return details;
+        }
+
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] PersonnelService practiManager,
