@@ -3,6 +3,7 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,6 +15,7 @@ namespace ECDLink.SmartStart.Reports
     {
         protected AuthenticationDbContext _dbContext;
         protected IHolidayService<Holiday> _holidayService;
+        private readonly IGenericRepositoryFactory _repositoryFactory;
 
         public AttendanceReportBase(IHolidayService<Holiday> holidayService, AuthenticationDbContext dbContext)
         {
@@ -26,7 +28,7 @@ namespace ECDLink.SmartStart.Reports
             var holidays = _holidayService.GetHolidays(startMonth, endMonth, "en-za").ToList();
 
             //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
-            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
+            //endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
 
             var datesBetween = startMonth.DaysBetween(endMonth);
 

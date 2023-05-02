@@ -3,6 +3,7 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,9 +14,11 @@ namespace ECDLink.SmartStart.Reports
 {
     public class MonthlyAttendanceReport : AttendanceReportBase
     {
-        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService)
+        private readonly IGenericRepositoryFactory _repositoryFactory;
+        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory)
           : base(holidayService, dbFactory.CreateDbContext())
         {
+            _repositoryFactory = repositoryFactory;
         }
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
@@ -57,7 +60,7 @@ namespace ECDLink.SmartStart.Reports
             {
                 return null;
             }
-
+            
             var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
@@ -104,7 +107,7 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = (item.Value.Sum(x => x.Item1) / 3);
+                var totalAttendance = (item.Value.Sum(x => x.Item1) / 3); //TODO: FIX THIS AT SOURCE
                 var actualAttendance = item.Value.Sum(x => x.Item2);
 
                 report.Add(new MonthlyAttendanceReportModel
