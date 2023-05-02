@@ -37,6 +37,10 @@ export interface GrowthMonitoring {
     value: 'normal' | 'severely stunted' | 'stunted';
     statusType: AlertSeverityType;
   };
+  height?: {
+    value: 'normal' | 'severely stunted' | 'stunted';
+    statusType: AlertSeverityType;
+  };
   muac?: {
     value:
       | 'normal'

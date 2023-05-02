@@ -19,6 +19,7 @@ using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -247,8 +248,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid childId,
             Guid classgroupId)
         {
+            if (childId == Guid.Empty)
+                throw new QueryException($"{nameof(childId)} cannot be empty");
+
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var child = childRepo.GetById(childId);
+            
+            if (classgroupId == Guid.Empty)
+            {
+                var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);
+                var learner = learnerRepo.GetAll().Where(x => x.UserId == child.UserId)?.FirstOrDefault();
+                classgroupId = learner.ClassroomGroupId;
+            }
 
             if (child == default)
             {

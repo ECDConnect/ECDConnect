@@ -13,6 +13,7 @@ export const GetAllProgressTrackingSkill = gql`
       subCategory {
         title
       }
+      value
     }
   }
 `;
@@ -30,6 +31,7 @@ export const GetProgressTrackingSkillId = gql`
       subCategory {
         title
       }
+      value
     }
   }
 `;

@@ -101,7 +101,12 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
       value: currentPractitioner?.userId,
     });
 
-    setPractitionersList(_list);
+    const filteredList = _list.filter(
+      (value, index, self) =>
+        index === self.findIndex((t) => t.value === value.value)
+    );
+
+    setPractitionersList(filteredList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -119,7 +124,8 @@ export const AddClassForm = ({ onSubmit }: { onSubmit: () => void }) => {
         id: classroomGroupId,
         classroomId: classroom?.id ?? '',
         name: data?.name ?? '',
-        programmeTypeId: programmeType?.id ?? '',
+        programmeTypeId:
+          programmeType?.id ?? classroomGroup?.[0]?.programmeType?.id,
         isActive: true,
         userId: data?.practitionerId,
       };

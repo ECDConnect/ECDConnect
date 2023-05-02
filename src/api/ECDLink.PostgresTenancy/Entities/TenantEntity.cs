@@ -28,8 +28,8 @@ namespace ECDLink.PostgresTenancy.Entities
         public string Var2 { get; set; }
         public string TestSiteAddress { get; set; }
         public string AdminTestSiteAddress { get; set; }
-
         public string MoodleUrlVar { get; set; }
+        public string MoodleConfigVar { get; set; }
 
     }
 }

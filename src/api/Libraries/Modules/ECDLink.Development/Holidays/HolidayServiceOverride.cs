@@ -18,7 +18,7 @@ namespace ECDLink.Development.Holidays
                 $"April 07, {DateTime.Now.Year}",
                 $"April 10, {DateTime.Now.Year}",
                 $"April 27, {DateTime.Now.Year}",
-                $"May 01, {DateTime.Now.Year}",
+              //  $"May 01, {DateTime.Now.Year}",
                 $"June 16, {DateTime.Now.Year}",
                 $"August 09, {DateTime.Now.Year}",
                 $"September 24, {DateTime.Now.Year}",

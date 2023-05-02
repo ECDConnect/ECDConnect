@@ -30,6 +30,7 @@ class Referral {
             isCompleted
             insertedDate
             visitData {
+              id
               visitName
               visitSection
               question
@@ -138,6 +139,9 @@ class Referral {
               visitName
               visitSection
               question
+              visit {
+                orderDate
+              }
             }
             backReferral {
               id

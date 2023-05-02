@@ -1,7 +1,7 @@
 import { Document } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getDocuments } from './document.actions';
+import { getDocuments, getDocumentsForHCW } from './document.actions';
 import { DocumentState } from './document.types';
 
 const initialState: DocumentState = {
@@ -46,6 +46,9 @@ const documentSlice = createSlice({
         const documents = Object.assign([], action.payload) as Document[];
         state.documents = documents;
       }
+    });
+    builder.addCase(getDocumentsForHCW.fulfilled, (state, action) => {
+      state.documentsForHCW = action.payload;
     });
   },
 });

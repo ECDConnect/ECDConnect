@@ -18,6 +18,7 @@ import {
   contentReportThunkActions,
 } from '@store/content/report';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
+import { ProgressSkillValues } from '@/enums/ProgressSkillValues';
 
 export interface SeperatedCategoryResult {
   notStartedCategories: ProgressTrackingCategoryDto[];
@@ -29,7 +30,7 @@ export const useChildProgressObservation = (
   childId: string,
   report?: ChildProgressObservationReport
 ) => {
-  const levelCompetencyThreshold = 75;
+  const levelCompetencyThreshold = 60;
   const [currentReport, setCurrentReport] = useState<
     ChildProgressObservationReport | undefined
   >(report);
@@ -347,12 +348,14 @@ export const useChildProgressObservation = (
       levelId,
       skillId: skill.id,
       description: skill.name || skill.description,
+      value: skill.value,
     }));
 
     const mappedMissedSkills: CategoryTask[] = missedSkills.map((skill) => ({
       levelId,
       skillId: skill.id,
       description: skill.name || skill.description,
+      value: skill.value,
     }));
 
     const currentCategoryCopy = { ...currentCategory };
@@ -410,10 +413,12 @@ export const useChildProgressObservation = (
     setCategoryTrackingStatus(ChildProgressObservationStatus.Started);
   };
 
-  const getUnseletedSkills = () => {
+  const getUnselectedSkills = () => {
     if (!currentReport || !currentCategory) return [];
 
-    const flatSeletedSkills = currentCategory.tasks.map((x) => x.skillId);
+    const flatSelectedSkills = currentCategory.tasks
+      .filter((x) => !x.value || x.value !== ProgressSkillValues.Yes)
+      .map((x) => x.skillId);
     const category = allCategories.find(
       (x) => x.id === currentCategory.categoryId
     );
@@ -431,7 +436,7 @@ export const useChildProgressObservation = (
     const unSelectedSkills = allSkills.filter(
       (skill) =>
         subCategorySkillsIds.includes(skill.id) &&
-        !flatSeletedSkills.some((flatSkillId) => flatSkillId === skill.id)
+        !flatSelectedSkills.some((flatSkillId) => flatSkillId === skill.id)
     );
 
     return unSelectedSkills;
@@ -460,11 +465,19 @@ export const useChildProgressObservation = (
       (task) => task.levelId === levelId
     );
 
-    return subCategorySkills.filter((skill) =>
-      selectedLevelSkillsForCategory.some(
-        (selectedSkill) => skill.id === selectedSkill.skillId
-      )
-    );
+    const selectedSkills: ProgressTrackingSkillDto[] = [];
+    selectedLevelSkillsForCategory.forEach((selectedLevelSkill) => {
+      const subCategorySkill = subCategorySkills.find(
+        (subCategorySkill) => subCategorySkill.id === selectedLevelSkill.skillId
+      );
+      if (subCategorySkill) {
+        selectedSkills.push({
+          ...subCategorySkill,
+          value: selectedLevelSkill.value,
+        });
+      }
+    });
+    return selectedSkills;
   };
 
   const getChildAchievedLevelPercentage = (
@@ -498,7 +511,7 @@ export const useChildProgressObservation = (
         subCategorySkillsIds.includes(skill.id)
     ).length;
     const selectedSkillCount = activeCategory.tasks.filter(
-      (x) => x.levelId === levelId
+      (x) => x.levelId === levelId && x.value === ProgressSkillValues.Yes
     ).length;
 
     return (selectedSkillCount / (totalLevelSkillCount || 1)) * 100;
@@ -547,6 +560,37 @@ export const useChildProgressObservation = (
     return ProgressTrackingLevels.LevelTwo;
   };
 
+  const isAllSkillsYes = () => {
+    const level1Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelOne
+    );
+    const level2Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelTwo
+    );
+    const level3Percentage = getChildAchievedLevelPercentage(
+      ProgressTrackingLevels.LevelThree
+    );
+    return (
+      level1Percentage === 100 &&
+      level2Percentage === 100 &&
+      level3Percentage === 100
+    );
+  };
+
+  const isNoTryingToDoAndAtLeastOneNotYet = () => {
+    if (!currentCategory) return false;
+
+    const tryingToDoCount = currentCategory.tasks.filter(
+      (x) => x.value === ProgressSkillValues.TryingToDo
+    ).length;
+
+    const notYetCount = currentCategory.tasks.filter(
+      (x) => x.value === ProgressSkillValues.NotYet
+    ).length;
+
+    return tryingToDoCount === 0 && notYetCount > 0;
+  };
+
   const getLatestReport = () => {
     if (!childReports)
       throw new Error('child reports are not set, could not get latest report');
@@ -581,13 +625,13 @@ export const useChildProgressObservation = (
   const getLevelSummaryText = (achievedLevelId: number, childName: string) => {
     switch (achievedLevelId) {
       case ProgressTrackingLevels.LevelP:
-        return `According to your answers, ${childName} can’t easily do nearly all of the things in level 1 yet`;
+        return `According to your answers, ${childName} can’t easily do nearly all of the things in the moving on level yet.`;
       case ProgressTrackingLevels.LevelOne:
-        return `According to your answers, ${childName} does nearly all of the things in level 1 easily.`;
+        return `According to your answers, ${childName} can do all or nearly all of the things in the moving on level.`;
       case ProgressTrackingLevels.LevelTwo:
-        return `According to your answers, ${childName} does nearly all of the things in levels 1 and 2 easily.`;
+        return `According to your answers, ${childName} can do all or nearly all of the things in the moving on and advancing further levels.`;
       case ProgressTrackingLevels.LevelThree:
-        return `According to your answers, ${childName} does nearly all of the things in levels 1, 2 and 3 easily.`;
+        return `According to your answers, ${childName} can do all or nearly all of the things in the moving on, advancing further and towards grade R levels.`;
       default:
         return '';
     }
@@ -667,7 +711,7 @@ export const useChildProgressObservation = (
       : 1;
 
   return {
-    getUnseletedSkills,
+    getUnselectedSkills,
     getChildAchievedLevelId,
     getLatestReport,
     getChildAchievedLevelPercentage,
@@ -696,5 +740,7 @@ export const useChildProgressObservation = (
     saveReport,
     completeReport,
     completeReportLocally,
+    isAllSkillsYes,
+    isNoTryingToDoAndAtLeastOneNotYet,
   };
 };

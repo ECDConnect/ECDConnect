@@ -1,11 +1,10 @@
 import {
-  Alert,
   Button,
-  Divider,
   Typography,
-  CheckboxChange,
   classNames,
   renderIcon,
+  ButtonGroup,
+  ButtonGroupTypes,
 } from '@ecdlink/ui';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { useEffect, useState } from 'react';
@@ -15,14 +14,14 @@ import { CategoryLevelFormProps } from './category-level-form.types';
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { CategoryLevelFormResult } from '@models/classroom/progress-observation/ChildProgressAssessment';
-import CheckboxCard from '../../../../../components/checkbox-card/checkbox-card';
-import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
+import { ProgressSkillValuesArray } from '@/enums/ProgressSkillValues';
 import ProgressLevelBar from '../../components/progress-level-bar/progress-level-bar';
 import { ProgressTrackingSkillDto } from '@ecdlink/core';
 
 export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
   progressTrackingCategoryId,
   levelId,
+  level,
   childId,
   optionSelected = () => {},
   onSubmit,
@@ -92,93 +91,77 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     onSubmit(result);
   };
 
-  const childSkillSelected = (checkBox: CheckboxChange) => {
-    if (!checkBox.value) return;
-
-    const selectedSkillIndex = selectedTasks?.findIndex(
-      (task) => task.id === checkBox.value
-    );
-
-    if (selectedSkillIndex === -1) {
-      const newSelectedTask = subCategoryAssessmentTasks?.find(
-        (skill) => skill.id === checkBox.value
+  const skillOptionSelected = (skillId: number, value: string) => {
+    var newSelectedTasks = [];
+    var selectedSkill = selectedTasks.find((x) => x.id === skillId);
+    if (!selectedSkill) {
+      const newSkill = subCategoryAssessmentTasks?.find(
+        (x) => x.id === skillId
       );
-
-      if (!newSelectedTask) return;
-
-      const newSelectedSkills = [...(selectedTasks || []), newSelectedTask];
-      setSelectedTasks(newSelectedSkills);
+      if (!newSkill) return;
+      selectedSkill = { ...newSkill };
+      newSelectedTasks = [...(selectedTasks || []), selectedSkill];
     } else {
-      const newSelectedSkills = [...(selectedTasks || [])];
-
-      newSelectedSkills.splice(selectedSkillIndex, 1);
-
-      setSelectedTasks(newSelectedSkills);
+      newSelectedTasks = [...selectedTasks];
     }
+    selectedSkill.value = value;
+    setSelectedTasks(newSelectedTasks);
     optionSelected();
   };
 
-  const isItemSelected = (skillId?: number) => {
-    if (!skillId) return false;
-
-    const isSelected =
-      selectedTasks.findIndex((skill) => skill.id === skillId) > -1;
-
-    return isSelected;
+  const whichSkillOptionSelected = (skillId?: number) => {
+    if (!skillId) return undefined;
+    var skill = selectedTasks.find((skill) => skill.id === skillId);
+    if (skill === undefined || !skill.value) return undefined;
+    return skill?.value;
   };
 
   return (
     <>
-      <ProgressLevelBar currentLevelId={levelId} />
-      <div className={'bg-uiBg px-4 pt-2'}>
+      <ProgressLevelBar currentLevelId={levelId} currentLevel={level} />
+      <div className={'bg-white px-4 pt-2'}>
         <Typography
-          type={'h1'}
-          color={'primary'}
+          type={'h2'}
           fontSize={'24'}
-          text={`<b>Choose the things ${childUser?.firstName} does <u>easily</u></b>`}
+          text={`Tell us about ${childUser?.firstName}`}
           hasMarkup={true}
         />
         {subCategoryAssessments &&
           subCategoryAssessments.map((subCategoryAssessment, index) => (
             <div
-              className={index === 0 ? 'pt-2' : 'pt-4'}
+              className={index === 0 ? 'pt-2 pb-4' : 'pt-4 pb-4'}
               key={`sub-category-${subCategoryAssessment.subCategory?.id}-assessment`}
             >
               <Typography
-                type={'body'}
+                type={'h3'}
                 color="textDark"
                 text={subCategoryAssessment.subCategory.name}
               />
               {subCategoryAssessment.skills.map(
                 (skill: ProgressTrackingSkillDto) => (
                   <div className={'pt-2'} key={`assessment-skill-${skill?.id}`}>
-                    <CheckboxCard
-                      description={skill.name}
-                      checked={isItemSelected(skill.id)}
-                      onCheckboxChange={(checkBox: CheckboxChange) => {
-                        childSkillSelected(checkBox);
+                    <Typography type={'h4'} text={skill.name} />
+                    <ButtonGroup<string>
+                      options={
+                        ProgressSkillValuesArray.map((x) => {
+                          return { text: x, value: x };
+                        }) || []
+                      }
+                      onOptionSelected={(value: string | string[]) => {
+                        skillOptionSelected(skill.id, value as string);
                       }}
-                      value={skill?.id}
+                      selectedOptions={whichSkillOptionSelected(skill.id)}
+                      color="secondary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                      multiple={false}
                     />
                   </div>
                 )
               )}
             </div>
           ))}
-        {levelId && levelId === ProgressTrackingLevels.LevelTwo && (
-          <Alert
-            type="info"
-            title={`Only choose the things that ${childUser?.firstName} can do easily.`}
-            list={[
-              `It is unlikely that every child will be able to do skills at Level 2. `,
-              `Observe each child carefully to see what they can do! `,
-            ]}
-            className={'mt-4'}
-          />
-        )}
-        <div className={styles.spaceTop}>
-          <Divider />
-        </div>
+        <div className={styles.spaceTop}></div>
         <Button
           color={'primary'}
           type={'filled'}

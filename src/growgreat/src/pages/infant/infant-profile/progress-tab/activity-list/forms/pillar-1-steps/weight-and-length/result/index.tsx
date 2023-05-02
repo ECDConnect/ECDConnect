@@ -16,7 +16,7 @@ import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { Chart, DataSetType, WeightOrHeightForAgeProps } from './chart';
 
 import {
-  weightAndLengthFormQuestions,
+  weightLengthAndHeightFormQuestions,
   weightAndLengthFormSection,
 } from '../form';
 import {
@@ -127,14 +127,9 @@ export const WeightAndLengthResultStep = ({
     undefined,
     undefined,
   ]);
-  const [lengthResult, setLengthResult] = useState<(number | undefined)[]>([
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-    undefined,
-  ]);
+  const [lengthOrHeightResult, setLengthOrHeightResult] = useState<
+    (number | undefined)[]
+  >([undefined, undefined, undefined, undefined, undefined, undefined]);
 
   const [suffix, setSuffix] = useState<string>('d');
 
@@ -186,7 +181,7 @@ export const WeightAndLengthResultStep = ({
     () =>
       Number(
         answers?.find(
-          (item) => item.question === weightAndLengthFormQuestions.weight
+          (item) => item.question === weightLengthAndHeightFormQuestions.weight
         )?.answer || 0
       ),
     [answers]
@@ -195,7 +190,16 @@ export const WeightAndLengthResultStep = ({
     () =>
       Number(
         answers?.find(
-          (item) => item.question === weightAndLengthFormQuestions.length
+          (item) => item.question === weightLengthAndHeightFormQuestions.length
+        )?.answer || 0
+      ),
+    [answers]
+  );
+  const height = useMemo(
+    () =>
+      Number(
+        answers?.find(
+          (item) => item.question === weightLengthAndHeightFormQuestions.height
         )?.answer || 0
       ),
     [answers]
@@ -206,10 +210,10 @@ export const WeightAndLengthResultStep = ({
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
-  const lengthAlertResult = findClosestWeight(
+  const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
-    length,
-    findLastIndex(lengthResult)
+    length || height,
+    findLastIndex(lengthOrHeightResult)
   )[0] as DataSetType;
 
   const weightMonitoring = useMemo((): GrowthMonitoring['weight'] => {
@@ -227,8 +231,8 @@ export const WeightAndLengthResultStep = ({
     }
   }, [weightAlertResult]);
 
-  const lengthMonitoring = useMemo((): GrowthMonitoring['length'] => {
-    switch (lengthAlertResult) {
+  const lengthOrHeightMonitoring = useMemo((): GrowthMonitoring['length'] => {
+    switch (lengthOrHeightAlertResult) {
       case 'SD2neg':
         return { value: 'stunted', statusType: 'warning' };
       case 'SD3neg':
@@ -236,7 +240,7 @@ export const WeightAndLengthResultStep = ({
       default:
         return { value: 'normal', statusType: 'success' };
     }
-  }, [lengthAlertResult]);
+  }, [lengthOrHeightAlertResult]);
 
   const WeightAlert = useCallback(() => {
     let WeightAlert = <Fragment />;
@@ -304,12 +308,12 @@ export const WeightAndLengthResultStep = ({
     return WeightAlert;
   }, [name, weightAlertResult]);
 
-  const LengthAlert = useCallback(() => {
-    let LengthAlert = <Fragment />;
+  const LengthOrHeightAlert = useCallback(() => {
+    let LengthOrHeightAlert = <Fragment />;
 
-    switch (lengthAlertResult) {
+    switch (lengthOrHeightAlertResult) {
       case 'SD2neg':
-        LengthAlert = (
+        LengthOrHeightAlert = (
           <Alert
             type="warning"
             title={`${name} is stunted.`}
@@ -322,7 +326,7 @@ export const WeightAndLengthResultStep = ({
         );
         break;
       case 'SD3neg':
-        LengthAlert = (
+        LengthOrHeightAlert = (
           <Alert
             type="error"
             title={`Refer ${name} to the clinic urgently.`}
@@ -341,8 +345,8 @@ export const WeightAndLengthResultStep = ({
       default:
         break;
     }
-    return LengthAlert;
-  }, [lengthAlertResult, name]);
+    return LengthOrHeightAlert;
+  }, [lengthOrHeightAlertResult, name]);
 
   const {
     lengthPerDay,
@@ -490,7 +494,7 @@ export const WeightAndLengthResultStep = ({
       ] || [];
     const lengthHistory =
       [
-        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.length] : []),
+        ...(groupedGrowthData?.length ? [...groupedGrowthData?.length] : []),
         ...[
           { visit: { plannedVisitDate: new Date() }, questionAnswer: length },
         ],
@@ -515,14 +519,14 @@ export const WeightAndLengthResultStep = ({
           )[0]
         )
       );
-      setLengthResult(
+      setLengthOrHeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
             lengthPerDay.date,
             'd',
-            lengthResult
+            lengthOrHeightResult
           )[0]
         )
       );
@@ -543,14 +547,14 @@ export const WeightAndLengthResultStep = ({
           )[0]
         )
       );
-      setLengthResult(
+      setLengthOrHeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
             lengthPerWeek.date,
             'w',
-            lengthResult
+            lengthOrHeightResult
           )[0]
         )
       );
@@ -571,14 +575,14 @@ export const WeightAndLengthResultStep = ({
           )[0]
         )
       );
-      setLengthResult(
+      setLengthOrHeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
             lengthPerMonth.date,
             'm',
-            lengthResult
+            lengthOrHeightResult
           )[0]
         )
       );
@@ -598,14 +602,14 @@ export const WeightAndLengthResultStep = ({
         )[0]
       )
     );
-    setLengthResult(
+    setLengthOrHeightResult(
       fillInMissingNumbers(
         getWeightOrLengthResult(
           dateOfBirth,
           lengthHistory,
           lengthPerYear.date,
           'm',
-          lengthResult
+          lengthOrHeightResult
         )[0]
       )
     );
@@ -626,20 +630,38 @@ export const WeightAndLengthResultStep = ({
   useEffect(() => {
     setGrowthMonitoring?.({
       weight: weightMonitoring,
-      length: lengthMonitoring,
+      ...(length
+        ? {
+            length: lengthOrHeightMonitoring,
+          }
+        : {}),
+      ...(height
+        ? {
+            height: lengthOrHeightMonitoring,
+          }
+        : {}),
     });
-  }, [lengthMonitoring, setGrowthMonitoring, weightMonitoring]);
+  }, [
+    height,
+    length,
+    lengthOrHeightMonitoring,
+    setGrowthMonitoring,
+    weightMonitoring,
+  ]);
 
   useLayoutEffect(() => {
     setChartData();
   }, [setChartData]);
 
   const renderCard = useMemo(() => {
-    if (weightAlertResult !== 'median' || lengthAlertResult !== 'median') {
+    if (
+      weightAlertResult !== 'median' ||
+      lengthOrHeightAlertResult !== 'median'
+    ) {
       return (
         <>
           <WeightAlert />
-          <LengthAlert />
+          {(!!length || !!height) && <LengthOrHeightAlert />}
         </>
       );
     }
@@ -652,10 +674,12 @@ export const WeightAndLengthResultStep = ({
       />
     );
   }, [
-    LengthAlert,
+    LengthOrHeightAlert,
     WeightAlert,
     caregiverName,
-    lengthAlertResult,
+    height,
+    length,
+    lengthOrHeightAlertResult,
     name,
     weightAlertResult,
   ]);
@@ -692,12 +716,14 @@ export const WeightAndLengthResultStep = ({
             value={String(weight)}
             subTitle="KG"
           />
-          <Card
-            status={lengthAlertResult}
-            title="Length"
-            value={String(length)}
-            subTitle="CM"
-          />
+          {(!!length || !!height) && (
+            <Card
+              status={lengthOrHeightAlertResult}
+              title={length ? 'Length' : 'Height'}
+              value={String(length || height)}
+              subTitle="CM"
+            />
+          )}
         </div>
         <Typography type="h3" color="textDark" text="Weight for age (kg)" />
         <Chart
@@ -707,15 +733,19 @@ export const WeightAndLengthResultStep = ({
           type="weight"
           suffix={suffix}
         />
-        <Divider dividerType="dashed" />
-        <Typography type="h3" color="textDark" text="Length for age (cm)" />
-        <Chart
-          infantName={name}
-          result={lengthResult}
-          data={lengthAxios as WeightOrHeightForAgeProps}
-          type="length"
-          suffix={suffix}
-        />
+        {(!!length || !!height) && (
+          <>
+            <Divider dividerType="dashed" />
+            <Typography type="h3" color="textDark" text="Length for age (cm)" />
+            <Chart
+              infantName={name}
+              result={lengthOrHeightResult}
+              data={lengthAxios as WeightOrHeightForAgeProps}
+              type="length"
+              suffix={suffix}
+            />
+          </>
+        )}
       </div>
     </>
   );

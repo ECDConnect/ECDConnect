@@ -1,10 +1,6 @@
-import {
-  ChildAttendanceReportModel,
-  ClassRoomChildAttendanceMonthlyReportModel,
-} from '@ecdlink/core';
+import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
-import { useEffect } from 'react';
-import { useLocation } from 'react-router';
+import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -15,10 +11,27 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
 import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
+import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export interface ChildAttendanceReportState {
   childId: string;
   classroomGroupId: string;
+}
+
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
 }
 
 export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
@@ -26,26 +39,40 @@ export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
   onDownloadReport: (date: Date) => void;
   onBack: () => void;
   classroomGroupId: string;
-  reportData: ClassRoomChildAttendanceMonthlyReportModel[];
+  reportData: ChildAttendanceOverallReportModel[];
+  totalAttendance: any[];
+  totalAttendanceStatsReport: any;
 }
 
 export const MonthlyAttendanceReport = ({
   reportMonth,
   onBack,
   reportData,
+  totalAttendance,
+  totalAttendanceStatsReport,
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const numDays = 29;
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
-  // data that must be used to display in report
-  // const dataX = {
-  //   "detailedReport":[{ child: 'John Doe', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }, { child: 'Jack Bauer', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0', day4: '1' }],
-  //   "todayAttendance": {day1: '10', day2: '21', day3: '10', day4: '4', },
-  //   "totalMonthlyAttendance": 23,
-  //   "totalSessions": 22,
-  //   "totalChildrenAttendedSessions": 53
-  // };
+  const numDays = totalAttendance.length;
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
+
+  useEffect(() => {
+    const getClassroomDetails = async () => {
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getReportDetailsForPractitioner(userAuth?.id || '');
+      return res;
+    };
+
+    getClassroomDetails().then((data) => {
+      console.log(data);
+      setReportDetails(data)
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -58,54 +85,75 @@ export const MonthlyAttendanceReport = ({
     }
   }, [appDispatch, isOnline, reportMonth]);
 
-  const data = [
-    { child: 'John', id: 'IDTEST2525255', day1: '1', day2: '1', day3: '0' },
-  ];
+  const tableBody = reportData.map(
+    (item: {
+      attendance?: any;
+      childFullName?: any;
+      childIdNumber?: string;
+    }) => {
+      const { childFullName, childIdNumber } = item;
+      const attendance = item.attendance.reduce(
+        (obj: { [x: string]: any }, { key, value }: any, i: number) => {
+          obj[`day${key}`] = value;
+          return obj;
+        },
+        {}
+      );
+      //test name too long so i sliced it
+      return { child: childFullName, id: childIdNumber, ...attendance };
+    }
+  );
 
-  for (let i = 0; i < 50; i++) {
-    const newArray = {
-      child: 'John Bblocks',
-      id: 'IDTEST2525255',
-      day1: '1',
-      day2: '1',
-      day3: '0',
-      day4: '0',
-      day5: '0',
-    };
-    data.push(newArray);
-  }
-  const tableColumns = [
+  const tableHeaders = [
     { header: 'Child', dataKey: 'child' },
     { header: 'ID/Passport', dataKey: 'id' },
-    ...Array.from({ length: numDays }, (_, i) => ({
-      header: `${i + 1}`, // day number as header
-      dataKey: `day${i + 1}`, // unique key for each day column
+    ...totalAttendance.slice(0, numDays).map(({ key }) => ({
+      header: `${key}`,
+      dataKey: `day${key}`, // using key value as dataKey
     })),
+  ];
+
+  const finalTableData = [
+    {
+      tableName: '',
+      type: '',
+      total: '',
+      headers: tableHeaders,
+      data: tableBody,
+    },
   ];
 
   const footer = [
     'Child Attendance per Day',
     '', // Placeholder for ID/Passport column
-    '', // Placeholder for Day 1 column
-    '', // Placeholder for Day 2 column
-    // ... continue with empty placeholders for Day 3 to Day 29 columns ...
   ];
+
+  totalAttendance.forEach((obj) => {
+    footer.push(obj.value.toString());
+  });
+
+  let attendnaceSum = 0;
+
+  for (let i = 0; i < totalAttendance.length; i++) {
+    attendnaceSum += totalAttendance[i].value;
+  }
 
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
-    subtitle: 'Text 2',
-    practitioner_name: 'Name: Jenny Droe',
-    id_number: 'ID: ID23YGH444',
-    programme_type: 'ProgrammeType: 46372test',
-    programme_days: 'Programmme Days: Monday to Friday',
-    site_address: 'Site Address1234 ABC St, City, State, Country',
-    phone: 'Phone: 0123456789',
+    subtitle: '',
+    text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_coulumn_one_row_two: `ID: ${reportDeatils?.idNumber}`,
+    text_coulumn_one_row_three: `Phone: ${reportDeatils?.phone}`,
+    //column2 with 3 rows of text
+    text_column_two_row_one: `ProgrammeType:${reportDeatils?.programmeTypeName} `,
+    text_column_two_row_two: `Programme Days:${reportDeatils?.programmeDays} `,
+    text_column_two_row_three: `Site: ${reportDeatils?.classSiteAddress}`,
   };
 
   const tableBottomContent = [
-    `Number of children who attended all sessions: 9`,
-    `Total number of sessions: 198`,
-    `Number of children who attended all sessions: 9`,
+    `Total monthly attendance: ${attendnaceSum}`,
+    `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
+    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions}`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -118,11 +166,12 @@ export const MonthlyAttendanceReport = ({
   const tableStyles: UserOptions['styles'] = {
     lineWidth: 0.1,
     lineColor: 0x000000,
+    fontSize: 8,
   };
   const tableFootStyles: UserOptions['footStyles'] = {
     textColor: [0, 0, 0],
     fillColor: [211, 211, 211], // Light grey
-    fontSize: 10,
+    fontSize: 8,
     lineWidth: 0.1,
     lineColor: 0x000000,
   };
@@ -210,8 +259,7 @@ export const MonthlyAttendanceReport = ({
           <GeneratePdfReportButton
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
-            headerColumns={tableColumns}
-            bodyRows={data}
+            tableData={finalTableData}
             tableFooter={footer}
             content={tableTopContent}
             tableBottomContent={tableBottomContent}

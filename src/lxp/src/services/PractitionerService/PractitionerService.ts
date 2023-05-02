@@ -12,6 +12,18 @@ import {
   PractitionerInput,
 } from '@ecdlink/graphql';
 
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
+}
 class PractitionerService {
   _accessToken: string;
 
@@ -247,7 +259,7 @@ class PractitionerService {
                 dateToBeRemoved
                 isLeaving
                 progress
-
+                isTrainee
               }
             }
             note
@@ -298,6 +310,39 @@ class PractitionerService {
     }
 
     return response.data.data.promotePractitionerToPrincipal;
+  }
+  async getReportDetailsForPractitioner(
+    userId: string
+  ): Promise<ReportDetailsForPractitionerData> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query reportDetailsForPractitioner($userId: String) {
+          reportDetailsForPractitioner(userId: $userId) { 
+          classroomGroupName
+          name
+          principalName
+          classroomGroupId
+          programmeTypeName
+          idNumber
+          insertedDate
+          programmeDays
+          phone classSiteAddress
+          }     
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.reportDetailsForPractitioner;
   }
 
   async getClassroomDetailsForPractitioner(

@@ -39,6 +39,7 @@ import { useStoreSetup } from '@/hooks/useStoreSetup';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { notificationActions } from '@/store/notifications';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -160,10 +161,15 @@ export const SetupPrincipal: React.FC = () => {
         })
       );
 
-      await new PractitionerService(
-        userAuth?.auth_token!
-      ).UpdatePractitionerProgress(user?.id!, 2.0);
+      await appDispatch(
+        practitionerThunkActions.updatePractitionerProgress({
+          practitionerId: user.id,
+          progress: 2.0,
+        })
+      );
     }
+
+    appDispatch(notificationActions.resetNotificationState());
 
     if (principalPractitioners?.length) {
       if (userAuth?.auth_token) {
@@ -190,7 +196,7 @@ export const SetupPrincipal: React.FC = () => {
 
   const exitPrompt = () => {
     dialog({
-      position: DialogPosition.Bottom,
+      position: DialogPosition.Middle,
       render: (onSubmit, onCancel) => (
         <ActionModal
           icon={'XCircleIcon'}
@@ -340,8 +346,20 @@ export const SetupPrincipal: React.FC = () => {
         size={page === PractitionerSetupSteps.WELCOME ? 'large' : 'medium'}
         renderBorder={true}
         showBackground={page === PractitionerSetupSteps.WELCOME}
-        title={'Edit Profile'}
-        subTitle={label}
+        title={
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+            ? 'Add Practitioners'
+            : 'Edit Profile'
+        }
+        subTitle={
+          confirmPractitionerPage ===
+            ConfirmPractitionersSteps.EDIT_PRACTITIONER ||
+          confirmPractitionerPage === ConfirmPractitionersSteps.ADD_PRACTITIONER
+            ? ''
+            : label
+        }
         onBack={
           !isFundaAppAdmin && isNotPrincipal
             ? () => setPage(PractitionerSetupSteps.SETUP_PROGRAMME)

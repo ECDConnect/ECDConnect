@@ -40,6 +40,7 @@ export interface CategoryTask {
   levelId: number;
   skillId: number;
   description: string;
+  value: string;
 }
 
 export interface ObservationCategorySummary {

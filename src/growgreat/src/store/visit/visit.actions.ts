@@ -87,7 +87,7 @@ export const addVisitFormData = createAsyncThunk<
 );
 
 export const getMoreInformation = createAsyncThunk<
-  MoreInformation[],
+  MoreInformation,
   { section: string; locale: string },
   ThunkApiType<RootState>
 >(
@@ -98,21 +98,15 @@ export const getMoreInformation = createAsyncThunk<
     } = getState();
 
     try {
-      let content: MoreInformation[] = [];
-
       if (userAuth?.auth_token) {
-        content = await new Visit(
+        const [content] = await new Visit(
           userAuth?.auth_token ?? ''
         ).getMoreInformation(section, locale);
+
+        return content;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
-
-      if (!content) {
-        return rejectWithValue('Error getting more information');
-      }
-
-      return content;
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -120,7 +114,7 @@ export const getMoreInformation = createAsyncThunk<
 );
 
 export const getHealthPromotion = createAsyncThunk<
-  HealthPromotion[],
+  HealthPromotion,
   { section: string; locale: string },
   ThunkApiType<RootState>
 >(
@@ -131,21 +125,15 @@ export const getHealthPromotion = createAsyncThunk<
     } = getState();
 
     try {
-      let content: HealthPromotion[] = [];
-
       if (userAuth?.auth_token) {
-        content = await new Visit(
+        const [content] = await new Visit(
           userAuth?.auth_token ?? ''
         ).getHealthPromotion(section, locale);
+
+        return content;
       } else {
         return rejectWithValue('no access token, profile check required');
       }
-
-      if (!content) {
-        return rejectWithValue('Error getting health promotion');
-      }
-
-      return content;
     } catch (err) {
       return rejectWithValue(err);
     }

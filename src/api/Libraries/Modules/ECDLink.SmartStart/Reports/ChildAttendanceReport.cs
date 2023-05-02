@@ -3,21 +3,22 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
-using HotChocolate.Data.Sorting.Expressions;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace ECDLink.SmartStart.Reports
 {
     public class ChildAttendanceReport : AttendanceReportBase
     {
-        public ChildAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService)
+        private readonly IGenericRepositoryFactory _repositoryFactory;
+        public ChildAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory)
           : base(holidayService, dbFactory.CreateDbContext())
         {
+            _repositoryFactory = repositoryFactory;
         }
 
         public ChildAttendanceReportModel GetChildAttendanceExpected(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
@@ -118,7 +119,7 @@ namespace ECDLink.SmartStart.Reports
         {
             var totalExpectedAttendance = learnerReports.Sum(x => x.ExpectedAttendance);
             var totalActualAttendance = learnerReports.Sum(x => x.ActualAttendance);
-            var attendancePercentage = (int)Math.Round(((double)totalActualAttendance / totalExpectedAttendance) * 100);
+            var attendancePercentage = (totalExpectedAttendance > 0 && totalActualAttendance > 0 ? (int)Math.Round(((double)totalActualAttendance / totalExpectedAttendance) * 100) : 0);
 
             return new ChildAttendanceReportModel
             {
@@ -189,7 +190,7 @@ namespace ECDLink.SmartStart.Reports
             {
                 var totalAttendance = item.Value.Sum(x => x.Item1);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
-                var attendancePercentage = (int)Math.Round(((double)actualAttendance / totalAttendance) * 100);
+                var attendancePercentage = (totalAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / totalAttendance) * 100) : 0);
 
                 report.Add(new ChildAttendanceMonthlyReportModel
                 {
@@ -214,12 +215,13 @@ namespace ECDLink.SmartStart.Reports
                     .ThenInclude(c => c.ClassProgrammes)
                     .FirstOrDefault(c => c.Id == classgroupId && string.Equals(userId, c.UserId));
 
+            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId)); //get practitioner being queried
+
             if (classroom == default(Classroom))
             {
                 //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
                 //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
-
-                Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
+                
                 if (practi != null && practi.PrincipalHierarchy.HasValue)
                 {
                     //now test the practitioners principal userid, if its theirs, then show results. If it still doesnt match, throw the error
@@ -243,10 +245,13 @@ namespace ECDLink.SmartStart.Reports
             foreach (var classroomGroup in classroom.ClassroomGroups)
             {
                 var learners = GetAllLearnerGroupInstances(classroomGroup.Id);
+                //get all children the user is allowed to see and run against hierarchy
+                var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: userId);
+                List<Child> children = childRepo.GetAll().ToList();
 
                 if (learners.Any())
                 {
-                    foreach (var learner in learners)
+                    foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains( x.UserId)))
                     {
                         var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
                         var allAttendance = new List<List<Tuple<int, int>>>();
@@ -277,28 +282,40 @@ namespace ECDLink.SmartStart.Reports
                             allAttendance.Add(attendance);
                         }
                         var reports = GetMonthlyReport(monthlyAttendance);
+                        //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
+                        SortedDictionary<int, int> attendanceDays = new SortedDictionary<int, int>();
+                        int daysInMonth = DateTime.DaysInMonth(startMonth.Year, startMonth.Month);
+                        for (int i = 1; i <= daysInMonth; i++)
+                        {
+                            DateTime dtCheck = Convert.ToDateTime(startMonth.Year + "-" + startMonth.Month + "-" + i.ToString());
+                            if (dtCheck.DayOfWeek != DayOfWeek.Sunday && dtCheck.DayOfWeek != DayOfWeek.Saturday)
+                            {
+                                if (!attendanceDays.ContainsKey(i))
+                                    attendanceDays[i] = 0;
+                            }
+
+                        }
 
                         if (reports != null)
                         {
+                            var keyDays = attendanceDays.Keys.ToList();
                             foreach (var report in reports.OrderByDescending(x => x.MonthNumber))
                             {
-                                SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
+                                SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
 
-                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId).OrderBy(p => p.AttendanceDate).ToList();
+                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day)).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
-                                    if (!totalAttendance.ContainsKey(attendance.AttendanceDate.Day))
-                                        totalAttendance.Add(attendance.AttendanceDate.Day, (attendance.Attended ? 1 : 0));
-                                    else
-                                        totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
+                                    totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
                                 classReports.Add(new ClassroomGroupChildAttendanceReportModel()
                                 {
                                     ChildUserId = learner.UserId,
                                     ClassgroupId = classgroupId,
-                                    ChildFullName = learner.User.FullName,
+                                    ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
+                                    ChildIdNumber = learner.User.IdNumber,
                                     TotalActualAttendance = report.ActualAttendance,
                                     TotalExpectedAttendance = report.ExpectedAttendance,
                                     AttendancePercentage = report.AttendancePercentage,
@@ -315,16 +332,16 @@ namespace ECDLink.SmartStart.Reports
             return classReports;
         }
 
-        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
+        public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView( Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
             ClassroomGroupChildAttendanceReportOverviewModel overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
             overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
 
             SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
 
             foreach (var report in overviewReport.ClassroomAttendanceReport)
             {
-
                 foreach (var dayAttendance in report.Attendance)
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))

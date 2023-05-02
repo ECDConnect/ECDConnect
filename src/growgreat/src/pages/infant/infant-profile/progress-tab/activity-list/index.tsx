@@ -21,6 +21,8 @@ import ROUTES from '@/routes/routes';
 import {
   getInfantById,
   getInfantVisitByVisitIdSelector,
+  getIsInfantFirstVisitSelector,
+  getIsInfantSecondVisitSelector,
 } from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
@@ -32,6 +34,7 @@ import { visitThunkActions } from '@/store/visit';
 import {
   getCompletedVisitsByVisitIdSelector,
   getPreviousVisitInformationForInfantSelector,
+  getVisitAnswersForInfantSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
@@ -42,7 +45,13 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays } from 'date-fns';
+import { differenceInDays, differenceInMonths } from 'date-fns';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { documentSelectors } from '@/store/document';
+import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
+import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
+import { clinicCheckupQuestion } from './forms/care-for-mom-steps/clinic-check-ups';
+import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -70,6 +79,9 @@ export const ActivityList: React.FC = () => {
   const { visitId, id: infantId } = useParams<InfantProfileParams>();
 
   const user = useSelector(userSelectors.getUser);
+  const documents = useSelector(
+    documentSelectors.getDocumentsByUserId(infantId)
+  );
 
   const visit = useSelector((state: RootState) =>
     getInfantVisitByVisitIdSelector(state, visitId)
@@ -102,6 +114,10 @@ export const ActivityList: React.FC = () => {
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+  const { months: ageMonths, years: ageYears } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+  const fullAgeInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
 
   const { isLoading } = useThunkFetchCall(
@@ -113,6 +129,121 @@ export const ActivityList: React.FC = () => {
     (infant?.user?.firstName || '').length +
       (infant?.user?.surname || '').length >
     22;
+
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
+  const isSecondVisit = useSelector(getIsInfantSecondVisitSelector);
+
+  const getIsFollowUp = useCallback(
+    (section: string, visitName: string) => {
+      return !!previousVisit?.visitDataStatus?.some(
+        (item) =>
+          item?.section === section &&
+          item.visitData?.visitName === visitName &&
+          item.color !== 'Success'
+      );
+    },
+    [previousVisit?.visitDataStatus]
+  );
+
+  const isRoadToHeathBookStep = useMemo(
+    () =>
+      !documents?.some(
+        (item) => item.documentType?.name === 'RoadToHealthBook'
+      ),
+    [documents]
+  );
+
+  const isDangerSignsFollowUpForBaby = getIsFollowUp(
+    dangerSignsVisitSectionForBaby,
+    activitiesTypes.careForBaby
+  );
+
+  const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
+
+  const isNewBornCare = useMemo(
+    () => !isFirstVisit && ageDays <= 28,
+    [ageDays, isFirstVisit]
+  );
+
+  const isKangarooMotherCare = useMemo(
+    () => isFirstVisit && ageDays <= 49,
+    [ageDays, isFirstVisit]
+  );
+
+  const isDevelopmentalScreening = useMemo(
+    () =>
+      ((isFirstVisit || isSecondVisit) && ageDays >= 4 && ageDays <= 27) ||
+      (isFirstVisit && ageDays >= 49 && ageDays <= 56),
+    [ageDays, isFirstVisit, isSecondVisit]
+  );
+
+  const isDevelopmentalScreeningWeeksFollowUp = getIsFollowUp(
+    DevelopmentalScreeningVisitSection,
+    activitiesTypes.pillar2
+  );
+
+  const isDevelopmentalScreeningWeeks = useMemo(
+    () => isFirstVisit && ageMonths >= 14 && fullAgeInMonths < 21,
+    [ageMonths, fullAgeInMonths, isFirstVisit]
+  );
+
+  const isDangerSignsFollowUpForMom = getIsFollowUp(
+    dangerSignsVisitSection,
+    activitiesTypes.careForMom
+  );
+
+  const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
+
+  const previousClinicCheckUpAnswer = previousAnswers?.find(
+    (item) => item.question === clinicCheckupQuestion
+  )?.questionAnswer;
+
+  const isShowClinicCheckUps = useMemo(
+    () =>
+      (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
+      (isFirstVisit && ageDays >= 49 && ageDays <= 56) ||
+      (Boolean(previousClinicCheckUpAnswer) === false && ageDays <= 56),
+    [ageDays, previousClinicCheckUpAnswer, isFirstVisit]
+  );
+
+  const isSelfCareAndSupport = useMemo(
+    () => isFirstVisit && ageDays >= 48 && ageDays <= 57,
+    [ageDays, isFirstVisit]
+  );
+
+  const isMaternalDistress = useMemo(
+    () => isFirstVisit && ageDays >= 49 && !ageYears && ageMonths < 9,
+    [ageDays, ageMonths, ageYears, isFirstVisit]
+  );
+
+  const isMaternalDistressFollowUp = getIsFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.careForMom
+  );
+
+  const isMotherCaregiver = useMemo(
+    () => infant?.caregiver?.relation?.description === 'Mother',
+    [infant?.caregiver?.relation?.description]
+  );
+
+  const isMaternalDistressScreening = useMemo(
+    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
+    [ageDays, isFirstVisit, isMotherCaregiver]
+  );
+
+  const isDisplayPillar2 = [
+    isDevelopmentalScreening,
+    isDevelopmentalScreeningWeeks,
+    isDevelopmentalScreeningWeeksFollowUp,
+  ].some((item) => !!item);
+
+  const isDisplayCareForBaby = [
+    isRoadToHeathBookStep,
+    isDangerSignsFollowUpForBaby,
+    isChildBefore49Days,
+    isNewBornCare,
+    isKangarooMotherCare,
+  ].some((item) => !!item);
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
@@ -128,17 +259,26 @@ export const ActivityList: React.FC = () => {
       (item) => item.label === 'Mother'
     );
 
-    const visibleActivities = activitiesList.filter(
-      (item) =>
-        (item.id !== activitiesTypes.careForMom &&
-          item.id !== activitiesTypes.pillar4) ||
+    const visibleActivities = activitiesList.filter((item) => {
+      if (
+        (item.id === activitiesTypes.pillar4 && !isChildAfter49Days) ||
+        (item.id === activitiesTypes.pillar2 && !isDisplayPillar2) ||
+        (item.id === activitiesTypes.careForBaby && !isDisplayCareForBaby) ||
         (item.id === activitiesTypes.careForMom &&
-          infant?.caregiver?.relation?.description === motherType?.label) ||
-        (item.id === activitiesTypes.pillar4 && isChildAfter49Days)
-    );
+          infant?.caregiver?.relation?.description !== motherType?.label)
+      )
+        return undefined;
+
+      return item;
+    });
 
     return { visibleActivities };
-  }, [infant?.caregiver?.relation?.description, isChildAfter49Days]);
+  }, [
+    infant?.caregiver?.relation?.description,
+    isChildAfter49Days,
+    isDisplayPillar2,
+    isDisplayCareForBaby,
+  ]);
 
   const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
     const completedActivities = visibleActivities.filter((item) =>
@@ -438,11 +578,34 @@ export const ActivityList: React.FC = () => {
     uncompletedForms,
     user?.firstName,
     visit?.actualVisitDate,
+    visit?.plannedVisitDate,
+    visit?.visitType?.normalizedName,
     width,
   ]);
 
   if (showForm && selectedOption) {
-    return <Form onBack={onFormBack} />;
+    return (
+      <Form
+        stepsRules={{
+          isRoadToHeathBookStep,
+          isDevelopmentalScreening,
+          isDevelopmentalScreeningWeeks,
+          isDevelopmentalScreeningWeeksFollowUp,
+          isChildBefore49Days,
+          isDangerSignsFollowUpForBaby,
+          isKangarooMotherCare,
+          isNewBornCare,
+          isDangerSignsFollowUpForMom,
+          isShowClinicCheckUps,
+          isSelfCareAndSupport,
+          isMaternalDistress,
+          isMaternalDistressFollowUp,
+          isMaternalDistressScreening,
+        }}
+        onBack={onFormBack}
+        getIsFollowUp={getIsFollowUp}
+      />
+    );
   }
 
   return (

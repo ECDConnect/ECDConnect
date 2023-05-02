@@ -12,17 +12,10 @@ import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import {
-  addDays,
-  getYear,
-  startOfMonth,
-  endOfMonth,
-  parse,
-  add,
-} from 'date-fns';
+import { getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
-import { ClassRoomChildAttendanceMonthlyReportModel } from '@ecdlink/core';
+import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -34,9 +27,21 @@ export const AttendanceMonthlyReport: React.FC<
 > = ({ attendanceSummary, classroomId }) => {
   const [displayReport, setDisplayReport] = useState<boolean>(false);
 
+  const [totalAttendance, setTotalAttendance] = useState<
+    {
+      key: number;
+      value: number;
+    }[]
+  >([]);
+  const [totalAttendanceStatsReport, setTotalAttendanceStatsReport] = useState<{
+    totalSessions: number;
+    totalMonthlyAttendance: number;
+    totalChildrenAttendedSessions: number;
+  }>();
+
   const [viewReportDate, setViewReportDate] = useState<string>();
   const [reportData, setReportData] = useState<
-    ClassRoomChildAttendanceMonthlyReportModel[]
+    ChildAttendanceOverallReportModel[]
   >([]);
   const authUser = useSelector(authSelectors.getAuthUser);
 
@@ -68,7 +73,9 @@ export const AttendanceMonthlyReport: React.FC<
           endDate
         )
         .then((data) => {
-          setReportData(data);
+          setReportData(data.classroomAttendanceReport);
+          setTotalAttendance(data.totalAttendance);
+          setTotalAttendanceStatsReport(data.totalAttendanceStatsReport);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -138,10 +145,12 @@ export const AttendanceMonthlyReport: React.FC<
           <div className={'h-full'}>
             <MonthlyAttendanceReport
               reportMonth={viewReportDate ?? ''}
-              onDownloadReport={() => console.log('>>')}
+              onDownloadReport={() => {}}
               onBack={() => closeReport()}
               classroomGroupId={classroomId}
               reportData={reportData}
+              totalAttendance={totalAttendance}
+              totalAttendanceStatsReport={totalAttendanceStatsReport}
             />
           </div>
         </Dialog>

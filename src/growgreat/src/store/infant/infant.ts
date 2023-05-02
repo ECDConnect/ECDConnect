@@ -84,8 +84,8 @@ const infantSlice = createSlice({
       if (!action.payload || !state.infants) return;
 
       state.infants = state.infants?.map((item) => {
-        if (item.id === action.payload.id) {
-          return { ...item, ...action };
+        if (item?.user?.id === action.payload?.user?.id) {
+          return { ...item, ...action.payload };
         }
         return item;
       });
