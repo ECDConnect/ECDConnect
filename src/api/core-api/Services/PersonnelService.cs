@@ -150,6 +150,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     principalClassroom.Name = classroom.Name;
                     principalClassroom.Id = classroom.Id.ToString();
                     principalClassroom.InsertedDate = classroom.InsertedDate;
+                    if (classroom.SiteAddressId != null)
+                    {
+                        var addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
+                        SiteAddress classAddress = addressRepo.GetById((Guid)classroom.SiteAddressId);
+                        principalClassroom.ClassSiteAddress = classAddress.Name + " " + classAddress.AddressLine1 + " " + classAddress.AddressLine2 + " " + classAddress.AddressLine3 + " " + (classAddress.Province != null ? classAddress.Province.Description : string.Empty) + " " + classAddress.PostalCode;
+                    }
                 }
             }
             return principalClassroom;
