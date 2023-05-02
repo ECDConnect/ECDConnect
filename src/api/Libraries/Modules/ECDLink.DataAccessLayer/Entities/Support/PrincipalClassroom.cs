@@ -19,5 +19,7 @@ namespace ECDLink.DataAccessLayer.Entities
 
         public DateTime InsertedDate { get; set; }
         public string ProgrammeTypeName { get; set; }
+
+        public string ClassSiteAddress { get; set; }
     }
 }

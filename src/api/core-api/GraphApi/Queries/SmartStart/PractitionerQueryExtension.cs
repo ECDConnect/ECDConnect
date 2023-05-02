@@ -198,7 +198,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 Phone = practi.User.PhoneNumber, 
                 PrincipalName = classDetails.PrincipalName, 
                 ProgrammeDays = "Monday to Friday", 
-                ProgrammeTypeName = classDetails.ProgrammeTypeName   };
+                ProgrammeTypeName = classDetails.ProgrammeTypeName,
+                ClassSiteAddress = classDetails.ClassSiteAddress
+            };
             return details;
         }
 

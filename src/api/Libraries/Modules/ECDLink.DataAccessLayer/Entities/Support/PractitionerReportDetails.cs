@@ -26,5 +26,6 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ProgrammeDays { get; set; }
 
         public string Phone { get; set;}
+        public string ClassSiteAddress { get; set; }
     }
 }
