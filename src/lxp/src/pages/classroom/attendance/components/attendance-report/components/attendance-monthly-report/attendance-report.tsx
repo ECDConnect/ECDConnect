@@ -1,6 +1,6 @@
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
 import { ComponentBaseProps, BannerWrapper, Typography } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
@@ -13,10 +13,25 @@ import GeneratePdfReportButton from '../../../../../../../../src/components/down
 import { UserOptions } from 'jspdf-autotable';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
+import { authSelectors } from '@/store/auth';
+import { PractitionerService } from '@/services/PractitionerService';
 
 export interface ChildAttendanceReportState {
   childId: string;
   classroomGroupId: string;
+}
+
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
 }
 
 export interface MonthlyAttendanceReportProps extends ComponentBaseProps {
@@ -38,8 +53,26 @@ export const MonthlyAttendanceReport = ({
 }: MonthlyAttendanceReportProps) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
+
+  useEffect(() => {
+    const getClassroomDetails = async () => {
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getReportDetailsForPractitioner(userAuth?.id || '');
+      return res;
+    };
+
+    getClassroomDetails().then((data) => {
+      console.log(data);
+      setReportDetails(data)
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (!isOnline) {
@@ -99,20 +132,26 @@ export const MonthlyAttendanceReport = ({
     footer.push(obj.value.toString());
   });
 
+  let attendnaceSum = 0;
+
+  for (let i = 0; i < totalAttendance.length; i++) {
+    attendnaceSum += totalAttendance[i].value;
+  }
+
   const tableTopContent = {
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: '',
     text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_coulumn_one_row_two: `ID: ${practitioner?.user?.idNumber}`,
-    text_coulumn_one_row_three: `Phone: ${practitioner?.user?.phoneNumber}`,
+    text_coulumn_one_row_two: `ID: ${reportDeatils?.idNumber}`,
+    text_coulumn_one_row_three: `Phone: ${reportDeatils?.phone}`,
     //column2 with 3 rows of text
-    text_column_two_row_one: `ProgrammeType: `,
-    text_column_two_row_two: 'Programmme Days: Monday to Friday',
-    text_column_two_row_three: `Site: ${practitioner?.siteAddress}`,
+    text_column_two_row_one: `ProgrammeType:${reportDeatils?.programmeTypeName} `,
+    text_column_two_row_two: `Programme Days:${reportDeatils?.programmeDays} `,
+    text_column_two_row_three: `Site: ${reportDeatils?.classSiteAddress}`,
   };
 
   const tableBottomContent = [
-    `Total monthly attendance: ${totalAttendanceStatsReport?.totalMonthlyAttendance}`,
+    `Total monthly attendance: ${attendnaceSum}`,
     `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
     `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions}`,
   ];
