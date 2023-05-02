@@ -1,6 +1,9 @@
 import { createSlice } from '@reduxjs/toolkit';
 import { ThunkActionStatuses } from '../types';
-import { syncOfflineData } from './sync.actions';
+import {
+  syncOfflineData,
+  syncOfflineDataForPractitioner,
+} from './sync.actions';
 import { SyncStates } from './sync.types';
 
 const initialState: SyncStates = {
@@ -36,21 +39,22 @@ const syncSlice = createSlice({
     builder.addCase(syncOfflineData.rejected, (state, action) => {
       state.status = ThunkActionStatuses.Rejected;
     });
-    // builder.addCase(
-    //   syncOfflineDataForPractitioner.fulfilled,
-    //   (state, action) => {
-    //     state.status = ThunkActionStatuses.Fulfilled;
-    //   }
-    // );
-    // builder.addCase(syncOfflineDataForPractitioner.pending, (state, action) => {
-    //   state.status = ThunkActionStatuses.Pending;
-    // });
-    // builder.addCase(
-    //   syncOfflineDataForPractitioner.rejected,
-    //   (state, action) => {
-    //     state.status = ThunkActionStatuses.Rejected;
-    //   }
-    // );
+
+    builder.addCase(
+      syncOfflineDataForPractitioner.fulfilled,
+      (state, action) => {
+        state.status = ThunkActionStatuses.Fulfilled;
+      }
+    );
+    builder.addCase(syncOfflineDataForPractitioner.pending, (state, action) => {
+      state.status = ThunkActionStatuses.Pending;
+    });
+    builder.addCase(
+      syncOfflineDataForPractitioner.rejected,
+      (state, action) => {
+        state.status = ThunkActionStatuses.Rejected;
+      }
+    );
   },
 });
 

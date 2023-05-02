@@ -1,6 +1,6 @@
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
 import { authSelectors } from '@/store/auth';
-import { LanguageDto, useDialog } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import {
   ActionModal,
   Alert,
@@ -13,12 +13,10 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import LanguageSelector from '@/components/language-selector/language-selector';
 import walktroughImage from '../../../assets/walktroughImage.png';
 import ROUTES from '@/routes/routes';
 import { useAppContext } from '@/walkthrougContext';
 import { useHistory } from 'react-router';
-import { staticDataSelectors } from '@/store/static-data';
 
 interface StatementsShowInfoProps {
   setShowInfo: any;

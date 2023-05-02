@@ -272,7 +272,6 @@ export const AlcoholUseStep = ({
                   {[
                     '300ml (1 small bottle) of 5% beer',
                     '117ml (1 small glass) of 13% wine',
-                    'Not be paid to care for the child',
                     '37ml (1 shotglass) of 40% spirits (for example: gin whiskey, vodka).',
                   ].map((item) => (
                     <li key={item} className="text-textMid">

@@ -1,4 +1,11 @@
-import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  DialogPosition,
+  Dialog,
+  ButtonGroup,
+  ButtonGroupTypes,
+  Typography,
+} from '@ecdlink/ui';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P5 from '@/assets/pillar/p5.svg';
 import { DynamicFormProps } from '../../dynamic-form';
@@ -54,12 +61,18 @@ export const HIVCareAndMedicationStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="HIV care & medication"
-        section="HIV care & medication"
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="HIV care & medication"
+          section="HIV care & medication"
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

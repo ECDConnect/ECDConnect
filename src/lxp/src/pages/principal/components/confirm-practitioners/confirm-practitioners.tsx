@@ -49,6 +49,7 @@ export default function ConfirmPractitioners({
     RegisterPractitioner[]
   >([]);
   const [allInFundaApp, setAllInFundaApp] = useState<boolean>();
+  const [hasTrainees, setHasTrainees] = useState<boolean>();
   const [editPractitioner, setEditPractitioner] =
     useState<RegisterPractitioner>();
   const [listItems, setListItems] = useState<StackListItems[]>([
@@ -81,9 +82,16 @@ export default function ConfirmPractitioners({
               passport: '',
               preferId: !!item?.user?.idNumber,
               isRegistered: Boolean(item?.isRegistered),
+              isTrainee: Boolean(item?.isTrainee),
             })
           );
-        setListItems(listItems);
+
+        const filteredList = listItems.filter(
+          (value, index, self) =>
+            index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+        );
+
+        setListItems(filteredList);
 
         _practitionersList.push({
           firstName: item?.user?.firstName ?? '',
@@ -94,17 +102,32 @@ export default function ConfirmPractitioners({
           passport: '',
           preferId: !!item?.user?.idNumber,
           isRegistered: Boolean(item?.isRegistered),
+          isTrainee: Boolean(item?.isTrainee),
         });
       });
-      setPrincipalPractitioners(_practitionersList);
+
+      const principalFilteredList = _practitionersList.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+      );
+      setPrincipalPractitioners(principalFilteredList);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isFundaAppAdmin, isSmartLinkImported, practitioners, user?.idNumber]);
 
   useEffect(() => {
     if (practitionersForPrincipal?.length) {
       const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
       (practitionersForPrincipal as unknown as RegisterPractitioner[]).forEach(
-        ({ firstName, surname, id, idNumber, isRegistered, userId }) => {
+        ({
+          firstName,
+          surname,
+          id,
+          idNumber,
+          isRegistered,
+          userId,
+          isTrainee,
+        }) => {
           listItems.push(
             createStackItem({
               firstName: firstName ?? '',
@@ -114,9 +137,15 @@ export default function ConfirmPractitioners({
               passport: '',
               preferId: !!idNumber,
               isRegistered: Boolean(isRegistered),
+              isTrainee: Boolean(isTrainee),
             })
           );
-          setListItems(listItems);
+
+          const filteredList = listItems.filter(
+            (value, index, self) =>
+              index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+          );
+          setListItems(filteredList);
 
           _practitionersList.push({
             firstName: firstName ?? '',
@@ -127,10 +156,16 @@ export default function ConfirmPractitioners({
             passport: '',
             preferId: !!idNumber,
             isRegistered: Boolean(isRegistered),
+            isTrainee: Boolean(isTrainee),
           });
         }
       );
-      setPrincipalPractitioners(_practitionersList);
+
+      const principalFilteredList = _practitionersList.filter(
+        (value, index, self) =>
+          index === self.findIndex((t) => t?.idNumber === value?.idNumber)
+      );
+      setPrincipalPractitioners(principalFilteredList);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [practitionersForPrincipal]);
@@ -180,6 +215,10 @@ export default function ConfirmPractitioners({
       (l) => l.isRegistered === true
     );
     setAllInFundaApp(allInFunda);
+    const hasTrainees = principalPractitioners.every(
+      (l) => l.isTrainee === true
+    );
+    setHasTrainees(hasTrainees);
 
     setConfirmPractitionerPage(ConfirmPractitionersSteps.CONFIRM_PRACTITIONERS);
   };
@@ -212,11 +251,21 @@ export default function ConfirmPractitioners({
                   color={'textMid'}
                 />
               </div>
-
+              {!!hasTrainees && (
+                <div>
+                  <Alert
+                    type={'info'}
+                    title={'One or more of your practitioners is a trainee.'}
+                    list={[
+                      'You will not be able to view their profile or add them to a class until they complete trainee onboarding.',
+                    ]}
+                  />
+                </div>
+              )}
               {allInFundaApp !== undefined && (
                 <div>
                   <Alert
-                    type={allInFundaApp ? 'success' : 'error'}
+                    type={allInFundaApp ? 'success' : 'warning'}
                     title={
                       allInFundaApp
                         ? 'All practitioners at your programme are registered on Funda app.'

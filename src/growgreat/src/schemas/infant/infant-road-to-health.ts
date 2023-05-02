@@ -3,6 +3,7 @@ import * as Yup from 'yup';
 export interface InfantRoadToHealthModel {
   weightAtBirth?: number;
   lengthAtBirth?: number;
+  height?: number;
   roadToHealthBook?: string;
   notRoadToHealthBook?: boolean;
 }

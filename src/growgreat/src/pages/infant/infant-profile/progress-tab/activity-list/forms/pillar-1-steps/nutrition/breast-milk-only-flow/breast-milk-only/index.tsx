@@ -1,4 +1,4 @@
-import { Alert, Typography } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
@@ -12,10 +12,7 @@ import { Video } from '../../../../components/video';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useParams } from 'react-router';
-import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const BreastMilkOnlyStep = ({
@@ -26,8 +23,6 @@ export const BreastMilkOnlyStep = ({
   onNextStep,
 }: DynamicFormProps) => {
   const { isOnline } = useOnlineStatus();
-
-  const { visitId } = useParams<InfantProfileParams>();
 
   const name = useMemo(
     () => infant?.user?.firstName || '',
@@ -45,9 +40,7 @@ export const BreastMilkOnlyStep = ({
     getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
-  const isFirstVisit = useSelector((state: RootState) =>
-    getIsInfantFirstVisitSelector(state, visitId)
-  );
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
 
   const isBenefitsOfBreastfeeding = useMemo(
     () => isFirstVisit && ageDays < 7,
@@ -213,12 +206,18 @@ export const BreastMilkOnlyStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle={sectionName}
-        section={sectionName}
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle={sectionName}
+          section={sectionName}
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

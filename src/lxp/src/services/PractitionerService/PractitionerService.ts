@@ -247,7 +247,7 @@ class PractitionerService {
                 dateToBeRemoved
                 isLeaving
                 progress
-
+                isTrainee
               }
             }
             note

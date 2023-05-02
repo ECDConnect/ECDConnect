@@ -76,6 +76,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         }
                         else
                         {
+                            if (practitioner.CoachHierarchy == null || practitioner.CoachHierarchy != principal.CoachHierarchy) 
+                            {
+                                return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Oh no! You can't add this practitioner to your programme. They don't have the same coach that you have. If you need more help, please contact the SmartStart call centre."};
+                            }
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     }

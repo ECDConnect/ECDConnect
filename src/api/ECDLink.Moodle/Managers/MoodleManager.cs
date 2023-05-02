@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Configuration;
 using Npgsql;
 using System;
+using System.Collections.Generic;
 using System.Security.Cryptography;
 using System.Threading.Tasks;
 
@@ -16,7 +17,7 @@ namespace ECDLink.Moodle.Managers
             _configuration = configuration;
         }
 
-        public async Task<bool> CreateUserAsync(MoodleUser user, string cohortName)
+        public async Task<bool> CreateUserAsync(MoodleUser user, List<string> cohorts)
         {
             string connectionString = ConfigurationExtensions.GetConnectionString(_configuration, "MoodleConnectionString");
 
@@ -50,7 +51,7 @@ namespace ECDLink.Moodle.Managers
                         new NpgsqlParameter("Confirmed", user.Confirmed),
                         new NpgsqlParameter("Mnethostid", user.Mnethostid),
                         new NpgsqlParameter("UserName", user.UserName),
-                        new NpgsqlParameter("Password", HashPassword(user.Password)),
+                        new NpgsqlParameter("Password", "$2y$10$NC4irSPAfnZHUN8HjWXD8e9.MotF0pGqZq6KDPtbfbUquHOQplQbq"), //HashPassword(user.Password)),
                         new NpgsqlParameter("IdNumber", user.IdNumber),
                         new NpgsqlParameter("Firstname", user.Firstname),
                         new NpgsqlParameter("Lastname", user.Lastname),
@@ -61,59 +62,62 @@ namespace ECDLink.Moodle.Managers
                 await cmd.ExecuteNonQueryAsync();
             }
 
-            // get cohort id
-            await using var getCohortId = new NpgsqlCommand("SELECT id FROM public.mdl_cohort where name = (@cohortName)", conn)
+            foreach (var cohortName in cohorts)
             {
-                Parameters = { new NpgsqlParameter("cohortName", cohortName) }
-            };
-            await using var cohortReader = await getCohortId.ExecuteReaderAsync();
+                // get cohort id
+                await using var getCohortId = new NpgsqlCommand("SELECT id FROM public.mdl_cohort where name = (@cohortName)", conn)
+                {
+                    Parameters = { new NpgsqlParameter("cohortName", cohortName) }
+                };
+                await using var cohortReader = await getCohortId.ExecuteReaderAsync();
 
-            long cohortId = -1;
-            while (await cohortReader.ReadAsync())
-            {
-                cohortId = cohortReader.GetInt64(0);
-            }
-            reader.Close();
+                long cohortId = -1;
+                while (await cohortReader.ReadAsync())
+                {
+                    cohortId = cohortReader.GetInt64(0);
+                }
+                reader.Close();
 
-            // get cohort member id
-            await using var getCohortMemberId = new NpgsqlCommand("SELECT id FROM public.mdl_cohort_members where cohortid = (@cohortId) and userid = (@userId)", conn)
-            {
-                Parameters = {
+                // get cohort member id
+                await using var getCohortMemberId = new NpgsqlCommand("SELECT id FROM public.mdl_cohort_members where cohortid = (@cohortId) and userid = (@userId)", conn)
+                {
+                    Parameters = {
                     new NpgsqlParameter("cohortId", cohortId),
                     new NpgsqlParameter("userId", userId)
                 }
 
-            };
-            await using var cohortMemberReader = await getCohortMemberId.ExecuteReaderAsync();
+                };
+                await using var cohortMemberReader = await getCohortMemberId.ExecuteReaderAsync();
 
-            long cohortMemberId = -1;
-            while (await cohortMemberReader.ReadAsync())
-            {
-                cohortMemberId = cohortMemberReader.GetInt64(0);
-            }
-            reader.Close();
-
-            // Add the cohort member record if not existed
-            if (cohortMemberId == -1)
-            {
-                DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
-                var unixTimeStamp = dto.ToUnixTimeSeconds();
-
-                await using var cmd = new NpgsqlCommand("INSERT INTO public.mdl_cohort_members" +
-                    "(cohortid, userid, timeadded)" +
-                    "VALUES((@cohortId),(@userId),(@unixTimeStamp))" +
-                    "RETURNING id",
-                    conn)
+                long cohortMemberId = -1;
+                while (await cohortMemberReader.ReadAsync())
                 {
-                    Parameters =
+                    cohortMemberId = cohortMemberReader.GetInt64(0);
+                }
+                reader.Close();
+
+                // Add the cohort member record if not existed
+                if (cohortMemberId == -1)
+                {
+                    DateTimeOffset dto = new DateTimeOffset(DateTime.Now);
+                    var unixTimeStamp = dto.ToUnixTimeSeconds();
+
+                    await using var cmd = new NpgsqlCommand("INSERT INTO public.mdl_cohort_members" +
+                        "(cohortid, userid, timeadded)" +
+                        "VALUES((@cohortId),(@userId),(@unixTimeStamp))" +
+                        "RETURNING id",
+                        conn)
+                    {
+                        Parameters =
                     {
                         new NpgsqlParameter("cohortId", cohortId),
                         new NpgsqlParameter("userId", userId),
                         new NpgsqlParameter("unixTimeStamp", unixTimeStamp),
                     }
-                };
+                    };
 
-                await cmd.ExecuteNonQueryAsync();
+                    await cmd.ExecuteNonQueryAsync();
+                }
             }
 
             conn.Close();

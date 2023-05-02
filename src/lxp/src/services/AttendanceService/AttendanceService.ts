@@ -58,30 +58,39 @@ class AttendanceService {
     classgroupId: string,
     startDate: Date,
     endDate: Date
-  ): Promise<ClassRoomChildAttendanceMonthlyReportModel[]> {
+  ): Promise<ClassRoomChildAttendanceMonthlyReportModel> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      query classroomAttendanceReport(
+      query classroomAttendanceOverviewReport(
         $userId: String
         $classgroupId: UUID!
         $startDate: DateTime!
         $endDate: DateTime!) {
-        classroomAttendanceReport(
-          userId: $userId
-          classgroupId: $classgroupId
-          startDate: $startDate
-          endDate: $endDate
-          ){
-          totalActualAttendance
-          totalExpectedAttendance
-          attendancePercentage
-          classgroupId
-          childFullName
-          childUserId
-          month
-          year 
+        classroomAttendanceOverviewReport(
+            userId: $userId
+            classgroupId: $classgroupId
+            startDate: $startDate
+            endDate: $endDate) {
+        classroomAttendanceReport{
+            totalActualAttendance
+            totalExpectedAttendance
+            attendancePercentage
+            classgroupId
+            childFullName
+            childIdNumber
+            childUserId
+            month
+            year
+            attendance{ key value }
         }
+        totalAttendance { key value }
+        totalAttendanceStatsReport {
+        totalSessions
+        totalMonthlyAttendance
+        totalChildrenAttendedSessions
+        }
+    }
     }
       `,
       variables: {
@@ -97,7 +106,7 @@ class AttendanceService {
         'Get Monthly Attendance Report failed - Server connection error'
       );
     }
-    return response.data.data.classroomAttendanceReport;
+    return response.data.data.classroomAttendanceOverviewReport;
   }
 
   async getMonthlyAttendanceReport(

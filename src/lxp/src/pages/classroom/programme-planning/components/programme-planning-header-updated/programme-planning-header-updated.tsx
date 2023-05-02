@@ -98,7 +98,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             {renderIcon('ChevronLeftIcon', 'h-6 w-6 text-textMid')}
           </div>
           <Dropdown
-            showSearch
             placeholder={`${monthDropdownLabel} ${currentYear}`}
             list={monthsList}
             selectedValue={month}

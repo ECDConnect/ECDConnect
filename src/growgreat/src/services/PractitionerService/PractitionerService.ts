@@ -569,6 +569,27 @@ class PractitionerService {
 
     return response.data.data.practitionerColleagues;
   }
+
+  async getMoodleSessionForUserId(userId: string): Promise<string> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query getMoodleSessionForUserId($userId: String) {
+        getMoodleSessionForUserId(userId: $userId) {
+        }
+      }
+      `,
+      variables: {
+        userId,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.getMoodleSessionForUserId;
+  }
 }
 
 export default PractitionerService;

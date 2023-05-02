@@ -1,4 +1,4 @@
-export const wrapper = 'h-full bg-uiBg flex flex-col overflow-auto pb-20';
+export const wrapper = 'h-full bg-uiWhite flex flex-col overflow-auto pb-20';
 export const bannerContentWrapper =
   'flex flex-col justify-between items-stretch h-full';
 export const spaceTop = 'mt-4';

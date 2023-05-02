@@ -156,7 +156,7 @@ export const NutritonEatingStep = ({
             disabled={item?.disabled}
           />
         ))}
-        {!!answers.length && (
+        {!!answers.length && !answers.includes(noneOption) && (
           <div className="mt-4 flex gap-2">
             <div
               className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(

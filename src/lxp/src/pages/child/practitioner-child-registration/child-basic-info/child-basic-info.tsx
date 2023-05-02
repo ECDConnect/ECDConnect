@@ -34,7 +34,7 @@ export const ChildBasicInfo: React.FC<
     classroomsSelectors?.getAllClassroomGroups
   );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const getClassroomForPrincipal = getAllClassroomGroups.filter((item) => {
+  const getClassroomForPractitioner = getAllClassroomGroups.filter((item) => {
     return item?.userId === practitioner?.userId || item?.isActive !== true;
   });
 
@@ -139,8 +139,8 @@ export const ChildBasicInfo: React.FC<
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
         list={
-          isPrincipal
-            ? getClassroomForPrincipal.map((x) => ({
+          !isPrincipal
+            ? getClassroomForPractitioner.map((x) => ({
                 label: x.name,
                 value: x.id || '',
               }))

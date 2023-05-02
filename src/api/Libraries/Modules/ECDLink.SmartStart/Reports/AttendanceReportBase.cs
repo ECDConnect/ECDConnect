@@ -88,7 +88,7 @@ namespace ECDLink.SmartStart.Reports
                 }
             }
 
-            var monthRange = validClassdays.Where(x => x >= actualStart && x <= actualEnd);
+            var monthRange = validClassdays.Where(x => x.Date >= actualStart.Date && x <= actualEnd.Date).ToList();
 
             return monthRange.Where(x => (int)x.DayOfWeek == day).ToList();
         }
