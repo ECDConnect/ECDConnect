@@ -335,6 +335,7 @@ namespace ECDLink.SmartStart.Reports
         public ClassroomGroupChildAttendanceReportOverviewModel GetClassroomAttendanceOverView( Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
             ClassroomGroupChildAttendanceReportOverviewModel overviewReport = new ClassroomGroupChildAttendanceReportOverviewModel();
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
             overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
 
             SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();

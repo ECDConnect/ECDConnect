@@ -121,6 +121,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var classroomGroupRepo = _repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: _applicationUserId);
             var classroomRepo = _repoFactory.CreateGenericRepository<Classroom>(userContext: _applicationUserId);
+            var ptypeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
             var practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId); //BYPASS USERHIERARCHY TO SEE UP THE CHAIN
             PrincipalClassroom principalClassroom = new PrincipalClassroom();
             var practitioner = practitionerRepo.GetByUserId(userId);
@@ -138,6 +139,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         classroom = classroomRepo.GetById(classroomGroup.ClassroomId);
                         principalClassroom.ClassroomGroupName = classroomGroup.Name;
                         principalClassroom.ClassroomGroupId = classroomGroup.Id.ToString();
+                        ProgrammeType ptype = ptypeRepo.GetAll().Where(p => p.Id.Equals(classroomGroup.ProgrammeTypeId)).FirstOrDefault();
+                        principalClassroom.ProgrammeTypeName = ptype!=null ? ptype.Description : "";
                     }
                     else
                     {

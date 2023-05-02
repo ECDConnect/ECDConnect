@@ -104,7 +104,7 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = item.Value.Sum(x => x.Item1);
+                var totalAttendance = (item.Value.Sum(x => x.Item1) / 3);
                 var actualAttendance = item.Value.Sum(x => x.Item2);
 
                 report.Add(new MonthlyAttendanceReportModel
