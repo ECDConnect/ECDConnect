@@ -23,7 +23,9 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     routineType === DailyRoutineItemType.smallGroup ||
     routineType === DailyRoutineItemType.largeGroup ||
     routineType === DailyRoutineItemType.storyBook;
-  const isMessageBoard = routineType === DailyRoutineItemType.messageBoard;
+  const isMessageBoard =
+    routineType === DailyRoutineItemType.messageBoard ||
+    routineType === DailyRoutineItemType.greeting;
   const activity = useSelector(
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)
@@ -84,7 +86,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
   const getRoutineItemPostSlotRender = () => {
     if (
-      routineItem.name === DailyRoutineItemType.messageBoard ||
+      // routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {
@@ -135,23 +137,23 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   const getRoutineItemPreSlotRender = () => {
-    if (
-      routineItem.name === DailyRoutineItemType.messageBoard &&
-      day?.messageBoardText
-    ) {
-      return (
-        <div
-          className={`bg-primary} mr-2 flex flex-row items-center justify-center rounded-full p-4`}
-          style={{ backgroundColor: routineItem.iconBackgroundColor }}
-        >
-          <img
-            className={'h-5 w-5'}
-            src={routineItem.icon}
-            alt="routine item"
-          />
-        </div>
-      );
-    }
+    // if (
+    //   routineItem.name === DailyRoutineItemType.messageBoard &&
+    //   day?.messageBoardText
+    // ) {
+    //   return (
+    //     <div
+    //       className={`bg-primary} mr-2 flex flex-row items-center justify-center rounded-full p-4`}
+    //       style={{ backgroundColor: routineItem.iconBackgroundColor }}
+    //     >
+    //       <img
+    //         className={'h-5 w-5'}
+    //         src={routineItem.icon}
+    //         alt="routine item"
+    //       />
+    //     </div>
+    //   );
+    // }
     if (activity) {
       return (
         <RoundIcon

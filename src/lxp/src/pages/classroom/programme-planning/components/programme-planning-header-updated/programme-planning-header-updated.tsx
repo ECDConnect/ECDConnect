@@ -45,6 +45,8 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
         format(new Date(selectedDate! || programmeChooseDate), 'd MMM yyyy')
       );
     });
+  console.log({ theme });
+
   const [chooseDayIndex, setChooseDayIndex] = useState(dailyProgramme?.day);
   const disableAddDay = dailyProgramme?.day === theme?.dailyProgrammes.length;
   const disableSubDay = dailyProgramme?.day === 1;
@@ -62,11 +64,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   }, [subHeaderText]);
 
   const addDay = () => {
-    if (dailyProgramme?.day !== theme?.dailyProgrammes.length) {
-      const updatedIndex = chooseDayIndex + 1;
+    if (Number(dailyProgramme?.day) !== theme?.dailyProgrammes.length) {
+      const updatedIndex = Number(chooseDayIndex) + 1;
       setChooseDayIndex(updatedIndex);
       const newDate = theme?.dailyProgrammes?.find((item) => {
-        return Number(item?.day) === updatedIndex;
+        return Number(item?.day) === Number(updatedIndex);
       });
       setProgrammeChooseDate(new Date(newDate?.dayDate!));
       setSelectedDate(new Date(newDate?.dayDate!));
@@ -74,11 +76,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   };
 
   const subDay = () => {
-    if (dailyProgramme?.day !== 1) {
-      const updatedIndex = chooseDayIndex - 1;
+    if (Number(dailyProgramme?.day) !== 1) {
+      const updatedIndex = Number(chooseDayIndex) - 1;
       setChooseDayIndex(updatedIndex);
       const newDate = theme?.dailyProgrammes?.find((item) => {
-        return Number(item?.day) === updatedIndex;
+        return Number(item?.day) === Number(updatedIndex);
       });
       setProgrammeChooseDate(new Date(newDate?.dayDate!));
       setSelectedDate(new Date(newDate?.dayDate!));
