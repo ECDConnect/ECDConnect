@@ -127,7 +127,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             var practitioner = practitionerRepo.GetByUserId(userId);
             if (practitioner != null)
             {
-                var principal = practitionerRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString());
+                var principal = ((bool)practitioner.IsPrincipal || (bool)practitioner.IsFundaAppAdmin ? practitioner : practitionerRepo.GetByUserId(practitioner.PrincipalHierarchy.ToString()));
                 if (principal != null)
                 {
                     principalClassroom.PrincipalName = string.IsNullOrWhiteSpace(principal.User.FullName) ? principal.User.FullName : principal.User.FullName;
