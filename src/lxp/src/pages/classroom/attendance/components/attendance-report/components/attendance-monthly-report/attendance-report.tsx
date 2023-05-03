@@ -59,34 +59,21 @@ export const MonthlyAttendanceReport = ({
 
   const { errorDialog, successDialog } = useRequestResponseDialog();
 
-  // const {
-  //   isLoading: isLoading,
-  //   isRejected: isRejectedAdditionalVisit,
-  // } = useThunkFetchCall(
-  //   'track',
-  //   attendanceActions.trackAttendance
-  // );
-
-
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
+  const [reportDeatils, setReportDetails] =
+    useState<ReportDetailsForPractitionerData>();
 
   useEffect(() => {
     const getClassroomDetails = async () => {
-      try{
-        const res = await new PractitionerService(
-          userAuth?.auth_token || ''
-        ).getReportDetailsForPractitioner(userAuth?.id || '');
-        return res;
-      }catch(err){
-        console.log(">", err)
-      }
-     
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getReportDetailsForPractitioner(userAuth?.id || '');
+      return res;
     };
 
     getClassroomDetails().then((data) => {
-      setReportDetails(data)
+      setReportDetails(data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -272,24 +259,26 @@ export const MonthlyAttendanceReport = ({
         );
       })}
       <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-          <GeneratePdfReportButton
-            title="Download Register"
-            outputName={`${reportMonth}-attandance-report.pdf`}
-            tableData={finalTableData}
-            tableFooter={footer}
-            content={tableTopContent}
-            tableBottomContent={tableBottomContent}
-            tableHeadStyles={tableHeadStyles}
-            tableFootStyles={tableFootStyles}
-            tableStyles={tableStyles}
-          />
+        <GeneratePdfReportButton
+          title="Download Register"
+          outputName={`${reportMonth}-attandance-report.pdf`}
+          tableData={finalTableData}
+          tableFooter={footer}
+          content={tableTopContent}
+          tableBottomContent={tableBottomContent}
+          tableHeadStyles={tableHeadStyles}
+          tableFootStyles={tableFootStyles}
+          tableStyles={tableStyles}
+        />
       </div>
     </BannerWrapper>
   );
 };
 
 export default MonthlyAttendanceReport;
-function useThunkFetchCall(arg0: string, ADD_ADDITIONAL_VISIT_FOR_INFANT: any): { isLoading: any; isRejected: any; } {
+function useThunkFetchCall(
+  arg0: string,
+  ADD_ADDITIONAL_VISIT_FOR_INFANT: any
+): { isLoading: any; isRejected: any } {
   throw new Error('Function not implemented.');
 }
-
