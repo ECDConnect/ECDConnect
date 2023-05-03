@@ -145,7 +145,7 @@ export const AttendanceMonthlyReport: React.FC<
           <div className={'h-full'}>
             <MonthlyAttendanceReport
               reportMonth={viewReportDate ?? ''}
-              onDownloadReport={() => console.log('>>')}
+              onDownloadReport={() => {}}
               onBack={() => closeReport()}
               classroomGroupId={classroomId}
               reportData={reportData}

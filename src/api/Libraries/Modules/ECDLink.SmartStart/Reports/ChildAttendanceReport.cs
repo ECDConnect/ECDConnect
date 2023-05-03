@@ -77,7 +77,6 @@ namespace ECDLink.SmartStart.Reports
 
             var learnerReports = new List<ChildGroupingAttendanceReportModel>();
 
-            // prolly one 1 for now
             foreach (var learner in learners)
             {
                 var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
@@ -199,7 +198,7 @@ namespace ECDLink.SmartStart.Reports
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
                     ExpectedAttendance = totalAttendance,
-                    AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
+                    AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
                 });
             }
 
@@ -242,13 +241,17 @@ namespace ECDLink.SmartStart.Reports
                 return null;
             }
 
-            foreach (var classroomGroup in classroom.ClassroomGroups)
+            //retrieve only groups the user is allowed to see
+            var classgroupRepo = _repositoryFactory.CreateRepository<ClassroomGroup>(userContext: userId);
+            List<ClassroomGroup> groups = classgroupRepo.GetAll().ToList();
+
+            foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
             {
                 var learners = GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
                 var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: userId);
                 List<Child> children = childRepo.GetAll().ToList();
-
+                var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
                 if (learners.Any())
                 {
                     foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains( x.UserId)))
@@ -264,10 +267,7 @@ namespace ECDLink.SmartStart.Reports
 
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
-                                var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
-                                                      && x.ClassroomProgrammeId == programme.Id
-                                                      && x.MonthOfYear == dt.Month
-                                                      && x.Year == dt.Year);
+                                var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth); 
 
                                 var attendedClasses = attendanceForPeriod
                                                       .Where(x => string.Equals(x.UserId, userId)
@@ -293,7 +293,6 @@ namespace ECDLink.SmartStart.Reports
                                 if (!attendanceDays.ContainsKey(i))
                                     attendanceDays[i] = 0;
                             }
-
                         }
 
                         if (reports != null)
@@ -339,9 +338,11 @@ namespace ECDLink.SmartStart.Reports
             overviewReport.ClassroomAttendanceReport = GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
 
             SortedDictionary<int, int> totalAttendance = new SortedDictionary<int, int>();
+            int totalExpectedAttendance = 0;
 
             foreach (var report in overviewReport.ClassroomAttendanceReport)
             {
+                totalExpectedAttendance += report.TotalExpectedAttendance;
                 foreach (var dayAttendance in report.Attendance)
                 {
                     if (totalAttendance.ContainsKey(dayAttendance.Key))
@@ -351,11 +352,12 @@ namespace ECDLink.SmartStart.Reports
                 }
 
             }
+
             overviewReport.TotalAttendance = totalAttendance;
             TotalAttendanceStatsReport stats = new TotalAttendanceStatsReport();
-            stats.TotalSessions = totalAttendance.Count;
+            stats.TotalSessions = totalExpectedAttendance;
             stats.TotalChildrenAttendedSessions = overviewReport.ClassroomAttendanceReport.Count();
-            stats.TotalMonthlyAttendance = totalAttendance.Count();
+            stats.TotalMonthlyAttendance = totalAttendance.Values.Sum();
             overviewReport.TotalAttendanceStatsReport = stats;
 
             return overviewReport;

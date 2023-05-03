@@ -497,7 +497,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           title={'What can you do with SmartStart points?'}
           message={'Get R5 airtime for every 500 points you earn!'}
           // todo: remove 'false' once needed.
-          visible={false || displaySmartStartMessage}
+          visible={false && displaySmartStartMessage}
           icon={'GiftIcon'}
           onClose={closeMessage}
         />
