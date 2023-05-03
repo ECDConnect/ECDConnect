@@ -1,7 +1,7 @@
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useDialog } from '@ecdlink/core';
-import momImage from '@/assets/ECD_Connect_alien.svg';
-import happyMomImage from '@/assets/cebisa.svg';
+import alertImage from '@/assets/alert-icon.png';
+import successImage from '@/assets/cebisa.svg';
 
 export const useRequestResponseDialog = () => {
   const dialog = useDialog();
@@ -14,17 +14,11 @@ export const useRequestResponseDialog = () => {
       render: (onClose) => {
         return (
           <ActionModal
-            className="z-50"
-            title="Something went wrong"
+            iconColor="alertMain"
+            iconBorderColor="errorBg"
+            title="Eish! Something went wrong!"
             detailText={detailText || 'Please try again'}
-            customIcon={
-              <div
-                className="bg-tertiary mb-4 flex h-auto justify-center overflow-hidden rounded-full"
-                style={{ width: 85 }}
-              >
-                <img src={momImage} alt="card" />
-              </div>
-            }
+            icon={'ExclamationCircleIcon'}
             actionButtons={[
               {
                 colour: 'primary',
@@ -53,7 +47,7 @@ export const useRequestResponseDialog = () => {
             title="Your submission has been sent"
             customIcon={
               <div className="bg-tertiary mb-4 flex h-24 w-24 justify-center overflow-hidden rounded-full pt-4">
-                <img src={happyMomImage} className="h-20 w-20" alt="card" />
+                <img src={successImage} className="h-20 w-20" alt="card" />
               </div>
             }
             actionButtons={[

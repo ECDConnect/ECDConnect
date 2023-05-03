@@ -15,6 +15,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { attendanceActions } from '@/store/attendance';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -55,16 +57,32 @@ export const MonthlyAttendanceReport = ({
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
 
+  const { errorDialog, successDialog } = useRequestResponseDialog();
+
+  // const {
+  //   isLoading: isLoading,
+  //   isRejected: isRejectedAdditionalVisit,
+  // } = useThunkFetchCall(
+  //   'track',
+  //   attendanceActions.trackAttendance
+  // );
+
+
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
 
   useEffect(() => {
     const getClassroomDetails = async () => {
-      const res = await new PractitionerService(
-        userAuth?.auth_token || ''
-      ).getReportDetailsForPractitioner(userAuth?.id || '');
-      return res;
+      try{
+        const res = await new PractitionerService(
+          userAuth?.auth_token || ''
+        ).getReportDetailsForPractitioner(userAuth?.id || '');
+        return res;
+      }catch(err){
+        console.log(">", err)
+      }
+     
     };
 
     getClassroomDetails().then((data) => {
@@ -254,7 +272,6 @@ export const MonthlyAttendanceReport = ({
         );
       })}
       <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-        {
           <GeneratePdfReportButton
             title="Download Register"
             outputName={`${reportMonth}-attandance-report.pdf`}
@@ -266,10 +283,13 @@ export const MonthlyAttendanceReport = ({
             tableFootStyles={tableFootStyles}
             tableStyles={tableStyles}
           />
-        }
       </div>
     </BannerWrapper>
   );
 };
 
 export default MonthlyAttendanceReport;
+function useThunkFetchCall(arg0: string, ADD_ADDITIONAL_VISIT_FOR_INFANT: any): { isLoading: any; isRejected: any; } {
+  throw new Error('Function not implemented.');
+}
+
