@@ -10,7 +10,7 @@ hosted on Azure infrastructure.
 ## Core Tech Stack Summary
 
 - **Frontend PWA** = React, Redux, TypeScript
-- **Backend Admin Portal** = React and Apollo Client
+- **Admin Portal** = React and Apollo Client
 - **Headless API Data Access Layer** = .NET 3.1 Core based GraphQL
 
 ## Infrastructure
@@ -55,7 +55,7 @@ hosted on Azure infrastructure.
 - New Practitioners are invited via the Admin Portal and the practitioners
   receive a SMS with a link and code to register
 
-## Backend Portal - Administrator logins
+## Admin Portal - Administrator logins
 
 - User based logins that allow any Administrator to login, invite new users &
   maintain the system.
@@ -84,7 +84,7 @@ hosted on Azure infrastructure.
   for clean & modern look
 - [heroicons](https://heroicons.com/) for SVG icons
 
-## Backend Admin Portal tech stack
+## Frontend Admin Portal tech stack
 
 - React using Functional components
 - Using [Apollo Client](https://www.apollographql.com/docs/react/) GraphQL for
@@ -97,12 +97,12 @@ hosted on Azure infrastructure.
 
 - Hosted within Azure, (Flexible Server hosting the database, Web Apps, Blob
   storage, CDN, Application Insights)
-- Frontend, Backend and API are all hosted as separate
+- Frontend, Admin Portal and API are all hosted as separate
   [Azure Web Apps](https://azure.microsoft.com/en-us/services/app-service/web/)
 
 ## Security
 
-- SSL certificates are recommended for the respective, frontend, backend and API
+- SSL certificates are recommended for the respective, frontend, Admin Portal and API
   url's
 - [JWT](https://jwt.io/) tokens for authorisation with refresh endpoints
 - Basic Authentication for tenant creation
@@ -127,13 +127,13 @@ hosted on Azure infrastructure.
 
 # How to run the projects
 
-## Front end / Backend Portal - Pre Setup
+## Front end / Admin Portal - Pre Setup
 
 1. Please ensure you have yarn installed (e.g. brew install yarn)
 2. Please ensure you have npm installed (download & install nodeJS from
    nodejs.org)
 
-## Front end / Backend Portal - Setup
+## Front end / Admin Portal - Setup
 
 1. Firstly, install the packages. Run, `yarn` in the **root folder** to install
    the NPM packages.
@@ -142,7 +142,7 @@ hosted on Azure infrastructure.
    the packages for use and add them to the node modules of the projects that
    have them as dependencies.
 
-## Front end / Backend Portal - Run
+## Front end / Admin Portal - Run
 
 ### Remember to do this before running FE or API
 
@@ -152,9 +152,9 @@ hosted on Azure infrastructure.
 
 - `yarn fe` to run the Front End
 
-### Run the Backend Admin Portal
+### Run the Admin Portal
 
-- `yarn portal` to run the Backend Admin Portal
+- `yarn portal` to run the Admin Portal
 
 ## Headless API - Run
 
