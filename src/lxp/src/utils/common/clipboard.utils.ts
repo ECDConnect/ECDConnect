@@ -20,7 +20,7 @@ export const copyToClip = async (value: string): Promise<boolean> => {
       navigator?.clipboard?.writeText(value);
     } catch {
       try {
-        document.execCommand('copy', true, value);
+        document?.execCommand && document?.execCommand('copy', true, value);
       } catch {
         return false;
       }
@@ -28,14 +28,12 @@ export const copyToClip = async (value: string): Promise<boolean> => {
 
     return true;
   } else {
-    if (document?.execCommand) {
-      try {
-        document.execCommand('copy', true, value);
-      } catch {
-        return false;
-      }
+    try {
+      document?.execCommand && document.execCommand('copy', true, value);
+    } catch {
+      return false;
     }
-
-    return true;
   }
+
+  return true;
 };

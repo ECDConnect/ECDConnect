@@ -500,7 +500,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   color="primary"
                   type="outlined"
                   onClick={() => {
-                    navigator.clipboard.writeText(
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText(
                       practitioner?.user?.phoneNumber!
                     );
                   }}
@@ -533,7 +534,8 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
                   color="primary"
                   type="outlined"
                   onClick={() => {
-                    navigator.clipboard.writeText(practitioner?.user?.email!);
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText(practitioner?.user?.email!);
                   }}
                 >
                   <Typography type="help" color="primary" text="Copy" />

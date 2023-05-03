@@ -87,7 +87,7 @@ export const Camera = ({ onGetPhoto, onClose }: CameraProps) => {
       }
     };
 
-    navigator.mediaDevices.enumerateDevices().then(gotDevices);
+    navigator?.mediaDevices?.enumerateDevices().then(gotDevices);
   }, []);
 
   return (
