@@ -92,14 +92,14 @@ export const VisitsTab: React.FC = () => {
     [infant?.caregiver?.firstName, infant?.user?.firstName]
   );
   const currentDate = useMemo(() => new Date(), []);
-  const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
+  //const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
   const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
   const infantAgeDays = infant?.user?.dateOfBirth
     ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
     : 0;
 
-  const isWeekDeadline =
-    dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
+  // Remove next7Days check according to ticket EC-331 - confirmed with Kim
+  const isWeekDeadline = dateToCheck && dateToCheck >= currentDate; // && dateToCheck <= next7Days;
 
   const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),
