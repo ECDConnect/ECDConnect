@@ -67,6 +67,7 @@ export const ActivityList: React.FC = () => {
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
+  const [stepperCount, setStepperCount] = useState(0);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -93,8 +94,8 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const isFollowUp = completedVisits?.length === 7;
-  const isAllCompleted = completedVisits?.length === 8;
+  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isAllCompleted = completedVisits?.length === stepperCount;
 
   const appDispatch = useAppDispatch();
 
@@ -323,6 +324,9 @@ export const ActivityList: React.FC = () => {
       })
     );
 
+    const total = completedForms.length + uncompletedForms.length + 1; // +1 is for followup
+    setStepperCount(total);
+
     const followUpForm: MenuListDataItem[] = [
       {
         showIcon: true,
@@ -512,18 +516,18 @@ export const ActivityList: React.FC = () => {
                 </>
               )}
               <div className="mt-8 flex gap-1">
-                {Object.values(activitiesTypes).map((item, index) => (
+                {Array.from({ length: stepperCount }, (_, i) => (
                   <span
-                    key={item}
+                    key={i}
                     className="rounded-10 h-2"
                     style={{
                       minWidth: 37,
                       background:
                         !!completedVisits?.length &&
-                        index + 1 <= completedVisits?.length
+                        i + 1 <= completedVisits?.length
                           ? '#26ACAF'
                           : '#D4EEEF',
-                      width: width / Object.values(activitiesTypes).length,
+                      width: width / stepperCount,
                     }}
                   />
                 ))}
