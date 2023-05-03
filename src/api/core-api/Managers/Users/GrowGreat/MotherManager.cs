@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
+        private IGenericRepository<Document, Guid> _documentRepo;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
@@ -46,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
+            _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
         }
 
         // GG BUSINESS RULES FOR CREATING A MOTHER AND SELECTING AN EXISTING CAREGIVER
@@ -120,6 +123,33 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _motherRepo.Update(entityToUpdate);
         }
 
+
+        public Boolean ArchiveMotherProfilesWithoutMaternalRecord(string hcwId)
+        {
+            // set today to validate 60 days from registration date
+            DateTime today = DateTime.Today;
+            List<Mother> mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(hcwId) && x.IsActive.Equals(true)).ToList();
+            foreach (Mother mother in mothers)
+            {
+                var registrationDate = mother.InsertedDate.Date;
+                var next60Days = registrationDate.AddDays(60);
+
+                if (next60Days > today)
+                {
+                    // if we are past 60 days and there is still no record for the mother with the name 'maternalcaserecord.png' then we archive the mother
+                    var total = _documentRepo.GetAll().Where(x => x.CreatedUserId.Equals(hcwId) && x.UserId.Equals(mother.Id) && x.Name == Constants.GGSettings.maternal_record_name).Count();
+                    if (total == 0)
+                    {
+                        mother.IsActive = false;
+                        mother.UpdatedBy = _applicationUserId;
+                        _motherRepo.Update(mother);
+                    }
+                }
+
+            }
+            return true;
+        }
+
         public Mother UpdateContactDetails(string id, MotherModel input) {
             var entityToUpdate = _motherRepo.GetAll().Where(x => x.User.Id == id).FirstOrDefault();
 
@@ -134,7 +164,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.User = user;
             return _motherRepo.Update(entityToUpdate);
         }
-       
 
         public Mother UpdateMotherAddress(string id, MotherModel input)
         {
