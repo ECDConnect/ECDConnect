@@ -89,7 +89,7 @@ export const ProgressTrackingTutorial = ({
               {renderIcon('GiftIcon', `w-5 h-5 text-white`)}
             </div>
           </div>
-          <div>
+          {/* <div>
             <Typography
               color={'white'}
               type={'help'}
@@ -103,7 +103,7 @@ export const ProgressTrackingTutorial = ({
               weight={'normal'}
               text={'Get R5 airtime for every 500 points you earn!'}
             />
-          </div>
+          </div> */}
         </div>
         <div className={'p-4'}>
           <Typography
