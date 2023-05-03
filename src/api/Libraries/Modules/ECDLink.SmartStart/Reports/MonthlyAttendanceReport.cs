@@ -60,7 +60,9 @@ namespace ECDLink.SmartStart.Reports
             {
                 return null;
             }
-            
+            //retrieve only groups the user is allowed to see
+            var classgroupRepo = _repositoryFactory.CreateRepository<ClassroomGroup>(userContext: userId);
+            List<ClassroomGroup> groups = classgroupRepo.GetAll().ToList();
             var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
@@ -71,12 +73,12 @@ namespace ECDLink.SmartStart.Reports
             for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
             {
                 var attendance = new List<Tuple<int, int>>();
-                // Nest into class per month
-                foreach (var classroomGroup in classroom.ClassroomGroups)
+                // Nest into class per month on only groups user is allowed to see
+                foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
                 {
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
-                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, null);
+                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
 
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
@@ -107,7 +109,7 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = (item.Value.Sum(x => x.Item1) / 3); //TODO: FIX THIS AT SOURCE
+                var totalAttendance = item.Value.Sum(x => x.Item1); //TODO: FIX THIS AT SOURCE
                 var actualAttendance = item.Value.Sum(x => x.Item2);
 
                 report.Add(new MonthlyAttendanceReportModel

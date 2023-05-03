@@ -79,9 +79,8 @@ namespace ECDLink.SmartStart.Reports
                     return Enumerable.Empty<DateTime>();
                 }
             }
-
-            //if endmonth is same as current month, prevent projections and use current date as endbound - if the endbound is the same day as today (ie the 1st of month) then add 1 day
-            var actualEnd = (actualStart.Month == DateTime.Now.Month ? (actualStart.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now.Date) : actualStart.GetEndOfMonth());
+            
+            var actualEnd = actualStart.GetEndOfMonth();
             if (endBound.HasValue && endBound.Value < actualEnd)
             {
                 if (actualEnd.IsInSameMonth(endBound))
