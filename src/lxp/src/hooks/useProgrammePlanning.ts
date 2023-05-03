@@ -4,7 +4,13 @@ import {
   ProgrammeThemeDto,
   sortDateFunction,
 } from '@ecdlink/core';
-import { addDays, isAfter, isFriday, isWeekend } from 'date-fns';
+import {
+  addDays,
+  differenceInDays,
+  isAfter,
+  isFriday,
+  isWeekend,
+} from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
@@ -37,7 +43,8 @@ export const useProgrammePlanning = () => {
   const createProgramme = async (
     startDate: Date,
     language: string,
-    theme?: ProgrammeThemeDto
+    theme?: ProgrammeThemeDto,
+    endDate?: Date
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
       id: newGuid(),
@@ -46,7 +53,7 @@ export const useProgrammePlanning = () => {
       name: theme?.name || 'No theme',
       preferredLanguage: language,
       startDate: startDate.toISOString(),
-      endDate: '',
+      endDate: endDate?.toISOString() || '',
       dailyProgrammes: [],
       classroomGroupId: practitionerClassroomGroups?.at(0)?.id,
     };
@@ -145,7 +152,8 @@ export const useProgrammePlanning = () => {
 
     const dailyProgrammes: DailyProgrammeDto[] = [];
     let themeDay = 1;
-    while (dailyProgrammes.length < 20) {
+    const diffDays = differenceInDays(new Date(programme?.endDate), startDate);
+    while (dailyProgrammes.length < diffDays) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }

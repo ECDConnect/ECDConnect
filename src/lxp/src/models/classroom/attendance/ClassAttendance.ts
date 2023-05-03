@@ -6,5 +6,5 @@ export interface ClassAttendance {
   attendanceList: AttendanceListDataItem[];
 }
 export const goodScoreThreshold = 80;
-export const averageScoreThreshold = 60;
+export const averageScoreThreshold = 51;
 export const badScoreThreshold = 50;
