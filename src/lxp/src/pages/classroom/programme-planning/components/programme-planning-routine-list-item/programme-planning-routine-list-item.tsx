@@ -17,7 +17,9 @@ export const ProgrammePlanningRoutineListItem: React.FC<
     routineType === DailyRoutineItemType.smallGroup ||
     routineType === DailyRoutineItemType.largeGroup ||
     routineType === DailyRoutineItemType.storyBook;
-  const isMessageBoard = routineType === DailyRoutineItemType.messageBoard;
+  const isMessageBoard =
+    // routineType === DailyRoutineItemType.messageBoard ||
+    routineType === DailyRoutineItemType.greeting;
   const activity = useSelector(
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)

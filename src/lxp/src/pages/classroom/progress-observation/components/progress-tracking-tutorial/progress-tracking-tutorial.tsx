@@ -83,7 +83,7 @@ export const ProgressTrackingTutorial = ({
             }
           />
         </div>
-        <div className={'bg-infoMain flex flex-row items-center py-4 px-4'}>
+        {/* <div className={'bg-infoMain flex flex-row items-center py-4 px-4'}>
           <div className={'mr-4 flex items-center'}>
             <div className={classNames('rounded-full p-2', `bg-infoDark`)}>
               {renderIcon('GiftIcon', `w-5 h-5 text-white`)}
@@ -104,7 +104,7 @@ export const ProgressTrackingTutorial = ({
               text={'Get R5 airtime for every 500 points you earn!'}
             />
           </div>
-        </div>
+        </div> */}
         <div className={'p-4'}>
           <Typography
             color={'textDark'}

@@ -23,7 +23,9 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
     routineType === DailyRoutineItemType.smallGroup ||
     routineType === DailyRoutineItemType.largeGroup ||
     routineType === DailyRoutineItemType.storyBook;
-  const isMessageBoard = routineType === DailyRoutineItemType.messageBoard;
+  const isMessageBoard =
+    routineType === DailyRoutineItemType.messageBoard ||
+    routineType === DailyRoutineItemType.greeting;
   const activity = useSelector(
     activitySelectors.getActivityById(
       getActivityIdForRoutineItem(routineItem.name, day)
@@ -84,7 +86,7 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
   const getRoutineItemPostSlotRender = () => {
     if (
-      routineItem.name === DailyRoutineItemType.messageBoard ||
+      // routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {
@@ -105,6 +107,22 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
 
               {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
             </div>
+          </div>
+        </Card>
+      );
+    }
+    if (!activity?.name) {
+      return (
+        <Card className="border-secondary w-full rounded-xl border-2 bg-white py-4 px-2">
+          <div
+            className={
+              'ml-4 flex w-full flex-row items-center justify-start gap-4'
+            }
+          >
+            <Typography type={'h1'} text={'+'} color={'secondary'} />
+            <Typography type={'h4'} text={'Add Activity'} color={'secondary'} />
+
+            {renderIcon('ClockIcon', `w-5 h-5 text-white ml-1`)}
           </div>
         </Card>
       );
@@ -135,23 +153,23 @@ export const ProgrammePlanningRoutineListItemUpdated: React.FC<
   };
 
   const getRoutineItemPreSlotRender = () => {
-    if (
-      routineItem.name === DailyRoutineItemType.messageBoard &&
-      day?.messageBoardText
-    ) {
-      return (
-        <div
-          className={`bg-primary} mr-2 flex flex-row items-center justify-center rounded-full p-4`}
-          style={{ backgroundColor: routineItem.iconBackgroundColor }}
-        >
-          <img
-            className={'h-5 w-5'}
-            src={routineItem.icon}
-            alt="routine item"
-          />
-        </div>
-      );
-    }
+    // if (
+    //   routineItem.name === DailyRoutineItemType.messageBoard &&
+    //   day?.messageBoardText
+    // ) {
+    //   return (
+    //     <div
+    //       className={`bg-primary} mr-2 flex flex-row items-center justify-center rounded-full p-4`}
+    //       style={{ backgroundColor: routineItem.iconBackgroundColor }}
+    //     >
+    //       <img
+    //         className={'h-5 w-5'}
+    //         src={routineItem.icon}
+    //         alt="routine item"
+    //       />
+    //     </div>
+    //   );
+    // }
     if (activity) {
       return (
         <RoundIcon
