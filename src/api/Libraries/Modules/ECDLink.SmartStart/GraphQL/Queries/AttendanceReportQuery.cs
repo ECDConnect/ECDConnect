@@ -23,7 +23,9 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endMonth)
         {
             startMonth = startMonth.GetStartOfMonth();
-            endMonth = endMonth.GetEndOfMonth();
+            //endMonth = endMonth.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth.GetEndOfMonth());
 
             return report.GenerateMonthlyAttendanceReport(userId, classroomId, startMonth, endMonth);
         }
@@ -35,6 +37,10 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endMonth,
           string ownerId)
         {
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth.GetEndOfMonth());
+
+
             var startOfMonth = startMonth;
             var endOfMonth = endMonth;
 
@@ -74,7 +80,11 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
-            var endMonth = endDate.GetEndOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
+
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
+
 
             return report.GetChildAttendance(classgroupId, userId, startMonth, endMonth);
         }
@@ -87,7 +97,9 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
   DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
-            var endMonth = endDate.GetEndOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
 
             return report.GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
         }
@@ -100,7 +112,9 @@ DateTime startDate,
 DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
-            var endMonth = endDate.GetEndOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
 
             return report.GetClassroomAttendanceOverView(classgroupId, userId, startMonth, endMonth);
         }

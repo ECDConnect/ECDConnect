@@ -3,6 +3,7 @@ using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
 using Microsoft.EntityFrameworkCore;
 using System;
@@ -13,9 +14,11 @@ namespace ECDLink.SmartStart.Reports
 {
     public class MonthlyAttendanceReport : AttendanceReportBase
     {
-        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService)
+        private readonly IGenericRepositoryFactory _repositoryFactory;
+        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory)
           : base(holidayService, dbFactory.CreateDbContext())
         {
+            _repositoryFactory = repositoryFactory;
         }
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
@@ -57,7 +60,9 @@ namespace ECDLink.SmartStart.Reports
             {
                 return null;
             }
-
+            //retrieve only groups the user is allowed to see
+            var classgroupRepo = _repositoryFactory.CreateRepository<ClassroomGroup>(userContext: userId);
+            List<ClassroomGroup> groups = classgroupRepo.GetAll().ToList();
             var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             var attendanceForPeriod = GetAttendanceRecordsForPeriod(classroom, userId, startMonth, endMonth);
@@ -68,12 +73,12 @@ namespace ECDLink.SmartStart.Reports
             for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
             {
                 var attendance = new List<Tuple<int, int>>();
-                // Nest into class per month
-                foreach (var classroomGroup in classroom.ClassroomGroups)
+                // Nest into class per month on only groups user is allowed to see
+                foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
                 {
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
-                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, null);
+                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
 
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
@@ -104,7 +109,7 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = (item.Value.Sum(x => x.Item1) / 3);
+                var totalAttendance = item.Value.Sum(x => x.Item1); //TODO: FIX THIS AT SOURCE
                 var actualAttendance = item.Value.Sum(x => x.Item2);
 
                 report.Add(new MonthlyAttendanceReportModel
