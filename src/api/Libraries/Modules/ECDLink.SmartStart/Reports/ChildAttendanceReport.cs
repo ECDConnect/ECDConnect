@@ -198,7 +198,7 @@ namespace ECDLink.SmartStart.Reports
                     MonthNumber = item.Key.Month,
                     ActualAttendance = actualAttendance,
                     ExpectedAttendance = totalAttendance,
-                    AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
+                    AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
                 });
             }
 
