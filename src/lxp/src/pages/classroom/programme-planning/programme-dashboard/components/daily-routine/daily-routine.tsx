@@ -375,14 +375,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           />
         ) : (
           <div className="mt-4">
-            {programmeRoutine?.routineItems.map((routineItem) => (
-              <ProgrammePlanningRoutineListItemUpdated
-                key={`id_${routineItem.id}`}
-                routineItem={routineItem}
-                day={currentDailyProgramme}
-                onClick={() => onProgrammeClick(routineItem)}
-              />
-            ))}
+            {programmeRoutine?.routineItems.map((routineItem) => {
+              if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
+                return (
+                  <ProgrammePlanningRoutineListItemUpdated
+                    key={`id_${routineItem.id}`}
+                    routineItem={routineItem}
+                    day={currentDailyProgramme}
+                    onClick={() => onProgrammeClick(routineItem)}
+                  />
+                );
+              }
+            })}
           </div>
         ))}
     </div>
