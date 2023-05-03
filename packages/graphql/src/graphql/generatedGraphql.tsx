@@ -1033,18 +1033,19 @@ export type ClassroomMetricReport = {
 
 export type ClientSummary = {
   __typename?: 'ClientSummary';
-  idDocStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  documentData?: Maybe<Array<Maybe<VisitDataStatus>>>;
   order: Scalars['Int'];
-  visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  summaryData?: Maybe<Array<Maybe<VisitDataStatus>>>;
   visitName?: Maybe<Scalars['String']>;
 };
 
 export type ClientSummaryByPriority = {
   __typename?: 'ClientSummaryByPriority';
   areaName?: Maybe<Scalars['String']>;
-  idDocStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  color?: Maybe<Scalars['String']>;
+  documentData?: Maybe<Array<Maybe<VisitDataStatus>>>;
   order: Scalars['Int'];
-  visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  summaryData?: Maybe<Array<Maybe<VisitDataStatus>>>;
 };
 
 export type Clinic = {
@@ -6953,11 +6954,11 @@ export type QueryInfantCountForHealthCareWorkerForMonthArgs = {
 };
 
 export type QueryInfantSummaryByGroupArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryInfantSummaryByPriorityArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryInfantVisitsArgs = {
@@ -7004,11 +7005,11 @@ export type QueryMotherCountForHealthCareWorkerForMonthArgs = {
 };
 
 export type QueryMotherSummaryByGroupArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMotherSummaryByPriorityArgs = {
-  id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryMotherVisitsArgs = {

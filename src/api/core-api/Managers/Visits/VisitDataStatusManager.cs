@@ -1592,17 +1592,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
-                ).OrderByDescending(y => y.InsertedDate).ToList();
+                ).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
 
-            allData = (List<VisitDataStatus>)allData.Take(3);
+            //allData = allData.Take(3);
 
             return allData;
         }
-        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
+        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.InsertedDate)
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
 

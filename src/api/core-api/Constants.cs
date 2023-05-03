@@ -246,6 +246,8 @@ namespace EcdLink.Api.CoreApi {
             public const string needSupport = "You need support in these areas:";
             public const string needUrgentSupport = "You need urgent support with these areas:";
 
+            public const string idDocSection = "ID document";
+
             // Infant Dates
             public const string day_3 = "day_3";
             public const string day_7 = "day_7";

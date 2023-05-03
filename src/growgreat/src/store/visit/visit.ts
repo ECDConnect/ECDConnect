@@ -18,6 +18,8 @@ import {
   getMomCompletedVisitsForVisitId,
   addVisitForMomFormData,
   getVisitAnswersForMother,
+  GetMotherSummaryByGroup,
+  GetMotherSummaryByPriority,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -133,6 +135,8 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getVisitAnswersForInfant);
     setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
+    setThunkActionStatus(builder, GetMotherSummaryByGroup);
+    setThunkActionStatus(builder, GetMotherSummaryByPriority);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -252,6 +256,14 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(GetMotherSummaryByGroup.fulfilled, (state, action) => {
+      state.motherSummaryByGroup = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(GetMotherSummaryByPriority.fulfilled, (state, action) => {
+      state.motherSummaryByPriority = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 

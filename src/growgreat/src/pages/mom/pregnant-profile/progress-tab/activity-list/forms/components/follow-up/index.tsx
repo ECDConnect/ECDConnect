@@ -1,17 +1,33 @@
-import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import {
+  Alert,
+  Colours,
+  Divider,
+  ProgressBar,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
+import {
+  GetMotherSummaryByPrioritySelector,
+  getPreviousVisitInformationForMotherSelector,
+} from '@/store/visit/visit.selectors';
 import {
   MotherDto,
+  VisitDto,
   getStringFromClassNameOrId,
   toCamelCase,
+  usePrevious,
 } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
-import { useCallback, useMemo } from 'react';
+import { useCallback, useLayoutEffect, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
 import { ReactComponent as Home } from '@/assets/home.svg';
+import PollyHappy from '@/assets/pollyHappy.svg';
+import PollyInformational from '@/assets/pollyInformational.svg';
+import PollyShock from '@/assets/pollyShock.svg';
+import ExclamationIcon from '@heroicons/react/outline';
 
 import {
   activitiesColours,
@@ -19,7 +35,9 @@ import {
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { progressSteps } from '../../../../walkthrough/steps';
-
+import { useAppDispatch } from '@/store';
+import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import { visitThunkActions } from '@/store/visit';
 export interface FollowUpWalkthroughData {
   progressBar: {
     message: string;
@@ -48,6 +66,12 @@ interface Status {
   none: VisitDataStatus[];
 }
 
+interface iPrint {
+  visitName: string;
+  summaryData: VisitDataStatus[];
+  documentData: VisitDataStatus[];
+}
+
 type StatusType = keyof Status;
 
 export const FollowUp = ({
@@ -55,40 +79,63 @@ export const FollowUp = ({
   walkthroughData,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+  const appDispatch = useAppDispatch();
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
+  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const previousCurrentVisit = usePrevious(currentVisit) as
+    | VisitDto
+    | undefined;
 
-  const getColorAndIcon = useCallback(
-    (
-      color: string
-    ): { primaryColour: Colours; secondaryColour: Colours; icon: string } => {
-      const formattedColor = color.toLowerCase();
-      switch (formattedColor) {
-        case 'warning':
-          return {
-            primaryColour: 'alertMain',
-            secondaryColour: 'alertBg',
-            icon: 'ExclamationIcon',
-          };
-        case 'error':
-          return {
-            primaryColour: 'errorMain',
-            secondaryColour: 'errorBg',
-            icon: 'ExclamationCircleIcon',
-          };
-        case 'success':
-        default:
-          return {
-            primaryColour: 'successMain',
-            secondaryColour: 'successBg',
-            icon: 'BadgeCheckIcon',
-          };
-      }
-    },
-    []
-  );
+  const printData = useSelector(GetMotherSummaryByPrioritySelector);
+
+  // Get Printing data
+  useLayoutEffect(() => {
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: currentVisit?.id,
+        })
+      );
+    console.log('dispatch GetMotherSummaryByPriority');
+  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+
+  // const getColorAndIcon = useCallback(
+  //   (
+  //     color: string
+  //   ): { primaryColour: Colours; secondaryColour: Colours; icon: string } => {
+  //     const formattedColor = color.toLowerCase();
+  //     switch (formattedColor) {
+  //       case 'warning':
+  //         return {
+  //           primaryColour: 'alertMain',
+  //           secondaryColour: 'alertBg',
+  //           icon: 'ExclamationIcon',
+  //         };
+  //       case 'error':
+  //         return {
+  //           primaryColour: 'errorMain',
+  //           secondaryColour: 'errorBg',
+  //           icon: 'ExclamationCircleIcon',
+  //         };
+  //       case 'success':
+  //       default:
+  //         return {
+  //           primaryColour: 'successMain',
+  //           secondaryColour: 'successBg',
+  //           icon: 'BadgeCheckIcon',
+  //         };
+  //     }
+  //   },
+  //   []
+  // );
 
   const progressBarOptions = useMemo((): {
     primaryColour: Colours;
@@ -122,21 +169,21 @@ export const FollowUp = ({
     }
   }, [name, previousVisit?.scoreColor]);
 
-  const getVisitIcon = (visitName: string) => {
-    switch (visitName) {
-      case activitiesSectionTypes.healthCare:
-        return {
-          icon: BabyHealthcare,
-          color: activitiesColours.other.primaryColor,
-        };
-      case activitiesSectionTypes.nutrition:
-        return { icon: P1, color: '#8CDBDF' };
-      case activitiesSectionTypes.pregnancyCare:
-        return { icon: P1, color: activitiesColours.pillar1.primaryColor };
-      default:
-        return { icon: P5, color: activitiesColours.pillar5.primaryColor };
-    }
-  };
+  // const getVisitIcon = (visitName: string) => {
+  //   switch (visitName) {
+  //     case activitiesSectionTypes.healthCare:
+  //       return {
+  //         icon: BabyHealthcare,
+  //         color: activitiesColours.other.primaryColor,
+  //       };
+  //     case activitiesSectionTypes.nutrition:
+  //       return { icon: P1, color: '#8CDBDF' };
+  //     case activitiesSectionTypes.pregnancyCare:
+  //       return { icon: P1, color: activitiesColours.pillar1.primaryColor };
+  //     default:
+  //       return { icon: P5, color: activitiesColours.pillar5.primaryColor };
+  //   }
+  // };
 
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
@@ -214,7 +261,7 @@ export const FollowUp = ({
       />
 
       <Divider dividerType="dashed" className="mt-4 mb-8" />
-      <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
+      {/* <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
         {!!groupedData &&
           Object.keys(groupedData).map((item, index) => {
             const { icon, primaryColour, secondaryColour } =
@@ -231,21 +278,217 @@ export const FollowUp = ({
             });
 
             return (
-              <InfoCard
-                key={index}
-                className="my-6"
-                icon={icon}
-                items={uniqueData.map((data): Item => {
-                  const { icon, color } = getVisitIcon(data?.section || '');
-                  return {
-                    customIcon: icon,
-                    iconHexBackgroundColour: color,
-                    title: `${data.comment}`,
-                  };
-                })}
-                primaryColour={primaryColour}
-                secondaryColour={secondaryColour}
-              />
+                <InfoCard
+                 key={index}
+                  className="my-6"
+                  icon={icon}
+                  items={uniqueData.map((data): Item => {
+                    const { icon, color } = getVisitIcon(data?.section || '');
+                    return {
+                      customIcon: icon,
+                      iconHexBackgroundColour: color,
+                      title: `${data.comment}`,
+                    };
+                  })}
+                  primaryColour={primaryColour}
+                  secondaryColour={secondaryColour}
+                />
+            );
+          })}
+      </div> */}
+
+      {/* Client summary Display */}
+      <div>
+        {!!printData &&
+          Object.values(printData).map((visit, index) => {
+            const summaryItems = visit?.summaryData?.map((item) => {
+              return item?.comment?.toString();
+            });
+
+            const documentItems = visit?.documentData?.map((item) => {
+              return item?.comment?.toString();
+            });
+
+            return (
+              <div key={index}>
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'success' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyHappy}
+                              className="text-successMain h-10 w-10"
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'BadgeCheckIcon',
+                                        `w-5 h-5 text-successDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'warning' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyInformational}
+                              className="text-alertMain h-10 w-10"
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'ExclamationIcon',
+                                        `w-5 h-5 text-alertDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'error' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyShock}
+                              className="text-errorMain h-10 w-10"
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'ExclamationIcon',
+                                        `w-5 h-5 text-errorDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+
+                {visit?.areaName === 'ID document' &&
+                  visit?.color?.toLowerCase() === 'success' &&
+                  documentItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            {renderIcon(
+                              'BadgeCheckIcon',
+                              'text-successMain w-10 h-10'
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                              <div className="pt-2">
+                                {documentItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    {/* <div className="flex-shrink-0 rounded-full flex justify-center items-center bg-undefined text-white">{renderIcon('BadgeCheckIcon', `w-5 h-5 text-successDark`)}</div> */}
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+                {visit?.areaName === 'ID document' &&
+                  visit?.color?.toLowerCase() === 'warning' &&
+                  documentItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-alertDark false bg-alertBg border-warningMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            {renderIcon(
+                              'ExclamationIcon',
+                              'text-alertMain w-10 h-10'
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                              <div className="pt-2">
+                                {documentItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    {/* <div className="flex-shrink-0 rounded-full flex justify-center items-center bg-undefined text-white">{renderIcon('ExclamationIcon', `w-5 h-5 text-alertDark`)}</div> */}
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+              </div>
             );
           })}
       </div>
