@@ -246,6 +246,69 @@ export const ActivityList: React.FC = () => {
     isKangarooMotherCare,
   ].some((item) => !!item);
 
+  const is6Week = ageDays >= 49 && ageDays <= 56;
+  const is10Week = ageDays >= 57 && ageMonths <= 3;
+  const is14Week = ageMonths === 4;
+  const is6Month = ageMonths >= 6 && ageMonths < 9;
+  const is9Month = ageMonths >= 9 && ageMonths < 12;
+  const is12Month = ageMonths >= 12 && ageMonths < 15;
+  const is18Month = ageMonths >= 18 && ageMonths < 21;
+  const is2Years = ageMonths >= 24 && ageMonths < 30;
+  const is2YearsAHalfYears = ageMonths >= 30 && ageMonths < 36;
+  const is3Years = ageMonths >= 36 && ageMonths < 42;
+  const is3YearsAHalfYears = ageMonths >= 42 && ageMonths < 48;
+  const is4Years = ageMonths >= 48 && ageMonths < 54;
+  const is4AHalfYears = ageMonths >= 54 && ageMonths < 60;
+  const is5Years = ageMonths >= 60;
+
+  const isImmunisationQuestion =
+    isFirstVisit &&
+    (is6Week ||
+      is10Week ||
+      is14Week ||
+      is6Month ||
+      is9Month ||
+      is12Month ||
+      is18Month);
+
+  const isVitaminAQuestion =
+    isFirstVisit &&
+    (is6Month ||
+      is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
+
+  const isDewormingQuestion =
+    isFirstVisit &&
+    (is12Month ||
+      is18Month ||
+      is2Years ||
+      is2YearsAHalfYears ||
+      is3Years ||
+      is3YearsAHalfYears ||
+      is4Years ||
+      is4AHalfYears ||
+      is5Years);
+
+  const isImmunisationsStep = useMemo(
+    () =>
+      isFirstVisit &&
+      ((ageDays >= 28 && ageDays <= 48) || (!ageYears && ageMonths === 5)),
+    [ageDays, ageMonths, ageYears, isFirstVisit]
+  );
+
+  const isDisplayPillar3 =
+    isImmunisationQuestion ||
+    isVitaminAQuestion ||
+    isDewormingQuestion ||
+    isImmunisationsStep;
+
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
       year: 'numeric',
@@ -266,7 +329,8 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.pillar2 && !isDisplayPillar2) ||
         (item.id === activitiesTypes.careForBaby && !isDisplayCareForBaby) ||
         (item.id === activitiesTypes.careForMom &&
-          infant?.caregiver?.relation?.description !== motherType?.label)
+          infant?.caregiver?.relation?.description !== motherType?.label) ||
+        (item.id === activitiesTypes.pillar3 && !isDisplayPillar3)
       )
         return undefined;
 
@@ -275,6 +339,7 @@ export const ActivityList: React.FC = () => {
 
     return { visibleActivities };
   }, [
+    isDisplayPillar3,
     infant?.caregiver?.relation?.description,
     isChildAfter49Days,
     isDisplayPillar2,
@@ -579,11 +644,10 @@ export const ActivityList: React.FC = () => {
     isStartVisit,
     options,
     previousVisit?.visitDataStatus?.length,
+    stepperCount,
     uncompletedForms,
     user?.firstName,
-    visit?.actualVisitDate,
-    visit?.plannedVisitDate,
-    visit?.visitType?.normalizedName,
+    visit,
     width,
   ]);
 
@@ -605,6 +669,10 @@ export const ActivityList: React.FC = () => {
           isMaternalDistress,
           isMaternalDistressFollowUp,
           isMaternalDistressScreening,
+          isImmunisationQuestion,
+          isVitaminAQuestion,
+          isDewormingQuestion,
+          isImmunisationsStep,
         }}
         onBack={onFormBack}
         getIsFollowUp={getIsFollowUp}

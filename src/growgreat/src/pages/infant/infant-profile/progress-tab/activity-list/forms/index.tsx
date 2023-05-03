@@ -50,6 +50,10 @@ interface FormProps {
     isMaternalDistress: boolean;
     isMaternalDistressFollowUp: boolean;
     isMaternalDistressScreening: boolean;
+    isImmunisationQuestion: boolean;
+    isVitaminAQuestion: boolean;
+    isDewormingQuestion: boolean;
+    isImmunisationsStep: boolean;
   };
 }
 
@@ -148,56 +152,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     () => !ageYears && ageMonths >= 6 && ageMonths <= 9,
     [ageMonths, ageYears]
   );
-
-  const is6Week = ageDays >= 49 && ageDays <= 56;
-  const is10Week = ageDays >= 57 && ageMonths <= 3;
-  const is14Week = ageMonths === 4;
-  const is6Month = ageMonths >= 6 && ageMonths < 9;
-  const is9Month = ageMonths >= 9 && ageMonths < 12;
-  const is12Month = ageMonths >= 12 && ageMonths < 15;
-  const is18Month = ageMonths >= 18 && ageMonths < 21;
-  const is2Years = ageMonths >= 24 && ageMonths < 30;
-  const is2YearsAHalfYears = ageMonths >= 30 && ageMonths < 36;
-  const is3Years = ageMonths >= 36 && ageMonths < 42;
-  const is3YearsAHalfYears = ageMonths >= 42 && ageMonths < 48;
-  const is4Years = ageMonths >= 48 && ageMonths < 54;
-  const is4AHalfYears = ageMonths >= 54 && ageMonths < 60;
-  const is5Years = ageMonths >= 60;
-
-  const isImmunisationQuestion =
-    isFirstVisit &&
-    (is6Week ||
-      is10Week ||
-      is14Week ||
-      is6Month ||
-      is9Month ||
-      is12Month ||
-      is18Month);
-
-  const isVitaminAQuestion =
-    isFirstVisit &&
-    (is6Month ||
-      is12Month ||
-      is18Month ||
-      is2Years ||
-      is2YearsAHalfYears ||
-      is3Years ||
-      is3YearsAHalfYears ||
-      is4Years ||
-      is4AHalfYears ||
-      is5Years);
-
-  const isDewormingQuestion =
-    isFirstVisit &&
-    (is12Month ||
-      is18Month ||
-      is2Years ||
-      is2YearsAHalfYears ||
-      is3Years ||
-      is3YearsAHalfYears ||
-      is4Years ||
-      is4AHalfYears ||
-      is5Years);
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -303,9 +257,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         );
       case activitiesTypes.pillar3:
         return pillar3Steps(
-          isImmunisationQuestion,
-          isVitaminAQuestion,
-          isDewormingQuestion
+          stepsRules.isImmunisationQuestion,
+          stepsRules.isVitaminAQuestion,
+          stepsRules.isDewormingQuestion,
+          stepsRules.isImmunisationsStep
         );
       case activitiesTypes.pillar4:
         return getPillar4Steps(
@@ -334,9 +289,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     ageDays,
     isDietFormStep,
     stepsRules,
-    isImmunisationQuestion,
-    isVitaminAQuestion,
-    isDewormingQuestion,
     isPillar4FollowUp,
     referralsForInfant?.length,
   ]);

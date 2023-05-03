@@ -225,9 +225,10 @@ export const pillar2Steps = (
 export const pillar3Steps = (
   isImmunisationQuestion: boolean,
   isVitaminAQuestion: boolean,
-  isDewormingQuestion: boolean
+  isDewormingQuestion: boolean,
+  isImmunisationsStep: boolean
 ) => [
-  ImmunisationsStep,
+  ...(isImmunisationsStep ? [ImmunisationsStep] : []),
   ...(isImmunisationQuestion || isVitaminAQuestion || isDewormingQuestion
     ? [ImmunisationsSupplementsDewormingStep]
     : []),
