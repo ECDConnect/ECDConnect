@@ -78,11 +78,12 @@ namespace ECDLink.SmartStart.Reports
                 {
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
-                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
+                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
 
                         var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
+                                              && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                               && x.MonthOfYear == dt.Month);
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
@@ -111,13 +112,13 @@ namespace ECDLink.SmartStart.Reports
             {
                 var totalAttendance = item.Value.Sum(x => x.Item1); //TODO: FIX THIS AT SOURCE
                 var actualAttendance = item.Value.Sum(x => x.Item2);
-
+                int reportPercentage = actualAttendance > 0 ? (int)((actualAttendance / (totalAttendance * 1.0)) * 100) : 0;
                 report.Add(new MonthlyAttendanceReportModel
                 {
                     MonthOfYear = item.Key.Month,
                     Month = item.Key.ToString("MMMM"),
                     Year = item.Key.Year,
-                    PercentageAttendance = actualAttendance > 0 ? (int)((actualAttendance / (totalAttendance * 1.0)) * 100) : 0
+                    PercentageAttendance = reportPercentage > 100 ? 100 : reportPercentage
                 });
             }
 
