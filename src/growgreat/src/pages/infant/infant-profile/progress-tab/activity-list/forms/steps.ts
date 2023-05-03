@@ -182,7 +182,7 @@ export const getPillar1Steps = ({
 
   const complementaryFeedingFlow = isDietFormStep
     ? [DietFormStep, ResourcesStep]
-    : [ResourcesStep];
+    : [];
 
   if (!!nutritionAnswer) {
     switch (nutritionAnswer) {

@@ -79,13 +79,16 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
 
   const dateOfBirth = infant?.user?.dateOfBirth as string;
 
-  const { years: ageYears, months: ageMonths } =
-    getAgeInYearsMonthsAndDays(dateOfBirth);
+  const {
+    years: ageYears,
+    months: ageMonths,
+    days,
+  } = getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
   const isChild6Months = useMemo(
-    () => !ageYears && ageMonths < 7,
-    [ageMonths, ageYears]
+    () => !ageYears && ((ageMonths === 6 && days === 0) || ageMonths < 6),
+    [ageMonths, ageYears, days]
   );
 
   const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
@@ -149,7 +152,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   );
 
   const isDietFormStep = useMemo(
-    () => !ageYears && ageMonths >= 6 && ageMonths <= 9,
+    () => ageMonths >= 6 && ageYears < 5,
     [ageMonths, ageYears]
   );
 
