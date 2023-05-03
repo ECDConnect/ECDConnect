@@ -24,7 +24,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public bool? HasDisability { get; set; }
         public string DisabilityType { get; set; }
         public string HealthConditions { get; set; }
-        public string CaregiverPhotographyAndFilmingConsent { get; set; }
+        public bool? CaregiverPhotographyAndFilmingConsent { get; set; }
         public bool? CaregiverPopiaConsent { get; set; }
         public string PlaygroupGroup { get; set; }
         public string InactiveReason { get; set; }

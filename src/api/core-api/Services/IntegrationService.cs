@@ -33,6 +33,8 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using EcdLink.Api.CoreApi.GraphApi.ObjectTypes;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Context;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Core.Services
 {
@@ -47,7 +49,7 @@ namespace ECDLink.Core.Services
         private UserManager<ApplicationUser> _userManager;
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
-
+        private  AuthenticationDbContext _dbContext;
         private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupGenericRepo;
         private IGenericRepository<ProgrammeType, Guid> _programmeTypeGenericRepo;
@@ -63,7 +65,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Education, Guid> _staticEducationRepo;
         private IGenericRepository<Grant, Guid> _staticGrantRepo;
         private IGenericRepository<WorkflowStatus, Guid> _staticWorkflowRepo;
-
+        private IGenericRepository<Document, Guid> _docRepo;
 
         private MappingMode _apiMode;
         private MappingMaskDataMode _maskMode;
@@ -84,7 +86,9 @@ namespace ECDLink.Core.Services
             HierarchyEngine hierarchyEngine,
             //[Service] AuthenticationDbContext context,
             [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
-            [Service] InvitationNotificationManager notificationManager)//, HttpClient httpClient
+            [Service] InvitationNotificationManager notificationManager,
+             AuthenticationDbContext dbContext
+            )//, HttpClient httpClient
         {
             _repositoryFactory = repositoryFactory;
             _integrationDelay = integrationDelay;
@@ -117,6 +121,10 @@ namespace ECDLink.Core.Services
             _staticEducationRepo = _repositoryFactory.CreateGenericRepository<Education>(userContext: _uId);;
             _staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
             _staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+
+    //dbFactory.CreateDbContext();
+    _dbContext = dbContext;
         }
 
         #region Utilities
@@ -401,9 +409,7 @@ namespace ECDLink.Core.Services
                     {
                         List<Child> newChildren = new List<Child>();
                         //Create franchisee and map in SS system
-                        var pracRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-                        var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
-                        Practitioner newPractitioner = pracRepo.GetByUserId(localPracId); //already mapped and inserted
+                        Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPracId); //already mapped and inserted
 
                         //get all elements underneath and map those too
 
@@ -456,6 +462,7 @@ namespace ECDLink.Core.Services
 
         public async Task<bool> IntegrationByMappedCoach()
         {
+            string franchiseeId = "02659d39-60dc-ed11-8356-00155d326100";
             bool returnOK = false;
             DateTime startTime = DateTime.Now;
             int totalAddedToSS = 0;
@@ -466,6 +473,7 @@ namespace ECDLink.Core.Services
             int totalUpdatedFromSL = 0;
             int totalUpdatedFromSS = 0;
             int errors = 0;
+            
             try
             {
                 //List<string> errorsList = new List<string>();
@@ -623,7 +631,7 @@ namespace ECDLink.Core.Services
                         //-------------------
                         //4.1) get all frannchisees and map them                
                         //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById("74736c48-1ae4-ed11-8356-00155d326100");
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
                         //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -679,6 +687,38 @@ namespace ECDLink.Core.Services
 
                                                 //5. Income Statements
 
+                                            }
+                                        } else
+                                        {
+                                            var localPractitioner = mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                            Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+
+                                            totalFranchiseesAddedToSS++;
+                                            //get all elements underneath and map those too
+
+                                            //1. Children
+                                            List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
+                                            if (remoteChildren != null)
+                                            {
+                                                //List of allocated children to new practitioner
+                                                List<Child> newChildren = new List<Child>();
+
+                                                foreach (var remoteChild in remoteChildren)
+                                                {
+                                                    if (remoteChild != null)
+                                                    {
+                                                        var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                        if (newChild != null)
+                                                        {
+                                                            newChildren.Add(newChild);
+                                                            totalChildrenAddedToSS++;
+                                                        }
+                                                    }
+                                                }
+
+                                                //realign hirarchy and learners to Unsure classgroups
+                                                await AlignChildHierarchy(newPractitioner, newChildren);
+                                                await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                                             }
                                         }
                                     }
@@ -968,14 +1008,6 @@ namespace ECDLink.Core.Services
                                 {
                                     newEntityAddress.ProvinceId = prov.Id;
                                 }
-                                else
-                                {
-                                    var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
-                                    if (naProv != null)
-                                    {
-                                        newEntityAddress.ProvinceId = naProv.Id;
-                                    }
-                                }
                             }
                             newEntityAddress.Id = siteAddressId;
                             newEntityAddress.UpdatedBy = _uId;
@@ -1132,6 +1164,7 @@ namespace ECDLink.Core.Services
                     if (existingUser == null)
                     {
                         //basic checks to allow child to be imported
+                        //
                         if (entity.CaregiverPopiaConsent == true && entity.Caregiver != null && entity.Gender != null && entity.Surname != null && entity.FirstName != null && entity.Caregiver.ContactNumber != null && (entity.BirthDate != null || entity.IdNumber != null))
                         {
 
@@ -1193,12 +1226,6 @@ namespace ECDLink.Core.Services
                                 if (sgender != null)
                                     newUser.GenderId = sgender.Id;
                             }
-                            else
-                            {
-                                var sgender = _staticGenderRepo.GetAll().Where(x => x.Description.Contains("N/A")).OrderBy(x => x.Id).FirstOrDefault();
-                                if (sgender != null)
-                                    newUser.GenderId = sgender.Id;
-                            }
                             //Check Race
                             if (entity.EthnicGroup != null)
                             {
@@ -1254,12 +1281,6 @@ namespace ECDLink.Core.Services
                                             if (sEducation != null)
                                                 education = sEducation.Id;
                                         }
-                                        if (education == null)
-                                        {
-                                            var sEducation = _staticEducationRepo.GetAll().Where(x => x.Description == "N/A").OrderBy(x => x.Id).FirstOrDefault();
-                                            if (sEducation != null)
-                                                education = sEducation.Id;
-                                        }
                                         //save caregiver and update child with caregiver detail
                                         if (entity.Caregiver.FirstName != null)
                                         {
@@ -1307,14 +1328,6 @@ namespace ECDLink.Core.Services
                                                         newEntityAddress.ProvinceId = prov.Id;
                                                     }
                                                 }
-                                                else
-                                                {
-                                                    var naProv = staticProvinceRepo.GetAll().Where(x => x.Description.Equals("N/A")).FirstOrDefault();
-                                                    if (naProv != null)
-                                                    {
-                                                        newEntityAddress.ProvinceId = naProv.Id;
-                                                    }
-                                                }
                                                 newEntityAddress.Id = Guid.NewGuid();
                                                 newEntityAddress.UpdatedBy = _uId;
                                                 newEntityAddress.UpdatedDate = DateTime.Now;
@@ -1339,7 +1352,6 @@ namespace ECDLink.Core.Services
 
                             if (childCreated)
                             {
-                                //Create additional table entries
 
                                 //1) Grants
                                 if (entity.GrantType != null)
@@ -1349,18 +1361,50 @@ namespace ECDLink.Core.Services
                                     {
                                         //insert new grant
                                         List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = tenantId, UserId = userId } };
-
-                                        GrantInterfaceExtension grantObj = new GrantInterfaceExtension() { };
-                                        //grantObj.AddGrants(_context, new List<UserGrant>(grants));
+                                        foreach (var grant in grants)
+                                        {
+                                            // Added safety from removing items from the list should the insertion of new items fail
+                                            try
+                                            {
+                                                _dbContext.UserGrants.AddRange(grant);
+                                                _dbContext.SaveChanges();
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                //TODO: LOG ERROR AND HANDLE
+                                                return null;
+                                            }
+                                        }
                                     }
                                 }
                                 //2) Consent
-                                //TODO: Build consent logic to insert to new table
-                                if (entity.CaregiverPopiaConsent != null)
+                                if ((bool)entity.CaregiverPopiaConsent)
                                 {
-                                    //create consent
+                                    try
+                                    {
+                                        UserConsent consentPopia = new UserConsent() { Id=Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                        _dbContext.UserConsents.Add(consentPopia);
+                                        _dbContext.SaveChanges();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //TODO: LOG ERROR AND HANDLE
+                                        return null;
+                                    }
+                                }
+                                if ((bool)entity.CaregiverPhotographyAndFilmingConsent) {
 
-
+                                    try
+                                    {
+                                        UserConsent consentPhoto = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 175, ConsentType = "PhotoPermissions", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                        _dbContext.UserConsents.Add(consentPhoto);
+                                        _dbContext.SaveChanges();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //TODO: LOG ERROR AND HANDLE
+                                        return null;
+                                    }
                                 }
 
                                 //ManageChildClassrooms();
@@ -2341,9 +2385,8 @@ namespace ECDLink.Core.Services
             bool retVal = false;
             bool updatedEntity = false;
             try
-            {
-                var entityRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
-                Document localEntity = entityRepo.GetById(Guid.Parse(model.localId));
+            {                
+                Document localEntity = _docRepo.GetById(Guid.Parse(model.localId));
                 if (localEntity != null)
                 {
                     //update entity properties
@@ -2384,7 +2427,7 @@ namespace ECDLink.Core.Services
                     {
                         localEntity.UpdatedBy = _uId;
                         localEntity.UpdatedDate = DateTime.Now;
-                        entityRepo.Update(localEntity);
+                        _docRepo.Update(localEntity);
 
                     }
                     retVal = true;
