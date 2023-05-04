@@ -1,10 +1,9 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useLayoutEffect, useMemo } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
 import { FollowUp } from '../../components/follow-up';
-import mockedImg from './mockedImg.png';
 import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 
@@ -16,15 +15,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
   );
 
   const dialog = useDialog();
-
-  const onDownloadImage = () => {
-    const imageUrl = mockedImg;
-    const link = document.createElement('a');
-    link.href = imageUrl;
-    link.setAttribute('download', 'Child-progress-summary.jpg');
-    document.body.appendChild(link);
-    link.click();
-  };
+  const [printTrigger, setPrintTrigger] = useState(0);
 
   const onShare = () => {
     dialog({
@@ -46,7 +37,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
                 type: 'filled',
                 leadingIcon: 'ShareIcon',
                 onClick: () => {
-                  onDownloadImage();
+                  setPrintTrigger((printTrigger) => printTrigger + 1);
                   onClose();
                 },
               },
@@ -86,7 +77,9 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
           buttonIcon="ShareIcon"
           onClick={onShare}
         />
-        <FollowUp infant={infant || {}} />
+        <div>
+          <FollowUp infant={infant || {}} printTrigger={printTrigger} />
+        </div>
       </div>
     </>
   );

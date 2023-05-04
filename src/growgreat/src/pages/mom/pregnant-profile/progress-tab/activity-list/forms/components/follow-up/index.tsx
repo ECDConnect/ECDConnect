@@ -1,5 +1,4 @@
 import {
-  Alert,
   Colours,
   Divider,
   ProgressBar,
@@ -13,31 +12,40 @@ import {
 import {
   MotherDto,
   VisitDto,
+  captureAndDownloadComponent,
   getStringFromClassNameOrId,
+  getWeeksDiff,
   toCamelCase,
   usePrevious,
 } from '@ecdlink/core';
-import { VisitDataStatus } from '@ecdlink/graphql';
-import { useCallback, useLayoutEffect, useMemo } from 'react';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useSelector } from 'react-redux';
-import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
-import P1 from '@/assets/pillar/p1.svg';
-import P5 from '@/assets/pillar/p5.svg';
 import { ReactComponent as Home } from '@/assets/home.svg';
 import PollyHappy from '@/assets/pollyHappy.svg';
 import PollyInformational from '@/assets/pollyInformational.svg';
 import PollyShock from '@/assets/pollyShock.svg';
-import ExclamationIcon from '@heroicons/react/outline';
-
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
+import P1 from '@/assets/pillar/p1.svg';
+import P5 from '@/assets/pillar/p5.svg';
+import PrintBanner from '@/assets/printBanner.png';
+import { progressSteps } from '../../../../walkthrough/steps';
+import { useAppDispatch } from '@/store';
+import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import { visitThunkActions } from '@/store/visit';
+import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
   activitiesColours,
   activitiesSectionTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
-import { progressSteps } from '../../../../walkthrough/steps';
-import { useAppDispatch } from '@/store';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
-import { visitThunkActions } from '@/store/visit';
+
 export interface FollowUpWalkthroughData {
   progressBar: {
     message: string;
@@ -57,6 +65,7 @@ export interface FollowUpWalkthroughData {
 interface FollowUpComponentProps {
   mother: MotherDto;
   walkthroughData?: FollowUpWalkthroughData;
+  printTrigger?: any;
 }
 
 interface Status {
@@ -66,20 +75,32 @@ interface Status {
   none: VisitDataStatus[];
 }
 
-interface iPrint {
-  visitName: string;
-  summaryData: VisitDataStatus[];
-  documentData: VisitDataStatus[];
-}
-
 type StatusType = keyof Status;
 
 export const FollowUp = ({
   mother,
   walkthroughData,
+  printTrigger,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
+  const introScreenRef = useRef<HTMLDivElement>(null);
+  const [showPrintData, setShowPrintData] = useState(false);
+
+  useEffect(() => {
+    if (printTrigger) {
+      setShowPrintData(true);
+      setTimeout(() => {
+        if (introScreenRef.current) {
+          captureAndDownloadComponent(
+            introScreenRef.current,
+            'mother-progress-summary.jpg'
+          );
+          setShowPrintData(false);
+        }
+      }, 100);
+    }
+  }, [printTrigger]);
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
@@ -88,6 +109,12 @@ export const FollowUp = ({
   const previousCurrentVisit = usePrevious(currentVisit) as
     | VisitDto
     | undefined;
+
+  const diffDates = !!mother?.expectedDateOfDelivery
+    ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
+    : '';
+
+  const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const printData = useSelector(GetMotherSummaryByPrioritySelector);
 
@@ -104,38 +131,37 @@ export const FollowUp = ({
           visitId: currentVisit?.id,
         })
       );
-    console.log('dispatch GetMotherSummaryByPriority');
   }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
 
-  // const getColorAndIcon = useCallback(
-  //   (
-  //     color: string
-  //   ): { primaryColour: Colours; secondaryColour: Colours; icon: string } => {
-  //     const formattedColor = color.toLowerCase();
-  //     switch (formattedColor) {
-  //       case 'warning':
-  //         return {
-  //           primaryColour: 'alertMain',
-  //           secondaryColour: 'alertBg',
-  //           icon: 'ExclamationIcon',
-  //         };
-  //       case 'error':
-  //         return {
-  //           primaryColour: 'errorMain',
-  //           secondaryColour: 'errorBg',
-  //           icon: 'ExclamationCircleIcon',
-  //         };
-  //       case 'success':
-  //       default:
-  //         return {
-  //           primaryColour: 'successMain',
-  //           secondaryColour: 'successBg',
-  //           icon: 'BadgeCheckIcon',
-  //         };
-  //     }
-  //   },
-  //   []
-  // );
+  const getColorAndIcon = useCallback(
+    (
+      color: string
+    ): { primaryColour: Colours; secondaryColour: Colours; icon: string } => {
+      const formattedColor = color.toLowerCase();
+      switch (formattedColor) {
+        case 'warning':
+          return {
+            primaryColour: 'alertMain',
+            secondaryColour: 'alertBg',
+            icon: 'ExclamationIcon',
+          };
+        case 'error':
+          return {
+            primaryColour: 'errorMain',
+            secondaryColour: 'errorBg',
+            icon: 'ExclamationCircleIcon',
+          };
+        case 'success':
+        default:
+          return {
+            primaryColour: 'successMain',
+            secondaryColour: 'successBg',
+            icon: 'BadgeCheckIcon',
+          };
+      }
+    },
+    []
+  );
 
   const progressBarOptions = useMemo((): {
     primaryColour: Colours;
@@ -169,21 +195,21 @@ export const FollowUp = ({
     }
   }, [name, previousVisit?.scoreColor]);
 
-  // const getVisitIcon = (visitName: string) => {
-  //   switch (visitName) {
-  //     case activitiesSectionTypes.healthCare:
-  //       return {
-  //         icon: BabyHealthcare,
-  //         color: activitiesColours.other.primaryColor,
-  //       };
-  //     case activitiesSectionTypes.nutrition:
-  //       return { icon: P1, color: '#8CDBDF' };
-  //     case activitiesSectionTypes.pregnancyCare:
-  //       return { icon: P1, color: activitiesColours.pillar1.primaryColor };
-  //     default:
-  //       return { icon: P5, color: activitiesColours.pillar5.primaryColor };
-  //   }
-  // };
+  const getVisitIcon = (visitName: string) => {
+    switch (visitName) {
+      case activitiesSectionTypes.healthCare:
+        return {
+          icon: BabyHealthcare,
+          color: activitiesColours.other.primaryColor,
+        };
+      case activitiesSectionTypes.nutrition:
+        return { icon: P1, color: '#8CDBDF' };
+      case activitiesSectionTypes.pregnancyCare:
+        return { icon: P1, color: activitiesColours.pillar1.primaryColor };
+      default:
+        return { icon: P5, color: activitiesColours.pillar5.primaryColor };
+    }
+  };
 
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
@@ -261,7 +287,7 @@ export const FollowUp = ({
       />
 
       <Divider dividerType="dashed" className="mt-4 mb-8" />
-      {/* <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
+      <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
         {!!groupedData &&
           Object.keys(groupedData).map((item, index) => {
             const { icon, primaryColour, secondaryColour } =
@@ -278,27 +304,50 @@ export const FollowUp = ({
             });
 
             return (
-                <InfoCard
-                 key={index}
-                  className="my-6"
-                  icon={icon}
-                  items={uniqueData.map((data): Item => {
-                    const { icon, color } = getVisitIcon(data?.section || '');
-                    return {
-                      customIcon: icon,
-                      iconHexBackgroundColour: color,
-                      title: `${data.comment}`,
-                    };
-                  })}
-                  primaryColour={primaryColour}
-                  secondaryColour={secondaryColour}
-                />
+              <InfoCard
+                key={index}
+                className="my-6"
+                icon={icon}
+                items={uniqueData.map((data): Item => {
+                  const { icon, color } = getVisitIcon(data?.section || '');
+                  return {
+                    customIcon: icon,
+                    iconHexBackgroundColour: color,
+                    title: `${data.comment}`,
+                  };
+                })}
+                primaryColour={primaryColour}
+                secondaryColour={secondaryColour}
+              />
             );
           })}
-      </div> */}
+      </div>
 
-      {/* Client summary Display */}
-      <div>
+      {/* Client print data display */}
+      <div
+        ref={introScreenRef}
+        style={{ display: showPrintData ? 'block' : 'none' }}
+      >
+        <img src={PrintBanner} alt="" />
+        <div
+          className="mb-2 flex flex-col justify-center p-4"
+          style={{ backgroundColor: '#FEF1E8' }}
+        >
+          <Typography
+            type="h2"
+            align="center"
+            weight="bold"
+            text={`${name}'s Progress`}
+            color="textDark"
+          />
+          <Typography
+            type="body"
+            align="center"
+            weight="skinny"
+            text={`${actualGestationWeek} weeks pregnant`}
+            color="textMid"
+          />
+        </div>
         {!!printData &&
           Object.values(printData).map((visit, index) => {
             const summaryItems = visit?.summaryData?.map((item) => {
@@ -321,6 +370,7 @@ export const FollowUp = ({
                             <img
                               src={PollyHappy}
                               className="text-successMain h-10 w-10"
+                              alt=""
                             />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
@@ -347,6 +397,7 @@ export const FollowUp = ({
                           </div>
                         </div>
                       </div>
+                      <div className="h-1"></div>
                     </>
                   )}
                 {visit?.areaName !== 'ID document' &&
@@ -359,6 +410,7 @@ export const FollowUp = ({
                             <img
                               src={PollyInformational}
                               className="text-alertMain h-10 w-10"
+                              alt=""
                             />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
@@ -385,6 +437,7 @@ export const FollowUp = ({
                           </div>
                         </div>
                       </div>
+                      <div className="h-1"></div>
                     </>
                   )}
                 {visit?.areaName !== 'ID document' &&
@@ -397,6 +450,7 @@ export const FollowUp = ({
                             <img
                               src={PollyShock}
                               className="text-errorMain h-10 w-10"
+                              alt=""
                             />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
@@ -423,6 +477,7 @@ export const FollowUp = ({
                           </div>
                         </div>
                       </div>
+                      <div className="h-1"></div>
                     </>
                   )}
 
@@ -444,7 +499,6 @@ export const FollowUp = ({
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>
-                                    {/* <div className="flex-shrink-0 rounded-full flex justify-center items-center bg-undefined text-white">{renderIcon('BadgeCheckIcon', `w-5 h-5 text-successDark`)}</div> */}
                                     <article className="w-full font-semibold text-black">
                                       {item}
                                     </article>
@@ -455,6 +509,7 @@ export const FollowUp = ({
                           </div>
                         </div>
                       </div>
+                      <div className="h-1"></div>
                     </>
                   )}
                 {visit?.areaName === 'ID document' &&
@@ -475,7 +530,6 @@ export const FollowUp = ({
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>
-                                    {/* <div className="flex-shrink-0 rounded-full flex justify-center items-center bg-undefined text-white">{renderIcon('ExclamationIcon', `w-5 h-5 text-alertDark`)}</div> */}
                                     <article className="w-full font-semibold text-black">
                                       {item}
                                     </article>

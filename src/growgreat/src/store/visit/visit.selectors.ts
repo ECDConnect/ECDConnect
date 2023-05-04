@@ -1,5 +1,4 @@
 import {
-  ClientSummary,
   ClientSummaryByPriority,
   HcwHighlights,
   HealthPromotion,
@@ -69,11 +68,12 @@ export const getMomCompletedVisitsByVisitIdSelector = (
     (item) => item.visitId === visitId
   );
 
-export const GetMotherSummaryByGroupSelector = (
-  state: RootState
-): ClientSummary[] | undefined => state.visits.motherSummaryByGroup;
-
 export const GetMotherSummaryByPrioritySelector = (
   state: RootState
 ): ClientSummaryByPriority[] | undefined =>
   state.visits.motherSummaryByPriority;
+
+export const GetInfantSummaryByPrioritySelector = (
+  state: RootState
+): ClientSummaryByPriority[] | undefined =>
+  state.visits.infantSummaryByPriority;

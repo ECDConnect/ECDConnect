@@ -1,5 +1,4 @@
 import {
-  ClientSummary,
   ClientSummaryByPriority,
   CmsVisitDataInputModelInput,
   HcwHighlights,
@@ -31,6 +30,6 @@ export interface VisitState {
   visitAnswersForMother?: VisitData[];
   healthCareWorkerHighlights?: HcwHighlights;
   previousVisitInformationForMother?: Progress_VisitDataStatus;
-  motherSummaryByGroup?: ClientSummary[];
   motherSummaryByPriority?: ClientSummaryByPriority[];
+  infantSummaryByPriority?: ClientSummaryByPriority[];
 }

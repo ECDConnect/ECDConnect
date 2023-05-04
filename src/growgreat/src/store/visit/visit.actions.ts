@@ -1,7 +1,6 @@
 import {} from '@/services/EventRecordService';
 import { Visit } from '@/services/VisitService';
 import {
-  ClientSummary,
   ClientSummaryByPriority,
   CmsVisitDataInputModelInput,
   HcwHighlights,
@@ -36,8 +35,8 @@ export const VisitActions = {
   GET_HCW_HIGHLIGHTS: 'getHealthCareWorkerHighlights',
   GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER:
     'getPreviousVisitInformationForMother',
-  GET_MOTHER_SUMMARY_BY_GROUP: 'GetMotherSummaryByGroup',
   GET_MOTHER_SUMMARY_BY_PRIORITY: 'GetMotherSummaryByPriority',
+  GET_INFANT_SUMMARY_BY_PRIORITY: 'GetInfantSummaryByPriority',
 };
 
 export const getHealthCareWorkerVisitStatus = createAsyncThunk<
@@ -383,38 +382,6 @@ export const getPreviousVisitInformationForMother = createAsyncThunk<
   }
 );
 
-export const GetMotherSummaryByGroup = createAsyncThunk<
-  ClientSummary[],
-  { visitId: string },
-  ThunkApiType<RootState>
->(
-  VisitActions.GET_MOTHER_SUMMARY_BY_GROUP,
-  async ({ visitId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-    try {
-      let content: ClientSummary[] | undefined = undefined;
-      if (userAuth?.auth_token) {
-        content = await new Visit(
-          userAuth?.auth_token ?? ''
-        ).GetMotherSummaryByGroup(visitId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
-
-      if (!content) {
-        return rejectWithValue(
-          'Error getting mother summary by group for mother'
-        );
-      }
-      return content;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
 export const GetMotherSummaryByPriority = createAsyncThunk<
   ClientSummaryByPriority[],
   { visitId: string },
@@ -441,7 +408,37 @@ export const GetMotherSummaryByPriority = createAsyncThunk<
           'Error getting mother summary by priority for mother'
         );
       }
-      console.log('GetMotherSummaryByPriority', visitId, content);
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const GetInfantSummaryByPriority = createAsyncThunk<
+  ClientSummaryByPriority[],
+  { visitId: string },
+  ThunkApiType<RootState>
+>(
+  VisitActions.GET_INFANT_SUMMARY_BY_PRIORITY,
+  async ({ visitId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let content: ClientSummaryByPriority[] | undefined = undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new Visit(
+          userAuth?.auth_token ?? ''
+        ).GetInfantSummaryByPriority(visitId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!content) {
+        return rejectWithValue('Error getting infant summary by priority');
+      }
       return content;
     } catch (err) {
       return rejectWithValue(err);

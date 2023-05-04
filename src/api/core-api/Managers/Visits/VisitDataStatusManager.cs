@@ -847,8 +847,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -942,8 +942,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
                 lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
 

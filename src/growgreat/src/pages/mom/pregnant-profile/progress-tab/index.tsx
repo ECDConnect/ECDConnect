@@ -1,16 +1,12 @@
 import { motherSelectors } from '@/store/mother';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { PregnantProfileParams } from '../index.types';
 import { IntroScreen } from './activity-list/intro-screen';
 import { RootState } from '@/store/types';
 import { PREGNANT_PROFILE_TABS } from '..';
-import {
-  VisitDto,
-  captureAndDownloadComponent,
-  usePrevious,
-} from '@ecdlink/core';
+import { VisitDto, usePrevious } from '@ecdlink/core';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
@@ -31,6 +27,8 @@ export const ProgressTab = () => {
   const { height } = useWindowSize();
 
   const appDispatch = useAppDispatch();
+
+  const [printTrigger, setPrintTrigger] = useState(0);
 
   const history = useHistory();
   const location = useLocation();
@@ -53,8 +51,6 @@ export const ProgressTab = () => {
     | VisitDto
     | undefined;
 
-  const introScreenRef = useRef<HTMLDivElement>(null);
-
   const walkthroughData: FollowUpWalkthroughData = {
     progressBar: {
       message: `${mother?.user?.firstName} is doing well!`,
@@ -74,9 +70,7 @@ export const ProgressTab = () => {
   };
 
   const handleCaptureClick = () => {
-    if (introScreenRef.current) {
-      captureAndDownloadComponent(introScreenRef.current, 'summary');
-    }
+    setPrintTrigger((printTrigger) => printTrigger + 1);
   };
 
   useLayoutEffect(() => {
@@ -136,13 +130,14 @@ export const ProgressTab = () => {
             }
       }
     >
-      <div ref={introScreenRef}>
+      <div>
         <IntroScreen
           mother={mother}
           walkthroughData={
             walkthroughState?.isTourActive ? walkthroughData : undefined
           }
           headerText={mother?.user?.firstName}
+          printTrigger={printTrigger}
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">

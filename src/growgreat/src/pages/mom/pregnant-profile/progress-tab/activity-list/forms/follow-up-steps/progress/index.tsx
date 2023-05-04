@@ -1,15 +1,10 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
 import { FollowUp } from '../../components/follow-up';
-import {
-  useDialog,
-  usePrevious,
-  VisitDto,
-  captureAndDownloadComponent,
-} from '@ecdlink/core';
+import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useSelector } from 'react-redux';
@@ -40,7 +35,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const previousCurrentVisit = usePrevious(currentVisit) as
     | VisitDto
     | undefined;
-  const introScreenRef = useRef<HTMLDivElement>(null);
+  const [printTrigger, setPrintTrigger] = useState(0);
 
   useLayoutEffect(() => {
     if (
@@ -67,15 +62,6 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     );
   }
 
-  const onDownloadImage = () => {
-    if (introScreenRef.current) {
-      captureAndDownloadComponent(
-        introScreenRef.current,
-        'mother-progress-summary.jpg'
-      );
-    }
-  };
-
   const onShare = () => {
     dialog({
       blocking: false,
@@ -96,7 +82,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
                 type: 'filled',
                 leadingIcon: 'ShareIcon',
                 onClick: () => {
-                  onDownloadImage();
+                  setPrintTrigger((printTrigger) => printTrigger + 1);
                   onClose();
                 },
               },
@@ -132,8 +118,8 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
           buttonIcon="ShareIcon"
           onClick={onShare}
         />
-        <div ref={introScreenRef}>
-          <FollowUp mother={mother || {}} />
+        <div>
+          <FollowUp mother={mother || {}} printTrigger={printTrigger} />
         </div>
       </div>
     </div>

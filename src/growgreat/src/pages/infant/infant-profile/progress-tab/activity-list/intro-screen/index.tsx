@@ -1,6 +1,6 @@
 import { Header } from '../../../components';
 import { InfantDto } from '@ecdlink/core';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
@@ -22,6 +22,7 @@ interface IntroScreenProps {
   walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
+  printTrigger?: any;
 }
 
 export const IntroScreen = ({
@@ -29,6 +30,7 @@ export const IntroScreen = ({
   walkthroughData,
   headerText,
   onStartVisit,
+  printTrigger,
 }: IntroScreenProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
@@ -39,6 +41,11 @@ export const IntroScreen = ({
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
+
+  useEffect(() => {
+    if (printTrigger) {
+    }
+  }, [printTrigger]);
 
   return (
     <>
@@ -60,7 +67,11 @@ export const IntroScreen = ({
         }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp infant={infant || {}} walkthroughData={walkthroughData} />
+        <FollowUp
+          infant={infant || {}}
+          walkthroughData={walkthroughData}
+          printTrigger={printTrigger}
+        />
         {!!onStartVisit && (
           <Button
             className="mt-8 w-full"

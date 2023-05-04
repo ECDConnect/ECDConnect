@@ -261,6 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.doingWell;
             sumObj.Order = 1;
+            sumObj.Color = MetricsColorEnum.Success.ToString().ToLower();
             sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Success.ToString());
             if (sumObj.SummaryData != null)
             {
@@ -270,6 +271,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.needSupport;
             sumObj.Order = 2;
+            sumObj.Color = MetricsColorEnum.Warning.ToString().ToLower();
             sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Warning.ToString());
             if (sumObj.SummaryData != null)
             {
@@ -279,6 +281,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.needUrgentSupport;
             sumObj.Order = 3;
+            sumObj.Color = MetricsColorEnum.Error.ToString().ToLower();
             sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Error.ToString());
             if (sumObj.SummaryData != null)
             {
@@ -288,6 +291,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.idDocSection;
             sumObj.Order = 4;
+            sumObj.Color = MetricsColorEnum.Success.ToString().ToLower();
             sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Success.ToString());
             if (sumObj.DocumentData != null)
             {
@@ -296,7 +300,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.idDocSection;
-            sumObj.Order = 4;
+            sumObj.Order = 5;
+            sumObj.Color = MetricsColorEnum.Warning.ToString().ToLower();
             sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Warning.ToString());
             if (sumObj.DocumentData != null)
             {
