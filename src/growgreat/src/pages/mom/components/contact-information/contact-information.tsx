@@ -28,6 +28,8 @@ export const ContactInformation: React.FC<
     register: consentFormRegister,
     // reset: resetMomContactInformationFormValue,
     control: momContactInformationControl,
+    watch,
+    clearErrors,
   } = useForm<PregnantContactInformationModel>({
     resolver: yupResolver(pregnantContactInformationModelSchema),
     mode: 'onBlur',
@@ -35,7 +37,8 @@ export const ContactInformation: React.FC<
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = useFormState({ control: momContactInformationControl });
+  const { errors } = useFormState({ control: momContactInformationControl });
+  const { whatsapp, cellphone } = watch();
 
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
@@ -64,6 +67,7 @@ export const ContactInformation: React.FC<
           placeholder={'e.g 012 345 6789'}
           type={'number'}
           className="mt-4"
+          error={!!errors.cellphone ? errors.cellphone : undefined}
         ></FormInput>
         <div className="mt-4">
           <Typography
@@ -75,9 +79,10 @@ export const ContactInformation: React.FC<
           <div className="mt-2">
             <ButtonGroup<boolean>
               options={yesNoOptions}
-              onOptionSelected={(value: boolean | boolean[]) =>
-                setHasWhatsapp(value)
-              }
+              onOptionSelected={(value: boolean | boolean[]) => {
+                clearErrors();
+                setHasWhatsapp(value);
+              }}
               color="secondary"
               type={ButtonGroupTypes.Button}
               className={'mt-2 w-full'}
@@ -93,6 +98,7 @@ export const ContactInformation: React.FC<
               placeholder={'e.g 012 345 6789'}
               type={'number'}
               className="mt-4"
+              error={!!errors.whatsapp ? errors.whatsapp : undefined}
             ></FormInput>
           </>
         )}
@@ -109,7 +115,10 @@ export const ContactInformation: React.FC<
           onClick={() => {
             onSubmit(getMomContactInformationFormValues());
           }}
-          disabled={!isValid}
+          disabled={
+            !!Object.keys(errors).length ||
+            (!!hasWhatsapp ? !cellphone : !whatsapp || !cellphone)
+          }
         />
       </div>
     </>
