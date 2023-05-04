@@ -1,8 +1,8 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useEffect, useMemo } from 'react';
+import { useEffect } from 'react';
 import { MoreInformation } from '../../components/more-information';
 import { Video } from '../../components/video';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
@@ -14,7 +14,7 @@ export const AntenatalClinicVideoStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
-  const videoSection = '';
+  const videoSection = 'Antenatal clinic video';
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -22,11 +22,17 @@ export const AntenatalClinicVideoStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        section="Developmental Screening"
-        subTitle="Developmental Screening"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Antenatal clinic video"
+          subTitle="Antenatal clinic video"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

@@ -95,6 +95,7 @@ class Visit {
           headerA
           headerB
           headerC
+          headerD
           id
           infoBoxDescription
           infoBoxIcon
@@ -102,6 +103,7 @@ class Visit {
           section
           showDividerA
           showDividerB
+          showDividerC
           type
           visit
         }
@@ -279,6 +281,8 @@ class Visit {
             question
             questionAnswer
             visit {
+              id
+              orderDate
               plannedVisitDate
             }
           }

@@ -43,6 +43,7 @@ export const GetUserById = gql`
       genderId
       phoneNumber
       profileImageUrl
+      isImported
       roles {
         id
         name

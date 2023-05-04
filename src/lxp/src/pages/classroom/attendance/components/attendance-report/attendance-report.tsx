@@ -1,5 +1,16 @@
-import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
-import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
+import {
+  ClassroomGroupDto,
+  LocalStorageKeys,
+  MonthlyAttendanceRecord,
+} from '@ecdlink/core';
+import {
+  Button,
+  MessageModal,
+  renderIcon,
+  SearchDropDown,
+  SearchDropDownOption,
+  Typography,
+} from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
@@ -20,6 +31,7 @@ import { addDays, startOfYear } from 'date-fns';
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
   currentClassroomGroup,
+  classroomGroups,
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
@@ -67,6 +79,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
+  const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
+    ClassroomGroupDto[]
+  >([]);
 
   useEffect(() => {
     const trackAttendance = async () => {
@@ -79,6 +94,14 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   }, []);
 
   const today = new Date();
+
+  useEffect(() => {
+    setSelectedClassroomGroups(
+      classroomGroups
+        ?.filter((x) => x.classroomId === classroomID)
+        .slice(0, 1) || []
+    );
+  }, [classroomGroups, classroomID]);
 
   useEffect(() => {
     const lastDayCurrentMonth = new Date(
@@ -95,7 +118,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroomID!,
+          selectedClassroomGroups[0]?.classroomId,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
@@ -104,7 +127,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom]);
+  }, [selectedClassroomGroups]);
 
   useEffect(() => {
     if (!reportData) return;
@@ -121,6 +144,10 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
 
+  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
+    setSelectedClassroomGroups(value.map((x) => x.value));
+  };
+
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
@@ -128,7 +155,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
           visible={successMessageVisible}
           onClose={() => closeNotification()}
           className={'mb-4'}
-          message={`Good job! All your attendance registers are  up to date!`}
+          message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport
@@ -163,8 +190,10 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          !hasClosedAttendanceSmartStartPointsMessage ??
-          displaySmartStartMessage
+          // todo: remove 'false' once needed.
+          false &&
+          (!hasClosedAttendanceSmartStartPointsMessage ??
+            displaySmartStartMessage)
         }
         icon={'GiftIcon'}
         className={'mt-4'}

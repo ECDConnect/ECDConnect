@@ -1,34 +1,16 @@
-import { useMemo } from 'react';
-import {
-  Button,
-  Dialog,
-  DialogPosition,
-  Divider,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import imgMocked from './mocked.png';
-import { dietFormQuestion } from '../nutrition-eating';
-import { noneOption } from '../nutrition-eating/options';
 import { DynamicFormProps } from '../../dynamic-form';
 
 export const ResourcesStep = ({
-  mother,
+  name,
   sectionQuestions: questions,
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const answers = questions
-    ?.flatMap((section) => section.questions)
-    .find((question) => question.question === dietFormQuestion)
-    ?.answer as string[];
-
-  const count = answers?.includes(noneOption) ? 0 : answers?.length;
-
   return (
     <>
       <div className="flex flex-col gap-4 p-4">
-        <Divider dividerType="dashed" />
         <Typography
           type="h4"
           color="black"

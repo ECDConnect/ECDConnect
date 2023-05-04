@@ -22,10 +22,14 @@ namespace EcdLink.Api.CoreApi {
             public const string client_mother = "mother";
             public const string client_child = "child";
             public const string client_new = "New client";
+            public const string client_teenager = "Teenager";
 
             public const string client_pregnant_mom = "Pregnant mom";
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
             public const string client_pregnant_mom_multiple_children = "Multiple children";
+
+            public const string maternal_record_name = "maternalcaserecord.png";
+            public const string upload_maternal_case_record = "Upload maternal case record";
 
             public const string additional_visits = "additional_visits";
             public const string visit1 = "visit_1";
@@ -147,6 +151,7 @@ namespace EcdLink.Api.CoreApi {
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
             public const string p4_name = "Pillar 4: Healthcare";
+            public const string low_birth_weight = "Low birth weight";
 
             // Infant referral, progress, G4 (ClientDashboardAlert), G9 (ClientSummaryDownload)
             public const string infant_missed_clinic_visit = "Missed clinic visit";
@@ -191,7 +196,6 @@ namespace EcdLink.Api.CoreApi {
             public const string p1_7 = "Vitamin A rich fruit & vegetables";
             public const string p1_8 = "Other fruits & vegetables";
 
-
             // Answers
             public const string answer_yes = "true";
             public const string answer_no = "false";
@@ -204,7 +208,6 @@ namespace EcdLink.Api.CoreApi {
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
-           
 
             // Growth names
             public const string weightForAgeBoys = "weight-for-age-boys";

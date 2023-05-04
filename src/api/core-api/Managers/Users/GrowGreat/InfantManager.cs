@@ -171,11 +171,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             infantToUpdate.UpdatedBy = _applicationUserId;
             infantToUpdate.UserId = infantUser.Id;
             infantToUpdate.User = infantUser;
-            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits;
-            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab;
-            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab;
-            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
-            infantToUpdate.ClickedContactTab = input.ClickedContactTab;
+            infantToUpdate.Completed24MonthVisits = input.Completed24MonthVisits == null ? false: input.Completed24MonthVisits;
+            infantToUpdate.ClickedVisitTab = input.ClickedVisitTab == null ? false : input.ClickedVisitTab;
+            infantToUpdate.ClickedProgressTab = input.ClickedProgressTab == null ? false : input.ClickedProgressTab;
+            infantToUpdate.ClickedReferralsTab = input.ClickedReferralsTab == null ? false : input.ClickedReferralsTab;
+            infantToUpdate.ClickedContactTab = input.ClickedContactTab == null ? false : input.ClickedContactTab;
 
             return _infantRepo.Update(infantToUpdate);
         }
@@ -351,7 +351,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             //
             // Green or neutral Alerts
             //
-            
+
 
             // show "booked" if a visit has been scheduled in the calendar -> DEVELOPMENT PENDING 
             // don't show a visit date if the booked date has passed; or if the last possible day to conduct that visit has passed (see timing in G5 & G6) -> DEVELOPMENT PENDING 
@@ -432,11 +432,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             if (totalMonths <= 3)
             {
                 var lastVisit = _visitManager.GetLastCompletedVisitId(child.Id.ToString(), Constants.GGSettings.client_child);
+
                 if (lastVisit == Guid.Empty)
                 {
-                    statusInfo.Color = MetricsIconEnum.None.ToString();
-                    statusInfo.Icon = MetricsIconEnum.None.ToString();
-                    statusInfo.Subject = Constants.GGSettings.client_new;
+                    if (child.WeightAtBirth != null && (double)child.WeightAtBirth < 2.5)
+                    {
+                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Subject = Constants.GGSettings.low_birth_weight;
+                    } else
+                    {
+                        statusInfo.Color = MetricsIconEnum.Success.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_new;
+                    }
                 }
             }
 

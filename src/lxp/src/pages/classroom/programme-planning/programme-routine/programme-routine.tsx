@@ -587,24 +587,30 @@ export const ProgrammeRoutine: React.FC = () => {
             )} */}
           <div className={'pt-4'}>
             {isDayCompleted &&
-              sortedRoutineItems.map((routineItem) => (
-                <ProgrammePlanningRoutineListItemUpdated
-                  key={routineItem.id}
-                  day={currentDay}
-                  routineItem={routineItem}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              ))}
+              sortedRoutineItems.map((routineItem) => {
+                if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
+                  return (
+                    <ProgrammePlanningRoutineListItemUpdated
+                      key={routineItem.id}
+                      day={currentDay}
+                      routineItem={routineItem}
+                      onClick={() => onProgrammeClick(routineItem)}
+                    />
+                  );
+                }
+              })}
 
             {!isDayCompleted &&
-              activityRequiredProgrammeRoutineItems?.map((routineItem) => (
-                <ProgrammePlanningRoutineListItemNotCompleted
-                  key={routineItem.id}
-                  day={currentDay}
-                  routineItem={routineItem}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              ))}
+              activityRequiredProgrammeRoutineItems?.map((routineItem) => {
+                return (
+                  <ProgrammePlanningRoutineListItemNotCompleted
+                    key={routineItem.id}
+                    day={currentDay}
+                    routineItem={routineItem}
+                    onClick={() => onProgrammeClick(routineItem)}
+                  />
+                );
+              })}
           </div>
         </>
       )}

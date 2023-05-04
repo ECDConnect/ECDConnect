@@ -26,6 +26,7 @@ import {
   buttonDays,
 } from '../setup-classes/setup-classes.types';
 import { yesNoOptions } from '../add-programme-form/add-programme-form.types';
+import { userSelectors } from '@/store/user';
 
 // TODO: Refactor this into add-class component
 export const EditClass = ({
@@ -58,13 +59,14 @@ export const EditClass = ({
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
-
-  const { isValid } = formState;
+  const user = useSelector(userSelectors.getUser);
 
   const { name, meetEveryday, meetingDays, practitionerId, isFullDay } =
     useWatch({
       control,
     });
+
+  const isValid = name && meetingDays && practitionerId;
 
   useEffect(() => {
     const _list = practitioners
@@ -79,12 +81,19 @@ export const EditClass = ({
       })
       .filter(Boolean) as { label: string; value: any }[];
 
-    _list.push({
-      label: currentPractitioner?.user?.fullName || '',
-      value: currentPractitioner?.userId,
-    });
+    if (!user?.isImported) {
+      _list.push({
+        label: currentPractitioner?.user?.fullName || '',
+        value: currentPractitioner?.userId,
+      });
+    }
 
-    setPractitionersList(_list);
+    const filteredList = _list.filter(
+      (value, index, self) =>
+        index === self.findIndex((t) => t.value === value.value)
+    );
+
+    setPractitionersList(filteredList);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -103,6 +112,7 @@ export const EditClass = ({
   }, [meetEveryday, setValue, trigger]);
 
   const programmeType = useSelector(classroomsSelectors.getProgrammeType());
+
   const classProgrammes = useSelector(
     classroomsSelectors.getClassProgrammesByClassGroupId(classToEdit.id)
   );
@@ -120,7 +130,7 @@ export const EditClass = ({
         classroomId: editClassroomId,
         programmeTypeId: programmeType?.id,
         isActive: true,
-        practitionerId: practitionerId,
+        userId: practitionerId,
       })
     );
 

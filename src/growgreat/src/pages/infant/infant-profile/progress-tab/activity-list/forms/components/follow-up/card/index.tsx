@@ -52,7 +52,8 @@ export const Card = ({
     month: 'short',
     year: 'numeric',
   };
-  const formattedDate = currentDate.toLocaleDateString('en-ZA', options);
+  const formattedDate =
+    date && currentDate.toLocaleDateString('en-ZA', options);
 
   return (
     <div

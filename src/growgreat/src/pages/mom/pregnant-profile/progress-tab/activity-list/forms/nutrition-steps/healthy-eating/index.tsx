@@ -58,11 +58,11 @@ export const HealthyEatingStep = ({
     } else {
       return (
         <div>
-          <ResourcesStep setIsTip={setIsTip} />
+          <ResourcesStep setIsTip={setIsTip} name={name} />
         </div>
       );
     }
-  }, [isFirstVisit, setIsTip, showVideo]);
+  }, [isFirstVisit, name, setIsTip, showVideo]);
 
   const renderHealthyFoodAlerts = useMemo(() => {
     if (nutritionAnswers.length <= 1) {
@@ -160,46 +160,78 @@ export const HealthyEatingStep = ({
   }, [setEnableButton]);
 
   const renderFoodGroupsNumber = useMemo(() => {
-    return (
-      <div className="flex gap-2 px-4">
-        <div
-          className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
-            nutritionAnswers.length
-          )} items-center justify-center font-bold text-white`}
-        >
-          {nutritionAnswers.includes(noneOption) ? 0 : nutritionAnswers.length}
+    if (!!nutritionAnswers.length && !nutritionAnswers.includes(noneOption)) {
+      return (
+        <div className="flex gap-2 px-4">
+          <div
+            className={`text-14 flex h-5 w-5 rounded-full bg-${getGroupColor(
+              nutritionAnswers.length
+            )} items-center justify-center font-bold text-white`}
+          >
+            {nutritionAnswers.includes(noneOption)
+              ? 0
+              : nutritionAnswers.length}
+          </div>
+          <Typography
+            type="h4"
+            color={getGroupColor(nutritionAnswers.length)}
+            text={'Food groups'}
+          />
         </div>
-        <Typography
-          type="h4"
-          color={getGroupColor(nutritionAnswers.length)}
-          text={'Food groups'}
-        />
-      </div>
-    );
+      );
+    } else {
+      return <></>;
+    }
   }, [nutritionAnswers]);
 
   const renderDietarySentence = useMemo(() => {
     if (nutritionAnswers.length > 1 && nutritionAnswers.length < 4) {
       return (
-        <Typography
-          color="textDark"
-          text="Not enough dietary diversity."
-          type={'body'}
-          weight="semibold"
-          className={'p-4'}
-        />
+        <>
+          <Typography
+            color="textDark"
+            text="Not enough dietary diversity."
+            type={'body'}
+            weight="semibold"
+            className={'p-4'}
+          />
+          <ul className={'text-uiMidDark mb-4 list-disc pl-8'}>
+            <li>
+              <Typography
+                type={'help'}
+                hasMarkup
+                text={`Remind ${name} to try to eat all the food groups`}
+                className={'text-sm font-normal'}
+                color={'textDark'}
+              />
+            </li>
+          </ul>
+        </>
       );
     }
 
     if (nutritionAnswers.length > 3 && nutritionAnswers.length < 6) {
       return (
-        <Typography
-          color="textDark"
-          text="Dietary diversity can be improved."
-          weight="semibold"
-          type={'body'}
-          className={'p-4'}
-        />
+        <>
+          <Typography
+            color="textDark"
+            text="Dietary diversity can be improved."
+            weight="bold"
+            type={'body'}
+            className={'p-4'}
+          />
+          <ul className={'text-uiMidDark mb-4 list-disc pl-8'}>
+            <li>
+              <Typography
+                type={'help'}
+                hasMarkup
+                text={`Remind ${name} to try to eat all the food groups`}
+                className={'text-sm font-normal'}
+                color={'textDark'}
+              />
+            </li>
+          </ul>
+        </>
       );
     }
 
@@ -215,15 +247,19 @@ export const HealthyEatingStep = ({
       );
     }
 
-    return (
-      <Typography
-        color="textDark"
-        text="Dietary diversity is great!"
-        type={'body'}
-        weight="semibold"
-        className={'p-4'}
-      />
-    );
+    if (nutritionAnswers.length > 6) {
+      return (
+        <Typography
+          color="textDark"
+          text="Dietary diversity is great!"
+          type={'body'}
+          weight="semibold"
+          className={'p-4'}
+        />
+      );
+    }
+
+    return <></>;
   }, [nutritionAnswers.length]);
 
   if (isTipPage) {

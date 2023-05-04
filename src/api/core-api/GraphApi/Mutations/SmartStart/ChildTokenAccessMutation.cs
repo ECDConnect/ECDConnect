@@ -19,6 +19,7 @@ using ECDLink.Security.Helpers;
 using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -166,8 +167,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
         {
-
-            var insertingUser = contextAccessor.HttpContext.GetUser().FullName;
+            // There may not be a logged in user if open access is used
+            var insertingUsername = contextAccessor.HttpContext.GetUser()?.FullName ?? caregiver?.FullName;
 
             var childEntity = new Child
             {
@@ -179,7 +180,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
                 CaregiverId = caregiver.Id,
-                InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
+                InsertedBy = !string.IsNullOrEmpty(insertingUsername) ? insertingUsername : "N/A"
             };
 
             var updated = repoFactory.Update(childEntity);
@@ -247,8 +248,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid childId,
             Guid classgroupId)
         {
+            if (childId == Guid.Empty)
+                throw new QueryException($"{nameof(childId)} cannot be empty");
+
             var childRepo = repoFactory.CreateRepository<Child>(userContext: httpContext.HttpContext.GetUser().Id);
             var child = childRepo.GetById(childId);
+            
+            if (classgroupId == Guid.Empty)
+            {
+                var learnerRepo = repoFactory.CreateRepository<Learner>(userContext: httpContext.HttpContext.GetUser().Id);
+                var learner = learnerRepo.GetAll().Where(x => x.UserId == child.UserId)?.FirstOrDefault();
+                classgroupId = learner.ClassroomGroupId;
+            }
 
             if (child == default)
             {

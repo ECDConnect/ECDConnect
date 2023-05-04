@@ -89,7 +89,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
       search: `?token=${response.payload}`,
     });
 
-    copyToClip(caregiverChildregUrl);
+    const linkCopied = await copyToClip(caregiverChildregUrl);
 
     dialog({
       render: (onSubmit, onCancel) => {
@@ -102,6 +102,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
               surname: childUser?.surname || '',
             }}
             caregiverUrl={caregiverChildregUrl}
+            couldCopyToClipboard={linkCopied}
           />
         );
       },
@@ -119,7 +120,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
       subTitle={'Not Registered'}
       displayOffline={!isOnline}
     >
-      <div className="h-full w-full flex flex-col p-4">
+      <div className="flex h-full w-full flex-col p-4">
         <Alert
           title={`${childUser?.firstName}'s registration is not complete`}
           type={'error'}

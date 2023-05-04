@@ -18,5 +18,8 @@ namespace ECDLink.DataAccessLayer.Entities
         public string ClassroomGroupId { get; set; }
 
         public DateTime InsertedDate { get; set; }
+        public string ProgrammeTypeName { get; set; }
+
+        public string ClassSiteAddress { get; set; }
     }
 }

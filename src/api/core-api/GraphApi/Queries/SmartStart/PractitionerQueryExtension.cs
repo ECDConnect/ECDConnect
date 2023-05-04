@@ -76,6 +76,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         }
                         else
                         {
+                            if (practitioner.CoachHierarchy == null || practitioner.CoachHierarchy != principal.CoachHierarchy) 
+                            {
+                                return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Oh no! You can't add this practitioner to your programme. They don't have the same coach that you have. If you need more help, please contact the SmartStart call centre."};
+                            }
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     }
@@ -175,6 +179,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             string userId)
         {
             return practiManager.GetAllClassroomGroupsForPractitioner(userId);
+        }
+
+        public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practi = practiRepo.GetByUserId(userId);
+            PrincipalClassroom classDetails = practiManager.GetClassroomDetailsForPractitioner(userId);
+            PractitionerReportDetails details = new PractitionerReportDetails() { 
+                ClassroomGroupId = classDetails.ClassroomGroupId, 
+                ClassroomGroupName = classDetails.ClassroomGroupName, 
+                Id = classDetails.Id, 
+                IdNumber = practi.User.IdNumber, 
+                InsertedDate = classDetails.InsertedDate, 
+                Name = practi.User.FullName, 
+                Phone = practi.User.PhoneNumber, 
+                PrincipalName = classDetails.PrincipalName, 
+                ProgrammeDays = "Monday to Friday", 
+                ProgrammeTypeName = classDetails.ProgrammeTypeName,
+                ClassSiteAddress = classDetails.ClassSiteAddress
+            };
+            return details;
         }
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,

@@ -43,6 +43,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
+
+            // first validate if the linked mothers should not be archive because of maternal case records missing after 60 days from when client was registered.
+            motherManager.ArchiveMotherProfilesWithoutMaternalRecord(id);
+
+            // Now we can return all active mothers to the FE
             List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Mother> mothers = new List<Mother>();
 
@@ -121,6 +126,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
             return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        {
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

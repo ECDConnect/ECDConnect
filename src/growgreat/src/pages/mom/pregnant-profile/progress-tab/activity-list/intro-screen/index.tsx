@@ -4,7 +4,10 @@ import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
-import { FollowUp } from '../forms/components/follow-up';
+import {
+  FollowUp,
+  FollowUpWalkthroughData,
+} from '../forms/components/follow-up';
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
@@ -15,6 +18,7 @@ import { RootState } from '@/store/types';
 
 interface IntroScreenProps {
   mother?: MotherDto;
+  walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
 }
@@ -22,6 +26,7 @@ interface IntroScreenProps {
 export const IntroScreen = ({
   mother,
   headerText,
+  walkthroughData,
   onStartVisit,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
@@ -66,7 +71,7 @@ export const IntroScreen = ({
         }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp mother={mother || {}} />
+        <FollowUp mother={mother || {}} walkthroughData={walkthroughData} />
         {!!onStartVisit && (
           <Button
             className="mt-8 w-full"

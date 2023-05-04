@@ -28,6 +28,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   hint?: string;
   register?: UseFormRegister<T>;
   maxLength?: number;
+  min?: number;
   suffixIconAction?: () => void;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

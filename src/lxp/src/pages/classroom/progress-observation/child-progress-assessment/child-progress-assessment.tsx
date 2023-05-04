@@ -85,14 +85,15 @@ export const ChildProgressAssessment: React.FC = () => {
     setCurrentCategoryById,
     submitLevelSkills,
     getChildAchievedLevelId,
-    getChildAchievedLevelPercentage,
-    getUnseletedSkills,
+    getUnselectedSkills,
     setCategoryAchievedLevel,
     completeCurrentCategoryTracking,
     setHelpingWithTask,
     setHelpingWithTaskText,
     isCompetentInLevel,
     clearHelpingWithTaskId,
+    isAllSkillsYes,
+    isNoTryingToDoAndAtLeastOneNotYet,
   } = useChildProgressObservation(childId, report);
 
   const [firstTimeTrackingPromptVisible, setFirstTimeTrackingPromptVisible] =
@@ -145,33 +146,7 @@ export const ChildProgressAssessment: React.FC = () => {
     form: ChildDevelopmentLevelFormModel
   ) => {
     setCategoryAchievedLevel(form.levelId);
-
-    const level1Percentage = getChildAchievedLevelPercentage(
-      ProgressTrackingLevels.LevelOne
-    );
-    const level2Percentage = getChildAchievedLevelPercentage(
-      ProgressTrackingLevels.LevelTwo
-    );
-    const level3Percentage = getChildAchievedLevelPercentage(
-      ProgressTrackingLevels.LevelThree
-    );
-
-    if (
-      level1Percentage < 100 ||
-      level2Percentage < 100 ||
-      level3Percentage < 100
-    ) {
-      goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
-    } else {
-      clearHelpingWithTaskId();
-      completeCurrentCategoryTracking();
-
-      if (returnToOverview) {
-        returnToReportOverview();
-      } else {
-        returnToReportDashboard();
-      }
-    }
+    goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
   };
 
   const returnToReportOverview = () => {
@@ -250,6 +225,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelTwo}
+            level={2}
             childId={currentChild?.id || ''}
             optionSelected={validateLevelOneSelection}
             onSubmit={(result: CategoryLevelFormResult) => {
@@ -267,6 +243,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelThree}
+            level={3}
             optionSelected={validateLevelOneAndTwoSelection}
             childId={currentChild?.id || ''}
             onSubmit={(result: CategoryLevelFormResult) => {
@@ -295,10 +272,22 @@ export const ChildProgressAssessment: React.FC = () => {
       case ChildProgressAssessmentSteps.assessmentStepFive:
         return (
           <ChildUndevelopedSkillForm
-            undevelopedSkills={getUnseletedSkills()}
+            undevelopedSkills={getUnselectedSkills()}
+            allSkillsYes={isAllSkillsYes()}
+            noTryingToDoAndAtLeastOneNotYet={isNoTryingToDoAndAtLeastOneNotYet()}
             childId={currentChild?.id}
-            onSubmit={(skill: ProgressTrackingSkillDto) => {
-              setChildUndevelopedTask(skill);
+            onSubmit={(skill: ProgressTrackingSkillDto | undefined) => {
+              if (skill) {
+                setChildUndevelopedTask(skill);
+              } else {
+                clearHelpingWithTaskId();
+                completeCurrentCategoryTracking();
+                if (returnToOverview) {
+                  returnToReportOverview();
+                } else {
+                  returnToReportDashboard();
+                }
+              }
             }}
           />
         );
@@ -325,6 +314,7 @@ export const ChildProgressAssessment: React.FC = () => {
           <CategoryLevelForm
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelOne}
+            level={1}
             childId={currentChild?.id || ''}
             onSubmit={(result: CategoryLevelFormResult) => {
               submitLevelSkills(
@@ -353,7 +343,7 @@ export const ChildProgressAssessment: React.FC = () => {
           }
         }}
         renderOverflow
-        backgroundColour={'uiBg'}
+        backgroundColour={'white'}
         onClose={exitAssessment}
         displayOffline={!isOnline}
       >

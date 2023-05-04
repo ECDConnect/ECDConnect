@@ -10,6 +10,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -27,6 +28,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
+        private IGenericRepository<Document, Guid> _documentRepo;
 
         public MotherManager(
             IHttpContextAccessor contextAccessor,
@@ -46,6 +48,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
+            _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
         }
 
         // GG BUSINESS RULES FOR CREATING A MOTHER AND SELECTING AN EXISTING CAREGIVER
@@ -74,23 +77,77 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         public Mother UpdateMother(string id, MotherModel input)
         {
-            var entityToUpdate = _motherRepo.GetAll().Where(x => x.Id.Equals(Guid.Parse(id))).FirstOrDefault();
+            var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
             var motherUser = GetUserFromInputModel(input);
 
             entityToUpdate.UpdatedDate = DateTime.Now;
             entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.UserId = input.UserId;
-            entityToUpdate.User = motherUser;
-            entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
-            entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
-            entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
-            entityToUpdate.SiteAddress = input.SiteAddress;
-            entityToUpdate.ClickedVisitTab = input.ClickedVisitTab;
-            entityToUpdate.ClickedProgressTab = input.ClickedProgressTab;
-            entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
-            entityToUpdate.ClickedContactTab = input.ClickedContactTab;
+
+            if (input.UserId != null)
+            {
+                entityToUpdate.UserId = input.UserId;
+                entityToUpdate.User = motherUser;
+            }
+            if (input.WhatsAppNumber != null) { 
+                entityToUpdate.WhatsAppNumber = input.WhatsAppNumber;
+            }
+            if (input.ExpectedDateOfDelivery != null)
+            {
+                entityToUpdate.ExpectedDateOfDelivery = input.ExpectedDateOfDelivery;
+            }
+            if (input.HealthCareWorkerId != null)
+            {
+                entityToUpdate.HealthCareWorkerId = input.HealthCareWorkerId;
+            }
+            if (input.SiteAddress != null)
+            {
+                entityToUpdate.SiteAddress = input.SiteAddress;
+            }
+            if (input.ClickedVisitTab != null)
+            {
+                entityToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+            }
+            if (input.ClickedProgressTab != null)
+            {
+                entityToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+            }
+            if (input.ClickedReferralsTab != null)
+            {
+                entityToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+            }
+            if (input.ClickedContactTab != null)
+            {
+                entityToUpdate.ClickedContactTab = input.ClickedContactTab;
+            }
 
             return _motherRepo.Update(entityToUpdate);
+        }
+
+
+        public Boolean ArchiveMotherProfilesWithoutMaternalRecord(string hcwId)
+        {
+            // set today to validate 60 days from registration date
+            DateTime today = DateTime.Today;
+            List<Mother> mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(hcwId) && x.IsActive.Equals(true)).ToList();
+            foreach (Mother mother in mothers)
+            {
+                var registrationDate = mother.InsertedDate;
+                var next60Days = registrationDate.AddDays(60);
+
+                if (today > next60Days)
+                {
+                    // if we are past 60 days and there is still no record for the mother with the name 'maternalcaserecord.png' then we archive the mother
+                    var total = _documentRepo.GetAll().Where(x => x.CreatedUserId.Equals(hcwId) && x.UserId.Equals(mother.UserId) && x.Name == Constants.GGSettings.maternal_record_name).Count();
+                    if (total == 0)
+                    {
+                        mother.IsActive = false;
+                        mother.UpdatedBy = _applicationUserId;
+                        _motherRepo.Update(mother);
+                    }
+                }
+
+            }
+            return true;
         }
 
         public Mother UpdateContactDetails(string id, MotherModel input) {
@@ -107,7 +164,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             entityToUpdate.User = user;
             return _motherRepo.Update(entityToUpdate);
         }
-       
 
         public Mother UpdateMotherAddress(string id, MotherModel input)
         {
@@ -393,11 +449,60 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Healthy";
             }
 
+            if (totalMonths <= 3)
+            {
+                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
+                if (lastVisit == Guid.Empty)
+                {
+                    if (mother.Age != null && Int32.Parse(mother.Age) < 20)
+                    {
+                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_teenager;
+                    }
+                    else
+                    {
+                        statusInfo.Color = MetricsIconEnum.Success.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_new;
+                    }
+
+                }
+            }
+
             //
             // Orange Alerts
             //
 
-            // 1. show if the visit deadline is less than 7 days away
+
+            // 4 clinicReferral
+            var clinicReferral = _visitDataStatusManager.GetClinicReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            if (clinicReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = clinicReferral;
+            }
+
+            // 3 homeAffairsReferral
+            var homeAffairsReferral = _visitDataStatusManager.GetHomeAffairsReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            if (homeAffairsReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = homeAffairsReferral;
+            }
+
+            // 2 sassaReferral
+            var sassaReferral = _visitDataStatusManager.GetSassaReferralForUser(mother.UserId, Constants.GGSettings.client_mother);
+            if (sassaReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = sassaReferral;
+            }
+
+            // 1 show if the visit deadline is less than 7 days away
             var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
@@ -410,7 +515,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Red Alerts
             //
 
-            // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
+            // 3. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
             var missedVisit = _visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
             if (missedVisit != "")
             {
@@ -419,18 +524,37 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = missedVisit;
             }
 
-            if (totalMonths <= 3)
+            // 2. Upload maternal case record
+            if (!GetMaternalCaseRecordStatus(mother.UserId))
             {
-                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
-                if (lastVisit == Guid.Empty)
-                {
-                    statusInfo.Color = MetricsIconEnum.None.ToString();
-                    statusInfo.Icon = MetricsIconEnum.None.ToString();
-                    statusInfo.Subject = Constants.GGSettings.client_new;
-                }
+                statusInfo.Icon = MetricsIconEnum.Error.ToString();
+                statusInfo.Color = MetricsColorEnum.Error.ToString();
+                statusInfo.Subject = Constants.GGSettings.upload_maternal_case_record;
             }
 
+
+            // 1. Refer to the clinic urgently
+            var redAlert = _visitDataStatusManager.GetRedAlertsForUser(mother.UserId, Constants.GGSettings.client_mother);
+            if (redAlert != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Error.ToString();
+                statusInfo.Color = MetricsColorEnum.Error.ToString();
+                statusInfo.Subject = redAlert;
+            }
+
+           
+
             return statusInfo;
+        }
+
+        private Boolean GetMaternalCaseRecordStatus(string UserId)
+        {
+            int total = _documentRepo.GetAll().Where(x =>  x.UserId.Equals(UserId) && x.Name == Constants.GGSettings.maternal_record_name).Count();
+            if (total == 0)
+            {
+                return false;
+            }
+            return true;
         }
 
         public DateTime? GetClientsNextVisitDate(Guid motherId)

@@ -53,7 +53,7 @@ import { AttendanceSummaryState } from './attendance-summary.types';
 export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   hidePopup,
   openReports,
-  currentUserId
+  currentUserId,
 }) => {
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
     useState<boolean>(false);
@@ -200,12 +200,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [
     publicHolidays,
     attendanceData,
     previousAttendanceData,
     classProgrammesUpdated,
+    classProgrammes,
+    todayDate,
+    practitioner?.isPrincipal,
+    classroomGroupsForPrincipal,
+    classroomGroups,
   ]);
 
   useEffect(() => {
@@ -270,9 +274,21 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
             openEditRegister(x.group.id ?? '', x.date, true, x.item.title);
           },
         }));
-      setAttendanceActionList(actionListToDisplay);
+      if (missedAttendanceGroups.length > 0) {
+        setAttendanceActionList(actionListToDisplay);
+      } else {
+        openReports();
+      }
     }
-  });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [
+    classProgrammesUpdated,
+    classroomGroups,
+    classroomGroupsForPrincipal,
+    isValidAttendanceDay,
+    missedAttendanceGroups,
+  ]);
 
   useEffect(() => {
     if (missedAttendanceGroups && missedAttendanceGroups.length > 0) {
@@ -480,7 +496,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         <MessageModal
           title={'What can you do with SmartStart points?'}
           message={'Get R5 airtime for every 500 points you earn!'}
-          visible={displaySmartStartMessage}
+          // todo: remove 'false' once needed.
+          visible={false && displaySmartStartMessage}
           icon={'GiftIcon'}
           onClose={closeMessage}
         />

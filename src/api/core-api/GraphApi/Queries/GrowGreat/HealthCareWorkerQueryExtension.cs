@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -93,6 +94,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             return caregivers;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Document> GetDocumentsForHCW([Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string createdUserId)
+        {
+
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
+            return documentRepo.GetAll().Where(x => x.CreatedUserId == createdUserId).OrderBy(x => x.Name).ToList();
         }
 
     }
