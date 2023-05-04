@@ -151,7 +151,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
-      return isSameDay(getDay(new Date(att.attendanceDate as Date)), getDay(currentDate));
+      return isSameDay(
+        new Date(att.attendanceDate as Date),
+        currentDate
+      );
     });
 
     const isValidDayForAttendance = isValidAttendableDate(
@@ -160,7 +163,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       publicHolidays || []
     );
 
-    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
+    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
       setAttendanceComponentType('attendance');
       return;
     }
@@ -190,8 +193,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       setAttendanceComponentType('summary');
     }
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, attendance]);
+  }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, allChildrenInsertedBeforeToday, publicHolidays, seeRegister, holidays]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // setSeeRegister(true);
@@ -275,7 +277,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   return (
     <div>
       <MultiRouteWrapper />
-      {attendanceComponentType && !seeRegister ? (
+      {attendanceComponentType ? (
         getComponentToRender(attendanceComponentType)
       ) : (
         <AttendanceSummary
@@ -291,7 +293,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
             color="primary"
             className={'mt-0'}
             onClick={() => {
-              setSeeRegister(true);
+              setSeeRegister(!seeRegister);
             }}
           >
             {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}
