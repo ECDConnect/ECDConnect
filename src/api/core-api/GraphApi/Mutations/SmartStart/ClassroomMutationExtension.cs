@@ -221,7 +221,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             List<string> learnersReassigned = new List<string>();
 
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).ToList();
+            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId) && x.IsActive == true).ToList();
             if (learners != null && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 foreach (var learner in learners)
