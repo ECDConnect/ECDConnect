@@ -44,28 +44,15 @@ export const ClassProgrammeAttendanceList: React.FC<
       const child = children?.find(
         (child) => child.userId === learner.userId && child.isActive
       );
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
 
-      const [currentClassProgramme] = classProgrammes.filter(
-        (x) => x.classroomGroupId === learner.classroomGroupId
-      );
-      const programStartDate =
-        typeof currentClassProgramme?.programmeStartDate != 'undefined'
-          ? new Date(currentClassProgramme?.programmeStartDate)
-          : new Date();
-      const startedAttendanceDate = new Date(learner.startedAttendance);
-      const showChildInRegister =
-        (isBefore(startedAttendanceDate, attendanceDate) ||
-          isSameDay(startedAttendanceDate, attendanceDate)) &&
-        (isAfter(startedAttendanceDate, programStartDate) ||
-          isSameDay(startedAttendanceDate, attendanceDate));
+      
+      const childUser = childUsers?.find((y) => y.id === learner.userId);
 
       if (
         child &&
         child?.caregiverId &&
         childUser?.firstName &&
-        childUser?.surname &&
-        showChildInRegister
+        childUser?.surname
       ) {
         filteredLearners.push(learner);
       }
@@ -100,7 +87,6 @@ export const ClassProgrammeAttendanceList: React.FC<
         };
       }
     );
-
     setAttendanceList(attendanceStackList);
     onAttendanceListUpdated(attendanceStackList);
   };

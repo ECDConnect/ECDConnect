@@ -166,8 +166,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
       return isSameDay(
-        getDay(new Date(att.attendanceDate as Date)),
-        getDay(currentDate)
+        new Date(att.attendanceDate as Date),
+        currentDate
       );
     });
 
