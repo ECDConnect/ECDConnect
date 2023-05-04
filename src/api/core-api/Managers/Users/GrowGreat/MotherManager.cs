@@ -131,10 +131,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             List<Mother> mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(hcwId) && x.IsActive.Equals(true)).ToList();
             foreach (Mother mother in mothers)
             {
-                var registrationDate = mother.InsertedDate.Date;
+                var registrationDate = mother.InsertedDate;
                 var next60Days = registrationDate.AddDays(60);
 
-                if (next60Days > today)
+                if (today > next60Days)
                 {
                     // if we are past 60 days and there is still no record for the mother with the name 'maternalcaserecord.png' then we archive the mother
                     var total = _documentRepo.GetAll().Where(x => x.CreatedUserId.Equals(hcwId) && x.UserId.Equals(mother.Id) && x.Name == Constants.GGSettings.maternal_record_name).Count();
