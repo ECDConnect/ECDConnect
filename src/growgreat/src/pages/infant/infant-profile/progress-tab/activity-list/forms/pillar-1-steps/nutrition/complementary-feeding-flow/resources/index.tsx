@@ -117,7 +117,7 @@ export const ResourcesStep = ({
       );
     }
 
-    if (count < 6) {
+    if (count < 5) {
       return (
         <>
           <Alert
