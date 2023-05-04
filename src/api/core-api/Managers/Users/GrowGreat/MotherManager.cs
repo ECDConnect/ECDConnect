@@ -137,7 +137,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 if (today > next60Days)
                 {
                     // if we are past 60 days and there is still no record for the mother with the name 'maternalcaserecord.png' then we archive the mother
-                    var total = _documentRepo.GetAll().Where(x => x.CreatedUserId.Equals(hcwId) && x.UserId.Equals(mother.Id) && x.Name == Constants.GGSettings.maternal_record_name).Count();
+                    var total = _documentRepo.GetAll().Where(x => x.CreatedUserId.Equals(hcwId) && x.UserId.Equals(mother.UserId) && x.Name == Constants.GGSettings.maternal_record_name).Count();
                     if (total == 0)
                     {
                         mother.IsActive = false;
@@ -449,11 +449,60 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = "Healthy";
             }
 
+            if (totalMonths <= 3)
+            {
+                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
+                if (lastVisit == Guid.Empty)
+                {
+                    if (mother.Age != null && Int32.Parse(mother.Age) < 20)
+                    {
+                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_teenager;
+                    }
+                    else
+                    {
+                        statusInfo.Color = MetricsIconEnum.Success.ToString();
+                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
+                        statusInfo.Subject = Constants.GGSettings.client_new;
+                    }
+
+                }
+            }
+
             //
             // Orange Alerts
             //
 
-            // 1. show if the visit deadline is less than 7 days away
+
+            // 4 clinicReferral
+            var clinicReferral = _visitDataStatusManager.GetClinicReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            if (clinicReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = clinicReferral;
+            }
+
+            // 3 homeAffairsReferral
+            var homeAffairsReferral = _visitDataStatusManager.GetHomeAffairsReferralForUser(mother.UserId, Constants.GGSettings.client_mother) ;
+            if (homeAffairsReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = homeAffairsReferral;
+            }
+
+            // 2 sassaReferral
+            var sassaReferral = _visitDataStatusManager.GetSassaReferralForUser(mother.UserId, Constants.GGSettings.client_mother);
+            if (sassaReferral != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Warning.ToString();
+                statusInfo.Color = MetricsColorEnum.Warning.ToString();
+                statusInfo.Subject = sassaReferral;
+            }
+
+            // 1 show if the visit deadline is less than 7 days away
             var nextVisitWithin7Days = _visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, withinWeek);
             if (nextVisitWithin7Days != "")
             {
@@ -466,7 +515,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             // Red Alerts
             //
 
-            // 1. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
+            // 3. Missed visits for pregnant mom - it could be Visit 1, 2, 3, or 4 
             var missedVisit = _visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
             if (missedVisit != "")
             {
@@ -475,27 +524,37 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 statusInfo.Subject = missedVisit;
             }
 
-            if (totalMonths <= 3)
+            // 2. Upload maternal case record
+            if (!GetMaternalCaseRecordStatus(mother.UserId))
             {
-                var lastVisit = _visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
-                if (lastVisit == Guid.Empty)
-                {
-                    if (mother.Age != null && Int32.Parse(mother.Age) < 20)
-                    {
-                        statusInfo.Color = MetricsIconEnum.Warning.ToString();
-                        statusInfo.Icon = MetricsIconEnum.Warning.ToString();
-                        statusInfo.Subject = Constants.GGSettings.client_teenager;
-                    } else
-                    {
-                        statusInfo.Color = MetricsIconEnum.Success.ToString();
-                        statusInfo.Icon = MetricsIconEnum.Success.ToString();
-                        statusInfo.Subject = Constants.GGSettings.client_new;
-                    }
-
-                }
+                statusInfo.Icon = MetricsIconEnum.Error.ToString();
+                statusInfo.Color = MetricsColorEnum.Error.ToString();
+                statusInfo.Subject = Constants.GGSettings.upload_maternal_case_record;
             }
 
+
+            // 1. Refer to the clinic urgently
+            var redAlert = _visitDataStatusManager.GetRedAlertsForUser(mother.UserId, Constants.GGSettings.client_mother);
+            if (redAlert != "")
+            {
+                statusInfo.Icon = MetricsIconEnum.Error.ToString();
+                statusInfo.Color = MetricsColorEnum.Error.ToString();
+                statusInfo.Subject = redAlert;
+            }
+
+           
+
             return statusInfo;
+        }
+
+        private Boolean GetMaternalCaseRecordStatus(string UserId)
+        {
+            int total = _documentRepo.GetAll().Where(x =>  x.UserId.Equals(UserId) && x.Name == Constants.GGSettings.maternal_record_name).Count();
+            if (total == 0)
+            {
+                return false;
+            }
+            return true;
         }
 
         public DateTime? GetClientsNextVisitDate(Guid motherId)

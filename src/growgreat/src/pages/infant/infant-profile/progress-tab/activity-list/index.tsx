@@ -649,6 +649,7 @@ export const ActivityList: React.FC = () => {
     user?.firstName,
     visit,
     width,
+    stepperCount,
   ]);
 
   if (showForm && selectedOption) {

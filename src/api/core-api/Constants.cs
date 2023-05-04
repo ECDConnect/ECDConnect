@@ -27,7 +27,9 @@ namespace EcdLink.Api.CoreApi {
             public const string client_pregnant_mom = "Pregnant mom";
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
             public const string client_pregnant_mom_multiple_children = "Multiple children";
+
             public const string maternal_record_name = "maternalcaserecord.png";
+            public const string upload_maternal_case_record = "Upload maternal case record";
 
             public const string additional_visits = "additional_visits";
             public const string visit1 = "visit_1";
