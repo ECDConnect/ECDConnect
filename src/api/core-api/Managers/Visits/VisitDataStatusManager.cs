@@ -1395,7 +1395,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return allReferrals;
         }
-
         public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType)
         {
             // This data is for the past 6 months
@@ -1696,7 +1695,107 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return status;
         }
 
-        
+        public string GetClinicReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.clinic_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.clinic_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.clinic_referrals;
+            }
+
+            return status;
+        }
+
+        public string GetHomeAffairsReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.home_affairs_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.home_affairs_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.home_affairs_referrals;
+            }
+
+            return status;
+        }
+
+        public string GetSassaReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.sassa_refferals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.sassa_refferals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.sassa_refferals;
+            }
+
+            return status;
+        }
 
 
 
