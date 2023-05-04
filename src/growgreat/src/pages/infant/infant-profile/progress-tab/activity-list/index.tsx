@@ -67,7 +67,6 @@ export const ActivityList: React.FC = () => {
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
-  const [stepperCount, setStepperCount] = useState(0);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -94,8 +93,6 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.length === stepperCount;
 
   const appDispatch = useAppDispatch();
 
@@ -346,71 +343,74 @@ export const ActivityList: React.FC = () => {
     isDisplayCareForBaby,
   ]);
 
-  const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    const completedActivities = visibleActivities.filter((item) =>
-      completedVisits?.includes(item.title)
-    );
-    const uncompletedActivities = visibleActivities.filter(
-      (item) => !completedVisits?.includes(item.title)
-    );
+  const { completedForms, uncompletedForms, followUpForm, stepperCount } =
+    useMemo(() => {
+      const completedActivities = visibleActivities.filter((item) =>
+        completedVisits?.includes(item.title)
+      );
+      const uncompletedActivities = visibleActivities.filter(
+        (item) => !completedVisits?.includes(item.title)
+      );
 
-    const completedForms = completedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        subTitle: '',
-        iconBackgroundColor: 'successMain' as Colours,
-        backgroundColor: 'successBg' as Colours,
-        rightIcon: 'BadgeCheckIcon',
-        rightIconClassName: 'h-5 w-5 text-successMain',
-      })
-    );
+      const completedForms = completedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'border-0',
+          title: item?.title,
+          subTitle: '',
+          iconBackgroundColor: 'successMain' as Colours,
+          backgroundColor: 'successBg' as Colours,
+          rightIcon: 'BadgeCheckIcon',
+          rightIconClassName: 'h-5 w-5 text-successMain',
+        })
+      );
 
-    const uncompletedForms = uncompletedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        subTitle: '',
-        iconBackgroundColor: item.iconBackgroundColor as Colours,
-        iconHexBackgroundColor: item.iconHexBackgroundColor,
-        backgroundColor: (item.backgroundColor as Colours) || '',
-        hexBackgroundColor: item.hexBackgroundColor || '',
-        className: item.className,
-        onActionClick: () => {
-          if (item.id) {
-            window.sessionStorage.setItem(currentActivityKey, item.id);
+      const uncompletedForms = uncompletedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'border-0',
+          title: item?.title,
+          subTitle: '',
+          iconBackgroundColor: item.iconBackgroundColor as Colours,
+          iconHexBackgroundColor: item.iconHexBackgroundColor,
+          backgroundColor: (item.backgroundColor as Colours) || '',
+          hexBackgroundColor: item.hexBackgroundColor || '',
+          className: item.className,
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
+        })
+      );
+
+      const stepperCount = completedForms.length + uncompletedForms.length + 1; // +1 is for followup
+
+      const followUpForm: MenuListDataItem[] = [
+        {
+          showIcon: true,
+          menuIcon: 'CalendarIcon',
+          menuIconClassName: 'border-0',
+          iconColor: 'white',
+          title: 'Follow up',
+          subTitle: 'Schedule your next visit, make referrals & save notes',
+          iconBackgroundColor: 'tertiary' as Colours,
+          backgroundColor: 'uiBg' as Colours,
+          onActionClick: () => {
+            window.sessionStorage.setItem(currentActivityKey, 'Follow up');
             setShowForm(true);
-          }
+          },
         },
-      })
-    );
+      ];
 
-    const total = completedForms.length + uncompletedForms.length + 1; // +1 is for followup
-    setStepperCount(total);
+      return { uncompletedForms, completedForms, followUpForm, stepperCount };
+    }, [completedVisits, visibleActivities]);
 
-    const followUpForm: MenuListDataItem[] = [
-      {
-        showIcon: true,
-        menuIcon: 'CalendarIcon',
-        menuIconClassName: 'border-0',
-        iconColor: 'white',
-        title: 'Follow up',
-        subTitle: 'Schedule your next visit, make referrals & save notes',
-        iconBackgroundColor: 'tertiary' as Colours,
-        backgroundColor: 'uiBg' as Colours,
-        onActionClick: () => {
-          window.sessionStorage.setItem(currentActivityKey, 'Follow up');
-          setShowForm(true);
-        },
-      },
-    ];
-
-    return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits, visibleActivities]);
+  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isAllCompleted = completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
@@ -649,7 +649,6 @@ export const ActivityList: React.FC = () => {
     user?.firstName,
     visit,
     width,
-    stepperCount,
   ]);
 
   if (showForm && selectedOption) {
