@@ -157,7 +157,11 @@ const visitSlice = createSlice({
         (item) => item.id === action.payload.id
       );
 
-      if (updatedDataIndex !== undefined && !!state.healthPromotion) {
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.healthPromotion
+      ) {
         state.healthPromotion[updatedDataIndex] = action.payload;
         return;
       }
@@ -172,7 +176,11 @@ const visitSlice = createSlice({
         (item) => item.id === action.payload.id
       );
 
-      if (updatedDataIndex !== undefined && !!state.moreInformation) {
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.moreInformation
+      ) {
         state.moreInformation[updatedDataIndex] = action.payload;
         return;
       }
