@@ -109,7 +109,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 : primaryClassProgramme[0]?.classroomGroupId)
           );
       setSelectedClassroomGroups(selectedGroups);
-      console.log(selectedGroups)
     }
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
