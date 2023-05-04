@@ -585,6 +585,7 @@ export const ActivityList: React.FC = () => {
     visit?.plannedVisitDate,
     visit?.visitType?.normalizedName,
     width,
+    stepperCount,
   ]);
 
   if (showForm && selectedOption) {
