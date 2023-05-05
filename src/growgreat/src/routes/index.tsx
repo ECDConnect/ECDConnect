@@ -43,12 +43,10 @@ import { ChildContactAddress } from '@/pages/infant/infant-profile/contact-tab/e
 import { MultipleChildren } from '@/pages/infant/multiple-children';
 import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
 import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
-import { WeightAndLengthResultStep } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/pillar-1-steps';
 
 function PublicRoutes() {
   return (
     <Switch>
-      <Route path="/test" exact component={WeightAndLengthResultStep} />
       <Route
         exact
         path={ROUTES.ROOT}
@@ -75,8 +73,6 @@ function PublicRoutes() {
 function AuthRoutes() {
   return (
     <Switch>
-      <Route path="/test" exact component={WeightAndLengthResultStep} />
-
       <Route
         path={ROUTES.PASSWORD_RESET}
         component={PasswordReset}
