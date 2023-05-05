@@ -28,7 +28,7 @@ export const ProgressTab = () => {
 
   const appDispatch = useAppDispatch();
 
-  const [printTrigger, setPrintTrigger] = useState(0);
+  const [isPrint, setIsPrint] = useState(false);
 
   const history = useHistory();
   const location = useLocation();
@@ -70,7 +70,7 @@ export const ProgressTab = () => {
   };
 
   const handleCaptureClick = () => {
-    setPrintTrigger((printTrigger) => printTrigger + 1);
+    setIsPrint(true);
   };
 
   useLayoutEffect(() => {
@@ -137,7 +137,7 @@ export const ProgressTab = () => {
             walkthroughState?.isTourActive ? walkthroughData : undefined
           }
           headerText={mother?.user?.firstName}
-          printTrigger={printTrigger}
+          isPrint={isPrint}
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">

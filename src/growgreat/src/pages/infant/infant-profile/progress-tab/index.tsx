@@ -32,7 +32,7 @@ export const ProgressTab = () => {
 
   const appDispatch = useAppDispatch();
 
-  const [printTrigger, setPrintTrigger] = useState(0);
+  const [isPrint, setIsPrint] = useState(false);
 
   const history = useHistory();
   const location = useLocation();
@@ -90,7 +90,7 @@ export const ProgressTab = () => {
   };
 
   const handleCaptureClick = () => {
-    setPrintTrigger((printTrigger) => printTrigger + 1);
+    setIsPrint((isPrint) => true);
   };
 
   useLayoutEffect(() => {
@@ -151,7 +151,7 @@ export const ProgressTab = () => {
           headerText={`${
             !!caregiverName ? caregiverName + ' &' : ''
           } ${infantName}`}
-          printTrigger={printTrigger}
+          isPrint={isPrint}
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">

@@ -15,7 +15,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
   );
 
   const dialog = useDialog();
-  const [printTrigger, setPrintTrigger] = useState(0);
+  const [isPrint, setIsPrint] = useState(false);
 
   const onShare = () => {
     dialog({
@@ -37,7 +37,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
                 type: 'filled',
                 leadingIcon: 'ShareIcon',
                 onClick: () => {
-                  setPrintTrigger((printTrigger) => printTrigger + 1);
+                  setIsPrint(true);
                   onClose();
                 },
               },
@@ -78,7 +78,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
           onClick={onShare}
         />
         <div>
-          <FollowUp infant={infant || {}} printTrigger={printTrigger} />
+          <FollowUp infant={infant || {}} isPrint={isPrint} />
         </div>
       </div>
     </>

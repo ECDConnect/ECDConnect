@@ -35,7 +35,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const previousCurrentVisit = usePrevious(currentVisit) as
     | VisitDto
     | undefined;
-  const [printTrigger, setPrintTrigger] = useState(0);
+  const [isPrint, setIsPrint] = useState(false);
 
   useLayoutEffect(() => {
     if (
@@ -82,7 +82,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
                 type: 'filled',
                 leadingIcon: 'ShareIcon',
                 onClick: () => {
-                  setPrintTrigger((printTrigger) => printTrigger + 1);
+                  setIsPrint(true);
                   onClose();
                 },
               },
@@ -119,7 +119,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
           onClick={onShare}
         />
         <div>
-          <FollowUp mother={mother || {}} printTrigger={printTrigger} />
+          <FollowUp mother={mother || {}} isPrint={isPrint} />
         </div>
       </div>
     </div>

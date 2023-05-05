@@ -65,7 +65,7 @@ export interface FollowUpWalkthroughData {
 interface FollowUpComponentProps {
   mother: MotherDto;
   walkthroughData?: FollowUpWalkthroughData;
-  printTrigger?: any;
+  isPrint?: boolean;
 }
 
 interface Status {
@@ -80,7 +80,7 @@ type StatusType = keyof Status;
 export const FollowUp = ({
   mother,
   walkthroughData,
-  printTrigger,
+  isPrint,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
@@ -88,7 +88,7 @@ export const FollowUp = ({
   const [showPrintData, setShowPrintData] = useState(false);
 
   useEffect(() => {
-    if (printTrigger) {
+    if (isPrint) {
       setShowPrintData(true);
       setTimeout(() => {
         if (introScreenRef.current) {
@@ -100,7 +100,7 @@ export const FollowUp = ({
         }
       }, 100);
     }
-  }, [printTrigger]);
+  }, [isPrint]);
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector

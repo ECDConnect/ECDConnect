@@ -22,7 +22,7 @@ interface IntroScreenProps {
   walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
-  printTrigger?: any;
+  isPrint?: boolean;
 }
 
 export const IntroScreen = ({
@@ -30,7 +30,7 @@ export const IntroScreen = ({
   walkthroughData,
   headerText,
   onStartVisit,
-  printTrigger,
+  isPrint,
 }: IntroScreenProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
@@ -42,10 +42,10 @@ export const IntroScreen = ({
     getPreviousVisitInformationForInfantSelector
   );
 
-  useEffect(() => {
-    if (printTrigger) {
-    }
-  }, [printTrigger]);
+  // useEffect(() => {
+  //   if (isPrint) {
+  //   }
+  // }, [isPrint]);
 
   return (
     <>
@@ -70,7 +70,7 @@ export const IntroScreen = ({
         <FollowUp
           infant={infant || {}}
           walkthroughData={walkthroughData}
-          printTrigger={printTrigger}
+          isPrint={isPrint}
         />
         {!!onStartVisit && (
           <Button
