@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -11,7 +12,8 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 {
     [Table(nameof(Learner))]
     [EntityPermission(PermissionGroups.CLASSROOM)]
-    public class Learner : EntityBase<Guid>, IUserScoped, ApplicationUserJoin, ClassroomGroupJoin<Guid>, ProgrammeAttendanceReasonJoin<Guid?>, ITrackableType
+    [PrimaryKey(nameof(UserId), nameof(Id), nameof(ClassroomGroupId))]
+    public class Learner : EntityBase<Guid>, IUserScoped, ApplicationUserJoin, ClassroomGroupJoin<Guid>, ProgrammeAttendanceReasonJoin<Guid?>
     {
         public string UserId { get; set; }
 
