@@ -206,15 +206,14 @@ export const Chart = ({
     responsive: true,
     scales: {
       x: {
-        // ticks: {
-        //   callback: function (value, index, y) {
-        //     console.log({value, index, y})
-        //     if (index === 0) {
-        //       return '';
-        //     }
-        //     return value + suffix;
-        //   },
-        // },
+        ticks: {
+          callback: function (_, index) {
+            if (index === 0) {
+              return '';
+            }
+            return chartData.date[index] + suffix;
+          },
+        },
       },
     },
     plugins: {
