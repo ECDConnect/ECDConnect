@@ -10,20 +10,42 @@ import { IconInformationIndicator } from '../components/icon-information-indicat
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import ROUTES from '@routes/routes';
 import { useState } from 'react';
+import { useHolidays } from '@/hooks/useHolidays';
 
-export const ProgrammeDashboard: React.FC<ComponentBaseProps> = () => {
+interface ProgrammeDashboardProps {
+  programmeStartDate: Date | undefined;
+}
+
+export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
+  programmeStartDate,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
 
   const programmes = useSelector(programmeSelectors.getProgrammes);
-  const [selectedDate, setSelectedDate] = useState(new Date());
+  const [selectedDate, setSelectedDate] = useState(
+    programmeStartDate || new Date()
+  );
+  console.log({ selectedDate });
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDate(new Date(selectedDate))
   );
   const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
     (dailyRoutine) => isSameDay(new Date(dailyRoutine.dayDate), selectedDate)
   );
+  console.log(
+    isSameDay(
+      new Date(currentProgramme?.dailyProgrammes?.[11].dayDate!),
+      selectedDate
+    )
+  );
+  console.log(new Date(currentProgramme?.dailyProgrammes?.[11].dayDate!));
+  console.log({ currentDailyProgramme });
+  console.log({ programmes });
+  console.log({ programmeStartDate });
+  const holiday = useHolidays();
+  console.log(holiday?.isHoliday(selectedDate));
 
   const handleAddProgramme = () => {
     if (isOnline) {
