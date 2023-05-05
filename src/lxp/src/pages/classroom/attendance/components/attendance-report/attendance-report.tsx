@@ -118,7 +118,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          classroomID ?? '',
+          classroomID!,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
