@@ -26,7 +26,10 @@ import ProgrammeDashboard from '../programme-planning/programme-dashboard/progra
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
@@ -190,9 +193,12 @@ export const ClassDashboard: React.FC = () => {
   }, [attendanceTutorialComplete, previousTabIndex]);
 
   const updatePractitionerProgress = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: practitioner?.userId,
+        progress: 3.0,
+      })
+    );
   };
 
   const completeTutorial = () => {
@@ -287,7 +293,8 @@ export const ClassDashboard: React.FC = () => {
     if (showAttendanceTutorial && !attendanceTutorialComplete) {
       handleAttendanceTutorial();
     }
-  }, [showAttendanceTutorial]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendanceTutorialComplete, showAttendanceTutorial]);
 
   return (
     <>
