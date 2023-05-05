@@ -105,40 +105,12 @@ const ProgrammeTiming: React.FC = () => {
 
     let internalEndDate;
 
-    // let daysLength = 20;
-
     if (!selectedTheme) {
       const endOfWeekDay = getNoThemedProgrammeEndDate(validatedDate);
       internalEndDate = endOfWeekDay.endDate;
-      // daysLength = endOfWeekDay.totalDays;
     } else {
       setValue('endDate', getThemedProgrammeEndDate(validatedDate).toString());
       internalEndDate = getThemedProgrammeEndDate(validatedDate);
-    }
-
-    const overlappingProgramme = getConflictingProgramme(
-      new Date(validatedDate),
-      internalEndDate
-    );
-
-    if (overlappingProgramme) {
-      setAlertState({
-        title: 'This start date causes conflicts',
-        list: [
-          `This programme (${
-            selectedTheme?.name || 'No theme'
-          }) will run from <b>${getDateRangeText(
-            validatedDate.toString(),
-            internalEndDate.toString()
-          )}</b>`,
-          `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
-            overlappingProgramme.startDate,
-            overlappingProgramme.endDate
-          )}</b> (${overlappingProgramme.name})`,
-        ],
-        type: 'warning',
-      });
-      return;
     }
 
     setAlert(internalEndDate);
@@ -148,6 +120,31 @@ const ProgrammeTiming: React.FC = () => {
 
   const setAlert = useCallback(
     (date) => {
+      const overlappingProgramme = getConflictingProgramme(
+        new Date(selectedDate!),
+        new Date(date)
+      );
+
+      if (overlappingProgramme) {
+        setAlertState({
+          title: 'This start date causes conflicts',
+          list: [
+            `This programme (${
+              selectedTheme?.name || 'No theme'
+            }) will run from <b>${getDateRangeText(
+              new Date(selectedDate!).toString(),
+              new Date(date).toString()
+            )}</b>`,
+            `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
+              overlappingProgramme.startDate,
+              overlappingProgramme.endDate
+            )}</b> (${overlappingProgramme.name})`,
+          ],
+          type: 'warning',
+        });
+        return;
+      }
+
       setAlertState({
         title: 'No conflicts for these dates',
         message: selectedTheme

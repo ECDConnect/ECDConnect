@@ -201,10 +201,11 @@ export const useProgrammePlanning = () => {
     startDate: Date
   ) => {
     let dayDate = startDate;
+    // let endDateResult = getNoThemedProgrammeEndDate(startDate);
     let endDateResult = getNoThemedProgrammeEndDate(startDate);
     const dailyProgrammes: DailyProgrammeDto[] = [];
 
-    for (let i = 0; i < endDateResult.totalDays; i++) {
+    for (let i = 0; i < 1; i++) {
       if (i > 0) {
         dayDate = getNextValidDate(dayDate);
       }
