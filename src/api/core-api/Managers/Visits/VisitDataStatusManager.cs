@@ -847,8 +847,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -942,8 +942,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
                 lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
 
@@ -1591,17 +1591,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
-                ).OrderByDescending(y => y.InsertedDate).ToList();
+                ).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
 
-            allData = (List<VisitDataStatus>)allData.Take(3);
+            //allData = allData.Take(3);
 
             return allData;
         }
-        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
+        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.InsertedDate)
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
 

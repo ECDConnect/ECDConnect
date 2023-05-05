@@ -1,6 +1,6 @@
 import { Header } from '../../../components';
 import { MotherDto, getWeeksDiff } from '@ecdlink/core';
-import { useMemo } from 'react';
+import { useEffect, useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
@@ -21,6 +21,7 @@ interface IntroScreenProps {
   walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
+  isPrint?: boolean;
 }
 
 export const IntroScreen = ({
@@ -28,6 +29,7 @@ export const IntroScreen = ({
   headerText,
   walkthroughData,
   onStartVisit,
+  isPrint,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
@@ -71,7 +73,11 @@ export const IntroScreen = ({
         }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp mother={mother || {}} walkthroughData={walkthroughData} />
+        <FollowUp
+          mother={mother || {}}
+          walkthroughData={walkthroughData}
+          isPrint={isPrint}
+        />
         {!!onStartVisit && (
           <Button
             className="mt-8 w-full"

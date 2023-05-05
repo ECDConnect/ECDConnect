@@ -57,7 +57,8 @@ export const MonthlyAttendanceReport = ({
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
+  const [reportDeatils, setReportDetails] =
+    useState<ReportDetailsForPractitionerData>();
 
   useEffect(() => {
     const getClassroomDetails = async () => {
@@ -68,7 +69,7 @@ export const MonthlyAttendanceReport = ({
     };
 
     getClassroomDetails().then((data) => {
-      setReportDetails(data)
+      setReportDetails(data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -4,5 +4,5 @@ import { ComponentBaseProps } from '@ecdlink/ui';
 export interface AttendanceReportProps extends ComponentBaseProps {
   classroom?: ClassroomDto;
   currentClassroomGroup?: ClassroomGroupDto;
-  classroomGroups?: ClassroomGroupDto[]
+  classroomGroups?: ClassroomGroupDto[];
 }

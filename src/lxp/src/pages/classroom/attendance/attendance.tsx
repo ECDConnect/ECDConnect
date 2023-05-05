@@ -134,11 +134,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-
-    if (
-      !currentLearners.length &&
-      allChildrenInsertedBeforeToday 
-    ) {
+    if (!currentLearners.length && allChildrenInsertedBeforeToday) {
       setAttendanceComponentType('summary');
       return;
     } else {
@@ -151,10 +147,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
-      return isSameDay(
-        new Date(att.attendanceDate as Date),
-        currentDate
-      );
+      return isSameDay(new Date(att.attendanceDate as Date), currentDate);
     });
 
     const isValidDayForAttendance = isValidAttendableDate(
@@ -192,8 +185,17 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
-
-  }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, allChildrenInsertedBeforeToday, publicHolidays, seeRegister, holidays]);
+  }, [
+    classroomGroups,
+    attendance,
+    learners,
+    classProgrammesUpdated,
+    currentDate,
+    allChildrenInsertedBeforeToday,
+    publicHolidays,
+    seeRegister,
+    holidays,
+  ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // setSeeRegister(true);
