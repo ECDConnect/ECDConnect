@@ -31,10 +31,7 @@ using ECDLink.Security;
 using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
-using EcdLink.Api.CoreApi.GraphApi.ObjectTypes;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Context;
-using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Core.Services
 {
@@ -122,9 +119,7 @@ namespace ECDLink.Core.Services
             _staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
             _staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
             _docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
-
-    //dbFactory.CreateDbContext();
-    _dbContext = dbContext;
+            _dbContext = dbContext;
         }
 
         #region Utilities
