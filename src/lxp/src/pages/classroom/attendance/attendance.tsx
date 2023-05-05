@@ -165,14 +165,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
-<<<<<<< HEAD
-      return isSameDay(
-        new Date(att.attendanceDate as Date),
-        currentDate
-      );
-=======
       return isSameDay(new Date(att.attendanceDate as Date), currentDate);
->>>>>>> develop
     });
 
     const isValidDayForAttendance = isValidAttendableDate(
@@ -210,22 +203,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
-<<<<<<< HEAD
 
   }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, allChildrenInsertedBeforeToday, publicHolidays, seeRegister, holidays]);
-=======
-  }, [
-    classroomGroups,
-    attendance,
-    learners,
-    classProgrammesUpdated,
-    currentDate,
-    allChildrenInsertedBeforeToday,
-    publicHolidays,
-    seeRegister,
-    holidays,
-  ]);
->>>>>>> develop
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // setSeeRegister(true);
