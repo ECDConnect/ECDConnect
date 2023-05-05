@@ -53,7 +53,7 @@ namespace ECDLink.DataAccessLayer.Entities
         public string NextOfKinFirstName { get; set; }
         public string NextOfKinSurname { get; set; }
         public string NextOfKinContactNumber { get; set; }
-        public bool IsImported { get; set; }
+        public bool? IsImported { get; set; }
         public string ReasonForLeaving { get; set; }
         public string ReasonForLeavingComments { get; set; }
 
