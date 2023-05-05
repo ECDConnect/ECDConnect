@@ -199,7 +199,7 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<Learner>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.UserId });
+                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
             });
 
             builder.Entity<ChildProgressReport>(x =>
