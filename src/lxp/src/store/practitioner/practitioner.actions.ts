@@ -215,10 +215,9 @@ export const updatePractitionerProgress = createAsyncThunk<
       auth: { userAuth },
     } = getState();
     const id = input.practitionerId;
-
     try {
       if (userAuth?.auth_token && id) {
-        await new PractitionerService(
+        return await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerProgress(id, input.progress);
       }
