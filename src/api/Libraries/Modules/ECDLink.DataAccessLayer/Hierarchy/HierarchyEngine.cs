@@ -338,11 +338,22 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
         public string GetAdminUserId()
         {
-            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
-
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();            
             var entity = userHierarchyRepo.GetAll()
-                               .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator"))
-                               .OrderBy(x => x.Id)
+                               .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && x.TenantId.Equals(TenantExecutionContext.Tenant.Id))
+                               .OrderBy(x => x.Key)
+                               .FirstOrDefault();
+
+            return entity?.UserId;
+        }
+
+        public string GetSuperAdminUserId()
+        {
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            var entity = userHierarchyRepo.GetAll()
+                               .Where(x => x.IsActive && string.Equals(x.UserType, "SuperAdministrator"))
+                               .OrderBy(x => x.Key)
                                .FirstOrDefault();
 
             return entity?.UserId;
