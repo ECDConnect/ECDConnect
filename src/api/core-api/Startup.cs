@@ -140,6 +140,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
+            services.AddTransient<IIntegrationService, IntegrationService>();
 
             ConfigureJobs(services);
             
