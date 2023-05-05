@@ -78,129 +78,127 @@ export const Chart = ({
 
   const getData = (
     type: WeightOrHeightForAgeProps
-  ): ChartData<'line', (number | undefined)[], number> => {
-    return {
-      labels: type?.date,
-      datasets: [
-        {
-          label: `hide`,
-          data: result,
-          borderColor: '#1D67D5',
-          backgroundColor: '#1D67D5',
-          borderWidth: 4,
-          pointRadius: (context) => {
-            const lastIndex = result.reduce((lastIndex, element, index) => {
-              if (typeof element !== 'undefined') {
-                return index;
-              }
-              return lastIndex;
-            }, -1);
-
-            if (context.dataIndex === lastIndex) {
-              return 6; // larger point radius for last data point
-            } else {
-              return 0; // smaller point radius for all other data points
+  ): ChartData<'line', (number | undefined)[], number> => ({
+    labels: type?.date,
+    datasets: [
+      {
+        label: `hide`,
+        data: result,
+        borderColor: '#1D67D5',
+        backgroundColor: '#1D67D5',
+        borderWidth: 4,
+        pointRadius: (context) => {
+          const lastIndex = result.reduce((lastIndex, element, index) => {
+            if (typeof element !== 'undefined') {
+              return index;
             }
-          },
-          pointBackgroundColor: 'white',
+            return lastIndex;
+          }, -1);
+
+          if (context.dataIndex === lastIndex) {
+            return 6; // larger point radius for last data point
+          } else {
+            return 0; // smaller point radius for all other data points
+          }
         },
-        {
-          label: `${infantName}'s growth`,
-          data: result,
-          backgroundColor: '#1D67D5',
-          pointRadius: 0,
-        },
-        {
-          label: 'hide',
-          data: type?.SD2?.weight || type?.SD2.height || [],
-          fill: 'end',
-          borderColor: colours.underweight.primary,
-          backgroundColor: colours.severely.secondary,
-          pointRadius: 0,
-          borderWidth: 1,
-        },
-        {
-          label: getLabel(type?.SD2.label),
-          data: type?.SD2?.weight || type?.SD2.height || [],
-          fill: false,
-          backgroundColor: colours.severely.primary,
-          pointRadius: 0,
-        },
-        {
-          label: 'hide',
-          data: type?.SD3?.weight || type?.SD3.height || [],
-          borderColor: colours.severely.primary,
-          backgroundColor: colours.severely.secondary,
-          pointRadius: 0,
-          borderWidth: 1,
-          fill: 'stack',
-        },
-        {
-          label: getLabel(type?.SD3.label),
-          data: type?.SD3?.weight || type?.SD3.height || [],
-          backgroundColor: colours.underweight.primary,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: 'hide',
-          data: type?.median?.weight || type?.median?.height || [],
-          borderColor: colours.normal.primary,
-          backgroundColor: colours.normal.secondary,
-          pointRadius: 0,
-          borderWidth: 1,
-          fill: 'stack',
-        },
-        {
-          label: getLabel(type?.median.label),
-          data: type?.median?.weight || type?.median?.height || [],
-          backgroundColor: colours.normal.primary,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: 'hide',
-          data: type?.SD2neg?.weight || type?.SD2neg.height || [],
-          borderColor: colours.underweight.primary,
-          backgroundColor: colours.normal.secondary,
-          pointRadius: 0,
-          borderWidth: 1,
-          fill: 'stack',
-        },
-        {
-          label: getLabel(type?.SD2neg.label),
-          data: type?.SD2neg?.weight || type?.SD2neg?.height || [],
-          backgroundColor: colours.underweight.primary,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: 'hide',
-          data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
-          borderColor: colours.severely.primary,
-          backgroundColor: colours.underweight.secondary,
-          pointRadius: 0,
-          borderWidth: 1,
-          fill: 'stack',
-        },
-        {
-          label: getLabel(type?.SD3neg?.label),
-          data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
-          backgroundColor: colours.severely.primary,
-          pointRadius: 0,
-          fill: false,
-        },
-        {
-          label: 'hide',
-          data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
-          backgroundColor: colours.severely.secondary,
-          pointRadius: 0,
-          borderWidth: 0,
-          fill: 'start',
-        },
-      ],
-    };
-  };
+        pointBackgroundColor: 'white',
+      },
+      {
+        label: `${infantName}'s growth`,
+        data: result,
+        backgroundColor: '#1D67D5',
+        pointRadius: 0,
+      },
+      {
+        label: 'hide',
+        data: type?.SD2?.weight || type?.SD2.height || [],
+        fill: 'end',
+        borderColor: colours.underweight.primary,
+        backgroundColor: colours.severely.secondary,
+        pointRadius: 0,
+        borderWidth: 1,
+      },
+      {
+        label: getLabel(type?.SD2.label),
+        data: type?.SD2?.weight || type?.SD2.height || [],
+        fill: false,
+        backgroundColor: colours.severely.primary,
+        pointRadius: 0,
+      },
+      {
+        label: 'hide',
+        data: type?.SD3?.weight || type?.SD3.height || [],
+        borderColor: colours.severely.primary,
+        backgroundColor: colours.severely.secondary,
+        pointRadius: 0,
+        borderWidth: 1,
+        fill: 'stack',
+      },
+      {
+        label: getLabel(type?.SD3.label),
+        data: type?.SD3?.weight || type?.SD3.height || [],
+        backgroundColor: colours.underweight.primary,
+        pointRadius: 0,
+        fill: false,
+      },
+      {
+        label: 'hide',
+        data: type?.median?.weight || type?.median?.height || [],
+        borderColor: colours.normal.primary,
+        backgroundColor: colours.normal.secondary,
+        pointRadius: 0,
+        borderWidth: 1,
+        fill: 'stack',
+      },
+      {
+        label: getLabel(type?.median.label),
+        data: type?.median?.weight || type?.median?.height || [],
+        backgroundColor: colours.normal.primary,
+        pointRadius: 0,
+        fill: false,
+      },
+      {
+        label: 'hide',
+        data: type?.SD2neg?.weight || type?.SD2neg.height || [],
+        borderColor: colours.underweight.primary,
+        backgroundColor: colours.normal.secondary,
+        pointRadius: 0,
+        borderWidth: 1,
+        fill: 'stack',
+      },
+      {
+        label: getLabel(type?.SD2neg.label),
+        data: type?.SD2neg?.weight || type?.SD2neg?.height || [],
+        backgroundColor: colours.underweight.primary,
+        pointRadius: 0,
+        fill: false,
+      },
+      {
+        label: 'hide',
+        data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
+        borderColor: colours.severely.primary,
+        backgroundColor: colours.underweight.secondary,
+        pointRadius: 0,
+        borderWidth: 1,
+        fill: 'stack',
+      },
+      {
+        label: getLabel(type?.SD3neg?.label),
+        data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
+        backgroundColor: colours.severely.primary,
+        pointRadius: 0,
+        fill: false,
+      },
+      {
+        label: 'hide',
+        data: type?.SD3neg?.weight || type?.SD3neg?.height || [],
+        backgroundColor: colours.severely.secondary,
+        pointRadius: 0,
+        borderWidth: 0,
+        fill: 'start',
+      },
+    ],
+  });
 
   const options: ChartOptions = {
     responsive: true,
