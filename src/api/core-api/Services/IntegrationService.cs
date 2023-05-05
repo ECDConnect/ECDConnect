@@ -497,7 +497,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                   /*         
+                   /**/       
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -517,7 +517,7 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                */
+                /**/
                     
 
                     //-------------------
@@ -526,7 +526,7 @@ namespace ECDLink.Core.Services
                     
                     foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
                     {
-                     /*   
+                     /**/  
                         if (coach.IsComplete != true)
                         {
                             //entity may have been manually mapped for inclusion, pull all details and update
@@ -624,14 +624,14 @@ namespace ECDLink.Core.Services
                                 }
                             }
                         }
-                        
-                    */
+                        /**/
+                    
                         //-------------------
                         //4. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //4.1) get all frannchisees and map them                
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
                         //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -906,10 +906,6 @@ namespace ECDLink.Core.Services
                         var programmeType = _programmeTypeGenericRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
                         string siteName = "N/A";
                         bool pracCreated = false;
-
-                        //char[] digits = entity.IdNumber.ToCharArray();
-                        //var dob = new DateTime(int.Parse("19" + digits[0] + digits[1]), int.Parse(digits[2].ToString() + digits[3].ToString()), int.Parse(digits[4].ToString() + digits[5].ToString()));
-                        //DateTime dobStr = (entity.BirthDate != null ? Convert.ToDateTime(entity.BirthDate) : dob);
 
                         var newPractitioner = new Practitioner
                         {

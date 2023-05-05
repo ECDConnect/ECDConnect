@@ -8,6 +8,7 @@ using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Storage;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -120,12 +121,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
             if (Exists(entity.Id))
             {
-                //T anotehrtest = entities.Where((s => s.Id == entity.Id)).FirstOrDefault();
-                //T checkBefore = entities.FirstOrDefault(s => s.Id == entity.Id);
                 T beforeUpdate = Retrieve(entity.Id);
-                //For integration, trust the FE provided updated date, otherwise set to now.
-                if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
-                //entity.UpdatedDate = DateTime.Now;
+
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
@@ -141,8 +138,17 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
 
                 //Populate Audit records
-                //if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                //    DoAudit(entity, "Update", beforeUpdate);
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                   if (DoAudit(entity, "Update", beforeUpdate))
+                    {
+                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
+                        entity.UpdatedDate = DateTime.Now;
+                    }
+                } else
+                {
+                    entity.UpdatedDate = DateTime.Now;
+                }
 
             }
             else
@@ -173,8 +179,9 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         }
 
-        public virtual void DoAudit(T entity, string changeType = "Update", T beforeObj = null)
+        public virtual bool DoAudit(T entity, string changeType = "Update", T beforeObj = null)
         {
+            bool isValidChange = false;
             GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
             Type tA = typeof(T);
             //Populate Audit records
@@ -191,7 +198,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         UserId = _userId,
                         RelatedId = entity.Id.ToString()
                     });
-
+                    isValidChange = true;
                     break;
                 case "Insert":
                     auditInsertRepo.Insert(new IntegrationAudit()
@@ -201,53 +208,33 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         UserId = _userId,
                         RelatedId = entity.Id.ToString()
                     });
-
+                    isValidChange= true;
                     break;
                 default:
                     List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-
-                    //var beforeCheck = entities.Entry(entities.FirstOrDefault(s => s.Id == beforeObj.Id)).OriginalValues; 
-                    //foreach (var olp in beforeCheck.Properties)
-                    //{
-                    //    if (olp != null)
-                    //    {
-                    //        if (!entities.Entry(beforeObj).Property(olp.Name).OriginalValue.Equals(entities.Entry(beforeObj).Property(olp.Name).CurrentValue))
-                    //        {
-                    //            //foreach (var prop in tA.GetProperties())//flags
-                    //            //{
-                    //            //    if (prop.GetValue(entity, null) != null)
-                    //            //    {
-                    //            //        if (!prop.GetValue(entity, null).Equals(prop.GetValue(beforeObj, null)))
-                    //            changesList.Add(new IntegrationAudit()
-                    //            {
-                    //                ChangeType = changeType,
-                    //                Entity = tA.Name,
-                    //                Property = olp.Name,
-                    //                ValueBefore = entities.Entry(beforeObj).Property(olp.Name).OriginalValue.ToString(),//prop.GetValue(beforeObj, null).ToString(),
-                    //                ValueAfter = entities.Entry(beforeObj).Property(olp.Name).CurrentValue.ToString(),//prop.GetValue(entity, null).ToString(),
-                    //                UserId = _userId,
-                    //                RelatedId = entity.Id.ToString()
-                    //            });
-                    //            //}
-                    //            //}
-                    //        }
-                    //    }
-                    //}
-
                     foreach (var prop in tA.GetProperties())
                     {
-                        if (prop.GetValue(entity, null) != entities.Entry(beforeObj).Property(prop.Name).OriginalValue) //prop.GetValue(beforeObj, null))
+                        Type propType = prop.PropertyType;
+                        if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType) //ignore navigation types due to lazyloading
                         {
-                            changesList.Add(new IntegrationAudit()
+                            //Determine changes and convert all to string
+                            string beforeValue = entities.Entry(beforeObj).Property(prop.Name).OriginalValue != null ? entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString() :  "";
+                            string afterValue = prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
+
+                            if (beforeValue != afterValue)
                             {
-                                ChangeType = changeType,
-                                Entity = tA.Name,
-                                Property = prop.Name,
-                                ValueBefore = entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString(),//prop.GetValue(entity, null).ToString(),
-                                ValueAfter = prop.GetValue(beforeObj, null).ToString(),
-                                UserId = _userId,
-                                RelatedId = entity.Id.ToString()
-                            });
+                                changesList.Add(new IntegrationAudit()
+                                {
+                                    ChangeType = changeType,
+                                    Entity = tA.Name,
+                                    Property = prop.Name,
+                                    ValueBefore = beforeValue,
+                                    ValueAfter = afterValue,
+                                    UserId = _userId,
+                                    RelatedId = entity.Id.ToString()
+                                });
+                                isValidChange = true;
+                            }
                         }
                     }
 
@@ -257,6 +244,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                     }
                     break;
             }
+            return isValidChange;
         }
 
         public virtual bool Exists(Guid id)

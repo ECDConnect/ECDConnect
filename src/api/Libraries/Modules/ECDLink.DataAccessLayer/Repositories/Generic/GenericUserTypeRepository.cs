@@ -325,8 +325,18 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
 
                 //Populate Audit records
-                //if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                //    DoAudit(entity, "Update", beforeUpdate);
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                    if (DoAudit(entity, "Update", beforeUpdate))
+                    {
+                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
+                        entity.UpdatedDate = DateTime.Now;
+                    }
+                }
+                else
+                {                    
+                    entity.UpdatedDate = DateTime.Now;
+                }
             }
 
             context.SaveChanges();
