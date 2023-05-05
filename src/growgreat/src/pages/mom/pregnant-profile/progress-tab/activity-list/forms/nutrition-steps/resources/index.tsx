@@ -1,16 +1,13 @@
-import { useMemo } from 'react';
-import { Button, Divider, Typography } from '@ecdlink/ui';
+import { Button, Typography } from '@ecdlink/ui';
 import imgMocked from './mocked.png';
 import { DynamicFormProps } from '../../dynamic-form';
 
 export const ResourcesStep = ({
-  mother,
+  name,
   sectionQuestions: questions,
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-
   return (
     <>
       <div className="flex flex-col gap-4 p-4">

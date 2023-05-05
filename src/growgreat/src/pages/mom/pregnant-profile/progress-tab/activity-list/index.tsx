@@ -73,8 +73,6 @@ export const MomActivityList: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
 
-  // const visits2 = useSelector(getMotherVisits);
-
   const MOCKED_VISIT_ID = visitId;
 
   const completedVisits = useSelector((state: RootState) =>
@@ -93,9 +91,6 @@ export const MomActivityList: React.FC = () => {
     previousMotherVisit?.visitDataStatus?.length! > 0
       ? activitiesList
       : activityListFiltered;
-
-  const isFollowUp = completedVisits?.length === 4;
-  const isAllCompleted = completedVisits?.length === 5;
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
@@ -126,73 +121,79 @@ export const MomActivityList: React.FC = () => {
     []
   );
 
-  const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    // const motherType = relationshipTypes.find(
-    //   (item) => item.label === 'Mother'
-    // );
+  const { completedForms, uncompletedForms, followUpForm, stepperCount } =
+    useMemo(() => {
+      // const motherType = relationshipTypes.find(
+      //   (item) => item.label === 'Mother'
+      // );
 
-    const completedActivities = activityListUpdated.filter((item) =>
-      completedVisits?.includes(item.title)
-    );
-    const uncompletedActivities = activityListUpdated.filter(
-      (item) => !completedVisits?.includes(item.title)
-    );
+      const completedActivities = activityListUpdated.filter((item) =>
+        completedVisits?.includes(item.title)
+      );
+      const uncompletedActivities = activityListUpdated.filter(
+        (item) => !completedVisits?.includes(item.title)
+      );
 
-    const completedForms = completedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        titleStyle: 'text-textDark',
-        subTitle: '',
-        iconBackgroundColor: 'successMain' as Colours,
-        backgroundColor: 'successBg' as Colours,
-        rightIcon: 'BadgeCheckIcon',
-        rightIconClassName: 'h-5 w-5 text-successMain',
-      })
-    );
+      const completedForms = completedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'border-0',
+          title: item?.title,
+          titleStyle: 'text-textDark',
+          subTitle: '',
+          iconBackgroundColor: 'successMain' as Colours,
+          backgroundColor: 'successBg' as Colours,
+          rightIcon: 'BadgeCheckIcon',
+          rightIconClassName: 'h-5 w-5 text-successMain',
+        })
+      );
 
-    const uncompletedForms = uncompletedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        subTitle: '',
-        iconBackgroundColor: item.iconBackgroundColor as Colours,
-        hexBackgroundColor: item.hexBackgroundColor || '',
-        className: item.className,
-        onActionClick: () => {
-          if (item.id) {
-            window.sessionStorage.setItem(currentActivityKey, item.id);
+      const uncompletedForms = uncompletedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'border-0',
+          title: item?.title,
+          subTitle: '',
+          iconBackgroundColor: item.iconBackgroundColor as Colours,
+          hexBackgroundColor: item.hexBackgroundColor || '',
+          className: item.className,
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
+        })
+      );
+
+      const stepperCount = completedForms.length + uncompletedForms.length + 1; // +1 is for followup
+
+      const followUpForm: MenuListDataItem[] = [
+        {
+          showIcon: true,
+          menuIcon: 'CalendarIcon',
+          menuIconClassName: 'border-0',
+          iconColor: 'white',
+          title: 'Follow up',
+          titleStyle: 'text-textDark semibold',
+          subTitle: 'Schedule your next visit, make referrals & save notes',
+          subTitleStyle: 'text-textMid',
+          iconBackgroundColor: 'tertiary' as Colours,
+          backgroundColor: 'uiBg' as Colours,
+          onActionClick: () => {
+            window.sessionStorage.setItem(currentActivityKey, 'Follow up');
             setShowForm(true);
-          }
+          },
         },
-      })
-    );
+      ];
 
-    const followUpForm: MenuListDataItem[] = [
-      {
-        showIcon: true,
-        menuIcon: 'CalendarIcon',
-        menuIconClassName: 'border-0',
-        iconColor: 'white',
-        title: 'Follow up',
-        titleStyle: 'text-textDark semibold',
-        subTitle: 'Schedule your next visit, make referrals & save notes',
-        subTitleStyle: 'text-textMid',
-        iconBackgroundColor: 'tertiary' as Colours,
-        backgroundColor: 'uiBg' as Colours,
-        onActionClick: () => {
-          window.sessionStorage.setItem(currentActivityKey, 'Follow up');
-          setShowForm(true);
-        },
-      },
-    ];
+      return { uncompletedForms, completedForms, followUpForm, stepperCount };
+    }, [activityListUpdated, completedVisits]);
 
-    return { uncompletedForms, completedForms, followUpForm };
-  }, [activityListUpdated, completedVisits]);
+  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isAllCompleted = completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
@@ -347,18 +348,18 @@ export const MomActivityList: React.FC = () => {
                 </>
               )}
               <div className="mt-8 flex gap-1">
-                {Object.values(activitiesTypes).map((item, index) => (
+                {Array.from({ length: stepperCount }, (_, i) => (
                   <span
-                    key={item}
+                    key={i}
                     className="rounded-10 h-2"
                     style={{
                       minWidth: 37,
                       background:
                         !!completedVisits?.length &&
-                        index + 1 <= completedVisits?.length
+                        i + 1 <= completedVisits?.length
                           ? '#26ACAF'
                           : '#D4EEEF',
-                      width: width / Object.values(activitiesTypes).length,
+                      width: width / stepperCount,
                     }}
                   />
                 ))}
@@ -413,6 +414,7 @@ export const MomActivityList: React.FC = () => {
     isShowCompletedForms,
     completedForms,
     width,
+    stepperCount,
   ]);
 
   if (showForm && selectedOption) {

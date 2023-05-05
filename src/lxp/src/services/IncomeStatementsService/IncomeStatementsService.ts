@@ -1,5 +1,10 @@
 import { api } from '../axios.helper';
-import { BalanceSheetDto, Config, IncomeStatementsDto, ReportTableDataDto } from '@ecdlink/core';
+import {
+  BalanceSheetDto,
+  Config,
+  IncomeStatementsDto,
+  ReportTableDataDto,
+} from '@ecdlink/core';
 import {
   StatementsIncomeInput,
   StatementsSubmitInput,

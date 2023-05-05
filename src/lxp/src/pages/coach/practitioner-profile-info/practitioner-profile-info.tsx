@@ -303,9 +303,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   color="secondaryAccent2"
                   type="filled"
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      practitioner?.user?.phoneNumber!
-                    );
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.phoneNumber!
+                      );
                   }}
                 >
                   <Typography
@@ -341,7 +343,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   color="secondaryAccent2"
                   type="filled"
                   onClick={() => {
-                    navigator.clipboard.writeText(practitioner?.user?.email!);
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.email!
+                      );
                   }}
                 >
                   <Typography

@@ -28,6 +28,9 @@ namespace EcdLink.Api.CoreApi {
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
             public const string client_pregnant_mom_multiple_children = "Multiple children";
 
+            public const string maternal_record_name = "maternalcaserecord.png";
+            public const string upload_maternal_case_record = "Upload maternal case record";
+
             public const string additional_visits = "additional_visits";
             public const string visit1 = "visit_1";
             public const string visit2 = "visit_2";
@@ -245,6 +248,8 @@ namespace EcdLink.Api.CoreApi {
             public const string doingWell = "You are doing well in these areas:";
             public const string needSupport = "You need support in these areas:";
             public const string needUrgentSupport = "You need urgent support with these areas:";
+
+            public const string idDocSection = "ID document";
 
             // Infant Dates
             public const string day_3 = "day_3";

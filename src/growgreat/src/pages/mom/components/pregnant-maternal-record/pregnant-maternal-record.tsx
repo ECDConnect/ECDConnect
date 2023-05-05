@@ -9,6 +9,7 @@ import {
   ImageInput,
   DialogPosition,
   Checkbox,
+  renderIcon,
 } from '@ecdlink/ui';
 import { PhotoPrompt } from '../../../../components/photo-prompt/photo-prompt';
 import DatePicker from 'react-datepicker';
@@ -24,16 +25,16 @@ import {
   PregnantMaternalCaseRecordModel,
   initialPregnantMaternalCaseRecordValues,
 } from '@/schemas/pregnant/pregnant-maternal-case-record';
-import { InformationCircleIcon } from '@heroicons/react/outline';
 import maternalRecord from '../../../../assets/maternalRecord.png';
 import { getNextDateByDay, getWeeksDiff } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { MotherActions } from '@/store/mother/mother.actions';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
+import { DocumentActions } from '@/store/document/document.actions';
 
 export const PregnantMaternalCaseRecord: React.FC<
   PregnantMaternalCaseRecordProps
-> = ({ onSubmit, details }) => {
+> = ({ onSubmit, details, isFromClientProfile }) => {
   const {
     trigger,
     getValues: getPregnantMaternalCaseRecordFormValues,
@@ -75,6 +76,10 @@ export const PregnantMaternalCaseRecord: React.FC<
   const { isLoading: isLoadingEventRecord } = useThunkFetchCall(
     'eventRecord',
     EventRecordActions.ADD_EVENT_RECORD
+  );
+  const { isLoading: isLoadingCreateDocument } = useThunkFetchCall(
+    'documents',
+    DocumentActions.CREATE_DOCUMENT
   );
 
   const setPhotoUrl = (imageUrl: string) => {
@@ -126,6 +131,12 @@ export const PregnantMaternalCaseRecord: React.FC<
     [tomorrow]
   );
 
+  useEffect(() => {
+    if (isFromClientProfile) {
+      setHasMaternalCaseRecord(true);
+    }
+  }, [isFromClientProfile]);
+
   return (
     <>
       <Typography
@@ -138,81 +149,28 @@ export const PregnantMaternalCaseRecord: React.FC<
         type="h4"
         color={'textMid'}
         text={'Maternal Case Record'}
-        className="w-11/12 pt-2"
+        className="mb-4 w-11/12 pt-2"
       />
-      <div className="mt-4">
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={'Expected delivery date:'}
-          className="w-11/12 pt-2"
-        />
-        <div className="flex items-center gap-1">
-          <DatePicker
-            placeholderText={'Please select a date'}
-            className="text-primary bg-uiBg focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            popperClassName="z-50"
-            selected={deliveryDate}
-            onChange={(date: Date) => setDeliveryDate(date)}
-            dateFormat="dd"
-            minDate={tomorrow}
-            maxDate={dateAfter280days}
-            renderCustomHeader={() => <div>Day</div>}
-            onKeyDown={onKeyDown}
+      {!isFromClientProfile && (
+        <>
+          <Typography
+            type="h4"
+            color={'textDark'}
+            text={`Does ${details?.name} have her Maternal Case Record?`}
+            className="mb-2 w-11/12 pt-2"
           />
-          <DatePicker
-            placeholderText={'Please select a date'}
-            className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            popperClassName="z-50"
-            selected={deliveryDate}
-            onChange={onMonthChange}
-            renderCustomHeader={() => <div>Month</div>}
-            dateFormat="MMMM"
-            minDate={tomorrow}
-            maxDate={dateAfter280days}
-            showMonthYearPicker
-            showPopperArrow={true}
-            onKeyDown={onKeyDown}
+          <ButtonGroup<boolean>
+            options={yesNoOptions}
+            onOptionSelected={(value: boolean | boolean[]) =>
+              setHasMaternalCaseRecord(value as boolean)
+            }
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            className={'mt-2 w-full'}
+            selectedOptions={hasMaternalCaseRecord}
           />
-          <DatePicker
-            placeholderText={'Please select a date'}
-            className="bg-uiBg text-primary focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
-            popperClassName="z-50"
-            selected={deliveryDate}
-            onChange={onYearChange}
-            dateFormat="yyyy"
-            minDate={tomorrow}
-            maxDate={dateAfter280days}
-            renderCustomHeader={() => <div>Year</div>}
-            showYearPicker
-            onKeyDown={onKeyDown}
-          />
-        </div>
-      </div>
-      <div className={'mt-4'}>
-        <Alert
-          type={'info'}
-          message={`About ${actualGestationWeek} weeks pregnant`}
-        />
-      </div>
-      <div className="mt-4">
-        <Typography
-          type="h4"
-          color={'textMid'}
-          text={`Does ${details?.name} have her Maternal Case Record?`}
-          className="mb-2 w-11/12 pt-2"
-        />
-        <ButtonGroup<boolean>
-          options={yesNoOptions}
-          onOptionSelected={(value: boolean | boolean[]) =>
-            setHasMaternalCaseRecord(value as boolean)
-          }
-          color="secondary"
-          type={ButtonGroupTypes.Button}
-          className={'mt-2 w-full'}
-          selectedOptions={hasMaternalCaseRecord}
-        />
-      </div>
+        </>
+      )}
       {hasMaternalCaseRecord === false && (
         <>
           <Typography
@@ -249,6 +207,58 @@ export const PregnantMaternalCaseRecord: React.FC<
       )}
       {hasMaternalCaseRecord === true && (
         <>
+          <Typography
+            type="h4"
+            color={'textDark'}
+            text={'Expected delivery date:'}
+            className="w-11/12 pt-4"
+          />
+          <div className="flex items-center gap-1">
+            <DatePicker
+              placeholderText={'Please select a date'}
+              className="text-primary bg-uiBg focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+              popperClassName="z-50"
+              selected={deliveryDate}
+              onChange={(date: Date) => setDeliveryDate(date)}
+              dateFormat="dd"
+              minDate={tomorrow}
+              maxDate={dateAfter280days}
+              renderCustomHeader={() => <div>Day</div>}
+              onKeyDown={onKeyDown}
+            />
+            <DatePicker
+              placeholderText={'Please select a date'}
+              className="text-primary bg-uiBg focus:border-primary focus:ring-primary mt-1 w-full rounded-md border-none text-lg shadow-sm"
+              popperClassName="z-50"
+              selected={deliveryDate}
+              onChange={onMonthChange}
+              renderCustomHeader={() => <div>Month</div>}
+              dateFormat="MMMM"
+              minDate={tomorrow}
+              maxDate={dateAfter280days}
+              showMonthYearPicker
+              showPopperArrow={true}
+              onKeyDown={onKeyDown}
+            />
+            <DatePicker
+              placeholderText={'Please select a date'}
+              className="bg-uiBg text-primary focus:border-primary focus:ring-primary z-50 mt-1 w-full rounded-md border-none text-lg shadow-sm"
+              popperClassName="z-50"
+              selected={deliveryDate}
+              onChange={onYearChange}
+              dateFormat="yyyy"
+              minDate={tomorrow}
+              maxDate={dateAfter280days}
+              renderCustomHeader={() => <div>Year</div>}
+              showYearPicker
+              onKeyDown={onKeyDown}
+            />
+          </div>
+          <Alert
+            type={'info'}
+            message={`About ${actualGestationWeek} weeks pregnant`}
+            className="mt-4"
+          />
           <div className="mt-4 flex items-center justify-between">
             <Typography
               type="h4"
@@ -259,12 +269,9 @@ export const PregnantMaternalCaseRecord: React.FC<
             />
             <div
               onClick={() => setMaternalRecordExampleVisible(true)}
-              className="bg-infoDark grid h-8 w-8 place-items-center rounded-full"
+              className="h-8 w-8 place-items-center rounded-full"
             >
-              <InformationCircleIcon
-                className="bg-trasparent h-auto w-auto text-white"
-                aria-hidden="true"
-              />
+              {renderIcon('InformationCircleIcon', 'text-infoMain')}
             </div>
           </div>
           <div className={'pt-1'}>
@@ -300,10 +307,13 @@ export const PregnantMaternalCaseRecord: React.FC<
           onClick={() => {
             onSubmit(getPregnantMaternalCaseRecordFormValues());
           }}
-          isLoading={isLoading || isLoadingEventRecord}
+          isLoading={
+            isLoading || isLoadingEventRecord || isLoadingCreateDocument
+          }
           disabled={
             isLoading ||
             isLoadingEventRecord ||
+            isLoadingCreateDocument ||
             !isValid ||
             (!hasMaternalCaseRecord &&
               !getPregnantMaternalCaseRecordFormValues()
@@ -344,8 +354,8 @@ export const PregnantMaternalCaseRecord: React.FC<
         className="m-5 overflow-auto rounded-2xl"
       >
         <div className="flex h-full flex-col items-center overflow-auto px-4 pt-7 pb-6">
-          <div className="bg-infoDark grid h-11 w-11 place-items-center rounded-full">
-            <InformationCircleIcon className="h-auto w-auto bg-transparent text-white" />
+          <div className="h-11 w-11 place-items-center rounded-full">
+            {renderIcon('InformationCircleIcon', 'text-infoMain')}
           </div>
           <div className="mt-4 flex justify-center">
             <Typography
