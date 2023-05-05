@@ -284,9 +284,7 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial && attendanceTutorialComplete) {
-      // if (showAttendanceTutorial && attendanceTutorialComplete) {
-
+    if (showAttendanceTutorial && !attendanceTutorialComplete) {
       handleAttendanceTutorial();
     }
   }, [showAttendanceTutorial]);
@@ -328,6 +326,7 @@ export const ClassDashboard: React.FC = () => {
           <AttendanceTutorial
             onComplete={completeTutorial}
             onClose={() => closeAttendanceTutorial()}
+            updatePractitionerProgress={updatePractitionerProgress}
           />
         </div>
       </Dialog>
