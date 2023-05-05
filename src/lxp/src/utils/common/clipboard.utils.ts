@@ -17,7 +17,7 @@ export const copyToClip = async (value: string): Promise<boolean> => {
     }
 
     try {
-      navigator?.clipboard?.writeText(value);
+      navigator?.clipboard?.writeText && navigator?.clipboard?.writeText(value);
     } catch {
       try {
         document?.execCommand && document?.execCommand('copy', true, value);
