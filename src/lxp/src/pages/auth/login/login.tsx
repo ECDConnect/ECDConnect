@@ -38,13 +38,14 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
-  navigator.storage.estimate().then((estimate) => {
-    if (estimate?.quota) {
-      const freMemoryResult = estimate?.quota / 1024 / 1024;
-      setFreeMemory(Number(freMemoryResult.toFixed(0)));
-      return estimate;
-    }
-  });
+  navigator?.storage?.estimate &&
+    navigator?.storage?.estimate().then((estimate) => {
+      if (estimate?.quota) {
+        const freMemoryResult = estimate?.quota / 1024 / 1024;
+        setFreeMemory(Number(freMemoryResult.toFixed(0)));
+        return estimate;
+      }
+    });
 
   const {
     register: loginRegister,

@@ -4,7 +4,7 @@ export enum DailyRoutineItemType {
   messageBoard = 'Message board',
   freePlay = 'Free play',
   storyBook = 'Story book',
-  greeting = 'Greeting',
+  greeting = 'Greeting & message board',
 }
 
 export enum StoryBookTypes {

@@ -10,11 +10,10 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
-import { DateFormats } from '../../../../constants/Dates';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 import {
@@ -29,7 +28,7 @@ import 'react-datepicker/dist/react-datepicker.css';
 import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
-import { addDays } from 'date-fns';
+import { addDays, format } from 'date-fns';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -60,6 +59,10 @@ const ProgrammeTiming: React.FC = () => {
     control: control,
   });
 
+  const validStartdDate = selectedDate
+    ? validateStartDate(new Date(selectedDate))
+    : new Date();
+
   const handleBack = () => {
     history.goBack();
   };
@@ -72,7 +75,8 @@ const ProgrammeTiming: React.FC = () => {
     const newProgramme = await createProgramme(
       validatedDate,
       formValue.language,
-      selectedTheme
+      selectedTheme,
+      new Date(endDate!)
     );
 
     if (isOnline) {
@@ -99,68 +103,72 @@ const ProgrammeTiming: React.FC = () => {
 
     const validatedDate = validateStartDate(new Date(selectedDate));
 
-    let endDate;
-
-    let daysLength = 20;
+    let internalEndDate;
 
     if (!selectedTheme) {
       const endOfWeekDay = getNoThemedProgrammeEndDate(validatedDate);
-      endDate = endOfWeekDay.endDate;
-      daysLength = endOfWeekDay.totalDays;
+      internalEndDate = endOfWeekDay.endDate;
     } else {
-      endDate = getThemedProgrammeEndDate(validatedDate);
+      setValue('endDate', getThemedProgrammeEndDate(validatedDate).toString());
+      internalEndDate = getThemedProgrammeEndDate(validatedDate);
     }
 
-    const overlappingProgramme = getConflictingProgramme(
-      new Date(validatedDate),
-      endDate
-    );
+    setAlert(internalEndDate);
 
-    if (overlappingProgramme) {
-      setAlertState({
-        title: 'This start date causes conflicts',
-        list: [
-          `This programme (${
-            selectedTheme?.name || 'No theme'
-          }) will run from <b>${getDateRangeText(
-            validatedDate.toString(),
-            endDate.toString()
-          )}</b>`,
-          `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
-            overlappingProgramme.startDate,
-            overlappingProgramme.endDate
-          )}</b> (${overlappingProgramme.name})`,
-        ],
-        type: 'warning',
-      });
-      return;
-    }
-
-    setAlertState({
-      title: 'No conflicts for these dates',
-      message: selectedTheme
-        ? `Your ${
-            selectedTheme.name
-          } programme will start on <b>${validatedDate.toLocaleString(
-            'en-ZA',
-            DateFormats.dayFullMonthYear
-          )}</b> and end on <b>${endDate.toLocaleString(
-            'en-ZA',
-            DateFormats.dayFullMonthYear
-          )}.</>`
-        : `Your programme will be <b>${
-            selectedTheme ? 20 : daysLength
-          } day(s)</b> long, starting on <b>${validatedDate.toLocaleString(
-            'en-ZA',
-            DateFormats.dayFullMonthYear
-          )}</b> and ending on <b>${endDate.toLocaleString(
-            'en-ZA',
-            DateFormats.dayFullMonthYear
-          )}</b>.`,
-      type: 'success',
-    });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedDate]);
+
+  const setAlert = useCallback(
+    (date) => {
+      const overlappingProgramme = getConflictingProgramme(
+        new Date(selectedDate!),
+        new Date(date)
+      );
+
+      if (overlappingProgramme) {
+        setAlertState({
+          title: 'This start date causes conflicts',
+          list: [
+            `This programme (${
+              selectedTheme?.name || 'No theme'
+            }) will run from <b>${getDateRangeText(
+              new Date(selectedDate!).toString(),
+              new Date(date).toString()
+            )}</b>`,
+            `If you continue with this start date you will lose your plans for <b>${getDateRangeText(
+              overlappingProgramme.startDate,
+              overlappingProgramme.endDate
+            )}</b> (${overlappingProgramme.name})`,
+          ],
+          type: 'warning',
+        });
+        return;
+      }
+
+      setAlertState({
+        title: 'No conflicts for these dates',
+        message: selectedTheme
+          ? `Your ${selectedTheme.name} programme will start on <b>${
+              selectedDate
+                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
+                : ''
+            }</b> and end on <b>${
+              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
+            }.</>`
+          : `Your programme will be <b>${
+              selectedTheme ? 20 : 20
+            } day(s)</b> long, starting on <b>${
+              selectedDate
+                ? format(new Date(selectedDate!), 'EEEE, d LLLL')
+                : ''
+            }</b> and ending on <b>${
+              date ? format(new Date(date!), 'EEEE, d LLLL') : ''
+            }</b>.`,
+        type: 'success',
+      });
+    },
+    [selectedDate, selectedTheme]
+  );
 
   return (
     <BannerWrapper
@@ -206,15 +214,10 @@ const ProgrammeTiming: React.FC = () => {
 
         <DatePicker
           placeholderText={`Please select a date`}
-          className="border-uiLight w-full rounded-md"
+          className="border-uiLight text-textMid w-full rounded-md"
           selected={selectedDate ? new Date(selectedDate) : undefined}
           onChange={(date: Date) => {
-            const endDateUpdate = addDays(
-              date,
-              selectedTheme?.themeDays?.length! - 1
-            );
             setValue('date', date ? date.toString() : '');
-            setValue('endDate', date ? endDateUpdate.toString() : '');
           }}
           dateFormat="EEE, dd MMM yyyy"
           minDate={new Date()}
@@ -227,13 +230,15 @@ const ProgrammeTiming: React.FC = () => {
         />
         <DatePicker
           placeholderText={`Please select a date`}
-          className="border-uiLight w-full rounded-md"
+          className="border-uiLight text-textMid w-full rounded-md"
           selected={endDate ? new Date(endDate) : undefined}
-          onChange={(date: Date) =>
-            setValue('endDate', endDate ? endDate.toString() : '')
-          }
+          onChange={(date: Date) => {
+            setValue('endDate', date ? date.toString() : '');
+            setAlert(date);
+          }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={new Date()}
+          minDate={addDays(new Date(), 1)}
+          maxDate={getThemedProgrammeEndDate(validStartdDate!)}
         />
 
         {alertState && <Alert className="mt-4" {...alertState} />}

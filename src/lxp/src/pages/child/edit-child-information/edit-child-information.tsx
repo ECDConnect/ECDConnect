@@ -57,6 +57,7 @@ import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
+import ROUTES from '../../../../src/routes/routes';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -504,37 +505,57 @@ export const EditChildInformation: React.FC = () => {
     const newClassroomGroupId =
       editChildInformationFormGetValues().classroomGroupId;
 
-    const learnerInputModel: LearnerDto = {
-      id: currentChildLearnerRecord?.id,
-      classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
-      stoppedAttendance: new Date().toISOString(),
-      isActive: false,
-    };
+    if (currentChildLearnerRecord) {
+      const learnerInputModel: LearnerDto = {
+        id: currentChildLearnerRecord?.id,
+        classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
+        stoppedAttendance: new Date().toISOString(),
+        isActive: false,
+      };
 
-    appDispatch(
-      classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-    );
+      appDispatch(
+        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+      );
 
-    const newLearnerModel: LearnerDto = {
-      id: newGuid(),
-      classroomGroupId: newClassroomGroupId,
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
-      stoppedAttendance: null,
-      isActive: currentChildLearnerRecord?.isActive,
-    };
+      const newLearnerModel: LearnerDto = {
+        id: newGuid(),
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: currentChildLearnerRecord?.isActive,
+      };
 
-    appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+    } else {
+      //this child does not belong to any classroomgroup
+      const newLearnerModel: LearnerDto = {
+        id: newGuid(),
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChild?.userId ?? '',
+        attendanceReasonId: '',
+        otherAttendanceReason: '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: true,
+      };
 
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+    }
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const saveChildCareGiver = async (
@@ -655,6 +676,7 @@ export const EditChildInformation: React.FC = () => {
 
   const closeEditField = () => {
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -844,7 +866,10 @@ export const EditChildInformation: React.FC = () => {
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => setChangeClassroomGroupPromptVisible(false),
+              onClick: () => {
+                setChangeClassroomGroupPromptVisible(false);
+                history.push(ROUTES.CHILD_PROFILE, { childId });
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}

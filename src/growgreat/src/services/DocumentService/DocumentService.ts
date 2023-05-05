@@ -1,6 +1,6 @@
 import { api } from '../axios.helper';
 import { DocumentDto, FileReturnModel, Config } from '@ecdlink/core';
-import { Document, DocumentInput } from '@ecdlink/graphql';
+import { DocumentInput } from '@ecdlink/graphql';
 class DocumentService {
   _accessToken: string;
 
@@ -49,10 +49,10 @@ class DocumentService {
     return response.data.data.GetAllDocument;
   }
 
-  async getDocumentsForHCW(userId: string): Promise<Document[]> {
+  async getDocumentsForHCW(userId: string): Promise<DocumentDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { documentsForHCW: Document[] };
+      data: { documentsForHCW: DocumentDto[] };
       errors?: {};
     }>(``, {
       query: `

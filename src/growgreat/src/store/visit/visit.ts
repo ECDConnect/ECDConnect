@@ -18,6 +18,8 @@ import {
   getMomCompletedVisitsForVisitId,
   addVisitForMomFormData,
   getVisitAnswersForMother,
+  GetMotherSummaryByPriority,
+  GetInfantSummaryByPriority,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -133,6 +135,8 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getVisitAnswersForInfant);
     setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
+    setThunkActionStatus(builder, GetMotherSummaryByPriority);
+    setThunkActionStatus(builder, GetInfantSummaryByPriority);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -153,7 +157,11 @@ const visitSlice = createSlice({
         (item) => item.id === action.payload.id
       );
 
-      if (updatedDataIndex !== undefined && !!state.healthPromotion) {
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.healthPromotion
+      ) {
         state.healthPromotion[updatedDataIndex] = action.payload;
         return;
       }
@@ -168,7 +176,11 @@ const visitSlice = createSlice({
         (item) => item.id === action.payload.id
       );
 
-      if (updatedDataIndex !== undefined && !!state.moreInformation) {
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.moreInformation
+      ) {
         state.moreInformation[updatedDataIndex] = action.payload;
         return;
       }
@@ -252,6 +264,14 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(GetMotherSummaryByPriority.fulfilled, (state, action) => {
+      state.motherSummaryByPriority = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(GetInfantSummaryByPriority.fulfilled, (state, action) => {
+      state.infantSummaryByPriority = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 

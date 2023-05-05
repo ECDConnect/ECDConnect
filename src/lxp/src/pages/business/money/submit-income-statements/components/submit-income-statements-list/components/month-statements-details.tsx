@@ -48,7 +48,8 @@ interface ReportDetailsForPractitionerData {
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
-  const [reportDeatils, setReportDetails] = useState<ReportDetailsForPractitionerData>();
+  const [reportDeatils, setReportDetails] =
+    useState<ReportDetailsForPractitionerData>();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const location = useLocation<MonthStatementsDetailsState>();
@@ -292,7 +293,7 @@ export const MonthStatementsDetails: React.FC = () => {
     utilitiesExpense?.id,
     salaryExpense?.id,
   ]);
-  
+
   useEffect(() => {
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(
@@ -302,11 +303,11 @@ export const MonthStatementsDetails: React.FC = () => {
     };
 
     getClassroomDetails().then((data) => {
-      setReportDetails(data)
+      setReportDetails(data);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
-  
+
   useEffect(() => {
     const monthlyDetailsdata = async () => {
       const incomeData = await new IncomeStatementsService(
