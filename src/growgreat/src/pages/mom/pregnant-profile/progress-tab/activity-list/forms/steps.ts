@@ -1,6 +1,5 @@
 import {
   ClinicVisitsStep,
-  ExpectedDeliveryStep,
   DangerSignsFollowUpStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
@@ -35,7 +34,6 @@ export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   AntenatalCare,
   ClinicVisitsStep,
   ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
-  ExpectedDeliveryStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
 ];
