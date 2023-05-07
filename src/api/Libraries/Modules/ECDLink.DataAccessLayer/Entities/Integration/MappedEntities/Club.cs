@@ -1,7 +1,7 @@
 namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
 {
-    public class MappedClub
+    public class MappedClub : BasicMappedBaseEntity
     {
-        public string Guid { get; set; }
+
     }
 }

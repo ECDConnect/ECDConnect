@@ -463,7 +463,7 @@ export const WeightAndLengthResultStep = ({
 
       const newResult = [...result];
 
-      return data.map((item) => {
+      const formattedResult = data.map((item) => {
         const date = differenceFunction(
           new Date(item.visit?.plannedVisitDate),
           new Date(age)
@@ -478,25 +478,47 @@ export const WeightAndLengthResultStep = ({
         }
 
         return result;
-      });
+      })[0];
+
+      return formattedResult;
     },
     []
   );
 
   const setChartData = useCallback(() => {
     const dateOfBirth = infant?.user?.dateOfBirth as string;
+
     const weightHistory =
       [
         ...(groupedGrowthData?.weight ? [...groupedGrowthData?.weight] : []),
         ...[
           { visit: { plannedVisitDate: new Date() }, questionAnswer: weight },
+          ...(infant?.weightAtBirth
+            ? [
+                {
+                  visit: { plannedVisitDate: new Date(dateOfBirth) },
+                  questionAnswer: infant?.weightAtBirth,
+                },
+              ]
+            : []),
         ],
       ] || [];
     const lengthHistory =
       [
         ...(groupedGrowthData?.length ? [...groupedGrowthData?.length] : []),
         ...[
-          { visit: { plannedVisitDate: new Date() }, questionAnswer: length },
+          {
+            visit: { plannedVisitDate: new Date() },
+            questionAnswer: length || height,
+          },
+          ...(infant?.lengthAtBirth
+            ? [
+                {
+                  visit: { plannedVisitDate: new Date(dateOfBirth) },
+                  questionAnswer: infant?.lengthAtBirth,
+                },
+              ]
+            : []),
         ],
       ] || [];
 
@@ -508,15 +530,18 @@ export const WeightAndLengthResultStep = ({
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
 
     if (!ageYears && !ageMonths && ageDays <= 14) {
+      const weightChartData = getChartData(ageDays, weightPerDay);
+      const lengthChartDate = getChartData(ageDays, lengthPerDay);
+
       setWeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             weightHistory,
-            weightPerDay.date,
+            weightChartData.date,
             'd',
             weightResult
-          )[0]
+          )
         )
       );
       setLengthOrHeightResult(
@@ -524,27 +549,30 @@ export const WeightAndLengthResultStep = ({
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
-            lengthPerDay.date,
+            lengthChartDate.date,
             'd',
             lengthOrHeightResult
-          )[0]
+          )
         )
       );
       setSuffix('d');
-      setLengthAxios(getChartData(ageDays, weightPerWeek));
-      return setWeightAxios(getChartData(ageDays, lengthPerWeek));
+      setLengthAxios(lengthChartDate);
+      return setWeightAxios(weightChartData);
     }
 
     if (ageWeeks <= 12) {
+      const weightChartData = getChartData(ageWeeks, weightPerWeek);
+      const lengthChartDate = getChartData(ageWeeks, lengthPerWeek);
+
       setWeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             weightHistory,
-            weightPerWeek.date,
+            weightChartData.date,
             'w',
             weightResult
-          )[0]
+          )
         )
       );
       setLengthOrHeightResult(
@@ -552,27 +580,30 @@ export const WeightAndLengthResultStep = ({
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
-            lengthPerWeek.date,
+            lengthChartDate.date,
             'w',
             lengthOrHeightResult
-          )[0]
+          )
         )
       );
       setSuffix('w');
-      setLengthAxios(getChartData(ageWeeks, lengthPerDay));
-      return setWeightAxios(getChartData(ageWeeks, weightPerDay));
+      setLengthAxios(lengthChartDate);
+      return setWeightAxios(weightChartData);
     }
 
     if (!ageYears && ageMonths <= 12) {
+      const weightChartData = getChartData(ageMonths, weightPerMonth);
+      const lengthChartDate = getChartData(ageMonths, lengthPerMonth);
+
       setWeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
             dateOfBirth,
             weightHistory,
-            weightPerMonth.date,
+            weightChartData.date,
             'm',
             weightResult
-          )[0]
+          )
         )
       );
       setLengthOrHeightResult(
@@ -580,26 +611,29 @@ export const WeightAndLengthResultStep = ({
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
-            lengthPerMonth.date,
+            lengthChartDate.date,
             'm',
             lengthOrHeightResult
-          )[0]
+          )
         )
       );
       setSuffix('m');
-      setLengthAxios(getChartData(ageMonths, lengthPerMonth));
-      return setWeightAxios(getChartData(ageMonths, weightPerMonth));
+      setLengthAxios(lengthChartDate);
+      return setWeightAxios(weightChartData);
     }
+
+    const weightChartData = getChartData(ageYears, weightPerYear);
+    const lengthChartDate = getChartData(ageYears, lengthPerYear);
 
     setWeightResult(
       fillInMissingNumbers(
         getWeightOrLengthResult(
           dateOfBirth,
           weightHistory,
-          weightPerYear.date,
-          'm',
+          weightChartData.date,
+          'y',
           weightResult
-        )[0]
+        )
       )
     );
     setLengthOrHeightResult(
@@ -607,15 +641,15 @@ export const WeightAndLengthResultStep = ({
         getWeightOrLengthResult(
           dateOfBirth,
           lengthHistory,
-          lengthPerYear.date,
-          'm',
+          lengthChartDate.date,
+          'y',
           lengthOrHeightResult
-        )[0]
+        )
       )
     );
     setSuffix('y');
-    setLengthAxios(getChartData(ageDays, lengthPerYear));
-    return setWeightAxios(getChartData(ageYears, weightPerYear));
+    setLengthAxios(lengthChartDate);
+    return setWeightAxios(weightChartData);
 
     // I've really put this eslint rule
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -656,7 +690,7 @@ export const WeightAndLengthResultStep = ({
   const renderCard = useMemo(() => {
     if (
       weightAlertResult !== 'median' ||
-      lengthOrHeightAlertResult !== 'median'
+      ((!!length || !!height) && lengthOrHeightAlertResult !== 'median')
     ) {
       return (
         <>
@@ -736,7 +770,11 @@ export const WeightAndLengthResultStep = ({
         {(!!length || !!height) && (
           <>
             <Divider dividerType="dashed" />
-            <Typography type="h3" color="textDark" text="Length for age (cm)" />
+            <Typography
+              type="h3"
+              color="textDark"
+              text={`${length ? 'Length' : 'Height'} for age (cm)`}
+            />
             <Chart
               infantName={name}
               result={lengthOrHeightResult}

@@ -264,19 +264,27 @@ namespace ECDLink.SmartStart.Reports
                         for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
                         {
                             var attendance = new List<Tuple<int, int>>();
-
+                            //int classDaysCount = 0;
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
-                                var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth); 
+                                //if (classDaysCount <= validClassDays.Count())
+                                //{
+                                    if (learner.StartedAttendance.Date >= programme.ProgrammeStartDate.Date)
+                                    {
+                                        var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
 
-                                var attendedClasses = attendanceForPeriod
-                                                      .Where(x => string.Equals(x.UserId, userId)
-                                                      && x.ClassroomProgrammeId == programme.Id
-                                                      && x.MonthOfYear == dt.Month
-                                                      && x.Year == dt.Year
-                                                      && x.Attended == true);
+                                        var attendedClasses = attendanceForPeriod
+                                                              .Where(x => string.Equals(x.UserId, userId)
+                                                              && x.ClassroomProgrammeId == programme.Id
+                                                              && x.MonthOfYear == dt.Month
+                                                              && x.Year == dt.Year
+                                                              && x.Attended == true);
 
-                                attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+
+                                        //classDaysCount = classDaysCount + daysOfClass.Count();
+                                    } else attendance.Add(Tuple.Create(0, 0));
+                                //} else attendance.Add(Tuple.Create(0, 0));
                             }
                             monthlyAttendance.Add(dt, attendance);
                             allAttendance.Add(attendance);
@@ -302,7 +310,7 @@ namespace ECDLink.SmartStart.Reports
                             {
                                 SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
 
-                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day)).OrderBy(p => p.AttendanceDate).ToList();
+                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {

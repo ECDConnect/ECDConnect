@@ -3,6 +3,7 @@ import { ComponentBaseProps, TabItem, Typography } from '@ecdlink/ui';
 export interface AttendanceTutorialProps extends ComponentBaseProps {
   onComplete: () => void;
   onClose: () => void;
+  updatePractitionerProgress(): () => void;
 }
 
 export const tabItems: TabItem[] = [

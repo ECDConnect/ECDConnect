@@ -18,6 +18,7 @@ import { useAppContext } from '@/walkthrougContext';
 export const AttendanceTutorial = ({
   onComplete,
   onClose,
+  updatePractitionerProgress,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
@@ -39,6 +40,7 @@ export const AttendanceTutorial = ({
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
+    updatePractitionerProgress();
     history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
   };
 

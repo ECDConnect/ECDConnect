@@ -50,7 +50,7 @@ const practitionerSlice = createSlice({
       state.practitioner = { ...state.practitioner, isRegistered: true };
     });
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
-      state.practitioner = { ...state.practitioner, ...action.payload };
+      state.practitioner = { ...state.practitioner, progress: action.payload };
     });
   },
 });

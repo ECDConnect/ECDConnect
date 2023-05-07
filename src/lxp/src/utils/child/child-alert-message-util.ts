@@ -60,11 +60,12 @@ export const getChildAlertModel = (
     isMatchingReportingPeriods(new Date(x.reportDate), today)
   );
 
+  const daysSinceInsertedDate = differenceInDays(
+    new Date(),
+    new Date(child?.insertedDate!)
+  );
+
   if (!report) {
-    const daysSinceInsertedDate = differenceInDays(
-      new Date(),
-      new Date(child?.insertedDate!)
-    );
     if (daysSinceInsertedDate > 30) {
       alert = 'error';
       alertMessage = 'Progress report overdue';
@@ -77,7 +78,7 @@ export const getChildAlertModel = (
     (x) => x.name.includes('clinicCard') || x.name.includes('birthCertificate')
   );
 
-  if (!userBirthDocument) {
+  if (!userBirthDocument && daysSinceInsertedDate >= 14) {
     alert = 'error';
     alertMessage = 'Child document missing';
 
