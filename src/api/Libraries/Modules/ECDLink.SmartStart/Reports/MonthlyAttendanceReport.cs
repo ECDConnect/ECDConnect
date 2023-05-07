@@ -5,6 +5,8 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
+using ECDLink.SmartStart.Services;
+using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -15,10 +17,44 @@ namespace ECDLink.SmartStart.Reports
     public class MonthlyAttendanceReport : AttendanceReportBase
     {
         private readonly IGenericRepositoryFactory _repositoryFactory;
-        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory)
+        public MonthlyAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory, [Service]AttendanceService attendance)
           : base(holidayService, dbFactory.CreateDbContext())
         {
             _repositoryFactory = repositoryFactory;
+        }
+
+        public Classroom GetUserClassroom(string userId, string classroomId = null)
+        {
+            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId));
+
+            var classroom = _dbContext.Classrooms
+                                .Include(x => x.ClassroomGroups)
+                                .ThenInclude(c => c.ClassProgrammes)
+                                .FirstOrDefault(c => string.Equals(userId, c.UserId));// c.Id == classroomId &&
+
+            if (classroom == default(Classroom))
+            {
+                //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
+                //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
+
+                
+                if (practi != null && practi.PrincipalHierarchy.HasValue)
+                {
+                    //now test the practitioners principal userid, if its theirs, then show results. If it still doesnt match, throw the error
+                    classroom = _dbContext.Classrooms
+                    .Include(x => x.ClassroomGroups)
+                    .ThenInclude(c => c.ClassProgrammes)
+                    .FirstOrDefault(c => c.UserId.Contains(practi.PrincipalHierarchy.ToString()));// c.Id == classroomId &&
+                }
+
+                if (classroom == default(Classroom))
+                {
+
+                    throw new UnauthorizedAccessException("User and Principal does not have access to this classroom");
+                }                 
+            }
+
+            return classroom;
         }
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Guid classroomId, DateTime startMonth, DateTime endMonth)
@@ -50,12 +86,16 @@ namespace ECDLink.SmartStart.Reports
                     throw new UnauthorizedAccessException("User and Principal does not have access to this classroom");
                 }
             }
+            //var classroom = GetUserClassroom(userId, classroomId.ToString());
 
             return GenerateMonthlyAttendanceReport(userId, classroom, startMonth, endMonth);
         }
 
         public IEnumerable<MonthlyAttendanceReportModel> GenerateMonthlyAttendanceReport(string userId, Classroom classroom, DateTime startMonth, DateTime endMonth)
         {
+            if (classroom == null)
+                classroom = GetUserClassroom(userId);
+
             if (!classroom.ClassroomGroups.Any())
             {
                 return null;

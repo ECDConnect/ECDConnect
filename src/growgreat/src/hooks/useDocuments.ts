@@ -1,5 +1,5 @@
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
-import { Document } from '@ecdlink/core';
+import { DocumentDto } from '@ecdlink/core';
 import { CreateDocumentRequest } from '@models/common/Document';
 import { documentActions, documentSelectors } from '@store/document';
 import { newGuid } from '@utils/common/uuid.utils';
@@ -29,12 +29,12 @@ export const useDocuments = () => {
   const createNewDocument = async (
     document: CreateDocumentRequest,
     reference?: string
-  ): Promise<Document | undefined> => {
+  ): Promise<DocumentDto | undefined> => {
     const statusId = await getWorkflowStatusIdByEnum(
       document.status || WorkflowStatusEnum.DocumentVerified
     );
     const documentTypeId = getDocumentTypeIdByEnum(document.fileType);
-    const documentInputModel: Document = {
+    const documentInputModel: DocumentDto = {
       id: newGuid(),
       userId: document.userId,
       createdUserId: document.userId ?? '',
@@ -52,14 +52,14 @@ export const useDocuments = () => {
   };
 
   const updateDocument = async (
-    existingDocument: Document,
+    existingDocument: DocumentDto,
     imageBaseString: string
   ) => {
     const statusId = await getWorkflowStatusIdByEnum(
       WorkflowStatusEnum.DocumentVerified
     );
 
-    const documentInputModel: Document = {
+    const documentInputModel: DocumentDto = {
       ...existingDocument,
       workflowStatusId: statusId ?? '',
       file: imageBaseString,
@@ -68,7 +68,7 @@ export const useDocuments = () => {
     appDispatch(documentActions.updateDocument(documentInputModel));
   };
 
-  const deleteDocument = (document?: Document) => {
+  const deleteDocument = (document?: DocumentDto) => {
     if (!document) return;
 
     appDispatch(documentActions.deleteDocument(document));

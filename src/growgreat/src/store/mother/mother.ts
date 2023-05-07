@@ -44,6 +44,7 @@ const motherSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addMother);
+    setThunkActionStatus(builder, getMothers);
     setThunkActionStatus(builder, updateMotherAddress);
     setThunkActionStatus(builder, updateMotherContactDetails);
     setThunkActionStatus(builder, getMotherCountForMonth);
@@ -67,6 +68,7 @@ const motherSlice = createSlice({
       }
 
       state.mothers = mothers;
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(getMothersWeeklyVisits.fulfilled, (state, action) => {
       state.mothersWeeklyVisits = action.payload;

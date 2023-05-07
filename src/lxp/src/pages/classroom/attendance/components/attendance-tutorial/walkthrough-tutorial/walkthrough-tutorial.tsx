@@ -21,6 +21,7 @@ import { useSetState } from 'react-use';
 export const WalkthroughTutorial = ({
   onComplete,
   onClose,
+  updatePractitionerProgress,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 2;

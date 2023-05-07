@@ -20,7 +20,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class Practitioner<TKey> : EntityBase<TKey>,
         IDocumentQueryable,
         SiteAddressJoin<Guid?>,
-        IUserType
+        IUserType,
+        ITrackableType
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]
@@ -69,6 +70,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? DateToBeRemoved { get; set; }
         public bool? IsLeaving { get; set; }
         public decimal Progress { get; set; }
+        public string ProgrammeType { get; set; }
+        public bool? IsClubOwner { get; set; }
+
     }
 
     public interface PractitionerJoin<TKey>

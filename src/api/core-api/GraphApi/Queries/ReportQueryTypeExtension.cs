@@ -166,6 +166,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] MonthlyAttendanceReport report,
             DateTime startMonth,
             DateTime endMonth)
         {
@@ -176,7 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = this.GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, practitioner.UserId, startMonth, endMonth);
+                var metric = this.GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report,  practitioner.UserId, startMonth, endMonth);
                 if (metric.Any())
                 {
                     if (metric.FirstOrDefault().classroomGroupId.ToString() != "00000000-0000-0000-0000-000000000000")
@@ -193,6 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<ClassroomMetricReport> GetClassAttendanceMetricsByUser(
             IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] MonthlyAttendanceReport report,
             string userId,
             DateTime startMonth,
             DateTime endMonth)
@@ -211,6 +213,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 toDate = reference;
             }
 
+           // var attendanceReport = report.GenerateMonthlyAttendanceReport(userId, null, startMonth.Date, endMonth.Date);
 
             var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
             if (classroomGroups != null)

@@ -84,6 +84,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
+  const [practitionersTeachList, setPractitionersTeachList] = useState<
+    { label: string; value: any }[]
+  >([]);
   const [classroomGroupsList, setClassroomGroupsList] = useState<
     { label: string; value: any }[]
   >([]);
@@ -136,6 +139,7 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setPractitionersList(_list);
+    setPractitionersTeachList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -239,11 +243,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           selectedValue={practitioner}
           onChange={(item: any) => {
             setReassignClassValue('practitioner', item);
+            setPractitionersTeachList(
+              practitionersList.filter((prac) => prac.value !== item)
+            );
           }}
         />
         <Dropdown
           placeholder={'Select practitioner'}
-          list={practitionersList || []}
+          list={practitionersTeachList || []}
           fillType="clear"
           label={'Which practitioner will teach this class instead?'}
           fullWidth
