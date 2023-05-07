@@ -6,7 +6,7 @@ import { Alert, Button, Divider, renderIcon, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import imgDietaryDiversity from './dietarydiversity.jpg';
+import imgDietaryDiversity from './dietarydiversity2.jpg';
 import eggInfographic from './eggInfographic.png';
 import { alerts } from './alerts';
 import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
