@@ -294,6 +294,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
             }
+            //For integration, trust the FE provided updated date, otherwise set to now.
+            if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
             entity.UpdatedDate = DateTime.Now;
             entity.UpdatedBy = _userId;
 

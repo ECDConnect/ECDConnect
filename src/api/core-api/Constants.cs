@@ -28,6 +28,9 @@ namespace EcdLink.Api.CoreApi {
             public const string client_pregnant_mom_and_child = "Pregnant mom and child";
             public const string client_pregnant_mom_multiple_children = "Multiple children";
 
+            public const string maternal_record_name = "maternalcaserecord.png";
+            public const string upload_maternal_case_record = "Upload maternal case record";
+
             public const string additional_visits = "additional_visits";
             public const string visit1 = "visit_1";
             public const string visit2 = "visit_2";
@@ -246,6 +249,8 @@ namespace EcdLink.Api.CoreApi {
             public const string needSupport = "You need support in these areas:";
             public const string needUrgentSupport = "You need urgent support with these areas:";
 
+            public const string idDocSection = "ID document";
+
             // Infant Dates
             public const string day_3 = "day_3";
             public const string day_7 = "day_7";
@@ -263,6 +268,70 @@ namespace EcdLink.Api.CoreApi {
             public const string months_21 = "21_months";
             public const string months_24 = "24_months";
             public const string years_5 = "5_years";
+
+        }
+
+        public static class SSIntegrationSettings
+        {
+            //Franchisee Queries
+            public const string SSPractitioner = "Practitioner";
+            public const string SLPractitioner = "Franchisee";
+            public const string SLPractitionerQueryAll = SLPractitioner + QueryAll;
+            public const string SLPractitionerQueryByGuid = SLPractitioner + QueryByGuid;
+            public const string SLPractitionerUpdate = SLPractitioner + UpdateSingular;
+            //Coach Queries
+            public const string SSCoach = "Coach";
+            public const string SLCoach = "Coach";
+            //Franchisor Queries
+            public const string SSFranchisor = "Franchisor";
+            public const string SLFranchisor = "Franchisor";
+            //Child Queries
+            public const string SSChild = "Child";
+            public const string SLChild = "Child";
+            //Caregiver Queries
+            public const string SSCaregiver = "Caregiver";
+            public const string SLCaregiver = "Caregiver";
+            //Trainee Queries
+            public const string SSTrainee = "Practitioner";
+            public const string SLTrainee = "Trainee";
+            //Address Queries
+            public const string SSAddress = "SiteAddress";
+            public const string SLAddress = "Address";
+            //Record Queries
+            public const string SSRecordChange = "";
+            public const string SLRecordChange = "RecordChange";
+            //Column Queries
+            public const string SSColumnChange = "";            
+            public const string SLColumnChange = "ColumnChange";
+            //Document Queries
+            public const string SSDocument = "Document";
+            public const string SLDocument = "Document";
+            //DocumentType Queries
+            public const string SSDocumentType = "DocumentType";
+            public const string SLDocumentType = "DocumentType";
+            //IncomeStatement Queries
+            public const string SSIncomeStatementIncome = "StatementsIncome";
+            public const string SLIncomeStatementIncome = "IncomeStatement";
+            public const string SSIncomeStatementExpense = "StatementsExpense";
+            public const string SLIncomeStatementExpense = "IncomeStatement";
+            //ChildAttendanceRegister Queries
+            public const string SSChildAttendanceRegister = "Attendance";
+            public const string SLChildAttendanceRegister = "ChildAttendanceRegister";
+            //Note Queries
+            public const string SSNote = "Note";
+            public const string SLNote = "Note";
+
+            //Additional API Switches
+            public const string QueryAll = "/Query";
+            public const string Singular = "/{{Guid}}";
+            public const string QueryByGuid = "/Query/{{Guid}}";
+            public const string ColumnsMetadata = "/Columns/";
+            public const string UpdateMultiple = "/Multiple/";
+            public const string UpdateSingular = "/{{Guid}}";
+            public const string CreateMultiple = "/Multiple/";
+            public const string CreateSingular = "/";
+            public const string DocumentSendLength = "20";
+            public const string IntegrationSystem = "Smartlink";
 
         }
     }

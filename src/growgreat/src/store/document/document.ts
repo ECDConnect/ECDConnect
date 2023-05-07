@@ -1,11 +1,13 @@
-import { Document } from '@ecdlink/core';
+import { DocumentDto } from '@ecdlink/core';
+
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getDocuments, getDocumentsForHCW } from './document.actions';
+import { createDocument, getDocumentsForHCW } from './document.actions';
 import { DocumentState } from './document.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: DocumentState = {
-  documents: undefined,
+  documentsForHCW: undefined,
 };
 
 const documentSlice = createSlice({
@@ -13,42 +15,40 @@ const documentSlice = createSlice({
   initialState,
   reducers: {
     resetDocumentsState: (state) => {
-      state.documents = initialState.documents;
+      state.documentsForHCW = initialState.documentsForHCW;
     },
-    createDocument: (state, action: PayloadAction<Document>) => {
-      if (!state.documents) state.documents = [];
-      state.documents?.push(action.payload);
+    createDocument: (state, action: PayloadAction<DocumentDto>) => {
+      if (!state.documentsForHCW) state.documentsForHCW = [];
+      state.documentsForHCW?.push(action.payload);
     },
-    deleteDocument: (state, action: PayloadAction<Document>) => {
-      if (!state.documents) return;
+    deleteDocument: (state, action: PayloadAction<DocumentDto>) => {
+      if (!state.documentsForHCW) return;
 
-      const index = state.documents.findIndex(
+      const index = state.documentsForHCW.findIndex(
         (c) => c.id === action.payload.id
       );
 
-      if (index > -1) state.documents?.splice(index, 1);
+      if (index > -1) state.documentsForHCW?.splice(index, 1);
     },
-    updateDocument: (state, action: PayloadAction<Document>) => {
-      if (!state.documents) return;
+    updateDocument: (state, action: PayloadAction<DocumentDto>) => {
+      if (!state.documentsForHCW) return;
 
-      const index = state.documents.findIndex(
+      const index = state.documentsForHCW.findIndex(
         (c) => c.id === action.payload.id
       );
 
       if (index < 0) return;
 
-      state.documents[index] = action.payload;
+      state.documentsForHCW[index] = action.payload;
     },
   },
   extraReducers: (builder) => {
-    builder.addCase(getDocuments.fulfilled, (state, action) => {
-      if (!state.documents) {
-        const documents = Object.assign([], action.payload) as Document[];
-        state.documents = documents;
-      }
-    });
+    setThunkActionStatus(builder, createDocument);
     builder.addCase(getDocumentsForHCW.fulfilled, (state, action) => {
       state.documentsForHCW = action.payload;
+    });
+    builder.addCase(createDocument.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

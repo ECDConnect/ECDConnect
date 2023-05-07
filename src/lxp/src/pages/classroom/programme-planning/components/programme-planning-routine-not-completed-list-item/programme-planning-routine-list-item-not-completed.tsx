@@ -100,7 +100,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
       );
     }
     if (
-      // routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {

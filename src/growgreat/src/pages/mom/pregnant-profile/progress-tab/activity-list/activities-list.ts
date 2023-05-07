@@ -19,6 +19,14 @@ export const activitiesSectionTypes = {
   followUp: 'Follow up',
 };
 
+export const printMotherSectionTypes = {
+  antenatalCare: 'Antenatal care',
+  pregnancyCare: 'Pregnancy care',
+  nutrition: 'Nutrition',
+  dangerSigns: 'Danger signs',
+  idDocument: 'ID document',
+};
+
 export const activitiesColours = {
   pillar1: {
     primaryColor: '#8CDBDF',

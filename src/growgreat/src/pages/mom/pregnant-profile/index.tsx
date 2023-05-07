@@ -10,7 +10,9 @@ import { useHistory, useLocation } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   ActionModal,
+  Alert,
   BannerWrapper,
+  Button,
   DialogPosition,
   TabItem,
   TabList,
@@ -37,6 +39,7 @@ import {
 } from '@/components/walkthrough/info-page';
 import { visitSteps } from './visits/walkthrough/steps';
 import {
+  Document,
   MotherDto,
   getStringFromClassNameOrId,
   replaceBraces,
@@ -49,6 +52,24 @@ import { progressSteps } from './progress-tab/walkthrough/steps';
 import { ReferralsTab } from './referrals-tab';
 import { referralsSteps } from './referrals-tab/walkthrough/steps';
 import { ReactComponent as PollyNeutral } from '@/assets/pollyNeutral.svg';
+import {
+  documentActions,
+  documentSelectors,
+  documentThunkActions,
+} from '@/store/document';
+import { Header } from './components';
+import Pregnant from '@/assets/pregnant.svg';
+import { add } from 'date-fns';
+import { useWindowSize } from '@reach/window-size';
+import { PregnantMaternalCaseRecord } from '../components/pregnant-maternal-record/pregnant-maternal-record';
+import { useStaticData } from '@/hooks/useStaticData';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { userSelectors } from '@/store/user';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { DocumentActions } from '@/store/document/document.actions';
+
+const HEADER_HEIGHT = 148;
 
 export const PREGNANT_PROFILE_TABS = {
   VISITS: 0,
@@ -59,6 +80,9 @@ export const PREGNANT_PROFILE_TABS = {
 
 export const PregnantProfile: React.FC = () => {
   const [isInfoPage, setIsInfoPage] = useState(false);
+  const [isAddMaternalCaseRecord, setIsAddMaternalCaseRecord] = useState(false);
+
+  const { height } = useWindowSize();
 
   const {
     handleCallback,
@@ -83,6 +107,26 @@ export const PregnantProfile: React.FC = () => {
   const location = useLocation();
 
   const [, , , motherId] = location.pathname.split('/');
+
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
+
+  const { isLoading } = useThunkFetchCall(
+    'documents',
+    DocumentActions.CREATE_DOCUMENT
+  );
+
+  const user = useSelector(userSelectors.getUser);
+
+  const documents = useSelector(
+    documentSelectors.getDocumentsByUserId(motherId)
+  );
+
+  const maternalCaseRecord = documents?.find(
+    (item) =>
+      item.documentType?.name === 'MaternalCaseRecord' ||
+      item.fileType === FileTypeEnum.MaternalCaseRecord
+  );
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
@@ -296,12 +340,185 @@ export const PregnantProfile: React.FC = () => {
   ]);
 
   const goBack = useCallback(() => {
+    if (isAddMaternalCaseRecord) {
+      return setIsAddMaternalCaseRecord(false);
+    }
+
     if (isInfoPage) {
       return setIsInfoPage(false);
     }
 
     return history.push(ROUTES.CLIENTS.ROOT);
-  }, [history, isInfoPage]);
+  }, [history, isAddMaternalCaseRecord, isInfoPage]);
+
+  const onSubmit = useCallback(
+    async (data) => {
+      const fileName = 'maternalcaserecord.png';
+      const workflowStatusId = getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentPendingVerification
+      );
+      const documentTypeId = getDocumentTypeIdByEnum(
+        FileTypeEnum.MaternalCaseRecord
+      );
+
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: motherId,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: workflowStatusId ?? '',
+        documentTypeId: documentTypeId ?? '',
+        name: fileName,
+        fileName: fileName,
+        file: data?.maternalCaseRecord,
+        fileType: FileTypeEnum.MaternalCaseRecord,
+      };
+
+      appDispatch(documentActions.createDocument(documentInputModel));
+      await appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
+
+      goBack();
+    },
+    [
+      appDispatch,
+      getDocumentTypeIdByEnum,
+      getWorkflowStatusIdByEnum,
+      goBack,
+      motherId,
+      user?.id,
+    ]
+  );
+
+  const renderHeader = useMemo(() => {
+    if (isInfoPage) {
+      return infoPageTitle;
+    }
+    return `${mother?.user?.firstName || ''} ${
+      !isLargeName ? mother?.user?.surname || '' : ''
+    }'s profile`;
+  }, [
+    infoPageTitle,
+    isInfoPage,
+    isLargeName,
+    mother?.user?.firstName,
+    mother?.user?.surname,
+  ]);
+
+  const renderContent = useMemo(() => {
+    if (isAddMaternalCaseRecord) {
+      return (
+        <div className="mx-4">
+          <PregnantMaternalCaseRecord
+            isFromClientProfile
+            details={{ name: mother?.user?.firstName }}
+            onSubmit={onSubmit}
+          />
+        </div>
+      );
+    }
+
+    if (!maternalCaseRecord) {
+      const dueDate =
+        mother?.expectedDateOfDelivery &&
+        add(new Date(mother?.expectedDateOfDelivery), { days: 60 });
+
+      return (
+        <>
+          <Header
+            customIcon={Pregnant}
+            backgroundColor="tertiary"
+            title={mother?.user?.firstName || ''}
+            subTitle="Expected delivery date not added"
+          />
+          <div
+            className="flex flex-col px-4 py-5"
+            style={{ height: height - HEADER_HEIGHT }}
+          >
+            <Alert
+              type="error"
+              title={`Add a maternal case record for ${
+                mother?.user?.firstName || 'mother'
+              } before you can start visiting the client.`}
+              list={[
+                `Encourage ${
+                  mother?.user?.firstName || 'mother'
+                } to go to the clinic to book the pregnancy and get the maternal case record.`,
+                `This profile will be removed if the maternal case record is not uploaded by ${dueDate?.toLocaleString(
+                  'en-ZA',
+                  {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric',
+                  }
+                )}.`,
+              ]}
+              className="mt-2"
+            />
+            <Button
+              icon="DocumentAddIcon"
+              textColor="white"
+              text="Add maternal case record"
+              type="filled"
+              color="primary"
+              className="mt-auto"
+              isLoading={isLoading}
+              disabled={isLoading}
+              onClick={() => setIsAddMaternalCaseRecord(true)}
+            />
+          </div>
+        </>
+      );
+    }
+
+    return isInfoPage ? (
+      <WalkthroughInfoPage
+        sectionName={infoPageSection}
+        onHelp={onHelp}
+        onClose={goBack}
+        extraElement={
+          displayExtraComponent ? (
+            <SuccessCard
+              className="my-4"
+              customIcon={<AwardIcon className="h-14	w-14" />}
+              text={`You can earn points with every visit!`}
+              textColour="successDark"
+              color="successBg"
+            />
+          ) : (
+            <></>
+          )
+        }
+      />
+    ) : (
+      <TabList
+        id={getStringFromClassNameOrId(visitSteps[0].target)}
+        tabClassName="min-w-0 w-24"
+        className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
+        tabItems={tabItems}
+        setSelectedIndex={state?.activeTabIndex ?? 0}
+        tabSelected={(tab) =>
+          history.push(location.pathname, { activeTabIndex: tab.index })
+        }
+      />
+    );
+  }, [
+    isAddMaternalCaseRecord,
+    maternalCaseRecord,
+    isInfoPage,
+    infoPageSection,
+    onHelp,
+    goBack,
+    displayExtraComponent,
+    tabItems,
+    state?.activeTabIndex,
+    mother,
+    onSubmit,
+    height,
+    isLoading,
+    history,
+    location.pathname,
+  ]);
 
   useLayoutEffect(() => {
     (async () =>
@@ -309,10 +526,15 @@ export const PregnantProfile: React.FC = () => {
   }, [appDispatch, motherId]);
 
   useEffect(() => {
-    if (previousActiveTab !== state?.activeTabIndex) {
+    if (previousActiveTab !== state?.activeTabIndex && !!maternalCaseRecord) {
       handleWelcomeDialog();
     }
-  }, [handleWelcomeDialog, previousActiveTab, state?.activeTabIndex]);
+  }, [
+    handleWelcomeDialog,
+    maternalCaseRecord,
+    previousActiveTab,
+    state?.activeTabIndex,
+  ]);
 
   return (
     <>
@@ -343,49 +565,20 @@ export const PregnantProfile: React.FC = () => {
         size="medium"
         renderBorder
         onBack={goBack}
-        title={
-          isInfoPage
-            ? infoPageTitle
-            : `${mother?.user?.firstName || ''} ${
+        title={renderHeader}
+        subTitle={
+          isAddMaternalCaseRecord
+            ? `${mother?.user?.firstName || ''} ${
                 !isLargeName ? mother?.user?.surname || '' : ''
-              }'s profile`
+              }`
+            : ''
         }
         backgroundColour="white"
         displayOffline={!isOnline}
-        displayHelp={!isInfoPage}
+        displayHelp={!isInfoPage && !!maternalCaseRecord}
         onHelp={() => setIsInfoPage(true)}
       >
-        {isInfoPage ? (
-          <WalkthroughInfoPage
-            sectionName={infoPageSection}
-            onHelp={onHelp}
-            onClose={goBack}
-            extraElement={
-              displayExtraComponent ? (
-                <SuccessCard
-                  className="my-4"
-                  customIcon={<AwardIcon className="h-14	w-14" />}
-                  text={`You can earn points with every visit!`}
-                  textColour="successDark"
-                  color="successBg"
-                />
-              ) : (
-                <></>
-              )
-            }
-          />
-        ) : (
-          <TabList
-            id={getStringFromClassNameOrId(visitSteps[0].target)}
-            tabClassName="min-w-0 w-24"
-            className="bg-uiBg border-uiLight fixed z-20 w-full border-b"
-            tabItems={tabItems}
-            setSelectedIndex={state?.activeTabIndex ?? 0}
-            tabSelected={(tab) =>
-              history.push(location.pathname, { activeTabIndex: tab.index })
-            }
-          />
-        )}
+        {renderContent}
         <div id="walkthrough-last-step" className="w-full"></div>
       </BannerWrapper>
     </>

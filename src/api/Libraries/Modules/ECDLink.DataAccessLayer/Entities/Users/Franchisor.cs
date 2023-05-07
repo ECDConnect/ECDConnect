@@ -15,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class Franchisor<TKey> : EntityBase<TKey>,
         IUserElevatedScoped, SiteAddressJoin<Guid?>,
-        ApplicationUserJoin, IUserType
+        ApplicationUserJoin, IUserType, ITrackableType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]

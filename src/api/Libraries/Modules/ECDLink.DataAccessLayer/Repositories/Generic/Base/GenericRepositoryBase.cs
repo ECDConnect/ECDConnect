@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Context;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
@@ -95,20 +96,29 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges();
 
             _domainEventService.NotifyCreate<T>(_userId, entity);
+
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                DoAudit(entity, "Insert");
+
             return entity;
         }
 
         public virtual T Update(T entity)
+
         {
             if (entity == null)
                 throw new ArgumentNullException("entity");
+
+            //T oneMoreCheck = GetById(entity.Id);
+            //T onemoreprecheck = entities.Find(entity.Id);
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             if (Exists(entity.Id))
             {
-                // TODO: Global change to Utc.
-                entity.UpdatedDate = DateTime.Now;
+                T beforeUpdate = Retrieve(entity.Id);
+
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
@@ -122,6 +132,20 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 
                 // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
+
+                //Populate Audit records
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                   if (DoAudit(entity, "Update", beforeUpdate))
+                    {
+                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
+                        entity.UpdatedDate = DateTime.Now;
+                    }
+                } else
+                {
+                    entity.UpdatedDate = DateTime.Now;
+                }
+
             }
             else
             {
@@ -131,7 +155,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges();
 
             return entity;
-        }
+        }       
 
         public virtual void Delete(Guid id)
         {
@@ -145,6 +169,78 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             context.SaveChanges(true);
             _domainEventService.NotifyUpdate<T>(_userId, entity);
 
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+            DoAudit(entity, "Delete");
+
+        }
+
+        public virtual bool DoAudit(T entity, string changeType = "Update", T beforeObj = null)
+        {
+            bool isValidChange = false;
+            GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
+            Type tA = typeof(T);
+            //Populate Audit records
+            switch (changeType)
+            {
+                case "Delete":
+                    auditInsertRepo.Insert(new IntegrationAudit()
+                    {
+                        ChangeType = changeType,
+                        Entity = tA.Name,
+                        Property = "IsActive",
+                        ValueAfter = "false",
+                        ValueBefore = "true",
+                        UserId = _userId,
+                        RelatedId = entity.Id.ToString()
+                    });
+                    isValidChange = true;
+                    break;
+                case "Insert":
+                    auditInsertRepo.Insert(new IntegrationAudit()
+                    {
+                        ChangeType = changeType,
+                        Entity = tA.Name,
+                        UserId = _userId,
+                        RelatedId = entity.Id.ToString()
+                    });
+                    isValidChange= true;
+                    break;
+                default:
+                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
+                    foreach (var prop in tA.GetProperties())
+                    {
+                        Type propType = prop.PropertyType;
+                        if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType) //ignore navigation types due to lazyloading
+                        {
+                            //Determine changes and convert all to string
+                            string beforeValue = entities.Entry(beforeObj).Property(prop.Name).OriginalValue != null ? entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString() :  "";
+                            string afterValue = prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
+
+                            if (beforeValue != afterValue)
+                            {
+                                changesList.Add(new IntegrationAudit()
+                                {
+                                    ChangeType = changeType,
+                                    Entity = tA.Name,
+                                    Property = prop.Name,
+                                    ValueBefore = beforeValue,
+                                    ValueAfter = afterValue,
+                                    UserId = _userId,
+                                    RelatedId = entity.Id.ToString()
+                                });
+                                isValidChange = true;
+                            }
+                        }
+                    }
+
+                    foreach (var auditItem in changesList)
+                    {
+                        auditInsertRepo.Insert(auditItem);
+                    }
+                    break;
+            }
+            return isValidChange;
         }
 
         public virtual bool Exists(Guid id)
@@ -155,6 +251,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             }
 
             return entities.Any(s => s.Id == id);
+        }
+
+        public virtual T Retrieve(Guid id)
+        {
+            if (id == default(Guid))
+            {
+                return null;
+            }
+
+            return entities.FirstOrDefault(s => s.Id == id);
         }
 
         public bool dbCreated()

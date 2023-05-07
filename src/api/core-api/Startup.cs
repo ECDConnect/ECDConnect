@@ -29,6 +29,7 @@ using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
+using ECDLink.SmartStart.Services;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -134,12 +135,14 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IncomeExpenseService>();
+            services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
+            services.AddTransient<IIntegrationService, IntegrationService>();
 
             ConfigureJobs(services);
             

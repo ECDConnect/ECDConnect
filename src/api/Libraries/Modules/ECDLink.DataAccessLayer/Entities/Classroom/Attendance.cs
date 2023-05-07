@@ -1,3 +1,4 @@
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -7,7 +8,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 {
     [Table(nameof(Attendance))]
     [EntityPermission(PermissionGroups.CLASSROOM)]
-    public class Attendance : ClassProgrammeJoin<Guid>, ApplicationUserJoin
+    public class Attendance : ClassProgrammeJoin<Guid>, ApplicationUserJoin, ITrackableType
     {
         public string ParentRecordId { get; set; }
 

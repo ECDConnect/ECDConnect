@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
@@ -14,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Caregiver
     {
     }
 
-    public class Caregiver<TKey> : EntityBase<TKey>, SiteAddressJoin<Guid?>, RelationJoin<Guid?>, EducationJoin<Guid?>, HealthCareWorkerJoin<Guid?>
+    public class Caregiver<TKey> : EntityBase<TKey>, SiteAddressJoin<Guid?>, RelationJoin<Guid?>, EducationJoin<Guid?>, HealthCareWorkerJoin<Guid?>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string IdNumber { get; set; }
