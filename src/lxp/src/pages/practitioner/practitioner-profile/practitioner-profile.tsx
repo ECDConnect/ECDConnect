@@ -196,7 +196,7 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: true,
         onActionClick: () => {
           dialog({
-            position: DialogPosition.Bottom,
+            position: DialogPosition.Middle,
             render: (onSubmit, onClose) => {
               return (
                 <ActionModal
