@@ -15,7 +15,6 @@ namespace ECDLink.SmartStart.Reports
     {
         protected AuthenticationDbContext _dbContext;
         protected IHolidayService<Holiday> _holidayService;
-        private readonly IGenericRepositoryFactory _repositoryFactory;
 
         public AttendanceReportBase(IHolidayService<Holiday> holidayService, AuthenticationDbContext dbContext)
         {
