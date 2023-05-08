@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -78,7 +79,7 @@ namespace ECDLink.SmartStart.Reports
             var classroomGroups = classroom.ClassroomGroups.ToList();
             var programmeIdList = classroomGroups.SelectMany(x => x.ClassProgrammes).Select(x => x.Id);
 
-            return base.GetAttendanceRecordsForPeriod(programmeIdList, userId, startMonth, endMonth);
+            return base.GetAttendanceRecordsForPeriod(programmeIdList, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
 
         private IEnumerable<MonthlyAttendanceReportModel> CreateReport(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance)
