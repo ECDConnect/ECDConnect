@@ -18,7 +18,6 @@ import {
 } from './steps';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
-import { DevelopmentalScreeningVisitSection } from './danger-signs-steps/developmental-screening-weeks';
 import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
 import {
   getIsMotherFirstVisitSelector,
@@ -30,6 +29,7 @@ import {
   idDocumentFirstQuestion,
   idDocumentSecondQuestion,
 } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
+import { dangerSignsSectionName } from './danger-signs-steps/danger-signs';
 
 interface FormProps {
   onBack: () => void;
@@ -106,9 +106,9 @@ export const Form = ({ onBack }: FormProps) => {
     activitiesTypes.nutrition
   );
 
-  const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
-    DevelopmentalScreeningVisitSection,
-    activitiesTypes.pregnancyCare
+  const isDangerSignsFollowUpStep = isFollowUp(
+    dangerSignsSectionName,
+    activitiesTypes.dangerSigns
   );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
@@ -184,7 +184,7 @@ export const Form = ({ onBack }: FormProps) => {
           isIDDocumentStep
         );
       case activitiesTypes.dangerSigns:
-        return dangerSignsSteps(isDevelopmentalScreeningWeeksFollowUp);
+        return dangerSignsSteps(isDangerSignsFollowUpStep);
       default:
         return followUpSteps(!!referralsForMother?.length);
     }
@@ -195,7 +195,7 @@ export const Form = ({ onBack }: FormProps) => {
     isDangerSignsFollowUpForMom,
     isDangerSignsFollowUpForBaby,
     isEqualOrAfter98andEqualOrBefore168Days,
-    isDevelopmentalScreeningWeeksFollowUp,
+    isDangerSignsFollowUpStep,
     referralsForMother?.length,
   ]);
 

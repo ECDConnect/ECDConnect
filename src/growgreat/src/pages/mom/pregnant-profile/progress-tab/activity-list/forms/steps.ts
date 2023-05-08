@@ -1,6 +1,6 @@
 import {
   ClinicVisitsStep,
-  DangerSignsFollowUpStep,
+  DangerSignsFollowUpStep as HealthcareDangerSignsFollowUpStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
   AntenatalCare,
@@ -19,7 +19,7 @@ import {
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
-import { DangerSignsStep } from './danger-signs-steps';
+import { DangerSignsStep, DangerSignsFollowUpStep } from './danger-signs-steps';
 import {
   NotesStep,
   ReferralsStep,
@@ -33,7 +33,7 @@ import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-f
 export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   AntenatalCare,
   ClinicVisitsStep,
-  ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
+  ...(isDangerSignsFollowUp ? [HealthcareDangerSignsFollowUpStep] : []),
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
 ];
@@ -67,9 +67,10 @@ export const getPregnancyCareSteps = (
   return [...defaultScreens, ...complementaryFeedingFlow];
 };
 
-export const dangerSignsSteps = (
-  isDevelopmentalScreeningWeeksFollowUp: boolean
-) => [DangerSignsStep];
+export const dangerSignsSteps = (isDangerSignsFollowUpStep: boolean) => [
+  ...(isDangerSignsFollowUpStep ? [DangerSignsFollowUpStep] : []),
+  DangerSignsStep,
+];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,
