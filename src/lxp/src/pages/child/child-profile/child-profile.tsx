@@ -257,26 +257,6 @@ export const ChildProfile: React.FC = () => {
       },
     });
 
-    if (allCompletedReports.length > 0) {
-      profileOptionsCopy.push({
-        key: 'progress',
-        title: 'Progress',
-        subTitle: 'See observations & reports',
-        buttonType: 'outlined',
-        buttonIcon: 'EyeIcon',
-        buttonText: 'View',
-        buttonTextColor: 'secondary',
-        buttonColor: 'secondaryAccent2',
-        showButton: true,
-        showDivider: true,
-        dividerType: 'dashed',
-        withPaddingY: true,
-        onButtonClick: () => {
-          viewChildProgressObservationReports();
-        },
-      });
-    }
-
     profileOptionsCopy.push({
       key: 'class',
       title: 'Class',

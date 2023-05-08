@@ -144,8 +144,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
 
-
-
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>

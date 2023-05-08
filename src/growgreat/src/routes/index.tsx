@@ -43,6 +43,7 @@ import { ChildContactAddress } from '@/pages/infant/infant-profile/contact-tab/e
 import { MultipleChildren } from '@/pages/infant/multiple-children';
 import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
 import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
+import { Community } from '@/pages/community/community';
 
 function PublicRoutes() {
   return (
@@ -256,6 +257,7 @@ function AuthRoutes() {
         component={EditPractitionerProfile}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
     </Switch>
   );
 }

@@ -32,6 +32,7 @@ const ROUTES = {
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
+  COMMUNITY: '/community',
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
