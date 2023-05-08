@@ -82,7 +82,7 @@ namespace ECDLink.SmartStart.Reports
                                                             && x.Year == dt.Year
                                                             && x.Attended == true);
 
-                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 
                                 } else attendance.Add(Tuple.Create(0, 0));
                             }

@@ -88,15 +88,15 @@ namespace ECDLink.SmartStart.Reports
 
             foreach (var item in monthlyAttendance)
             {
-                var totalAttendance = item.Value.Sum(x => x.Item1);
-                var actualAttendance = item.Value.Sum(x => x.Item2);
-                int reportPercentage = actualAttendance > 0 ? (int)((actualAttendance / (totalAttendance * 1.0)) * 100) : 0;
+                int totalAttendance = item.Value.Sum(x => x.Item1);
+                int actualAttendance = item.Value.Sum(x => x.Item2);
+                int reportPercentage = (actualAttendance > 0 ? (int)((actualAttendance / (totalAttendance * 1.0)) * 100) : 0);
                 report.Add(new MonthlyAttendanceReportModel
                 {
                     MonthOfYear = item.Key.Month,
                     Month = item.Key.ToString("MMMM"),
                     Year = item.Key.Year,
-                    PercentageAttendance = reportPercentage > 100 ? 100 : reportPercentage
+                    PercentageAttendance = reportPercentage > 100 ? 100 : (reportPercentage < 0 ? 0 : reportPercentage)
                 });
             }
 
