@@ -6,7 +6,7 @@ import { Button, LoadingSpinner } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { IntroScreen } from './activity-list/intro-screen';
-import { useLayoutEffect, useMemo, useRef } from 'react';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
@@ -14,11 +14,7 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import {
-  VisitDto,
-  captureAndDownloadComponent,
-  usePrevious,
-} from '@ecdlink/core';
+import { VisitDto, usePrevious } from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
 import { activitiesTypes } from './activity-list/activities-list';
@@ -35,6 +31,8 @@ export const ProgressTab = () => {
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const appDispatch = useAppDispatch();
+
+  const [isPrint, setIsPrint] = useState(false);
 
   const history = useHistory();
   const location = useLocation();
@@ -64,8 +62,6 @@ export const ProgressTab = () => {
     [infant?.caregiver?.firstName]
   );
 
-  const introScreenRef = useRef<HTMLDivElement>(null);
-
   const walkthroughData: FollowUpWalkthroughData = {
     progressBar: {
       message: `${infantName} need urgent support`,
@@ -94,9 +90,7 @@ export const ProgressTab = () => {
   };
 
   const handleCaptureClick = () => {
-    if (introScreenRef.current) {
-      captureAndDownloadComponent(introScreenRef.current, 'summary');
-    }
+    setIsPrint((isPrint) => true);
   };
 
   useLayoutEffect(() => {
@@ -148,7 +142,7 @@ export const ProgressTab = () => {
         walkthroughState?.isTourActive ? {} : { height: height - HEADER_HEIGHT }
       }
     >
-      <div ref={introScreenRef}>
+      <div>
         <IntroScreen
           infant={infant}
           walkthroughData={
@@ -157,6 +151,7 @@ export const ProgressTab = () => {
           headerText={`${
             !!caregiverName ? caregiverName + ' &' : ''
           } ${infantName}`}
+          isPrint={isPrint}
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">

@@ -167,8 +167,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         private Child AddChild([Service] IHttpContextAccessor contextAccessor, AddChildTokenModel child, ChildTokenWrapperModel tokenModel, Caregiver caregiver, IGenericRepository<Child, Guid> repoFactory)
         {
-
-            var insertingUser = contextAccessor.HttpContext.GetUser().FullName;
+            // There may not be a logged in user if open access is used
+            var insertingUsername = contextAccessor.HttpContext.GetUser()?.FullName ?? caregiver?.FullName;
 
             var childEntity = new Child
             {
@@ -180,7 +180,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 OtherHealthConditions = child.OtherHealthConditions,
                 WorkflowStatusId = child.WorkflowStatusId,
                 CaregiverId = caregiver.Id,
-                InsertedBy = !string.IsNullOrEmpty(insertingUser) ? insertingUser : "N/A"
+                InsertedBy = !string.IsNullOrEmpty(insertingUsername) ? insertingUsername : "N/A"
             };
 
             var updated = repoFactory.Update(childEntity);

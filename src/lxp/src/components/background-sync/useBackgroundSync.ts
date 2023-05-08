@@ -15,7 +15,7 @@ const useBackgroundSync = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const { resetAppStore, initStoreSetup } = useStoreSetup();
-  const minutesBetweenSync = 5;
+  const minutesBetweenSync = 30;
 
   const { sync, analytics, settings, notifications, ...rest } = useAppSelector(
     (state) => state

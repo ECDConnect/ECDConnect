@@ -118,7 +118,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          selectedClassroomGroups[0]?.classroomId,
+          classroomID!,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
@@ -143,10 +143,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     setAttendanceData(attendanceReport.reverse());
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
-
-  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
-    setSelectedClassroomGroups(value.map((x) => x.value));
-  };
 
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
@@ -190,8 +186,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          // todo: remove once needed.
-          false ||
+          // todo: remove 'false' once needed.
+          false &&
           (!hasClosedAttendanceSmartStartPointsMessage ??
             displaySmartStartMessage)
         }

@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -12,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
     {
 
     }
-    public class StatementsIncomeStatement<TKey> : EntityBase<TKey>
+    public class StatementsIncomeStatement<TKey> : EntityBase<TKey>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string Notes { get; set; }

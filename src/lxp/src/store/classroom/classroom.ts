@@ -79,7 +79,8 @@ const classroomsSlice = createSlice({
           if (
             state.classroomGroupLearners[i].userId === action.payload.userId &&
             state.classroomGroupLearners[i].classroomGroupId ===
-              action.payload.classroomGroupId
+              action.payload.classroomGroupId &&
+            state.classroomGroupLearners[i].id === action.payload.id
           )
             state.classroomGroupLearners[i] = action.payload;
         }
@@ -165,7 +166,9 @@ const classroomsSlice = createSlice({
       if (!state.classroomGroupLearners) return;
 
       const learnerIndex = state.classroomGroupLearners.findIndex(
-        (learner) => learner.userId === action.payload.userId
+        (learner) =>
+          learner.userId === action.payload.userId &&
+          learner.id === action.payload.id
       );
 
       if (learnerIndex < 0) return;

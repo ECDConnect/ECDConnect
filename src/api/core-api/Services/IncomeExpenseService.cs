@@ -35,7 +35,7 @@ namespace ECDLink.Core.Services
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = "c41d21b2-8908-47a9-94ef-bc6f4ccbe484"; // _contextAccessor.HttpContext.GetUser().Id;
             _submitStartDate = submitStartDate;
             _submitEndDate = submitEndDate;
 

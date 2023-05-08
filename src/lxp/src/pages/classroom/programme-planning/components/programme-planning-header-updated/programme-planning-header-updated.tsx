@@ -5,11 +5,18 @@ import {
   renderIcon,
   Dropdown,
 } from '@ecdlink/ui/';
-import { getDate, getISODay, getMonth, getYear } from 'date-fns';
+import {
+  addDays,
+  getDate,
+  getISODay,
+  getMonth,
+  getYear,
+  isSameDay,
+  subDays,
+} from 'date-fns';
 import { ProgrammePlanningHeaderProps } from './programme-planning-header-updated.types';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
-import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { monthsList } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
@@ -33,56 +40,32 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   function titleCase(string: string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
   }
-  const [programmeChooseDate, setProgrammeChooseDate] = useState(subHeaderText);
-  const day = getDate(selectedDate! || programmeChooseDate);
-  const weekNumber = getISODay(selectedDate! || programmeChooseDate);
+  const day = getDate(selectedDate!);
+  const weekNumber = getISODay(selectedDate!);
   const dayName = titleCase(String(Weekdays[weekNumber]));
-  const dailyProgramme =
-    programmeChooseDate &&
-    theme?.dailyProgrammes?.find((item) => {
-      return (
-        format(new Date(item?.dayDate), 'd MMM yyyy') ===
-        format(new Date(selectedDate! || programmeChooseDate), 'd MMM yyyy')
-      );
-    });
-  const [chooseDayIndex, setChooseDayIndex] = useState(dailyProgramme?.day);
-  const disableAddDay = dailyProgramme?.day === theme?.dailyProgrammes.length;
-  const disableSubDay = dailyProgramme?.day === 1;
+  const dailyProgramme = theme?.dailyProgrammes?.find((item) => {
+    return isSameDay(new Date(item?.dayDate), new Date(selectedDate!));
+  });
   const [month, setMonth] = useState<string | undefined>();
-  const currentMonth = getMonth(selectedDate || programmeChooseDate);
-  const currentYear = getYear(programmeChooseDate || new Date());
+  const currentMonth = getMonth(selectedDate!);
+  const currentYear = getYear(new Date());
   const monthDropdownLabel = monthsList[currentMonth]?.label;
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === theme?.name);
+  const isCurrentDay = isSameDay(selectedDate!, new Date());
 
-  useEffect(() => {
-    if (subHeaderText) {
-      setProgrammeChooseDate(subHeaderText);
-    }
-  }, [subHeaderText]);
+  const addDay = useCallback(() => {
+    setSelectedDate(addDays(selectedDate!, 1));
+  }, [selectedDate, setSelectedDate]);
 
-  const addDay = () => {
-    if (dailyProgramme?.day !== theme?.dailyProgrammes.length) {
-      const updatedIndex = chooseDayIndex + 1;
-      setChooseDayIndex(updatedIndex);
-      const newDate = theme?.dailyProgrammes?.find((item) => {
-        return Number(item?.day) === updatedIndex;
-      });
-      setProgrammeChooseDate(new Date(newDate?.dayDate!));
-      setSelectedDate(new Date(newDate?.dayDate!));
+  const subDay = useCallback(() => {
+    if (new Date(selectedDate!) > new Date()) {
+      setSelectedDate(subDays(selectedDate!, 1));
     }
-  };
+  }, [selectedDate, setSelectedDate]);
 
-  const subDay = () => {
-    if (dailyProgramme?.day !== 1) {
-      const updatedIndex = chooseDayIndex - 1;
-      setChooseDayIndex(updatedIndex);
-      const newDate = theme?.dailyProgrammes?.find((item) => {
-        return Number(item?.day) === updatedIndex;
-      });
-      setProgrammeChooseDate(new Date(newDate?.dayDate!));
-      setSelectedDate(new Date(newDate?.dayDate!));
-    }
+  const setDayCurrentDate = () => {
+    setSelectedDate(new Date());
   };
 
   return (
@@ -90,9 +73,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       {!weekSummary && (
         <div className="flex w-full items-center justify-between p-4">
           <div
-            className={`flex flex-row items-center justify-center ${
-              disableSubDay ? 'pointer-events-none opacity-70' : ''
-            }`}
+            className={`flex flex-row items-center justify-center`}
             onClick={subDay}
           >
             {renderIcon('ChevronLeftIcon', 'h-6 w-6 text-textMid')}
@@ -106,14 +87,16 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             textColor="white"
             fillType="filled"
             labelColor="white"
+            className="w-36"
           />
-          <div className="bg-primary flex h-8 w-8 items-center justify-center rounded-full">
+          <div
+            className="bg-primary flex h-8 w-8 items-center justify-center rounded-full"
+            onClick={setDayCurrentDate}
+          >
             {renderIcon('CalendarIcon', 'h-5 w-5 text-white')}
           </div>
           <div
-            className={`flex flex-row items-center justify-center ${
-              disableAddDay ? 'pointer-events-none opacity-70' : ''
-            }`}
+            className={`flex flex-row items-center justify-center `}
             onClick={addDay}
           >
             {renderIcon('ChevronRightIcon', 'h-6 w-6 text-textMid')}
@@ -123,21 +106,21 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
       <div className={classNames(className, 'flex w-full gap-2 px-4')}>
         <div className="flex w-1/4 p-2">
           <Card
-            className={
-              'bg-primaryAccent2 flex w-full flex-col items-center justify-center rounded-xl p-2'
-            }
+            className={`${
+              isCurrentDay ? 'bg-secondaryAccent2' : 'bg-primaryAccent2'
+            } flex w-full flex-col items-center justify-center rounded-xl p-2`}
             borderRaduis={'lg'}
             shadowSize={'lg'}
           >
             <Typography
               type="body"
               text={dayName}
-              color="primary"
+              color={isCurrentDay ? `secondary` : `primary`}
               weight={`bold`}
             />
             <Typography
               type="small"
-              color="primary"
+              color={isCurrentDay ? `secondary` : `primary`}
               text={String(day)}
               className="mr-1"
               weight={`bold`}
@@ -148,9 +131,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
           {showChips && (
             <Card className={`flex w-full items-center rounded-xl p-2`}>
               <div
-                className={`flex w-full items-center rounded-xl p-2`}
+                className={`flex w-full items-center rounded-xl p-2 ${
+                  !chosedTheme ? 'bg-uiBg' : ''
+                }`}
                 style={{
-                  backgroundColor: chosedTheme?.color || 'bg-primaryAccent2',
+                  backgroundColor: chosedTheme?.color || 'bg-uiBg',
                 }}
               >
                 {chosedTheme && (
@@ -164,7 +149,11 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
                   <Typography
                     type="small"
                     color={chosedTheme ? 'white' : 'textDark'}
-                    text={`${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`}
+                    text={
+                      themeName
+                        ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
+                        : `No theme`
+                    }
                     className={'p-4'}
                     weight={`bold`}
                   />

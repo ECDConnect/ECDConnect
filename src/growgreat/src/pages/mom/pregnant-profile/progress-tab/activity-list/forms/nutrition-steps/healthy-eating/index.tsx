@@ -58,11 +58,11 @@ export const HealthyEatingStep = ({
     } else {
       return (
         <div>
-          <ResourcesStep setIsTip={setIsTip} />
+          <ResourcesStep setIsTip={setIsTip} name={name} />
         </div>
       );
     }
-  }, [isFirstVisit, setIsTip, showVideo]);
+  }, [isFirstVisit, name, setIsTip, showVideo]);
 
   const renderHealthyFoodAlerts = useMemo(() => {
     if (nutritionAnswers.length <= 1) {
@@ -187,25 +187,51 @@ export const HealthyEatingStep = ({
   const renderDietarySentence = useMemo(() => {
     if (nutritionAnswers.length > 1 && nutritionAnswers.length < 4) {
       return (
-        <Typography
-          color="textDark"
-          text="Not enough dietary diversity."
-          type={'body'}
-          weight="semibold"
-          className={'p-4'}
-        />
+        <>
+          <Typography
+            color="textDark"
+            text="Not enough dietary diversity."
+            type={'body'}
+            weight="semibold"
+            className={'p-4'}
+          />
+          <ul className={'text-uiMidDark mb-4 list-disc pl-8'}>
+            <li>
+              <Typography
+                type={'help'}
+                hasMarkup
+                text={`Remind ${name} to try to eat all the food groups`}
+                className={'text-sm font-normal'}
+                color={'textDark'}
+              />
+            </li>
+          </ul>
+        </>
       );
     }
 
     if (nutritionAnswers.length > 3 && nutritionAnswers.length < 6) {
       return (
-        <Typography
-          color="textDark"
-          text="Dietary diversity can be improved."
-          weight="semibold"
-          type={'body'}
-          className={'p-4'}
-        />
+        <>
+          <Typography
+            color="textDark"
+            text="Dietary diversity can be improved."
+            weight="bold"
+            type={'body'}
+            className={'p-4'}
+          />
+          <ul className={'text-uiMidDark mb-4 list-disc pl-8'}>
+            <li>
+              <Typography
+                type={'help'}
+                hasMarkup
+                text={`Remind ${name} to try to eat all the food groups`}
+                className={'text-sm font-normal'}
+                color={'textDark'}
+              />
+            </li>
+          </ul>
+        </>
       );
     }
 

@@ -34,12 +34,13 @@ import { getFirstActivityByType } from '@utils/classroom/programme-planning/acti
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';
 import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import { useHolidays } from '@hooks/useHolidays';
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
 import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -70,11 +71,18 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+  const { createProgramme } = useProgrammePlanning();
+  const [selectedActitivy, setSelectedActivity] = useState(0);
+  const [routineItemSet, setRoutineItemSet] =
+    useState<ProgrammeRoutineItemDto>();
+  const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
 
   useEffect(() => {
-    setIsCurrentDayHoliday(isHoliday(new Date()));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (selectedDate) {
+      setIsCurrentDayHoliday(isHoliday(selectedDate));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [isHoliday, selectedDate]);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -168,7 +176,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     if (!currentDailyProgramme) return;
 
     const currentDayCopy = { ...currentDailyProgramme };
-
     currentDayCopy.messageBoardText = message;
 
     saveCurrentDay(currentDayCopy);
@@ -211,25 +218,35 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     openActivityItem(routineItem);
   };
 
-  const onActivitySelected = (
+  const onActivitySelected = async (
     routineItem: ProgrammeRoutineItemDto,
     activityId?: number
   ) => {
-    if (!currentDailyProgramme) return;
-
-    const currentDayCopy = { ...currentDailyProgramme };
-
-    switch (routineItem.name) {
-      case DailyRoutineItemType.largeGroup:
-        currentDayCopy.largeGroupActivityId = activityId;
-        break;
-      case DailyRoutineItemType.smallGroup:
-        currentDayCopy.smallGroupActivityId = activityId;
-        break;
+    if (!currentDailyProgramme) {
+      await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
     }
-
-    saveCurrentDay(currentDayCopy);
   };
+
+  useEffect(() => {
+    if (currentDailyProgramme && routineItemSet && triggerSaveActivity) {
+      const currentDayCopy = { ...currentDailyProgramme! };
+      if (routineItemSet) {
+        switch (routineItemSet.name) {
+          case DailyRoutineItemType.largeGroup:
+            currentDayCopy.largeGroupActivityId = selectedActitivy;
+            break;
+          case DailyRoutineItemType.smallGroup:
+            currentDayCopy.smallGroupActivityId = selectedActitivy;
+            break;
+        }
+      }
+
+      saveCurrentDay(currentDayCopy);
+      setTriggerSaveActivity(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDailyProgramme, routineItemSet]);
+
   const onStoryAndActivitySelected = (
     storyId?: number,
     activityId?: number
@@ -267,6 +284,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             routineItem={routineItem}
             onSave={(activityId?: number) => {
               onActivitySelected(routineItem, activityId);
+              setRoutineItemSet(routineItem);
+              setSelectedActivity(activityId!);
+              setTriggerSaveActivity(true);
               onSubmit();
             }}
             onClose={onClose}
@@ -320,34 +340,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         selectedDate={selectedDate}
       />
 
-      <div className={'items-centers flex w-full flex-row p-4'}>
-        <Button
-          className={'w-1/2'}
-          size="small"
-          type={'outlined'}
-          color={'primary'}
-          onClick={handleViewProgrammeSummary}
-        >
-          {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography
-            type={'small'}
-            color={'primary'}
-            text={'Programme summary'}
-          />
-        </Button>
-        <Button
-          id="gtm-add-programme"
-          className={'ml-2 w-1/2'}
-          size="small"
-          type={'filled'}
-          color={'primary'}
-          onClick={handleAddProgramme}
-        >
-          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'Add new theme'} />
-        </Button>
-      </div>
-
       {!isCurrentDayEmpty &&
         routineContainsIncompleteDays &&
         !isCurrentDayHoliday && (
@@ -359,32 +351,36 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           />
         )}
 
-      {isCurrentDayEmpty && !isCurrentDayHoliday && (
-        <Alert
-          className={'mx-4'}
-          type={'warning'}
-          title={'You don’t have a plan for today'}
-          message={'Add activities to your daily routine!'}
-        />
-      )}
-
-      {currentDailyProgramme &&
+      {(isCurrentDayEmpty || currentDailyProgramme) &&
         (isCurrentDayHoliday ? (
-          <PublicHolidayIndicator
-            date={new Date(currentDailyProgramme.dayDate)}
-          />
+          <PublicHolidayIndicator date={new Date(selectedDate!)} />
         ) : (
           <div className="mt-4">
-            {programmeRoutine?.routineItems.map((routineItem) => (
-              <ProgrammePlanningRoutineListItemUpdated
-                key={`id_${routineItem.id}`}
-                routineItem={routineItem}
-                day={currentDailyProgramme}
-                onClick={() => onProgrammeClick(routineItem)}
-              />
-            ))}
+            {programmeRoutine?.routineItems.map((routineItem) => {
+              if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
+                return (
+                  <ProgrammePlanningRoutineListItemUpdated
+                    key={`id_${routineItem.id}`}
+                    routineItem={routineItem}
+                    day={currentDailyProgramme}
+                    onClick={() => onProgrammeClick(routineItem)}
+                  />
+                );
+              }
+            })}
           </div>
         ))}
+      <Button
+        id="gtm-add-programme"
+        className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+        size="small"
+        type={'filled'}
+        color={'primary'}
+        onClick={handleAddProgramme}
+      >
+        {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+        <Typography type={'small'} color={'white'} text={'Add new theme'} />
+      </Button>
     </div>
   );
 };

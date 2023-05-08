@@ -171,41 +171,37 @@ export const PregnantRegisterForm: React.FC = () => {
       motherThunkActions.addMother({ mother: motherInputModel })
     ).unwrap();
 
-    const fileName = 'maternalcaserecord.png';
-    const workflowStatusId = getWorkflowStatusIdByEnum(
-      WorkflowStatusEnum.DocumentPendingVerification
-    );
-    const documentTypeId = getDocumentTypeIdByEnum(
-      FileTypeEnum.MaternalCaseRecord
-    );
+    if (!pregnantMaternalCaseRecord?.notHaveAMaternalRecord) {
+      const fileName = 'maternalcaserecord.png';
+      const workflowStatusId = getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentPendingVerification
+      );
+      const documentTypeId = getDocumentTypeIdByEnum(
+        FileTypeEnum.MaternalCaseRecord
+      );
 
-    const documentInputModel: Document = {
-      id: newGuid(),
-      userId: motherUserId,
-      createdUserId: user?.id ?? '',
-      workflowStatusId: workflowStatusId ?? '',
-      documentTypeId: documentTypeId ?? '',
-      name: fileName,
-      fileName: fileName,
-      file: pregnantMaternalCaseRecord?.maternalCaseRecord,
-      fileType: FileTypeEnum.MaternalCaseRecord,
-    };
-    appDispatch(documentActions.createDocument(documentInputModel));
-    appDispatch(
-      documentThunkActions.createDocument(documentInputModel)
-    ).unwrap();
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: motherUserId,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: workflowStatusId ?? '',
+        documentTypeId: documentTypeId ?? '',
+        name: fileName,
+        fileName: fileName,
+        file: pregnantMaternalCaseRecord?.maternalCaseRecord,
+        fileType: FileTypeEnum.MaternalCaseRecord,
+      };
+      appDispatch(documentActions.createDocument(documentInputModel));
+      appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
+    }
   }, [
-    address?.address,
-    address?.addressLine1,
-    address?.id,
-    contactInformation?.cellphone,
-    contactInformation?.whatsapp,
-    details?.name,
-    details?.surname,
-    details?.age,
+    address,
+    contactInformation,
+    details,
     user?.id,
-    pregnantMaternalCaseRecord?.deliveryDate,
-    pregnantMaternalCaseRecord?.maternalCaseRecord,
+    pregnantMaternalCaseRecord,
     location?.state?.linkedInfantId,
     relations,
     appDispatch,

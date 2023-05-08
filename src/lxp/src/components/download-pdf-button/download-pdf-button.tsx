@@ -160,7 +160,6 @@ const GeneratePdfReportButton = ({
           body: data,
           columnStyles: { 0: { minCellHeight: 20 } },
           rowPageBreak: 'avoid', // avoid breaking rows into multiple sections
-
         });
         doc.setFillColor(200, 200, 200); // set grey background color
         doc.rect(
@@ -227,9 +226,9 @@ const GeneratePdfReportButton = ({
 
     if (tableData.length === 1) {
       doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30);
-        doc.rect(30, (doc as any).lastAutoTable.finalY + 25, 65, 10);
-        doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
-        doc.rect(120, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+      doc.rect(30, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+      doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
+      doc.rect(120, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
     //export pdf report
     doc.save(outputName);

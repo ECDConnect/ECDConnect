@@ -26,7 +26,10 @@ import ProgrammeDashboard from '../programme-planning/programme-dashboard/progra
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
@@ -45,6 +48,9 @@ export const ClassDashboard: React.FC = () => {
     useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
+  );
+  const [programmeStartDate, setProgrammeStartDate] = useState(
+    state?.programmeStartDate
   );
   const [showAttendance, setShowAttendance] = useState(true);
   const appDispatch = useAppDispatch();
@@ -116,7 +122,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -148,7 +154,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -162,6 +168,7 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
+    setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
   };
@@ -190,9 +197,12 @@ export const ClassDashboard: React.FC = () => {
   }, [attendanceTutorialComplete, previousTabIndex]);
 
   const updatePractitionerProgress = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: practitioner?.userId,
+        progress: 3.0,
+      })
+    );
   };
 
   const completeTutorial = () => {
@@ -284,12 +294,11 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial && attendanceTutorialComplete) {
-      // if (showAttendanceTutorial && attendanceTutorialComplete) {
-
+    if (showAttendanceTutorial && !attendanceTutorialComplete) {
       handleAttendanceTutorial();
     }
-  }, [showAttendanceTutorial]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendanceTutorialComplete, showAttendanceTutorial]);
 
   return (
     <>
@@ -328,6 +337,7 @@ export const ClassDashboard: React.FC = () => {
           <AttendanceTutorial
             onComplete={completeTutorial}
             onClose={() => closeAttendanceTutorial()}
+            updatePractitionerProgress={updatePractitionerProgress}
           />
         </div>
       </Dialog>
