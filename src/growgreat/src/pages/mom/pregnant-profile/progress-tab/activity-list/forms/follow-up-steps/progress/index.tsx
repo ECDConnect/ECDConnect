@@ -28,9 +28,6 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     'visits',
     VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
   );
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForMotherSelector
-  );
   const currentVisit = useSelector(getMotherCurrentVisitSelector);
   const previousCurrentVisit = usePrevious(currentVisit) as
     | VisitDto

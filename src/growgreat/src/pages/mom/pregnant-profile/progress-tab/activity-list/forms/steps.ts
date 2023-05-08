@@ -46,7 +46,9 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
 ];
 
 export const getPregnancyCareSteps = (
-  isEqualOrAfter98andEqualOrBefore168Days: boolean
+  isEqualOrAfter98andEqualOrBefore168Days: boolean,
+  isAlcoholUseStep: boolean,
+  isIDDocumentStep: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthResultStep,
@@ -56,9 +58,9 @@ export const getPregnancyCareSteps = (
   ];
 
   const complementaryFeedingFlow = [
-    AlcoholUseStep,
+    ...(isAlcoholUseStep ? [AlcoholUseStep] : []),
     HivCareAndMedicationStep,
-    IdDocumentStep,
+    ...(isIDDocumentStep ? [IdDocumentStep] : []),
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [InfantCareStep] : []),
   ];
 

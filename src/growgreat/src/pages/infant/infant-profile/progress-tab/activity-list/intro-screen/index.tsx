@@ -1,6 +1,6 @@
 import { Header } from '../../../components';
 import { InfantDto } from '@ecdlink/core';
-import { useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
@@ -41,11 +41,6 @@ export const IntroScreen = ({
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-
-  // useEffect(() => {
-  //   if (isPrint) {
-  //   }
-  // }, [isPrint]);
 
   return (
     <>
