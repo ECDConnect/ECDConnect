@@ -421,10 +421,15 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
               StoppedAttendance: x.stoppedAttendance,
               IsActive: Boolean(x.isActive),
             };
-
-            return await new ClassroomGroupLearnerService(
-              userAuth?.auth_token
-            ).updateLearner(x.id && x.id.length > 0 ? x.id : newGuid(), input);
+            if (x.id && x.id.length > 0) {
+              return await new ClassroomGroupLearnerService(
+                userAuth?.auth_token
+              ).updateLearner(x.id, input);
+            } else {
+              return !!(await new ClassroomGroupLearnerService(
+                userAuth?.auth_token
+              ).createLearner(input));
+            }
           });
       }
       return Promise.all(promises);

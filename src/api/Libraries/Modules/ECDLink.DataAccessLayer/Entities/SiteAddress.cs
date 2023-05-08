@@ -26,6 +26,10 @@ namespace ECDLink.DataAccessLayer.Entities
         public string PostalCode { get; set; }
 
         public string Ward { get; set; }
+        public string Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Municipality { get; set; }
+        public string Area { get; set; }
 
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }

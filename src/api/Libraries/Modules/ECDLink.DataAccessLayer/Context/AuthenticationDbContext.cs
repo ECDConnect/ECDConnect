@@ -7,7 +7,7 @@ using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -100,7 +100,9 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<JobNotification> JobNotifications { get; set; }
 
         // Integration
-        public DbSet<IntegrationMapping> IntegrationMappings { get; set; }
+        public DbSet<IntegrationEntityMapping> IntegrationEntityMappings { get; set; }
+        public DbSet<IntegrationColumnMapping> IntegrationColumnMappings { get; set; }
+        public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
 
 
 
@@ -197,7 +199,7 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<Learner>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.UserId });
+                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
             });
 
             builder.Entity<ChildProgressReport>(x =>

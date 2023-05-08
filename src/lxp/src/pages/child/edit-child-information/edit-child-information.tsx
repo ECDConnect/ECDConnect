@@ -540,10 +540,9 @@ export const EditChildInformation: React.FC = () => {
     } else {
       //this child does not belong to any classroomgroup
       const newLearnerModel: LearnerDto = {
-        id: newGuid(),
         classroomGroupId: newClassroomGroupId,
         userId: currentChild?.userId ?? '',
-        attendanceReasonId: '',
+        attendanceReasonId: undefined,
         otherAttendanceReason: '',
         startedAttendance: new Date().toISOString(),
         stoppedAttendance: null,
@@ -791,7 +790,7 @@ export const EditChildInformation: React.FC = () => {
         stretch={true}
         borderRadius="normal"
         visible={editFieldVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <div className={'p-4'}>
           <div className={styles.labelContainer}>

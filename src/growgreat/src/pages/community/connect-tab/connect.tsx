@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useEffect, useMemo } from 'react';
 import { communitySelectors, communityThunkActions } from '@/store/community';
 import { useAppDispatch } from '@/store';
-import { Divider, RoundIcon, Typography, renderIcon } from '@ecdlink/ui';
+import { Divider, Typography } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import OpenLink from '@/assets/openLink.svg';
 import OpenBook from '@/assets/openBook.svg';
@@ -74,7 +74,7 @@ export const Connect: React.FC = () => {
     );
     sectionItems?.reverse();
     return { sectionItems };
-  }, [connectSections, connectSectionItems]);
+  }, [connectSections, connectSectionItems, getChildren]);
 
   const onLinkClicked = (link: string) => {
     window.open(link, '_blank');
@@ -110,21 +110,26 @@ export const Connect: React.FC = () => {
           />
 
           {section.children?.map((item) => (
-            <div className="bg-uiBg mb-2 flex items-center gap-1 rounded-2xl p-4">
+            <div
+              className="bg-uiBg mb-2 flex items-center gap-1 rounded-2xl p-4"
+              key={item?.id}
+            >
               <table className="border border-gray-100" width={`100%`}>
-                <tr>
-                  <td width={`90%`}>{item?.buttonText}</td>
-                  <td width={`10%`}>
-                    <a
-                      href={item?.link || ''}
-                      onClick={() => {
-                        onLinkClicked(item?.link || '');
-                      }}
-                    >
-                      <img className={''} src={OpenLink} alt="" />
-                    </a>
-                  </td>
-                </tr>
+                <tbody>
+                  <tr>
+                    <td width={`90%`}>{item?.buttonText}</td>
+                    <td width={`10%`}>
+                      <a
+                        href={item?.link || ''}
+                        onClick={() => {
+                          onLinkClicked(item?.link || '');
+                        }}
+                      >
+                        <img className={''} src={OpenLink} alt="" />
+                      </a>
+                    </td>
+                  </tr>
+                </tbody>
               </table>
             </div>
           ))}

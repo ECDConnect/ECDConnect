@@ -78,9 +78,11 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
 
   useEffect(() => {
-    setIsCurrentDayHoliday(isHoliday(new Date()));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (selectedDate) {
+      setIsCurrentDayHoliday(isHoliday(selectedDate));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [isHoliday, selectedDate]);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -338,34 +340,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         selectedDate={selectedDate}
       />
 
-      <div className={'items-centers flex w-full flex-row p-4'}>
-        <Button
-          className={'w-1/2'}
-          size="small"
-          type={'outlined'}
-          color={'primary'}
-          onClick={handleViewProgrammeSummary}
-        >
-          {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography
-            type={'small'}
-            color={'primary'}
-            text={'Programme summary'}
-          />
-        </Button>
-        <Button
-          id="gtm-add-programme"
-          className={'ml-2 w-1/2'}
-          size="small"
-          type={'filled'}
-          color={'primary'}
-          onClick={handleAddProgramme}
-        >
-          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'Add new theme'} />
-        </Button>
-      </div>
-
       {!isCurrentDayEmpty &&
         routineContainsIncompleteDays &&
         !isCurrentDayHoliday && (
@@ -377,11 +351,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           />
         )}
 
-      {currentDailyProgramme &&
+      {(isCurrentDayEmpty || currentDailyProgramme) &&
         (isCurrentDayHoliday ? (
-          <PublicHolidayIndicator
-            date={new Date(currentDailyProgramme.dayDate)}
-          />
+          <PublicHolidayIndicator date={new Date(selectedDate!)} />
         ) : (
           <div className="mt-4">
             {programmeRoutine?.routineItems.map((routineItem) => {
@@ -398,23 +370,17 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             })}
           </div>
         ))}
-
-      {isCurrentDayEmpty && !isCurrentDayHoliday && (
-        <div className="mt-4">
-          {programmeRoutine?.routineItems.map((routineItem) => {
-            if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
-              return (
-                <ProgrammePlanningRoutineListItemUpdated
-                  key={`id_${routineItem.id}`}
-                  routineItem={routineItem}
-                  day={currentDailyProgramme}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              );
-            }
-          })}
-        </div>
-      )}
+      <Button
+        id="gtm-add-programme"
+        className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+        size="small"
+        type={'filled'}
+        color={'primary'}
+        onClick={handleAddProgramme}
+      >
+        {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+        <Typography type={'small'} color={'white'} text={'Add new theme'} />
+      </Button>
     </div>
   );
 };

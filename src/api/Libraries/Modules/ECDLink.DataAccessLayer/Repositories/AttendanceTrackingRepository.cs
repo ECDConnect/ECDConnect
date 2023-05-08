@@ -80,7 +80,6 @@ namespace ECDLink.DataAccessLayer.Repositories
 
                 if (attendance.Any())
                 {
-
                     foreach (var att in attendance)
                     {
                         if (programmeIds.Contains(att.ClassroomProgrammeId.ToString()))

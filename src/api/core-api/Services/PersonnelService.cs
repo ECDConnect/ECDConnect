@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 {
