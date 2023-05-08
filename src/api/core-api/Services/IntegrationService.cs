@@ -44,7 +44,9 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
+        private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
+        private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
         private  AuthenticationDbContext _dbContext;
         private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
@@ -100,6 +102,8 @@ namespace ECDLink.Core.Services
 
             //Generic static repos
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
             _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
             _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
@@ -138,6 +142,23 @@ namespace ECDLink.Core.Services
             }
         }
 
+        private async Task<List<IntegrationAudit>> GetAudits(DateTime startTime, string entityType = null)
+        {
+            try
+            {
+                var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= startTime.AddMinutes(-10)).ToList(); //overlaps with 10 minutes of changes
+                if (entityType != null)
+                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
+
+                return audits;
+            }
+            catch (Exception e)
+            {
+                //TODO: LOG ERROR AND HANDLE          
+                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
         private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
         {
             try
@@ -159,12 +180,10 @@ namespace ECDLink.Core.Services
         {
             try
             {
-
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
                 if (entityType != null)
-                    return mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
                 else
-                    return mapperRepo.GetAll().ToList();
+                    return _columnmapperRepo.GetAll().ToList();
             }
             catch (Exception e)
             {
@@ -519,7 +538,12 @@ namespace ECDLink.Core.Services
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
+                        List<IntegrationAudit> audits = await this.GetAudits(DateTime.Now.AddDays(-1)); //get date from last service scheduler run or take last 24 hours
+                        foreach (var audit in audits)
+                        {
+                            //update child, franchisee
 
+                        }
                         //TODO: API Data pushes from SS Audit tables
                         returnOK = true;
                     }
