@@ -65,7 +65,7 @@ export const ClassDashboard: React.FC = () => {
       showAttendance,
     [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
   );
-  console.log({ state });
+
   const backToDashboard = () => {
     history.push('/');
   };

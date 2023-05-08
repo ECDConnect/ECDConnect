@@ -23,29 +23,18 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
   const { isOnline } = useOnlineStatus();
   const dialog = useDialog();
 
-  const programmes = useSelector(programmeSelectors.getProgrammes);
   const [selectedDate, setSelectedDate] = useState(
     programmeStartDate || new Date()
   );
-  console.log({ selectedDate });
+
   const currentProgramme = useSelector(
     programmeSelectors.getProgrammeByDate(new Date(selectedDate))
   );
   const currentDailyProgramme = currentProgramme?.dailyProgrammes.find(
-    (dailyRoutine) => isSameDay(new Date(dailyRoutine.dayDate), selectedDate)
+    (dailyRoutine) => isSameDay(new Date(dailyRoutine?.dayDate), selectedDate)
   );
-  console.log(
-    isSameDay(
-      new Date(currentProgramme?.dailyProgrammes?.[11].dayDate!),
-      selectedDate
-    )
-  );
-  console.log(new Date(currentProgramme?.dailyProgrammes?.[11].dayDate!));
-  console.log({ currentDailyProgramme });
-  console.log({ programmes });
-  console.log({ programmeStartDate });
   const holiday = useHolidays();
-  console.log(holiday?.isHoliday(selectedDate));
+  const isHoliday = holiday?.isHoliday(selectedDate);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -70,6 +59,7 @@ export const ProgrammeDashboard: React.FC<ProgrammeDashboardProps> = ({
       currentDailyProgramme={currentDailyProgramme}
       setSelectedDate={setSelectedDate}
       selectedDate={selectedDate}
+      isHoliday={isHoliday}
     />
   );
 };
