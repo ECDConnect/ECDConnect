@@ -30,6 +30,7 @@ import {
   idDocumentSecondQuestion,
 } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
 import { dangerSignsSectionName } from './danger-signs-steps/danger-signs';
+import { maternalDistressVisitSection } from './pregnancy-care-steps/maternal-distress/result';
 
 interface FormProps {
   onBack: () => void;
@@ -96,6 +97,11 @@ export const Form = ({ onBack }: FormProps) => {
 
   const isAlcoholUseStep =
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
+
+  const isMaternalDistressFollowUp = isFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.pregnancyCare
+  );
 
   const isDangerSignsFollowUpForMom = isFollowUp(
     dangerSignsVisitSection,
@@ -181,7 +187,8 @@ export const Form = ({ onBack }: FormProps) => {
         return getPregnancyCareSteps(
           isEqualOrAfter98andEqualOrBefore168Days,
           isAlcoholUseStep,
-          isIDDocumentStep
+          isIDDocumentStep,
+          isMaternalDistressFollowUp
         );
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDangerSignsFollowUpStep);
@@ -189,6 +196,7 @@ export const Form = ({ onBack }: FormProps) => {
         return followUpSteps(!!referralsForMother?.length);
     }
   }, [
+    isMaternalDistressFollowUp,
     isIDDocumentStep,
     isAlcoholUseStep,
     activityName,

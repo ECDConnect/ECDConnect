@@ -1,15 +1,15 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, renderIcon } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
-import Pregnant from '@/assets/pregnant.svg';
 import { useLayoutEffect, useMemo } from 'react';
 import { ReactComponent as PollyTime } from '@/assets/pollyTime.svg';
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
-import { DynamicFormProps } from '../../../dynamic-form';
-import { activitiesTypes } from '../../../../activities-list';
-import { dangerSignsSectionName } from '..';
+import { DynamicFormProps } from '../../../../dynamic-form';
+import { activitiesTypes } from '../../../../../activities-list';
+import Pregnant from '@/assets/pregnant.svg';
+import { maternalDistressVisitSection } from '..';
 
-export const DangerSignsFollowUpStep = ({
+export const MaternalDistressFollowUpStep = ({
   mother,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -25,7 +25,7 @@ export const DangerSignsFollowUpStep = ({
   const followUp = useMemo(() => {
     const followUp = previousVisit?.visitDataStatus?.find(
       (item) =>
-        item?.section === dangerSignsSectionName &&
+        item?.section === maternalDistressVisitSection &&
         item.visitData?.visitName === activitiesTypes.dangerSigns
     )?.comment;
 
@@ -49,7 +49,7 @@ export const DangerSignsFollowUpStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title={dangerSignsSectionName}
+        title="Maternal distress"
         subTitle="Follow up"
       />
       <Alert
@@ -59,6 +59,16 @@ export const DangerSignsFollowUpStep = ({
         titleColor="textDark"
         list={followUp.list}
         customIcon={<PollyTime className="w-16" />}
+      />
+      <Alert
+        className="mx-4"
+        type="warning"
+        title={`Follow up and find out if ${name} got support from the clinic, their friends, or family.`}
+        customIcon={
+          <div className="rounded-full">
+            {renderIcon('ExclamationCircleIcon', 'text-alertMain w-10 h-10')}
+          </div>
+        }
       />
     </>
   );
