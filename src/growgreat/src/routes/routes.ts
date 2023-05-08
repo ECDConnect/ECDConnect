@@ -21,6 +21,7 @@ const ROUTES = {
     }),
   }),
   TRAINING: '/training',
+  COMMUNITY: '/community',
   DASHBOARD: '/dashboard',
   CLIENTS: addPrefix('/clients', {
     ROOT: '/',
