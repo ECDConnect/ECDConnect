@@ -152,67 +152,58 @@ export const ChildCompletedObservationReports: React.FC = () => {
           type={'info'}
           title={`Don't worry if ${currentChildUser?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
         /> */}
-        {!childProgressReports ||
-          (childProgressReports.length === 0 && (
-            <div
-              className={
-                'border-uiLight mt-4 flex flex-col items-stretch border-b'
-              }
-            >
-              <div className="grid grid-cols-1 justify-center gap-4">
-                <div className="flex justify-center">
-                  <img
-                    width={'30%'}
-                    src={NoProgressEmoticon}
-                    alt="No progress reports"
-                  />
-                </div>
-                <div className="flex justify-center">
-                  <div className="flex w-8/12 justify-center">
-                    <Typography
-                      type="h3"
-                      color="textDark"
-                      text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
-                      className={'text-center'}
-                    />
-                  </div>
-                </div>
-                <div className="flex justify-center">
+        {(!childProgressReports || childProgressReports.length === 0) && (
+          <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
+            <div className="grid grid-cols-1 justify-center gap-4">
+              <div className="flex justify-center">
+                <img
+                  width={'30%'}
+                  src={NoProgressEmoticon}
+                  alt="No progress reports"
+                />
+              </div>
+              <div className="flex justify-center">
+                <div className="flex w-8/12 justify-center">
                   <Typography
-                    type="body"
-                    color="textMid"
-                    text={'Tap the button below to start'}
-                    className={'mb-4'}
+                    type="h3"
+                    color="textDark"
+                    text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
+                    className={'text-center'}
                   />
                 </div>
               </div>
-              <Button
-                onClick={startTrackingProgress}
-                disabled={false}
-                className="w-full"
-                size="small"
-                color="primary"
-                type="filled"
-              >
-                {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
+              <div className="flex justify-center">
                 <Typography
-                  type="h6"
-                  className="ml-2"
-                  text="Start tracking progress"
-                  color="white"
+                  type="body"
+                  color="textMid"
+                  text={'Tap the button below to start'}
+                  className={'mb-4'}
                 />
-              </Button>
+              </div>
             </div>
-          ))}
+            <Button
+              onClick={startTrackingProgress}
+              disabled={false}
+              className="w-full"
+              size="small"
+              color="primary"
+              type="filled"
+            >
+              {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
+              <Typography
+                type="h6"
+                className="ml-2"
+                text="Start tracking progress"
+                color="white"
+              />
+            </Button>
+          </div>
+        )}
         {childProgressReports && childProgressReports.length > 0 && (
-          <div
-            className={
-              'border-uiLight mt-4 flex flex-col items-stretch border-b'
-            }
-          >
+          <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
             <div
               className={
-                'border-uiLight flex flex-row items-center justify-between border-b pl-4'
+                'border-uiLight flex flex-row items-center justify-between pl-4'
               }
             >
               <Typography type={'body'} className={'w-1/2'} text={''} />

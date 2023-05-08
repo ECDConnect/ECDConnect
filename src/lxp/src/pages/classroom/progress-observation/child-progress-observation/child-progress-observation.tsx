@@ -304,6 +304,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                       ? capitalizeFirstLetter(cat.name.toLowerCase())
                       : ''
                   }
+                  titleTypographyType="h4"
                   subTitle={
                     cat.subTitle
                       ? capitalizeFirstLetter(cat.subTitle.toLowerCase())
@@ -343,6 +344,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                     iconImageBackgroundColor={cat.color}
                     showIcon={true}
                     title={capitalizeFirstLetter(cat.name.toLowerCase())}
+                    titleTypographyType="h4"
                     subTitle={capitalizeFirstLetter(cat.subTitle.toLowerCase())}
                     showChevronIcon
                     showDivider
