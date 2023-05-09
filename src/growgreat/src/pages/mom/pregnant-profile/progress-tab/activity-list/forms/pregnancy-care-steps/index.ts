@@ -7,6 +7,7 @@ export { DrugOrAlcoholUseStep } from './drug-or-alcohol-use';
 export { NutritionStep } from './nutrition';
 export { AlcoholUseStep } from './nutrition/complementary-feeding-flow/alcohol-use';
 export { HivCareAndMedicationStep } from './nutrition/complementary-feeding-flow/hiv-care';
+export { MaternalDistressFollowUpStep } from './maternal-distress/result/follow-up';
 
 export interface GrowthMonitoring {
   [key: string]: any;
