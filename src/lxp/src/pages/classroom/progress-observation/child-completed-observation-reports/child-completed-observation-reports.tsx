@@ -97,10 +97,11 @@ export const ChildCompletedObservationReports: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const startTrackingProgress = () => {
+  const startTrackingProgress = (firstObservation: boolean) => {
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
       childId: routeState?.childId,
-      reportingDate: getReportingPeriod(new Date()),
+      firstObservation: firstObservation,
+      reportingDate: new Date(),
     });
   };
 
@@ -182,7 +183,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
               </div>
             </div>
             <Button
-              onClick={startTrackingProgress}
+              onClick={() => startTrackingProgress(true)}
               disabled={false}
               className="w-full"
               size="small"
