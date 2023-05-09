@@ -215,14 +215,15 @@ const GeneratePdfReportButton = ({
         doc.rect(140, (doc as any).lastAutoTable.finalY + 42, 25, 10, 'S');
 
         doc.setFontSize(16);
-        doc.addImage(
-          signature,
-          'PNG',
-          40,
-          (doc as any).lastAutoTable.finalY + 90,
-          imgWidth,
-          imgHeight
-        );
+        signature &&
+          doc.addImage(
+            signature,
+            'PNG',
+            40,
+            (doc as any).lastAutoTable.finalY + 90,
+            imgWidth,
+            imgHeight
+          );
         doc.text(downloadDate, 135, (doc as any).lastAutoTable.finalY + 98);
 
         //sign document section
@@ -244,17 +245,17 @@ const GeneratePdfReportButton = ({
     }
 
     if (tableData.length === 1) {
- 
       // add the image to the PDF document
       doc.setFontSize(16);
-      doc.addImage(
-        signature,
-        'PNG',
-        40,
-        (doc as any).lastAutoTable.finalY + 26,
-        imgWidth,
-        imgHeight
-      );
+      signature &&
+        doc.addImage(
+          signature,
+          'PNG',
+          40,
+          (doc as any).lastAutoTable.finalY + 26,
+          imgWidth,
+          imgHeight
+        );
       doc.text(downloadDate, 135, (doc as any).lastAutoTable.finalY + 33);
 
       doc.setFontSize(14);
