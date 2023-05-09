@@ -1,5 +1,5 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
@@ -8,7 +8,6 @@ import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useSelector } from 'react-redux';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useAppDispatch } from '@/store';
@@ -47,6 +46,10 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
         })
       );
   }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+
+  useEffect(() => {
+    setEnableButton?.(true);
+  }, [setEnableButton]);
 
   if (isLoading) {
     return (
