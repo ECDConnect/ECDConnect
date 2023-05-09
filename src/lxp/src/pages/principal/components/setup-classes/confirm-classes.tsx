@@ -136,7 +136,7 @@ export const ConfirmClasses = ({
             textColor="white"
             icon="SaveIcon"
             onClick={() => {
-              onSubmit(PractitionerSetupSteps.ADD_PHOTO);
+              onSubmit(PractitionerSetupSteps.ADD_SIGNATURE);
             }}
           />
         </div>
