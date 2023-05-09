@@ -123,10 +123,6 @@ export const MomActivityList: React.FC = () => {
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
     useMemo(() => {
-      // const motherType = relationshipTypes.find(
-      //   (item) => item.label === 'Mother'
-      // );
-
       const completedActivities = activityListUpdated.filter((item) =>
         completedVisits?.includes(item.title)
       );
