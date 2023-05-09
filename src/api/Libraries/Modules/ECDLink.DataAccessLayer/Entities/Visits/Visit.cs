@@ -26,7 +26,6 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public string? Risk { get; set; }
         public string Comment { get; set; }
         public Guid? LinkedVisitId { get; set; }
-
         public Guid? PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
 

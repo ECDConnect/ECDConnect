@@ -27,9 +27,9 @@ export const getGroupColor = (count: number): Colours => {
   return 'successDark';
 };
 
-export const dietFormQuestion =
-  'What did you give {client} to eat or drink in the last 24 hours?';
-
+export const DangerSignsQuestion =
+  'Tick the danger signs {client} is experiencing:';
+export const dangerSignsSectionName = 'Danger signs';
 export const DangerSignsStep = ({
   mother,
   isTipPage,
@@ -45,15 +45,13 @@ export const DangerSignsStep = ({
   >(options);
   const [currentOption, setCurrentOption] = useState<string>();
   const [question, setAnswers] = useState({
-    question: `Tick the danger signs {client} is experiencing:`,
+    question: DangerSignsQuestion,
     answer: [] as (string | number | undefined)[],
   });
 
   const answers = question.answer as string[];
 
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-
-  const visitSection = 'Danger signs';
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -68,7 +66,7 @@ export const DangerSignsStep = ({
         setEnableButton?.(true);
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsSectionName,
             questions: [updatedQuestion],
           },
         ]);
@@ -80,7 +78,7 @@ export const DangerSignsStep = ({
       setAnswers(updatedQuestion);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsSectionName,
           questions: [updatedQuestion],
         },
       ]);
@@ -135,7 +133,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         customIcon={P4}
-        title={visitSection}
+        title={dangerSignsSectionName}
         subTitle="Check for these signs"
         backgroundColor="tertiary"
       />
@@ -157,7 +155,7 @@ export const DangerSignsStep = ({
             checked={answers?.some((option) => option === item.title)}
             value={item.title}
             onChange={onCheckboxChange}
-            disabled={item?.disabled}
+            disabled={answers?.includes(noneOption) ? item?.disabled : false}
             {...(options.length - 1 > index && {
               extraChildren: (
                 <button
