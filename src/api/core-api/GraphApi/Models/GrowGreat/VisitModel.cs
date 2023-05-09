@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string Risk { get; set; }  // high or normal
         public string Comment { get; set; }
         public bool Attended { get; set; }
-
+        public Guid? PractitionerId { get; set; }
         public Guid? LinkedVisitId { get; set; }
     }
 }

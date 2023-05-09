@@ -35,7 +35,6 @@ import ROUTES from '@/routes/routes';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import { referralsSteps } from './walkthrough/steps';
 import { useWalkthrough } from '@/context/walkthroughContext';
-import { INFANT_PROFILE_TABS } from '../progress-tab/activity-list';
 
 const HEADER_HEIGHT = 64;
 interface GroupedData {
