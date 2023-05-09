@@ -32,6 +32,8 @@ using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
+using EcdLink.Api.CoreApi.Security.Models;
+using ECDLink.Core.Helpers;
 
 namespace ECDLink.Core.Services
 {
@@ -401,82 +403,11 @@ namespace ECDLink.Core.Services
         #endregion
 
 
-        #region Integration Points
-
-        public async Task<bool> IntegrationByMappedCoachTest()
-        {
-            bool returnOK = false;
-            //List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-            //List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
-
-            string remotePracId = "93224ae2-ea56-ea11-833a-00155d326100";
-            string localPracId = "040bb9d7-e96f-49ee-b045-1ec04e3e19ab";
-            //string remoteChildId = "99676639-e24e-ed11-8355-00155d326100";
-
-            List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(remotePracId);
-            //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
-            if (remoteFranchisees != null)
-            {
-                foreach (var franchisee in remoteFranchisees)
-                {
-                    if (franchisee != null)
-                    {
-                        List<Child> newChildren = new List<Child>();
-                        //Create franchisee and map in SS system
-                        Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPracId); //already mapped and inserted
-
-                        //get all elements underneath and map those too
-
-                        //1. Children, , 
-
-
-                        //Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
-                        //Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
-                        //Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
-                        ////Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
-
-                        //newChildren.Add(child1);
-                        //newChildren.Add(child2);
-                        //newChildren.Add(child3);
-                        //newChildren.Add(child4);
-
-                        
-                        List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
-                        if (remoteChildren != null)
-                        {
-                            foreach (var remoteChild in remoteChildren)
-                            {
-                                if (remoteChild != null)
-                                {
-                                    var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                    if (newChild != null)
-                                    {
-
-                                        newChildren.Add(newChild);
-                                    }
-                                }
-                            }
-                        }
-                        
-                        //2. Documents
-
-                        //3. Notes
-
-                        //4. Attendance
-                        //5. Income Statements
-                        await AlignChildHierarchy(newPractitioner, newChildren);
-                        await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
-                    }
-                }
-            }
-
-
-            return returnOK;
-        }
+        #region Integration Points      
 
         public async Task<bool> IntegrationByMappedCoach()
         {
-            string franchiseeId = "02659d39-60dc-ed11-8356-00155d326100";
+            string franchiseeId = "41d9f86b-bced-ed11-8356-00155d326100";
             bool returnOK = false;
             DateTime startTime = DateTime.Now;
             int totalAddedToSS = 0;
@@ -511,7 +442,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                    /**/       
+                    /*       
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -531,7 +462,7 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                    /**/
+                    /*/
                     //-------------------
                     //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
                     //-------------------
@@ -541,11 +472,36 @@ namespace ECDLink.Core.Services
                         List<IntegrationAudit> audits = await this.GetAudits(DateTime.Now.AddDays(-1)); //get date from last service scheduler run or take last 24 hours
                         foreach (var audit in audits)
                         {
+                            switch (audit.ChangeType)
+                            {
+                                case "Insert":
+
+
+                                    break;
+                                case "Update":
+                                    //ensure the property that has been updated is a mapped column between systems
+                                    if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
+                                    {
+
+
+
+
+                                    }
+
+                                    break;
+                                case "Delete":
+
+
+                                    break;
+                                default:
+                                    break;
+                            }
+
                             //update child, franchisee
 
                         }
                         //TODO: API Data pushes from SS Audit tables
-                        returnOK = true;
+                        //returnOK = true;
                     }
 
                     //-------------------
@@ -563,8 +519,8 @@ namespace ECDLink.Core.Services
                         //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //5.1) get all frannchisees and map them                
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
                         //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -846,10 +802,24 @@ namespace ECDLink.Core.Services
                             IsClubOwner = entity.IsClubLeader
                         };
 
+                        //check phone number is valid
+                        string numberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.PersonalNumber);
+                            if (string.Equals(normalizePhoneNumber, entity.PersonalNumber))
+                            {
+                                numberToImport = normalizePhoneNumber;
+                            }
+                        } catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
+
                         var newUser = new ApplicationUser
                         {
                             Id = userId.ToString(),
-                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : entity.PersonalNumber),
+                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
                             UserName = entity.IdNumber,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
