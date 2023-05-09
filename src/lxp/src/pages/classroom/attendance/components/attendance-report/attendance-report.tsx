@@ -149,7 +149,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}
-          onClose={() => closeNotification()}
           className={'mb-4'}
           message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
