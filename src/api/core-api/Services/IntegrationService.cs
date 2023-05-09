@@ -34,6 +34,8 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
 using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Core.Helpers;
+using MediatR;
+using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ECDLink.Core.Services
 {
@@ -402,12 +404,69 @@ namespace ECDLink.Core.Services
 
         #endregion
 
+        private async Task<bool> PushUpdates(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
+            {
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushDeletes(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+            if (updates.Count > 0)
+            {
+                PushUpdates(inserts);
+            }
+            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
+            {
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushInserts(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+            if (updates.Count > 0)
+            {
+                PushUpdates(inserts);
+            }
+            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
+            {
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushData(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns)
+        {
+            int changesCheckTime = 60;
+            List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+            //Inserts
+            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
+            if (inserts.Count > 0)
+                await PushInserts(inserts, mappedEntities, mappedColumns);
+
+
+            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
+            if (updates.Count > 0)
+                await PushUpdates(updates, mappedEntities, mappedColumns);
+
+            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            if (deletes.Count > 0)
+                await PushDeletes(deletes, mappedEntities, mappedColumns);
+
+            return true;
+        }
+
 
         #region Integration Points      
 
         public async Task<bool> IntegrationByMappedCoach()
         {
-            string franchiseeId = "41d9f86b-bced-ed11-8356-00155d326100";
+            string franchiseeId = "41d9f86b-bced-ed11-8356-00155d326100";            
             bool returnOK = false;
             DateTime startTime = DateTime.Now;
             int totalAddedToSS = 0;
@@ -469,39 +528,7 @@ namespace ECDLink.Core.Services
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
-                        List<IntegrationAudit> audits = await this.GetAudits(DateTime.Now.AddDays(-1)); //get date from last service scheduler run or take last 24 hours
-                        foreach (var audit in audits)
-                        {
-                            switch (audit.ChangeType)
-                            {
-                                case "Insert":
-
-
-                                    break;
-                                case "Update":
-                                    //ensure the property that has been updated is a mapped column between systems
-                                    if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
-                                    {
-
-
-
-
-                                    }
-
-                                    break;
-                                case "Delete":
-
-
-                                    break;
-                                default:
-                                    break;
-                            }
-
-                            //update child, franchisee
-
-                        }
-                        //TODO: API Data pushes from SS Audit tables
-                        //returnOK = true;
+                        await PushData(mappedEntities, mappedColumns);                        
                     }
 
                     //-------------------
