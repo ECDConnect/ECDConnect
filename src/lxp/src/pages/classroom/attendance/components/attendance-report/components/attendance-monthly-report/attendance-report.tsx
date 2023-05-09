@@ -57,7 +57,7 @@ export const MonthlyAttendanceReport = ({
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
 
-  const { errorDialog } = useRequestResponseDialog();
+  const { errorDialog } = useRequestResponseDialog(); 
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);

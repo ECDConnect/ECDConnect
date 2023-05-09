@@ -80,7 +80,7 @@ export const AttendanceMonthlyReport: React.FC<
           setTotalAttendanceStatsReport(data.totalAttendanceStatsReport);
         }).catch((err) => {
           errorDialog(err.message);
-        });;
+        });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewReportDate]);
