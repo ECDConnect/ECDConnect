@@ -155,7 +155,7 @@ export const DangerSignsStep = ({
             checked={answers?.some((option) => option === item.title)}
             value={item.title}
             onChange={onCheckboxChange}
-            disabled={item?.disabled}
+            disabled={answers?.includes(noneOption) ? item?.disabled : false}
             {...(options.length - 1 > index && {
               extraChildren: (
                 <button
