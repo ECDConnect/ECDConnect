@@ -82,7 +82,7 @@ namespace ECDLink.SmartStart.Reports
                                                             && x.Year == dt.Year
                                                             && x.Attended == true);
 
-                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 
                                 } else attendance.Add(Tuple.Create(0, 0));
                             }
@@ -117,19 +117,39 @@ namespace ECDLink.SmartStart.Reports
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                classReports.Add(new ClassroomGroupChildAttendanceReportModel()
+                                if (classReports.Where(x => x.ChildUserId.Equals(learner.UserId)).FirstOrDefault() != null)
                                 {
-                                    ChildUserId = learner.UserId,
-                                    ClassgroupId = classgroupId,
-                                    ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
-                                    ChildIdNumber = learner.User.IdNumber,
-                                    TotalActualAttendance = report.ActualAttendance,
-                                    TotalExpectedAttendance = report.ExpectedAttendance,
-                                    AttendancePercentage = report.AttendancePercentage,
-                                    Month = report.MonthNumber,
-                                    Year = report.Year, 
-                                    Attendance = totalAttendance
-                                });
+                                    //append to existing report and not add if child already exists in report list based on different classes child may be in
+                                    ClassroomGroupChildAttendanceReportModel existingReport = classReports.Where(x => x.ChildUserId.Equals(learner.UserId) && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
+                                    int totalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
+                                    existingReport.TotalActualAttendance = totalActualAttendance;
+                                    int totalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
+                                    existingReport.TotalExpectedAttendance = totalExpectedAttendance;
+                                    int totalAttendancePercentage = existingReport.AttendancePercentage + report.AttendancePercentage;
+                                    existingReport.AttendancePercentage = totalAttendancePercentage > 0 ? (totalAttendancePercentage > 100 ? 100 : totalAttendancePercentage) : 0;
+                                    foreach (var item in totalAttendance)
+                                    {
+                                        if (existingReport.Attendance.ContainsKey(item.Key))
+                                            existingReport.Attendance[item.Key] = existingReport.Attendance[item.Key] + item.Value;
+                                    }
+                                }
+                                else
+                                {
+
+                                    classReports.Add(new ClassroomGroupChildAttendanceReportModel()
+                                    {
+                                        ChildUserId = learner.UserId,
+                                        ClassgroupId = classroomGroup.Id,
+                                        ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
+                                        ChildIdNumber = learner.User.IdNumber,
+                                        TotalActualAttendance = report.ActualAttendance,
+                                        TotalExpectedAttendance = report.ExpectedAttendance,
+                                        AttendancePercentage = report.AttendancePercentage,
+                                        Month = report.MonthNumber,
+                                        Year = report.Year,
+                                        Attendance = totalAttendance
+                                    });
+                                }
                             }
                         }
                     }

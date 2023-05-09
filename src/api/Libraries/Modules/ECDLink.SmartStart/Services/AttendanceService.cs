@@ -186,7 +186,7 @@ namespace ECDLink.SmartStart.Services
                                               && x.Year == dt.Year
                                               && x.Attended == true);
 
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 
                     }
                     monthlyAttendance.Add(dt, attendance);
@@ -231,8 +231,8 @@ namespace ECDLink.SmartStart.Services
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year);
-
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
+                        
+                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
                     }
                     monthlyAttendance.Add(dt, attendance);
                 }
@@ -254,7 +254,7 @@ namespace ECDLink.SmartStart.Services
                 TotalActualAttendance = totalActualAttendance,
                 TotalExpectedAttendance = totalExpectedAttendance,
                 ClassGroupAttendance = learnerReports,
-                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
+                AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
             };
         }
 
@@ -274,7 +274,7 @@ namespace ECDLink.SmartStart.Services
                 ClassroomGroupName = learner.ClassroomGroup.Name,
                 MonthlyAttendance = monthlyReports,
                 EndDate = learner.StoppedAttendance,
-                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
+                AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
             };
         }
 

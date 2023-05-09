@@ -177,7 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report, attendanceService,  practitioner.UserId, startMonth, endMonth);
+                var metric = GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report, attendanceService,  practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
                     metrics.AddRange(metric);
@@ -200,7 +200,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             List<ClassroomMetricReport> metric = new List<ClassroomMetricReport>();
 
             var fromDate = startMonth.GetStartOfMonth();
-            var toDate = endMonth.GetEndOfMonth();
+            var toDate = endMonth.GetEndOfMonth().GetEndOfDay();
 
             var classroomGroups = attendanceService.GetUserClassroomGroups(userId);
             if (classroomGroups != null)
