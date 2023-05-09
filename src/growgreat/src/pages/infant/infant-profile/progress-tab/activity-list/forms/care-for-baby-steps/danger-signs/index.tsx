@@ -12,7 +12,7 @@ import { Header, Label } from '@/pages/infant/infant-profile/components';
 import Infant from '@/assets/infant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 
@@ -49,6 +49,13 @@ export const DangerSignsStep = ({
     { name: 'Severe cord infection' },
     { name: noneOption },
   ];
+
+  const [optionList, setOptionList] = useState<
+    {
+      name: string;
+      disabled?: boolean;
+    }[]
+  >(options);
 
   const question = `Tick the danger signs {client} is experiencing:`;
 
@@ -126,6 +133,38 @@ export const DangerSignsStep = ({
     },
     [answers, dialog, name, question, setEnableButton, setQuestions]
   );
+
+  const handleOnChangeSelectedOptions = useCallback(() => {
+    if (!answers?.includes(noneOption) && answers?.length) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name === noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    if (answers?.includes(noneOption)) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name !== noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    return setOptionList((prevState) =>
+      prevState.map((item) => ({ ...item, disabled: false }))
+    );
+  }, [answers]);
+
+  useEffect(() => {
+    handleOnChangeSelectedOptions();
+  }, [handleOnChangeSelectedOptions]);
 
   if (isTipPage && currentOption) {
     return (

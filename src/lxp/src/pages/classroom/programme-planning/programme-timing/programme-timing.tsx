@@ -87,9 +87,13 @@ const ProgrammeTiming: React.FC = () => {
       }
     }
 
-    history.replace(ROUTES.PROGRAMMES.SUMMARY, {
-      programmeId: newProgramme.id,
-      variation: 'create',
+    // history.replace(ROUTES.PROGRAMMES.SUMMARY, {
+    //   programmeId: newProgramme.id,
+    //   variation: 'create',
+    // });
+    history.push(ROUTES.CLASSROOM, {
+      activeTabIndex: 3,
+      programmeStartDate: validatedDate,
     });
   };
 

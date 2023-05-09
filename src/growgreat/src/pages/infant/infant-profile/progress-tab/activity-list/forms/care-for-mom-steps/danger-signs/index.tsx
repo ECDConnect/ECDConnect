@@ -11,7 +11,7 @@ import { Header } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 
@@ -26,7 +26,6 @@ export const DangerSignsStep = ({
 }: DynamicFormProps) => {
   const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
-
   const dialog = useDialog();
   const noneOption = 'None of the above';
 
@@ -44,6 +43,14 @@ export const DangerSignsStep = ({
     { name: 'Problems with breastfeeding' },
     { name: noneOption },
   ];
+
+  const [optionList, setOptionList] = useState<
+    {
+      name: string;
+      disabled?: boolean;
+      description?: string;
+    }[]
+  >(options);
 
   const question = `Tick the danger signs {client} is experiencing:`;
 
@@ -127,6 +134,38 @@ export const DangerSignsStep = ({
       setQuestions,
     ]
   );
+
+  const handleOnChangeSelectedOptions = useCallback(() => {
+    if (!answers?.includes(noneOption) && answers?.length) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name === noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    if (answers?.includes(noneOption)) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name !== noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    return setOptionList((prevState) =>
+      prevState.map((item) => ({ ...item, disabled: false }))
+    );
+  }, [answers]);
+
+  useEffect(() => {
+    handleOnChangeSelectedOptions();
+  }, [handleOnChangeSelectedOptions]);
 
   if (isTipPage && currentOption) {
     return (

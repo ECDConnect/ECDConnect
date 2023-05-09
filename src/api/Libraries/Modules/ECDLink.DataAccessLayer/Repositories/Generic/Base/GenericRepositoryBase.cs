@@ -211,7 +211,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                     foreach (var prop in tA.GetProperties())
                     {
                         Type propType = prop.PropertyType;
-                        if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType) //ignore navigation types due to lazyloading
+                        if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
                         {
                             //Determine changes and convert all to string
                             string beforeValue = entities.Entry(beforeObj).Property(prop.Name).OriginalValue != null ? entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString() :  "";

@@ -5,4 +5,5 @@ export interface DailyRoutineProps {
   currentDailyProgramme?: DailyProgrammeDto;
   setSelectedDate?: any;
   selectedDate?: Date;
+  isHoliday?: boolean;
 }

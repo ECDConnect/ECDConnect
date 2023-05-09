@@ -2,6 +2,7 @@ using ECDLink.Abstractrions.Constants;
 using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
@@ -68,6 +69,8 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                 "Coach",
                 "Practitioner",
                 "Child",
+                "Learner",
+                "ClassroomGroup",
                 "Principal",
                 "Franchisor"
             };
@@ -183,6 +186,22 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                     ParentId = Guid.Parse("c3eb2d28-832e-4202-b251-278b1dc89844"),
                     SystemType = typeof(Child).FullName,
                     Type = typeof(Child).Name
+                },
+                 new HierarchyEntity
+                {
+                    Id = Guid.Parse("4fc01cd6-0acb-4634-897c-465a783074c3"),
+                    IsActive = true,
+                    ParentId = Guid.Parse("9ec454ac-ac26-4a5c-914d-e1191edcfa78"),
+                    SystemType = typeof(Learner).FullName,
+                    Type = typeof(Learner).Name
+                },
+                  new HierarchyEntity
+                {
+                    Id = Guid.Parse("60d908cc-cb62-4143-9605-0095dfd7e432"),
+                    IsActive = true,
+                    ParentId = Guid.Parse("c3eb2d28-832e-4202-b251-278b1dc89844"),
+                    SystemType = typeof(ClassroomGroup).FullName,
+                    Type = typeof(ClassroomGroup).Name
                 },
             };
 

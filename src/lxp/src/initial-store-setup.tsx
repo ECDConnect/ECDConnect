@@ -283,6 +283,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupLearners({})
+    ).unwrap();
   };
 
   const getLoadingMessage = () => {

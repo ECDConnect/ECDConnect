@@ -30,9 +30,6 @@ export const getGroupColor = (count: number): Colours => {
   return 'successDark';
 };
 
-export const dietFormQuestion =
-  'What did you give {client} to eat or drink in the last 48 hours?';
-
 export const AlcoholUseStep = ({
   mother,
   setIsTip,

@@ -49,6 +49,10 @@ import {
 } from '../eventRecord/eventRecord';
 import { visitPersistConfig, visitReducer } from '../visit/visit';
 import { referralPersistConfig, referralReducer } from '../referral/referral';
+import {
+  communityPersistConfig,
+  communityReducer,
+} from '../community/community';
 
 const persistedReducers = {
   analytics: persistReducer(analyticsPersistConfig, analyticsReducer),
@@ -71,6 +75,7 @@ const persistedReducers = {
   eventRecord: persistReducer(eventRecordPersistConfig, eventRecordReducer),
   visits: persistReducer(visitPersistConfig, visitReducer),
   referrals: persistReducer(referralPersistConfig, referralReducer),
+  community: persistReducer(communityPersistConfig, communityReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);
