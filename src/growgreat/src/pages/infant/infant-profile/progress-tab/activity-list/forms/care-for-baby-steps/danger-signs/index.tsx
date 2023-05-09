@@ -1,8 +1,8 @@
 import {
   ActionModal,
   Alert,
-  Checkbox,
   CheckboxChange,
+  CheckboxGroup,
   DialogPosition,
   Divider,
   renderIcon,
@@ -151,35 +151,30 @@ export const DangerSignsStep = ({
           text={replaceBraces(question, name)}
           color="black"
         />
-        {options.map((option, index) => (
-          <div
-            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={answers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text={option?.name || ''}
-              color="textMid"
-            />
-            {options.length - 1 > index && (
-              <button
-                className="ml-auto"
-                onClick={() => {
-                  setCurrentOption(option?.name);
-                  setIsTip && setIsTip(true);
-                }}
-              >
-                <Translation className="h-6 w-6" />
-              </button>
-            )}
-          </div>
+        {options.map((item, index) => (
+          <CheckboxGroup
+            checkboxColor="primary"
+            className="mt-2"
+            id={item.name}
+            key={item.name}
+            title={item.name}
+            checked={answers?.some((option) => option === item.name)}
+            value={item.name}
+            onChange={onCheckboxChange}
+            {...(options.length - 1 > index && {
+              extraChildren: (
+                <button
+                  className="ml-auto"
+                  onClick={() => {
+                    setCurrentOption(item.name);
+                    setIsTip?.(true);
+                  }}
+                >
+                  <Translation className="h-6 w-6" />
+                </button>
+              ),
+            })}
+          />
         ))}
         {answers?.some((item) => item !== noneOption) && (
           <Alert

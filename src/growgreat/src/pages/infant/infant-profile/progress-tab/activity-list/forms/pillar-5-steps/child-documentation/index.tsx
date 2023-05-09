@@ -334,6 +334,7 @@ export const ChildDocumentationStep = ({
             />
             {checkboxOptions.map((item) => (
               <CheckboxGroup
+                checkboxColor="primary"
                 id={item.name}
                 key={item.name}
                 title={item.name}

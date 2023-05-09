@@ -151,6 +151,7 @@ export const DangerSignsStep = ({
         />
         {optionList.map((item, index) => (
           <CheckboxGroup
+            checkboxColor="primary"
             id={item.title}
             key={item.title}
             title={item.title}

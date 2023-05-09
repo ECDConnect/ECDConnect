@@ -1,8 +1,8 @@
 import {
   ActionModal,
   Alert,
-  Checkbox,
   CheckboxChange,
+  CheckboxGroup,
   DialogPosition,
   renderIcon,
   Typography,
@@ -161,46 +161,31 @@ export const DangerSignsStep = ({
           color="textMid"
           className="mb-4"
         />
-        {options.map((option, index) => (
-          <div
-            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={answers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <div>
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={option?.name || ''}
-                color="textMid"
-              />
-              {option?.description && (
-                <Typography
-                  type="body"
-                  align="left"
-                  weight="skinny"
-                  color="textLight"
-                  text={option?.description}
-                />
-              )}
-            </div>
-            {options.length - 1 > index && (
-              <button
-                className="ml-auto"
-                onClick={() => {
-                  setCurrentOption(option?.name);
-                  setIsTip && setIsTip(true);
-                }}
-              >
-                <Translation className="h-6 w-6" />
-              </button>
-            )}
-          </div>
+        {options.map((item, index) => (
+          <CheckboxGroup
+            checkboxColor="primary"
+            className="mt-2"
+            id={item.name}
+            key={item.name}
+            title={item.name}
+            description={item.description}
+            checked={answers?.some((option) => option === item.name)}
+            value={item.name}
+            onChange={onCheckboxChange}
+            {...(options.length - 1 > index && {
+              extraChildren: (
+                <button
+                  className="ml-auto"
+                  onClick={() => {
+                    setCurrentOption(item.name);
+                    setIsTip?.(true);
+                  }}
+                >
+                  <Translation className="h-6 w-6" />
+                </button>
+              ),
+            })}
+          />
         ))}
         {answers?.some((item) => item !== noneOption) && (
           <Alert

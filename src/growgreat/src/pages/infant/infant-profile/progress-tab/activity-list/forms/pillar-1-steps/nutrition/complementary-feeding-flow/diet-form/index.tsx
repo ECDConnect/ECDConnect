@@ -154,6 +154,7 @@ export const DietFormStep = ({
         />
         {optionList.map((item) => (
           <CheckboxGroup
+            checkboxColor="primary"
             id={item.title}
             key={item.title}
             icon={item.icon}
