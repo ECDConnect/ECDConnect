@@ -106,7 +106,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   useEffect(() => {
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
-      today.getMonth() + 1,
+      today.getMonth() ,
       0
     );
 

@@ -22,6 +22,7 @@ export interface GeneratePdfReportButtonProps {
   tableFootStyles: UserOptions['footStyles'];
   pageOriantations?: jsPDFOptions['orientation'];
   signature: string;
+  downloadDate: string;
 }
 
 const GeneratePdfReportButton = ({
@@ -37,12 +38,13 @@ const GeneratePdfReportButton = ({
   pageOriantations,
   component,
   signature,
+  downloadDate,
 }: GeneratePdfReportButtonProps) => {
-
   const generateReport = (
     footer: any[],
     tableData: TableData[],
     signature: string,
+    downloadDate: string,
     content?: any,
     tableBottomContent?: any,
     outputName?: string,
@@ -50,13 +52,13 @@ const GeneratePdfReportButton = ({
     tableHeadStyles?: UserOptions['headStyles'],
     tableStyles?: UserOptions['styles'],
     tableFootStyles?: UserOptions['footStyles'],
-    pageOriantations?: jsPDFOptions['orientation'],
+    pageOriantations?: jsPDFOptions['orientation']
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
     let startY = 30; // initial startY value
-    const today = new Date().toDateString();
-
+    var imgWidth = 45;
+    var imgHeight = 8;
     const tablesByType: { [key: string]: TableData[] } = {};
 
     // Group tables by type
@@ -212,11 +214,22 @@ const GeneratePdfReportButton = ({
         doc.setFillColor(255, 0, 0);
         doc.rect(140, (doc as any).lastAutoTable.finalY + 42, 25, 10, 'S');
 
+        doc.setFontSize(16);
+        doc.addImage(
+          signature,
+          'PNG',
+          40,
+          (doc as any).lastAutoTable.finalY + 90,
+          imgWidth,
+          imgHeight
+        );
+        doc.text(downloadDate, 135, (doc as any).lastAutoTable.finalY + 98);
+
         //sign document section
         doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 95);
-        doc.rect(30, (doc as any).lastAutoTable.finalY + 90, 65, 10);
+        doc.rect(35, (doc as any).lastAutoTable.finalY + 90, 65, 10);
         doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 95);
-        doc.rect(120, (doc as any).lastAutoTable.finalY + 90, 65, 10);
+        doc.rect(125, (doc as any).lastAutoTable.finalY + 90, 65, 10);
       }
     });
     doc.setFillColor(255, 255, 255); // set grey background color
@@ -231,21 +244,34 @@ const GeneratePdfReportButton = ({
     }
 
     if (tableData.length === 1) {
-      var imgWidth = 45;
-      var imgHeight = 8;
+ 
       // add the image to the PDF document
       doc.setFontSize(16);
-      doc.addImage(signature, 'PNG', 40, (doc as any).lastAutoTable.finalY + 26, imgWidth, imgHeight);
-      doc.text(today, 135, (doc as any).lastAutoTable.finalY + 32);
+      doc.addImage(
+        signature,
+        'PNG',
+        40,
+        (doc as any).lastAutoTable.finalY + 26,
+        imgWidth,
+        imgHeight
+      );
+      doc.text(downloadDate, 135, (doc as any).lastAutoTable.finalY + 33);
 
       doc.setFontSize(14);
-      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30); 
+      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30);
       doc.rect(35, (doc as any).lastAutoTable.finalY + 25, 65, 10);
       doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
       doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
     //export pdf report
     doc.save(outputName);
+
+    // save the PDF document as binary data
+    var pdfData = doc.output();
+
+    // convert the binary data to a base64-encoded string
+    var base64String = btoa(pdfData);
+    console.log('output', base64String);
   };
 
   return (
@@ -258,6 +284,7 @@ const GeneratePdfReportButton = ({
           [tableFooter],
           tableData ?? [],
           signature,
+          downloadDate,
           content,
           tableBottomContent,
           outputName,
@@ -265,7 +292,7 @@ const GeneratePdfReportButton = ({
           tableHeadStyles,
           tableStyles,
           tableFootStyles,
-          pageOriantations,
+          pageOriantations
         )
       }
     >

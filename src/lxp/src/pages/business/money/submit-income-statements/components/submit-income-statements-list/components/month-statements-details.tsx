@@ -619,6 +619,7 @@ export const MonthStatementsDetails: React.FC = () => {
                 tableStyles={tableStyles}
                 pageOriantations={'portrait'}
                 signature={signature}
+                downloadDate={today.toDateString()}
               />
             )}
           </div>
