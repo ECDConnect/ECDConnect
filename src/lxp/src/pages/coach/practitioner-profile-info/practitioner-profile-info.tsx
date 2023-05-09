@@ -33,6 +33,7 @@ import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
 import { useAppDispatch } from '@store';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -61,7 +62,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
 
   const appDispatch = useAppDispatch();
