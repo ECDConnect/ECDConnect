@@ -10,7 +10,14 @@ namespace EcdLink.Api.CoreApi {
             public const string GraphEndPoint = "GraphQl:EndPoint";
         }
 
-        public static class GGSettings
+    public static class  SSSettings
+    {
+            public const string client_practitioner = "practitioner";
+            public const string visitType_support = "support_visit";
+
+    }
+
+    public static class GGSettings
         {
             public const int recordsPerPage = 40;
             public const int pageNumber = 0;
@@ -18,6 +25,7 @@ namespace EcdLink.Api.CoreApi {
             public const string visitType_all = "all";
             public const string visitType_overdue = "overdue";
             public const string visitType_due = "due";
+            public const string visit_follow_up = "Follow up";
 
             public const string client_mother = "mother";
             public const string client_child = "child";
