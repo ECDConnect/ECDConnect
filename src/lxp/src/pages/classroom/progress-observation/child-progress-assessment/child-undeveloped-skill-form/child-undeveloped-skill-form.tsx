@@ -16,13 +16,13 @@ import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon
 
 export const ChildUndevelopedSkillForm: React.FC<
   ChildUndevelopedSkillFormProps
-> = ({
-  undevelopedSkills,
-  allSkillsYes,
-  noTryingToDoAndAtLeastOneNotYet,
-  childId,
-  onSubmit,
-}) => {
+> = ({ skills, allSkillsYes, childId, onSubmit }) => {
+  const noTryingToDoAndAtLeastOneNotYet =
+    !allSkillsYes &&
+    skills.tryingToDo &&
+    skills.tryingToDo.length === 0 &&
+    skills.notYet &&
+    skills.notYet.length > 0;
   const child = useSelector(childrenSelectors.getChildById(childId));
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -35,15 +35,28 @@ export const ChildUndevelopedSkillForm: React.FC<
     useState<ProgressTrackingSkillDto>();
 
   useEffect(() => {
-    if (undevelopedSkills && undevelopedSkills.length > 0) {
-      const skillsRadioList: RadioGroupOption[] = undevelopedSkills.map(
-        (skill) => ({
-          id: skill.id || 0,
-          label: skill?.name,
-          value: skill.id || 0,
-        })
-      );
-      setSkillsRadioGroupOptions(skillsRadioList);
+    if (noTryingToDoAndAtLeastOneNotYet) {
+      if (skills.notYet && skills.notYet.length > 0) {
+        const skillsRadioList: RadioGroupOption[] = skills.notYet.map(
+          (skill) => ({
+            id: skill.id || 0,
+            label: skill?.name,
+            value: skill.id || 0,
+          })
+        );
+        setSkillsRadioGroupOptions(skillsRadioList);
+      }
+    } else {
+      if (skills.tryingToDo && skills.tryingToDo.length > 0) {
+        const skillsRadioList: RadioGroupOption[] = skills.tryingToDo.map(
+          (skill) => ({
+            id: skill.id || 0,
+            label: skill?.name,
+            value: skill.id || 0,
+          })
+        );
+        setSkillsRadioGroupOptions(skillsRadioList);
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -58,7 +71,9 @@ export const ChildUndevelopedSkillForm: React.FC<
   };
 
   const onSkillSelected = (skillId: number) => {
-    const skill = undevelopedSkills.find((skill) => skill.id === skillId);
+    const skill = noTryingToDoAndAtLeastOneNotYet
+      ? skills.notYet.find((skill) => skill.id === skillId)
+      : skills.tryingToDo.find((skill) => skill.id === skillId);
     setSelectedUndevelopedSkill(skill);
   };
 
@@ -101,7 +116,7 @@ export const ChildUndevelopedSkillForm: React.FC<
         {!allSkillsYes && (
           <div>
             {noTryingToDoAndAtLeastOneNotYet && (
-              <div className={'mt-4 px-4'}>
+              <div className={'mt-4 mb-4 px-4'}>
                 <Alert
                   type={'info'}
                   title='You did not choose "trying to do" for any of the skills.'

@@ -75,6 +75,7 @@ import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/att
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
 import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
+import { Community } from '@/pages/community/community';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -162,6 +163,7 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
       <Route
         path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
         component={WalkthroughTutorial}
