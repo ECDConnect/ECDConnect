@@ -16,6 +16,7 @@ import { getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 interface AttendanceMonthlyReportProps extends ComponentBaseProps {
   attendanceSummary: AttendanceSummary[];
@@ -44,6 +45,7 @@ export const AttendanceMonthlyReport: React.FC<
     ChildAttendanceOverallReportModel[]
   >([]);
   const authUser = useSelector(authSelectors.getAuthUser);
+  const { errorDialog } = useRequestResponseDialog();
 
   const closeReport = () => {
     setDisplayReport(!displayReport);
@@ -76,7 +78,9 @@ export const AttendanceMonthlyReport: React.FC<
           setReportData(data.classroomAttendanceReport);
           setTotalAttendance(data.totalAttendance);
           setTotalAttendanceStatsReport(data.totalAttendanceStatsReport);
-        });
+        }).catch((err) => {
+          errorDialog(err.message);
+        });;
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [viewReportDate]);

@@ -57,7 +57,7 @@ export const MonthlyAttendanceReport = ({
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
 
-  const { errorDialog, successDialog } = useRequestResponseDialog();
+  const { errorDialog } = useRequestResponseDialog();
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -74,6 +74,8 @@ export const MonthlyAttendanceReport = ({
 
     getClassroomDetails().then((data) => {
       setReportDetails(data);
+    }).catch((err) => {
+      errorDialog(err.message);
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

@@ -77,7 +77,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const { errorDialog } = useRequestResponseDialog();
 
   const {
-    isLoading: isAttendnaceLoading,
     isRejected: isAttendnaceRejected,
   } = useThunkFetchCall(
     'attendanceData',

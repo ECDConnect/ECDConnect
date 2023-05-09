@@ -27,6 +27,8 @@ import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
 import { addDays, startOfYear } from 'date-fns';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -95,6 +97,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
 
   const today = new Date();
 
+  const { errorDialog } = useRequestResponseDialog();
+
   useEffect(() => {
     setSelectedClassroomGroups(
       classroomGroups
@@ -124,6 +128,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         )
         .then((data) => {
           setReportData(data);
+        })
+        .catch((err) => {
+          errorDialog(err.message);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
