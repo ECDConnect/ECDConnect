@@ -60,6 +60,7 @@ export const MonthlyAttendanceReport = ({
   const [reportDeatils, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
 
+  const signature = practitioner?.signingSignature ?? '';
   useEffect(() => {
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(
@@ -266,6 +267,7 @@ export const MonthlyAttendanceReport = ({
             tableHeadStyles={tableHeadStyles}
             tableFootStyles={tableFootStyles}
             tableStyles={tableStyles}
+            signature={signature}
           />
         }
       </div>

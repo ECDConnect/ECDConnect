@@ -1,6 +1,7 @@
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
+import { weeksToDays } from 'date-fns';
 type TableData = {
   tableName: string;
   type: string;
@@ -20,6 +21,7 @@ export interface GeneratePdfReportButtonProps {
   tableStyles: UserOptions['styles'];
   tableFootStyles: UserOptions['footStyles'];
   pageOriantations?: jsPDFOptions['orientation'];
+  signature: string;
 }
 
 const GeneratePdfReportButton = ({
@@ -34,10 +36,13 @@ const GeneratePdfReportButton = ({
   tableFootStyles,
   pageOriantations,
   component,
+  signature,
 }: GeneratePdfReportButtonProps) => {
+
   const generateReport = (
     footer: any[],
     tableData: TableData[],
+    signature: string,
     content?: any,
     tableBottomContent?: any,
     outputName?: string,
@@ -45,11 +50,12 @@ const GeneratePdfReportButton = ({
     tableHeadStyles?: UserOptions['headStyles'],
     tableStyles?: UserOptions['styles'],
     tableFootStyles?: UserOptions['footStyles'],
-    pageOriantations?: jsPDFOptions['orientation']
+    pageOriantations?: jsPDFOptions['orientation'],
   ) => {
     //make landscape document
     const doc = new jsPDF(pageOriantations ?? 'landscape');
     let startY = 30; // initial startY value
+    const today = new Date().toDateString();
 
     const tablesByType: { [key: string]: TableData[] } = {};
 
@@ -225,10 +231,18 @@ const GeneratePdfReportButton = ({
     }
 
     if (tableData.length === 1) {
-      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30);
-      doc.rect(30, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+      var imgWidth = 45;
+      var imgHeight = 8;
+      // add the image to the PDF document
+      doc.setFontSize(16);
+      doc.addImage(signature, 'PNG', 40, (doc as any).lastAutoTable.finalY + 26, imgWidth, imgHeight);
+      doc.text(today, 135, (doc as any).lastAutoTable.finalY + 32);
+
+      doc.setFontSize(14);
+      doc.text('Sign: ', 20, (doc as any).lastAutoTable.finalY + 30); 
+      doc.rect(35, (doc as any).lastAutoTable.finalY + 25, 65, 10);
       doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
-      doc.rect(120, (doc as any).lastAutoTable.finalY + 25, 65, 10);
+      doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
     //export pdf report
     doc.save(outputName);
@@ -243,6 +257,7 @@ const GeneratePdfReportButton = ({
         generateReport(
           [tableFooter],
           tableData ?? [],
+          signature,
           content,
           tableBottomContent,
           outputName,
@@ -250,7 +265,7 @@ const GeneratePdfReportButton = ({
           tableHeadStyles,
           tableStyles,
           tableFootStyles,
-          pageOriantations
+          pageOriantations,
         )
       }
     >

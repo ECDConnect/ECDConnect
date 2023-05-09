@@ -188,6 +188,7 @@ export const MonthStatementsDetails: React.FC = () => {
   const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
   const enableDownload = lastDayToSubmit < today;
   const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
+  const signature = practitioner?.signingSignature ?? '';
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -617,6 +618,7 @@ export const MonthStatementsDetails: React.FC = () => {
                 tableFootStyles={tableFootStyles}
                 tableStyles={tableStyles}
                 pageOriantations={'portrait'}
+                signature={signature}
               />
             )}
           </div>
