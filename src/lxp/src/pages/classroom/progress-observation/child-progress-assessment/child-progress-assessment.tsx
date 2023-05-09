@@ -74,7 +74,7 @@ export const ChildProgressAssessment: React.FC = () => {
     setCurrentCategoryById,
     submitLevelSkills,
     getChildAchievedLevelId,
-    getUnselectedSkills,
+    getSkills,
     setCategoryAchievedLevel,
     completeCurrentCategoryTracking,
     setHelpingWithTask,
@@ -82,7 +82,6 @@ export const ChildProgressAssessment: React.FC = () => {
     isCompetentInLevel,
     clearHelpingWithTaskId,
     isAllSkillsYes,
-    isNoTryingToDoAndAtLeastOneNotYet,
   } = useChildProgressObservation(childId, report);
 
   const [
@@ -246,9 +245,8 @@ export const ChildProgressAssessment: React.FC = () => {
       case ChildProgressAssessmentSteps.assessmentStepFive:
         return (
           <ChildUndevelopedSkillForm
-            undevelopedSkills={getUnselectedSkills()}
+            skills={getSkills()}
             allSkillsYes={isAllSkillsYes()}
-            noTryingToDoAndAtLeastOneNotYet={isNoTryingToDoAndAtLeastOneNotYet()}
             childId={currentChild?.id}
             onSubmit={(skill: ProgressTrackingSkillDto | undefined) => {
               if (skill) {
