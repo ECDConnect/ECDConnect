@@ -56,7 +56,7 @@ export const AttendanceMonthlyReport: React.FC<
     // Get the start and end date of the month
     const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
 
-    const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
+    const endDate = endOfMonth(new Date(year, monthNumber - 1 , 1));
 
     return { startDate, endDate };
   }
@@ -64,6 +64,7 @@ export const AttendanceMonthlyReport: React.FC<
   useEffect(() => {
     if (viewReportDate) {
       const { startDate, endDate } = getMonthRange(viewReportDate);
+
       const nextDay = add(startDate, { days: 1 });
       new AttendanceService(authUser?.auth_token ?? '')
         .getClassroomAttendanceReport(

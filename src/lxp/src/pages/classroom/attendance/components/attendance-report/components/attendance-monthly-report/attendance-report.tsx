@@ -54,11 +54,13 @@ export const MonthlyAttendanceReport = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const today = new Date().toDateString();
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [reportDeatils, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
+
 
   useEffect(() => {
     const getClassroomDetails = async () => {
@@ -266,6 +268,8 @@ export const MonthlyAttendanceReport = ({
             tableHeadStyles={tableHeadStyles}
             tableFootStyles={tableFootStyles}
             tableStyles={tableStyles}
+            signature={practitioner?.signingSignature ?? ''}
+            downloadDate={today}
           />
         }
       </div>
