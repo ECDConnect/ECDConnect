@@ -61,7 +61,6 @@ export const MonthlyAttendanceReport = ({
   const [reportDeatils, setReportDetails] =
     useState<ReportDetailsForPractitionerData>();
 
-
   useEffect(() => {
     const getClassroomDetails = async () => {
       const res = await new PractitionerService(

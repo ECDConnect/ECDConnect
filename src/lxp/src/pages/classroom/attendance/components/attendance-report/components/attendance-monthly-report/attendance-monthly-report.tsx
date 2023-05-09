@@ -56,7 +56,7 @@ export const AttendanceMonthlyReport: React.FC<
     // Get the start and end date of the month
     const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
 
-    const endDate = endOfMonth(new Date(year, monthNumber - 1 , 1));
+    const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
 
     return { startDate, endDate };
   }

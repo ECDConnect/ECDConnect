@@ -139,6 +139,7 @@ export const ReferralsStep = ({
             <Typography type="h3" text={section.label || ''} color="textDark" />
             {questions?.[section.value].map((item: VisitDataStatus) => (
               <CheckboxGroup
+                checkboxColor="primary"
                 id={item?.id}
                 key={item?.id}
                 title={item?.comment || ''}

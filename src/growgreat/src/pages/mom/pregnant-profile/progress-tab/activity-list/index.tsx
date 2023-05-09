@@ -90,7 +90,7 @@ export const MomActivityList: React.FC = () => {
   const activityListUpdated =
     previousMotherVisit?.visitDataStatus?.length! > 0
       ? activitiesList
-      : activityListFiltered;
+      : activitiesList;
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
@@ -134,7 +134,7 @@ export const MomActivityList: React.FC = () => {
         (item): MenuListDataItem => ({
           showIcon: true,
           menuIconUrl: item?.menuIconUrl,
-          menuIconClassName: 'border-0',
+          menuIconClassName: 'w-7 h-7',
           title: item?.title,
           titleStyle: 'text-textDark',
           subTitle: '',
@@ -149,7 +149,7 @@ export const MomActivityList: React.FC = () => {
         (item): MenuListDataItem => ({
           showIcon: true,
           menuIconUrl: item?.menuIconUrl,
-          menuIconClassName: 'border-0',
+          menuIconClassName: 'w-7 h-7',
           title: item?.title,
           subTitle: '',
           iconBackgroundColor: item.iconBackgroundColor as Colours,
