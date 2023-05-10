@@ -10,6 +10,9 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using ECDLink.Core.Services;
+using ECDLink.Core.Services.Interfaces;
+using EcdLink.Api.CoreApi.GraphApi.Models;
+
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
@@ -18,13 +21,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private IFileService _fileService;
+
         public IncomeStatementMutationExtension(
                 IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+                IGenericRepositoryFactory repoFactory, 
+                IFileService fileService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _fileService = fileService;
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
@@ -70,6 +77,18 @@ StatementsSubmit input)
                 return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
             }
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
+        }
+
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
+        public bool SaveIncomeStatementPDF(IncomeStatementPDFDoc input)
+        {
+            if (input != null)
+            {
+               
+            }
+
+            return true;
+
         }
     }
 }
