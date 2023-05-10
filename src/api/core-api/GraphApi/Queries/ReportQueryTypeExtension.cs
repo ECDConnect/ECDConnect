@@ -18,6 +18,8 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports;
 using ECDLink.SmartStart.Reports.ChildProgressReport;
+using ECDLink.SmartStart.Reports.Models;
+using ECDLink.SmartStart.Services;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -163,27 +165,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public List<ClassroomMetricReport> GetClassAttendanceMetrics(
-            [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] MonthlyAttendanceReport report,
+            [Service] AttendanceService attendanceService,
             DateTime startMonth,
             DateTime endMonth)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            List<Practitioner> practitioners = practitionerRepo.GetAll().ToList(); //get all practitioners within userhierarchy
+            List<Practitioner> practitioners = attendanceService.GetPractitionersByHierarchy();
 
             List<ClassroomMetricReport> metrics = new List<ClassroomMetricReport>();
             foreach (var practitioner in practitioners)
             {
-                var metric = this.GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report,  practitioner.UserId, startMonth, endMonth);
+                var metric = GetClassAttendanceMetricsByUser(repoFactory, attendanceRepo, report, attendanceService,  practitioner.UserId, startMonth.Date, endMonth.GetEndOfDay());
                 if (metric.Any())
                 {
-                    if (metric.FirstOrDefault().classroomGroupId.ToString() != "00000000-0000-0000-0000-000000000000")
-                    {
-                        metrics.AddRange(metric);
-                    }
+                    metrics.AddRange(metric);
                 }
 
             }
@@ -195,51 +192,50 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             [Service] AttendanceTrackingRepository attendanceRepo,
             [Service] MonthlyAttendanceReport report,
+            [Service] AttendanceService attendanceService,
             string userId,
             DateTime startMonth,
             DateTime endMonth)
         {
-            DateTime reference = DateTime.Now;
-
             List<ClassroomMetricReport> metric = new List<ClassroomMetricReport>();
-            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: userId);
-            var LearnerRepo = repoFactory.CreateRepository<Learner>(userContext: userId);
 
-            var fromDate = (startMonth != null ? startMonth : new DateTime(reference.Year, reference.Month, 1));
-            fromDate = fromDate.AddMonths(-1);
-            var toDate = endMonth;
-            if (endMonth == null)
-            {
-                toDate = reference;
-            }
+            var fromDate = startMonth.GetStartOfMonth();
+            var toDate = endMonth.GetEndOfMonth().GetEndOfDay();
 
-           // var attendanceReport = report.GenerateMonthlyAttendanceReport(userId, null, startMonth.Date, endMonth.Date);
-
-            var classroomGroups = classGroupRepo.GetAll().Where(x => x.UserId.ToString().Contains(userId)).ToList();
+            var classroomGroups = attendanceService.GetUserClassroomGroups(userId);
             if (classroomGroups != null)
             {
                 foreach (var group in classroomGroups)
                 {
-                    List<Learner> learners = LearnerRepo.GetAll().Where(x => x.ClassroomGroupId.ToString().Contains(group.Id.ToString())).ToList();
+                    List<Learner> learners = attendanceService.GetAllLearnerGroupInstances(group.Id);
+                    
                     int childCount = learners.Count;
                     int month = fromDate.Month;
                     int year = fromDate.Year;
                     int weekOfYear = fromDate.GetWeekOfYear();
 
                     int attendancePercentage = 0;
-                    List<Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, group.UserId.ToString());
-                    if (attendanceData.Any())
+                    var learnerReports = new List<ChildGroupingAttendanceReportModel>();
+
+                    if (learners.Any())
                     {
-                        var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
-                        var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
-                        if (attendanceUnAttended > 0)
-                            attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
-                        //override month and year to attendance month and year
-                        month = attendanceData.FirstOrDefault().MonthOfYear;
-                        year = attendanceData.FirstOrDefault().Year;
-                        weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                        foreach (Learner learner in learners)
+                        {
+                            List<Attendance> attendanceData = attendanceRepo.GetAllByDateRangeByClassroom(fromDate, toDate, group.Id, learner.UserId);
+                            if (attendanceData.Any())
+                            {
+                                var attendanceAttended = attendanceData.Where(x => x.Attended == true).Count();
+                                var attendanceUnAttended = attendanceData.Where(x => x.Attended == false).Count();
+                                if (attendanceAttended > 0)
+                                    attendancePercentage = (int)(childCount > 0 && attendanceAttended > 0 ? Math.Round((double)(attendanceAttended / (double)(attendanceAttended + attendanceUnAttended)) * 100) : 0);
+                                //override month and year to attendance month and year
+                                month = attendanceData.FirstOrDefault().MonthOfYear;
+                                year = attendanceData.FirstOrDefault().Year;
+                                weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
+                            }
+                            metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
+                        }
                     }
-                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
                 }
             }
 

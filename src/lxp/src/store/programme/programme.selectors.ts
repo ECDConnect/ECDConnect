@@ -1,4 +1,4 @@
-import { ProgrammeDto } from '@ecdlink/core';
+import { DailyProgrammeDto, ProgrammeDto } from '@ecdlink/core';
 import { createSelector } from '@reduxjs/toolkit';
 import { isAfter, isBefore, isSameDay } from 'date-fns';
 import { RootState } from '../types';
@@ -30,6 +30,9 @@ export const getProgrammeByDate = (date: Date) =>
     (programmes: ProgrammeDto[]) =>
       programmes.find(
         (programme) =>
+          programme.dailyProgrammes.find((dailyRoutine: DailyProgrammeDto) =>
+            isSameDay(new Date(dailyRoutine.dayDate), date)
+          ) ||
           isSameDay(new Date(programme.startDate || 0), date) ||
           isSameDay(new Date(programme.endDate || 0), date) ||
           (isAfter(new Date(programme.startDate || 0), date) &&

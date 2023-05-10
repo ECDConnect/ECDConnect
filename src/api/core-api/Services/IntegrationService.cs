@@ -492,7 +492,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                   /**/       
+                    /**/       
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -512,122 +512,36 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                /**/
-                    
+                    /**/
+                    //-------------------
+                    //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
+                    //-------------------
+                    //Only allow data pushing when api mode has been set
+                    if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+                    {
+
+                        //TODO: API Data pushes from SS Audit tables
+                        returnOK = true;
+                    }
 
                     //-------------------
-                    //2. Iterate through all known coaches to get information below hierarchy
+                    //3. Iterate through all known coaches to get information below hierarchy
                     //-------------------
-                    
+
                     foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
                     {
-                     /**/  
-                        if (coach.IsComplete != true)
-                        {
-                            //entity may have been manually mapped for inclusion, pull all details and update
-                            string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
-                            var responseString = await GetAPIHandlerResponse(url, null);
-                            MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
-                            if (entity != null)
-                            {
-                                entity.localId = coach.LocalId;
-                                //update coach against mappedcoachproperties
-                                await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
-                            }
-                        }
-
                         //-------------------
-                        //3. - check all changes on known entities that is not marked complete
+                        //4. - check all changes on known entities that is not marked complete
                         //-------------------
-                        //run through all mapped practitioners that is not complete
-                        foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
-                        {
-                            if (practitioner.IsComplete != true)
-                            {
-                                //entity may have been manually mapped for inclusion, pull all details and update
-                                string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
-                                var responseString = await GetAPIHandlerResponse(url, null);
-                                MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
-                                if (entity != null)
-                                {
-                                    entity.localId = coach.LocalId;
-                                    await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
-                                }
-                            }
-                        }
-                        //run through all mapped children that is not complete
-                        foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
-                        {
-                            if (child.IsComplete != true)
-                            {
-                                //entity may have been manually mapped for inclusion, pull all details and update
-                                string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
-                                var responseString = await GetAPIHandlerResponse(url, null);
-                                MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
-                                if (entity != null)
-                                {
-                                    entity.localId = coach.LocalId;
-                                    await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
-                                }
-                            }
-                        }
-                        //run through all mapped caregivers
-                        foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
-                        {
-                            if (caregiver.IsComplete != true)
-                            {
-                                //entity may have been manually mapped for inclusion, pull all details and update
-                                string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
-                                var responseString = await GetAPIHandlerResponse(url, null);
-                                MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
-                                if (entity != null)
-                                {
-                                    entity.localId = caregiver.LocalId;
-                                    await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
-                                }
-                            }
-                        }
-                        //run through all mapped addresses that is not complete
-                        foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
-                        {
-                            if (address.IsComplete != true)
-                            {
-                                //entity may have been manually mapped for inclusion, pull all details and update
-                                string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
-                                var responseString = await GetAPIHandlerResponse(url, null);
-                                MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
-                                if (entity != null)
-                                {
-                                    entity.localId = address.LocalId;
-                                    await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
-                                }
-                            }
-                        }
-                        //run through all mapped documents that is not complete
-                        foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
-                        {
-                            if (docs.IsComplete != true)
-                            {
-                                //entity may have been manually mapped for inclusion, pull all details and update
-                                string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
-                                var responseString = await GetAPIHandlerResponse(url, null);
-                                MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
-                                if (entity != null)
-                                {
-                                    entity.localId = docs.LocalId;
-                                    await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
-                                }
-                            }
-                        }
-                        /**/
+                        //UpdateIncompletes(mappedEntities, mappedColumns, coach);
                     
                         //-------------------
-                        //4. - get all data from API and discard whats complete and known to SS
+                        //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
-                        //4.1) get all frannchisees and map them                
+                        //5.1) get all frannchisees and map them                
                         List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
                         //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
-                        //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
                             //order all to load principals first
@@ -729,14 +643,10 @@ namespace ECDLink.Core.Services
                         }
                     }
                 }
-                //Only allow data pushing when api mode has been set
-                if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
-                {
 
-                    //TODO: API Data pushes from SS Audit tables
-                    returnOK = true;
-                }
-
+                //-------------------
+                //6.Update service scheduler and mapping tables with reports of what got done
+                //-------------------
                 //update iterations of run into ServiceScheduler as conclusion to run
                 //save how many records updated to SL and from SL, created between SL and to SL and how it completed and when it stopped
                 //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
@@ -2440,6 +2350,109 @@ namespace ECDLink.Core.Services
             }
 
             return retVal;
+        }
+
+        private async Task<bool> UpdateIncompletes(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns, IntegrationEntityMapping coach)
+        {
+            //-------------------
+            //3. - check all changes on known entities that is not marked complete
+            //-------------------
+            if (coach.IsComplete != true)
+            {
+                //entity may have been manually mapped for inclusion, pull all details and update
+                string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
+                var responseString = await GetAPIHandlerResponse(url, null);
+                MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
+                if (entity != null)
+                {
+                    entity.localId = coach.LocalId;
+                    //update coach against mappedcoachproperties
+                    await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
+                }
+            }
+
+            //run through all mapped practitioners that is not complete
+            foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
+            {
+                if (practitioner.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
+                    var responseString = await GetAPIHandlerResponse(url, null);
+                    MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = practitioner.LocalId;
+                        await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
+                    }
+                }
+            }
+            //run through all mapped children that is not complete
+            foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
+            {
+                if (child.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
+                    var responseString = await GetAPIHandlerResponse(url, null);
+                    MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = child.LocalId;
+                        await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
+                    }
+                }
+            }
+            //run through all mapped caregivers
+            foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
+            {
+                if (caregiver.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
+                    var responseString = await GetAPIHandlerResponse(url, null);
+                    MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = caregiver.LocalId;
+                        await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
+                    }
+                }
+            }
+            //run through all mapped addresses that is not complete
+            foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
+            {
+                if (address.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
+                    var responseString = await GetAPIHandlerResponse(url, null);
+                    MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = address.LocalId;
+                        await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
+                    }
+                }
+            }
+            //run through all mapped documents that is not complete
+            foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
+            {
+                if (docs.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
+                    var responseString = await GetAPIHandlerResponse(url, null);
+                    MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = docs.LocalId;
+                        await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
+                    }
+                }
+            }
+            /**/
+            return true;
         }
 
         #endregion

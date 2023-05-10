@@ -7,6 +7,7 @@ export const visitSteps: Step[] = [
       'You can use the tabs at the top to see different parts of your client’s profile',
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-visit-step-2',

@@ -42,6 +42,7 @@ export enum NavigationTypes {
   Profile = 'Profile',
   Messages = 'Messages',
   Training = 'Training',
+  Community = 'Community',
   Logout = 'Log out',
 }
 
@@ -272,6 +273,13 @@ export const Dashboard: React.FC = () => {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
       icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
     },

@@ -413,12 +413,20 @@ export const useChildProgressObservation = (
     setCategoryTrackingStatus(ChildProgressObservationStatus.Started);
   };
 
-  const getUnselectedSkills = () => {
-    if (!currentReport || !currentCategory) return [];
+  const getSkills = (): {
+    yes: ProgressTrackingSkillDto[];
+    tryingToDo: ProgressTrackingSkillDto[];
+    notYet: ProgressTrackingSkillDto[];
+    none: ProgressTrackingSkillDto[];
+  } => {
+    if (!currentReport || !currentCategory)
+      return {
+        yes: [],
+        tryingToDo: [],
+        notYet: [],
+        none: [],
+      };
 
-    const flatSelectedSkills = currentCategory.tasks
-      .filter((x) => !x.value || x.value !== ProgressSkillValues.Yes)
-      .map((x) => x.skillId);
     const category = allCategories.find(
       (x) => x.id === currentCategory.categoryId
     );
@@ -433,13 +441,37 @@ export const useChildProgressObservation = (
 
     const subCategorySkillsIds = subCategorySkills?.map((x) => x.id);
 
-    const unSelectedSkills = allSkills.filter(
-      (skill) =>
-        subCategorySkillsIds.includes(skill.id) &&
-        !flatSelectedSkills.some((flatSkillId) => flatSkillId === skill.id)
-    );
-
-    return unSelectedSkills;
+    return {
+      yes: allSkills.filter(
+        (skill) =>
+          subCategorySkillsIds.includes(skill.id) &&
+          currentCategory.tasks.some(
+            (x) => x.skillId === skill.id && x.value === ProgressSkillValues.Yes
+          )
+      ),
+      tryingToDo: allSkills.filter(
+        (skill) =>
+          subCategorySkillsIds.includes(skill.id) &&
+          currentCategory.tasks.some(
+            (x) =>
+              x.skillId === skill.id &&
+              x.value === ProgressSkillValues.TryingToDo
+          )
+      ),
+      notYet: allSkills.filter(
+        (skill) =>
+          subCategorySkillsIds.includes(skill.id) &&
+          currentCategory.tasks.some(
+            (x) =>
+              x.skillId === skill.id && x.value === ProgressSkillValues.NotYet
+          )
+      ),
+      none: allSkills.filter(
+        (skill) =>
+          subCategorySkillsIds.includes(skill.id) &&
+          currentCategory.tasks.some((x) => x.skillId === skill.id && !x.value)
+      ),
+    };
   };
 
   const getSelectedSkillIdsForCategoryLevel = (levelId: number) => {
@@ -577,20 +609,6 @@ export const useChildProgressObservation = (
     );
   };
 
-  const isNoTryingToDoAndAtLeastOneNotYet = () => {
-    if (!currentCategory) return false;
-
-    const tryingToDoCount = currentCategory.tasks.filter(
-      (x) => x.value === ProgressSkillValues.TryingToDo
-    ).length;
-
-    const notYetCount = currentCategory.tasks.filter(
-      (x) => x.value === ProgressSkillValues.NotYet
-    ).length;
-
-    return tryingToDoCount === 0 && notYetCount > 0;
-  };
-
   const getLatestReport = () => {
     if (!childReports)
       throw new Error('child reports are not set, could not get latest report');
@@ -711,7 +729,7 @@ export const useChildProgressObservation = (
       : 1;
 
   return {
-    getUnselectedSkills,
+    getSkills,
     getChildAchievedLevelId,
     getLatestReport,
     getChildAchievedLevelPercentage,
@@ -741,6 +759,5 @@ export const useChildProgressObservation = (
     completeReport,
     completeReportLocally,
     isAllSkillsYes,
-    isNoTryingToDoAndAtLeastOneNotYet,
   };
 };
