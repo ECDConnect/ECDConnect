@@ -8,13 +8,10 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
