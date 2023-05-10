@@ -85,9 +85,15 @@ export const DynamicForm = ({
     'referrals',
     ReferralActions.UPDATE_VISIT_DATA_STATUS
   );
+  const { isLoading: isLoadingCompletedVisits } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOM_COMPLETED_VISITS_FOR_VISIT_ID
+  );
 
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
+  const wasLoadingCompletedVisits = isLoadingCompletedVisits;
+
   const { visitId } = useParams<MotherProfileParams>();
 
   const appDispatch = useAppDispatch();
@@ -179,23 +185,20 @@ export const DynamicForm = ({
       isCompleted: String(item.isCompleted),
     })) as VisitDataStatusFilterInput[];
 
-    appDispatch(
-      visitActions.addMomCompletedVisitsByVisitId({
+    appDispatch(visitActions.addVisitFormDataForMother(input));
+    await appDispatch(visitThunkActions.addVisitForMomFormData(input));
+    await appDispatch(
+      visitThunkActions.getMomCompletedVisitsForVisitId({
         visitId: visitId,
-        visits: [name || ''],
       })
     );
-
-    if (!!sections?.length) {
-      appDispatch(visitActions.addVisitFormDataForMother(input));
-      await appDispatch(visitThunkActions.addVisitForMomFormData(input));
-
-      await appDispatch(
-        visitThunkActions.getMomCompletedVisitsForVisitId({
-          visitId: visitId,
-        })
-      );
-    }
+    // TODO: fix local update
+    // appDispatch(
+    //   visitActions.addMomCompletedVisitsByVisitId({
+    //     visitId: visitId,
+    //     visits: [name || ''],
+    //   })
+    // );
 
     if (!!referrals?.length) {
       appDispatch(
@@ -275,11 +278,20 @@ export const DynamicForm = ({
   useEffect(() => {
     if (
       (wasLoading && !isLoading) ||
-      (wasLoadingReferral && !isLoadingReferral)
+      (wasLoadingReferral && !isLoadingReferral) ||
+      (wasLoadingCompletedVisits && !isLoadingCompletedVisits)
     ) {
       onClose?.();
     }
-  }, [isLoading, isLoadingReferral, onClose, wasLoading, wasLoadingReferral]);
+  }, [
+    isLoading,
+    isLoadingCompletedVisits,
+    isLoadingReferral,
+    onClose,
+    wasLoading,
+    wasLoadingCompletedVisits,
+    wasLoadingReferral,
+  ]);
 
   return (
     <div className="flex h-full flex-col">

@@ -129,7 +129,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   });
 
   const principalChildren = children?.filter((el) => {
-    return classroomGroupLearners.some((f) => {
+    return principalLearners.some((f) => {
       return f.userId === el.userId; // filter only principal learners
     });
   });

@@ -1,10 +1,4 @@
-import {
-  Alert,
-  Checkbox,
-  CheckboxChange,
-  Divider,
-  Typography,
-} from '@ecdlink/ui';
+import { Alert, CheckboxChange, CheckboxGroup, Divider } from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, Label } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
@@ -97,24 +91,17 @@ export const FoodsFormStep = ({
         />
         <Label className="mt-4" text={replaceBraces(question.question, name)} />
         <Divider dividerType="dashed" className="mb-3" />
-        {options.map((option) => (
-          <div
-            className="bg-uiBg mb-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={answers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text={option.name}
-              color="textMid"
-            />
-          </div>
+        {options.map((item, index) => (
+          <CheckboxGroup
+            checkboxColor="primary"
+            className="mt-2"
+            id={item.name}
+            key={item.name}
+            title={item.name}
+            checked={answers?.some((option) => option === item.name)}
+            value={item.name}
+            onChange={onCheckboxChange}
+          />
         ))}
       </div>
     </>
