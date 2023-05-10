@@ -104,13 +104,37 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const listItems = [
     {
+      title: 'SmartStarter journey',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Training, PQA rating & performance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BadgeCheckIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.SMART_STARTER_JOURNEY.ROOT.replace(':clientId', practitionerId)
+        ),
+      classNames: 'bg-uiBg',
+    },
+    {
       title: 'Classroom',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: 'Children, progress & attendance',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'AcademicCapIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
       chipConfig: {
@@ -134,7 +158,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
       chipConfig: {
