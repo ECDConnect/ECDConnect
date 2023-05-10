@@ -196,7 +196,7 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null)
+        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null, bool showOptions = true, bool isPut = false, string postString = "")
         {
             var request = new HttpRequestMessage();
 
@@ -209,8 +209,8 @@ namespace ECDLink.Core.Services
                         var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions, Related = relatedConditions };
 
                         var payload = JsonSerializer.Serialize(apiEntity);
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
-                        var response = await SmartLinkClient.PostAsync(endpointUrl, content);
+                        var content = showOptions ? new StringContent(payload, Encoding.UTF8, "application/json") : new StringContent(postString, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
+                        var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
 
                         if (!response.IsSuccessStatusCode)
                         {
@@ -406,8 +406,81 @@ namespace ECDLink.Core.Services
 
         private async Task<bool> PushUpdates(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
         {
-            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
+            //1) Get list of entities and their types
+            //2) iterate through these and group updates for same entity
+            //3) build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any otehr changes is irrelevant
+            //4) add remote guid
+            //5) Send it to the /Multiple endpoint
+            //move to next entity type thats mapped and ha sproperties
+            var entityTypeList = audits.Select(x => x.Entity).Distinct();
+            Dictionary<string,string> entitypes = new Dictionary<string,string>();
+
+            foreach (var updatedEntityType in entityTypeList)
             {
+                StringBuilder jsonString = new StringBuilder();
+                var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                if (entityIdList.Any() && entities.Any())
+                {                    
+                    string url = "";//"Franchisee" + SSIntegrationSettings.UpdateMultiple;
+                    jsonString.AppendLine("[");
+                    foreach (var entityToUpdate in entityIdList)
+                    {
+                        if (entities.Where(x => x.LocalId.Equals(entityToUpdate)) != null)
+                        {
+                            var mappedEntity = entities.Where(x => x.LocalId.Equals(entityToUpdate)).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            string localEntity = entityToUpdate;
+                            string remoteEntity = entityToUpdate;
+                            if (entityToUpdate.Equals("ApplicationUser"))
+                            {
+                                localEntity = mappedEntity.LocalEntity;
+                                remoteEntity = mappedEntity.RemoteEntity;
+                            }
+
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).ToList();
+
+                                foreach (var changeLine in allChanges)
+                                {
+                                    url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    var mappedColumnLine = columns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                    if (mappedColumnLine != null)
+                                    {
+                                        //get mappedcolumn from columnmapping
+                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + changeLine.ValueAfter + "\",");
+                                    }
+                                }
+                                jsonString.AppendLine("},");
+                            }
+                        }
+                    }
+                    jsonString.AppendLine("]");
+                    //jsonString.AppendLine("[");
+                    //jsonString.AppendLine("{");
+                    //    jsonString.AppendLine("\"FirstName\": \"Ntombizanele Nozonela\", ");
+                    //    jsonString.AppendLine("\"Surname\": \"Maasdorp\", ");
+                    //    jsonString.AppendLine("\"IdNumber\": \"8509230915086\", ");
+                    //    jsonString.AppendLine("\"PersonalNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"WhatsAppNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"BirthDate\": \"1985-09-23\", ");
+                    //    jsonString.AppendLine("\"EmailAddress\": \"test@ecdconnect.co.za\", ");
+                    //    jsonString.AppendLine("\"NextOfKinFirstName\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinSurname\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinContactNumber\": null,");
+                    //    jsonString.AppendLine("\"Guid\": \"cc1cbf5d-d3a1-eb11-8346-00155d326100\"");
+                    //  jsonString.AppendLine("}");
+                    //jsonString.AppendLine("]");
+
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                }
+
+
+
             }
 
             return true;
@@ -415,40 +488,26 @@ namespace ECDLink.Core.Services
 
         private async Task<bool> PushDeletes(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
         {
-            if (updates.Count > 0)
-            {
-                PushUpdates(inserts);
-            }
-            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
-            {
-            }
+
 
             return true;
         }
 
         private async Task<bool> PushInserts(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
         {
-            if (updates.Count > 0)
-            {
-                PushUpdates(inserts);
-            }
-            if (mappedColumns.Where(x => x.LocalEntity.Equals(audit.Entity) && x.LocalColumn.Equals(audit.Property)) != null)
-            {
-            }
 
             return true;
         }
 
         private async Task<bool> PushData(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns)
         {
-            int changesCheckTime = 60;
+            int changesCheckTime = 120;
             List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
 
             //Inserts
             var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
             if (inserts.Count > 0)
                 await PushInserts(inserts, mappedEntities, mappedColumns);
-
 
             var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
             if (updates.Count > 0)
@@ -528,7 +587,7 @@ namespace ECDLink.Core.Services
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
-                        await PushData(mappedEntities, mappedColumns);                        
+                    //    await PushData(mappedEntities, mappedColumns);                        
                     }
 
                     //-------------------

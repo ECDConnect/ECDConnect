@@ -5,7 +5,6 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
@@ -18,7 +17,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public bool AddUsersToRole(
           [Service] UserManager<ApplicationUser> userManager,
-          [Service] IHttpContextAccessor contextAccessor,
           [Service] HierarchyEngine engine,
           string userId,
           List<string> roleNames)
@@ -31,7 +29,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new Exception("User does not exist");
             }
 
-            // TODO: Remove this temp fix and move role and hierarchy federation to the userrepo layer
             if (roleNames.Contains(Roles.ADMINISTRATOR))
             {
                 if (string.IsNullOrEmpty(engine.GetUserHierarchy(userId)))
