@@ -333,10 +333,10 @@ namespace EcdLink.Api.CoreApi {
             public const string QueryAll = "/Query";
             public const string Singular = "/{{Guid}}";
             public const string QueryByGuid = "/Query/{{Guid}}";
-            public const string ColumnsMetadata = "/Columns/";
-            public const string UpdateMultiple = "/Multiple/";
+            public const string ColumnsMetadata = "/Columns";
+            public const string UpdateMultiple = "/Multiple";
             public const string UpdateSingular = "/{{Guid}}";
-            public const string CreateMultiple = "/Multiple/";
+            public const string CreateMultiple = "/Multiple";
             public const string CreateSingular = "/";
             public const string DocumentSendLength = "20";
             public const string IntegrationSystem = "Smartlink";
