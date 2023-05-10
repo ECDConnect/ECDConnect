@@ -32,10 +32,8 @@ using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
-using EcdLink.Api.CoreApi.Security.Models;
 using ECDLink.Core.Helpers;
 using MediatR;
-using static Microsoft.EntityFrameworkCore.DbLoggerCategory;
 
 namespace ECDLink.Core.Services
 {
