@@ -121,18 +121,12 @@ export const ChildDevelopmentLevelForm: React.FC<
         </div>
       </div>
       <Dialog
-        fullScreen={false}
         visible={developmentLevelsDisplayActive}
-        position={DialogPosition.Full}
+        position={DialogPosition.Middle}
       >
-        <BannerWrapper
-          size="small"
-          onBack={openLevelDescriptions}
-          title="Tracking progress"
-          renderOverflow
-        >
+        <div className="p-4">
           <ChildDevelopmentLevelsDisplay onClose={openLevelDescriptions} />
-        </BannerWrapper>
+        </div>
       </Dialog>
     </>
   );

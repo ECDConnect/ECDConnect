@@ -1,7 +1,7 @@
-import pregnantHealthCare from '@/assets/iconCircleAntenatalSmall.svg';
+import pregnantHealthCare from '@/assets/healthcare.svg';
 import Pregnant from '@/assets/pregnant.svg';
 import P1 from '@/assets/pillar/p1.svg';
-import IconCircleDanger from '@/assets/IconCircleDanger.svg';
+import IconCircleDanger from '@/assets/danger.svg';
 
 export const activitiesTypes = {
   healthCare: 'Healthcare',

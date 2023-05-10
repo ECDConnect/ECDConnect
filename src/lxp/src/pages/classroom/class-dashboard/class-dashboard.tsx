@@ -49,6 +49,9 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
+  const [programmeStartDate, setProgrammeStartDate] = useState(
+    state?.programmeStartDate
+  );
   const [showAttendance, setShowAttendance] = useState(true);
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
@@ -119,7 +122,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -151,7 +154,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -165,6 +168,7 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
+    setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
   };
