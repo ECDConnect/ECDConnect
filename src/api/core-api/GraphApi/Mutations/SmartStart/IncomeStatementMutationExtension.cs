@@ -12,6 +12,15 @@ using Newtonsoft.Json;
 using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using System;
+using System.IO;
+using System.Threading.Tasks;
+using ECDLink.Abstractrions.Enums;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.Tenancy.Context;
+using System.Linq;
+using ECDLink.DataAccessLayer.Entities.Workflow;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -22,6 +31,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
         private IFileService _fileService;
+        private IGenericRepository<Document, Guid> _documentRepo;
+        private IGenericRepository<DocumentType, Guid> _documentTypRepo;
+        private IGenericRepository<WorkflowStatusType, Guid> _workflowStatusTypeRepo;
+        private IGenericRepository<WorkflowStatus, Guid> _workflowStatusRepo;
 
         public IncomeStatementMutationExtension(
                 IHttpContextAccessor contextAccessor,
@@ -32,6 +45,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             _repoFactory = repoFactory;
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _fileService = fileService;
+            _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
+            _documentTypRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: _applicationUserId);
+            _workflowStatusTypeRepo = _repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: _applicationUserId);
+            _workflowStatusRepo = _repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: _applicationUserId);
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
@@ -84,7 +101,38 @@ StatementsSubmit input)
         {
             if (input != null)
             {
-               
+                // Upload the document
+                var b64Str = input.Reference.Substring(input.Reference.LastIndexOf(',') + 1);
+                var bytes = Convert.FromBase64String(b64Str);
+
+                using MemoryStream fileStream = new MemoryStream(bytes);
+                var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, input.FileName, FileTypeEnum.IncomeStatementPDF)).Result;
+                fileStream.Dispose();
+
+                // Get the document type
+                DocumentType docType = _documentTypRepo.GetAll().Where(x => x.Name == "IncomeStatementPDF").FirstOrDefault();
+
+                // Workflow info
+                WorkflowStatusType wsType = _workflowStatusTypeRepo.GetAll().Where(x => x.Description == "Document").FirstOrDefault();
+                WorkflowStatus ws = _workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == "Verified").FirstOrDefault();
+
+                // Save the document to the database
+                var docInput = new Document
+                {
+                    CreatedUserId = input.CreatedUserId,
+                    Name = input.FileName,
+                    UpdatedBy = _applicationUserId,
+                    InsertedDate = DateTime.Now,
+                    Reference = fileUrl,
+                    UserId = input.UserId,
+                    DocumentTypeId = docType.Id,
+                    WorkflowStatusId = ws.Id,
+                    TenantId = TenantExecutionContext.Tenant.Id
+
+                };
+
+                _documentRepo.Insert(docInput);
+
             }
 
             return true;
