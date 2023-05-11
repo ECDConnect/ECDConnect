@@ -7,8 +7,8 @@ import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import { SmartStarterJourneyParams } from '../smart-starter-journey.types';
 import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
-import { currentActivityKey, visitsTypes } from '..';
-import { firstVisit, secondVisit } from './steps';
+import { currentActivityKey } from '..';
+import { prePqaVisits } from './steps';
 
 interface FormProps {
   onBack: () => void;
@@ -92,10 +92,8 @@ export const Form = ({ onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
-      case visitsTypes.secondVisit:
-        return secondVisit;
       default:
-        return firstVisit;
+        return prePqaVisits;
     }
   }, [activityName]);
 

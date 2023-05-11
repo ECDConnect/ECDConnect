@@ -105,7 +105,7 @@ export const SmartStarterJourney: React.FC = () => {
       },
     },
   ];
-  console.log({ practitioner });
+
   if (showForm) {
     return <Form onBack={() => setShowForm(false)} />;
   }
