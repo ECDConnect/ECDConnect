@@ -140,6 +140,7 @@ class IncomeStatementsService {
     return response.data.data.GetAllStatementsPayType;
   }
 
+
   async UpdateStatementsIncome(
     id: string,
     input: StatementsIncomeInput
@@ -166,6 +167,39 @@ class IncomeStatementsService {
     }
 
     return response.data.data.updateStatementsIncome;
+  }
+
+
+  async submitStatementsIncomePdfReport(
+    fileName: string,
+    reference: string,
+    userId: string,
+    createdUserId: string
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation saveIncomeStatementPDF($fileName: string!, $reference: string!, $userId: number! ) { 
+         saveIncomeStatementPDF( fileName: $fileName, reference: $reference, userId: $userId) {
+           result  resultObject resultMessage 
+          }
+        }
+      `,
+      variables: {
+        fileName,
+        reference,
+        userId,
+        createdUserId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Submit income report statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.report;
   }
 
   async getMonthsIncomeExpensesReport(

@@ -123,7 +123,7 @@ export const useGeneratePdfReport = () => {
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
-      if (component === 'income-statements' && tableData.length > 1) {
+      if ((component === 'income-statements' || component === 'submit-statements') && tableData.length > 1 ) {
         const columns = ['Additional Notes'];
         const data = [['']];
         autoTable(doc, {
@@ -234,7 +234,8 @@ export const useGeneratePdfReport = () => {
       var pdfData = doc.output();
       // convert the binary data to a base64-encoded string
       var base64String = btoa(pdfData);
-      console.log('output', base64String);
+      return base64String;
+
     } else {
       //export pdf report
       doc.save(outputName);

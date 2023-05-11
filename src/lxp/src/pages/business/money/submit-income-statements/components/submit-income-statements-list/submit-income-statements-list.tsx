@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
-  IncomeStatementsDto
+  IncomeStatementsDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -391,6 +391,19 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     },
   ];
 
+  const submitPdfReport = async (report: string) => {
+    await new IncomeStatementsService(userAuth?.auth_token!)
+      .submitStatementsIncomePDF(
+        `${getMonthName(
+          Number(statementMonth) - 1
+        )}-income-statement-report.pdf`,
+        report,
+        practitioner?.id ?? '',
+        practitioner?.id ?? ''
+      )
+      .catch((err) => {});
+  };
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -517,7 +530,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                       statementYear
                     )
                     .then((reportData) => {
-                      generateReport(
+                      const report = generateReport(
                         reportData,
                         signature,
                         new Date().toDateString(),
@@ -533,9 +546,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                         tableFootStyles,
                         'portrait'
                       );
-                    }).catch((error) => {
-
-                    });
+                      submitPdfReport(report ?? '');
+                    })
+                    .catch((error) => {});
                 });
                 setConfimSubmitIncomeValues(false);
               },
