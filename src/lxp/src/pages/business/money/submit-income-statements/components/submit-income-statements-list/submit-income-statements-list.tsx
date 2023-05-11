@@ -395,7 +395,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     await new IncomeStatementsService(userAuth?.auth_token!)
       .saveIncomeStatementPDF(
         `${getMonthName(
-          Number(statementMonth) - 1
+          Number(statementMonth)
         )}-income-statement-report.pdf`,
         report,
         practitioner?.id ?? '',
@@ -530,6 +530,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                       statementYear
                     )
                     .then((reportData) => {
+                      console.log(">>", reportData);
                       const report = generateReport(
                         reportData,
                         signature,
@@ -538,7 +539,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                         tableTopContent,
                         tableStyles,
                         `${getMonthName(
-                          Number(statementMonth) - 1
+                          Number(statementMonth)
                         )}-income-statement-report.pdf`,
                         'submit-statements',
                         tableStyles,

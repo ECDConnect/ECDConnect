@@ -2,7 +2,6 @@ import { ReportTableDataDto } from '@/../../../packages/core/lib/models/dto/Stat
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 
-
 export const useGeneratePdfReport = () => {
   const generateReport = (
     tableData: ReportTableDataDto[],
@@ -51,15 +50,15 @@ export const useGeneratePdfReport = () => {
       tables.forEach((table, index) => {
         const headers = table.headers;
         let finalFooter =
-          component !== 'income-statements'
-            ? footer
-            : [
+          component === 'income-statements' || component === 'submit-statements'
+            ? [
                 [
                   'Total',
                   ...new Array(headers.length - 2).fill(''),
                   `R ${table.total}`,
                 ],
-              ];
+              ]
+            : footer;
 
         // table section with styles
         autoTable(doc, {
@@ -123,7 +122,11 @@ export const useGeneratePdfReport = () => {
         // Calculate position for next table
         startY = (doc as any).lastAutoTable.finalY + 10;
       });
-      if ((component === 'income-statements' || component === 'submit-statements') && tableData.length > 1 ) {
+      if (
+        (component === 'income-statements' ||
+          component === 'submit-statements') &&
+        tableData.length > 1
+      ) {
         const columns = ['Additional Notes'];
         const data = [['']];
         autoTable(doc, {
@@ -228,14 +231,13 @@ export const useGeneratePdfReport = () => {
       doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
       doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
-    // send income statements-pdf-report to SmartStart
+    // send pdf to SmartStart
     if (component === 'submit-statements' && tableData.length > 1) {
       // save the PDF document as binary data
       var pdfData = doc.output();
       // convert the binary data to a base64-encoded string
       var base64String = btoa(pdfData);
       return base64String;
-
     } else {
       //export pdf report
       doc.save(outputName);
