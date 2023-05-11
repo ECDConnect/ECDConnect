@@ -58,6 +58,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Language, Guid> _staticLanguageRepo;
         private IGenericRepository<Gender, Guid> _staticGenderRepo;
         private IGenericRepository<Race, Guid> _staticRaceRepo;
+        private IGenericRepository<Province, Guid> _staticProvinceRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerGenericRepo;
         private IGenericRepository<Child, Guid> _childRepo;
@@ -117,6 +118,7 @@ namespace ECDLink.Core.Services
             _staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
             _staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
             _staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
             _practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
             _practitionerGenericRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
             _coachGenericRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
@@ -432,7 +434,6 @@ namespace ECDLink.Core.Services
                     jsonString.AppendLine("[");
                     foreach (var entityToUpdate in entityIdList)
                     {
-                       
                         var mappedEntity = validEntities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
                         if (mappedEntity != null) //if we have this entity mapped to remote?
                         {
@@ -465,7 +466,6 @@ namespace ECDLink.Core.Services
                                     localEntity = SSIntegrationSettings.SSFranchisor;
                                     remoteEntity = SSIntegrationSettings.SLFranchisor;
                                 }
-
                             }
 
                             url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
@@ -482,22 +482,23 @@ namespace ECDLink.Core.Services
                                     {
                                         if (mappedColumnLine.UpdateDirection.Equals(UpdateDirection.Both) || mappedColumnLine.UpdateDirection.Equals(UpdateDirection.SSToSL)) //only update mapped columns configured to update
                                         {
+                                            string valueToSend = changeLine.ValueAfter;
                                             //get mappedcolumn from columnmapping
                                             if (mappedColumnLine.RemapToString)
                                             {
-
+                                                if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend)) {
+                                                    valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                }
                                             }
-                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + changeLine.ValueAfter + "\",");
+                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
                                         }
                                     }
-
                                     //remove entry from audits list as we have processed it here and sending to SL
                                     audits.Remove(changeLine);
                                 }
                             }
                             jsonString.AppendLine("},");
                         }
-                        
                     }
                     jsonString.AppendLine("]");
                     //jsonString.AppendLine("[");
@@ -563,6 +564,39 @@ namespace ECDLink.Core.Services
                 await PushDeletes(deletes, mappedEntities, mappedColumns);
 
             return true;
+        }
+
+        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (race != null ? race.Description : null);
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (gender != null ? gender.Description : null);
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (lang != null ? lang.Description : null);
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (rel != null ? rel.Description : null);
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (prov != null ? prov.Description : null);
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (edu != null ? edu.Description : null);
+                    break;
+            }
+
+            return valueToSend;
         }
 
 
@@ -1238,7 +1272,7 @@ namespace ECDLink.Core.Services
                                 UserName = userId,//entity?.IdNumber,
                                 IdNumber = entity.IdNumber,
                                 IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                                VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
+                                //VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
                                 FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                                 Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
                                 FullName = entity.FirstName + " " + entity.Surname,

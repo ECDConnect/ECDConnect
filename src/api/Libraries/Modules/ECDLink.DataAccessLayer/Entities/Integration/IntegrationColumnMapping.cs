@@ -22,6 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string EntityGrouping { get; set; }
         public int ColumnValidationLimit { get; set; }
         public bool RemapToString { get; set; } = false;
+        public string RemapEntity { get; set; }
 
 
     }
