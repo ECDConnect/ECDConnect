@@ -287,24 +287,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     });
                     break;
                 default:
-                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-                    foreach (var prop in changes)
+                    if (changes != null)
                     {
-                        changesList.Add(new IntegrationAudit()
+                        List<IntegrationAudit> changesList = new List<IntegrationAudit>();
+                        foreach (var prop in changes)
                         {
-                            ChangeType = changeType,
-                            Entity = "ApplicationUser",
-                            Property = prop.FieldName,
-                            ValueBefore = prop.ValueBefore,
-                            ValueAfter = prop.ValueAfter,
-                            UserId = uId,
-                            RelatedId = id
-                        });
-                    }
+                            changesList.Add(new IntegrationAudit()
+                            {
+                                ChangeType = changeType,
+                                Entity = "ApplicationUser",
+                                Property = prop.FieldName,
+                                ValueBefore = prop.ValueBefore,
+                                ValueAfter = prop.ValueAfter,
+                                UserId = uId,
+                                RelatedId = id
+                            });
+                        }
 
-                    foreach (var auditItem in changesList)
-                    {
-                        auditInsertRepo.Insert(auditItem);
+                        foreach (var auditItem in changesList)
+                        {
+                            auditInsertRepo.Insert(auditItem);
+                        }
                     }
                     break;
             }
