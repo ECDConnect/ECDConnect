@@ -1,18 +1,11 @@
+import { ReportTableDataDto } from '@/../../../packages/core/lib/models/dto/Statements/income-statements.dto';
 import { jsPDF, jsPDFOptions } from 'jspdf';
 import autoTable, { UserOptions } from 'jspdf-autotable';
 
-type TableData = {
-  tableName: string;
-  type: string;
-  headers: { header: string; dataKey: string }[];
-  data: { [key: string]: any }[];
-  total: number;
-};
 
-export const useGenenratePdfReport = () => {
+export const useGeneratePdfReport = () => {
   const generateReport = (
-    footer: any[],
-    tableData: TableData[],
+    tableData: ReportTableDataDto[],
     signature: string,
     downloadDate: string,
     tableHeadStyles?: UserOptions['headStyles'],
@@ -21,6 +14,7 @@ export const useGenenratePdfReport = () => {
     outputName?: string,
     component?: string,
     tableStyles?: UserOptions['styles'],
+    footer?: any[],
     tableFootStyles?: UserOptions['footStyles'],
     pageOriantations?: jsPDFOptions['orientation']
   ) => {
@@ -29,7 +23,7 @@ export const useGenenratePdfReport = () => {
     let startY = 30; // initial startY value
     var imgWidth = 45;
     var imgHeight = 8;
-    const tablesByType: { [key: string]: TableData[] } = {};
+    const tablesByType: { [key: string]: ReportTableDataDto[] } = {};
 
     // Group tables by type
     tableData.forEach((table) => {
@@ -102,7 +96,7 @@ export const useGenenratePdfReport = () => {
             // Add left header
             doc.setFontSize(20);
             doc.setFont('bold');
-            doc.text(content.pageTitle, 10, 10);
+            doc.text(content?.pageTitle ?? '', 10, 10);
 
             // Add right header
             doc.setFontSize(16);
@@ -110,7 +104,7 @@ export const useGenenratePdfReport = () => {
             const pageWidth = doc.internal.pageSize.getWidth();
             doc.text(
               content.subtitle ?? '',
-              pageWidth - doc.getStringUnitWidth(content.subtitle) - 50,
+              pageWidth - doc.getStringUnitWidth(content.subtitle ?? '') - 50,
               10
             );
             doc.setFontSize(12);
@@ -234,15 +228,17 @@ export const useGenenratePdfReport = () => {
       doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
       doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
-    //export pdf report
-    doc.save(outputName);
-
-    // save the PDF document as binary data
-    var pdfData = doc.output();
-
-    // convert the binary data to a base64-encoded string
-    var base64String = btoa(pdfData);
-    return console.log('output', base64String);
+    // send pdf to SmartStart
+    if (component === 'submit-statements' && tableData.length > 1) {
+      // save the PDF document as binary data
+      var pdfData = doc.output();
+      // convert the binary data to a base64-encoded string
+      var base64String = btoa(pdfData);
+      console.log('output', base64String);
+    } else {
+      //export pdf report
+      doc.save(outputName);
+    }
   };
-  return {generateReport};
+  return { generateReport };
 };

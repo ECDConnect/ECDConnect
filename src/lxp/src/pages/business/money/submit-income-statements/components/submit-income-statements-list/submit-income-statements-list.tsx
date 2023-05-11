@@ -17,7 +17,7 @@ import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 import {
   ExpensesStatementsDto,
-  IncomeStatementsDto,
+  IncomeStatementsDto
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -26,6 +26,11 @@ import {
   incomesValueFunc,
   numberWithSpaces,
 } from '@/utils/statements/statements-utils';
+import { getMonth, getYear } from 'date-fns';
+import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
+import { practitionerSelectors } from '@/store/practitioner';
+import { UserOptions } from 'jspdf-autotable';
+import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -74,6 +79,9 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const totalBalance = (totalIncome - totalExpenses).toFixed(2);
 
+  const statementMonth = getMonth(new Date());
+  const statementYear = getYear(new Date());
+
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
   const [startupSupport, setStartupSupport] = useState<any>([]);
@@ -88,6 +96,44 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const [otherExpenseValues, setOtherExpenseValues] = useState<any>([]);
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const signature = practitioner?.signingSignature ?? '';
+  // const { errorDialog } = useRequestResponseDialog();
+
+  const { generateReport } = useGeneratePdfReport();
+
+  const footer = [
+    'Total',
+    '', // Placeholder for Day 2 column
+  ];
+
+  const tableTopContent = {
+    pageTitle: `Income Statement`,
+    subtitle: '',
+    //column2 with 3 rows of text
+    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_column_two_row_two: `ID: ${practitioner?.userId}`,
+    text_column_two_row_three: `Phone: ${practitioner?.startDate}`,
+  };
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 8,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -194,8 +240,8 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const input = {
     period: 'Monthly',
     userId: userAuth?.id!,
-    month: 2,
-    year: 2023,
+    month: statementMonth,
+    year: statementYear,
   };
 
   const updateStatements = async () => {
@@ -463,7 +509,34 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               colour: 'primary',
               type: 'filled',
               onClick: () => {
-                updateStatements();
+                updateStatements().then(async () => {
+                  await new IncomeStatementsService(userAuth?.auth_token!)
+                    .getMonthsIncomeExpensesReport(
+                      userAuth?.id!,
+                      statementMonth,
+                      statementYear
+                    )
+                    .then((reportData) => {
+                      generateReport(
+                        reportData,
+                        signature,
+                        new Date().toDateString(),
+                        tableHeadStyles,
+                        tableTopContent,
+                        tableStyles,
+                        `${getMonthName(
+                          Number(statementMonth) - 1
+                        )}-income-statement-report.pdf`,
+                        'submit-statements',
+                        tableStyles,
+                        footer,
+                        tableFootStyles,
+                        'portrait'
+                      );
+                    }).catch((error) => {
+
+                    });
+                });
                 setConfimSubmitIncomeValues(false);
               },
               leadingIcon: 'ArrowCircleRightIcon',

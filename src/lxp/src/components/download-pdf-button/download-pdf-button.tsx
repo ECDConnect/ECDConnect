@@ -1,16 +1,8 @@
-import { jsPDF, jsPDFOptions } from 'jspdf';
-import autoTable, { UserOptions } from 'jspdf-autotable';
+import { jsPDFOptions } from 'jspdf';
+import { UserOptions } from 'jspdf-autotable';
 import { Typography, Button, renderIcon } from '@ecdlink/ui';
-import { weeksToDays } from 'date-fns';
-import { useGenenratePdfReport } from '@/hooks/useGenenratePdfReport';
+import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 
-type TableData = {
-  tableName: string;
-  type: string;
-  headers: { header: string; dataKey: string }[];
-  data: { [key: string]: any }[];
-  total: number;
-};
 export interface GeneratePdfReportButtonProps {
   tableFootStyles: UserOptions['footStyles'];
   title: string;
@@ -42,7 +34,7 @@ const GeneratePdfReportButton = ({
   signature,
   downloadDate,
 }: GeneratePdfReportButtonProps) => {
-  const { generateReport } = useGenenratePdfReport();
+  const { generateReport } = useGeneratePdfReport();
   return (
     <Button
       type="filled"
@@ -50,7 +42,6 @@ const GeneratePdfReportButton = ({
       className={'mt'}
       onClick={() =>
         generateReport(
-          [tableFooter],
           tableData ?? [],
           signature,
           downloadDate,
@@ -60,6 +51,7 @@ const GeneratePdfReportButton = ({
           outputName,
           component,
           tableStyles,
+          [tableFooter],
           tableFootStyles,
           pageOriantations
         )

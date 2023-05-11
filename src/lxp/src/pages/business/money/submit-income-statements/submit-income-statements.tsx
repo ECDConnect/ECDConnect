@@ -383,7 +383,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                   history.push(ROUTES.BUSINESS_SUBMIT_INCOME_STATEMENTS_LIST)
                 }
                 className="mt-6 rounded-2xl"
-                disabled={disableSubmit || !enableSubmit}
+                // disabled={disableSubmit || !enableSubmit}
               >
                 <Typography
                   type="help"

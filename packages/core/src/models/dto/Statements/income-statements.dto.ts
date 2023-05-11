@@ -20,6 +20,12 @@ export interface IncomeStatementsDto {
 export interface ReportTableDataDto {
   tableName: string;
   type: string;
-  headers: { header: string; dataKey: string }[];
-  data: { [key: string]: any }[];
-};
+  headers: {
+    header: string;
+    dataKey: string;
+  }[];
+  data: {
+    [key: string]: any;
+  }[];
+  total: number;
+}
