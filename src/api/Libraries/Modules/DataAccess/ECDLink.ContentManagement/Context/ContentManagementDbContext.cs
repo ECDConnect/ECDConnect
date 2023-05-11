@@ -10,7 +10,7 @@ namespace ECDLink.DataAccessLayer.Context
 
         public DbSet<ContentTypeField> ContentTypeFields { get; set; }
 
-        public DbSet<ContentValue> ContentTypesFieldValues { get; set; }
+        public DbSet<ContentValue> ContentValues { get; set; }
 
         public DbSet<FieldType> FieldTypes { get; set; }
 
@@ -36,7 +36,10 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<ContentValue>(entity =>
             {
-                entity.HasKey(e => new { e.ContentId, e.ContentTypeFieldId, e.LocaleId });
+                // Allow nulls in the TenantId Column (Unique Primary key removed)
+                entity.HasKey(e => e.Id);
+                entity.HasIndex(e => new { e.ContentId, e.ContentTypeFieldId, e.LocaleId, e.TenantId })
+                    .IsUnique();
             });
         }
     }
