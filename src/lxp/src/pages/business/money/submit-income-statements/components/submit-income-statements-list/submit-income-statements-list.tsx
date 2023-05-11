@@ -393,7 +393,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const submitPdfReport = async (report: string) => {
     await new IncomeStatementsService(userAuth?.auth_token!)
-      .submitStatementsIncomePDF(
+      .saveIncomeStatementPDF(
         `${getMonthName(
           Number(statementMonth) - 1
         )}-income-statement-report.pdf`,

@@ -170,7 +170,7 @@ class IncomeStatementsService {
   }
 
 
-  async submitStatementsIncomePdfReport(
+  async saveIncomeStatementPDF(
     fileName: string,
     reference: string,
     userId: string,
@@ -179,8 +179,8 @@ class IncomeStatementsService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation saveIncomeStatementPDF($fileName: string!, $reference: string!, $userId: number! ) { 
-         saveIncomeStatementPDF( fileName: $fileName, reference: $reference, userId: $userId) {
+      mutation saveIncomeStatementPDF($fileName: string!, $reference: string!, $userId: string!, $createdUserId: string! ) { 
+         saveIncomeStatementPDF( fileName: $fileName, reference: $reference, userId: $userId, createdUserId: $createdUserId) {
            result  resultObject resultMessage 
           }
         }
