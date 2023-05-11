@@ -44,6 +44,14 @@ export const GetUserById = gql`
       phoneNumber
       profileImageUrl
       isImported
+      raceId
+      languageId
+      emergencyContactFirstName
+      emergencyContactSurname
+      emergencyContactPhoneNumber
+      nextOfKinContactNumber
+      nextOfKinFirstName
+      nextOfKinSurname
       roles {
         id
         name
