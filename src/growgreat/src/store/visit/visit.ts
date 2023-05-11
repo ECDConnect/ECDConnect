@@ -33,7 +33,7 @@ const handleAddCompletedVisitsByVisitId = (
   state: VisitState & ThunkStateStatus,
   action: PayloadAction<CompletedVisitsForVisitId>
 ) => {
-  return typeof state.completedVisitsForVisitId?.[0] === 'string'
+  return state.completedVisitsForVisitId
     ? state.completedVisitsForVisitId?.map((item) => {
         if (item.visitId === action.payload.visitId) {
           const uniqueVisits = [

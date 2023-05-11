@@ -56,8 +56,9 @@ export const MonthlyAttendanceReport = ({
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const today = new Date().toDateString();
 
-  const { errorDialog } = useRequestResponseDialog(); 
+  const { errorDialog } = useRequestResponseDialog();
 
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -72,11 +73,13 @@ export const MonthlyAttendanceReport = ({
       return res;
     };
 
-    getClassroomDetails().then((data) => {
-      setReportDetails(data);
-    }).catch((err) => {
-      errorDialog(err.message);
-    });
+    getClassroomDetails()
+      .then((data) => {
+        setReportDetails(data);
+      })
+      .catch((err) => {
+        errorDialog(err.message);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -271,6 +274,8 @@ export const MonthlyAttendanceReport = ({
           tableHeadStyles={tableHeadStyles}
           tableFootStyles={tableFootStyles}
           tableStyles={tableStyles}
+          signature={practitioner?.signingSignature ?? ''}
+          downloadDate={today}
         />
       </div>
     </BannerWrapper>

@@ -66,6 +66,7 @@ export const AttendanceMonthlyReport: React.FC<
   useEffect(() => {
     if (viewReportDate) {
       const { startDate, endDate } = getMonthRange(viewReportDate);
+
       const nextDay = add(startDate, { days: 1 });
       new AttendanceService(authUser?.auth_token ?? '')
         .getClassroomAttendanceReport(

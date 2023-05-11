@@ -32,6 +32,9 @@ using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.Core.Helpers;
+using MediatR;
+using ECDLink.DataAccessLayer.Entities.DataIngestion;
 
 namespace ECDLink.Core.Services
 {
@@ -44,7 +47,9 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
+        private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
+        private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
         private  AuthenticationDbContext _dbContext;
         private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
@@ -53,10 +58,13 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Language, Guid> _staticLanguageRepo;
         private IGenericRepository<Gender, Guid> _staticGenderRepo;
         private IGenericRepository<Race, Guid> _staticRaceRepo;
+        private IGenericRepository<Province, Guid> _staticProvinceRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerGenericRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Child, Guid> _childGenericRepo;
+        private IGenericRepository<Coach, Guid> _coachGenericRepo;
+        private IGenericRepository<Franchisor, Guid> _franchisorGenericRepo;
         private IGenericRepository<Caregiver, Guid> _caregiverRepo;
         private IGenericRepository<Relation, Guid> _staticRelationRepo;
         private IGenericRepository<Education, Guid> _staticEducationRepo;
@@ -100,6 +108,8 @@ namespace ECDLink.Core.Services
 
             //Generic static repos
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
             _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
             _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
@@ -108,8 +118,11 @@ namespace ECDLink.Core.Services
             _staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
             _staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
             _staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
             _practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
             _practitionerGenericRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _coachGenericRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
+            _franchisorGenericRepo = _repositoryFactory.CreateGenericRepository<Franchisor>(userContext: _uId);
 
             _childRepo = _repositoryFactory.CreateRepository<Child>(userContext: _uId);
             _childGenericRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
@@ -138,6 +151,23 @@ namespace ECDLink.Core.Services
             }
         }
 
+        private async Task<List<IntegrationAudit>> GetAudits(DateTime startTime, string entityType = null)
+        {
+            try
+            {
+                var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= startTime.AddMinutes(-10)).ToList(); //overlaps with 10 minutes of changes
+                if (entityType != null)
+                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
+
+                return audits;
+            }
+            catch (Exception e)
+            {
+                //TODO: LOG ERROR AND HANDLE          
+                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
         private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
         {
             try
@@ -159,12 +189,10 @@ namespace ECDLink.Core.Services
         {
             try
             {
-
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
                 if (entityType != null)
-                    return mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
                 else
-                    return mapperRepo.GetAll().ToList();
+                    return _columnmapperRepo.GetAll().ToList();
             }
             catch (Exception e)
             {
@@ -173,7 +201,7 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null)
+        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null, bool showOptions = true, bool isPut = false, string postString = "")
         {
             var request = new HttpRequestMessage();
 
@@ -186,8 +214,8 @@ namespace ECDLink.Core.Services
                         var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions, Related = relatedConditions };
 
                         var payload = JsonSerializer.Serialize(apiEntity);
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
-                        var response = await SmartLinkClient.PostAsync(endpointUrl, content);
+                        var content = showOptions ? new StringContent(payload, Encoding.UTF8, "application/json") : new StringContent(postString, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
+                        var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
 
                         if (!response.IsSuccessStatusCode)
                         {
@@ -381,83 +409,216 @@ namespace ECDLink.Core.Services
 
         #endregion
 
-
-        #region Integration Points
-
-        public async Task<bool> IntegrationByMappedCoachTest()
+        private async Task<bool> PushUpdates(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
         {
-            bool returnOK = false;
-            //List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-            //List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
+            //1) Get list of entities and their types
+            //2) iterate through these and group updates for same entity
+            //3) build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any otehr changes is irrelevant
+            //4) add remote guid
+            //5) Send it to the /Multiple endpoint
+            //move to next entity type thats mapped and ha sproperties
 
-            string remotePracId = "93224ae2-ea56-ea11-833a-00155d326100";
-            string localPracId = "040bb9d7-e96f-49ee-b045-1ec04e3e19ab";
-            //string remoteChildId = "99676639-e24e-ed11-8355-00155d326100";
+            audits = audits.Where(x => x.RelatedId.Equals("4dbdb108-0983-4de6-8c6a-35a905c869c6")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
 
-            List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(remotePracId);
-            //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
-            if (remoteFranchisees != null)
+            var entityTypeList = audits.Select(x => x.Entity).Distinct();
+            Dictionary<string,string> entitypes = new Dictionary<string,string>();
+            var validEntities = entities.Where(x => x.LocalId != null).ToList();
+            foreach (var updatedEntityType in entityTypeList)
             {
-                foreach (var franchisee in remoteFranchisees)
+                StringBuilder jsonString = new StringBuilder();
+                var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                if (entityIdList.Any() && entities.Any())
                 {
-                    if (franchisee != null)
+                    string url = "";
+                    jsonString.AppendLine("[");
+                    foreach (var entityToUpdate in entityIdList)
                     {
-                        List<Child> newChildren = new List<Child>();
-                        //Create franchisee and map in SS system
-                        Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPracId); //already mapped and inserted
-
-                        //get all elements underneath and map those too
-
-                        //1. Children, , 
-
-
-                        //Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
-                        //Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
-                        //Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
-                        ////Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
-
-                        //newChildren.Add(child1);
-                        //newChildren.Add(child2);
-                        //newChildren.Add(child3);
-                        //newChildren.Add(child4);
-
-                        
-                        List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
-                        if (remoteChildren != null)
+                        var mappedEntity = validEntities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                        if (mappedEntity != null) //if we have this entity mapped to remote?
                         {
-                            foreach (var remoteChild in remoteChildren)
+                            string localEntity = mappedEntity.LocalEntity;
+                            string remoteEntity = mappedEntity.RemoteEntity;
+                            if (updatedEntityType.Equals("ApplicationUser"))
                             {
-                                if (remoteChild != null)
+                                //determine what the related entity is here, we have to remap to SL because we split Application user and the entity in 2, they have all USer properties on entity only
+                                var prac = _practitionerGenericRepo.GetByUserId(mappedEntity.UserId);
+                                var child = _childGenericRepo.GetByUserId(mappedEntity.UserId);
+                                var coach = _coachGenericRepo.GetByUserId(mappedEntity.UserId);
+                                var franchisor = _franchisorGenericRepo.GetByUserId(mappedEntity.UserId);
+                                if (prac != null)
                                 {
-                                    var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                    if (newChild != null)
-                                    {
-
-                                        newChildren.Add(newChild);
-                                    }
+                                    localEntity = SSIntegrationSettings.SSPractitioner;
+                                    remoteEntity = SSIntegrationSettings.SLPractitioner;
+                                }
+                                else if (child != null)
+                                {
+                                    localEntity = SSIntegrationSettings.SSChild;
+                                    remoteEntity = SSIntegrationSettings.SLChild;
+                                }
+                                else if (coach != null)
+                                {
+                                    localEntity = SSIntegrationSettings.SSCoach;
+                                    remoteEntity = SSIntegrationSettings.SLCoach;
+                                }
+                                else if (franchisor != null)
+                                {
+                                    localEntity = SSIntegrationSettings.SSFranchisor;
+                                    remoteEntity = SSIntegrationSettings.SLFranchisor;
                                 }
                             }
+
+                            url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                            jsonString.AppendLine("{");
+                            //get all changes for this entity and group and build JSON
+                            var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
+                            if (allChanges.Count() > 0)
+                            {
+                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                foreach (var changeLine in allChanges)
+                                {
+                                    var mappedColumnLine = columns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                    if (mappedColumnLine != null)
+                                    {
+                                        if (mappedColumnLine.UpdateDirection.Equals(UpdateDirection.Both) || mappedColumnLine.UpdateDirection.Equals(UpdateDirection.SSToSL)) //only update mapped columns configured to update
+                                        {
+                                            string valueToSend = changeLine.ValueAfter;
+                                            //get mappedcolumn from columnmapping
+                                            if (mappedColumnLine.RemapToString)
+                                            {
+                                                if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend)) {
+                                                    valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                }
+                                            }
+                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                        }
+                                    }
+                                    //remove entry from audits list as we have processed it here and sending to SL
+                                    audits.Remove(changeLine);
+                                }
+                            }
+                            jsonString.AppendLine("},");
                         }
-                        
-                        //2. Documents
-
-                        //3. Notes
-
-                        //4. Attendance
-                        //5. Income Statements
-                        await AlignChildHierarchy(newPractitioner, newChildren);
-                        await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                     }
+                    jsonString.AppendLine("]");
+                    //jsonString.AppendLine("[");
+                    //jsonString.AppendLine("{");
+                    //    jsonString.AppendLine("\"FirstName\": \"Ntombizanele Nozonela\", ");
+                    //    jsonString.AppendLine("\"Surname\": \"Maasdorp\", ");
+                    //    jsonString.AppendLine("\"IdNumber\": \"8509230915086\", ");
+                    //    jsonString.AppendLine("\"PersonalNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"WhatsAppNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"BirthDate\": \"1985-09-23\", ");
+                    //    jsonString.AppendLine("\"EmailAddress\": \"test@ecdconnect.co.za\", ");
+                    //    jsonString.AppendLine("\"NextOfKinFirstName\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinSurname\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinContactNumber\": null,");
+                    //    jsonString.AppendLine("\"Guid\": \"cc1cbf5d-d3a1-eb11-8346-00155d326100\"");
+                    //  jsonString.AppendLine("}");
+                    //jsonString.AppendLine("]");
+
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                    if (responseString != null)
+                    {
+
+                    }
+                }
+
+
+
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushDeletes(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+
+
+            return true;
+        }
+
+        private async Task<bool> PushInserts(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+
+            return true;
+        }
+
+        private async Task<bool> PushData(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns)
+        {
+            int changesCheckTime = 1620;
+            List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+            //Inserts
+            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
+            if (inserts.Count > 0)
+                await PushInserts(inserts, mappedEntities, mappedColumns);
+
+            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
+            if (updates.Count > 0)
+                await PushUpdates(updates, mappedEntities, mappedColumns);
+
+            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            if (deletes.Count > 0)
+                await PushDeletes(deletes, mappedEntities, mappedColumns);
+
+            return true;
+        }
+
+        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (race != null ? race.Description : null);
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (gender != null ? gender.Description : null);
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (lang != null ? lang.Description : null);
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (rel != null ? rel.Description : null);
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (prov != null ? prov.Description : null);
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (edu != null ? edu.Description : null);
+                    break;
+            }
+
+            return valueToSend;
+        }
+
+
+        #region Integration Points      
+
+        public async Task<bool> IntegrationByFranchisees()
+        {            
+            List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
+            if (ids.Count > 0)
+            {
+                foreach (var item in ids)
+                {
+                    await IntegrationByMappedCoach(item.Id.ToString());
                 }
             }
 
 
-            return returnOK;
+            return true;
         }
-
-        public async Task<bool> IntegrationByMappedCoach()
-        {
-            string franchiseeId = "02659d39-60dc-ed11-8356-00155d326100";
+            
+        public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
+        {        
             bool returnOK = false;
             DateTime startTime = DateTime.Now;
             int totalAddedToSS = 0;
@@ -492,7 +653,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                    /**/       
+                    /*       
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -512,16 +673,14 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                    /**/
+                    /*/
                     //-------------------
                     //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
                     //-------------------
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
-
-                        //TODO: API Data pushes from SS Audit tables
-                        returnOK = true;
+                        //await PushData(mappedEntities, mappedColumns);                        
                     }
 
                     //-------------------
@@ -539,8 +698,8 @@ namespace ECDLink.Core.Services
                         //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //5.1) get all frannchisees and map them                
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await GetFranchiseesById(franchiseeId) : await GetFranchiseesByCoach(coach.RemoteId));
                         //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -819,17 +978,48 @@ namespace ECDLink.Core.Services
                             CoachHierarchy = Guid.Parse(entity.localParentEntityId),
                             IsActive = true,
                             ProgrammeType = programmeTypeDesc,
-                            IsClubOwner = entity.IsClubLeader
+                            IsClubOwner = entity.IsClubLeader,
+                            AttendedBusinessSkills = entity.AttendedBusinessSkills,
+                            AttendedChildProgress = entity.AttendedChildProgress,
+                            MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
+                            ConsentForPhoto = entity.ConsentForPhoto                            
                         };
+
+                        //check phone number is valid
+                        string numberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.PersonalNumber);
+                            if (!string.Equals(normalizePhoneNumber, entity.PersonalNumber))
+                            {
+                                numberToImport = normalizePhoneNumber;
+                            }
+                        } catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
+                        string whatsappNumberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.WhatsAppNumber);
+                            if (!string.Equals(normalizePhoneNumber, entity.WhatsAppNumber))
+                            {
+                                whatsappNumberToImport = normalizePhoneNumber;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
 
                         var newUser = new ApplicationUser
                         {
                             Id = userId.ToString(),
-                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : entity.PersonalNumber),
+                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
                             UserName = entity.IdNumber,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
-                            IsSouthAfricanCitizen = entity.IsSouthAfricanCitizen,
+                            IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
                             VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
                             DateOfBirth = Convert.ToDateTime(entity.BirthDate),
                             FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
@@ -846,9 +1036,10 @@ namespace ECDLink.Core.Services
                             EmergencyContactFullName = (entity.EmergencyContactFirstName != null ? entity.EmergencyContactFirstName + " " + entity.EmergencyContactSurname : null),
                             TenantId = tenantId,
                             IsImported = true,
-
-                            //ProfileImageUrl = ""
-
+                            PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
+                            WhatsAppNumber = whatsappNumberToImport,
+                            ReasonForLeaving = entity.ReasonForLeaving,
+                            ReasonForLeavingComments = entity.InactivityComments
                         };
 
                         //check language
@@ -897,6 +1088,7 @@ namespace ECDLink.Core.Services
                             newEntityAddress.Area = entity.SiteAddress.Area;
                             newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
                             newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
+                            newEntityAddress.AddressLine3 = entity.SiteAddress.Area;
                             newEntityAddress.Longitude = entity.SiteAddress.Longitude;
                             newEntityAddress.Latitude = entity.SiteAddress.Latitude;
 
@@ -1080,7 +1272,7 @@ namespace ECDLink.Core.Services
                                 UserName = userId,//entity?.IdNumber,
                                 IdNumber = entity.IdNumber,
                                 IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                                VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
+                                //VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
                                 FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                                 Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
                                 FullName = entity.FirstName + " " + entity.Surname,
@@ -1354,109 +1546,7 @@ namespace ECDLink.Core.Services
 
             return null;
         }
-
-        private async Task<bool> ManageChildClassrooms(Child entity, Practitioner ownerPractitioner)
-        {
-            //var classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
-            //var classroomGroupGenericRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
-            //var classProgrammeGenericRepo = _repositoryFactory.CreateGenericRepository<ClassProgramme>(userContext: _uId);
-            //var learnerGenericRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
-            //var programmeTypeRepo = _repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
-
-            //Check if owner is FAA or Principal and then find 'Unsure' Group and map learners to that
-            //if (programmeGroupId != null)
-            //{
-            //    Learner newLearner = new Learner()
-            //    {
-            //        UserId = userId,
-            //        ClassroomGroupId = Guid.Parse(programmeGroupId),
-            //        StartedAttendance = DateTime.Now,
-            //        Hierarchy = parentHierarchy
-            //    };
-            //    learnerGenericRepo.Insert(newLearner);
-            //}
-
-
-            //DO NOT MAP CLASSROOM GROUP AND PROGRAMME INFORMATION YET
-            //get the classroom
-            //Classroom existingClassroom = classroomGenericRepo.GetAll().Where(x => x.UserId.Equals(parentUser.Id)).OrderBy(x => x.Id).FirstOrDefault();
-            //if (existingClassroom != null)
-            //{
-            //    //map programme type
-            //    childItem.ECDType = childItem.ECDType == "ECD Centre" ? "Preschool" : childItem.ECDType == "Full Week (Daymothers)" ? "Day Mother" : childItem.ECDType == "SmartStart ECD" ? "Preschool" : childItem.ECDType == "PlayGroup" ? "Preschool" : childItem.ECDType;
-            //    var programmeType = programmeTypeRepo.GetAll().Where(x => x.Description.Equals(childItem.ECDType)).OrderBy(x => x.Id).FirstOrDefault();
-
-            //    //check if this specific group exists already
-            //    var fullListGroups = classroomGroupGenericRepo.GetAll();
-            //    List<ClassroomGroup> parentClassroomGroups = new List<ClassroomGroup>();
-            //    foreach (ClassroomGroup group in fullListGroups)
-            //    {
-            //        if (group.UserId.ToString() == parentUser.Id)
-            //        {
-            //            parentClassroomGroups.Add(group);
-            //        }
-            //    }
-            //    var existingGroup = parentClassroomGroups.Where(x => x.Name.Equals(childItem.PlayGroupGroup)).OrderBy(x => x.Id).FirstOrDefault();
-            //    string programmeGroupId = null;
-            //    if (existingGroup == null)
-            //    {
-            //        if (programmeType != null)
-            //        {
-            //            //if the group doesnt exist yet, create it
-            //            ClassroomGroup pracClassGroup = new ClassroomGroup()
-            //            {
-            //                Id = Guid.NewGuid(),
-            //                UserId = Guid.Parse(parentUser.Id),
-            //                IsActive = true,
-            //                TenantId = tenantId,
-            //                Name = childItem.PlayGroupGroup,
-            //                ClassroomId = existingClassroom.Id,
-            //                Hierarchy = parentHierarchy,
-            //                ProgrammeTypeId = programmeType.Id
-            //            };
-            //            classroomGroupGenericRepo.Insert(pracClassGroup);
-
-            //            for (var iidx = 1; iidx <= 5; iidx++)
-            //            {
-            //                ClassProgramme pracClassGroupProgramme = new ClassProgramme()
-            //                {
-            //                    Id = Guid.NewGuid(),
-            //                    MeetingDay = iidx,
-            //                    IsFullDay = true,
-            //                    IsActive = true,
-            //                    TenantId = tenantId,
-            //                    ProgrammeStartDate = DateTime.Now,
-            //                    ClassroomGroupId = pracClassGroup.Id,
-            //                    Hierarchy = parentHierarchy
-            //                };
-            //                classProgrammeGenericRepo.Insert(pracClassGroupProgramme);
-            //            }
-            //            programmeGroupId = pracClassGroup.Id.ToString();
-            //        }
-            //    }
-            //    else
-            //    {
-            //        //if the group exist already, only use that group id to create learnetr4
-            //        programmeGroupId = existingGroup.Id.ToString();
-            //    }
-            //create programme
-
-            //now create the learner and tie them to the playgroup - if a group exists
-            //if (programmeGroupId != null)
-            //{
-            //    Learner newLearner = new Learner()
-            //    {
-            //        UserId = userId,
-            //        ClassroomGroupId = Guid.Parse(programmeGroupId),
-            //        StartedAttendance = DateTime.Now,
-            //        Hierarchy = parentHierarchy
-            //    };
-            //    learnerGenericRepo.Insert(newLearner);
-            //}
-            //}
-            return false;
-        }
-
+       
         #endregion
 
         #region Local Updates
