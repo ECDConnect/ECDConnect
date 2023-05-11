@@ -283,9 +283,4 @@ export const MonthlyAttendanceReport = ({
 };
 
 export default MonthlyAttendanceReport;
-function useThunkFetchCall(
-  arg0: string,
-  ADD_ADDITIONAL_VISIT_FOR_INFANT: any
-): { isLoading: any; isRejected: any } {
-  throw new Error('Function not implemented.');
-}
+
