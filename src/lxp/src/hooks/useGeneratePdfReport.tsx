@@ -228,7 +228,7 @@ export const useGeneratePdfReport = () => {
       doc.text('Date: ', 110, (doc as any).lastAutoTable.finalY + 30);
       doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
-    // send pdf to SmartStart
+    // send income statements-pdf-report to SmartStart
     if (component === 'submit-statements' && tableData.length > 1) {
       // save the PDF document as binary data
       var pdfData = doc.output();
