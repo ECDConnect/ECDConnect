@@ -51,6 +51,13 @@ namespace ECDLink.Core.Extensions
 
             return start.AddMonths(1).AddDays(-1);
         }
+        public static DateTime GetEndOfDay(this DateTime date)
+        {
+            var start = date.Date;
+
+            return start.AddDays(1).AddSeconds(-1);
+        }
+
 
         public static DateTime GetEndOfPreviousMonth(this DateTime date)
         {

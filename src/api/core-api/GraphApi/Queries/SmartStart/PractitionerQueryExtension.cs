@@ -17,6 +17,8 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.DataAccessLayer.Entities.Visits;
+using EcdLink.Api.CoreApi.Managers.Visits;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -363,6 +365,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             var messageType = "invitation";
             return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
+        }
+
+        public List<Visit> GetPractitionerVisits(
+            [Service] VisitManager visitManager,
+            string userId)
+        {
+            return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
         }
 
     }

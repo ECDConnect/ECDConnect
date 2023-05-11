@@ -95,3 +95,11 @@ export const getCompletedReferralsForMotherSelector = (
   state: RootState
 ): VisitDataStatus[] | undefined =>
   state.mothers.completedReferralsForMother || [];
+
+export const getIsMotherFirstVisitSelector = (state: RootState): boolean => {
+  const visits = state.mothers.visits;
+
+  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+
+  return attendedVisitsCount === 0;
+};

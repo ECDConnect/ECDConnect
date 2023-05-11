@@ -1,9 +1,9 @@
-import { Typography } from '../../../components';
-import { ComponentBaseProps, Colours, CheckboxChange } from '../../../models';
-
 import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
-import { classNames } from '../../../utils/style-class.utils';
+import { CheckboxChange, Colours, ComponentBaseProps } from '../../../models';
+import { classNames } from '../../../utils';
+import Typography from '../../typography/typography';
 import * as styles from './checkbox-input.styles';
+
 export interface CheckboxProps<T extends FieldValues = {}>
   extends ComponentBaseProps {
   description?: string;
@@ -46,10 +46,9 @@ export const Checkbox = <T extends FieldValues>({
   };
 
   return (
-    // eslint-disable-next-line react/jsx-no-useless-fragment
     <>
       {visible && (
-        <div className={classNames(styles.container, className)}>
+        <label className="item-center flex gap-2">
           <div className={styles.inputContainer}>
             {nameProp && register && (
               <input
@@ -80,14 +79,12 @@ export const Checkbox = <T extends FieldValues>({
               />
             )}
           </div>
-          <div className={styles.textContainer}>
-            <Typography
-              type="body"
-              color={descriptionColor}
-              text={description || ''}
-            ></Typography>
-          </div>
-        </div>
+          <Typography
+            type="body"
+            color={descriptionColor}
+            text={description || ''}
+          ></Typography>
+        </label>
       )}
     </>
   );

@@ -27,20 +27,22 @@ import ActivityDetails from '../../../components/activities/activity/activity-de
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
-import { programmeActions } from '@store/programme';
+import { programmeActions, programmeSelectors } from '@store/programme';
 import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
 import { getFirstActivityByType } from '@utils/classroom/programme-planning/activity-search.utils';
 import { StoryActivitySearch } from '../../../components/activities/storybooks/story-activity-search/story-activity-search';
 import { useProgrammePlanningRecommendations } from '@hooks/useProgrammePlanningRecommendations';
 import { useHolidays } from '@hooks/useHolidays';
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 import { PublicHolidayIndicator } from '../../../programme-routine/components/public-holiday-indicator/public-holiday-indicator';
 import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
 import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
+import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
+import { isSameWeek, isWeekend } from 'date-fns';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -76,11 +78,26 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [routineItemSet, setRoutineItemSet] =
     useState<ProgrammeRoutineItemDto>();
   const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
+  const isWeekendDay = isWeekend(new Date(selectedDate!));
+  const nextProgrammes = useSelector(
+    programmeSelectors.getProgrammesAfterDate(selectedDate!)
+  );
+  const nextProgrammeDaysWithoutActivity =
+    nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
+      return (
+        !item?.storyActivityId &&
+        isSameWeek(new Date(item?.dayDate), new Date(selectedDate!), {
+          weekStartsOn: 6,
+        })
+      );
+    });
 
   useEffect(() => {
-    setIsCurrentDayHoliday(isHoliday(new Date()));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (selectedDate) {
+      setIsCurrentDayHoliday(isHoliday(selectedDate));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [isHoliday, selectedDate]);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -96,12 +113,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       render: (onSubmit) => {
         return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
       },
-    });
-  };
-
-  const handleViewProgrammeSummary = () => {
-    history.push(ROUTES.PROGRAMMES.SUMMARY, {
-      variation: 'view',
     });
   };
 
@@ -336,35 +347,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         chosedTheme={chosedTheme}
         setSelectedDate={setSelectedDate}
         selectedDate={selectedDate}
+        isWeekendDay={isWeekendDay}
       />
-
-      <div className={'items-centers flex w-full flex-row p-4'}>
-        <Button
-          className={'w-1/2'}
-          size="small"
-          type={'outlined'}
-          color={'primary'}
-          onClick={handleViewProgrammeSummary}
-        >
-          {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography
-            type={'small'}
-            color={'primary'}
-            text={'Programme summary'}
-          />
-        </Button>
-        <Button
-          id="gtm-add-programme"
-          className={'ml-2 w-1/2'}
-          size="small"
-          type={'filled'}
-          color={'primary'}
-          onClick={handleAddProgramme}
-        >
-          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'Add new theme'} />
-        </Button>
-      </div>
 
       {!isCurrentDayEmpty &&
         routineContainsIncompleteDays &&
@@ -377,11 +361,25 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
           />
         )}
 
-      {currentDailyProgramme &&
-        (isCurrentDayHoliday ? (
-          <PublicHolidayIndicator
-            date={new Date(currentDailyProgramme.dayDate)}
-          />
+      {(isCurrentDayEmpty || currentDailyProgramme) &&
+        (isCurrentDayHoliday || isWeekendDay ? (
+          isWeekendDay ? (
+            <WeekendDayIndicator
+              date={new Date(selectedDate!)}
+              nextProgrammeDaysWithoutActivity={
+                nextProgrammeDaysWithoutActivity
+              }
+              setSelectedDate={setSelectedDate}
+            />
+          ) : (
+            <PublicHolidayIndicator
+              date={new Date(selectedDate!)}
+              nextProgrammeDaysWithoutActivity={
+                nextProgrammeDaysWithoutActivity
+              }
+              setSelectedDate={setSelectedDate}
+            />
+          )
         ) : (
           <div className="mt-4">
             {programmeRoutine?.routineItems.map((routineItem) => {
@@ -398,23 +396,17 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             })}
           </div>
         ))}
-
-      {isCurrentDayEmpty && !isCurrentDayHoliday && (
-        <div className="mt-4">
-          {programmeRoutine?.routineItems.map((routineItem) => {
-            if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
-              return (
-                <ProgrammePlanningRoutineListItemUpdated
-                  key={`id_${routineItem.id}`}
-                  routineItem={routineItem}
-                  day={currentDailyProgramme}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              );
-            }
-          })}
-        </div>
-      )}
+      <Button
+        id="gtm-add-programme"
+        className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+        size="small"
+        type={'filled'}
+        color={'primary'}
+        onClick={handleAddProgramme}
+      >
+        {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+        <Typography type={'small'} color={'white'} text={'Add new theme'} />
+      </Button>
     </div>
   );
 };

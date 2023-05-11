@@ -1,24 +1,15 @@
-import {
-  LocalStorageKeys,
-  ProgressTrackingSkillDto,
-  useStepNavigation,
-} from '@ecdlink/core';
+import { ProgressTrackingSkillDto, useStepNavigation } from '@ecdlink/core';
 import { BannerWrapper, Dialog, DialogPosition } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { ProgressTrackingAlertLevelOnePrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-one-prompt/progress-tracking-alert-level-one-prompt';
 import { ProgressTrackingAlertLevelTwoPrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-two-prompt/progress-tracking-alert-level-two-prompt';
-import { ProgressTrackingInformationPrompt } from '../components/progress-tracking-prompts/progress-tracking-information-prompt/progress-tracking-information-prompt';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
-import {
-  getStorageItem,
-  setStorageItem,
-} from '@utils/common/local-storage.utils';
 import { CategoryLevelForm } from './category-level-form/category-level-form';
 import { ChildDevelopmentLevelForm } from './child-development-level-form/child-development-level-form';
 import { ChildDevelopmentLevelFormModel } from '@schemas/classroom/child-progress-observations/child-development-level-form';
@@ -45,8 +36,6 @@ export const ChildProgressAssessment: React.FC = () => {
   const childId = location.state.childId;
   const returnToOverview = location.state.returnToOverview;
   const progressTrackingCategoryId = location.state.progressTrackingCategoryId;
-  const userHasTrackedBefore =
-    getStorageItem(LocalStorageKeys.HasTrackedChildProgressBefore) || false;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const currentChildUser = useSelector(
     childrenSelectors.getChildUserById(currentChild?.userId)
@@ -85,7 +74,7 @@ export const ChildProgressAssessment: React.FC = () => {
     setCurrentCategoryById,
     submitLevelSkills,
     getChildAchievedLevelId,
-    getUnselectedSkills,
+    getSkills,
     setCategoryAchievedLevel,
     completeCurrentCategoryTracking,
     setHelpingWithTask,
@@ -93,11 +82,7 @@ export const ChildProgressAssessment: React.FC = () => {
     isCompetentInLevel,
     clearHelpingWithTaskId,
     isAllSkillsYes,
-    isNoTryingToDoAndAtLeastOneNotYet,
   } = useChildProgressObservation(childId, report);
-
-  const [firstTimeTrackingPromptVisible, setFirstTimeTrackingPromptVisible] =
-    useState<boolean>(false);
 
   const [
     progressTrackingLevelOneAlertVisible,
@@ -129,18 +114,6 @@ export const ChildProgressAssessment: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentReport]);
-
-  useEffect(() => {
-    if (userHasTrackedBefore === false) {
-      setFirstTimeTrackingPromptVisible(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
-  const firstTimeTrackingPromptHandler = () => {
-    setStorageItem(true, LocalStorageKeys.HasTrackedChildProgressBefore);
-    setFirstTimeTrackingPromptVisible(false);
-  };
 
   const saveChildDevelopmentLevelForm = (
     form: ChildDevelopmentLevelFormModel
@@ -272,9 +245,8 @@ export const ChildProgressAssessment: React.FC = () => {
       case ChildProgressAssessmentSteps.assessmentStepFive:
         return (
           <ChildUndevelopedSkillForm
-            undevelopedSkills={getUnselectedSkills()}
+            skills={getSkills()}
             allSkillsYes={isAllSkillsYes()}
-            noTryingToDoAndAtLeastOneNotYet={isNoTryingToDoAndAtLeastOneNotYet()}
             childId={currentChild?.id}
             onSubmit={(skill: ProgressTrackingSkillDto | undefined) => {
               if (skill) {
@@ -349,17 +321,6 @@ export const ChildProgressAssessment: React.FC = () => {
       >
         {childProgressAssessmentSteps(activeStepKey)}
       </BannerWrapper>
-
-      <Dialog
-        visible={firstTimeTrackingPromptVisible}
-        position={DialogPosition.Middle}
-        className={'mx-4'}
-      >
-        <ProgressTrackingInformationPrompt
-          childUser={currentChildUser}
-          onClose={firstTimeTrackingPromptHandler}
-        />
-      </Dialog>
 
       <Dialog
         visible={progressTrackingLevelOneAlertVisible}

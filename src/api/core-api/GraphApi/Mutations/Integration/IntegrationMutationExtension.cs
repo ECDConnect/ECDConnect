@@ -13,7 +13,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         public async Task<bool> IntegrationByMappedCoach([Service] IIntegrationService integrationService)
         {
             return await integrationService.IntegrationByMappedCoach();
-            //return await integrationService.IntegrationByMappedCoachTest();
+        }
+
+        public async Task<bool> IntegrationByFranchisees([Service] IIntegrationService integrationService)
+        {
+            return await integrationService.IntegrationByFranchisees();
         }
 
         #endregion
