@@ -30,9 +30,14 @@ class UserService {
             firstName
             surname
             fullName
+            raceId
+            languageId
             emergencyContactFirstName
             emergencyContactSurname
             emergencyContactPhoneNumber
+            nextOfKinContactNumber
+            nextOfKinFirstName
+            nextOfKinSurname
             contactPreference
             genderId
             phoneNumber
