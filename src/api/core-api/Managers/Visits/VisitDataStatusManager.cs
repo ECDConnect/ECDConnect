@@ -542,6 +542,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             foreach (VisitData visitData in allVisitData) {
                 if (visitData.Question == Constants.GGSettings.q_first_antenatal_visit) {
                     if (visitData.QuestionAnswer == Constants.GGSettings.answer_no) {
+
                         // this should add a referral to the list(""Pregnancy not booked"")
                         comment = Constants.GGSettings.pregnancy_not_booked;
                         AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
@@ -557,9 +558,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
-
                     }
-                    else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+                    
+                    if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
                         comment = Constants.GGSettings.pregnancy_booked;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -587,7 +588,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = Constants.GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
                     }
-                    else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+                    if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // ""green"" item is added to the progress: "Clinic visits up to date"
                         comment = Constants.GGSettings.clinic_visits_up_to_date;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -621,7 +622,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
                         AddAdditionalVisit(motherId, Constants.GGSettings.client_mother, Constants.GGSettings.underweight3);
                     }
-                    else if (questionAnswer >= 22) {
+                    if (questionAnswer >= 22) {
                         // add to green items in progress screen(use case 2) (""MUAC over 22cm"")TenancyMiddleware.cs
                         comment = Constants.GGSettings.muac_over_22;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -847,8 +848,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -942,8 +943,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
                 lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
 
@@ -1236,7 +1237,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && x.Type == input.Type && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
@@ -1591,17 +1592,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
-                ).OrderByDescending(y => y.InsertedDate).ToList();
+                ).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
 
-            allData = (List<VisitDataStatus>)allData.Take(3);
+            //allData = allData.Take(3);
 
             return allData;
         }
-        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
+        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.InsertedDate)
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
 

@@ -22,6 +22,7 @@ interface IntroScreenProps {
   walkthroughData?: FollowUpWalkthroughData;
   headerText?: string;
   onStartVisit?: () => void;
+  isPrint?: boolean;
 }
 
 export const IntroScreen = ({
@@ -29,6 +30,7 @@ export const IntroScreen = ({
   walkthroughData,
   headerText,
   onStartVisit,
+  isPrint,
 }: IntroScreenProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
@@ -60,7 +62,11 @@ export const IntroScreen = ({
         }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp infant={infant || {}} walkthroughData={walkthroughData} />
+        <FollowUp
+          infant={infant || {}}
+          walkthroughData={walkthroughData}
+          isPrint={isPrint}
+        />
         {!!onStartVisit && (
           <Button
             className="mt-8 w-full"

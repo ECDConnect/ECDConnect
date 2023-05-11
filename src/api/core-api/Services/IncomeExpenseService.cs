@@ -35,7 +35,7 @@ namespace ECDLink.Core.Services
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = "c41d21b2-8908-47a9-94ef-bc6f4ccbe484"; // _contextAccessor.HttpContext.GetUser().Id;
             _submitStartDate = submitStartDate;
             _submitEndDate = submitEndDate;
 
@@ -676,7 +676,7 @@ namespace ECDLink.Core.Services
                 statementRepo.Insert(submittedStatement);
 
                 //income
-                if (incomeExpenses.AllUnSubmitted.Income.Count > 0)
+                if (incomeExpenses.AllUnSubmitted.Income?.Count > 0)
                 {
                     var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
                      // if any statement lines were added after previous months submission, these get added to the newest submission
@@ -693,7 +693,7 @@ namespace ECDLink.Core.Services
                     retVal = true;
                 }
                 //expenses
-                if (incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
+                if (incomeExpenses.AllUnSubmitted.Expenses != null && incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
                 {
                     var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
                     // if any statement lines were added after previous months submission, these get added to the newest submission

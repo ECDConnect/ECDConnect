@@ -309,9 +309,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   type="filled"
                   onClick={() => {
                     //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText(
-                      practitioner?.user?.phoneNumber!
-                    );
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.phoneNumber!
+                      );
                   }}
                 >
                   <Typography
@@ -348,7 +349,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   type="filled"
                   onClick={() => {
                     //TODO: what if copy fails?
-                    navigator?.clipboard?.writeText(practitioner?.user?.email!);
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.email!
+                      );
                   }}
                 >
                   <Typography

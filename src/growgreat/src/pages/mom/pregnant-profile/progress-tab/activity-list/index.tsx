@@ -60,7 +60,6 @@ export const MomActivityList: React.FC = () => {
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
   const { visitId } = useParams<MotherProfileParams>();
-  // const [stepperCount, setStepperCount] = useState(0);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
 
@@ -73,8 +72,6 @@ export const MomActivityList: React.FC = () => {
   const location = useLocation();
 
   const user = useSelector(userSelectors.getUser);
-
-  // const visits2 = useSelector(getMotherVisits);
 
   const MOCKED_VISIT_ID = visitId;
 
@@ -93,7 +90,7 @@ export const MomActivityList: React.FC = () => {
   const activityListUpdated =
     previousMotherVisit?.visitDataStatus?.length! > 0
       ? activitiesList
-      : activityListFiltered;
+      : activitiesList;
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
@@ -126,10 +123,6 @@ export const MomActivityList: React.FC = () => {
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
     useMemo(() => {
-      // const motherType = relationshipTypes.find(
-      //   (item) => item.label === 'Mother'
-      // );
-
       const completedActivities = activityListUpdated.filter((item) =>
         completedVisits?.includes(item.title)
       );
@@ -141,7 +134,7 @@ export const MomActivityList: React.FC = () => {
         (item): MenuListDataItem => ({
           showIcon: true,
           menuIconUrl: item?.menuIconUrl,
-          menuIconClassName: 'border-0',
+          menuIconClassName: 'w-7 h-7',
           title: item?.title,
           titleStyle: 'text-textDark',
           subTitle: '',
@@ -156,7 +149,7 @@ export const MomActivityList: React.FC = () => {
         (item): MenuListDataItem => ({
           showIcon: true,
           menuIconUrl: item?.menuIconUrl,
-          menuIconClassName: 'border-0',
+          menuIconClassName: 'w-7 h-7',
           title: item?.title,
           subTitle: '',
           iconBackgroundColor: item.iconBackgroundColor as Colours,
@@ -417,6 +410,7 @@ export const MomActivityList: React.FC = () => {
     isShowCompletedForms,
     completedForms,
     width,
+    stepperCount,
   ]);
 
   if (showForm && selectedOption) {

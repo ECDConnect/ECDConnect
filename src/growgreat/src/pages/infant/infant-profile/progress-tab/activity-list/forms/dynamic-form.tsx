@@ -392,7 +392,6 @@ export const DynamicForm = ({
         });
         goHome?.();
       } else {
-        successDialog();
         onClose?.();
       }
     }

@@ -1,8 +1,9 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Interfaces;
+using System;
 
 namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
 {
-    public class StatementsBalanceSheet
+    public class StatementsBalanceSheet : ITrackableType
     {
         public int? Month { get; set; }
         public int Year { get; set; }

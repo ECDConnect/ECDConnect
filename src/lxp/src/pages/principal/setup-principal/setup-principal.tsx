@@ -40,6 +40,7 @@ import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@/routes/routes';
 import { useNotificationService } from '@/hooks/useNotificationService';
 import { notificationActions } from '@/store/notifications';
+import { PractitionerSignature } from '../components/practitioner-signature/practitioner-signature';
 
 export const SetupPrincipal: React.FC = () => {
   const history = useHistory();
@@ -286,6 +287,9 @@ export const SetupPrincipal: React.FC = () => {
           />
         );
 
+      case PractitionerSetupSteps.ADD_SIGNATURE:
+        return <PractitionerSignature page={classesPage} onNext={setPage} />;
+
       case PractitionerSetupSteps.ADD_PHOTO:
         return (
           <AddPhoto
@@ -330,9 +334,12 @@ export const SetupPrincipal: React.FC = () => {
         );
         return setPage(PractitionerSetupSteps.CONFIRM_PRACTITIONERS);
 
-      case PractitionerSetupSteps.ADD_PHOTO:
+      case PractitionerSetupSteps.ADD_SIGNATURE:
         setClassesPage(ConfirmClassesSteps.CONFIRM_CLASSES);
         return setPage(PractitionerSetupSteps.CONFIRM_CLASSES);
+
+      case PractitionerSetupSteps.ADD_PHOTO:
+        return setPage(PractitionerSetupSteps.ADD_SIGNATURE);
 
       case PractitionerSetupSteps.WELCOME:
       default:

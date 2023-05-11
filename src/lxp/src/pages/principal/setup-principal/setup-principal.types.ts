@@ -6,7 +6,8 @@ export enum PractitionerSetupSteps {
   SETUP_PROGRAMME = 1,
   CONFIRM_PRACTITIONERS = 2,
   CONFIRM_CLASSES = 3,
-  ADD_PHOTO = 4,
+  ADD_SIGNATURE = 4,
+  ADD_PHOTO = 5,
 }
 
 export enum ConfirmPractitionersSteps {

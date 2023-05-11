@@ -1,4 +1,4 @@
-export const wrapper = 'h-full bg-uiBg';
+export const wrapper = 'h-full bg-white';
 export const bannerContentWrapper =
   'flex flex-col justify-between items-stretch';
 export const listItems = 'list-disc ml-6';

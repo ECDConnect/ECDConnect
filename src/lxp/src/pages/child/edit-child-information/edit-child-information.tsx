@@ -32,7 +32,11 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { caregiverActions, caregiverSelectors } from '@store/caregiver';
 import { childrenActions, childrenSelectors } from '@store/children';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsThunkActions,
+  classroomsSelectors,
+} from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { newGuid } from '@utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
@@ -57,6 +61,7 @@ import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
+import ROUTES from '../../../../src/routes/routes';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -504,37 +509,79 @@ export const EditChildInformation: React.FC = () => {
     const newClassroomGroupId =
       editChildInformationFormGetValues().classroomGroupId;
 
-    const learnerInputModel: LearnerDto = {
-      id: currentChildLearnerRecord?.id,
-      classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
-      stoppedAttendance: new Date().toISOString(),
-      isActive: false,
-    };
+    if (currentChildLearnerRecord) {
+      const learnerInputModel: LearnerDto = {
+        id: currentChildLearnerRecord?.id,
+        classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
+        stoppedAttendance: new Date().toISOString(),
+        isActive: false,
+      };
 
-    appDispatch(
-      classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-    );
+      appDispatch(
+        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+      );
 
-    const newLearnerModel: LearnerDto = {
-      id: newGuid(),
-      classroomGroupId: newClassroomGroupId,
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
-      stoppedAttendance: null,
-      isActive: currentChildLearnerRecord?.isActive,
-    };
+      await appDispatch(
+        classroomsThunkActions.updateLearner({
+          id: learnerInputModel.id as string,
+          learner: learnerInputModel,
+        })
+      );
 
-    appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
+      const newLearnerModel: LearnerDto = {
+        id: newGuid(),
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: currentChildLearnerRecord?.isActive,
+      };
 
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
+    } else {
+      //this child does not belong to any classroomgroup
+      const newLearnerModel: LearnerDto = {
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChild?.userId ?? '',
+        attendanceReasonId: undefined,
+        otherAttendanceReason: '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: true,
+      };
+
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
+    }
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const saveChildCareGiver = async (
@@ -655,6 +702,7 @@ export const EditChildInformation: React.FC = () => {
 
   const closeEditField = () => {
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -769,7 +817,7 @@ export const EditChildInformation: React.FC = () => {
         stretch={true}
         borderRadius="normal"
         visible={editFieldVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <div className={'p-4'}>
           <div className={styles.labelContainer}>
@@ -844,7 +892,10 @@ export const EditChildInformation: React.FC = () => {
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => setChangeClassroomGroupPromptVisible(false),
+              onClick: () => {
+                setChangeClassroomGroupPromptVisible(false);
+                history.push(ROUTES.CHILD_PROFILE, { childId });
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}

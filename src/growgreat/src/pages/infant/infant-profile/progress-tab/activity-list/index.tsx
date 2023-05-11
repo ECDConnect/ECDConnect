@@ -558,7 +558,7 @@ export const ActivityList: React.FC = () => {
                 type="h4"
                 align="left"
                 weight="bold"
-                text="Tap a button below to get started."
+                text="Tap a button below to get started"
                 color="textDark"
                 className="mt-6 mb-4"
               />

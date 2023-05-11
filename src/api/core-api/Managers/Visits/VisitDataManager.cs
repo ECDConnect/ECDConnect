@@ -65,8 +65,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended/completed when all 7 questionnaires are completed
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId)).Select(y => y.VisitName).Distinct().Count();
-            if (count == 7)
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
+            if (count != 0)
             {
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;
@@ -106,8 +106,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // update the visit record to show attended/completed when all 5 questionnaires are completed
-            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId)).Select(y => y.VisitName).Distinct().Count();
-            if (count == 5)
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
+            if (count != 0)
             {
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
                 entityToUpdate.UpdatedDate = DateTime.Now;

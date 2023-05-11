@@ -14,7 +14,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     {
     }
 
-    public class ProgrammeType<TKey> : EntityBase<TKey>, IEnumType<ProgrammeTypeEnum>
+    public class ProgrammeType<TKey> : EntityBase<TKey>, IEnumType<ProgrammeTypeEnum>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string Description { get; set; }

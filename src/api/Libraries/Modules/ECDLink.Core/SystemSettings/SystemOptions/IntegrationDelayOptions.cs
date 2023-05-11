@@ -2,7 +2,7 @@
 
 namespace ECDLink.Core.SystemSettings.SystemOptions
 {
-    [SettingGroup(SettingGroups.Integration.IntegrationDelay)]
+    [SettingGroup(SettingGroups.IntegrationDelay.Delay)]
     public class IntegrationDelayOptions
     {
         public string IntegrationDelay { get; set; }

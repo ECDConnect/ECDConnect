@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -14,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
     }
 
-    public class DailyProgramme<TKey> : EntityBase<TKey>, ProgrammeJoin<TKey>
+    public class DailyProgramme<TKey> : EntityBase<TKey>, ProgrammeJoin<TKey>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public TKey ProgrammeId { get; set; }

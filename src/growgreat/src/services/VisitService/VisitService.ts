@@ -1,6 +1,7 @@
 import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
 import {
+  ClientSummaryByPriority,
   CmsVisitDataInputModelInput,
   HcwHighlights,
   MoreInformation,
@@ -383,6 +384,7 @@ class Visit {
       query GetPreviousVisitInformationForMother($visitId: String) {
         previousVisitInformationForMother(visitId: $visitId) {
               score
+              scoreColor
               visitDataStatus {
                   id
                   comment
@@ -407,6 +409,89 @@ class Visit {
     }
 
     return response.data.data.previousVisitInformationForMother;
+  }
+
+  async GetMotherSummaryByPriority(
+    visitId: string
+  ): Promise<ClientSummaryByPriority[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { motherSummaryByPriority: ClientSummaryByPriority[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetMotherSummaryByPriority($visitId: String) {
+        motherSummaryByPriority(visitId: $visitId) {
+          areaName
+          order
+          color
+          summaryData {
+            comment
+            color
+            type
+          }
+          documentData {
+            comment
+            color
+            type
+          }
+        }
+      }
+      
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get client summary by priority For Mother Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherSummaryByPriority;
+  }
+
+  async GetInfantSummaryByPriority(
+    visitId: string
+  ): Promise<ClientSummaryByPriority[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infantSummaryByPriority: ClientSummaryByPriority[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetInfantSummaryByPriority($visitId: String) {
+        infantSummaryByPriority(visitId: $visitId) {
+          areaName
+          order
+          color
+          summaryData {
+            comment
+            color
+            type
+          }
+          documentData {
+            comment
+            color
+            type
+          }
+        }
+      }
+      
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get client summary by priority For infant Failed - Server connection error'
+      );
+    }
+    return response.data.data.infantSummaryByPriority;
   }
 
   async getVisitAnswersForMother(

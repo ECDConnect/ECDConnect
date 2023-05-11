@@ -1,7 +1,6 @@
 import {
   ClinicVisitsStep,
-  ExpectedDeliveryStep,
-  DangerSignsFollowUpStep,
+  DangerSignsFollowUpStep as HealthcareDangerSignsFollowUpStep,
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
   AntenatalCare,
@@ -16,11 +15,12 @@ import {
   WeightAndLengthResultStep,
   MaternalDistressSteps,
   MidUpperArmCircumferenceResultStep,
+  MaternalDistressFollowUpStep,
   DrugOrAlcoholUseStep,
   AlcoholUseStep,
   HivCareAndMedicationStep,
 } from './pregnancy-care-steps';
-import { DangerSignsStep } from './danger-signs-steps';
+import { DangerSignsStep, DangerSignsFollowUpStep } from './danger-signs-steps';
 import {
   NotesStep,
   ReferralsStep,
@@ -34,8 +34,7 @@ import { InfantCareStep } from './pregnancy-care-steps/nutrition/complementary-f
 export const getHealhcareteps = (isDangerSignsFollowUp: boolean) => [
   AntenatalCare,
   ClinicVisitsStep,
-  ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
-  ExpectedDeliveryStep,
+  ...(isDangerSignsFollowUp ? [HealthcareDangerSignsFollowUpStep] : []),
   ClinicVisitsUpToDateStep,
   AntenatalClinicVideoStep,
 ];
@@ -48,28 +47,33 @@ export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
 ];
 
 export const getPregnancyCareSteps = (
-  isEqualOrAfter98andEqualOrBefore168Days: boolean
+  isEqualOrAfter98andEqualOrBefore168Days: boolean,
+  isAlcoholUseStep: boolean,
+  isIDDocumentStep: boolean,
+  isMaternalDistressFollowUp: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthResultStep,
     MaternalDistressSteps,
+    ...(isMaternalDistressFollowUp ? [MaternalDistressFollowUpStep] : []),
     MidUpperArmCircumferenceResultStep,
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [DrugOrAlcoholUseStep] : []),
   ];
 
   const complementaryFeedingFlow = [
-    AlcoholUseStep,
+    ...(isAlcoholUseStep ? [AlcoholUseStep] : []),
     HivCareAndMedicationStep,
-    IdDocumentStep,
+    ...(isIDDocumentStep ? [IdDocumentStep] : []),
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [InfantCareStep] : []),
   ];
 
   return [...defaultScreens, ...complementaryFeedingFlow];
 };
 
-export const dangerSignsSteps = (
-  isDevelopmentalScreeningWeeksFollowUp: boolean
-) => [DangerSignsStep];
+export const dangerSignsSteps = (isDangerSignsFollowUpStep: boolean) => [
+  ...(isDangerSignsFollowUpStep ? [DangerSignsFollowUpStep] : []),
+  DangerSignsStep,
+];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

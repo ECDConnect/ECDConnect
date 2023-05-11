@@ -106,7 +106,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   useEffect(() => {
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
-      today.getMonth() + 1,
+      today.getMonth(),
       0
     );
 
@@ -118,7 +118,7 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       new AttendanceService(authUser?.auth_token ?? '')
         .getMonthlyAttendanceReport(
           authUser?.id ?? '',
-          selectedClassroomGroups[0]?.classroomId,
+          classroomID!,
           firstDayOfYear,
           new Date(lastDayCurrentMonth)
         )
@@ -144,16 +144,11 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [reportData]);
 
-  const onFilterItemsChanges = (value: SearchDropDownOption<any>[]) => {
-    setSelectedClassroomGroups(value.map((x) => x.value));
-  };
-
   return (
     <div className="flex h-full w-full flex-col overflow-y-auto px-4 pt-4 pb-32">
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}
-          onClose={() => closeNotification()}
           className={'mb-4'}
           message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}

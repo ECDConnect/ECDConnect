@@ -47,6 +47,7 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
                 backgroundColor={item.iconBackgroundColor}
                 imageUrl={item.menuIconUrl}
                 icon={item.menuIcon}
+                iconClassName={item.menuIconClassName}
               />
             ) : (
               <div>

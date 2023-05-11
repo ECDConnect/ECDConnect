@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
@@ -91,11 +92,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             else
             {
                 //get the users hierarchy to reuse
+                var oldHierarchy = classRoomGroup.Hierarchy;
+               
                 if (input.UserId != null)
-                {
-                    //update classrooms hierarchy and send through to next function
-
-                    if (hierarchy != null)
+                {                     
+                    if (hierarchy != null && (oldHierarchy != classRoomGroup.Hierarchy))
                     {
                         var historyRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
                         ClassReassignmentHistory newReassignment = new ClassReassignmentHistory();
@@ -111,11 +112,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         newReassignment.ReassignedBackToDate = DateTime.Now;
                        
                         historyRepo.Insert(newReassignment);
-
                     }
                 }
-                var oldHierarchy = classRoomGroup.Hierarchy;
 
+                //update classrooms hierarchy and send through to next function         
                 classRoomGroup.Hierarchy = hierarchy;
                 classRoomGroup.UserId = input.UserId;
                 classRoomGroup.ClassroomId = input.ClassroomId;
@@ -125,11 +125,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 classRoomGroup.UpdatedBy = uId; 
                 classRepo.Update(classRoomGroup);
 
-                //update the hierarchy of learners and children
-                var learnersReassigned = UpdateLearners(repoFactory, uId, id, oldHierarchy, hierarchy);
-                UpdateChildren(repoFactory, uId, oldHierarchy, hierarchy, learnersReassigned);
-
                 //also update the userhierarchy on classroomgroup, as well as classProgramme so that a practitioner can see this
+                var learnersReassigned = UpdateLearners(repoFactory, uId, id, hierarchy);
+                UpdateChildren(repoFactory, uId, hierarchy, learnersReassigned, input.UserId.ToString());              
                 UpdateClassProgrammeForPractitioner(contextAccessor, repoFactory, input.ClassroomId, hierarchy);
 
                 return classRoomGroup;
@@ -204,7 +202,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
             ClassProgramme classProgramme = classProgrammeRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
-            if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy))
+            if (classProgramme != null && !string.IsNullOrWhiteSpace(newHierarchy) && classProgramme.Hierarchy != newHierarchy)
             {
                 classProgramme.Hierarchy = newHierarchy;
                 classProgrammeRepo.Update(classProgramme);
@@ -215,22 +213,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory, 
             string uId, 
             Guid classroomGroupId, 
-            string oldHierarchy, 
             string newHierarchy)
         {
             List<string> learnersReassigned = new List<string>();
 
             var learnerRepo = repoFactory.CreateGenericRepository<Learner>(userContext: uId);
-            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId)).ToList();
-            if (learners != null && !string.IsNullOrWhiteSpace(newHierarchy))
+            List<Learner> learners = learnerRepo.GetAll().Where(x => x.ClassroomGroupId.Equals(classroomGroupId) && x.IsActive == true).ToList();
+            if (learners != null && learners.Count > 0 && !string.IsNullOrWhiteSpace(newHierarchy))
             {
                 foreach (var learner in learners)
                 {
-                    learner.Hierarchy = learner.Hierarchy.Replace(oldHierarchy, newHierarchy);
-                    learnerRepo.Update(learner);
-
-                    learnersReassigned.Add(learner.UserId);
-                }
+                    if (learner.Hierarchy != newHierarchy)
+                    {
+                        learner.Hierarchy = newHierarchy;
+                        learnerRepo.Update(learner);
+                        learnersReassigned.Add(learner.UserId);
+                    }
+                }   
             }
             return learnersReassigned;
         }
@@ -238,25 +237,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         private List<string> UpdateChildren(
             IGenericRepositoryFactory repoFactory, 
             string uId, 
-            string oldHierarchy, 
             string newHierarchy, 
-            List<string> learnerIds)
+            List<string> learnerIds,
+            string newUserId)
         {
             List<string> childrenReassigned = new List<string>();
-
+            var staticHierarchyRepo = repoFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
             var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: uId);
 
-            if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
+            if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy) && learnerIds.Count > 0)
             {
                 foreach (var learnerId in learnerIds)
                 {
                     Child children = childRepo.GetByUserId(learnerId);
-                    if (children != null)
+                    if (children != null )
                     {
-                        children.Hierarchy = children.Hierarchy.Replace(oldHierarchy, newHierarchy);
-                        childRepo.Update(children);
+                       string childNewHierarchy = "";
+                       UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(children.UserId)).FirstOrDefault();
 
-                        childrenReassigned.Add(children.UserId);
+                        if (childHierarchy != null)
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = HierarchyHelper.AppendHierarchy(newHierarchy, childHierarchy.Key.ToString());
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newUserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(children.UserId);
+                            updatedChild.Hierarchy = childNewHierarchy;
+                            childRepo.Update(updatedChild);
+                        }
+
                     }
                 }
             }

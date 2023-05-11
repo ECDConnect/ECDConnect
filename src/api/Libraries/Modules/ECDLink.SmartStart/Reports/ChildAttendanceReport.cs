@@ -5,6 +5,8 @@ using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.SmartStart.Reports.Models;
+using ECDLink.SmartStart.Services;
+using HotChocolate;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -14,227 +16,32 @@ namespace ECDLink.SmartStart.Reports
 {
     public class ChildAttendanceReport : AttendanceReportBase
     {
-        private readonly IGenericRepositoryFactory _repositoryFactory;
-        public ChildAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, IGenericRepositoryFactory repositoryFactory)
+        protected AttendanceService _attendanceService;
+        public ChildAttendanceReport(IDbContextFactory<AuthenticationDbContext> dbFactory, IHolidayService<Holiday> holidayService, [Service] AttendanceService attendanceService)
           : base(holidayService, dbFactory.CreateDbContext())
         {
-            _repositoryFactory = repositoryFactory;
+            _attendanceService = attendanceService;
         }
 
         public ChildAttendanceReportModel GetChildAttendanceExpected(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            var learners = GetAllLearnerInstances(userId, classgroupId);
-
-            if (!learners.Any())
-            {
-                return null;
-            }
-
-            var learnerReports = new List<ChildGroupingAttendanceReportModel>();
-
-            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
-
-            foreach (var learner in learners)
-            {
-                var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
-
-                var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
-
-                // Do monthly Tracking here
-                for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
-                {
-                    var attendance = new List<Tuple<int, int>>();
-
-                    foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
-                    {
-                        var daysOfClass = CalculateDaysOfClassForMonth(dt, programme.MeetingDay, validClassDays, learner.StartedAttendance, learner.StoppedAttendance);
-
-                        var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
-                                              && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month
-                                              && x.Year == dt.Year);
-
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
-                    }
-                    monthlyAttendance.Add(dt, attendance);
-                }
-
-                learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
-            }
-
-            return CreateCompleteAttendanceReport(learnerReports);
+            return _attendanceService.GetChildAttendanceExpected(classgroupId, userId, startMonth, endMonth);
         }
 
         public ChildAttendanceReportModel GetChildAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
-            var learners = GetAllLearnerInstances(userId, classgroupId);
-
-            if (!learners.Any())
-            {
-                return null;
-            }
-
-            var learnerReports = new List<ChildGroupingAttendanceReportModel>();
-
-            foreach (var learner in learners)
-            {
-                var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
-
-                var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
-
-                // Do monthly Tracking here
-                for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
-                {
-                    var attendance = new List<Tuple<int, int>>();
-
-                    foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
-                    {
-                        var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
-                                              && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month
-                                              && x.Year == dt.Year);
-
-                        var attendedClasses = attendanceForPeriod
-                                              .Where(x => string.Equals(x.UserId, userId)
-                                              && x.ClassroomProgrammeId == programme.Id
-                                              && x.MonthOfYear == dt.Month
-                                              && x.Year == dt.Year
-                                              && x.Attended == true);
-
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
-
-                    }
-                    monthlyAttendance.Add(dt, attendance);
-                }
-
-                learnerReports.Add(CreateLearnerReport(learner, GetMonthlyReport(monthlyAttendance)));
-            }
-
-            return CreateCompleteAttendanceReport(learnerReports);
+            return _attendanceService.GetChildAttendance(classgroupId, userId, startMonth, endMonth);
         }
 
-        private ChildAttendanceReportModel CreateCompleteAttendanceReport(List<ChildGroupingAttendanceReportModel> learnerReports)
-        {
-            var totalExpectedAttendance = learnerReports.Sum(x => x.ExpectedAttendance);
-            var totalActualAttendance = learnerReports.Sum(x => x.ActualAttendance);
-            var attendancePercentage = (totalExpectedAttendance > 0 && totalActualAttendance > 0 ? (int)Math.Round(((double)totalActualAttendance / totalExpectedAttendance) * 100) : 0);
-
-            return new ChildAttendanceReportModel
-            {
-                TotalActualAttendance = totalActualAttendance,
-                TotalExpectedAttendance = totalExpectedAttendance,
-                ClassGroupAttendance = learnerReports,
-                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
-            };
-        }
-
-        private List<Attendance> GetAttendanceRecordsForPeriod(Learner learner, string userId, DateTime startMonth, DateTime endMonth)
-        {
-            var programmeIds = learner.ClassroomGroup.ClassProgrammes.Select(x => x.Id).ToList();
-
-            return GetAttendanceRecordsForPeriod(programmeIds, userId, startMonth, endMonth);
-        }
-
-        private ChildGroupingAttendanceReportModel CreateLearnerReport(Learner learner, IEnumerable<ChildAttendanceMonthlyReportModel> monthlyReports)
-        {
-
-            var totalExpectedAttendance = monthlyReports.Sum(x => x.ExpectedAttendance);
-            var totalActualAttendance = monthlyReports.Sum(x => x.ActualAttendance);
-            var attendancePercentage = (int)Math.Round(((double)totalActualAttendance / totalExpectedAttendance) * 100);
-
-            return new ChildGroupingAttendanceReportModel
-            {
-                ActualAttendance = totalActualAttendance,
-                ExpectedAttendance = totalExpectedAttendance,
-                StartDate = learner.StartedAttendance,
-                ClassroomGroupId = learner.ClassroomGroupId,
-                ClassroomGroupName = learner.ClassroomGroup.Name,
-                MonthlyAttendance = monthlyReports,
-                EndDate = learner.StoppedAttendance,
-                AttendancePercentage = (attendancePercentage > 0 ? attendancePercentage : 0)
-            };
-        }
-
-        private IEnumerable<Learner> GetAllLearnerInstances(string userId, Guid classgroupId = default(Guid))
-        {
-            var learners = _dbContext.Learners
-                            .Include(x => x.ClassroomGroup)
-                            .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => string.Equals(l.UserId, userId));
-            // Get all instances of where the user was a learner
-
-            if (classgroupId != default(Guid))
-            {
-                learners = learners.Where(l => l.ClassroomGroupId == classgroupId);
-            }
-
-            return learners.ToList();
-        }
-        private IEnumerable<Learner> GetAllLearnerGroupInstances(Guid classgroupId = default(Guid))
-        {
-            var learners = _dbContext.Learners
-                            .Include(x => x.ClassroomGroup)
-                            .ThenInclude(x => x.ClassProgrammes)
-                            .Where(l => l.ClassroomGroupId == classgroupId);
-            return learners.ToList();
-        }
-
-
-        private IEnumerable<ChildAttendanceMonthlyReportModel> GetMonthlyReport(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance)
-        {
-            var report = new List<ChildAttendanceMonthlyReportModel>();
-
-            foreach (var item in monthlyAttendance)
-            {
-                var totalAttendance = item.Value.Sum(x => x.Item1);
-                var actualAttendance = item.Value.Sum(x => x.Item2);
-                var attendancePercentage = (totalAttendance > 0 && actualAttendance > 0 ? (int)Math.Round(((double)actualAttendance / totalAttendance) * 100) : 0);
-
-                report.Add(new ChildAttendanceMonthlyReportModel
-                {
-                    Month = item.Key.ToString("MMMM"),
-                    Year = item.Key.Year,
-                    MonthNumber = item.Key.Month,
-                    ActualAttendance = actualAttendance,
-                    ExpectedAttendance = totalAttendance,
-                    AttendancePercentage = (attendancePercentage > 0 ? (attendancePercentage > 100 ? 100 : attendancePercentage) : 0)
-                });
-            }
-
-            return report.OrderByDescending(report => report.Year).ThenBy(x => x.MonthNumber);
+        private IEnumerable<ChildAttendanceMonthlyReportModel> GetMonthlyReport(Dictionary<DateTime, List<Tuple<int, int>>> monthlyAttendance) { 
+            return _attendanceService.GetMonthlyReport(monthlyAttendance);
         }
 
         public List<ClassroomGroupChildAttendanceReportModel> GetClassroomAttendance(Guid classgroupId, string userId, DateTime startMonth, DateTime endMonth)
         {
             List<ClassroomGroupChildAttendanceReportModel> classReports = new List<ClassroomGroupChildAttendanceReportModel>();
             //get classroom
-            Classroom classroom = _dbContext.Classrooms
-                    .Include(x => x.ClassroomGroups)
-                    .ThenInclude(c => c.ClassProgrammes)
-                    .FirstOrDefault(c => c.Id == classgroupId && string.Equals(userId, c.UserId));
-
-            Practitioner practi = _dbContext.Practitioners.FirstOrDefault(x => string.Equals(userId, x.UserId)); //get practitioner being queried
-
-            if (classroom == default(Classroom))
-            {
-                //a practitioner may call here on a classroom that only the principal has access to, since practitioners are assigned to classroomgroups, and principals to classrooms.
-                //So get the parent of the practitioner and if that matches the classroom id by their principal id to the classroom id, then allow the request
-                
-                if (practi != null && practi.PrincipalHierarchy.HasValue)
-                {
-                    //now test the practitioners principal userid, if its theirs, then show results. If it still doesnt match, throw the error
-                    classroom = _dbContext.Classrooms
-                    .Include(x => x.ClassroomGroups)
-                    .ThenInclude(c => c.ClassProgrammes)
-                    .FirstOrDefault(c => c.Id == classgroupId && c.UserId.Contains(practi.PrincipalHierarchy.ToString()));// && string.Equals(practi.PrincipalHierarchy, c.UserId)
-                }
-
-                if (classroom == default(Classroom))
-                {
-                    throw new UnauthorizedAccessException("User and Principal does not have access to this classroom");
-                }
-            }
+            var classroom = _attendanceService.GetUserClassroom(userId, classgroupId.ToString());
 
             if (!classroom.ClassroomGroups.Any())
             {
@@ -242,46 +49,47 @@ namespace ECDLink.SmartStart.Reports
             }
 
             //retrieve only groups the user is allowed to see
-            var classgroupRepo = _repositoryFactory.CreateRepository<ClassroomGroup>(userContext: userId);
-            List<ClassroomGroup> groups = classgroupRepo.GetAll().ToList();
+            List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId); 
 
             foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
             {
-                var learners = GetAllLearnerGroupInstances(classroomGroup.Id);
+                var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
-                var childRepo = _repositoryFactory.CreateRepository<Child>(userContext: userId);
-                List<Child> children = childRepo.GetAll().ToList();
+                List<Child> children = _attendanceService.GetChildrenForUser(userId);
                 var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
                 if (learners.Any())
                 {
                     foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains( x.UserId)))
                     {
-                        var attendanceForPeriod = GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
+                        var attendanceForPeriod = _attendanceService.GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
                         var allAttendance = new List<List<Tuple<int, int>>>();
                         var monthlyAttendance = new Dictionary<DateTime, List<Tuple<int, int>>>();
 
-                        // Do monthly Tracking here
+                        //Check monthly Tracking here
                         for (DateTime dt = startMonth; dt <= endMonth; dt = dt.AddMonths(1))
                         {
                             var attendance = new List<Tuple<int, int>>();
-
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
-                                var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth); 
+                                if (learner.StartedAttendance.Date >= programme.ProgrammeStartDate.Date)
+                                {
+                                    var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
 
-                                var attendedClasses = attendanceForPeriod
-                                                      .Where(x => string.Equals(x.UserId, userId)
-                                                      && x.ClassroomProgrammeId == programme.Id
-                                                      && x.MonthOfYear == dt.Month
-                                                      && x.Year == dt.Year
-                                                      && x.Attended == true);
+                                    var attendedClasses = attendanceForPeriod
+                                                            .Where(x => string.Equals(x.UserId, userId)
+                                                            && x.ClassroomProgrammeId == programme.Id
+                                                            && x.MonthOfYear == dt.Month
+                                                            && x.Year == dt.Year
+                                                            && x.Attended == true);
 
-                                attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? attendedClasses.Count() : 0)));
+                                    attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
+
+                                } else attendance.Add(Tuple.Create(0, 0));
                             }
                             monthlyAttendance.Add(dt, attendance);
                             allAttendance.Add(attendance);
                         }
-                        var reports = GetMonthlyReport(monthlyAttendance);
+                        var reports = _attendanceService.GetMonthlyReport(monthlyAttendance);
                         //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
                         SortedDictionary<int, int> attendanceDays = new SortedDictionary<int, int>();
                         int daysInMonth = DateTime.DaysInMonth(startMonth.Year, startMonth.Month);
@@ -302,26 +110,46 @@ namespace ECDLink.SmartStart.Reports
                             {
                                 SortedDictionary<int, int> totalAttendance = attendanceDays.Copy();
 
-                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day)).OrderBy(p => p.AttendanceDate).ToList();
+                                List<Attendance> attendances = _dbContext.Attendances.Where(c => c.UserId == learner.UserId && keyDays.Contains(c.AttendanceDate.Day) && c.AttendanceDate.Date >= startMonth.Date && c.AttendanceDate.Date <= endMonth.Date).OrderBy(p => p.AttendanceDate).ToList();
 
                                 foreach (var attendance in attendances)
                                 {
                                     totalAttendance[attendance.AttendanceDate.Day] = (attendance.Attended ? 1 : 0);
                                 }
 
-                                classReports.Add(new ClassroomGroupChildAttendanceReportModel()
+                                if (classReports.Where(x => x.ChildUserId.Equals(learner.UserId)).FirstOrDefault() != null)
                                 {
-                                    ChildUserId = learner.UserId,
-                                    ClassgroupId = classgroupId,
-                                    ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
-                                    ChildIdNumber = learner.User.IdNumber,
-                                    TotalActualAttendance = report.ActualAttendance,
-                                    TotalExpectedAttendance = report.ExpectedAttendance,
-                                    AttendancePercentage = report.AttendancePercentage,
-                                    Month = report.MonthNumber,
-                                    Year = report.Year, 
-                                    Attendance = totalAttendance
-                                });
+                                    //append to existing report and not add if child already exists in report list based on different classes child may be in
+                                    ClassroomGroupChildAttendanceReportModel existingReport = classReports.Where(x => x.ChildUserId.Equals(learner.UserId) && x.Month == report.MonthNumber && x.Year == report.Year).FirstOrDefault();
+                                    int totalActualAttendance = existingReport.TotalActualAttendance + report.ActualAttendance;
+                                    existingReport.TotalActualAttendance = totalActualAttendance;
+                                    int totalExpectedAttendance = existingReport.TotalExpectedAttendance + report.ExpectedAttendance;
+                                    existingReport.TotalExpectedAttendance = totalExpectedAttendance;
+                                    int totalAttendancePercentage = existingReport.AttendancePercentage + report.AttendancePercentage;
+                                    existingReport.AttendancePercentage = totalAttendancePercentage > 0 ? (totalAttendancePercentage > 100 ? 100 : totalAttendancePercentage) : 0;
+                                    foreach (var item in totalAttendance)
+                                    {
+                                        if (existingReport.Attendance.ContainsKey(item.Key))
+                                            existingReport.Attendance[item.Key] = existingReport.Attendance[item.Key] + item.Value;
+                                    }
+                                }
+                                else
+                                {
+
+                                    classReports.Add(new ClassroomGroupChildAttendanceReportModel()
+                                    {
+                                        ChildUserId = learner.UserId,
+                                        ClassgroupId = classroomGroup.Id,
+                                        ChildFullName = learner.User.FirstName + " " + learner.User.Surname,
+                                        ChildIdNumber = learner.User.IdNumber,
+                                        TotalActualAttendance = report.ActualAttendance,
+                                        TotalExpectedAttendance = report.ExpectedAttendance,
+                                        AttendancePercentage = report.AttendancePercentage,
+                                        Month = report.MonthNumber,
+                                        Year = report.Year,
+                                        Attendance = totalAttendance
+                                    });
+                                }
                             }
                         }
                     }

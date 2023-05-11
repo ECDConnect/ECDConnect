@@ -1,7 +1,5 @@
-import { Document } from '@ecdlink/core';
-import { Document as DocumentsForHCW } from '@ecdlink/graphql';
+import { DocumentDto } from '@ecdlink/core';
 
 export type DocumentState = {
-  documents?: Document[] | undefined;
-  documentsForHCW?: DocumentsForHCW[];
+  documentsForHCW?: DocumentDto[];
 };

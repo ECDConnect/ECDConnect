@@ -3,8 +3,8 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
     public class MappedChildCaregiver : MappedBaseEntity
     {
 
-        MappedChild child { get; set; }
-        MappedCaregiver caregiver { get; set; }
+        MappedChild Child { get; set; }
+        MappedCaregiver Caregiver { get; set; }
 
     }
 

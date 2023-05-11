@@ -9,6 +9,7 @@ export type RoundIconProps = {
   className?: string;
   size?: IconSize;
   iconSize?: IconSize;
+  iconClassName?: string;
 };
 
 type SizeType = '1' | '2' | '3' | '4' | '5' | '6' | '7' | '8' | '9';

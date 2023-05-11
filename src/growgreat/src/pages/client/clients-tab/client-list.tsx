@@ -55,6 +55,8 @@ import { generatePath } from 'react-router-dom';
 import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getCaregiverClientsSelector } from '@/store/caregiver/caregiver.selectors';
+import { MotherActions } from '@/store/mother/mother.actions';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const useClientProfileDialog = () => {
   const history = useHistory();
@@ -160,6 +162,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   const { isLoading } = useThunkFetchCall(
     'caregivers',
     CaregiverActions.GET_CAREGIVER_CLIENTS
+  );
+  const { isLoading: isLoadingMothers } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHERS
+  );
+  const { isLoading: isLoadingInfants } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANTS
   );
 
   const { isOnline } = useOnlineStatus();
@@ -291,7 +301,9 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       (mother) => {
         return {
           icon: Pregnant,
-          title: mother?.firstName || mother?.user?.firstName!,
+          title:
+            mother?.user?.firstName! + ' ' + mother?.user?.surname! ||
+            mother?.firstName!,
           subTitle: mother.statusInfo?.subject,
           switchTextStyles: true,
           alertSeverity:
@@ -369,8 +381,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   useLayoutEffect(() => {
-    appDispatch(motherThunkActions.getMothers({})).unwrap();
-    appDispatch(infantThunkActions.getInfants({})).unwrap();
+    const promises = [
+      appDispatch(motherThunkActions.getMothers({})).unwrap(),
+      appDispatch(infantThunkActions.getInfants({})).unwrap(),
+    ];
+
+    Promise.all(promises);
   }, [appDispatch]);
 
   useEffect(() => {
@@ -379,7 +395,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     }
   }, [location, isEmptyState]);
 
-  if (isLoading) {
+  if (isLoading || isLoadingMothers || isLoadingInfants) {
     return (
       <LoadingSpinner
         size="medium"

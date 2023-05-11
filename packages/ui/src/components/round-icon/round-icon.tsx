@@ -13,6 +13,7 @@ const RoundIcon: React.FC<RoundIconProps> = ({
   backgroundColor,
   iconColor,
   className,
+  iconClassName,
 }) => (
   <div
     className={classNames(
@@ -23,10 +24,15 @@ const RoundIcon: React.FC<RoundIconProps> = ({
     )}
     style={hexBackgroundColor ? { backgroundColor: hexBackgroundColor } : {}}
   >
-    {imageUrl && <img className={styles.roundIcon(iconSize)} src={imageUrl} />}
+    {imageUrl && (
+      <img
+        className={classNames(iconClassName, styles.roundIcon(iconSize))}
+        src={imageUrl}
+      />
+    )}
     {icon &&
       !imageUrl &&
-      renderIcon(icon, classNames(styles.roundIcon(iconSize)))}
+      renderIcon(icon, classNames(iconClassName, styles.roundIcon(iconSize)))}
   </div>
 );
 
