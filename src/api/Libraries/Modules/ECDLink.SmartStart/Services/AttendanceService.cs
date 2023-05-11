@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using DotLiquid;
 using ECDLink.Abstractrions.Services;
-using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
@@ -17,7 +15,6 @@ using ECDLink.SmartStart.Reports.Models;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace ECDLink.SmartStart.Services
 {

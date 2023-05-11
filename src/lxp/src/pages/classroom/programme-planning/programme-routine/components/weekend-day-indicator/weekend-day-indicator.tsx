@@ -1,24 +1,27 @@
 import { Button, Typography, renderIcon } from '@ecdlink/ui';
-import HolidayEmoji from '../../../../../../assets/holidayEmoji.png';
+import WeekendEmoji from '../../../../../../assets/positive-bonus-emoticon.png';
+import { isSaturday, nextMonday } from 'date-fns';
 import { DailyProgrammeDto } from '@/../../../packages/core/lib';
-import { nextMonday } from 'date-fns';
 
-interface PublicHolidayProps {
+interface HolidayProps {
   date: Date;
-  nextProgrammeDaysWithoutActivity?: DailyProgrammeDto[];
-  setSelectedDate?: (date: Date) => void;
+  nextProgrammeDaysWithoutActivity: DailyProgrammeDto[];
+  setSelectedDate: (date: Date) => void;
 }
 
-export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
+export const WeekendDayIndicator: React.FC<HolidayProps> = ({
   date,
   nextProgrammeDaysWithoutActivity,
   setSelectedDate,
 }) => {
+  const isSaturdayDay = isSaturday(new Date(date!));
+  console.log({ nextProgrammeDaysWithoutActivity });
+
   return (
     <div className={'flex flex-auto flex-col items-center justify-center'}>
       <div>
         <img
-          src={HolidayEmoji}
+          src={WeekendEmoji}
           alt="weekend emoji"
           className="mt-8 h-28 w-28"
         />
@@ -29,7 +32,9 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
         fontSize="16"
         align="center"
         weight="bold"
-        text={`This is a public holiday. Get a head start by planning next week!`}
+        text={`Happy ${
+          isSaturdayDay ? 'Saturday' : 'Sunday'
+        }! You can start planning next week.`}
       />
       <Typography
         type="body"
@@ -41,7 +46,7 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
             ? `You have ${nextProgrammeDaysWithoutActivity?.length} ${
                 nextProgrammeDaysWithoutActivity?.length === 1 ? 'day' : 'days'
               } to plan next week`
-            : ``
+            : `You have a plan for every day next week, great job!`
         }
         color={'textMid'}
         fontSize="14"
@@ -51,11 +56,11 @@ export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
           color={'primary'}
           type={'outlined'}
           onClick={() =>
-            setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+            nextProgrammeDaysWithoutActivity?.length
               ? setSelectedDate(
                   new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
                 )
-              : setSelectedDate && setSelectedDate(nextMonday(new Date(date)))
+              : setSelectedDate(nextMonday(new Date(date)))
           }
           className={'mt-4 mb-4 w-full'}
         >

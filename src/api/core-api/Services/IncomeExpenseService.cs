@@ -676,7 +676,7 @@ namespace ECDLink.Core.Services
                 statementRepo.Insert(submittedStatement);
 
                 //income
-                if (incomeExpenses.AllUnSubmitted.Income.Count > 0)
+                if (incomeExpenses.AllUnSubmitted.Income?.Count > 0)
                 {
                     var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
                      // if any statement lines were added after previous months submission, these get added to the newest submission
@@ -693,7 +693,7 @@ namespace ECDLink.Core.Services
                     retVal = true;
                 }
                 //expenses
-                if (incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
+                if (incomeExpenses.AllUnSubmitted.Expenses != null && incomeExpenses.AllUnSubmitted.Expenses.Count > 0)
                 {
                     var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
                     // if any statement lines were added after previous months submission, these get added to the newest submission

@@ -36,6 +36,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   setSelectedDate,
   selectedDate,
   weekSummary,
+  isWeekendDay,
 }) => {
   function titleCase(string: string) {
     return string[0].toUpperCase() + string.slice(1).toLowerCase();
@@ -53,7 +54,7 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === theme?.name);
   const isCurrentDay = isSameDay(selectedDate!, new Date());
-
+  console.log({ month });
   const addDay = useCallback(() => {
     setSelectedDate(addDays(selectedDate!, 1));
   }, [selectedDate, setSelectedDate]);
@@ -67,6 +68,8 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const setDayCurrentDate = () => {
     setSelectedDate(new Date());
   };
+
+  console.log({ monthsList });
 
   return (
     <div>
@@ -82,7 +85,14 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             placeholder={`${monthDropdownLabel} ${currentYear}`}
             list={monthsList}
             selectedValue={month}
-            onChange={() => setMonth(monthsList[currentMonth]?.label)}
+            onChange={(item) => {
+              setMonth(monthsList[currentMonth]?.label);
+              setSelectedDate(
+                new Date(currentYear, Number(item), 1) < new Date()
+                  ? new Date()
+                  : new Date(currentYear, Number(item) - 1, 1)
+              );
+            }}
             fillColor="secondary"
             textColor="white"
             fillType="filled"
@@ -127,49 +137,51 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
             />
           </Card>
         </div>
-        <div className="flex w-3/4 items-center justify-center">
-          {showChips && (
-            <Card className={`flex w-full items-center rounded-xl p-2`}>
-              <div
-                className={`flex w-full items-center rounded-xl p-2 ${
-                  !chosedTheme ? 'bg-uiBg' : ''
-                }`}
-                style={{
-                  backgroundColor: chosedTheme?.color || 'bg-uiBg',
-                }}
-              >
-                {chosedTheme && (
-                  <img
-                    src={chosedTheme?.imageUrl}
-                    alt="theme"
-                    className="h-8 w-8"
-                  />
-                )}
-                {dailyProgramme && theme?.dailyProgrammes?.length ? (
-                  <Typography
-                    type="small"
-                    color={chosedTheme ? 'white' : 'textDark'}
-                    text={
-                      themeName
-                        ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
-                        : `No theme`
-                    }
-                    className={'p-4'}
-                    weight={`bold`}
-                  />
-                ) : (
-                  <Typography
-                    type="small"
-                    color={chosedTheme ? 'white' : 'textDark'}
-                    text={`${themeName}`}
-                    className={'p-4'}
-                    weight={`bold`}
-                  />
-                )}
-              </div>
-            </Card>
-          )}
-        </div>
+        {!isWeekendDay && (
+          <div className="flex w-3/4 items-center justify-center">
+            {showChips && (
+              <Card className={`flex w-full items-center rounded-xl p-2`}>
+                <div
+                  className={`flex w-full items-center rounded-xl p-2 ${
+                    !chosedTheme ? 'bg-uiBg' : ''
+                  }`}
+                  style={{
+                    backgroundColor: chosedTheme?.color || 'bg-uiBg',
+                  }}
+                >
+                  {chosedTheme && (
+                    <img
+                      src={chosedTheme?.imageUrl}
+                      alt="theme"
+                      className="h-8 w-8"
+                    />
+                  )}
+                  {dailyProgramme && theme?.dailyProgrammes?.length ? (
+                    <Typography
+                      type="small"
+                      color={chosedTheme ? 'white' : 'textDark'}
+                      text={
+                        themeName
+                          ? `${themeName}  (Day ${dailyProgramme?.day}/${theme?.dailyProgrammes?.length})`
+                          : `No theme`
+                      }
+                      className={'p-4'}
+                      weight={`bold`}
+                    />
+                  ) : (
+                    <Typography
+                      type="small"
+                      color={chosedTheme ? 'white' : 'textDark'}
+                      text={`${themeName}`}
+                      className={'p-4'}
+                      weight={`bold`}
+                    />
+                  )}
+                </div>
+              </Card>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

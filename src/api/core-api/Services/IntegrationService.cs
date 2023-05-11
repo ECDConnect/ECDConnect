@@ -32,6 +32,8 @@ using ECDLink.Tenancy.Context;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
+using ECDLink.Core.Helpers;
+using MediatR;
 
 namespace ECDLink.Core.Services
 {
@@ -44,7 +46,9 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
+        private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
+        private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
         private  AuthenticationDbContext _dbContext;
         private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
@@ -100,6 +104,8 @@ namespace ECDLink.Core.Services
 
             //Generic static repos
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
             _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
             _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
@@ -138,6 +144,23 @@ namespace ECDLink.Core.Services
             }
         }
 
+        private async Task<List<IntegrationAudit>> GetAudits(DateTime startTime, string entityType = null)
+        {
+            try
+            {
+                var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= startTime.AddMinutes(-10)).ToList(); //overlaps with 10 minutes of changes
+                if (entityType != null)
+                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
+
+                return audits;
+            }
+            catch (Exception e)
+            {
+                //TODO: LOG ERROR AND HANDLE          
+                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
         private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
         {
             try
@@ -159,12 +182,10 @@ namespace ECDLink.Core.Services
         {
             try
             {
-
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
                 if (entityType != null)
-                    return mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
                 else
-                    return mapperRepo.GetAll().ToList();
+                    return _columnmapperRepo.GetAll().ToList();
             }
             catch (Exception e)
             {
@@ -173,7 +194,7 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null)
+        private async Task<string> GetAPIHandlerResponse(string endpointUrl, List<IntegrationOptionConditionEntity> optionConditions = null, List<IntegrationOptionRelatedEntity> relatedConditions = null, bool showOptions = true, bool isPut = false, string postString = "")
         {
             var request = new HttpRequestMessage();
 
@@ -186,8 +207,8 @@ namespace ECDLink.Core.Services
                         var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions, Related = relatedConditions };
 
                         var payload = JsonSerializer.Serialize(apiEntity);
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
-                        var response = await SmartLinkClient.PostAsync(endpointUrl, content);
+                        var content = showOptions ? new StringContent(payload, Encoding.UTF8, "application/json") : new StringContent(postString, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
+                        var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
 
                         if (!response.IsSuccessStatusCode)
                         {
@@ -381,83 +402,128 @@ namespace ECDLink.Core.Services
 
         #endregion
 
-
-        #region Integration Points
-
-        public async Task<bool> IntegrationByMappedCoachTest()
+        private async Task<bool> PushUpdates(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
         {
-            bool returnOK = false;
-            //List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-            //List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
+            //1) Get list of entities and their types
+            //2) iterate through these and group updates for same entity
+            //3) build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any otehr changes is irrelevant
+            //4) add remote guid
+            //5) Send it to the /Multiple endpoint
+            //move to next entity type thats mapped and ha sproperties
+            var entityTypeList = audits.Select(x => x.Entity).Distinct();
+            Dictionary<string,string> entitypes = new Dictionary<string,string>();
 
-            string remotePracId = "93224ae2-ea56-ea11-833a-00155d326100";
-            string localPracId = "040bb9d7-e96f-49ee-b045-1ec04e3e19ab";
-            //string remoteChildId = "99676639-e24e-ed11-8355-00155d326100";
-
-            List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(remotePracId);
-            //4.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
-            if (remoteFranchisees != null)
+            foreach (var updatedEntityType in entityTypeList)
             {
-                foreach (var franchisee in remoteFranchisees)
-                {
-                    if (franchisee != null)
+                StringBuilder jsonString = new StringBuilder();
+                var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                if (entityIdList.Any() && entities.Any())
+                {                    
+                    string url = "";//"Franchisee" + SSIntegrationSettings.UpdateMultiple;
+                    jsonString.AppendLine("[");
+                    foreach (var entityToUpdate in entityIdList)
                     {
-                        List<Child> newChildren = new List<Child>();
-                        //Create franchisee and map in SS system
-                        Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPracId); //already mapped and inserted
-
-                        //get all elements underneath and map those too
-
-                        //1. Children, , 
-
-
-                        //Child child1 = childRepo.GetByUserId("cddd65ea-2913-4889-87a9-4ddea0936283");
-                        //Child child2 = childRepo.GetByUserId("eefa0a36-ceb1-4fdf-adfe-2a85a483c9b4");
-                        //Child child3 = childRepo.GetByUserId("923782c9-8696-4899-b1aa-be272a6b67ac");
-                        ////Child child4 = childRepo.GetByUserId("3443753f-5c55-47ca-8459-4ffe26de539c");
-
-                        //newChildren.Add(child1);
-                        //newChildren.Add(child2);
-                        //newChildren.Add(child3);
-                        //newChildren.Add(child4);
-
-                        
-                        List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);//await GetChild(remoteChildId);//
-                        if (remoteChildren != null)
+                        if (entities.Where(x => x.LocalId.Equals(entityToUpdate)) != null)
                         {
-                            foreach (var remoteChild in remoteChildren)
+                            var mappedEntity = entities.Where(x => x.LocalId.Equals(entityToUpdate)).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            string localEntity = entityToUpdate;
+                            string remoteEntity = entityToUpdate;
+                            if (entityToUpdate.Equals("ApplicationUser"))
                             {
-                                if (remoteChild != null)
-                                {
-                                    var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                    if (newChild != null)
-                                    {
+                                localEntity = mappedEntity.LocalEntity;
+                                remoteEntity = mappedEntity.RemoteEntity;
+                            }
 
-                                        newChildren.Add(newChild);
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).ToList();
+
+                                foreach (var changeLine in allChanges)
+                                {
+                                    url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    var mappedColumnLine = columns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                    if (mappedColumnLine != null)
+                                    {
+                                        //get mappedcolumn from columnmapping
+                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + changeLine.ValueAfter + "\",");
                                     }
                                 }
+                                jsonString.AppendLine("},");
                             }
                         }
-                        
-                        //2. Documents
-
-                        //3. Notes
-
-                        //4. Attendance
-                        //5. Income Statements
-                        await AlignChildHierarchy(newPractitioner, newChildren);
-                        await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                     }
+                    jsonString.AppendLine("]");
+                    //jsonString.AppendLine("[");
+                    //jsonString.AppendLine("{");
+                    //    jsonString.AppendLine("\"FirstName\": \"Ntombizanele Nozonela\", ");
+                    //    jsonString.AppendLine("\"Surname\": \"Maasdorp\", ");
+                    //    jsonString.AppendLine("\"IdNumber\": \"8509230915086\", ");
+                    //    jsonString.AppendLine("\"PersonalNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"WhatsAppNumber\": \"+27786832610\", ");
+                    //    jsonString.AppendLine("\"BirthDate\": \"1985-09-23\", ");
+                    //    jsonString.AppendLine("\"EmailAddress\": \"test@ecdconnect.co.za\", ");
+                    //    jsonString.AppendLine("\"NextOfKinFirstName\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinSurname\": \"N/A\",");
+                    //        jsonString.AppendLine("\"NextOfKinContactNumber\": null,");
+                    //    jsonString.AppendLine("\"Guid\": \"cc1cbf5d-d3a1-eb11-8346-00155d326100\"");
+                    //  jsonString.AppendLine("}");
+                    //jsonString.AppendLine("]");
+
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
                 }
+
+
+
             }
 
-
-            return returnOK;
+            return true;
         }
+
+        private async Task<bool> PushDeletes(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+
+
+            return true;
+        }
+
+        private async Task<bool> PushInserts(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
+        {
+
+            return true;
+        }
+
+        private async Task<bool> PushData(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns)
+        {
+            int changesCheckTime = 120;
+            List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+            //Inserts
+            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
+            if (inserts.Count > 0)
+                await PushInserts(inserts, mappedEntities, mappedColumns);
+
+            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
+            if (updates.Count > 0)
+                await PushUpdates(updates, mappedEntities, mappedColumns);
+
+            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            if (deletes.Count > 0)
+                await PushDeletes(deletes, mappedEntities, mappedColumns);
+
+            return true;
+        }
+
+
+        #region Integration Points      
 
         public async Task<bool> IntegrationByMappedCoach()
         {
-            string franchiseeId = "02659d39-60dc-ed11-8356-00155d326100";
+            string franchiseeId = "41d9f86b-bced-ed11-8356-00155d326100";            
             bool returnOK = false;
             DateTime startTime = DateTime.Now;
             int totalAddedToSS = 0;
@@ -492,7 +558,7 @@ namespace ECDLink.Core.Services
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
                     List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                    /**/       
+                    /*       
                     if (changedColumns != null) {
                         foreach (var change in changedColumns)
                         {
@@ -512,16 +578,14 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                    /**/
+                    /*/
                     //-------------------
                     //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
                     //-------------------
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
-
-                        //TODO: API Data pushes from SS Audit tables
-                        returnOK = true;
+                    //    await PushData(mappedEntities, mappedColumns);                        
                     }
 
                     //-------------------
@@ -539,8 +603,8 @@ namespace ECDLink.Core.Services
                         //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //5.1) get all frannchisees and map them                
-                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = await GetFranchiseesById(franchiseeId);
                         //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
                         if (remoteFranchisees != null)
                         {
@@ -822,10 +886,24 @@ namespace ECDLink.Core.Services
                             IsClubOwner = entity.IsClubLeader
                         };
 
+                        //check phone number is valid
+                        string numberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.PersonalNumber);
+                            if (string.Equals(normalizePhoneNumber, entity.PersonalNumber))
+                            {
+                                numberToImport = normalizePhoneNumber;
+                            }
+                        } catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
+
                         var newUser = new ApplicationUser
                         {
                             Id = userId.ToString(),
-                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : entity.PersonalNumber),
+                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
                             UserName = entity.IdNumber,
                             IdNumber = entity.IdNumber,
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
