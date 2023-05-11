@@ -185,10 +185,10 @@ export const MonthStatementsDetails: React.FC = () => {
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
 
-  const lastDayToSubmit = useMemo(() => setDate(new Date(), 7), []);
-  const enableDownload = lastDayToSubmit < today;
+  const enableDownload = income.length > 0;
   const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
   const signature = practitioner?.signingSignature ?? '';
+
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
