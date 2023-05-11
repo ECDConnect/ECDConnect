@@ -15,6 +15,8 @@ import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { attendanceActions } from '@/store/attendance';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -56,6 +58,8 @@ export const MonthlyAttendanceReport = ({
   const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date().toDateString();
 
+  const { errorDialog } = useRequestResponseDialog();
+
   const numDays = totalAttendance.length;
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [reportDeatils, setReportDetails] =
@@ -69,9 +73,13 @@ export const MonthlyAttendanceReport = ({
       return res;
     };
 
-    getClassroomDetails().then((data) => {
-      setReportDetails(data);
-    });
+    getClassroomDetails()
+      .then((data) => {
+        setReportDetails(data);
+      })
+      .catch((err) => {
+        errorDialog(err.message);
+      });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -256,24 +264,23 @@ export const MonthlyAttendanceReport = ({
         );
       })}
       <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
-        {
-          <GeneratePdfReportButton
-            title="Download Register"
-            outputName={`${reportMonth}-attandance-report.pdf`}
-            tableData={finalTableData}
-            tableFooter={footer}
-            content={tableTopContent}
-            tableBottomContent={tableBottomContent}
-            tableHeadStyles={tableHeadStyles}
-            tableFootStyles={tableFootStyles}
-            tableStyles={tableStyles}
-            signature={practitioner?.signingSignature ?? ''}
-            downloadDate={today}
-          />
-        }
+        <GeneratePdfReportButton
+          title="Download Register"
+          outputName={`${reportMonth}-attandance-report.pdf`}
+          tableData={finalTableData}
+          tableFooter={footer}
+          content={tableTopContent}
+          tableBottomContent={tableBottomContent}
+          tableHeadStyles={tableHeadStyles}
+          tableFootStyles={tableFootStyles}
+          tableStyles={tableStyles}
+          signature={practitioner?.signingSignature ?? ''}
+          downloadDate={today}
+        />
       </div>
     </BannerWrapper>
   );
 };
 
 export default MonthlyAttendanceReport;
+

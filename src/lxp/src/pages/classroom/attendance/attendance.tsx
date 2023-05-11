@@ -30,6 +30,8 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
@@ -71,6 +73,21 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const currentDate = new Date();
+
+  const { errorDialog } = useRequestResponseDialog();
+
+  const {
+    isRejected: isAttendnaceRejected,
+  } = useThunkFetchCall(
+    'attendanceData',
+    'getAttendance'
+  );
+
+  useEffect(() => {
+    if (isAttendnaceRejected) {
+      errorDialog();
+    }
+  }, [errorDialog, isAttendnaceRejected]);
 
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
@@ -185,17 +202,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
-  }, [
-    classroomGroups,
-    attendance,
-    learners,
-    classProgrammesUpdated,
-    currentDate,
-    allChildrenInsertedBeforeToday,
-    publicHolidays,
-    seeRegister,
-    holidays,
-  ]);
+
+  }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, allChildrenInsertedBeforeToday, publicHolidays, seeRegister, holidays]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // setSeeRegister(true);
@@ -311,3 +319,5 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     </div>
   );
 };
+
+
