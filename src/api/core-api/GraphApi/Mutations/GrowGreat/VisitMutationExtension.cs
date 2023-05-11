@@ -11,8 +11,12 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using NPOI.HSSF.Record;
 using System;
+using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -37,6 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.InfantId = null;
             input.MotherId = mother.Id;
             input.LinkedVisitId = null;
+            input.PractitionerId = null;
 
             return visitManager.AddAdditionalVisit(input);
         }
@@ -60,8 +65,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.MotherId = null;
             input.InfantId = infant.Id;
             input.LinkedVisitId = null;
+            input.PractitionerId = null;
 
             return visitManager.AddAdditionalVisit(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddSupportVisitForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            VisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+
+            input.VisitType = visitType;
+            input.Attended = false;
+            input.MotherId = null;
+            input.InfantId = null;
+            input.LinkedVisitId = null;
+            input.PractitionerId = practitioner.Id;
+
+            return visitManager.AddAdditionalVisit(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public bool AddDefaultVisitsForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            string practitionerId)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == practitionerId).FirstOrDefault();
+            List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
+
+            //TODO: dates
+            // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
+            // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
+            
+            var input = new VisitModel();
+            foreach (VisitType visitType in visitTypes)
+            {
+                input = new VisitModel();
+                input.VisitType = visitType;
+                input.Attended = false;
+                input.MotherId = null;
+                input.InfantId = null;
+                input.LinkedVisitId = null;
+                input.PractitionerId = input.PractitionerId;
+                visitManager.AddAdditionalVisit(input);
+            }
+
+            return true;
         }
     }
 }

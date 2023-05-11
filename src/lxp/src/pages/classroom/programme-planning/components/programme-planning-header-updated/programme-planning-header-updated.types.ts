@@ -1,8 +1,4 @@
-import {
-  DailyProgrammeDto,
-  ProgrammeDto,
-  ProgrammeThemeDto,
-} from '@/../../../packages/core/lib';
+import { ProgrammeDto, ProgrammeThemeDto } from '@/../../../packages/core/lib';
 import { ComponentBaseProps } from '@ecdlink/ui/';
 
 export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
@@ -20,4 +16,5 @@ export interface ProgrammePlanningHeaderProps extends ComponentBaseProps {
   onChangeSubDay?: () => void;
   setSelectedDate?: any;
   selectedDate?: Date;
+  isWeekendDay?: boolean;
 }

@@ -301,7 +301,9 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       (mother) => {
         return {
           icon: Pregnant,
-          title: mother?.firstName || mother?.user?.firstName!,
+          title:
+            mother?.user?.firstName! + ' ' + mother?.user?.surname! ||
+            mother?.firstName!,
           subTitle: mother.statusInfo?.subject,
           switchTextStyles: true,
           alertSeverity:

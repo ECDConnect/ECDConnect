@@ -24,6 +24,7 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@store';
 import { notificationActions } from '@/store/notifications';
 import { useNotificationService } from '@/hooks/useNotificationService';
+import { PractitionerSignature } from './components/practitioner-signature/practitioner-signature';
 
 export const EditPractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -115,8 +116,15 @@ export const EditPractitionerProfile: React.FC = () => {
           <PractitionerSetup
             onSubmit={(form: PractitionerFormData) => {
               setFormData(form);
-              setActiveStep(EditPractitionerSteps.ADD_PHOTO);
+              setActiveStep(EditPractitionerSteps.ADD_SIGNATURE);
             }}
+          />
+        );
+
+      case EditPractitionerSteps.ADD_SIGNATURE:
+        return (
+          <PractitionerSignature
+            onSubmit={(e) => setActiveStep(EditPractitionerSteps.ADD_PHOTO)}
           />
         );
 
