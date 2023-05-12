@@ -22,6 +22,7 @@ import {
 import { useAppDispatch } from '@store';
 import { useHistory } from 'react-router-dom';
 import { userActions, userThunkActions } from '@store/user';
+import { cloneDeep } from 'lodash';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -63,7 +64,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
-    const copy = Object.assign({}, user);
+    const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
