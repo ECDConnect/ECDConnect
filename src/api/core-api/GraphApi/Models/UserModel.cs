@@ -19,5 +19,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string Password { get; set; }
         public string ProfileImageUrl { get; set; }
         public Guid? LanguageId { get; set; }
+        public string EmergencyContactPhoneNumber { get; set; }
+        public string EmergencyContactFirstName { get; set; }
+        public string EmergencyContactSurname { get; set; }
+        public string NextOfKinFirstName { get; set; }
+        public string NextOfKinSurname { get; set; }
+        public string NextOfKinContactNumber { get; set; }
     }
 }

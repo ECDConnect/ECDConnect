@@ -32,7 +32,11 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { caregiverActions, caregiverSelectors } from '@store/caregiver';
 import { childrenActions, childrenSelectors } from '@store/children';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsThunkActions,
+  classroomsSelectors,
+} from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { newGuid } from '@utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
@@ -522,6 +526,13 @@ export const EditChildInformation: React.FC = () => {
         classroomsActions.updateClassroomGroupLearner(learnerInputModel)
       );
 
+      await appDispatch(
+        classroomsThunkActions.updateLearner({
+          id: learnerInputModel.id as string,
+          learner: learnerInputModel,
+        })
+      );
+
       const newLearnerModel: LearnerDto = {
         id: newGuid(),
         classroomGroupId: newClassroomGroupId,
@@ -537,6 +548,14 @@ export const EditChildInformation: React.FC = () => {
       appDispatch(
         classroomsActions.createClassroomGroupLearner(newLearnerModel)
       );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
     } else {
       //this child does not belong to any classroomgroup
       const newLearnerModel: LearnerDto = {
@@ -552,6 +571,14 @@ export const EditChildInformation: React.FC = () => {
       appDispatch(
         classroomsActions.createClassroomGroupLearner(newLearnerModel)
       );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
     }
     setEditFieldVisible(false);
     history.push(ROUTES.CHILD_PROFILE, { childId });

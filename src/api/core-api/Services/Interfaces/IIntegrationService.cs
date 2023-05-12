@@ -7,8 +7,7 @@ namespace ECDLink.Core.Services.Interfaces
 {
     public interface IIntegrationService
     {
-        Task<bool> IntegrationByMappedCoach();
-        Task<bool> IntegrationByMappedCoachTest();
-
+        Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
+        Task<bool> IntegrationByFranchisees();
     }
 }

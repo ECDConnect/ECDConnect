@@ -1,6 +1,6 @@
 import {
   createRef,
-  LegacyRef,
+  ReactElement,
   RefObject,
   useCallback,
   useEffect,
@@ -18,6 +18,7 @@ export interface StepItem {
   subTitle?: string;
   subTitleColor?: Colours;
   inProgressStepIcon?: string;
+  completedStepIcon?: string;
   type: 'todo' | 'inProgress' | 'completed';
   showActionButton?: boolean;
   actionButtonText?: string;
@@ -26,21 +27,39 @@ export interface StepItem {
   actionButtonIcon?: string;
   actionButtonClassName?: string;
   actionButtonOnClick?: () => void;
+  showAccordion?: boolean;
+  accordionContent?: ReactElement;
 }
 
 interface StepsProps {
   items: StepItem[];
+  typeColor?: { completed?: Colours; todoAndInProgress?: Colours };
 }
 
-export const Steps = ({ items }: StepsProps) => {
+interface Icon {
+  todo?: string;
+  inProgress?: string;
+  completed?: string;
+}
+
+export const Steps = ({ items, typeColor }: StepsProps) => {
   const [refs, setRefs] = useState<RefObject<HTMLDivElement>[]>();
+  const [isAccordingOpen, setIsAccordingOpen] = useState<
+    { index: number; isOpen: boolean }[]
+  >([]);
 
   const divRefs = useRef<RefObject<HTMLDivElement>[]>([]);
 
   divRefs.current = Array.from({ length: items.length }, () => createRef());
 
   const typeStyle = useCallback(
-    (icon?: string) => ({
+    ({
+      icon,
+      typeColor,
+    }: {
+      icon?: Icon;
+      typeColor?: StepsProps['typeColor'];
+    }) => ({
       todo: {
         style: 'bg-tertiaryAccent2 border-2 border-primary',
         icon: '',
@@ -48,12 +67,12 @@ export const Steps = ({ items }: StepsProps) => {
       },
       inProgress: {
         style: 'bg-primary',
-        icon: icon || 'CalendarIcon',
+        icon: icon?.inProgress || 'CalendarIcon',
         border: 'border-dashed',
       },
       completed: {
-        style: 'bg-secondary',
-        icon: 'CheckIcon',
+        style: `bg-${typeColor?.completed || 'secondary'}`,
+        icon: icon?.completed || 'CheckIcon',
         border: 'border-solid	',
       },
     }),
@@ -61,112 +80,155 @@ export const Steps = ({ items }: StepsProps) => {
   );
 
   const getStatus = useCallback(
-    (type: StepItem['type'], icon?: string) => {
+    (type: StepItem['type'], icon?: Icon) => {
       switch (type) {
         case 'todo':
-          return typeStyle().todo;
+          return typeStyle({ typeColor }).todo;
         case 'inProgress':
-          return typeStyle(icon).inProgress;
+          return typeStyle({ icon: { inProgress: icon?.inProgress } })
+            .inProgress;
         default:
-          return typeStyle().completed;
+          return typeStyle({ typeColor, icon: { completed: icon?.completed } })
+            .completed;
       }
     },
-    [typeStyle]
+    [typeStyle, typeColor]
   );
 
+  const handleOnClickAccording = useCallback((index: number) => {
+    setIsAccordingOpen((prevState) => {
+      if (prevState.some((item) => item.index === index)) {
+        return prevState?.map((item) => {
+          console.log({ item, index });
+          if (item.index === index) {
+            console.log('entrei if', { ...item, isOpen: !item.isOpen });
+            return { ...item, isOpen: !item.isOpen };
+          }
+
+          return item;
+        });
+      }
+      return [...prevState, { index, isOpen: true }];
+    });
+  }, []);
+
+  console.log(isAccordingOpen);
   useEffect(() => {
     setTimeout(() => {
       setRefs(divRefs?.current);
     }, 100);
-  }, [items]);
+  }, [items, isAccordingOpen]);
 
   return (
     <div>
       {items &&
-        items.map((item, index) => (
-          <div
-            id={String(index)}
-            key={`step-${item.title}-${index}`}
-            ref={divRefs?.current[index]}
-            className="relative flex gap-5 pb-6"
-          >
-            {items.length !== index + 1 && (
-              <div
-                className={classNames(
-                  'absolute top-0 z-0 border-2',
-                  getStatus(item.type)?.border
-                )}
-                style={{
-                  borderColor:
-                    (!items[index - 1] ||
-                      (items[index - 1] &&
-                        items[index - 1].type === 'completed')) &&
-                    item.type === 'completed' &&
-                    items[index + 1] &&
-                    items[index + 1].type === 'completed'
-                      ? '#26ACAF'
-                      : '#F47C24',
-                  height: refs && refs[index]?.current?.clientHeight,
-                  left: 14,
-                }}
-              ></div>
-            )}
-            <div className="z-10">
-              <div
-                className={classNames(
-                  'min-h-8 min-w-8 flex h-8 w-8 items-center justify-center rounded-full',
-                  getStatus(item.type)?.style
-                )}
-              >
-                {getStatus(item.type)?.icon &&
-                  renderIcon(
-                    getStatus(item.type, item.inProgressStepIcon)?.icon,
-                    'text-white w-5 h-5'
-                  )}
-              </div>
-            </div>
+        items.map((item, index) => {
+          const isOpen = isAccordingOpen?.find(
+            (item) => item.index === index
+          )?.isOpen;
+
+          return (
             <div
-              style={
-                item.showActionButton ? { width: '44%' } : { width: '87%' }
-              }
+              id={String(index)}
+              key={`step-${item.title}-${index}`}
+              ref={divRefs?.current[index]}
+              className="relative flex gap-5 pb-6"
             >
-              <Typography
-                type="body"
-                align="left"
-                weight="bold"
-                text={item.title}
-                color="textDark"
-                className="col-span-2 break-words"
-              />
-              {item.subTitle && (
+              {items.length !== index + 1 && (
+                <div
+                  className={classNames(
+                    'absolute top-0 z-0 border-2',
+                    getStatus(item.type)?.border
+                  )}
+                  style={{
+                    borderColor:
+                      (!items[index - 1] ||
+                        (items[index - 1] &&
+                          items[index - 1].type === 'completed')) &&
+                      item.type === 'completed' &&
+                      items[index + 1] &&
+                      items[index + 1].type === 'completed'
+                        ? `var(--${typeColor?.completed || 'secondary'})`
+                        : `var(--${typeColor?.todoAndInProgress || 'primary'})`,
+                    height: refs && refs[index]?.current?.clientHeight,
+                    left: 14,
+                  }}
+                ></div>
+              )}
+              <div className="z-10">
+                <div
+                  className={classNames(
+                    'min-h-8 min-w-8 flex h-8 w-8 items-center justify-center rounded-full',
+                    getStatus(item.type)?.style
+                  )}
+                >
+                  {getStatus(item.type)?.icon &&
+                    renderIcon(
+                      getStatus(item.type, {
+                        completed: item.completedStepIcon,
+                        inProgress: item.inProgressStepIcon,
+                      })?.icon,
+                      'text-white w-5 h-5'
+                    )}
+                </div>
+              </div>
+              <div
+                style={
+                  item.showActionButton
+                    ? { width: '44%' }
+                    : { width: isOpen ? '70%' : '87%' }
+                }
+              >
                 <Typography
-                  className="col-span-2 row-span-2 text-sm"
                   type="body"
                   align="left"
-                  weight="skinny"
-                  text={item.subTitle}
-                  color={item.subTitleColor || 'textMid'}
+                  weight="bold"
+                  text={item.title}
+                  color="textDark"
+                  className="col-span-2 break-words"
                 />
+                {item.subTitle && (
+                  <Typography
+                    className="col-span-2 row-span-2 text-sm"
+                    type="body"
+                    align="left"
+                    weight="skinny"
+                    text={item.subTitle}
+                    color={item.subTitleColor || 'textMid'}
+                  />
+                )}
+                {item.showAccordion && isOpen && item.accordionContent}
+              </div>
+              {item.showActionButton && (
+                <div className="flex w-32 justify-end">
+                  <Button
+                    type="filled"
+                    color={item.actionButtonColor || 'primary'}
+                    {...(item.actionButtonIcon && {
+                      icon: item.actionButtonIcon,
+                    })}
+                    iconPosition="end"
+                    className={'h-9 w-auto'}
+                    onClick={item.actionButtonOnClick}
+                    text={item.actionButtonText}
+                    textColor={item.actionButtonTextColor || 'white'}
+                  />
+                </div>
+              )}
+              {item.showAccordion && (
+                <button
+                  className="absolute right-4 top-2 z-0 flex h-full w-full justify-end"
+                  onClick={() => handleOnClickAccording(index)}
+                >
+                  {renderIcon(
+                    isOpen ? 'ChevronUpIcon' : 'ChevronDownIcon',
+                    'w-8 h-8 text-primary'
+                  )}
+                </button>
               )}
             </div>
-            {item.showActionButton && (
-              <div className="flex w-32 justify-end">
-                <Button
-                  type="filled"
-                  color={item.actionButtonColor || 'primary'}
-                  {...(item.actionButtonIcon && {
-                    icon: item.actionButtonIcon,
-                  })}
-                  iconPosition="end"
-                  className={'h-9 w-auto'}
-                  onClick={item.actionButtonOnClick}
-                  text={item.actionButtonText}
-                  textColor={item.actionButtonTextColor || 'white'}
-                />
-              </div>
-            )}
-          </div>
-        ))}
+          );
+        })}
     </div>
   );
 };
