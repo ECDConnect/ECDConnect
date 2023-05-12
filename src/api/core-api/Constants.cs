@@ -13,9 +13,31 @@ namespace EcdLink.Api.CoreApi {
     public static class  SSSettings
     {
             public const string client_practitioner = "practitioner";
-            public const string visitType_support = "support_visit";
 
-    }
+            public const string visitType_support = "support_visit";
+            public const string visit1 = "visit_1";
+            public const string visit2 = "visit_2";
+
+            // Licenses
+            public const string ss_starter_license = "ss_starter_license";
+            public const string ss_smart_space_license = "ss_smart_space_license";
+
+            // Timeline messages
+            public const string starter_license_received = "Starter License received";
+            public const string starter_license_not_received = "Starter License not received";
+
+            public const string smart_space_license_received = "SmartSpace License received";
+            public const string smart_space_license_not_received = "SmartSpace License not received";
+
+            public const string first_site_visit = "First site visit before PQA";
+            public const string second_site_visit = "Second site visit before PQA";
+
+
+            public const string income_statement_pdf_type = "IncomeStatementPDF";
+            public const string workflow_pdf_type = "Document";
+            public const string workflow_status_pdf_type = "Verified";
+
+        }
 
     public static class GGSettings
         {

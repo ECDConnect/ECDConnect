@@ -118,13 +118,8 @@ namespace ECDLink.ContentManagement.Repositories
 
         private string GetFieldType(ContentTypeField field)
         {
-            if (field.FieldTypeId == (int)FieldTypeEnum.DynamicRelation)
-            {
-                var builder = new DynamicTypeBuilder(field.DataLinkName);
-                return builder.Enumerable().Build();
-            }
-
-            if (field.FieldTypeId == (int)FieldTypeEnum.StaticRelation)
+            if (field.FieldTypeId == (int)FieldTypeEnum.DynamicRelation
+                || field.FieldTypeId == (int)FieldTypeEnum.StaticRelation)
             {
                 var builder = new DynamicTypeBuilder(field.DataLinkName);
                 return builder.Enumerable().Build();
