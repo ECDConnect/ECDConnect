@@ -110,33 +110,45 @@ StatementsSubmit input)
                 fileStream.Dispose();
 
                 // Get the document type
-                DocumentType docType = _documentTypRepo.GetAll().Where(x => x.Name == "IncomeStatementPDF").FirstOrDefault();
+                DocumentType docType = _documentTypRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
 
                 // Workflow info
-                WorkflowStatusType wsType = _workflowStatusTypeRepo.GetAll().Where(x => x.Description == "Document").FirstOrDefault();
-                WorkflowStatus ws = _workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == "Verified").FirstOrDefault();
+                WorkflowStatusType wsType = _workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
+                WorkflowStatus ws = _workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
 
-                // Save the document to the database
-                var docInput = new Document
+                // First validate if document is already in db
+                var doc = _documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+
+                if (doc == null)
                 {
-                    CreatedUserId = input.CreatedUserId,
-                    Name = input.FileName,
-                    UpdatedBy = _applicationUserId,
-                    InsertedDate = DateTime.Now,
-                    Reference = fileUrl,
-                    UserId = input.UserId,
-                    DocumentTypeId = docType.Id,
-                    WorkflowStatusId = ws.Id,
-                    TenantId = TenantExecutionContext.Tenant.Id
+                    // Save new document to the database
+                    doc = new Document
+                    {
+                        CreatedUserId = _applicationUserId,
+                        Name = input.FileName,
+                        UpdatedBy = _applicationUserId,
+                        InsertedDate = DateTime.Now,
+                        Reference = fileUrl,
+                        UserId = input.UserId,
+                        DocumentTypeId = docType.Id,
+                        WorkflowStatusId = ws.Id,
+                        TenantId = TenantExecutionContext.Tenant.Id
+                    };
+                    _documentRepo.Insert(doc);
 
-                };
+                } else {
 
-                _documentRepo.Insert(docInput);
+                    doc.Name = input.FileName;
+                    doc.UpdatedBy = _applicationUserId;
+                    doc.Reference = fileUrl;
+                    doc.UserId = input.UserId;
+                    doc.UpdatedDate = DateTime.Now;
+                    _documentRepo.Update(doc);
 
+                }
             }
 
             return true;
-
         }
     }
 }
