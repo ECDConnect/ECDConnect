@@ -12,6 +12,7 @@ import {
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
@@ -79,7 +80,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
 
   const handleClick = (practitionerId: string) => {

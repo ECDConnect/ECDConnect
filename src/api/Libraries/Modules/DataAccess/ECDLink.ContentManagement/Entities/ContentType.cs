@@ -1,6 +1,8 @@
 using ECDLink.ContentManagement.Entities.Base;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+//using HotChocolate;
+//using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -20,5 +22,9 @@ namespace ECDLink.ContentManagement.Entities
         public string MetaData { get; set; }
 
         public bool IsActive { get; set; }
+
+        //[GraphQLIgnore]
+        //[Column(Order = 101)]
+        //public new Guid? TenantId { get; set; }
     }
 }
