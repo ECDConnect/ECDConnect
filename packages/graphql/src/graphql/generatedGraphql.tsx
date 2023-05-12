@@ -426,6 +426,7 @@ export type CmsVisitDataInput = {
 export type CmsVisitDataInputModelInput = {
   infantId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
   visitData?: InputMaybe<CmsVisitDataInput>;
   visitId?: InputMaybe<Scalars['String']>;
 };
