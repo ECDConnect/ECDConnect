@@ -3,7 +3,6 @@ using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -15,7 +14,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -140,9 +138,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 }
 
             }
-           
-            
-
 
             return true;
         }
