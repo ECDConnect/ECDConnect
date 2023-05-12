@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -132,6 +133,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
             services.AddTransient<VisitBackReferralManager>();
+            services.AddTransient<PractitionerManager>();
+            services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IncomeExpenseService>();
