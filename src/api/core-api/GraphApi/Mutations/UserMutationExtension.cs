@@ -93,40 +93,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             //audit user changes
             List<AuditChanges> fields = new List<AuditChanges>();
             if (input.PhoneNumber != user.PhoneNumber)
-                fields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber.ToString(), ValueAfter = user.PhoneNumber });
+                fields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
             user.PhoneNumber = replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber);
             if (input.IdNumber != user.IdNumber)
-                fields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber.ToString(), ValueAfter = input.IdNumber });
+                fields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
             user.IdNumber = input.IdNumber;
             if (input.IsSouthAfricanCitizen != user.IsSouthAfricanCitizen)
-                fields.Add(new AuditChanges() { FieldName = "IsSouthAfricanCitizen", ValueBefore = user.IsSouthAfricanCitizen.ToString(), ValueAfter = input.IsSouthAfricanCitizen.ToString() });
+                fields.Add(new AuditChanges() { FieldName = "IsSouthAfricanCitizen", ValueBefore = ((bool)user.IsSouthAfricanCitizen).ToString(), ValueAfter = ((bool)input.IsSouthAfricanCitizen).ToString() });
             user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
             if (input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
-                fields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = user.VerifiedByHomeAffairs.ToString(), ValueAfter = input.VerifiedByHomeAffairs.ToString() });
+                fields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = ((bool)user.VerifiedByHomeAffairs).ToString(), ValueAfter = ((bool)input.VerifiedByHomeAffairs).ToString() });
             user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
             if (input.DateOfBirth != user.DateOfBirth)
                 fields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.ToString(), ValueAfter = input.DateOfBirth.ToString() });
             user.DateOfBirth = input.DateOfBirth;
             if (input.GenderId != user.GenderId)
-                fields.Add(new AuditChanges() { FieldName = "GenderId", ValueBefore = (user.GenderId !=null ? user.GenderId.ToString() : null), ValueAfter = (input.GenderId != null ? input.GenderId.ToString() : null) });
+                fields.Add(new AuditChanges() { FieldName = "GenderId", ValueBefore = (user.GenderId != null ? user.GenderId.ToString() : null), ValueAfter = (input.GenderId != null ? input.GenderId.ToString() : null) });
             user.GenderId = input.GenderId;
             if (input.RaceId != user.RaceId)
-                fields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId!=null ? user.RaceId.ToString(): null ), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
+                fields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
             user.RaceId = input.RaceId;
             if (input.LanguageId != user.LanguageId)
-                fields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId!=null ? input.LanguageId.ToString() : null) });
+                fields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
             user.LanguageId = input.LanguageId;
             if (input.FirstName != user.FirstName)
-                fields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName.ToString(), ValueAfter = input.FirstName });
+                fields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
             user.FirstName = input.FirstName;
             if (input.Surname != user.Surname)
-                fields.Add(new AuditChanges() { FieldName = "Surname", ValueBefore = user.Surname.ToString(), ValueAfter = input.Surname });
+                fields.Add(new AuditChanges() { FieldName = "Surname", ValueBefore = user.Surname, ValueAfter = input.Surname });
             user.Surname = input.Surname;
             user.FullName = $"{input.FirstName} {input.Surname}";
             if (input.ContactPreference != user.ContactPreference)
                 fields.Add(new AuditChanges() { FieldName = "ContactPreference", ValueBefore = user.ContactPreference, ValueAfter = input.ContactPreference });
             user.ContactPreference = input.ContactPreference;
-
             if (input.EmergencyContactPhoneNumber != user.EmergencyContactPhoneNumber)
                 fields.Add(new AuditChanges() { FieldName = "EmergencyContactPhoneNumber", ValueBefore = user.EmergencyContactPhoneNumber, ValueAfter = input.EmergencyContactPhoneNumber });
             user.EmergencyContactPhoneNumber = input.EmergencyContactPhoneNumber;

@@ -1,55 +1,72 @@
 import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
+import * as Yup from 'yup';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { EditCellPhoneNUmberProps } from './next-to-kin.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
-  EditNextOfKinModel,
-  editNextOfKinSchema,
-  initialEditPractitionerValues,
-} from '@/schemas/practitioner/edit-next-of-kin';
+  PractitionerAboutModel,
+  initialPractitionerAboutValues,
+} from '@/schemas/practitioner/practitioner-about';
 import { useAppDispatch } from '@store';
 import { userActions, userThunkActions } from '@store/user';
 import { cloneDeep } from 'lodash';
+import { UserDto } from '@/../../../packages/core/lib';
 
-export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
-  setAddNextToKin,
-  user,
-}) => {
+export interface EditEmailProps {
+  setEditEmail?: any;
+  user?: UserDto;
+}
+
+var emailRexExp =
+  /^[a-zA-Z0-9.!#$%&’*+/=?^_`{|}~-]+@[a-zA-Z0-9-]+(?:\.[a-zA-Z0-9-]+)*$/;
+
+const editEmailModelSchema = Yup.object().shape({
+  email: Yup.string()
+    .email('Please enter a valid email address')
+    .required('Email is required')
+    .matches(emailRexExp, 'Email address is not valid'),
+});
+
+export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
 
   const getDefaultFormvalues = () => {
     if (user) {
-      const tempPractitioner: EditNextOfKinModel = {
-        name: user.emergencyContactFirstName || '',
-        surname: user.emergencyContactSurname || '',
-        cellphone: user.emergencyContactPhoneNumber || '',
+      const tempPractitioner: PractitionerAboutModel = {
+        name: user.firstName || '',
+        surname: user.surname || '',
+        cellphone: user.phoneNumber || '',
+        email: user?.email! || '',
+        whatsapp: user?.whatsappNumber || '',
       };
-
       return tempPractitioner;
     } else {
-      return initialEditPractitionerValues;
+      return initialPractitionerAboutValues;
     }
   };
 
   const {
-    getValues: getNextOfKinInfoFormValues,
-    register: nextOfKinInfoFormRegister,
-  } = useForm({
-    resolver: yupResolver(editNextOfKinSchema),
+    getValues: getPractitionerInfoFormValues,
+    formState: practitionerInfoFormState,
+    register: practitionerInfoFormRegister,
+  } = useForm<PractitionerAboutModel>({
+    resolver: yupResolver(editEmailModelSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
 
+  const { isValid } = practitionerInfoFormState;
+
   const savePractitionerUserData = () => {
-    const practitionerForm = getNextOfKinInfoFormValues();
+    const practitionerForm = getPractitionerInfoFormValues();
     const copy = cloneDeep(user);
     if (copy) {
-      copy.emergencyContactFirstName = practitionerForm.name;
-      copy.emergencyContactSurname = practitionerForm.surname;
-      copy.emergencyContactPhoneNumber = practitionerForm.cellphone;
+      copy.firstName = practitionerForm.name;
+      copy.surname = practitionerForm.surname;
+      copy.phoneNumber = practitionerForm.cellphone;
+      copy.email = practitionerForm.email!;
 
       appDispatch(userActions.updateUser(copy));
       appDispatch(userThunkActions.updateUser(copy));
@@ -63,10 +80,10 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Add next of kin'}
+        title={'Edit practitioner'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
-        onBack={() => setAddNextToKin(false)}
+        onBack={() => setEditEmail(false)}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -74,41 +91,18 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
             <div className="w-full">
               <Typography
                 type="h2"
-                text="Next of kin"
+                text="Email Address"
                 color={'textDark'}
                 className="mt-4 w-11/12"
               />
-              <Typography
-                type="h4"
-                text="Add someone who can be contacted in case of an emergency."
-                color={'textDark'}
-                className="mt-2 w-11/12"
-              />
             </div>
             <div className="mt-2 flex w-full flex-col justify-center gap-4">
-              <FormInput<EditNextOfKinModel>
-                label={'First name'}
+              <FormInput<PractitionerAboutModel>
+                label={''}
                 visible={true}
-                nameProp={'name'}
-                placeholder="First name"
+                nameProp={'email'}
                 className="w-full"
-                register={nextOfKinInfoFormRegister}
-              />
-              <FormInput<EditNextOfKinModel>
-                label={'Surname'}
-                visible={true}
-                nameProp={'surname'}
-                placeholder="Surname/family name"
-                className="w-full"
-                register={nextOfKinInfoFormRegister}
-              />
-              <FormInput<EditNextOfKinModel>
-                label={'Cellphone number'}
-                visible={true}
-                nameProp={'cellphone'}
-                placeholder="e.g 012 345 6789"
-                className="w-full"
-                register={nextOfKinInfoFormRegister}
+                register={practitionerInfoFormRegister}
               />
             </div>
             <div className="mt-4 -mb-4 h-full w-full self-end">
@@ -120,10 +114,10 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
+                disabled={!isValid}
                 onClick={() => {
-                  // handleChangePractitionerInfo();
                   savePractitionerUserData();
-                  setAddNextToKin(false);
+                  setEditEmail(false);
                 }}
               />
             </div>
