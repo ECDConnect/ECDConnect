@@ -21,6 +21,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.Tenancy.Context;
 using System.Linq;
 using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.AzureStorage.Blob;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -135,8 +136,9 @@ StatementsSubmit input)
                         TenantId = TenantExecutionContext.Tenant.Id
                     };
                     _documentRepo.Insert(doc);
-
                 } else {
+                    // remove previous file on file server
+                    _fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
                     doc.Name = input.FileName;
                     doc.UpdatedBy = _applicationUserId;
