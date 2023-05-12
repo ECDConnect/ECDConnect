@@ -156,7 +156,7 @@ namespace ECDLink.ContentManagement.GraphQL.Extensions
                                 LocaleId = translationValue.LocaleId,
                                 Value = translationValue.Value
                             };
-                            context.ContentTypesFieldValues.Add(newContentValue);
+                            context.ContentValues.Add(newContentValue);
                         }
 
                     }

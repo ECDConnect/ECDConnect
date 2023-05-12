@@ -72,6 +72,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public bool? IsClubOwner { get; set; }
+        public bool? AttendedChildProgress { get; set; }
+        public bool? AttendedBusinessSkills { get; set; }
 
     }
 

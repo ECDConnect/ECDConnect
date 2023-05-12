@@ -22,4 +22,4 @@ export interface ReportTableDataDto {
   type: string;
   headers: { header: string; dataKey: string }[];
   data: { [key: string]: any }[];
-};
+}

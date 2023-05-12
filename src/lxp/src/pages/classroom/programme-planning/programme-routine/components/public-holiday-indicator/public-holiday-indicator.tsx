@@ -1,33 +1,73 @@
-import { RoundIcon, Typography } from '@ecdlink/ui';
-import { DateFormats } from '../../../../../../constants/Dates';
+import { Button, Typography, renderIcon } from '@ecdlink/ui';
+import HolidayEmoji from '../../../../../../assets/holidayEmoji.png';
+import { DailyProgrammeDto } from '@/../../../packages/core/lib';
+import { nextMonday } from 'date-fns';
 
-export const PublicHolidayIndicator: React.FC<{ date: Date }> = ({ date }) => {
+interface PublicHolidayProps {
+  date: Date;
+  nextProgrammeDaysWithoutActivity?: DailyProgrammeDto[];
+  setSelectedDate?: (date: Date) => void;
+}
+
+export const PublicHolidayIndicator: React.FC<PublicHolidayProps> = ({
+  date,
+  nextProgrammeDaysWithoutActivity,
+  setSelectedDate,
+}) => {
   return (
-    <div className={'flex flex-auto flex-col justify-center items-center'}>
-      <RoundIcon
-        icon="ExclamationCircleIcon"
-        className={'bg-alertMain text-white mt-12'}
-      />
+    <div className={'flex flex-auto flex-col items-center justify-center'}>
+      <div>
+        <img
+          src={HolidayEmoji}
+          alt="weekend emoji"
+          className="mt-8 h-28 w-28"
+        />
+      </div>
       <Typography
         type="body"
         className="mt-4"
         fontSize="16"
         align="center"
         weight="bold"
-        text={`${date.toLocaleString(
-          'en-ZA',
-          DateFormats.dayWithLongMonthName
-        )} is a public holiday`}
+        text={`This is a public holiday. Get a head start by planning next week!`}
       />
       <Typography
         type="body"
         className="mt-1 w-1/2"
         align={'center'}
         weight="skinny"
-        text={`You don't need to create a plan for this day`}
+        text={
+          nextProgrammeDaysWithoutActivity?.length
+            ? `You have ${nextProgrammeDaysWithoutActivity?.length} ${
+                nextProgrammeDaysWithoutActivity?.length === 1 ? 'day' : 'days'
+              } to plan next week`
+            : ``
+        }
         color={'textMid'}
         fontSize="14"
       />
+      <div className={'pt-2'}>
+        <Button
+          color={'primary'}
+          type={'outlined'}
+          onClick={() =>
+            setSelectedDate && nextProgrammeDaysWithoutActivity?.length
+              ? setSelectedDate(
+                  new Date(nextProgrammeDaysWithoutActivity?.[0]?.dayDate!)
+                )
+              : setSelectedDate && setSelectedDate(nextMonday(new Date(date)))
+          }
+          className={'mt-4 mb-4 w-full'}
+        >
+          {renderIcon('ClipboardListIcon', `w-5 h-5 text-primary`)}
+          <Typography
+            color={'primary'}
+            type={'help'}
+            weight={'normal'}
+            text={'Start planning'}
+          />
+        </Button>
+      </div>
     </div>
   );
 };

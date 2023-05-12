@@ -24,18 +24,32 @@ import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 export const PractitionersList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
+  const { errorDialog } = useRequestResponseDialog();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitionersList = practitioners?.filter(
     (item) => item.userId !== practitioner?.userId
   );
+
+  const { isRejected: isGetPractitionerRejected } = useThunkFetchCall(
+    'practitioner',
+    'getAllPractitioners'
+  );
+
+  useEffect(() => {
+    if (isGetPractitionerRejected) {
+      errorDialog();
+    }
+  }, [errorDialog, isGetPractitionerRejected]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
