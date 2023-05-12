@@ -15,6 +15,7 @@ import {
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
@@ -86,7 +87,7 @@ export const PractitionerAbout: React.FC = () => {
         name: user.firstName || '',
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
+        email: user.email || '',
       };
       return tempPractitioner;
     } else {
@@ -257,7 +258,7 @@ export const PractitionerAbout: React.FC = () => {
 
   const savePractitionerUserData = (imageBaseString: string = '') => {
     const practitionerForm = practitionerAboutFormGetValues();
-    const copy = Object.assign({}, user);
+    const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;

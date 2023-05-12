@@ -161,11 +161,7 @@ export const resetUserPassword = createAsyncThunk<
   }
 );
 
-export const updateUser = createAsyncThunk<
-  boolean[],
-  {},
-  ThunkApiType<RootState>
->(
+export const updateUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
   'updateUser',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
@@ -240,4 +236,15 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   phoneNumber: user.phoneNumber,
   email: user.email,
   profileImageUrl: user.profileImageUrl,
+  emergencyContactFirstName: user.emergencyContactFirstName
+    ? user.emergencyContactFirstName
+    : null,
+  emergencyContactSurname: user.emergencyContactSurname
+    ? user.emergencyContactSurname
+    : null,
+  emergencyContactPhoneNumber: user.emergencyContactPhoneNumber
+    ? user.emergencyContactPhoneNumber
+    : null,
+  languageId:
+    user.languageId && user.languageId.length ? user.languageId : null,
 });
