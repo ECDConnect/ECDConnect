@@ -283,4 +283,3 @@ export const MonthlyAttendanceReport = ({
 };
 
 export default MonthlyAttendanceReport;
-

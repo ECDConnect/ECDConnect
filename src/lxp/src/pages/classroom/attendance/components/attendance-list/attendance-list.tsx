@@ -90,7 +90,6 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     (prog) => prog.meetingDay === getDay(attendanceDate)
   );
 
- 
   useEffect(() => {
     if (classroomGroups) {
       const selectedGroups = isPrincipal

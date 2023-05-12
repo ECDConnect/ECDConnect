@@ -38,7 +38,7 @@ namespace ECDLink.SmartStart.GraphQL.Mutations
                 return false;
             }
 
-            var document = await _fileService.UploadFile(report, ReportConstants.ChildProgressReport, FileTypeEnum.ReportTemplates);
+            var document = await _fileService.UploadBase64StringFile(report, ReportConstants.ChildProgressReport, FileTypeEnum.ReportTemplates);
 
             var documentRepo = repoFactory.CreateRepository<Document>();
             var existingDocument = documentRepo

@@ -40,19 +40,17 @@ export const PractitionersList: React.FC = () => {
     (item) => item.userId !== practitioner?.userId
   );
 
-  const {
-    isRejected: isGetPractitionerRejected,
-  } = useThunkFetchCall(
+  const { isRejected: isGetPractitionerRejected } = useThunkFetchCall(
     'practitioner',
     'getAllPractitioners'
-  )
+  );
 
   useEffect(() => {
     if (isGetPractitionerRejected) {
       errorDialog();
     }
   }, [errorDialog, isGetPractitionerRejected]);
-  
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerListData, setPractitionerListData] =
     useState<UserAlertListDataItem[]>();

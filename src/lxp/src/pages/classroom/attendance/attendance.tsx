@@ -76,9 +76,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
   const { errorDialog } = useRequestResponseDialog();
 
-  const {
-    isRejected: isAttendnaceRejected,
-  } = useThunkFetchCall(
+  const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
     'attendanceData',
     'getAttendance'
   );
@@ -202,8 +200,17 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
-
-  }, [classroomGroups, attendance, learners, classProgrammesUpdated, currentDate, allChildrenInsertedBeforeToday, publicHolidays, seeRegister, holidays]);
+  }, [
+    classroomGroups,
+    attendance,
+    learners,
+    classProgrammesUpdated,
+    currentDate,
+    allChildrenInsertedBeforeToday,
+    publicHolidays,
+    seeRegister,
+    holidays,
+  ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // setSeeRegister(true);
@@ -319,5 +326,3 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     </div>
   );
 };
-
-

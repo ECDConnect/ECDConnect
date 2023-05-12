@@ -45,7 +45,6 @@ export const ClassProgrammeAttendanceList: React.FC<
         (child) => child.userId === learner.userId && child.isActive
       );
 
-      
       const childUser = childUsers?.find((y) => y.id === learner.userId);
 
       if (

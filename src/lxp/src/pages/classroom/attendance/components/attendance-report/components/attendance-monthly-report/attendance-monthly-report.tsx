@@ -79,7 +79,8 @@ export const AttendanceMonthlyReport: React.FC<
           setReportData(data.classroomAttendanceReport);
           setTotalAttendance(data.totalAttendance);
           setTotalAttendanceStatsReport(data.totalAttendanceStatsReport);
-        }).catch((err) => {
+        })
+        .catch((err) => {
           errorDialog(err.message);
         });
     }
