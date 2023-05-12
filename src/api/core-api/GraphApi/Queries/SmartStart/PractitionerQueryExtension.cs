@@ -1,9 +1,13 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -16,9 +20,6 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using ECDLink.DataAccessLayer.Entities.Visits;
-using EcdLink.Api.CoreApi.Managers.Visits;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -367,11 +368,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
         }
 
-        public List<Visit> GetPractitionerVisits(
-            [Service] VisitManager visitManager,
-            string userId)
+        public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)
         {
             return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+
+        }
+        public PractitionerTimeLine GetPractitionerTimeline([Service] PractitionerManager practitionerManager, string userId)
+        {
+            return practitionerManager.GetPractitionerTimeline(userId);
         }
 
     }
