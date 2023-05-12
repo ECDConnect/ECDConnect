@@ -262,7 +262,7 @@ export const PractitionerAbout: React.FC = () => {
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
-      copy.phoneNumber = practitionerForm.cellphone;
+      //  copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email;
       if (imageBaseString?.length > 0) {
         copy.profileImageUrl = imageBaseString;
