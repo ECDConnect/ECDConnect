@@ -1,5 +1,6 @@
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
+using HotChocolate;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
@@ -9,6 +10,8 @@ namespace ECDLink.ContentManagement.Entities
     [EntityPermission(PermissionGroups.GENERAL)]
     public class ContentValue
     {
+        public int Id { get; set; }
+
         [ForeignKey(nameof(ContentId))]
         public Content Content { get; set; }
         public int ContentId { get; set; }
@@ -24,5 +27,9 @@ namespace ECDLink.ContentManagement.Entities
         [ForeignKey(nameof(StatusId))]
         public virtual ContentStatus Status { get; set; }
         public int? StatusId { get; set; }
+
+        [GraphQLIgnore]
+        [ForeignKey(nameof(TenantId))]
+        public Guid? TenantId { get; set; }
     }
 }

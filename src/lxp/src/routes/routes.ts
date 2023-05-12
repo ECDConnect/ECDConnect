@@ -99,6 +99,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  SMART_STARTER_JOURNEY: addPrefix('/smart-starter-journey/:clientId', {}),
 };
 
 export default ROUTES;
