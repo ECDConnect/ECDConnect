@@ -162,6 +162,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     fields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
                 user.NextOfKinContactNumber = input.NextOfKinContactNumber;
             }
+            if (input.WhatsAppNumber != user.WhatsAppNumber)
+                fields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
+            user.WhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
 
             user.TenantId = tenantId;
 
