@@ -34,6 +34,7 @@ import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
+import { EditEmail } from './edit-email/edit-email';
 import { practitionerSelectors } from '@/store/practitioner';
 import { NextToKin } from './next-to-kin/next-to-kin';
 import { coachSelectors } from '@/store/coach';
@@ -49,11 +50,10 @@ export const PractitionerAbout: React.FC = () => {
     updateDocument,
   } = useDocuments();
 
-  const [editFieldVisible, setEditFieldVisible] = useState(false);
-  const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
+  const [editEmail, setEditEmail] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
 
   useEffect(() => {
@@ -95,22 +95,10 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
-  const {
-    register: practitionerAboutRegister,
-    formState: practitionerAboutFormState,
-    getValues: practitionerAboutFormGetValues,
-  } = useForm({
+  const { getValues: practitionerAboutFormGetValues } = useForm({
     resolver: yupResolver(practitionerAboutModelSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onChange',
-  });
-
-  const [dialogFormInput, setDialogFormInput] = useState<
-    DialogFormInput<PractitionerAboutModel>
-  >({
-    label: '',
-    formFieldName: 'name',
-    value: '',
   });
 
   const { theme } = useTheme();
@@ -136,27 +124,13 @@ export const PractitionerAbout: React.FC = () => {
         actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
         buttonType: currentUser?.email ? 'outlined' : 'filled',
         onActionClick: () => {
-          editField({
-            label: 'Email Address',
-            formFieldName: 'email',
-            value: practitionerAboutFormGetValues().email,
-          });
+          setEditEmail(true);
         },
       },
       {
         title: 'Your SmartStart club',
         subTitle: 'N/A',
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
-        // onActionClick: () => {
-        //   editField({
-        //     label: 'Email Address',
-        //     formFieldName: 'email',
-        //     value: practitionerAboutFormGetValues().email,
-        //   });
-        // },
       },
       {
         title: 'Your SmartStart coach',
@@ -196,28 +170,8 @@ export const PractitionerAbout: React.FC = () => {
     setListItems(list);
   };
 
-  const editField = (
-    formInputToLoad: DialogFormInput<PractitionerAboutModel>
-  ) => {
-    setDialogFormInput(formInputToLoad);
-    setEditFieldVisible(true);
-  };
-
-  const saveEdit = async () => {
-    if (practitionerAboutFormState.errors[dialogFormInput.formFieldName]) {
-      setDisplayError(true);
-    } else {
-      setEditFieldVisible(false);
-      await savePractitionerUserData();
-    }
-  };
-
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
-
-  const closeEditField = () => {
-    setEditFieldVisible(false);
   };
 
   const deleteProfilePicture = () => {
@@ -262,7 +216,7 @@ export const PractitionerAbout: React.FC = () => {
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
-      //  copy.phoneNumber = practitionerForm.cellphone;
+      copy.phoneNumber = practitionerForm.cellphone!;
       copy.email = practitionerForm.email;
       if (imageBaseString?.length > 0) {
         copy.profileImageUrl = imageBaseString;
@@ -286,6 +240,9 @@ export const PractitionerAbout: React.FC = () => {
           setEditiCellPhoneNumber={setEditiCellPhoneNumber}
           user={user}
         />
+      </Dialog>
+      <Dialog fullScreen visible={editEmail} position={DialogPosition.Top}>
+        <EditEmail setEditEmail={setEditEmail} user={user} />
       </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextToKin setAddNextToKin={setAddNextToKin} user={user} />
@@ -325,63 +282,6 @@ export const PractitionerAbout: React.FC = () => {
           )}
         </div>
       </BannerWrapper>
-
-      <Dialog
-        stretch={true}
-        borderRadius="normal"
-        visible={editFieldVisible}
-        position={DialogPosition.Bottom}
-      >
-        <div className={'p-4'}>
-          <div className={styles.labelContainer}>
-            <Typography
-              type="body"
-              className=""
-              color="textDark"
-              text={dialogFormInput.label}
-              weight="bold"
-            ></Typography>
-            <div onClick={closeEditField}>
-              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
-            </div>
-          </div>
-          <FormInput<PractitionerAboutModel>
-            visible={true}
-            nameProp={dialogFormInput.formFieldName}
-            register={practitionerAboutRegister}
-            disabled={false}
-            className={!displayError ? 'mb-6' : ''}
-          />
-          {displayError && (
-            <div className={'mt-2'}>
-              <Typography
-                type="help"
-                color="errorMain"
-                text={
-                  practitionerAboutFormState.errors[
-                    dialogFormInput.formFieldName
-                  ]?.message || ''
-                }
-                className={'mb-6'}
-              ></Typography>
-            </div>
-          )}
-          <Button
-            type="filled"
-            color="primary"
-            className={'w-full'}
-            onClick={saveEdit}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
-        </div>
-      </Dialog>
       <Dialog
         visible={editProfilePictureVisible}
         position={DialogPosition.Bottom}
