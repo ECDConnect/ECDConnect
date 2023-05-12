@@ -13,7 +13,7 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
-import { SmartStarterJourneyParams } from './smart-starter-journey.types';
+import { PractitionerJourneyParams } from './coach-practitioner-journey.types';
 import { useState } from 'react';
 import { Form } from './forms';
 
@@ -72,13 +72,13 @@ export const visitsTypes = {
   secondVisit: 'Second site visit before PQA',
 };
 
-export const SmartStarterJourney: React.FC = () => {
+export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
 
-  const { clientId } = useParams<SmartStarterJourneyParams>();
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   // TODO: add integration
   const isCompletedFirstVisit = false;
@@ -86,7 +86,7 @@ export const SmartStarterJourney: React.FC = () => {
     ? visitsTypes.secondVisit
     : visitsTypes.firstVisit;
 
-  const practitioner = useSelector(getPractitionerById(clientId));
+  const practitioner = useSelector(getPractitionerById(practitionerId));
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
