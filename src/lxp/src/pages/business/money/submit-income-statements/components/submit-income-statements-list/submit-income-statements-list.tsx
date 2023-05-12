@@ -14,10 +14,14 @@ import React, { useEffect, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import {
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
+  ReportTableDataDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -31,6 +35,9 @@ import { useGeneratePdfReport } from '@/hooks/useGeneratePdfReport';
 import { practitionerSelectors } from '@/store/practitioner';
 import { UserOptions } from 'jspdf-autotable';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
+import { useAppDispatch } from '@/store';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -39,12 +46,16 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const [confimSubmitIncomeValues, setConfimSubmitIncomeValues] =
     useState(false);
+  const { errorDialog } = useRequestResponseDialog();
 
   const goBack = () => {
     history.push(ROUTES.BUSINESS);
   };
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
+  const reportData = useSelector(
+    statementsSelectors.getIncomeExpensesPDFreport
+  );
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -98,7 +109,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const [salary, setSalary] = useState<any>([]);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const signature = practitioner?.signingSignature ?? '';
-  // const { errorDialog } = useRequestResponseDialog();
 
   const { generateReport } = useGeneratePdfReport();
 
@@ -246,10 +256,11 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
-      await new IncomeStatementsService(userAuth?.auth_token).submitStatement(
-        id,
-        input
-      );
+      await new IncomeStatementsService(userAuth?.auth_token)
+        .submitStatement(id, input)
+        .catch((err) => {
+          errorDialog(err.message);
+        });
     }
   };
 
@@ -391,18 +402,34 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     },
   ];
 
-  const submitPdfReport = async (report: string) => {
+  const submitPdfReport = async (reportValues: ReportTableDataDto[]) => {
+    const report = generateReport(
+      reportValues,
+      signature,
+      new Date().toDateString(),
+      tableHeadStyles,
+      tableTopContent,
+      tableStyles,
+      `${getMonthName(Number(statementMonth))}-income-statement-report.pdf`,
+      'submit-statements',
+      tableStyles,
+      footer,
+      tableFootStyles,
+      'portrait'
+    );
     await new IncomeStatementsService(userAuth?.auth_token!)
       .saveIncomeStatementPDF(
-        `${getMonthName(
-          Number(statementMonth)
-        )}-income-statement-report.pdf`,
-        report,
+        `${getMonthName(Number(statementMonth))}-income-statement-report.pdf`,
+        report ?? '',
         practitioner?.id ?? '',
         practitioner?.id ?? ''
       )
-      .catch((err) => {});
+      .catch((err) => {
+        errorDialog(err.message);
+      });
   };
+
+  const appDispatch = useAppDispatch();
 
   return (
     <BannerWrapper
@@ -523,33 +550,13 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 updateStatements().then(async () => {
-                  await new IncomeStatementsService(userAuth?.auth_token!)
-                    .getMonthsIncomeExpensesReport(
-                      userAuth?.id!,
-                      statementMonth,
-                      statementYear
-                    )
-                    .then((reportData) => {
-                      console.log(">>", reportData);
-                      const report = generateReport(
-                        reportData,
-                        signature,
-                        new Date().toDateString(),
-                        tableHeadStyles,
-                        tableTopContent,
-                        tableStyles,
-                        `${getMonthName(
-                          Number(statementMonth)
-                        )}-income-statement-report.pdf`,
-                        'submit-statements',
-                        tableStyles,
-                        footer,
-                        tableFootStyles,
-                        'portrait'
-                      );
-                      submitPdfReport(report ?? '');
+                  await appDispatch(
+                    statementsThunkActions.getIncomeExpensesPDFreport({
+                      month: statementMonth,
+                      year: statementYear,
                     })
-                    .catch((error) => {});
+                  );
+                  submitPdfReport(reportData ?? []);
                 });
                 setConfimSubmitIncomeValues(false);
               },

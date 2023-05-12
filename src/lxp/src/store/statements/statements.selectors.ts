@@ -4,6 +4,7 @@ import {
   ExpensesStatementsTypes,
   IncomeStatementsDto,
   IncomeStatementsTypes,
+  ReportTableDataDto,
   StatementsContributionTypes,
   StatementsFeeTypes,
   StatementsPayTypes,
@@ -49,6 +50,7 @@ export const getExpenses = (
 export const getBalanceSheet = (
   state: RootState
 ): BalanceSheetDto[] | undefined => state?.statements?.balanceSheet || [];
+
 
 // Income types selectors
 export const getPreschoolFeeIncome = (state: RootState): IncomeStatementsDto =>
@@ -113,3 +115,8 @@ export const getSalaryExpense = (state: RootState): ExpensesStatementsDto =>
   state.statements?.expensesTypes?.find(
     (item) => item?.id === SALARY_EXPENSE_ID
   ) || '';
+
+export const getIncomeExpensesPDFreport = (
+  state: RootState
+): ReportTableDataDto[] | undefined => state?.statements?.pdfReportData || [];
+
