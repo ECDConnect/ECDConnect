@@ -129,16 +129,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input.EmergencyContactPhoneNumber != user.EmergencyContactPhoneNumber)
                 fields.Add(new AuditChanges() { FieldName = "EmergencyContactPhoneNumber", ValueBefore = user.EmergencyContactPhoneNumber, ValueAfter = input.EmergencyContactPhoneNumber });
+            user.EmergencyContactPhoneNumber = input.EmergencyContactPhoneNumber;
             if (input.EmergencyContactFirstName != user.EmergencyContactFirstName)
                 fields.Add(new AuditChanges() { FieldName = "EmergencyContactFirstName", ValueBefore = user.EmergencyContactFirstName, ValueAfter = input.EmergencyContactFirstName });
+            user.EmergencyContactFirstName = input.EmergencyContactFirstName;
             if (input.EmergencyContactSurname != user.EmergencyContactSurname)
                 fields.Add(new AuditChanges() { FieldName = "EmergencyContactSurname", ValueBefore = user.EmergencyContactSurname, ValueAfter = input.EmergencyContactSurname });
+            user.EmergencyContactSurname = input.EmergencyContactSurname;
             if (input.NextOfKinFirstName != user.NextOfKinFirstName)
                 fields.Add(new AuditChanges() { FieldName = "NextOfKinFirstName", ValueBefore = user.NextOfKinFirstName, ValueAfter = input.NextOfKinFirstName });
+            user.NextOfKinFirstName = input.NextOfKinFirstName;
             if (input.NextOfKinSurname != user.NextOfKinSurname)
                 fields.Add(new AuditChanges() { FieldName = "NextOfKinSurname", ValueBefore = user.NextOfKinSurname, ValueAfter = input.NextOfKinSurname });
+            user.NextOfKinSurname = input.NextOfKinSurname;
             if (input.NextOfKinContactNumber != user.NextOfKinContactNumber)
                 fields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
+            user.NextOfKinContactNumber = input.NextOfKinContactNumber;
 
             user.TenantId = tenantId;
 
@@ -287,24 +293,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     });
                     break;
                 default:
-                    List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-                    foreach (var prop in changes)
+                    if (changes != null)
                     {
-                        changesList.Add(new IntegrationAudit()
+                        List<IntegrationAudit> changesList = new List<IntegrationAudit>();
+                        foreach (var prop in changes)
                         {
-                            ChangeType = changeType,
-                            Entity = "ApplicationUser",
-                            Property = prop.FieldName,
-                            ValueBefore = prop.ValueBefore,
-                            ValueAfter = prop.ValueAfter,
-                            UserId = uId,
-                            RelatedId = id
-                        });
-                    }
+                            changesList.Add(new IntegrationAudit()
+                            {
+                                ChangeType = changeType,
+                                Entity = "ApplicationUser",
+                                Property = prop.FieldName,
+                                ValueBefore = prop.ValueBefore,
+                                ValueAfter = prop.ValueAfter,
+                                UserId = uId,
+                                RelatedId = id
+                            });
+                        }
 
-                    foreach (var auditItem in changesList)
-                    {
-                        auditInsertRepo.Insert(auditItem);
+                        foreach (var auditItem in changesList)
+                        {
+                            auditInsertRepo.Insert(auditItem);
+                        }
                     }
                     break;
             }

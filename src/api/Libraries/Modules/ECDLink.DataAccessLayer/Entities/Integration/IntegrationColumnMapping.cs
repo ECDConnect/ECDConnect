@@ -19,5 +19,11 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string LocalEntity { get; set; }
         public string IntegrationSystem { get; set; } = "Smartlink";
         public string UpdateDirection { get; set; }
+        public string EntityGrouping { get; set; }
+        public int ColumnValidationLimit { get; set; }
+        public bool RemapToString { get; set; } = false;
+        public string RemapEntity { get; set; }
+
+
     }
 }

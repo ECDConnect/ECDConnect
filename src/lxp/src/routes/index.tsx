@@ -76,6 +76,7 @@ import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income
 import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
 import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
 import { Community } from '@/pages/community/community';
+import { SmartStarterJourney } from '@/pages/smart-starter-journey';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -374,6 +375,11 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 
       <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
+      <Route
+        exact
+        path={ROUTES.SMART_STARTER_JOURNEY.ROOT}
+        component={SmartStarterJourney}
+      />
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

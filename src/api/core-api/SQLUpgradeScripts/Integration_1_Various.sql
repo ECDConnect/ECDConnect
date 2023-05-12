@@ -1,16 +1,23 @@
 /*
 
-CREATE TABLE "IntegrationColumnMapping" (
+CREATE TABLE public."IntegrationColumnMapping" (
 	"Id" uuid NOT NULL,
 	"LocalColumn" text NULL,
 	"RemoteColumn" text NULL,
 	"IntegrationSystem" text NULL,
 	"LocalEntity" text NULL,
 	"RemoteEntity" text NULL,
+	"IsActive" bool NOT NULL DEFAULT true,
+	"UpdatedBy" text NULL,
+	"UpdatedDate" timestamp NULL,
+	"InsertedDate" timestamp NULL,
+	"TenantId" uuid NULL,
+	"UpdateDirection" text NULL DEFAULT 'Both'::text,
+	"EntityGrouping" text NULL,
 	CONSTRAINT "PK_IntegrationSSColumnMapping" PRIMARY KEY ("Id")
 );
 
-CREATE TABLE "IntegrationAudit" (
+CREATE TABLE public."IntegrationAudit" (
 	"Id" uuid NOT NULL,
 	"IsActive" bool NOT NULL,
 	"InsertedDate" timestamp NOT NULL,
@@ -28,7 +35,7 @@ CREATE TABLE "IntegrationAudit" (
 	CONSTRAINT "PK_IntegrationAudit" PRIMARY KEY ("Id")
 );
 
-CREATE TABLE "IntegrationEntityMapping" (
+CREATE TABLE public."IntegrationEntityMapping" (
 	"Id" uuid NOT NULL,
 	"IsActive" bool NOT NULL,
 	"InsertedDate" timestamp NOT NULL,
@@ -63,7 +70,8 @@ INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystem
 	ALTER TABLE public."AspNetUsers" ADD "ReasonForLeaving" text NULL;
 ALTER TABLE public."AspNetUsers" ADD "ReasonForLeavingComments" text NULL;
 
-
+ALTER TABLE public."Practitioner" ADD "AttendedChildProgress" bool NULL;
+ALTER TABLE public."Practitioner" ADD "AttendedBusinessSkills" bool NULL;
 
 	INSERT INTO "IntegrationColumnMapping" ("Id","LocalColumn","RemoteColumn","IntegrationSystem","LocalEntity","RemoteEntity","IsActive","UpdatedBy","UpdatedDate","InsertedDate","TenantId","UpdateDirection") VALUES
 	(uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'FullName','FullName','Smartlink','Child','Child',true,NULL,'2022-12-05 00:00:00.000','2022-12-05 00:00:00.000',NULL,'Both'), 

@@ -112,7 +112,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser()?.Id ?? throw new ArgumentNullException("User.Id"); ;
+            
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
             List<Classroom> classrooms = new List<Classroom>();

@@ -1,6 +1,7 @@
 import { PractitionerDto } from '@ecdlink/core';
 import { RootState } from '../types';
 import { PrincipalPractitioners } from './practitioner.types';
+import { createSelector } from '@reduxjs/toolkit';
 
 export const getPractitioner = (
   state: RootState
@@ -14,3 +15,13 @@ export const getPrincipalPractitioners = (
   state: RootState
 ): PrincipalPractitioners[] | undefined =>
   state.practitioner.principalPractitioners;
+
+export const getPractitionerById = (id: string) =>
+  createSelector(
+    (state: RootState) => state.practitioner.practitioners,
+    (practitioners: PractitionerDto[] | undefined) => {
+      if (!practitioners) return;
+
+      return practitioners.find((practitioner) => practitioner.userId === id);
+    }
+  );

@@ -6,6 +6,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import * as styles from './contact-person.styles';
 
 interface ContactPersonProps extends ComponentBaseProps {
@@ -29,7 +30,9 @@ export const ContactPerson: React.FC<ContactPersonProps> = ({
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${contactNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(contactNumber)}`
+    );
   };
 
   return (

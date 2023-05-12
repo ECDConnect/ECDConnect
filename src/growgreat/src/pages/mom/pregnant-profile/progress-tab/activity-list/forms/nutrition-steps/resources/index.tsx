@@ -1,5 +1,5 @@
 import { Button, Typography } from '@ecdlink/ui';
-import imgMocked from './mocked.png';
+import imgMocked from './dietarydiversity2.jpg';
 import { DynamicFormProps } from '../../dynamic-form';
 
 export const ResourcesStep = ({
