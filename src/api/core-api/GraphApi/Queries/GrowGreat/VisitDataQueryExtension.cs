@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitDataForClient([Service] VisitDataManager visitDataManager, string visitId)
+        public List<VisitData> GetVisitDataForVisitId([Service] VisitDataManager visitDataManager, string visitId)
         {
             return visitDataManager.GetVisitDataForVisitId(visitId);
         }
