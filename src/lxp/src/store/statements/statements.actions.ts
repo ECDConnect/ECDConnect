@@ -8,6 +8,7 @@ import {
   ExpensesStatementsTypes,
   IncomeStatementsDto,
   IncomeStatementsTypes,
+  IncomeStatementPDFDocInput,
   ReportTableDataDto,
   StatementsContributionTypes,
 } from '@/../../../packages/core/lib';
@@ -322,6 +323,38 @@ export const getIncomeExpensesPDFreport = createAsyncThunk<
         report = await new IncomeStatementsService(
           userAuth?.auth_token
         ).getMonthsIncomeExpensesReport(userAuth?.id!, month, year);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!report) {
+        return rejectWithValue('Error getting pdf Report Data');
+      }
+      return report;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveIncomeStatementPDF = createAsyncThunk<
+  boolean,
+  IncomeStatementPDFDocInput,
+  ThunkApiType<RootState>
+>(
+  'saveIncomeStatementPDF',
+
+  async ( input , { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let report: boolean | undefined;
+
+      if (userAuth?.auth_token) {
+        report = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).saveIncomeStatementPDF(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

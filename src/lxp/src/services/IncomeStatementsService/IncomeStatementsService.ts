@@ -4,6 +4,7 @@ import {
   Config,
   IncomeStatementsDto,
   ReportTableDataDto,
+  IncomeStatementPDFDocInput,
 } from '@ecdlink/core';
 import {
   StatementsIncomeInput,
@@ -140,7 +141,6 @@ class IncomeStatementsService {
     return response.data.data.GetAllStatementsPayType;
   }
 
-
   async UpdateStatementsIncome(
     id: string,
     input: StatementsIncomeInput
@@ -169,27 +169,18 @@ class IncomeStatementsService {
     return response.data.data.updateStatementsIncome;
   }
 
-
-  async saveIncomeStatementPDF(
-    fileName: string,
-    reference: string,
-    userId: string,
-    createdUserId: string
-  ): Promise<any> {
+  async saveIncomeStatementPDF(input: IncomeStatementPDFDocInput): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-      mutation saveIncomeStatementPDF($fileName: string!, $reference: string!, $userId: string!, $createdUserId: string! ) { 
-         saveIncomeStatementPDF( fileName: $fileName, reference: $reference, userId: $userId, createdUserId: $createdUserId) {
-           result  resultObject resultMessage 
+      mutation saveIncomeStatementPDF($input: IncomeStatementPDFDocInput) { 
+         saveIncomeStatementPDF(input: $input) {
+           
           }
         }
       `,
       variables: {
-        fileName,
-        reference,
-        userId,
-        createdUserId,
+        input
       },
     });
 
@@ -199,7 +190,7 @@ class IncomeStatementsService {
       );
     }
 
-    return response.data.data.report;
+    return response.data.data.saveIncomeStatementPDF;
   }
 
   async getMonthsIncomeExpensesReport(

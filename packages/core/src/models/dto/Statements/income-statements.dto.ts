@@ -29,3 +29,9 @@ export interface ReportTableDataDto {
   }[];
   total: number;
 }
+
+export interface IncomeStatementPDFDocInput {
+  fileName: string;
+  reference: string;
+  userId: string;
+}

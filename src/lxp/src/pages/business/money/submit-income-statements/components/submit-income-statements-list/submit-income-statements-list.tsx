@@ -89,6 +89,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   }, 0);
 
   const totalBalance = (totalIncome - totalExpenses).toFixed(2);
+  const appDispatch = useAppDispatch();
 
   const statementMonth = getMonth(new Date());
   const statementYear = getYear(new Date());
@@ -417,19 +418,16 @@ export const SubmitIncomeStatementsList: React.FC = () => {
       tableFootStyles,
       'portrait'
     );
-    await new IncomeStatementsService(userAuth?.auth_token!)
-      .saveIncomeStatementPDF(
-        `${getMonthName(Number(statementMonth))}-income-statement-report.pdf`,
-        report ?? '',
-        practitioner?.id ?? '',
-        practitioner?.id ?? ''
-      )
-      .catch((err) => {
-        errorDialog(err.message);
-      });
+    await appDispatch(
+      statementsThunkActions.saveIncomeStatementPDF({
+        fileName: `${getMonthName(
+          Number(statementMonth)
+        )}-income-statement-report.pdf`,
+        reference: report ?? '',
+        userId: practitioner?.id ?? '',
+      })
+    );
   };
-
-  const appDispatch = useAppDispatch();
 
   return (
     <BannerWrapper
