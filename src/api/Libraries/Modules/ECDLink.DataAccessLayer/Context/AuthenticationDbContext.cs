@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -127,6 +128,11 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitGrowthDataDay> VisitGrowthDataDay { get; set; }
         public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
+
+        // Licenses
+        public DbSet<LicenseType> LicenseType { get; set; }
+        public DbSet<License> License { get; set; }
+
 
         // Event Records
         public DbSet<EventRecordType> EventRecordTypes { get; set; }

@@ -121,6 +121,46 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
             return true;
         }
+
+        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input)
+        {
+
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    _visitDataRepo.Insert(visitData);
+                }
+            }
+
+            // update the visit record to show attended/completed 
+            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+            entityToUpdate.UpdatedDate = DateTime.Now;
+            entityToUpdate.UpdatedBy = _applicationUserId;
+            entityToUpdate.Attended = true;
+            entityToUpdate.ActualVisitDate = DateTime.Now;
+            _visitRepo.Update(entityToUpdate);
+
+            // then handle status data
+           // _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+            return true;
+        }
+
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)
