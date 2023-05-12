@@ -15,7 +15,11 @@ namespace EcdLink.Api.CoreApi {
             public const string client_practitioner = "practitioner";
             public const string visitType_support = "support_visit";
 
-    }
+            public const string income_statement_pdf_type = "IncomeStatementPDF";
+            public const string workflow_pdf_type = "Document";
+            public const string workflow_status_pdf_type = "Verified";
+
+        }
 
     public static class GGSettings
         {
