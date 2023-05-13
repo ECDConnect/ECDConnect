@@ -62,6 +62,29 @@ export class IncompletePractitionerInformationNotificationValidator
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
+      const isTrainee = practitionerState?.practitioner?.isTrainee;
+
+      if (isTrainee) {
+        return [
+          {
+            reference: `practitioner-profile`,
+            title: 'Start your trainee journey!',
+            message:
+              'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Get started',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.TRAINEE.SETUPE_TRAINEE,
+            },
+          },
+        ];
+      }
 
       if (showNotificationForPrincipalFlow) {
         return [

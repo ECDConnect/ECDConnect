@@ -87,6 +87,7 @@ class PractitionerService {
               ward
             }
             isPrincipal
+            isTrainee
             isRegistered
             principalHierarchy
             coachHierarchy
