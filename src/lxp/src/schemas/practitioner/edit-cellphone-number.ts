@@ -17,14 +17,11 @@ export const initialEditPractitionerValues: EditCellphoneModel = {
   email: '',
 };
 
-const phoneRegExp =
-  /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2,4})[ \\-]*)*?[0-9]{3,4}?[ \\-]*[0-9]{3,4}?$/;
+const phoneRegExp = /^((?:\+27|27)|0)(=72|82|73|83|74|84)(\d{7})$/;
 
 export const editCelphoneNumberSchema = Yup.object().shape({
   name: Yup.string(),
   cellphone: Yup.string()
     .required('Cellphone number is required')
-    .matches(phoneRegExp, 'Phone number is not valid')
-    .min(10, 'too short')
-    .max(10, 'too long'),
+    .matches(phoneRegExp, 'Phone number is not valid'),
 });

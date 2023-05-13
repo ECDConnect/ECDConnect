@@ -6,7 +6,7 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -37,8 +37,8 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         name: user.firstName || '',
         surname: user.surname || '',
         cellphone: user.phoneNumber || undefined,
-        email: user?.email! || undefined,
-        whatsapp: user?.whatsappNumber || undefined,
+        email: user.email || undefined,
+        whatsapp: user.whatsappNumber || undefined,
       };
       return tempPractitioner;
     } else {
@@ -50,15 +50,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     getValues: getPractitionerInfoFormValues,
     formState: practitionerInfoFormState,
     register: practitionerInfoFormRegister,
-    control: practitionerInfoFormControl,
   } = useForm<EditCellphoneModel>({
     resolver: yupResolver(editCelphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
-  });
-  const { whatsapp } = useWatch({
-    control: practitionerInfoFormControl,
   });
 
   const { isValid } = practitionerInfoFormState;
@@ -71,7 +67,9 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
       copy.email = practitionerForm.email!;
-      if (whatsapp) {
+      if (isWhatsappNumber) {
+        copy.whatsappNumber = undefined;
+      } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
@@ -79,6 +77,13 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       appDispatch(userThunkActions.updateUser(copy));
     }
   };
+
+  useEffect(() => {
+    if (user?.whatsappNumber) {
+      setIsWhatsappNumber(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   return (
     <div>
@@ -108,7 +113,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 label={'Cellphone number'}
                 visible={true}
                 nameProp={'cellphone'}
-                placeholder="073 527 9059"
+                placeholder="+27735279059"
                 className="w-full"
                 register={practitionerInfoFormRegister}
               />
@@ -129,7 +134,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   color="secondary"
                   type={ButtonGroupTypes.Button}
                   className={'w-full'}
-                  // selectedOptions={multipleChildren}
+                  selectedOptions={isWhatsappNumber}
                 />
               </div>
               {!isWhatsappNumber && (
@@ -155,7 +160,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 icon="SaveIcon"
                 disabled={!isValid}
                 onClick={() => {
-                  // handleChangePractitionerInfo();
                   savePractitionerUserData();
                   setEditiCellPhoneNumber(false);
                 }}

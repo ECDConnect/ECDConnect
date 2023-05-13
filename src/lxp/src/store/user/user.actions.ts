@@ -247,4 +247,5 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
     : null,
   languageId:
     user.languageId && user.languageId.length ? user.languageId : null,
+  whatsAppNumber: user.whatsappNumber ? user.whatsappNumber : null,
 });
