@@ -81,6 +81,8 @@ namespace ECDLink.Core.Services
         public static string securityStamp = "7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
         public static string concurrencystamp = "a7ce158a-30c5-4cfb-aee2-027c000b8df6";
         public Guid tenantId = TenantExecutionContext.Tenant.Id;
+        public List<IntegrationEntityMapping> _mappedEntities;
+        public List<IntegrationColumnMapping> _mappedColumns;
 
         public IntegrationService(
             IGenericRepositoryFactory repositoryFactory,
@@ -174,7 +176,7 @@ namespace ECDLink.Core.Services
             {
 
                 if (entityType != null)
-                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId!=null).ToList();
                 else
                     return _mapperRepo.GetAll().ToList();
             }
@@ -233,6 +235,236 @@ namespace ECDLink.Core.Services
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
+
+        #endregion
+
+        #region Integration Points      
+
+        public async Task<bool> IntegrationByFranchisees()
+        {            
+            List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
+            if (ids.Count > 0)
+            {
+                foreach (var item in ids)
+                {
+                    await IntegrationByMappedCoach(item.Id.ToString());
+                }
+            }
+
+
+            return true;
+        }
+            
+        public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
+        {        
+            bool returnOK = false;
+            DateTime startTime = DateTime.Now;
+            int totalAddedToSS = 0;
+            int totalFranchiseesAddedToSS = 0;
+            int totalChildrenAddedToSS = 0;
+            int totalFranchiseesAddedToSL = 0;
+            int totalChildrenAddedToSL = 0;
+            int totalUpdatedFromSL = 0;
+            int totalUpdatedFromSS = 0;
+            int errors = 0;
+            
+            try
+            {
+                //List<string> errorsList = new List<string>();
+                /*
+                 * 1) get all mapped coaches done
+                * 2) iterate through franchisees of each remote against what we have and create what we dont have and do same for all child caregiver address document etc IN PROGRESS
+                * 3) interate through franchisees we have and check any column/entity changes from SL and update what we have done
+                * 4) check all changes we had since last r an and push any changes for the entities we had updates to - inserts/updates done
+                * 5) start with updates
+                * 6) start with income statements and attendance and push only to SL
+                */
+
+                //Only allow data pulling when api mode has been set
+                
+                if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
+                {
+                    _mappedEntities = await this.GetMappedEntities();
+                    _mappedColumns = await this.GetMappedColumns();
+
+                    //-------------------
+                    //1. - check all changes on known entities marked as changed from SL API and update
+                    //-------------------
+                    List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
+                    /*       
+                    if (changedColumns != null) {
+                        foreach (var change in changedColumns)
+                        {
+                            //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
+                            if (mappedEntities.Where(x => x.RemoteId.Equals(change.RecordChange.RecordGuid) && x.RemoteEntity.Equals(change.Entity)) == null)
+                            {
+                                var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
+                                //kick off change sequence depending on type
+                                foreach (var item in remoteColumnChanges)
+                                {
+                                    UpdateLocalEntity updateEntity = new UpdateLocalEntity() { Guid = change.RecordChange.RecordGuid, 
+                                                                                                EntityColumn = mappedColumns.Where(c => c.RemoteEntity.Equals(item.Entity) && c.RemoteColumn.Equals(item.Column)).Select(cc => cc.LocalColumn).FirstOrDefault().ToString(), 
+                                                                                                EntityType = item.Entity, 
+                                                                                                LastUpdatedDateTime = item.DateTimeStamp, NewData = change.NewValue };
+                                    await this.UpdateEntityColumn(updateEntity);
+                                }                    
+                            }
+                        }
+                    }
+                    /*/
+                    //-------------------
+                    //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
+                    //-------------------
+                    //Only allow data pushing when api mode has been set
+                    if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+                    {
+                        //filter valid entities that havent failed importing before
+                        await PushData();                        
+                    }
+
+                    //-------------------
+                    //3. Iterate through all known coaches to get information below hierarchy
+                    //-------------------
+
+                    foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+                    {
+                        //-------------------
+                        //4. - check all changes on known entities that is not marked complete
+                        //-------------------
+                        //UpdateIncompletes(mappedEntities, mappedColumns, coach);
+                    
+                        //-------------------
+                        //5. - get all data from API and discard whats complete and known to SS
+                        //-------------------
+                        //5.1) get all frannchisees and map them                
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await GetFranchiseesById(franchiseeId) : await GetFranchiseesByCoach(coach.RemoteId));
+                        //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        if (remoteFranchisees != null)
+                        {
+                            //order all to load principals first
+                            remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
+                            try
+                            {
+                                foreach (var franchisee in remoteFranchisees)
+                                {
+                                    if (franchisee != null)
+                                    {
+                                        if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
+                                        {
+                                            //Create franchisee and map in SS system
+                                            franchisee.localParentEntityId = coach.LocalId;
+                                            Practitioner newPractitioner = await MapFranchisee(franchisee);
+                                            if (newPractitioner != null)
+                                            {
+                                                totalFranchiseesAddedToSS++;
+                                                //get all elements underneath and map those too
+
+                                                //1. Children
+                                                List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
+                                                if (remoteChildren != null)
+                                                {
+                                                    //List of allocated children to new practitioner
+                                                    List<Child> newChildren = new List<Child>();
+
+                                                    foreach (var remoteChild in remoteChildren)
+                                                    {
+                                                        if (remoteChild != null)
+                                                        {
+                                                            var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                            if (newChild != null)
+                                                            {
+                                                                newChildren.Add(newChild);
+                                                                totalChildrenAddedToSS++;
+                                                            }
+                                                        }
+                                                    }
+
+                                                    //realign hirarchy and learners to Unsure classgroups
+                                                    await AlignChildHierarchy(newPractitioner, newChildren);
+                                                    await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
+                                                }
+
+
+                                                //2. Documents
+
+                                                //3. Notes
+
+                                                //4. Attendance
+
+                                                //5. Income Statements
+
+                                            }
+                                        } else
+                                        {
+                                            var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                            Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+
+                                            totalFranchiseesAddedToSS++;
+                                            //get all elements underneath and map those too
+
+                                            //1. Children
+                                            List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
+                                            if (remoteChildren != null)
+                                            {
+                                                //List of allocated children to new practitioner
+                                                List<Child> newChildren = new List<Child>();
+
+                                                foreach (var remoteChild in remoteChildren)
+                                                {
+                                                    if (remoteChild != null)
+                                                    {
+                                                        var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                        if (newChild != null)
+                                                        {
+                                                            newChildren.Add(newChild);
+                                                            totalChildrenAddedToSS++;
+                                                        }
+                                                    }
+                                                }
+
+                                                //realign hirarchy and learners to Unsure classgroups
+                                                await AlignChildHierarchy(newPractitioner, newChildren);
+                                                await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
+                                            }
+                                        }
+                                    }
+                                }
+                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
+                                await MatchPrincipals();
+                            }
+                            catch (Exception ex)
+                            {
+                                //TODO: LOG ERROR AND HANDLE
+                            }
+                            returnOK = true;
+                        }
+                    }
+                }
+
+                //-------------------
+                //6.Update service scheduler and mapping tables with reports of what got done
+                //-------------------
+                //update iterations of run into ServiceScheduler as conclusion to run
+                //save how many records updated to SL and from SL, created between SL and to SL and how it completed and when it stopped
+                //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
+                var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
+                ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
+                scheduledRun.Results = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|",_errorsList.ToArray());
+                scheduledRun.EndTime = DateTime.Now;
+                scheduledRun.StartTime = startTime;
+                scheduledRun.UpdatedDate = DateTime.Now;
+                scheduledRun.UpdatedBy = _uId;
+                schedulerRepo.Update(scheduledRun);
+
+            }
+            catch (Exception ex)
+            {
+                //TODO: LOG ERROR AND HANDLE
+            }
+            return returnOK;
+        }
+
 
         #endregion
 
@@ -399,431 +631,6 @@ namespace ECDLink.Core.Services
                 //TODO: LOG ERROR AND HANDLE              
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
-        }
-
-
-        #endregion
-
-        #region Post API Entity
-
-
-        #endregion
-
-        private async Task<bool> PushUpdates(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
-        {
-            //1) Get list of entities and their types
-            //2) iterate through these and group updates for same entity
-            //3) build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any otehr changes is irrelevant
-            //4) add remote guid
-            //5) Send it to the /Multiple endpoint
-            //move to next entity type thats mapped and ha sproperties
-
-            audits = audits.Where(x => x.RelatedId.Equals("4dbdb108-0983-4de6-8c6a-35a905c869c6")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
-
-            var entityTypeList = audits.Select(x => x.Entity).Distinct();
-            Dictionary<string,string> entitypes = new Dictionary<string,string>();
-            var validEntities = entities.Where(x => x.LocalId != null).ToList();
-            foreach (var updatedEntityType in entityTypeList)
-            {
-                StringBuilder jsonString = new StringBuilder();
-                var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
-
-                if (entityIdList.Any() && entities.Any())
-                {
-                    string url = "";
-                    jsonString.AppendLine("[");
-                    foreach (var entityToUpdate in entityIdList)
-                    {
-                        var mappedEntity = validEntities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
-                        if (mappedEntity != null) //if we have this entity mapped to remote?
-                        {
-                            string localEntity = mappedEntity.LocalEntity;
-                            string remoteEntity = mappedEntity.RemoteEntity;
-                            if (updatedEntityType.Equals("ApplicationUser"))
-                            {
-                                //determine what the related entity is here, we have to remap to SL because we split Application user and the entity in 2, they have all USer properties on entity only
-                                var prac = _practitionerGenericRepo.GetByUserId(mappedEntity.UserId);
-                                var child = _childGenericRepo.GetByUserId(mappedEntity.UserId);
-                                var coach = _coachGenericRepo.GetByUserId(mappedEntity.UserId);
-                                var franchisor = _franchisorGenericRepo.GetByUserId(mappedEntity.UserId);
-                                if (prac != null)
-                                {
-                                    localEntity = SSIntegrationSettings.SSPractitioner;
-                                    remoteEntity = SSIntegrationSettings.SLPractitioner;
-                                }
-                                else if (child != null)
-                                {
-                                    localEntity = SSIntegrationSettings.SSChild;
-                                    remoteEntity = SSIntegrationSettings.SLChild;
-                                }
-                                else if (coach != null)
-                                {
-                                    localEntity = SSIntegrationSettings.SSCoach;
-                                    remoteEntity = SSIntegrationSettings.SLCoach;
-                                }
-                                else if (franchisor != null)
-                                {
-                                    localEntity = SSIntegrationSettings.SSFranchisor;
-                                    remoteEntity = SSIntegrationSettings.SLFranchisor;
-                                }
-                            }
-
-                            url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
-                            jsonString.AppendLine("{");
-                            //get all changes for this entity and group and build JSON
-                            var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
-                            if (allChanges.Count() > 0)
-                            {
-                                jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
-                                foreach (var changeLine in allChanges)
-                                {
-                                    var mappedColumnLine = columns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
-                                    if (mappedColumnLine != null)
-                                    {
-                                        if (mappedColumnLine.UpdateDirection.Equals(UpdateDirection.Both) || mappedColumnLine.UpdateDirection.Equals(UpdateDirection.SSToSL)) //only update mapped columns configured to update
-                                        {
-                                            string valueToSend = changeLine.ValueAfter;
-                                            //get mappedcolumn from columnmapping
-                                            if (mappedColumnLine.RemapToString)
-                                            {
-                                                if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend)) {
-                                                    valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
-                                                }
-                                            }
-                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
-                                        }
-                                    }
-                                    //remove entry from audits list as we have processed it here and sending to SL
-                                    audits.Remove(changeLine);
-                                }
-                            }
-                            jsonString.AppendLine("},");
-                        }
-                    }
-                    jsonString.AppendLine("]");
-                    //jsonString.AppendLine("[");
-                    //jsonString.AppendLine("{");
-                    //    jsonString.AppendLine("\"FirstName\": \"Ntombizanele Nozonela\", ");
-                    //    jsonString.AppendLine("\"Surname\": \"Maasdorp\", ");
-                    //    jsonString.AppendLine("\"IdNumber\": \"8509230915086\", ");
-                    //    jsonString.AppendLine("\"PersonalNumber\": \"+27786832610\", ");
-                    //    jsonString.AppendLine("\"WhatsAppNumber\": \"+27786832610\", ");
-                    //    jsonString.AppendLine("\"BirthDate\": \"1985-09-23\", ");
-                    //    jsonString.AppendLine("\"EmailAddress\": \"test@ecdconnect.co.za\", ");
-                    //    jsonString.AppendLine("\"NextOfKinFirstName\": \"N/A\",");
-                    //        jsonString.AppendLine("\"NextOfKinSurname\": \"N/A\",");
-                    //        jsonString.AppendLine("\"NextOfKinContactNumber\": null,");
-                    //    jsonString.AppendLine("\"Guid\": \"cc1cbf5d-d3a1-eb11-8346-00155d326100\"");
-                    //  jsonString.AppendLine("}");
-                    //jsonString.AppendLine("]");
-
-                    //now send to API call <entity type>/Multiple
-                    var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
-                    if (responseString != null)
-                    {
-
-                    }
-                }
-
-
-
-            }
-
-            return true;
-        }
-
-        private async Task<bool> PushDeletes(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
-        {
-
-
-            return true;
-        }
-
-        private async Task<bool> PushInserts(List<IntegrationAudit> audits, List<IntegrationEntityMapping> entities, List<IntegrationColumnMapping> columns)
-        {
-
-            return true;
-        }
-
-        private async Task<bool> PushData(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns)
-        {
-            int changesCheckTime = 1620;
-            List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
-
-            //Inserts
-            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
-            if (inserts.Count > 0)
-                await PushInserts(inserts, mappedEntities, mappedColumns);
-
-            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
-            if (updates.Count > 0)
-                await PushUpdates(updates, mappedEntities, mappedColumns);
-
-            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
-            if (deletes.Count > 0)
-                await PushDeletes(deletes, mappedEntities, mappedColumns);
-
-            return true;
-        }
-
-        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
-        {
-            switch (entityToRemap)
-            {
-                case "Race":
-                    var race = _staticRaceRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (race != null ? race.Description : null);
-                    break;
-                case "Gender":
-                    var gender = _staticGenderRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (gender != null ? gender.Description : null);
-                    break;
-                case "Language":
-                    var lang = _staticLanguageRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (lang != null ? lang.Description : null);
-                    break;
-                case "Relation":
-                    var rel = _staticRelationRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (rel != null ? rel.Description : null);
-                    break;
-                case "Province":
-                    var prov = _staticProvinceRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (prov != null ? prov.Description : null);
-                    break;
-                case "Education":
-                    var edu = _staticEducationRepo.GetById(Guid.Parse(valueToSend));
-                    valueToSend = (edu != null ? edu.Description : null);
-                    break;
-            }
-
-            return valueToSend;
-        }
-
-
-        #region Integration Points      
-
-        public async Task<bool> IntegrationByFranchisees()
-        {            
-            List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
-            if (ids.Count > 0)
-            {
-                foreach (var item in ids)
-                {
-                    await IntegrationByMappedCoach(item.Id.ToString());
-                }
-            }
-
-
-            return true;
-        }
-            
-        public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
-        {        
-            bool returnOK = false;
-            DateTime startTime = DateTime.Now;
-            int totalAddedToSS = 0;
-            int totalFranchiseesAddedToSS = 0;
-            int totalChildrenAddedToSS = 0;
-            int totalFranchiseesAddedToSL = 0;
-            int totalChildrenAddedToSL = 0;
-            int totalUpdatedFromSL = 0;
-            int totalUpdatedFromSS = 0;
-            int errors = 0;
-            
-            try
-            {
-                //List<string> errorsList = new List<string>();
-                /*
-                 * 1) get all mapped coaches done
-                * 2) iterate through franchisees of each remote against what we have and create what we dont have and do same for all child caregiver address document etc IN PROGRESS
-                * 3) interate through franchisees we have and check any column/entity changes from SL and update what we have done
-                * 4) check all changes we had since last r an and push any changes for the entities we had updates to - inserts/updates done
-                * 5) start with updates
-                * 6) start with income statements and attendance and push only to SL
-                */
-
-                //Only allow data pulling when api mode has been set
-                
-                if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
-                {
-                    List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-                    List<IntegrationColumnMapping> mappedColumns = await this.GetMappedColumns();
-
-                    //-------------------
-                    //1. - check all changes on known entities marked as changed from SL API and update
-                    //-------------------
-                    List<ColumnChange> changedColumns = await GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
-                    /*       
-                    if (changedColumns != null) {
-                        foreach (var change in changedColumns)
-                        {
-                            //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
-                            if (mappedEntities.Where(x => x.RemoteId.Equals(change.RecordChange.RecordGuid) && x.RemoteEntity.Equals(change.Entity)) == null)
-                            {
-                                var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
-                                //kick off change sequence depending on type
-                                foreach (var item in remoteColumnChanges)
-                                {
-                                    UpdateLocalEntity updateEntity = new UpdateLocalEntity() { Guid = change.RecordChange.RecordGuid, 
-                                                                                                EntityColumn = mappedColumns.Where(c => c.RemoteEntity.Equals(item.Entity) && c.RemoteColumn.Equals(item.Column)).Select(cc => cc.LocalColumn).FirstOrDefault().ToString(), 
-                                                                                                EntityType = item.Entity, 
-                                                                                                LastUpdatedDateTime = item.DateTimeStamp, NewData = change.NewValue };
-                                    await this.UpdateEntityColumn(updateEntity);
-                                }                    
-                            }
-                        }
-                    }
-                    /*/
-                    //-------------------
-                    //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
-                    //-------------------
-                    //Only allow data pushing when api mode has been set
-                    if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
-                    {
-                        //await PushData(mappedEntities, mappedColumns);                        
-                    }
-
-                    //-------------------
-                    //3. Iterate through all known coaches to get information below hierarchy
-                    //-------------------
-
-                    foreach (var coach in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
-                    {
-                        //-------------------
-                        //4. - check all changes on known entities that is not marked complete
-                        //-------------------
-                        //UpdateIncompletes(mappedEntities, mappedColumns, coach);
-                    
-                        //-------------------
-                        //5. - get all data from API and discard whats complete and known to SS
-                        //-------------------
-                        //5.1) get all frannchisees and map them                
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
-                        List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await GetFranchiseesById(franchiseeId) : await GetFranchiseesByCoach(coach.RemoteId));
-                        //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
-                        if (remoteFranchisees != null)
-                        {
-                            //order all to load principals first
-                            remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
-                            try
-                            {
-                                foreach (var franchisee in remoteFranchisees)
-                                {
-                                    if (franchisee != null)
-                                    {
-                                        if (mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
-                                        {
-                                            //Create franchisee and map in SS system
-                                            franchisee.localParentEntityId = coach.LocalId;
-                                            Practitioner newPractitioner = await MapFranchisee(franchisee);
-                                            if (newPractitioner != null)
-                                            {
-                                                totalFranchiseesAddedToSS++;
-                                                //get all elements underneath and map those too
-
-                                                //1. Children
-                                                List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
-                                                if (remoteChildren != null)
-                                                {
-                                                    //List of allocated children to new practitioner
-                                                    List<Child> newChildren = new List<Child>();
-
-                                                    foreach (var remoteChild in remoteChildren)
-                                                    {
-                                                        if (remoteChild != null)
-                                                        {
-                                                            var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                                            if (newChild != null)
-                                                            {
-                                                                newChildren.Add(newChild);
-                                                                totalChildrenAddedToSS++;
-                                                            }
-                                                        }
-                                                    }
-
-                                                    //realign hirarchy and learners to Unsure classgroups
-                                                    await AlignChildHierarchy(newPractitioner, newChildren);
-                                                    await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
-                                                }
-
-
-                                                //2. Documents
-
-                                                //3. Notes
-
-                                                //4. Attendance
-
-                                                //5. Income Statements
-
-                                            }
-                                        } else
-                                        {
-                                            var localPractitioner = mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
-                                            Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
-
-                                            totalFranchiseesAddedToSS++;
-                                            //get all elements underneath and map those too
-
-                                            //1. Children
-                                            List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
-                                            if (remoteChildren != null)
-                                            {
-                                                //List of allocated children to new practitioner
-                                                List<Child> newChildren = new List<Child>();
-
-                                                foreach (var remoteChild in remoteChildren)
-                                                {
-                                                    if (remoteChild != null)
-                                                    {
-                                                        var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                                        if (newChild != null)
-                                                        {
-                                                            newChildren.Add(newChild);
-                                                            totalChildrenAddedToSS++;
-                                                        }
-                                                    }
-                                                }
-
-                                                //realign hirarchy and learners to Unsure classgroups
-                                                await AlignChildHierarchy(newPractitioner, newChildren);
-                                                await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
-                                            }
-                                        }
-                                    }
-                                }
-                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
-                                await MatchPrincipals();
-                            }
-                            catch (Exception ex)
-                            {
-                                //TODO: LOG ERROR AND HANDLE
-                            }
-                            returnOK = true;
-                        }
-                    }
-                }
-
-                //-------------------
-                //6.Update service scheduler and mapping tables with reports of what got done
-                //-------------------
-                //update iterations of run into ServiceScheduler as conclusion to run
-                //save how many records updated to SL and from SL, created between SL and to SL and how it completed and when it stopped
-                //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
-                var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
-                ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
-                scheduledRun.Results = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|",_errorsList.ToArray());
-                scheduledRun.EndTime = DateTime.Now;
-                scheduledRun.StartTime = startTime;
-                scheduledRun.UpdatedDate = DateTime.Now;
-                scheduledRun.UpdatedBy = _uId;
-                schedulerRepo.Update(scheduledRun);
-
-            }
-            catch (Exception ex)
-            {
-                //TODO: LOG ERROR AND HANDLE
-            }
-            return returnOK;
         }
 
 
@@ -2546,13 +2353,398 @@ namespace ECDLink.Core.Services
 
         #endregion
 
-        #region Undo Last transaction
+        #region Post API Entity
+        private async Task<bool> PushUpdates(List<IntegrationAudit> audits)
+        {
+            //1) Get list of entities and their types
+            //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
+            //3) Build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any other changes is irrelevant
+            //4) Add remote guid
+            //5) Send it to the /Multiple endpoint
+            //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+
+            List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
+
+            audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+
+            var entityTypeList = audits.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
+
+            Dictionary<string, string> entitypes = new Dictionary<string, string>();
+            List<IntegrationAudit> completedList = new List<IntegrationAudit>();
+            
+            foreach (var updatedEntityType in entityTypeList)
+            {
+                try
+                {
+
+                    StringBuilder jsonString = new StringBuilder();
+                    var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                    if (entityIdList.Any() && entities.Any())
+                    {
+                        string url = "";
+                        jsonString.AppendLine("[");
+                        foreach (var entityToUpdate in entityIdList)
+                        {
+                            var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                string localEntity = mappedEntity.LocalEntity;
+                                string remoteEntity = mappedEntity.RemoteEntity;
+
+                                url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                if (updatedEntityType.Equals("ApplicationUser"))
+                                {
+                                    //add possible additional entity changes in too - If ApplicationUser, there may be additional Practitioner/Child/Coach/Franchisor changes associated, also check address, principal
+                                    var entityChanges = audits.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                    if (entityChanges.Any())
+                                    {
+                                        allChanges.AddRange(entityChanges);
+                                    }
+                                }
+                                if (allChanges.Count() > 0)
+                                {
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    foreach (var changeLine in allChanges)
+                                    {
+                                        var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                        if (mappedColumnLine != null)
+                                        {
+                                            if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                if (changeLine.Property == "IsActive") //special logic for deactivating
+                                                {
+                                                    //TODO: complete status change logic
+                                                }
+
+                                                string valueToSend = changeLine.ValueAfter;
+
+                                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                if (mappedColumnLine.RemapToString)
+                                                {
+                                                    if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            }
+                                        }
+                                        //remove entry from audits list as we have processed it here and sending
+                                        completedList.Add(changeLine);
+                                        audits.Remove(changeLine);
+                                    }
+                                }
+                                jsonString.AppendLine("},");
+                            }
+                        }
+                        jsonString.AppendLine("]");
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                if (responseString == "1") //success
+                                {
+                                    //mark entries as submitted
+                                    await UpdateAuditSubmitted(completedList);
+                                }
+                                else if (responseString == "0")
+                                {
+                                    //there was a reason why these entries did not update
+
+                                }
+                                else //error
+                                {
+                                    //updated failed, log and try again later
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //TODO: LOG ERROR AND HANDLE              
+                            throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    //TODO: LOG ERROR AND HANDLE              
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+            }
+
+            return true;
+        }
+
+        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        {
+            if (!completedAudits.Any())
+                return false;
+            else
+            {
+                foreach (var audit in completedAudits)
+                {
+                    var auditRow = _auditRepo.GetById(audit.Id);
+                    if (auditRow != null)
+                    {
+                        auditRow.UpdatedDate = DateTime.Now;
+                        auditRow.UpdatedBy = _uId;
+                        auditRow.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditRow);
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        private async Task<bool> PushDeletes(List<IntegrationAudit> audits)
+        {
+
+
+            return true;
+        }
+
+        private async Task<bool> PushInserts(List<IntegrationAudit> audits)
+        {
+            //User entities
+            PushNewEntities(audits);
+            //Attendance
+            PushAttendance(audits);
+            //Income Statements
+            PushStatements(audits);
+            //Documents
+            PushDocuments(audits);
+
+            return true;
+        }
+
+        private async Task<bool> PushData()
+        {
+            int changesCheckTime = 1620;
+            List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+            //Inserts
+            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
+            if (inserts.Count > 0)
+                await PushInserts(inserts);
+
+            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
+            if (updates.Count > 0)
+                await PushUpdates(updates);
+
+            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            if (deletes.Count > 0)
+                await PushDeletes(deletes);
+
+            return true;
+        }
+
+        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (race != null ? race.Description : null);
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (gender != null ? gender.Description : null);
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (lang != null ? lang.Description : null);
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (rel != null ? rel.Description : null);
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (prov != null ? prov.Description : null);
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (edu != null ? edu.Description : null);
+                    break;
+            }
+
+            return valueToSend;
+        }
+
+        
+        private async Task<bool> PushNewEntities(List<IntegrationAudit> audits)
+        {
+            /*
+             //1) use all insert lines - retrieve column mappings and create
+             
+             */
+
+            return true;
+        }
+        private async Task<bool> PushAttendance(List<IntegrationAudit> audits)
+        {
+            return true;
+        }
+
+        private async Task<bool> PushDocuments(List<IntegrationAudit> audits)
+        {
+            return true;
+        }
+
+        private async Task<bool> PushStatements(List<IntegrationAudit> audits)
+        {
+            //1) Get list of entities and their types
+            //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
+            //3) Build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any other changes is irrelevant
+            //4) Add remote guid
+            //5) Send it to the /Multiple endpoint
+            //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+
+            List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
+
+            audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+
+            var entityTypeList = audits.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
+
+            Dictionary<string, string> entitypes = new Dictionary<string, string>();
+            List<IntegrationAudit> completedList = new List<IntegrationAudit>();
+
+            foreach (var updatedEntityType in entityTypeList)
+            {
+                try
+                {
+
+                    StringBuilder jsonString = new StringBuilder();
+                    var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                    if (entityIdList.Any() && entities.Any())
+                    {
+                        string url = "";
+                        jsonString.AppendLine("[");
+                        foreach (var entityToUpdate in entityIdList)
+                        {
+                            var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                string localEntity = mappedEntity.LocalEntity;
+                                string remoteEntity = mappedEntity.RemoteEntity;
+
+                                url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                if (updatedEntityType.Equals("ApplicationUser"))
+                                {
+                                    //add possible additional entity changes in too - If ApplicationUser, there may be additional Practitioner/Child/Coach/Franchisor changes associated, also check address, principal
+                                    var entityChanges = audits.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                    if (entityChanges.Any())
+                                    {
+                                        allChanges.AddRange(entityChanges);
+                                    }
+                                }
+                                if (allChanges.Count() > 0)
+                                {
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    foreach (var changeLine in allChanges)
+                                    {
+                                        var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                        if (mappedColumnLine != null)
+                                        {
+                                            if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                if (changeLine.Property == "IsActive") //special logic for deactivating
+                                                {
+                                                    //TODO: complete status change logic
+                                                }
+
+                                                string valueToSend = changeLine.ValueAfter;
+
+                                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                if (mappedColumnLine.RemapToString)
+                                                {
+                                                    if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            }
+                                        }
+                                        //remove entry from audits list as we have processed it here and sending
+                                        completedList.Add(changeLine);
+                                        audits.Remove(changeLine);
+                                    }
+                                }
+                                jsonString.AppendLine("},");
+                            }
+                        }
+                        jsonString.AppendLine("]");
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                if (responseString == "1") //success
+                                {
+                                    //mark entries as submitted
+                                    await UpdateAuditSubmitted(completedList);
+                                }
+                                else if (responseString == "0")
+                                {
+                                    //there was a reason why these entries did not update
+
+                                }
+                                else //error
+                                {
+                                    //updated failed, log and try again later
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //TODO: LOG ERROR AND HANDLE              
+                            throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    //TODO: LOG ERROR AND HANDLE              
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Transactional
 
         private async Task<bool> RemoveImportedAndFlag(string userId, bool isPrac = false, bool isChild = false)
         {
 
             return true;
         }
+
+
+        #endregion
+
+        #region Logging
+
 
 
         #endregion
