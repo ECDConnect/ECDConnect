@@ -57,6 +57,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 VisitTypeId = input.VisitType.Id,
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
+                PractitionerId = input.PractitionerId,
                 Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId
@@ -219,11 +220,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     select visit
                 ).FirstOrDefault();
             }
-            else if(type == Constants.GGSettings.client_child)
+            else if (type == Constants.GGSettings.client_child)
             {
                 nextVisit = (
                     from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            } else if (type == Constants.SSSettings.client_practitioner)
+            {
+                nextVisit = (
+                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= next7Days.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -280,11 +288,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     select visit
                 ).FirstOrDefault();
             }
-            else
+            else if (type == Constants.GGSettings.client_child)
             {
                 nextVisit = (
                     from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            } else if (type == Constants.SSSettings.client_practitioner)
+            {
+                nextVisit = (
+                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).FirstOrDefault();
             }
@@ -352,7 +367,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Guid GetLastCompletedVisitId(String id, string type)
         {
-            Guid visitId;
+            Guid visitId = Guid.Empty;
 
             if (type == Constants.GGSettings.client_mother)
             {
@@ -362,11 +377,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     select visit.Id
                 ).FirstOrDefault();
             }
-            else
+            else if (type == Constants.GGSettings.client_child)
             {
                 visitId = (
                     from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                    select visit.Id
+                ).FirstOrDefault();
+            }
+            else if (type == Constants.SSSettings.client_practitioner)
+            {
+                visitId = (
+                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
                     select visit.Id
                 ).FirstOrDefault();
             }

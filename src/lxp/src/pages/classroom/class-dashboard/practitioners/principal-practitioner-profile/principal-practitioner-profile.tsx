@@ -15,6 +15,7 @@ import {
 } from '@ecdlink/ui';
 import { NoteTypeEnum } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './principal-practitioner-profile.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './principal-practitioner-profile.styles';
@@ -125,7 +126,11 @@ export const PrincipalPractitionerProfileInfo: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
 
   const removePractitioner = async () => {

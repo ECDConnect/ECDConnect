@@ -58,6 +58,7 @@ type IntialStoreSetupContextValues = {
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
+  refreshClassroom: () => Promise<void>;
 };
 
 export const IntialStoreSetupContext =
@@ -288,6 +289,18 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
   };
 
+  const refreshClassroom = async () => {
+    appDispatch(classroomsActions.resetClassroomState());
+    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
+    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomProgrammes({})
+    ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomGroupLearners({})
+    ).unwrap();
+  };
+
   const getLoadingMessage = () => {
     let message = 'Loading . . .';
 
@@ -309,6 +322,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     resetAuth,
     getLoadingMessage,
     syncClassroom,
+    refreshClassroom,
   };
 
   useEffect(() => {

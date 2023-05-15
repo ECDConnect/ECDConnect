@@ -4,6 +4,7 @@ import {
   ExpensesStatementsTypes,
   IncomeStatementsDto,
   IncomeStatementsTypes,
+  ReportTableDataDto,
   StatementsContributionTypes,
   StatementsFeeTypes,
   StatementsPayTypes,
@@ -113,3 +114,7 @@ export const getSalaryExpense = (state: RootState): ExpensesStatementsDto =>
   state.statements?.expensesTypes?.find(
     (item) => item?.id === SALARY_EXPENSE_ID
   ) || '';
+
+export const getIncomeExpensesPDFreport = (
+  state: RootState
+): ReportTableDataDto[] | undefined => state?.statements?.pdfReportData || [];
