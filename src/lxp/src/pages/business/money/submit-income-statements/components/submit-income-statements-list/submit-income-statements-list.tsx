@@ -424,7 +424,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           Number(statementMonth)
         )}-income-statement-report.pdf`,
         reference: report ?? '',
-        userId: practitioner?.id ?? '',
+        userId: practitioner?.userId ?? '',
       })
     );
   };
