@@ -1,15 +1,19 @@
-﻿using ECDLink.Core.Services.Interfaces;
+﻿using DotLiquid.Util;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using HotChocolate;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace ECDLink.Core.Services
 {
@@ -117,10 +121,10 @@ namespace ECDLink.Core.Services
             )
         {
             var historyRepo = _repositoryFactory.CreateGenericRepository<ClassReassignmentHistory>(userContext: uId);
-
+           
             try
             {
-                if (startDate <= DateTime.Today)//  DateTime.Now.AddDays(1))//for future dated reassignments/absentees
+                if (startDate.Date <= DateTime.Today.Date)//  DateTime.Now.AddDays(1))//for future dated reassignments/absentees
                 {
                     if (fromUserId != null && toUserId != null)
                     {
@@ -158,7 +162,7 @@ namespace ECDLink.Core.Services
                             historyRepo.Update(historySaved);
                         }
 
-                        if (startDate <= DateTime.Now) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
+                        if (startDate <= DateTime.Today) //backdating reassignments - immediately reassign everything back so that the records match up and functionality remains consistent
                         {
                             ReassignClassroomsFromHistory(uId, fromUserId);
                         }
@@ -202,7 +206,7 @@ namespace ECDLink.Core.Services
                         //reassign learners
                         reassignment.LearnersReassigned = UpdateLearners(uId, classroomGroupObj.Id, fromUserHierarchy, toUserHierarchy);
                         //reassign children
-                        reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, fromUserHierarchy, toUserHierarchy, reassignment.LearnersReassigned);
+                        reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, toUserHierarchy, reassignment.LearnersReassigned, toUserId);
                     }
                 }
                 else
@@ -224,7 +228,7 @@ namespace ECDLink.Core.Services
                             //reassign learners
                             reassignment.LearnersReassigned = UpdateLearners(uId, classGroup.Id, fromUserHierarchy, toUserHierarchy);
                             //reassign children
-                            reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, fromUserHierarchy, toUserHierarchy, reassignment.LearnersReassigned);
+                            reassignment.ChildrenReassignedUserIds = UpdateChildren(uId, toUserHierarchy, reassignment.LearnersReassigned, toUserId);
                         }
                     }
                     //update classroom
@@ -310,19 +314,21 @@ namespace ECDLink.Core.Services
             {
                 foreach (var learner in learners)
                 {
-                    learner.Hierarchy = learner.Hierarchy.Replace(oldHierarchy, newHierarchy);
-                    learnerRepo.Update(learner);
-
-                    learnersReassigned.Add(learner.UserId);
+                    if (learner.Hierarchy != newHierarchy)
+                    {
+                        learner.Hierarchy = newHierarchy;
+                        learnerRepo.Update(learner);
+                        learnersReassigned.Add(learner.UserId);
+                    }
                 }
             }
             return learnersReassigned;
         }
 
-        private List<string> UpdateChildren(string uId, string oldHierarchy, string newHierarchy, List<string> learnerIds)
+        private List<string> UpdateChildren(string uId, string newHierarchy, List<string> learnerIds, string newUserId)
         {
             List<string> childrenReassigned = new List<string>();
-
+            var staticHierarchyRepo = _repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: uId);
             var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: uId);
 
             if (learnerIds != null && !string.IsNullOrWhiteSpace(newHierarchy))
@@ -332,10 +338,23 @@ namespace ECDLink.Core.Services
                     Child children = childRepo.GetByUserId(learnerId);
                     if (children != null)
                     {
-                        children.Hierarchy = children.Hierarchy.Replace(oldHierarchy, newHierarchy);
-                        childRepo.Update(children);
+                        string childNewHierarchy = "";
+                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(children.UserId)).FirstOrDefault();
 
-                        childrenReassigned.Add(children.UserId);
+                        if (childHierarchy != null)
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = HierarchyHelper.AppendHierarchy(newHierarchy, childHierarchy.Key.ToString());
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newUserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(children.UserId);
+                            updatedChild.Hierarchy = childNewHierarchy;
+                            childRepo.Update(updatedChild);
+                        }
                     }
                 }
             }
