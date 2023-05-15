@@ -178,15 +178,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [currentDayClassroomGroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === currentDayClassroomGroup.id
-      ),
+      classProgrammesUpdated,
       attendance || [],
       currentDate
     );
 
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(currentDate)
+      (x) => x.meetingDay === getDay(currentDate)
     );
 
     const removeHolidays = removeTodaysAttendance.filter((x) => {
@@ -195,6 +193,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
+
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
     } else {
@@ -213,8 +212,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
-    // setSeeRegister(true);
-
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -232,6 +229,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       attendance || [],
       currentDate
     );
+
     const removeTodaysAttendance = missedClassAttendance.filter(
       (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
     );
@@ -250,12 +248,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   };
 
   const gotToReports = () => {
-    if (seeRegister) {
-      setSeeRegister(!seeRegister);
-      setAttendanceComponentType('report');
-    } else {
-      setAttendanceComponentType('report');
-    }
+    setSeeRegister(!seeRegister);
+    setAttendanceComponentType('report');
   };
 
   const getComponentToRender = (type?: AttendanceComponentType) => {
