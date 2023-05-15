@@ -13,7 +13,7 @@ import { classNames, renderIcon } from '../../utils';
 import Button from '../button/button';
 import Typography from '../typography/typography';
 
-export interface StepItem {
+export interface StepItem<T = {}> {
   title: string;
   subTitle?: string;
   subTitleColor?: Colours;
@@ -29,6 +29,7 @@ export interface StepItem {
   actionButtonOnClick?: () => void;
   showAccordion?: boolean;
   accordionContent?: ReactElement;
+  extraData?: T;
 }
 
 interface StepsProps {
@@ -99,9 +100,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
     setIsAccordingOpen((prevState) => {
       if (prevState.some((item) => item.index === index)) {
         return prevState?.map((item) => {
-          console.log({ item, index });
           if (item.index === index) {
-            console.log('entrei if', { ...item, isOpen: !item.isOpen });
             return { ...item, isOpen: !item.isOpen };
           }
 
@@ -112,7 +111,6 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
     });
   }, []);
 
-  console.log(isAccordingOpen);
   useEffect(() => {
     setTimeout(() => {
       setRefs(divRefs?.current);
