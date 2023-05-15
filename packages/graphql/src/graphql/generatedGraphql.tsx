@@ -6306,6 +6306,7 @@ export type Query = {
   visitClientSummaryDataForMother?: Maybe<Progress_VisitDataStatus>;
   visitClientSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
   visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
+  visitDataForVisitId?: Maybe<Array<Maybe<VisitData>>>;
   visitVideos: Array<Maybe<VisitVideos>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
@@ -7758,6 +7759,10 @@ export type QueryVisitDataForVisitArgs = {
   visitId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryVisitDataForVisitIdArgs = {
+  visitId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryVisitVideosArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
@@ -8946,6 +8951,7 @@ export type UserModelInput = {
   raceId?: InputMaybe<Scalars['UUID']>;
   surname?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
+  whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
 export type Visit = {

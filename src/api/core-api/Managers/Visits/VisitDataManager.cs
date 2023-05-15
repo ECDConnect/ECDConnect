@@ -204,6 +204,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
+
+        public List<VisitData> GetVisitDataForVisitId(string visitId)
+        {
+            return (
+                from visit in _visitRepo.GetAll().Where(x => x.Id.ToString() == visitId).OrderBy(x => x.PlannedVisitDate)
+                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                select visitData
+            ).ToList();
+        }
         public List<VisitData> GetGrowthDataForInfant(string id) {
 
               List<VisitData> vData = new List<VisitData>();
