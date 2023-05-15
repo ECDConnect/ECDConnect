@@ -326,7 +326,6 @@ export const classroomGroupHasAttendanceDate = (
   classProgrammes: ClassProgrammeDto[],
   date: Date
 ): ClassProgrammeDto | undefined => {
-
   return classProgrammes
     ? getDay(date) !== 1
       ? classProgrammes.find((x) => x.meetingDay === getDay(date))

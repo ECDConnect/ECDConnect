@@ -72,7 +72,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
-  const tomorrowDate = new Date();
   const currentDate = new Date();
 
   const { errorDialog } = useRequestResponseDialog();
