@@ -103,14 +103,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         } else
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         site_visits.Add(visit);
                     }
@@ -118,15 +118,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         else
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         site_visits.Add(visit);
                     }

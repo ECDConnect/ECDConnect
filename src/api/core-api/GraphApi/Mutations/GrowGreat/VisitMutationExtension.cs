@@ -134,6 +134,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                         DateTime newDate = dt.AddMonths(2);
                         input.PlannedVisitDate = newDate;
                     }
+                    // SmartSpace licence received date + 3 months
+                    if (visitType.Name == Constants.SSSettings.pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(3);
+                        input.PlannedVisitDate = newDate;
+                    }
                     visitManager.AddVisit(input);
                 }
 

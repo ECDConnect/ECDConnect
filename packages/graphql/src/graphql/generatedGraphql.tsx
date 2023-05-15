@@ -5481,6 +5481,12 @@ export type PractitionerTimeLine = {
   firstAidCourseColor?: Maybe<Scalars['String']>;
   firstAidCourseStatus?: Maybe<Scalars['String']>;
   firstAidDate?: Maybe<Scalars['DateTime']>;
+  prePQAVisitDate1?: Maybe<Scalars['DateTime']>;
+  prePQAVisitDate1Color?: Maybe<Scalars['String']>;
+  prePQAVisitDate1Status?: Maybe<Scalars['String']>;
+  prePQAVisitDate2?: Maybe<Scalars['DateTime']>;
+  prePQAVisitDate2Color?: Maybe<Scalars['String']>;
+  prePQAVisitDate2Status?: Maybe<Scalars['String']>;
   siteVisits?: Maybe<Array<Maybe<Visit>>>;
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
@@ -5489,12 +5495,6 @@ export type PractitionerTimeLine = {
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
   supportVisits?: Maybe<Array<Maybe<Visit>>>;
-  visitDate1?: Maybe<Scalars['DateTime']>;
-  visitDate1Color?: Maybe<Scalars['String']>;
-  visitDate1Status?: Maybe<Scalars['String']>;
-  visitDate2?: Maybe<Scalars['DateTime']>;
-  visitDate2Color?: Maybe<Scalars['String']>;
-  visitDate2Status?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerUserAndNote = {
