@@ -3,13 +3,11 @@ import {
   InitialObservations,
   ProgrammeDetails,
   ProgrammeObservations,
-} from './first-visit';
+} from './pre-pqa-visits';
 
-export const firstVisit = [
+export const prePqaVisits = [
   ProgrammeDetails,
   InitialObservations,
   ProgrammeObservations,
   DiscussionNotes,
 ];
-
-export const secondVisit = [];

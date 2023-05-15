@@ -48,14 +48,56 @@ export const DynamicForm = ({
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
 
+  const handleSetQuestions = useCallback(
+    (value: SectionQuestions[]) => {
+      setSectionQuestions((prevSections) => {
+        const updatedQuestions = value.flatMap((newObj) => {
+          const { visitSection: newVisitSection, questions: newQuestions } =
+            newObj;
+          const oldSection = prevSections?.find(
+            (oldObj) => oldObj.visitSection === newVisitSection
+          );
+          const questionsFromOldSection = oldSection?.questions || [];
+
+          const filteredQuestions = newQuestions.filter(
+            (newQuestion) =>
+              !questionsFromOldSection.some(
+                (oldQuestion) => oldQuestion.question === newQuestion.question
+              )
+          );
+
+          const otherSections = prevSections?.filter(
+            (item) => item.visitSection !== newVisitSection
+          );
+
+          const mergedQuestions = filteredQuestions.length
+            ? [...questionsFromOldSection, ...newQuestions]
+            : [...newQuestions];
+
+          return [
+            ...(otherSections?.length ? otherSections : []),
+            {
+              visitSection: newVisitSection,
+              questions: mergedQuestions,
+            },
+          ];
+        }, []);
+
+        setSectionQuestionsForm?.(updatedQuestions);
+        return updatedQuestions;
+      });
+    },
+    [setSectionQuestionsForm]
+  );
+
   const handleOnNext = useCallback(() => {
     setIsEnableButton(false);
     onNextStep?.();
   }, [onNextStep]);
 
   const onSubmit = useCallback(async () => {
-    console.log('submitting...');
-  }, []);
+    console.log('submitting...', sectionQuestions);
+  }, [sectionQuestions]);
 
   const renderContent = useMemo(() => {
     if (!steps) return;
@@ -70,12 +112,13 @@ export const DynamicForm = ({
         isTipPage={isTipPage}
         setIsTip={setIsTip}
         sectionQuestions={sectionQuestions}
-        setSectionQuestions={() => {}}
+        setSectionQuestions={handleSetQuestions}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
       />
     );
   }, [
+    handleSetQuestions,
     smartStarter,
     currentStep,
     isTipPage,

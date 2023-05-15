@@ -121,17 +121,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     input.PractitionerId = practitioner.Id;
 
                     // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
-                    if (visitType.Name == Constants.SSSettings.visit1)
+                    if (visitType.Name == Constants.SSSettings.pre_pqa_visit_1)
                     {
                         DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
                         DateTime newDate = dt.AddMonths(1);
                         input.PlannedVisitDate = newDate;
                     }
                     // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
-                    if (visitType.Name == Constants.SSSettings.visit2)
+                    if (visitType.Name == Constants.SSSettings.pre_pqa_visit_2)
                     {
                         DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
                         DateTime newDate = dt.AddMonths(2);
+                        input.PlannedVisitDate = newDate;
+                    }
+                    // SmartSpace licence received date + 3 months
+                    if (visitType.Name == Constants.SSSettings.pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(3);
                         input.PlannedVisitDate = newDate;
                     }
                     visitManager.AddVisit(input);

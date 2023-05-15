@@ -128,7 +128,10 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       text: '1',
       onActionClick: () =>
         history.push(
-          ROUTES.SMART_STARTER_JOURNEY.ROOT.replace(':clientId', practitionerId)
+          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+            ':practitionerId',
+            practitionerId
+          )
         ),
       classNames: 'bg-uiBg',
     },

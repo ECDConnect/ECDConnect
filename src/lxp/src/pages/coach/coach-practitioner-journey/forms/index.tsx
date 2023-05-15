@@ -5,10 +5,10 @@ import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
-import { SmartStarterJourneyParams } from '../smart-starter-journey.types';
+import { PractitionerJourneyParams } from '../coach-practitioner-journey.types';
 import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
-import { currentActivityKey, visitsTypes } from '..';
-import { firstVisit, secondVisit } from './steps';
+import { currentActivityKey } from '..';
+import { prePqaVisits } from './steps';
 
 interface FormProps {
   onBack: () => void;
@@ -28,9 +28,9 @@ export const Form = ({ onBack }: FormProps) => {
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  const { clientId } = useParams<SmartStarterJourneyParams>();
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
 
-  const practitioner = useSelector(getPractitionerById(clientId));
+  const practitioner = useSelector(getPractitionerById(practitionerId));
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -92,10 +92,8 @@ export const Form = ({ onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
-      case visitsTypes.secondVisit:
-        return secondVisit;
       default:
-        return firstVisit;
+        return prePqaVisits;
     }
   }, [activityName]);
 
