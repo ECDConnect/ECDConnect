@@ -230,7 +230,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       currentDate
     );
 
-   
     const removeTodaysAttendance = missedClassAttendance.filter(
       (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
     );
@@ -249,12 +248,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   };
 
   const gotToReports = () => {
-    if (seeRegister) {
-      setSeeRegister(!seeRegister);
-      setAttendanceComponentType('summary');
-    } else {
-      setAttendanceComponentType('report');
-    }
+    setSeeRegister(!seeRegister);
+    setAttendanceComponentType('report');
   };
 
   const getComponentToRender = (type?: AttendanceComponentType) => {
