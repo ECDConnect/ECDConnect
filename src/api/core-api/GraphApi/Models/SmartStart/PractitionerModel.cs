@@ -13,8 +13,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string ClubMeetingDate1Status { get; set; }
         public string ClubMeetingDate2Status { get; set; }
         public string ClubMeetingDate3Status { get; set; }
-        public string VisitDate1Status { get; set; }
-        public string VisitDate2Status { get; set; }
+        public string PrePQAVisitDate1Status { get; set; }
+        public string PrePQAVisitDate2Status { get; set; }
         public string CoachingCircle1Status { get; set; }
         public string CoachingCircle2Status { get; set; }
         public string CoachingCircle3Status { get; set; }
@@ -27,8 +27,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string ClubMeetingDate1Color { get; set; }
         public string ClubMeetingDate2Color { get; set; }
         public string ClubMeetingDate3Color { get; set; }
-        public string VisitDate1Color { get; set; }
-        public string VisitDate2Color { get; set; }
+        public string PrePQAVisitDate1Color { get; set; }
+        public string PrePQAVisitDate2Color { get; set; }
         public string CoachingCircle1Color { get; set; }
         public string CoachingCircle2Color { get; set; }
         public string CoachingCircle3Color { get; set; }
@@ -42,8 +42,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public DateTime? ClubMeetingDate1 { get; set; }
         public DateTime? ClubMeetingDate2 { get; set; }
         public DateTime? ClubMeetingDate3 { get; set; }
-        public DateTime? VisitDate1 { get; set; }
-        public DateTime? VisitDate2 { get; set; }
+        public DateTime? PrePQAVisitDate1 { get; set; }
+        public DateTime? PrePQAVisitDate2 { get; set; }
 
         public DateTime? CoachingCircleDate1 { get; set; }
         public DateTime? CoachingCircleDate2 { get; set; }

@@ -18,6 +18,8 @@ namespace EcdLink.Api.CoreApi {
             public const string pre_pqa_visit_1 = "pre_pqa_visit_1";
             public const string pre_pqa_visit_2 = "pre_pqa_visit_2";
 
+            public const string pqa_visit_1 = "pqa_visit_1";
+
             // Licenses
             public const string ss_starter_license = "ss_starter_license";
             public const string ss_smart_space_license = "ss_smart_space_license";
