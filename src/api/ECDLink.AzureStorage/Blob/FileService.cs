@@ -37,8 +37,9 @@ namespace ECDLink.AzureStorage.Blob
             }
         }
 
-        public async Task<DocumentModel> UploadFile(string file, string fileName, FileTypeEnum fileType)
+        public async Task<DocumentModel> UploadBase64StringFile(string base64stringFile, string fileName, FileTypeEnum fileType)
         {
+            // TODO: Security, js injection at least.
             try
             {// TODO: \$”{guid}_profile_image/generic file name”
                 var fileReference = fileName;
@@ -56,7 +57,7 @@ namespace ECDLink.AzureStorage.Blob
                     blobClient = blobContainer.GetBlobClient(fileReference);
                 }
 
-                var bytes = Convert.FromBase64String(file);
+                var bytes = Convert.FromBase64String(base64stringFile);
 
                 using MemoryStream fileStream = new MemoryStream(bytes);
 
@@ -84,6 +85,9 @@ namespace ECDLink.AzureStorage.Blob
 
         public async Task<string> UploadFileStream(MemoryStream file, string fileName, FileTypeEnum fileType)
         {
+            // TODO: Security, js injection at least.
+            // TODO: Anyone in TenantA can overwrite TenantB's file if they know the file name? (filenames get guids appended though?)
+            // make files tenant specific? What if they need to be mass removed or migrated?
             try
             {
                 ValidateFileType(file);
@@ -104,7 +108,6 @@ namespace ECDLink.AzureStorage.Blob
             }
             catch (Exception e)
             {
-
                 throw;
             }
         }

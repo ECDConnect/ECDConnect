@@ -223,9 +223,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             {
                 foreach (var learner in learners)
                 {
-                    learner.Hierarchy = newHierarchy;
-                    learnerRepo.Update(learner);
-                    learnersReassigned.Add(learner.UserId);
+                    if (learner.Hierarchy != newHierarchy)
+                    {
+                        learner.Hierarchy = newHierarchy;
+                        learnerRepo.Update(learner);
+                        learnersReassigned.Add(learner.UserId);
+                    }
                 }   
             }
             return learnersReassigned;

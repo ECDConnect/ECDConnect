@@ -1,4 +1,5 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -11,12 +12,9 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using NPOI.HSSF.Record;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -98,29 +96,54 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
-            string practitionerId)
+            [Service] UserLicenseManager userLicenseManager,
+            string userId)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == practitionerId).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
             List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
 
-            //TODO: dates
-            // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
-            // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
-            
-            var input = new VisitModel();
-            foreach (VisitType visitType in visitTypes)
+            var smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_license);
+
+            if (smartSpaceLic != null)
             {
-                input = new VisitModel();
-                input.VisitType = visitType;
-                input.Attended = false;
-                input.MotherId = null;
-                input.InfantId = null;
-                input.LinkedVisitId = null;
-                input.PractitionerId = input.PractitionerId;
-                visitManager.AddAdditionalVisit(input);
+                var input = new VisitModel();
+                foreach (VisitType visitType in visitTypes)
+                {
+                    input = new VisitModel();
+                    input.VisitType = visitType;
+                    input.Attended = false;
+                    input.MotherId = null;
+                    input.InfantId = null;
+                    input.LinkedVisitId = null;
+                    input.PractitionerId = practitioner.Id;
+
+                    // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
+                    if (visitType.Name == Constants.SSSettings.pre_pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(1);
+                        input.PlannedVisitDate = newDate;
+                    }
+                    // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
+                    if (visitType.Name == Constants.SSSettings.pre_pqa_visit_2)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(2);
+                        input.PlannedVisitDate = newDate;
+                    }
+                    // SmartSpace licence received date + 3 months
+                    if (visitType.Name == Constants.SSSettings.pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(3);
+                        input.PlannedVisitDate = newDate;
+                    }
+                    visitManager.AddVisit(input);
+                }
+
             }
 
             return true;

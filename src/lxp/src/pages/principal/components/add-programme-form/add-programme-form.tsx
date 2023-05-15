@@ -333,7 +333,7 @@ export const AddProgrammeForm: React.FC<{
             className={styles.button}
             disabled={isFundaAppAdmin ? !validationForFundaAdmin : !isValid}
             onClick={
-              isSmartLinkImported
+              isSmartLinkImported && classroom?.id
                 ? handleSubmit(onSubmitForImportedUser)
                 : handleSubmit(onSubmit)
             } // Navigate to a different page if it is principle

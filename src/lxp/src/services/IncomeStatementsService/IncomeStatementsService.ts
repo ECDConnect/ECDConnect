@@ -4,6 +4,7 @@ import {
   Config,
   IncomeStatementsDto,
   ReportTableDataDto,
+  IncomeStatementPDFDocInput,
 } from '@ecdlink/core';
 import {
   StatementsIncomeInput,
@@ -166,6 +167,32 @@ class IncomeStatementsService {
     }
 
     return response.data.data.updateStatementsIncome;
+  }
+
+  async saveIncomeStatementPDF(
+    input: IncomeStatementPDFDocInput
+  ): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation saveIncomeStatementPDF($input: IncomeStatementPDFDocInput) { 
+         saveIncomeStatementPDF(input: $input) {
+           
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Submit income report statement Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.saveIncomeStatementPDF;
   }
 
   async getMonthsIncomeExpensesReport(
