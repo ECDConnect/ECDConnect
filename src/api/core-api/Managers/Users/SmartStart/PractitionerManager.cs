@@ -99,7 +99,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (visit != null)
                 {
-                    if (visit.VisitType.Name == Constants.SSSettings.visit1)
+                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_1)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
@@ -114,7 +114,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         }
                         site_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visit2)
+                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_2)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
