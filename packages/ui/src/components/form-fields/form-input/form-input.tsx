@@ -109,14 +109,23 @@ export const FormInput = <T extends FieldValues>({
           );
         } else {
           return (
-            <textarea
+            <CurrencyInput
+              id="validation-example-2-field"
+              allowDecimals={true}
+              step={10}
               autoComplete="new-off"
               placeholder={placeholder}
               disabled={disabled}
-              rows={4}
+              type={type}
               maxLength={maxLength}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
-              defaultValue={value ?? ''}
+              value={value ?? ''}
+              className={
+                error ? styles.errorStyle : styles.defaultMoneyInputStyle
+              }
+              style={{
+                paddingRight: suffixIcon ? 38 : 16,
+                paddingLeft: prefixIcon ? 20 : 16,
+              }}
               {...restProps}
             />
           );
@@ -133,7 +142,10 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               {...register(nameProp)}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
-              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              style={{
+                paddingRight: suffixIcon ? 38 : 16,
+                paddingLeft: prefixIcon ? 20 : 16,
+              }}
               {...restProps}
             />
           );
@@ -147,7 +159,10 @@ export const FormInput = <T extends FieldValues>({
               value={value ?? ''}
               maxLength={maxLength}
               className={error ? styles.errorStyle : styles.defaultInputStyle}
-              style={suffixIcon ? { paddingRight: 38 } : { paddingRight: 16 }}
+              style={{
+                paddingRight: suffixIcon ? 38 : 16,
+                paddingLeft: prefixIcon ? 20 : 16,
+              }}
               {...restProps}
             />
           );

@@ -1,4 +1,4 @@
-import { Button, StepItem, Typography } from '@ecdlink/ui';
+import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
 import { Maybe, PractitionerTimeLine, Visit } from '@ecdlink/graphql';
 import { CalendarIcon } from '@heroicons/react/solid';
 
@@ -15,18 +15,20 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) =>
   (Number(visitA?.visitType?.order) || 0) -
   (Number(visitB?.visitType?.order) || 0);
 
-export const getStepType = (color?: Maybe<string>): StepItem['type'] => {
-  if (!color) return 'todo';
+export const getStepType = (
+  color?: Maybe<string>
+): { type: StepItem['type']; color?: Colours } => {
+  if (!color) return { type: 'todo' };
 
   switch (color.toLowerCase()) {
     case 'success':
-      return 'completed';
+      return { type: 'completed' };
     case 'warning':
-      return 'inProgress';
+      return { type: 'inProgress', color: 'alertDark' };
     case 'error':
-      return 'inProgress';
+      return { type: 'inProgress', color: 'alertDark' };
     default:
-      return 'todo';
+      return { type: 'todo' };
   }
 };
 
@@ -42,15 +44,19 @@ export const setStep = (
     return {
       title: status,
       subTitle: getStepDate(date),
-      type: getStepType(color),
+      subTitleColor: getStepType(color)?.color || '',
+      type: getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
-    };
+    } as StepItem;
   }
 
   return {};
 };
 
-export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
+export const timelineSteps = (
+  timeline: PractitionerTimeLine,
+  visits?: Maybe<Visit>[]
+): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
   steps.push(
@@ -140,7 +146,22 @@ export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
 
   formattedSteps.push({
     title: 'Pre-PQA site visits',
-    subTitle: `By 10 Apr 2020`,
+    subTitle: `By ${
+      timeline.prePQAVisitDate1Color === 'Success' &&
+      !visits?.some((item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1')
+      )
+        ? new Date(
+            timeline.siteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_2')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions)
+        : new Date(
+            timeline.siteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_1')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions)
+    }`,
     type: 'todo',
     showAccordion: true,
     accordionContent: (
@@ -156,6 +177,15 @@ export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
               (index === 1 && timeline.prePQAVisitDate2Status) ||
               visit?.visitType?.description ||
               'Visit';
+
+            const color =
+              (index === 0 && timeline.prePQAVisitDate1Color) ||
+              (index === 1 && timeline.prePQAVisitDate2Color);
+
+            const attendedRule =
+              (visit?.visitType?.order === 1 && !visit.attended) ||
+              (!!previousVisit?.attended && !visit?.attended);
+
             return (
               <div className="my-4">
                 <div className="relative flex items-center gap-1">
@@ -168,26 +198,26 @@ export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
                     className="w-6/12 font-bold"
                     text={title}
                   />
-                  {((visit?.visitType?.order === 1 && !visit.attended) ||
-                    (!!previousVisit?.attended && !visit?.attended)) && (
-                    <Button
-                      style={{
-                        position: 'absolute',
-                        right: -36,
-                      }}
-                      className="z-50 w-32"
-                      type="outlined"
-                      color="primary"
-                      text="Schedule"
-                      icon="CalendarIcon"
-                      // TODO: add integration
-                      onClick={() => {}}
-                    />
-                  )}
+                  {visits?.some((item) => item?.id === visit?.id) &&
+                    attendedRule && (
+                      <Button
+                        style={{
+                          position: 'absolute',
+                          right: -36,
+                        }}
+                        className="z-50 w-32"
+                        type="outlined"
+                        color="primary"
+                        text="Schedule"
+                        icon="CalendarIcon"
+                        // TODO: add integration
+                        onClick={() => {}}
+                      />
+                    )}
                 </div>
                 <Typography
                   type="body"
-                  color="textMid"
+                  color={getStepType(String(color))?.color || 'textMid'}
                   text={
                     !!visit?.plannedVisitDate
                       ? `By ${new Date(

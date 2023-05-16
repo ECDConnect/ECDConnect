@@ -1,15 +1,70 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getPractitionerTimeline } from './pqa.actions';
+import { addVisitFormData, getPractitionerTimeline } from './pqa.actions';
 import { PQAState } from './pqa.types';
+import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import { setThunkActionStatus } from '../utils';
+import { setFulfilledThunkActionStatus } from '../utils';
 
 const initialState: PQAState = {};
 
 const pqaSlice = createSlice({
   name: 'pqa',
   initialState,
-  reducers: {},
+  reducers: {
+    addVisitFormData: {
+      reducer: (
+        state,
+        action: PayloadAction<
+          CmsVisitDataInputModelInput,
+          string,
+          { userId: string; formType: 'pre-pqa' | 'pqa' }
+        >
+      ) => {
+        const { userId, formType } = action.meta;
+        const visitId = action.payload.visitId;
+        switch (formType) {
+          case 'pqa':
+            break;
+          default:
+            if (state?.prePqaFormData?.length) {
+              if (
+                !state.prePqaFormData.some(
+                  (item) => item.formData.visitId === visitId
+                )
+              ) {
+                state.prePqaFormData = [
+                  ...state.prePqaFormData,
+                  { practitionerId: userId, formData: action.payload },
+                ];
+                return;
+              }
+
+              const newState = state.prePqaFormData.map((item) => {
+                if (item.formData.visitId === visitId) {
+                  return { ...item, formData: action.payload };
+                }
+
+                return item;
+              });
+
+              state.prePqaFormData = newState;
+            } else {
+              state.prePqaFormData = [
+                { practitionerId: userId, formData: action.payload },
+              ];
+            }
+            break;
+        }
+      },
+      prepare: (
+        payload: CmsVisitDataInputModelInput,
+        meta: { userId: string; formType: 'pre-pqa' | 'pqa' }
+      ) => ({ payload, meta }),
+    },
+  },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, addVisitFormData);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       const practitionerId = action.meta.arg.userId;
 
@@ -31,6 +86,9 @@ const pqaSlice = createSlice({
           },
         ];
       }
+    });
+    builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

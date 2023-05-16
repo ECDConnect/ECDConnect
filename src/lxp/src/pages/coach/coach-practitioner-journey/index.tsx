@@ -15,10 +15,13 @@ import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { PractitionerJourneyParams } from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
-import { Form } from './forms';
+import { Form, currentActivityKey } from './forms';
 import { useAppDispatch } from '@/store';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
-import { getPractitionerTimelineSelector } from '@/store/pqa/pqa.selectors';
+import {
+  getPractitionerTimelineByIdSelector,
+  getPrePqaFormDataByIdSelector,
+} from '@/store/pqa/pqa.selectors';
 import {
   dateOptions,
   filterVisit,
@@ -27,10 +30,10 @@ import {
 } from './timeline-steps';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
-export const currentActivityKey = 'selectedOption';
-
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+
+  const selectedForm = window.sessionStorage.getItem(currentActivityKey);
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -39,7 +42,12 @@ export const CoachPractitionerJourney: React.FC = () => {
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const practitioner = useSelector(getPractitionerById(practitionerId));
-  const timeline = useSelector(getPractitionerTimelineSelector(practitionerId));
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+  const prePqaFormData = useSelector(
+    getPrePqaFormDataByIdSelector(practitionerId)
+  );
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -66,11 +74,15 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
-  const currentVisit = timeline?.siteVisits
+  const uncompletedVisits = timeline?.siteVisits?.filter(
+    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+  );
+
+  const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
     .map(
-      (visit): MenuListDataItem => ({
+      (visit): MenuListDataItem<{ visitId: string }> => ({
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
@@ -83,6 +95,7 @@ export const CoachPractitionerJourney: React.FC = () => {
           : '',
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
+        extraData: { visitId: visit?.id },
         onActionClick: () => {
           window.sessionStorage.setItem(
             currentActivityKey,
@@ -95,11 +108,22 @@ export const CoachPractitionerJourney: React.FC = () => {
     .shift();
 
   useLayoutEffect(() => {
+    if (selectedForm) {
+      setShowForm(true);
+    }
+  }, [selectedForm]);
+
+  useLayoutEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   }, [appDispatch, practitionerId]);
 
-  if (showForm) {
-    return <Form onBack={() => setShowForm(false)} />;
+  if (showForm && currentVisit?.extraData?.visitId) {
+    return (
+      <Form
+        onBack={() => setShowForm(false)}
+        visitId={currentVisit?.extraData.visitId}
+      />
+    );
   }
   return (
     <BannerWrapper
@@ -164,7 +188,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       />
       {!!timeline && (
         <Steps
-          items={timelineSteps(timeline)}
+          items={timelineSteps(timeline, uncompletedVisits)}
           typeColor={{ completed: 'successMain' }}
         />
       )}

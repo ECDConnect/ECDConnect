@@ -1,5 +1,8 @@
 import { Config } from '@ecdlink/core';
-import { PractitionerTimeLine } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  PractitionerTimeLine,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
 class PQAService {
@@ -7,6 +10,27 @@ class PQAService {
 
   constructor(accessToken: string) {
     this._accessToken = accessToken;
+  }
+
+  async addVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation addVisitData($input: CMSVisitDataInputModel) {
+          addVisitData(input: $input) {
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Add visit failed - Server connection error');
+    }
+
+    return true;
   }
 
   async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {

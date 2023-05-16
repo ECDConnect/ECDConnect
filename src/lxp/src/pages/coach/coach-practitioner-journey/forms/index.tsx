@@ -7,16 +7,24 @@ import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import { PractitionerJourneyParams } from '../coach-practitioner-journey.types';
 import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
-import { currentActivityKey } from '..';
 import { prePqaVisits } from './steps';
+import { useDispatch } from 'react-redux';
+import { pqaActions } from '@/store/pqa';
+import {
+  CmsVisitDataInputModelInput,
+  CmsVisitSectionInput,
+  InputMaybe,
+} from '@ecdlink/graphql';
 
 interface FormProps {
+  visitId: string;
   onBack: () => void;
 }
 
+export const currentActivityKey = 'selectedOption';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ onBack }: FormProps) => {
+export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
@@ -25,6 +33,7 @@ export const Form = ({ onBack }: FormProps) => {
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
+  const appDispatch = useDispatch();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
@@ -90,6 +99,32 @@ export const Form = ({ onBack }: FormProps) => {
     setStep((preState) => preState + 1);
   }, []);
 
+  const handleOnSubmit = () => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
+    const payload: CmsVisitDataInputModelInput = {
+      visitId,
+      practitionerId,
+      visitData: {
+        visitName: activityName,
+        sections,
+      },
+    };
+    appDispatch(
+      pqaActions.addVisitFormData(payload, {
+        userId: practitionerId,
+        formType: 'pre-pqa',
+      })
+    );
+    console.log('Submitting', sectionQuestions);
+  };
+
   const currentSteps = useMemo(() => {
     switch (activityName) {
       default:
@@ -119,6 +154,7 @@ export const Form = ({ onBack }: FormProps) => {
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
         onClose={onBack}
+        onSubmit={handleOnSubmit}
       />
     </BannerWrapper>
   );

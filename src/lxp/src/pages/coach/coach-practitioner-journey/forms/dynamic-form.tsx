@@ -1,6 +1,8 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { PqaActions } from '@/store/pqa/pqa.actions';
 
 export interface Question {
   question: string;
@@ -31,6 +33,7 @@ export interface DynamicFormProps {
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  onSubmit?: () => void;
 }
 
 export const DynamicForm = ({
@@ -43,10 +46,16 @@ export const DynamicForm = ({
   onNextStep,
   setIsTip,
   onClose,
+  onSubmit,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_VISIT_FORM_DATA
+  );
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -95,10 +104,6 @@ export const DynamicForm = ({
     onNextStep?.();
   }, [onNextStep]);
 
-  const onSubmit = useCallback(async () => {
-    console.log('submitting...', sectionQuestions);
-  }, [sectionQuestions]);
-
   const renderContent = useMemo(() => {
     if (!steps) return;
 
@@ -136,13 +141,6 @@ export const DynamicForm = ({
         icon: 'SaveIcon',
       };
     }
-    if (Number(currentStep) === 0) {
-      return {
-        action: handleOnNext,
-        text: name?.startsWith('Care for') ? 'Start' : 'Next',
-        icon: 'ClipboardListIcon',
-      };
-    }
 
     if (Number(currentStep) < Number(steps?.length) - 1) {
       return {
@@ -157,7 +155,7 @@ export const DynamicForm = ({
       text: 'Save',
       icon: 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length, name]);
+  }, [currentStep, handleOnNext, onSubmit, steps?.length]);
 
   return (
     <div className="flex h-full flex-col">
@@ -172,7 +170,8 @@ export const DynamicForm = ({
             className="mb-4 w-full"
             text={renderButton.text}
             onClick={renderButton.action}
-            disabled={!isEnableButton}
+            isLoading={isLoading}
+            disabled={!isEnableButton || isLoading}
           />
         </div>
       )}
