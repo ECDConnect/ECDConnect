@@ -2,11 +2,11 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
 import {
   Alert,
+  AlertType,
   BannerWrapper,
   Button,
   MenuListDataItem,
   StackedList,
-  StepItem,
   Steps,
   Typography,
 } from '@ecdlink/ui';
@@ -14,97 +14,89 @@ import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import { PractitionerJourneyParams } from './coach-practitioner-journey.types';
-import { useState } from 'react';
+import { useLayoutEffect, useState } from 'react';
 import { Form } from './forms';
-
-const MOCKED_DATA = {
-  visit: {
-    title: 'First site visit',
-    subTitle: 'By 10 April 2020',
-  },
-  alert: {
-    title: 'SmartSpace Licence received',
-    subTitle: '10 March 2020',
-  },
-  steps: [
-    {
-      title: 'Starter Licence received',
-      subTitle: '22 Feb 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Consolidation meeting attended',
-      subTitle: '25 Feb 2020',
-      type: 'completed',
-      completedStepIcon: 'CalendarIcon',
-      showAccordion: true,
-    },
-    {
-      title: 'SmartSpace Licence received',
-      subTitle: '10 Mar 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Did not attend first aid course',
-      subTitle: '5 Mar 2020',
-      type: 'inProgress',
-      inProgressStepIcon: 'ExclamationCircleIcon',
-    },
-    {
-      title: '3/3 club meetings attended',
-      subTitle: '25 Aug 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Pre-PQA site visits',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-      showAccordion: true,
-      accordionContent: <>Content</>,
-    },
-  ] as StepItem[],
-};
+import { useAppDispatch } from '@/store';
+import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
+import { getPractitionerTimelineSelector } from '@/store/pqa/pqa.selectors';
+import {
+  dateOptions,
+  filterVisit,
+  sortVisit,
+  timelineSteps,
+} from './timeline-steps';
+import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
 export const currentActivityKey = 'selectedOption';
-
-export const visitsTypes = {
-  firstVisit: 'First site visit before PQA',
-  secondVisit: 'Second site visit before PQA',
-};
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
+  const appDispatch = useAppDispatch();
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
-  // TODO: add integration
-  const isCompletedFirstVisit = false;
-  const currentVisit = isCompletedFirstVisit
-    ? visitsTypes.secondVisit
-    : visitsTypes.firstVisit;
-
   const practitioner = useSelector(getPractitionerById(practitionerId));
+  const timeline = useSelector(getPractitionerTimelineSelector(practitionerId));
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
-  const visits: MenuListDataItem[] = [
-    {
-      showIcon: true,
-      menuIcon: 'ClipboardListIcon',
-      iconColor: 'white',
-      title: currentVisit,
-      subTitle: MOCKED_DATA.visit.subTitle,
-      iconBackgroundColor: 'primary',
-      backgroundColor: 'uiBg',
-      onActionClick: () => {
-        window.sessionStorage.setItem(currentActivityKey, currentVisit);
-        setShowForm(true);
-      },
-    },
-  ];
+  const getTime = (startedDate?: string) => {
+    if (!startedDate) return undefined;
+    const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
+
+    if (years === 0 && months < 1) {
+      return `${days} ${days > 1 ? 'days' : 'day'}`;
+    }
+
+    if (years === 0) {
+      return `${months} ${months > 1 ? 'months' : 'month'}`;
+    }
+
+    return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
+      months > 1 ? 'months' : 'month'
+    }`;
+  };
+
+  const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
+  const currentVisit = timeline?.siteVisits
+    ?.filter(filterVisit)
+    .sort(sortVisit)
+    .map(
+      (visit): MenuListDataItem => ({
+        showIcon: true,
+        menuIcon: 'ClipboardListIcon',
+        iconColor: 'white',
+        title: visit?.visitType?.description || 'Visit',
+        subTitle: !!visit?.plannedVisitDate
+          ? new Date(visit?.plannedVisitDate).toLocaleDateString(
+              'en-ZA',
+              dateLongMonthOptions
+            )
+          : '',
+        iconBackgroundColor: 'primary',
+        backgroundColor: 'uiBg',
+        onActionClick: () => {
+          window.sessionStorage.setItem(
+            currentActivityKey,
+            visit?.visitType?.description || 'Visit'
+          );
+          setShowForm(true);
+        },
+      })
+    )
+    .shift();
+
+  useLayoutEffect(() => {
+    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [appDispatch, practitionerId]);
 
   if (showForm) {
     return <Form onBack={() => setShowForm(false)} />;
@@ -119,12 +111,27 @@ export const CoachPractitionerJourney: React.FC = () => {
       onBack={() => history.goBack()}
       className="p-4"
     >
-      <StackedList isFullHeight={false} type="MenuList" listItems={visits} />
+      {!!currentVisit && (
+        <StackedList
+          isFullHeight={false}
+          type="MenuList"
+          listItems={[currentVisit]}
+        />
+      )}
       <Alert
         className="mt-4"
-        type="success"
-        title={MOCKED_DATA.alert.title}
-        message={MOCKED_DATA.alert.subTitle}
+        type={
+          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+        }
+        title={timeline?.smartSpaceLicenseStatus || ''}
+        message={
+          !!timeline?.smartSpaceLicenseDate
+            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )
+            : ''
+        }
         messageColor="textMid"
         customIcon={<BalloonsIcon />}
       />
@@ -135,9 +142,17 @@ export const CoachPractitionerJourney: React.FC = () => {
       />
       <div className="mb-4 flex gap-2">
         <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
-          {'tag'}
+          {getTime(timeline?.starterLicenseDate || new Date())}
         </p>
-        <Typography type="body" color="textMid" text={`Since xx xxx xxxx`} />
+        {!!timeline?.starterLicenseDate && (
+          <Typography
+            type="body"
+            color="textMid"
+            text={`Since ${new Date(
+              timeline.starterLicenseDate
+            ).toLocaleDateString('en-ZA', dateOptions)}`}
+          />
+        )}
       </div>
       <Button
         className="mb-4 w-full"
@@ -147,10 +162,12 @@ export const CoachPractitionerJourney: React.FC = () => {
         icon="LocationMarkerIcon"
         text="Schedule support visit"
       />
-      <Steps
-        items={MOCKED_DATA.steps}
-        typeColor={{ completed: 'successMain' }}
-      />
+      {!!timeline && (
+        <Steps
+          items={timelineSteps(timeline)}
+          typeColor={{ completed: 'successMain' }}
+        />
+      )}
     </BannerWrapper>
   );
 };
