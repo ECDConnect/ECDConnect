@@ -16,7 +16,9 @@ export const getAge = (dateOfBirth?: string) => {
   }
 
   if (years === 0) {
-    return `${months} months ${days} ${days > 1 ? 'days' : 'day'}`;
+    return `${months} ${months > 1 ? 'months' : 'month'} ${days} ${
+      days > 1 ? 'days' : 'day'
+    }`;
   }
 
   return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${

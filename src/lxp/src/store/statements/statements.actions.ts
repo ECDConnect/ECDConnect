@@ -8,6 +8,8 @@ import {
   ExpensesStatementsTypes,
   IncomeStatementsDto,
   IncomeStatementsTypes,
+  IncomeStatementPDFDocInput,
+  ReportTableDataDto,
   StatementsContributionTypes,
 } from '@/../../../packages/core/lib';
 
@@ -278,31 +280,91 @@ export const getAllPayType = createAsyncThunk<
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      statements: { payTypes: payTypesCached },
     } = getState();
 
-    if (!payTypesCached) {
-      try {
-        let payTypes: any[] | undefined;
+    try {
+      let payTypes: ReportTableDataDto[] | undefined;
 
-        if (userAuth?.auth_token) {
-          payTypes = await new IncomeStatementsService(
-            userAuth?.auth_token
-          ).GetAllStatementsPayType();
-        } else {
-          return rejectWithValue('no access token, profile check required');
-        }
-
-        if (!payTypes) {
-          return rejectWithValue('Erro getting pay types');
-        }
-
-        return payTypes;
-      } catch (err) {
-        return rejectWithValue(err);
+      if (userAuth?.auth_token) {
+        payTypes = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).GetAllStatementsPayType();
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
-    } else {
-      return payTypesCached;
+
+      if (!payTypes) {
+        return rejectWithValue('Erro getting pay types');
+      }
+
+      return payTypes;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getIncomeExpensesPDFreport = createAsyncThunk<
+  any[],
+  { year: Number; month: Number },
+  ThunkApiType<RootState>
+>(
+  'getIncomeExpensesPDFreport',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ year, month }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let report: ReportTableDataDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        report = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).getMonthsIncomeExpensesReport(userAuth?.id!, month, year);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!report) {
+        return rejectWithValue('Error getting pdf Report Data');
+      }
+      return report;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const saveIncomeStatementPDF = createAsyncThunk<
+  boolean,
+  IncomeStatementPDFDocInput,
+  ThunkApiType<RootState>
+>(
+  'saveIncomeStatementPDF',
+
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    try {
+      let report: boolean | undefined;
+
+      if (userAuth?.auth_token) {
+        report = await new IncomeStatementsService(
+          userAuth?.auth_token
+        ).saveIncomeStatementPDF(input);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!report) {
+        return rejectWithValue('Error getting pdf Report Data');
+      }
+      return report;
+    } catch (err) {
+      return rejectWithValue(err);
     }
   }
 );

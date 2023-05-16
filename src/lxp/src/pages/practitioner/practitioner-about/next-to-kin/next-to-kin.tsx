@@ -4,13 +4,13 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { EditCellPhoneNUmberProps } from './next-to-kin.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
-  EditCellphoneModel,
-  editCelphoneNumberSchema,
+  EditNextOfKinModel,
+  editNextOfKinSchema,
   initialEditPractitionerValues,
-} from '@/schemas/practitioner/edit-cellphone-number';
+} from '@/schemas/practitioner/edit-next-of-kin';
 import { useAppDispatch } from '@store';
-import { useHistory } from 'react-router-dom';
 import { userActions, userThunkActions } from '@store/user';
+import { cloneDeep } from 'lodash';
 
 export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
   setAddNextToKin,
@@ -18,11 +18,10 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const history = useHistory();
 
   const getDefaultFormvalues = () => {
     if (user) {
-      const tempPractitioner: EditCellphoneModel = {
+      const tempPractitioner: EditNextOfKinModel = {
         name: user.emergencyContactFirstName || '',
         surname: user.emergencyContactSurname || '',
         cellphone: user.emergencyContactPhoneNumber || '',
@@ -38,7 +37,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
     getValues: getNextOfKinInfoFormValues,
     register: nextOfKinInfoFormRegister,
   } = useForm({
-    resolver: yupResolver(editCelphoneNumberSchema),
+    resolver: yupResolver(editNextOfKinSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
@@ -46,7 +45,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
 
   const savePractitionerUserData = () => {
     const practitionerForm = getNextOfKinInfoFormValues();
-    const copy = Object.assign({}, user);
+    const copy = cloneDeep(user);
     if (copy) {
       copy.emergencyContactFirstName = practitionerForm.name;
       copy.emergencyContactSurname = practitionerForm.surname;
@@ -67,7 +66,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
         title={'Add next of kin'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
-        onBack={() => history.goBack()}
+        onBack={() => setAddNextToKin(false)}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -87,7 +86,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
               />
             </div>
             <div className="mt-2 flex w-full flex-col justify-center gap-4">
-              <FormInput<EditCellphoneModel>
+              <FormInput<EditNextOfKinModel>
                 label={'First name'}
                 visible={true}
                 nameProp={'name'}
@@ -95,7 +94,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 className="w-full"
                 register={nextOfKinInfoFormRegister}
               />
-              <FormInput<EditCellphoneModel>
+              <FormInput<EditNextOfKinModel>
                 label={'Surname'}
                 visible={true}
                 nameProp={'surname'}
@@ -103,7 +102,7 @@ export const NextToKin: React.FC<EditCellPhoneNUmberProps> = ({
                 className="w-full"
                 register={nextOfKinInfoFormRegister}
               />
-              <FormInput<EditCellphoneModel>
+              <FormInput<EditNextOfKinModel>
                 label={'Cellphone number'}
                 visible={true}
                 nameProp={'cellphone'}

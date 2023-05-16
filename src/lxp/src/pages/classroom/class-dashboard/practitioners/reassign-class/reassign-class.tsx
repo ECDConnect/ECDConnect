@@ -12,6 +12,7 @@ import { useHistory, useLocation } from 'react-router';
 import { ReassignClassPageState } from './reassign-class.types';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   ReassignClassModel,
   reassignClassSchema,
@@ -55,6 +56,7 @@ const absentInfo = [
 ];
 
 export const ReassignClass: React.FC<ComponentBaseProps> = () => {
+  const { refreshClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
@@ -88,6 +90,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
     { label: string; value: any }[]
   >([]);
   const [classroomGroupsList, setClassroomGroupsList] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [absentInfoList, setAbsentInfoList] = useState<
     { label: string; value: any }[]
   >([]);
 
@@ -144,6 +149,16 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   useEffect(() => {
+    const _list = absentInfo?.map((item) => {
+      return {
+        label: item.name,
+        value: item.name,
+      };
+    });
+    setAbsentInfoList(_list);
+  }, []);
+
+  useEffect(() => {
     const _list = classroomGroups
       ?.map((p) => {
         if (p?.name) {
@@ -177,7 +192,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         userData?.id,
         reassignedClass
       );
+      await refreshClassroom();
     }
+
     history.push(ROUTES.DASHBOARD);
   };
 
@@ -261,21 +278,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         />
         <Dropdown
           placeholder={'Select reason'}
-          list={
-            (absentInfo &&
-              absentInfo.map((item) => {
-                return {
-                  label: item.name,
-                  value: item.name,
-                };
-              })) ||
-            []
-          }
+          list={absentInfoList}
           fillType="clear"
           label={'Why is the practitioner absent?'}
           fullWidth
           className={'mt-3 w-11/12'}
-          onChange={(item: string) => {
+          onChange={(item: any) => {
             setReassignClassValue('reason', item);
           }}
         />
