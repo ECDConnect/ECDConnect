@@ -13,12 +13,15 @@ begin transaction;
 	CREATE UNIQUE INDEX "u_ContentValue_TenantId_Null" ON "ContentValue" ("ContentId", "ContentTypeFieldId", "LocaleId") WHERE "TenantId" IS NULL;
 
 	-- Delete funda Consent content
-	delete from "ContentValue"
-	where "ContentId" in (select "ContentId" from "Content" where "ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent') and "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda'));
+	delete from "ContentValue" cv
+	where cv."ContentId" in (
+		select c."Id" from "Content" c where c."ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent') 
+		and c."TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'Funda')
+	);
 
-	delete from "Content"
-	where "ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent')
-		and "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda');
+	delete from "Content" c
+	where c."ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent')
+		and c."TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda');
 	
 	-- Make all ContentFieldTypes global.
 --	update "ContentFieldType"
