@@ -78,6 +78,7 @@ import { MonthStatementsDetails } from '@/pages/business/money/submit-income-sta
 import { Community } from '@/pages/community/community';
 import { SmartStarterJourney } from '@/pages/smart-starter-journey';
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
+import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -248,8 +249,13 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
       <Route
         exact
-        path={ROUTES.TRAINEE.SETUPE_TRAINEE}
+        path={ROUTES.TRAINEE.SETUP_TRAINEE}
         component={SetupTrainee}
+      />
+      <Route
+        exact
+        path={ROUTES.TRAINEE.TRAINEE_ONBOARDING}
+        component={TraineeOnboarding}
       />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />

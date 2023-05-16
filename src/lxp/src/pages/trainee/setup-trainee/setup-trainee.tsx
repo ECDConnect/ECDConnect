@@ -1,11 +1,19 @@
-import { BannerWrapper, Card, StepItem, Steps, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Card,
+  StepItem,
+  Steps,
+  Typography,
+} from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import { useTheme } from '@ecdlink/core';
 import WelcomeImage from '../../../assets/walktroughImage.png';
 import { WelcomePage } from '@/components/welcome-page';
+import ROUTES from '@/routes/routes';
 
-const MOCKED_DATA = {
+const MOCKED_INCOMPLETE_DATA = {
   visit: {
     title: 'First site visit',
     subTitle: 'By 10 April 2020',
@@ -16,39 +24,27 @@ const MOCKED_DATA = {
   },
   steps: [
     {
-      title: 'Starter Licence received',
+      title: 'Starter Licence',
+      subTitle: '22 Feb 2020',
+      type: 'todo',
+    },
+  ] as StepItem[],
+};
+
+const MOCKED_COMPLETE_DATA = {
+  visit: {
+    title: 'First site visit',
+    subTitle: 'By 10 April 2020',
+  },
+  alert: {
+    title: 'SmartSpace Licence received',
+    subTitle: '10 March 2020',
+  },
+  steps: [
+    {
+      title: 'Attended day 1 of start-up training',
       subTitle: '22 Feb 2020',
       type: 'completed',
-    },
-    {
-      title: 'Consolidation meeting attended',
-      subTitle: '25 Feb 2020',
-      type: 'completed',
-      completedStepIcon: 'CalendarIcon',
-      showAccordion: true,
-    },
-    {
-      title: 'SmartSpace Licence received',
-      subTitle: '10 Mar 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Did not attend first aid course',
-      subTitle: '5 Mar 2020',
-      type: 'inProgress',
-      inProgressStepIcon: 'ExclamationCircleIcon',
-    },
-    {
-      title: '3/3 club meetings attended',
-      subTitle: '25 Aug 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Pre-PQA site visits',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-      showAccordion: true,
-      accordionContent: <>Content</>,
     },
   ] as StepItem[],
 };
@@ -102,10 +98,40 @@ export const SetupTrainee = () => {
               </div>
             </Card>
           </div>
-          <div className="p-4">
+          <div className="py-4 pt-4">
             <Steps
-              items={MOCKED_DATA.steps}
+              items={MOCKED_INCOMPLETE_DATA.steps}
               typeColor={{ completed: 'successMain' }}
+            />
+            <Typography
+              className="-mt-4"
+              color={'textMid'}
+              type={'body'}
+              text={`When you a finish a step, a green circle and a tick will appear next to the step.`}
+            />
+          </div>
+          <div className="py-4 pt-4">
+            <Steps
+              items={MOCKED_COMPLETE_DATA.steps}
+              typeColor={{ completed: 'successMain' }}
+            />
+            <Typography
+              className="-mt-4"
+              color={'textMid'}
+              type={'body'}
+              text={`When you a finish a step, a green circle and a tick will appear next to the step.`}
+            />
+          </div>
+          <div className="mt-4 -mb-4 h-full w-full self-end">
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="primary"
+              text="Start"
+              textColor="white"
+              icon="ArrowCircleRightIcon"
+              onClick={() => history?.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING)}
             />
           </div>
         </div>

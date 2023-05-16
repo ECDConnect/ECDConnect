@@ -80,7 +80,7 @@ export class IncompletePractitionerInformationNotificationValidator
             actionText: 'Get started',
             viewType: 'Hub',
             routeConfig: {
-              route: ROUTES.TRAINEE.SETUPE_TRAINEE,
+              route: ROUTES.TRAINEE.SETUP_TRAINEE,
             },
           },
         ];
