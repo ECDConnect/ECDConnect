@@ -1,4 +1,5 @@
--- Copy ContentType 'Consent' to a new ContentType Called 'ConsentSS', using current Consent datadata
+/* Uncomment and run only if you need to reset SS content to copies of GG content and reallign TenantIds.
+-- Delete SmartStart/Funda "Consent" Data and replace it with that copied from GrowGreat, using current Consent datadata
 begin transaction;
 	-- #1 Add columns for Id mapping
 	alter table "Content" add column "OldId" integer null;
@@ -23,44 +24,38 @@ begin transaction;
 	where c."ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent')
 		and c."TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda');
 	
-	-- Make all ContentFieldTypes global.
---	update "ContentFieldType"
---	set "TenantId" = null
---	where "TenantId" is not null;
-
 	-- Make all GG content for Consent global.
 	update "Content"
 	set "TenantId" = null
 	where "ContentTypeId" = (select ct."Id" from "ContentType" ct where ct."Name" = 'Consent')
-			and "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat');
+			and "TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'GrowGreat');
 
 	-- Make all former GG ContentValue for ContentType Consent global, GG is the donor.
 	update "ContentValue"
 	set "TenantId" = null
-	where "Id" in (select c."Id" from "ContentValue"c where c."TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat'));
+	where "Id" in (select c."Id" from "ContentValue"c where c."TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'GrowGreat'));
 
 	
 	-- Make GrowGreat content TenantIds consistent for all ContentTypes
-	update "Content" 
-	set "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat')
-	where "Id" in (select "Id" from "ContentType" where "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat'));
+	update "Content"
+	set "TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'GrowGreat')
+	where "Id" in (select ct."Id" from "ContentType" ct where ct."TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'GrowGreat'));
 
 	-- Make GrowGreat contentValue TenantIds consistent for all ContentTypes
 	update "ContentValue"
 	set "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat')
-	where "ContentId" in (select "Id" from "Content" where "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'GrowGreat'));
+	where "ContentId" in (select c."Id" from "Content" c where c."TenantId" = (select t."Id" from "Tenant" t where t."ApplicationName" = 'GrowGreat'));
 
 	
 	-- Make Funda content TenantIds consistent for all ContentTypes
-	update "Content" 
+	update "Content"
 	set "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda')
-	where "Id" in (select "Id" from "ContentType" where "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda'));
+	where "Id" in (select ct."Id" from "ContentType" ct where ct."TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda'));
 
 	-- Make Funda contentValue TenantIds consistent for all ContentTypes
 	update "ContentValue"
 	set "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda')
-	where "ContentId" in (select "Id" from "Content" where "TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda'));
-
+	where "ContentId" in (select c."Id" from "Content" c where c."TenantId" = (select t."Id" from "Tenant" t where "ApplicationName" = 'Funda'));
 
 	-- Add Missing Content items based on existing global content - GrowGreat
 	insert into "Content" ("ContentTypeId", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "TenantId", "OldId")
@@ -108,4 +103,4 @@ begin transaction;
 	alter table "Content" drop column "OldId";
 	
 COMMIT;
--- rollback transaction;
+*/
