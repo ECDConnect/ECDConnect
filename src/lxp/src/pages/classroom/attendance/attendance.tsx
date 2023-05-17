@@ -188,10 +188,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     let notSubmitted = missedDays.filter(
       (x) => getDay(x.missedDay) === getDay(currentDate)
     );
-  
+
     if (
       !attendanceAlreadyTaken &&
-      isValidDayForAttendance && notSubmitted.length > 0
+      isValidDayForAttendance &&
+      notSubmitted.length > 0
     ) {
       setAttendanceComponentType('attendance');
       return;
@@ -199,7 +200,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
-    
       setAttendanceComponentType('summary');
     }
   }, [
@@ -246,7 +246,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays
       );
     });
-    console.log('>>', removeHolidays);
 
     if (removeHolidays.length === 0) {
       setAttendanceComponentType('report');
