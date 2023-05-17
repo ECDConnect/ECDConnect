@@ -390,10 +390,6 @@ namespace ECDLink.Core.Services
 
                                                 //3. Notes
 
-                                                //4. Attendance
-
-                                                //5. Income Statements
-
                                             }
                                         } else
                                         {
