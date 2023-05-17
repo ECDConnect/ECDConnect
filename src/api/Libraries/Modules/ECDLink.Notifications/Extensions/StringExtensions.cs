@@ -14,7 +14,7 @@ namespace ECDLink.Core.Extensions
 
             MatchCollection matches = Regex.Matches(str, regex, RegexOptions.IgnoreCase);
 
-            return matches.Select(x => x.Value.Trim().Replace(startPlaceHolder, "").Replace(endPlaceHolder, "")).ToArray();
+            return matches.Select(x => x.Value.Trim().Replace(startPlaceHolder, "").Replace(endPlaceHolder, "")).Distinct().ToArray();
         }
     }
 }
