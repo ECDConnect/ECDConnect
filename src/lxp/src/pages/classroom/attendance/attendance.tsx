@@ -188,18 +188,33 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     let notSubmitted = missedDays.filter(
       (x) => getDay(x.missedDay) === getDay(currentDate)
     );
-    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
+  
+    if (
+      !attendanceAlreadyTaken &&
+      isValidDayForAttendance && notSubmitted.length > 0
+    ) {
       setAttendanceComponentType('attendance');
       return;
     }
-    if (notSubmitted.length !== 0) {
-      setAttendanceComponentType('attendance');
-    }else if (missedDays.length === 0) {
+    if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
+    
       setAttendanceComponentType('summary');
     }
-  });
+  }, [
+    allChildrenInsertedBeforeToday,
+    attendance,
+    classProgrammesUpdated,
+    classroomGroups,
+    classroomGroupsForPrincipal,
+    currentDate,
+    holidays,
+    learners,
+    practitioner?.isPrincipal,
+    publicHolidays,
+    seeRegister,
+  ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // is attendance complete for whole weeek?
@@ -211,30 +226,33 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     if (!classgroup) return;
 
-    const missedClassAttendance = getMissedClassAttendance(
-      [classgroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === attendanceResult.classroomGroupId
-      ),
-      attendance || [],
-      currentDate
-    );
+    const missedClassAttendance: MissedAttendanceGroups[] =
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance || [],
+        holidays,
+        currentDate
+      );
 
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
+        addDays(startOfWeek(currentDate), getDay(x.missedDay)),
         holidays
       );
     });
+    console.log('>>', removeHolidays);
 
-    // if (removeHolidays.length === 0) {
-    //   setAttendanceComponentType('report');
-    // } else {
-    //   setAttendanceComponentType('summary');
-    // }
+    if (removeHolidays.length === 0) {
+      setAttendanceComponentType('report');
+    } else {
+      setAttendanceComponentType('summary');
+    }
   };
 
   const gotToReports = () => {
