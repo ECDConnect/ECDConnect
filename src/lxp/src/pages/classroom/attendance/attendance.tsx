@@ -5,7 +5,13 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  getDayOfYear,
+  getDaysInYear,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -90,10 +96,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
       const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
-
-      return getDay(insertedDate) < getDay(currentDate);
+      return getDayOfYear(insertedDate) <= getDayOfYear(currentDate);
     });
-
     return filteredArray.every((value) => value === true);
   }
 
@@ -149,13 +153,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-    if (!currentLearners.length && allChildrenInsertedBeforeToday) {
-      setAttendanceComponentType('summary');
-      return;
-    } else {
-      setAttendanceComponentType('report');
-    }
-
     const currentClassProgrammes = classProgrammesUpdated.filter(
       (x) => x.classroomGroupId === currentDayClassroomGroup.id
     );
@@ -170,7 +167,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       meetingDays || [],
       publicHolidays || []
     );
-
     if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
       setAttendanceComponentType('attendance');
       return;
@@ -178,7 +174,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [currentDayClassroomGroup],
-      classProgrammesUpdated,
+      classProgrammesUpdated.filter(
+        (x) => x.classroomGroupId === currentDayClassroomGroup.id
+      ),
       attendance || [],
       currentDate
     );
@@ -194,7 +192,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
+    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
+      setAttendanceComponentType('attendance');
+      return;
+    }
+
     if (removeHolidays.length === 0) {
+    console.log('gotToReports', seeRegister)
+
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
@@ -223,9 +228,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [classgroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === classgroup.id
-      ),
+      classProgrammesUpdated,
       attendance || [],
       currentDate
     );
@@ -248,8 +251,12 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   };
 
   const gotToReports = () => {
-    setSeeRegister(!seeRegister);
-    setAttendanceComponentType('report');
+    if (!seeRegister) {
+      setSeeRegister(!seeRegister);
+      setAttendanceComponentType('report');
+    } else {
+      setAttendanceComponentType('summary');
+    }
   };
 
   const getComponentToRender = (type?: AttendanceComponentType) => {
