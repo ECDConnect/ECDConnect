@@ -23,6 +23,7 @@ import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
+  getMissedAttendanceSummaryGroups,
   getMissedClassAttendance,
   isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
@@ -38,6 +39,7 @@ import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
@@ -172,49 +174,28 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-    const missedClassAttendance = getMissedClassAttendance(
-      [currentDayClassroomGroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === currentDayClassroomGroup.id
-      ),
-      attendance || [],
+    const missedDays: MissedAttendanceGroups[] =
+    getMissedAttendanceSummaryGroups(
+      practitioner?.isPrincipal === true
+        ? classroomGroupsForPrincipal
+        : classroomGroups || [],
+      classProgrammesUpdated,
+      attendance,
+      holidays,
       currentDate
     );
-
-    const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay === getDay(currentDate)
-    );
-
-    const removeHolidays = removeTodaysAttendance.filter((x) => {
-      return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
-        holidays
-      );
-    });
-
+    
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
     }
 
-    if (removeHolidays.length === 0) {
-    console.log('gotToReports', seeRegister)
-
+    if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
     }
-  }, [
-    classroomGroups,
-    attendance,
-    learners,
-    classProgrammesUpdated,
-    currentDate,
-    allChildrenInsertedBeforeToday,
-    publicHolidays,
-    seeRegister,
-    holidays,
-  ]);
+  });
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // is attendance complete for whole weeek?
@@ -228,7 +209,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const missedClassAttendance = getMissedClassAttendance(
       [classgroup],
-      classProgrammesUpdated,
+      classProgrammesUpdated.filter(
+        (x) => x.classroomGroupId === attendanceResult.classroomGroupId
+      ),
       attendance || [],
       currentDate
     );
@@ -243,11 +226,11 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-    if (removeHolidays.length === 0) {
-      setAttendanceComponentType('report');
-    } else {
-      setAttendanceComponentType('summary');
-    }
+    // if (removeHolidays.length === 0) {
+    //   setAttendanceComponentType('report');
+    // } else {
+    //   setAttendanceComponentType('summary');
+    // }
   };
 
   const gotToReports = () => {
