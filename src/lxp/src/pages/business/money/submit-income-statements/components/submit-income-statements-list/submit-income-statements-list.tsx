@@ -37,7 +37,20 @@ import { UserOptions } from 'jspdf-autotable';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import { useAppDispatch } from '@/store';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { PractitionerService } from '@/services/PractitionerService';
+
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
+}
 
 export const SubmitIncomeStatementsList: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -113,6 +126,23 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const { generateReport } = useGeneratePdfReport();
 
+  const [reportDetails, setReportDetails] =
+  useState<ReportDetailsForPractitionerData>();
+
+  useEffect(() => {
+    const getClassroomDetails = async () => {
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getReportDetailsForPractitioner(userAuth?.id || '');
+      return res;
+    };
+
+    getClassroomDetails().then((data) => {
+      setReportDetails(data);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const footer = [
     'Total',
     '', // Placeholder for Day 2 column
@@ -123,8 +153,8 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     subtitle: '',
     //column2 with 3 rows of text
     text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_column_two_row_two: `ID: ${practitioner?.userId}`,
-    text_column_two_row_three: `Phone: ${practitioner?.startDate}`,
+    text_column_two_row_two: `ID: ${reportDetails?.idNumber}`,
+    text_column_two_row_three: `Phone: ${reportDetails?.phone}`,
   };
 
   const tableHeadStyles: UserOptions['headStyles'] = {
