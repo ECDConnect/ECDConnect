@@ -116,7 +116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
                     Guid tenantId = TenantExecutionContext.Tenant.Id;
 
-                    if (user.TenantId != tenantId)
+                    if (user.TenantId != tenantId && user.TenantId != null)
                     {
                         throw new Exception("Cross tenant access denied.");
                     }
