@@ -1,26 +1,24 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
+using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
-using ECDLink.Core.Services;
-using ECDLink.Core.Services.Interfaces;
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using System;
-using System.IO;
-using System.Threading.Tasks;
-using ECDLink.Abstractrions.Enums;
-using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.DataAccessLayer.Entities.Documents;
-using ECDLink.Tenancy.Context;
 using System.Linq;
-using ECDLink.DataAccessLayer.Entities.Workflow;
+using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 {
@@ -30,17 +28,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
-        private IFileService _fileService;
-
+        
         public IncomeStatementMutationExtension(
                 IHttpContextAccessor contextAccessor,
-                IGenericRepositoryFactory repoFactory, 
-                IFileService fileService)
+                IGenericRepositoryFactory repoFactory)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
-            _fileService = fileService;
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
@@ -89,8 +83,11 @@ StatementsSubmit input)
         }
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public bool SaveIncomeStatementPDF([Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, IncomeStatementPDFDoc input)
+        public bool SaveIncomeStatementPDF(
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IFileService fileService,
+            IGenericRepositoryFactory repoFactory, 
+            IncomeStatementPDFDoc input)
         {
             if (input != null && input.Reference != "")
             {
@@ -111,12 +108,11 @@ StatementsSubmit input)
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
 
                 // Upload the document
-                var b64Str = input.Reference; //.Substring(input.Reference.LastIndexOf(',') + 1);
-                var bytes = Convert.FromBase64String(b64Str);
+                var b64Str = input.Reference;
 
-                using MemoryStream fileStream = new MemoryStream(bytes);
-                var fileUrl = Task.Run(() => _fileService.UploadFileStream(fileStream, input.FileName, FileTypeEnum.IncomeStatementPDF)).Result;
-                fileStream.Dispose();
+                // using MemoryStream fileStream = new MemoryStream(bytes);
+                var fileName = input.UserId + "_" + input.FileName;
+                var fileUrl = Task.Run(() => fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF)).Result.Url;
 
                 if (doc == null)
                 {
@@ -134,16 +130,17 @@ StatementsSubmit input)
                         TenantId = TenantExecutionContext.Tenant.Id
                     };
                     documentRepo.Insert(doc);
-                } else {
+                }
+                else {
                     // remove previous file on file server
-                    _fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                    fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
-                    doc.Name = input.FileName;
-                    doc.UpdatedBy = _applicationUserId;
-                    doc.Reference = fileUrl;
-                    doc.UserId = input.UserId;
-                    doc.UpdatedDate = DateTime.Now;
-                    documentRepo.Update(doc);
+                     doc.Name = input.FileName;
+                     doc.UpdatedBy = _applicationUserId;
+                     doc.Reference = fileUrl;
+                     doc.UserId = input.UserId;
+                     doc.UpdatedDate = DateTime.Now;
+                     documentRepo.Update(doc);
 
                 }
             }
