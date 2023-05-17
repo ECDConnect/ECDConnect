@@ -175,22 +175,26 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
 
     const missedDays: MissedAttendanceGroups[] =
-    getMissedAttendanceSummaryGroups(
-      practitioner?.isPrincipal === true
-        ? classroomGroupsForPrincipal
-        : classroomGroups || [],
-      classProgrammesUpdated,
-      attendance,
-      holidays,
-      currentDate
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance,
+        holidays,
+        currentDate
+      );
+    // missedDays
+    let notSubmitted = missedDays.filter(
+      (x) => getDay(x.missedDay) === getDay(currentDate)
     );
-    
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
     }
-
-    if (missedDays.length === 0) {
+    if (notSubmitted.length !== 0) {
+      setAttendanceComponentType('attendance');
+    }else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
