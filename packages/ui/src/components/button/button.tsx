@@ -22,9 +22,11 @@ export const Button: React.FC<ButtonProps> = ({
   iconPosition = 'start',
   text,
   textColor,
+  style,
 }) => {
   return (
     <button
+      style={style}
       id={id}
       data-testid={testId}
       type="button"
