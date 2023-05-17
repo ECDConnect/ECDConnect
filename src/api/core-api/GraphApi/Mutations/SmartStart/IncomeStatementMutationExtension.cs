@@ -120,7 +120,7 @@ StatementsSubmit input)
                     doc = new Document
                     {
                         CreatedUserId = _applicationUserId,
-                        Name = input.FileName,
+                        Name = fileName,
                         UpdatedBy = _applicationUserId,
                         InsertedDate = DateTime.Now,
                         Reference = fileUrl,
@@ -135,7 +135,7 @@ StatementsSubmit input)
                     // remove previous file on file server
                     fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
-                     doc.Name = input.FileName;
+                     doc.Name = fileName;
                      doc.UpdatedBy = _applicationUserId;
                      doc.Reference = fileUrl;
                      doc.UserId = input.UserId;
