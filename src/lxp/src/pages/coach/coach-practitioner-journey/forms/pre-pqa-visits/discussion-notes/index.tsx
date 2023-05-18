@@ -2,6 +2,9 @@ import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import { ChangeEvent, useState } from 'react';
 import { replaceBraces } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { getPreviousCoachVisitByUserId } from '@/store/pqa/pqa.selectors';
+import { currentActivityKey } from '../..';
 
 const MOCKED_DATA = {
   followUp: {
@@ -21,6 +24,12 @@ export const DiscussionNotes = ({
   const visitSection = 'Discussion notes';
   // TODO: add integration (15.1.4)
   const isFollowUp = false;
+
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const previousVisit = useSelector(
+    getPreviousCoachVisitByUserId(activityName, smartStarter?.userId!)
+  );
 
   const onChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>

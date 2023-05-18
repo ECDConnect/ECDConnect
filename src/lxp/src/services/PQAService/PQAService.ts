@@ -1,5 +1,9 @@
 import { Config } from '@ecdlink/core';
-import { PractitionerTimeLine } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  PractitionerTimeLine,
+  VisitData,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
 class PQAService {
@@ -7,6 +11,60 @@ class PQAService {
 
   constructor(accessToken: string) {
     this._accessToken = accessToken;
+  }
+
+  async addVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation addVisitData($input: CMSVisitDataInputModelInput) {
+          addVisitData(input: $input) {
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add visit failed - Server connection error');
+    }
+
+    return true;
+  }
+
+  async getVisitDataForVisitId(userId: string): Promise<VisitData> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { visitDataForVisitId: VisitData };
+      errors?: {};
+    }>(``, {
+      query: `
+        GetVisitDataForVisitId($visitId: String) {
+          visitDataForVisitId(visitId: $visitId) {
+            visitName
+            visitSection
+            question
+            questionAnswer
+          }
+        }
+          `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Visit Data For Visit Id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.visitDataForVisitId;
   }
 
   async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {
