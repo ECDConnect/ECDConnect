@@ -2,7 +2,9 @@ import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeLine,
+  Visit,
   VisitData,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
@@ -37,7 +39,38 @@ class PQAService {
     return true;
   }
 
-  async getVisitDataForVisitId(userId: string): Promise<VisitData> {
+  async addSupportVisitForPractitioner(input: VisitModelInput): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addSupportVisitForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddSupportVisitForPractitioner($input: VisitModelInput) {          
+          addSupportVisitForPractitioner(input: $input) {          
+            actualVisitDate
+            attended,
+            visitType{
+              id
+              normalizedName
+              name
+            }
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add support visit failed - Server connection error');
+    }
+
+    return response.data.data.addSupportVisitForPractitioner;
+  }
+
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { visitDataForVisitId: VisitData };
@@ -54,7 +87,7 @@ class PQAService {
         }
           `,
       variables: {
-        userId,
+        visitId,
       },
     });
 

@@ -11,24 +11,28 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
-import { PractitionerJourneyParams } from '../coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { prePqaVisits } from './steps';
-import { useDispatch } from 'react-redux';
+import { generalSupportVisit, prePqaVisits } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from 'react-use';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
 
 interface FormProps {
-  visitId: string;
+  visitId?: string;
   onBack: () => void;
 }
 
@@ -37,14 +41,14 @@ const sessionStorageKey = 'currentStepNumber';
 
 export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
-  const [step, setStep] = useState(3);
+  const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
 
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
-  const appDispatch = useDispatch();
+  const appDispatch = useAppDispatch();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
@@ -149,22 +153,37 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const payload: CmsVisitDataInputModelInput = {
-      visitId,
-      practitionerId,
-      visitData: {
-        visitName: activityName,
-        sections,
-      },
-    };
-    appDispatch(
-      pqaActions.addVisitFormData(payload, {
-        userId: practitionerId,
-        formType: 'pre-pqa',
-      })
-    );
-    // @ts-ignore
-    appDispatch(pqaThunkActions.addVisitFormData(payload));
+    switch (activityName) {
+      case visitTypes.supportVisit:
+        const supportVisitPayload: VisitModelInput = {
+          actualVisitDate: '',
+          attended: true,
+          plannedVisitDate: new Date(),
+        };
+        appDispatch(
+          pqaThunkActions.addSupportVisitFormData(supportVisitPayload)
+        );
+        break;
+
+      default:
+        const payload: CmsVisitDataInputModelInput = {
+          visitId,
+          practitionerId,
+          visitData: {
+            visitName: activityName,
+            sections,
+          },
+        };
+
+        appDispatch(
+          pqaActions.addVisitFormData(payload, {
+            userId: practitionerId,
+            formType: 'pre-pqa',
+          })
+        );
+        appDispatch(pqaThunkActions.addVisitFormData(payload));
+        break;
+    }
   }, [activityName, appDispatch, practitionerId, sectionQuestions, visitId]);
 
   const displayChildrenDialog = useCallback(() => {
@@ -215,6 +234,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
+      case visitTypes.supportVisit:
+        return generalSupportVisit;
       default:
         return prePqaVisits;
     }

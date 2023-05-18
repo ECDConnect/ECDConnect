@@ -13,7 +13,10 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
-import { PractitionerJourneyParams } from './coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
 import { Form, currentActivityKey } from './forms';
 import { useAppDispatch } from '@/store';
@@ -82,7 +85,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     ?.filter(filterVisit)
     .sort(sortVisit)
     ?.map(
-      (visit): MenuListDataItem<{ visitId: string }> => ({
+      (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
@@ -107,6 +110,11 @@ export const CoachPractitionerJourney: React.FC = () => {
     )
     .shift();
 
+  const onSupportVisit = () => {
+    window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
+    setShowForm(true);
+  };
+
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     setShowForm(false);
@@ -122,9 +130,12 @@ export const CoachPractitionerJourney: React.FC = () => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   }, [appDispatch, practitionerId]);
 
-  if (showForm && currentVisit?.extraData?.visitId) {
+  if (
+    (showForm && currentVisit?.extraData?.visitId) ||
+    (showForm && selectedForm === visitTypes.supportVisit)
+  ) {
     return (
-      <Form onBack={onFormBack} visitId={currentVisit?.extraData.visitId} />
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
     );
   }
   return (
@@ -144,25 +155,29 @@ export const CoachPractitionerJourney: React.FC = () => {
           listItems={[currentVisit]}
         />
       )}
-      {timeline?.smartSpaceLicenseColor === 'Success' && (
-        <Alert
-          className="mt-4"
-          type={
-            timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-          }
-          title={timeline?.smartSpaceLicenseStatus || ''}
-          message={
-            !!timeline?.smartSpaceLicenseDate
-              ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                  'en-ZA',
-                  dateLongMonthOptions
-                )
-              : ''
-          }
-          messageColor="textMid"
-          customIcon={<BalloonsIcon />}
-        />
-      )}
+      <Alert
+        className="mt-4"
+        type={
+          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+        }
+        title={timeline?.smartSpaceLicenseStatus || ''}
+        message={
+          !!timeline?.smartSpaceLicenseDate
+            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                'en-ZA',
+                dateLongMonthOptions
+              )
+            : ''
+        }
+        messageColor="textMid"
+        customIcon={
+          timeline?.smartSpaceLicenseColor === 'Success' ? (
+            <BalloonsIcon />
+          ) : (
+            <></>
+          )
+        }
+      />
       <Typography
         className="mt-4 mb-2"
         type="h4"
@@ -189,6 +204,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         textColor="primary"
         icon="LocationMarkerIcon"
         text="Start support visit"
+        onClick={onSupportVisit}
       />
       {!!timeline && (
         <Steps

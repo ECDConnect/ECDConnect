@@ -1,10 +1,12 @@
 import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
-import { ChangeEvent, useState } from 'react';
+import { ChangeEvent, useLayoutEffect, useState } from 'react';
 import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { getPreviousCoachVisitByUserId } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
+import { useAppDispatch } from '@/store';
+import { getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
 
 const MOCKED_DATA = {
   followUp: {
@@ -27,6 +29,8 @@ export const DiscussionNotes = ({
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
+  const appDispatch = useAppDispatch();
+
   const previousVisit = useSelector(
     getPreviousCoachVisitByUserId(activityName, smartStarter?.userId!)
   );
@@ -46,6 +50,12 @@ export const DiscussionNotes = ({
 
     setEnableButton?.(false);
   };
+
+  useLayoutEffect(() => {
+    if (previousVisit) {
+      appDispatch(getVisitDataForVisitId({ visitId: previousVisit.id }));
+    }
+  }, [appDispatch, previousVisit]);
 
   return (
     <div className="p-4">
