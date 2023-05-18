@@ -4,13 +4,16 @@ import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeLine,
+  Visit,
   VisitData,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
   GET_VISIT_DATA_FOR_VISIT_ID: 'getVisitDataForVisitId',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
+  ADD_SUPPORT_VISIT_FORM_DATA: 'addSupportVisitFormData',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -50,13 +53,51 @@ export const addVisitFormData = createAsyncThunk<
   }
 );
 
+export const addSupportVisitFormData = createAsyncThunk<
+  Visit | undefined,
+  VisitModelInput | undefined,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_SUPPORT_VISIT_FORM_DATA,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa: { prePqaFormData },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addSupportVisitForPractitioner(input);
+
+          return response;
+        }
+
+        // TODO: add sync promises
+        // const promises = prePqaFormData?.map(
+        //   async (item) =>
+        //     await new PQAService(userAuth?.auth_token).addSupportVisitForPractitioner(
+        //       item.formData
+        //     )
+        // );
+
+        // return promises?.length && Promise.all(promises);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getVisitDataForVisitId = createAsyncThunk<
   VisitData,
-  { userId: string },
+  { visitId: string },
   ThunkApiType<RootState>
 >(
   PqaActions.GET_VISIT_DATA_FOR_VISIT_ID,
-  async ({ userId }, { getState, rejectWithValue }) => {
+  async ({ visitId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -65,7 +106,7 @@ export const getVisitDataForVisitId = createAsyncThunk<
       if (userAuth?.auth_token) {
         return await new PQAService(
           userAuth?.auth_token
-        ).getVisitDataForVisitId(userId);
+        ).getVisitDataForVisitId(visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

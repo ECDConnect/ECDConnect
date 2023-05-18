@@ -1,6 +1,10 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { addVisitFormData, getPractitionerTimeline } from './pqa.actions';
+import {
+  addSupportVisitFormData,
+  addVisitFormData,
+  getPractitionerTimeline,
+} from './pqa.actions';
 import { PQAState } from './pqa.types';
 import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
@@ -65,6 +69,7 @@ const pqaSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, addSupportVisitFormData);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       const practitionerId = action.meta.arg.userId;
 
@@ -100,6 +105,9 @@ const pqaSlice = createSlice({
       }
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },
