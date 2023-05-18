@@ -144,9 +144,13 @@ export const timelineSteps = (
   const formattedSteps = steps
     .filter((object) => Object.keys(object).length !== 0)
     .sort(
-      (stepA, stepB) =>
+      (
+        stepA,
+        stepB // TODO: fix type
+      ) =>
         // @ts-ignore
         (stepA.extraData?.date?.getTime() || 0) -
+        // @ts-ignore
         (stepB.extraData?.date?.getTime() || 0)
     ) as StepItem<{ date: Date }>[];
 
