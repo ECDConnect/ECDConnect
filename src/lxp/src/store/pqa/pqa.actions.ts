@@ -4,10 +4,12 @@ import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeLine,
+  VisitData,
 } from '@ecdlink/graphql';
 
 export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
+  GET_VISIT_DATA_FOR_VISIT_ID: 'getVisitDataForVisitId',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
 };
 
@@ -20,15 +22,52 @@ export const addVisitFormData = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
+      pqa: { prePqaFormData },
     } = getState();
 
     try {
       if (userAuth?.auth_token) {
-        const response = await new PQAService(
-          userAuth?.auth_token
-        ).addVisitData(input);
+        if (!!input) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addVisitData(input);
 
-        return response;
+          return response;
+        }
+
+        const promises = prePqaFormData?.map(
+          async (item) =>
+            await new PQAService(userAuth?.auth_token).addVisitData(
+              item.formData
+            )
+        );
+
+        return promises?.length && Promise.all(promises);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getVisitDataForVisitId = createAsyncThunk<
+  VisitData,
+  { userId: string },
+  ThunkApiType<RootState>
+>(
+  PqaActions.GET_VISIT_DATA_FOR_VISIT_ID,
+  async ({ userId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PQAService(
+          userAuth?.auth_token
+        ).getVisitDataForVisitId(userId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
       }
     } catch (err) {
       return rejectWithValue(err);

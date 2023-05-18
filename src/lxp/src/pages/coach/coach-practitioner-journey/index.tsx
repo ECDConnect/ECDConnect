@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
   Alert,
   AlertType,
@@ -41,7 +41,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
-  const practitioner = useSelector(getPractitionerById(practitionerId));
+  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
@@ -81,7 +81,7 @@ export const CoachPractitionerJourney: React.FC = () => {
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
-    .map(
+    ?.map(
       (visit): MenuListDataItem<{ visitId: string }> => ({
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
@@ -107,6 +107,11 @@ export const CoachPractitionerJourney: React.FC = () => {
     )
     .shift();
 
+  const onFormBack = () => {
+    window.sessionStorage.removeItem(currentActivityKey);
+    setShowForm(false);
+  };
+
   useLayoutEffect(() => {
     if (selectedForm) {
       setShowForm(true);
@@ -119,10 +124,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   if (showForm && currentVisit?.extraData?.visitId) {
     return (
-      <Form
-        onBack={() => setShowForm(false)}
-        visitId={currentVisit?.extraData.visitId}
-      />
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData.visitId} />
     );
   }
   return (
@@ -142,23 +144,25 @@ export const CoachPractitionerJourney: React.FC = () => {
           listItems={[currentVisit]}
         />
       )}
-      <Alert
-        className="mt-4"
-        type={
-          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-        }
-        title={timeline?.smartSpaceLicenseStatus || ''}
-        message={
-          !!timeline?.smartSpaceLicenseDate
-            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                'en-ZA',
-                dateLongMonthOptions
-              )
-            : ''
-        }
-        messageColor="textMid"
-        customIcon={<BalloonsIcon />}
-      />
+      {timeline?.smartSpaceLicenseColor === 'Success' && (
+        <Alert
+          className="mt-4"
+          type={
+            timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+          }
+          title={timeline?.smartSpaceLicenseStatus || ''}
+          message={
+            !!timeline?.smartSpaceLicenseDate
+              ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                  'en-ZA',
+                  dateLongMonthOptions
+                )
+              : ''
+          }
+          messageColor="textMid"
+          customIcon={<BalloonsIcon />}
+        />
+      )}
       <Typography
         className="mt-4 mb-2"
         type="h4"
@@ -184,10 +188,11 @@ export const CoachPractitionerJourney: React.FC = () => {
         type="outlined"
         textColor="primary"
         icon="LocationMarkerIcon"
-        text="Schedule support visit"
+        text="Start support visit"
       />
       {!!timeline && (
         <Steps
+          // @ts-ignore
           items={timelineSteps(timeline, uncompletedVisits)}
           typeColor={{ completed: 'successMain' }}
         />

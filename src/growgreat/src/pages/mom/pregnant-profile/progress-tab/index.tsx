@@ -62,7 +62,7 @@ export const ProgressTab = () => {
     infoCard: {
       success: [
         {
-          comment: `No danger signs for Lethabo ${mother?.user?.firstName}`,
+          comment: `No danger signs for ${mother?.user?.firstName}`,
           visitData: { visitName: activitiesTypes.dangerSigns },
         },
       ],

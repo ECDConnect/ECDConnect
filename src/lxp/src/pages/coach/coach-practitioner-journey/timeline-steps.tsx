@@ -11,9 +11,11 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
 export const filterVisit = (visit: Maybe<Visit>) =>
   !visit?.attended && typeof visit?.visitType?.order !== 'undefined';
 
-export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) =>
-  (Number(visitA?.visitType?.order) || 0) -
-  (Number(visitB?.visitType?.order) || 0);
+export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
+  const orderA = Number(visitA?.visitType?.order) || 0;
+  const orderB = Number(visitB?.visitType?.order) || 0;
+  return orderA - orderB;
+};
 
 export const getStepType = (
   color?: Maybe<string>
@@ -44,6 +46,8 @@ export const setStep = (
     return {
       title: status,
       subTitle: getStepDate(date),
+      inProgressStepIcon:
+        (color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon',
       subTitleColor: getStepType(color)?.color || '',
       type: getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
@@ -140,98 +144,107 @@ export const timelineSteps = (
   const formattedSteps = steps
     .filter((object) => Object.keys(object).length !== 0)
     .sort(
-      // @ts-ignore
-      (stepA, stepB) => (stepA.extraData?.date || null) - stepB?.extraData?.date
+      (stepA, stepB) =>
+        // @ts-ignore
+        (stepA.extraData?.date?.getTime() || 0) -
+        (stepB.extraData?.date?.getTime() || 0)
     ) as StepItem<{ date: Date }>[];
 
-  formattedSteps.push({
-    title: 'Pre-PQA site visits',
-    subTitle: `By ${
-      timeline.prePQAVisitDate1Color === 'Success' &&
-      !visits?.some((item) =>
-        item?.visitType?.name?.includes('pre_pqa_visit_1')
-      )
-        ? new Date(
-            timeline.siteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_2')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions)
-        : new Date(
-            timeline.siteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_1')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions)
-    }`,
-    type: 'todo',
-    showAccordion: true,
-    accordionContent: (
-      <>
-        {timeline.siteVisits
-          ?.filter(filterVisit)
-          ?.sort(sortVisit)
-          ?.map((visit, index) => {
-            const previousVisit =
-              index > 1 ? timeline.siteVisits?.[index - 1] : undefined;
-            const title =
-              (index === 0 && timeline.prePQAVisitDate1Status) ||
-              (index === 1 && timeline.prePQAVisitDate2Status) ||
-              visit?.visitType?.description ||
-              'Visit';
+  if (!!timeline.siteVisits?.length) {
+    formattedSteps.push({
+      title: 'Pre-PQA site visits',
+      subTitle: `By ${
+        timeline.prePQAVisitDate1Color === 'Success' &&
+        !visits?.some((item) =>
+          item?.visitType?.name?.includes('pre_pqa_visit_1')
+        )
+          ? new Date(
+              timeline.siteVisits?.find((item) =>
+                item?.visitType?.name?.includes('pre_pqa_visit_2')
+              )?.plannedVisitDate
+            ).toLocaleDateString('en-ZA', dateOptions)
+          : new Date(
+              timeline.siteVisits?.find((item) =>
+                item?.visitType?.name?.includes('pre_pqa_visit_1')
+              )?.plannedVisitDate
+            ).toLocaleDateString('en-ZA', dateOptions)
+      }`,
+      type: timeline.siteVisits?.every((item) => !!item?.attended)
+        ? 'completed'
+        : 'todo',
+      showAccordion: true,
+      accordionContent: (
+        <>
+          {timeline.siteVisits
+            ?.filter(
+              (visit: Maybe<Visit>) =>
+                typeof visit?.visitType?.order !== 'undefined'
+            )
+            ?.sort(sortVisit)
+            ?.map((visit, index) => {
+              const previousVisit =
+                index > 1 ? timeline.siteVisits?.[index - 1] : undefined;
+              const title =
+                (index === 0 && timeline.prePQAVisitDate1Status) ||
+                (index === 1 && timeline.prePQAVisitDate2Status) ||
+                visit?.visitType?.description ||
+                'Visit';
 
-            const color =
-              (index === 0 && timeline.prePQAVisitDate1Color) ||
-              (index === 1 && timeline.prePQAVisitDate2Color);
+              const color =
+                (index === 0 && timeline.prePQAVisitDate1Color) ||
+                (index === 1 && timeline.prePQAVisitDate2Color);
 
-            const attendedRule =
-              (visit?.visitType?.order === 1 && !visit.attended) ||
-              (!!previousVisit?.attended && !visit?.attended);
+              const attendedRule =
+                (visit?.visitType?.order === 1 && !visit.attended) ||
+                (!!previousVisit?.attended && !visit?.attended);
 
-            return (
-              <div className="my-4">
-                <div className="relative flex items-center gap-1">
-                  <span>
-                    <CalendarIcon className="text-primary h-4 w-4" />
-                  </span>
+              return (
+                <div className="my-4">
+                  <div className="relative flex items-center gap-1">
+                    <span>
+                      <CalendarIcon className="text-primary h-4 w-4" />
+                    </span>
+                    <Typography
+                      type="body"
+                      color="textDark"
+                      className="w-6/12 font-bold"
+                      text={title}
+                    />
+                    {visits?.some((item) => item?.id === visit?.id) &&
+                      attendedRule && (
+                        <Button
+                          style={{
+                            position: 'absolute',
+                            right: -36,
+                          }}
+                          className="z-50 w-32"
+                          type="outlined"
+                          color="primary"
+                          text="Schedule"
+                          icon="CalendarIcon"
+                          // TODO: add integration
+                          onClick={() => {}}
+                        />
+                      )}
+                  </div>
                   <Typography
                     type="body"
-                    color="textDark"
-                    className="w-6/12 font-bold"
-                    text={title}
+                    color={getStepType(String(color))?.color || 'textMid'}
+                    text={
+                      !!visit?.plannedVisitDate
+                        ? `By ${new Date(
+                            visit.plannedVisitDate
+                          ).toLocaleDateString('en-ZA', dateOptions)}`
+                        : ''
+                    }
                   />
-                  {visits?.some((item) => item?.id === visit?.id) &&
-                    attendedRule && (
-                      <Button
-                        style={{
-                          position: 'absolute',
-                          right: -36,
-                        }}
-                        className="z-50 w-32"
-                        type="outlined"
-                        color="primary"
-                        text="Schedule"
-                        icon="CalendarIcon"
-                        // TODO: add integration
-                        onClick={() => {}}
-                      />
-                    )}
                 </div>
-                <Typography
-                  type="body"
-                  color={getStepType(String(color))?.color || 'textMid'}
-                  text={
-                    !!visit?.plannedVisitDate
-                      ? `By ${new Date(
-                          visit.plannedVisitDate
-                        ).toLocaleDateString('en-ZA', dateOptions)}`
-                      : ''
-                  }
-                />
-              </div>
-            );
-          })}
-      </>
-    ),
-  });
+              );
+            })}
+        </>
+      ),
+    });
+  }
 
   return formattedSteps;
 };

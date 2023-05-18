@@ -21,3 +21,23 @@ export const getPrePqaFormDataByIdSelector = (userId: string) => {
     }
   );
 };
+
+export const getPreviousCoachVisitByUserId = (
+  currentVisitDescription: string,
+  userId: string
+) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const currentVisit = timeline?.siteVisits?.find(
+      (visit) => visit?.visitType?.description === currentVisitDescription
+    );
+
+    if (currentVisit) {
+      const previousVisit = timeline?.siteVisits?.find(
+        (visit) =>
+          visit?.visitType?.order === Number(currentVisit?.visitType?.order) - 1
+      );
+      return previousVisit || undefined;
+    }
+
+    return undefined;
+  });

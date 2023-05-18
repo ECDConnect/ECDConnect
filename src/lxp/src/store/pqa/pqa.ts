@@ -69,6 +69,18 @@ const pqaSlice = createSlice({
       const practitionerId = action.meta.arg.userId;
 
       if (state.coachPractitionersTimeline?.length) {
+        if (
+          !state.coachPractitionersTimeline.some(
+            (item) => item.practitionerId === practitionerId
+          )
+        ) {
+          state.coachPractitionersTimeline = [
+            ...state.coachPractitionersTimeline,
+            { practitionerId, timeline: action.payload },
+          ];
+          return;
+        }
+
         const newState = state.coachPractitionersTimeline.map((item) => {
           if (item.practitionerId === practitionerId) {
             return { ...item, timeline: action.payload };
