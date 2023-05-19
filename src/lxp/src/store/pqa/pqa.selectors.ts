@@ -65,9 +65,7 @@ export const getVisitDataForVisitIdSelectorByUserId = (
   return createSelector(
     (state: RootState) => state.pqa.prePqaPreviousFormData,
     (items: PreviousFormData[] | undefined) => {
-      return items
-        ?.find((item) => item.practitionerId === userId)
-        ?.formData.filter((item) => item.visitId === visitId);
+      return items?.find((item) => item.visitId === visitId)?.formData;
     }
   );
 };

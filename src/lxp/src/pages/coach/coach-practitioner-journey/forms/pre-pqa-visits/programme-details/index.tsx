@@ -8,7 +8,7 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
-import { replaceBraces } from '@ecdlink/core';
+import { parseBool, replaceBraces } from '@ecdlink/core';
 import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
@@ -86,14 +86,14 @@ export const ProgrammeDetails = ({
         if (index === 0) {
           return {
             ...item,
-            answer: Boolean(question1?.questionAnswer),
+            answer: parseBool(question1?.questionAnswer!),
           };
         }
 
         if (index === 1) {
           return {
             ...item,
-            answer: Boolean(question2?.questionAnswer),
+            answer: parseBool(question2?.questionAnswer!),
           };
         }
 
@@ -139,8 +139,8 @@ export const ProgrammeDetails = ({
       ).length;
 
       if (
-        (!!Boolean(updatedQuestions[1].answer) && count === 3) ||
-        (Boolean(updatedQuestions[1].answer) === false && count === 2)
+        (!!parseBool(updatedQuestions[1].answer) && count === 3) ||
+        (parseBool(updatedQuestions[1].answer) === false && count === 2)
       ) {
         return setEnableButton?.(true);
       }
@@ -201,7 +201,9 @@ export const ProgrammeDetails = ({
         type={ButtonGroupTypes.Button}
         options={options}
         selectedOptions={
-          questions[0].answer !== '' ? Boolean(questions[0].answer) : undefined
+          questions[0].answer !== ''
+            ? parseBool(String(questions[0].answer))
+            : undefined
         }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
@@ -216,11 +218,13 @@ export const ProgrammeDetails = ({
         type={ButtonGroupTypes.Button}
         options={options}
         selectedOptions={
-          questions[1].answer !== '' ? Boolean(questions[1].answer) : undefined
+          questions[1].answer !== ''
+            ? parseBool(String(questions[1].answer))
+            : undefined
         }
         onOptionSelected={(value) => onOptionSelected(value, 1)}
       />
-      {!!Boolean(questions[1].answer) && (
+      {!!parseBool(String(questions[1].answer)) && (
         <FormInput
           disabled={isView}
           className="mt-4"
@@ -231,7 +235,7 @@ export const ProgrammeDetails = ({
           onChange={(event) => onOptionSelected(event.target.value, 2)}
         />
       )}
-      {!!Boolean(questions[0].answer) && (
+      {!!parseBool(String(questions[0].answer)) && (
         <Alert
           className="mt-4"
           type="info"

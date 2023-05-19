@@ -70,6 +70,7 @@ const pqaSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       const practitionerId = action.meta.arg.userId;
@@ -106,23 +107,21 @@ const pqaSlice = createSlice({
       }
     });
     builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
-      const practitionerId = action.meta.arg.userId;
+      const visitId = action.meta.arg.visitId;
 
       if (state.prePqaPreviousFormData?.length) {
         if (
-          !state.prePqaPreviousFormData.some(
-            (item) => item.practitionerId === practitionerId
-          )
+          !state.prePqaPreviousFormData.some((item) => item.visitId === visitId)
         ) {
           state.prePqaPreviousFormData = [
             ...state.prePqaPreviousFormData,
-            { practitionerId, formData: action.payload },
+            { visitId, formData: action.payload },
           ];
           return;
         }
 
         const newState = state.prePqaPreviousFormData.map((item) => {
-          if (item.practitionerId === practitionerId) {
+          if (item.visitId === visitId) {
             return { ...item, formData: action.payload };
           }
 
@@ -133,11 +132,12 @@ const pqaSlice = createSlice({
       } else {
         state.prePqaPreviousFormData = [
           {
-            practitionerId,
+            visitId,
             formData: action.payload,
           },
         ];
       }
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

@@ -21,6 +21,7 @@ import { useLayoutEffect, useState } from 'react';
 import { Form, currentActivityKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
+  PqaActions,
   getPractitionerTimeline,
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
@@ -36,6 +37,7 @@ import {
 } from './timeline-steps';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -46,6 +48,11 @@ export const CoachPractitionerJourney: React.FC = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const appDispatch = useAppDispatch();
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -232,8 +239,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       />
       {!!timeline && (
         <Steps
-          // @ts-ignore
-          items={timelineSteps(timeline, onView, uncompletedVisits)}
+          items={timelineSteps(timeline, onView, isLoading, uncompletedVisits)}
           typeColor={{ completed: 'successMain' }}
         />
       )}

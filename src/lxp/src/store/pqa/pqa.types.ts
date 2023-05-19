@@ -1,12 +1,12 @@
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeLine,
+  PractitionerTimeline,
   VisitData,
 } from '@ecdlink/graphql';
 
 export interface CoachPractitionerTimeline {
   practitionerId: string;
-  timeline: PractitionerTimeLine;
+  timeline: PractitionerTimeline;
 }
 
 export interface FormData {
@@ -15,7 +15,7 @@ export interface FormData {
 }
 
 export interface PreviousFormData {
-  practitionerId: string;
+  visitId: string;
   formData: VisitData[];
 }
 
