@@ -3,7 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeLine,
+  PractitionerTimeline,
   Visit,
   VisitData,
   VisitModelInput,
@@ -117,7 +117,7 @@ export const getVisitDataForVisitId = createAsyncThunk<
 );
 
 export const getPractitionerTimeline = createAsyncThunk<
-  PractitionerTimeLine,
+  PractitionerTimeline,
   { userId: string },
   ThunkApiType<RootState>
 >(

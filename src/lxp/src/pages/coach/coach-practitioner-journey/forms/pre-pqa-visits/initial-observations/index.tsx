@@ -1,7 +1,7 @@
-import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
-import { replaceBraces } from '@ecdlink/core';
+import { parseBool, replaceBraces } from '@ecdlink/core';
 import { currentActivityKey } from '../..';
 import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
@@ -68,13 +68,13 @@ export const InitialObservations = ({
         if (index === 0) {
           return {
             ...item,
-            answer: Boolean(question1?.questionAnswer),
+            answer: parseBool(question1?.questionAnswer!),
           };
         }
 
         return {
           ...item,
-          answer: Boolean(question2?.questionAnswer),
+          answer: parseBool(question2?.questionAnswer!),
         };
       })
     );
@@ -129,6 +129,13 @@ export const InitialObservations = ({
         text="What did you observe when you first arrived?"
         color="textMid"
       />
+      {isView && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot edit responses."
+        />
+      )}
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}
@@ -140,7 +147,9 @@ export const InitialObservations = ({
         type={ButtonGroupTypes.Button}
         options={options}
         selectedOptions={
-          questions[0].answer !== '' ? Boolean(questions[0].answer) : undefined
+          questions[0].answer !== ''
+            ? parseBool(String(questions[0].answer))
+            : undefined
         }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
@@ -155,7 +164,9 @@ export const InitialObservations = ({
         type={ButtonGroupTypes.Button}
         options={options}
         selectedOptions={
-          questions[1].answer !== '' ? Boolean(questions[1].answer) : undefined
+          questions[1].answer !== ''
+            ? parseBool(String(questions[1].answer))
+            : undefined
         }
         onOptionSelected={(value) => onOptionSelected(value, 1)}
       />

@@ -1,7 +1,7 @@
 import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeLine,
+  PractitionerTimeline,
   Visit,
   VisitData,
   VisitModelInput,
@@ -102,10 +102,10 @@ class PQAService {
     return response.data.data.visitDataForVisitId;
   }
 
-  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {
+  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeline> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { practitionerTimeline: PractitionerTimeLine };
+      data: { practitionerTimeline: PractitionerTimeline };
       errors?: {};
     }>(``, {
       query: `
