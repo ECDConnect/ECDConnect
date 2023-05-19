@@ -1,5 +1,5 @@
 import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
-import { Maybe, PractitionerTimeLine, Visit } from '@ecdlink/graphql';
+import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { CalendarIcon } from '@heroicons/react/solid';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
@@ -58,7 +58,7 @@ export const setStep = (
 };
 
 export const timelineSteps = (
-  timeline: PractitionerTimeLine,
+  timeline: PractitionerTimeline,
   visits?: Maybe<Visit>[]
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
