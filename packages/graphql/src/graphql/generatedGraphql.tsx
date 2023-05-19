@@ -2630,6 +2630,7 @@ export type LearnerInput = {
 
 export type License = {
   __typename?: 'License';
+  delicensedDate?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -2644,6 +2645,7 @@ export type License = {
 
 export type LicenseFilterInput = {
   and?: InputMaybe<Array<LicenseFilterInput>>;
+  delicensedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -2658,6 +2660,7 @@ export type LicenseFilterInput = {
 };
 
 export type LicenseInput = {
+  DelicensedDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LicenseDate?: InputMaybe<Scalars['DateTime']>;
@@ -3126,6 +3129,7 @@ export type Mutation = {
   createVisitVideos?: Maybe<Scalars['String']>;
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
+  deActivatePractitioner: Scalars['Boolean'];
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
@@ -3227,6 +3231,7 @@ export type Mutation = {
   deleteVisitVideos?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatus?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatusType?: Maybe<Scalars['Boolean']>;
+  delicensePractitioner: Scalars['Boolean'];
   demotePractitionerAsPrincipal?: Maybe<Practitioner>;
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
@@ -3918,6 +3923,10 @@ export type MutationCreateWorkflowStatusTypeArgs = {
   input?: InputMaybe<WorkflowStatusTypeInput>;
 };
 
+export type MutationDeActivatePractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationDeleteAbsenteesArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -4371,6 +4380,10 @@ export type MutationDeleteWorkflowStatusArgs = {
 
 export type MutationDeleteWorkflowStatusTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDelicensePractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDemotePractitionerAsPrincipalArgs = {

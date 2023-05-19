@@ -50,6 +50,21 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             ).FirstOrDefault();
         }
 
+
+        public bool DelicenseUser(string userId)
+        {
+            List<License> license1 = _licenseRepo.GetAll().Where(x => x.UserId == userId).ToList();
+
+            foreach (License license in license1)
+            {
+                license.IsActive = false;
+                license.DelicensedDate = DateTime.Now;
+
+                _licenseRepo.Update(license);
+            }
+            return true;
+        }
+
     }
 }
 
