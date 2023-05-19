@@ -59,6 +59,7 @@ export const setStep = (
 
 export const timelineSteps = (
   timeline: PractitionerTimeLine,
+  onView: (visit: Visit) => void,
   visits?: Maybe<Visit>[]
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
@@ -230,6 +231,20 @@ export const timelineSteps = (
                           onClick={() => {}}
                         />
                       )}
+                    {!!visit?.attended && (
+                      <Button
+                        style={{
+                          position: 'absolute',
+                          right: -36,
+                        }}
+                        className="z-50 w-24"
+                        type="filled"
+                        color="secondaryAccent2"
+                        textColor="secondary"
+                        text="View"
+                        onClick={() => onView(visit)}
+                      />
+                    )}
                   </div>
                   <Typography
                     type="body"

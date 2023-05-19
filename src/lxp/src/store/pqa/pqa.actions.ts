@@ -92,8 +92,8 @@ export const addSupportVisitFormData = createAsyncThunk<
 );
 
 export const getVisitDataForVisitId = createAsyncThunk<
-  VisitData,
-  { visitId: string },
+  VisitData[],
+  { visitId: string; userId: string },
   ThunkApiType<RootState>
 >(
   PqaActions.GET_VISIT_DATA_FOR_VISIT_ID,

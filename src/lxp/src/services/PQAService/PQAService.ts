@@ -70,15 +70,17 @@ class PQAService {
     return response.data.data.addSupportVisitForPractitioner;
   }
 
-  async getVisitDataForVisitId(visitId: string): Promise<VisitData> {
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { visitDataForVisitId: VisitData };
+      data: { visitDataForVisitId: VisitData[] };
       errors?: {};
     }>(``, {
       query: `
-        GetVisitDataForVisitId($visitId: String) {
+        query GetVisitDataForVisitId($visitId: String) {
           visitDataForVisitId(visitId: $visitId) {
+            insertedDate
+            visitId
             visitName
             visitSection
             question

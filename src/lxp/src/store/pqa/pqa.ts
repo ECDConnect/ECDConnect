@@ -4,6 +4,7 @@ import {
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
+  getVisitDataForVisitId,
 } from './pqa.actions';
 import { PQAState } from './pqa.types';
 import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
@@ -100,6 +101,40 @@ const pqaSlice = createSlice({
           {
             practitionerId,
             timeline: action.payload,
+          },
+        ];
+      }
+    });
+    builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
+      const practitionerId = action.meta.arg.userId;
+
+      if (state.prePqaPreviousFormData?.length) {
+        if (
+          !state.prePqaPreviousFormData.some(
+            (item) => item.practitionerId === practitionerId
+          )
+        ) {
+          state.prePqaPreviousFormData = [
+            ...state.prePqaPreviousFormData,
+            { practitionerId, formData: action.payload },
+          ];
+          return;
+        }
+
+        const newState = state.prePqaPreviousFormData.map((item) => {
+          if (item.practitionerId === practitionerId) {
+            return { ...item, formData: action.payload };
+          }
+
+          return item;
+        });
+
+        state.prePqaPreviousFormData = newState;
+      } else {
+        state.prePqaPreviousFormData = [
+          {
+            practitionerId,
+            formData: action.payload,
           },
         ];
       }

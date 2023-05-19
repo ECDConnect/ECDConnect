@@ -1,14 +1,29 @@
 import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 import { replaceBraces } from '@ecdlink/core';
+import { currentActivityKey } from '../..';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { useSelector } from 'react-redux';
+import {
+  getCurrentCoachVisitByUserId,
+  getVisitDataForVisitIdSelectorByUserId,
+} from '@/store/pqa/pqa.selectors';
+import { Maybe } from '@ecdlink/graphql';
 
 export const InitialObservations = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<
+    {
+      question: string;
+      answer: null | Maybe<string> | string | boolean | undefined;
+    }[]
+  >([
     {
       question: `Did it seem that you were interrupting {client}’s programme?`,
       answer: '',
@@ -20,12 +35,50 @@ export const InitialObservations = ({
   ]);
 
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isView },
+    { text: 'No', value: false, disabled: isView },
   ];
 
   const name = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Initial observations';
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const currentVisit = useSelector(
+    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+  );
+  const previousVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+  );
+  const previousSectionAnswers = previousVisitAnswers?.filter(
+    (item) => item.visitSection === visitSection
+  );
+
+  const question1 = previousSectionAnswers?.find(
+    (item) => item.question === questions[0].question
+  );
+  const question2 = previousSectionAnswers?.find(
+    (item) => item.question === questions[1].question
+  );
+
+  const setPreviousAnswers = useCallback(() => {
+    setAnswers((prevState) =>
+      prevState.map((item, index) => {
+        if (index === 0) {
+          return {
+            ...item,
+            answer: Boolean(question1?.questionAnswer),
+          };
+        }
+
+        return {
+          ...item,
+          answer: Boolean(question2?.questionAnswer),
+        };
+      })
+    );
+  }, [question1, question2]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -58,6 +111,16 @@ export const InitialObservations = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  useEffect(() => {
+    if (isView) {
+      setEnableButton?.(true);
+    }
+  }, [isView, setEnableButton]);
+
+  useEffect(() => {
+    setPreviousAnswers();
+  }, [setPreviousAnswers]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
@@ -76,6 +139,9 @@ export const InitialObservations = ({
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
+        selectedOptions={
+          questions[0].answer !== '' ? Boolean(questions[0].answer) : undefined
+        }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
       <Typography
@@ -88,6 +154,9 @@ export const InitialObservations = ({
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
+        selectedOptions={
+          questions[1].answer !== '' ? Boolean(questions[1].answer) : undefined
+        }
         onOptionSelected={(value) => onOptionSelected(value, 1)}
       />
     </div>
