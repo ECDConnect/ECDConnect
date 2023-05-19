@@ -1,7 +1,7 @@
 import { Colours } from '../../..';
 import { ListItem } from './ListItem';
 
-export interface MenuListDataItem extends ListItem {
+export interface MenuListDataItem<T = {}> extends ListItem {
   className?: string;
   menuIcon?: string;
   menuIconClassName?: string;
@@ -16,4 +16,5 @@ export interface MenuListDataItem extends ListItem {
   hexBackgroundColor?: string;
   rightIcon?: string;
   rightIconClassName?: string;
+  extraData?: T;
 }

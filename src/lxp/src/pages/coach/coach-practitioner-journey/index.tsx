@@ -1,5 +1,5 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
   Alert,
   AlertType,
@@ -13,12 +13,18 @@ import {
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
-import { PractitionerJourneyParams } from './coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
-import { Form } from './forms';
+import { Form, currentActivityKey } from './forms';
 import { useAppDispatch } from '@/store';
 import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
-import { getPractitionerTimelineSelector } from '@/store/pqa/pqa.selectors';
+import {
+  getPractitionerTimelineByIdSelector,
+  getPrePqaFormDataByIdSelector,
+} from '@/store/pqa/pqa.selectors';
 import {
   dateOptions,
   filterVisit,
@@ -27,10 +33,10 @@ import {
 } from './timeline-steps';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 
-export const currentActivityKey = 'selectedOption';
-
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+
+  const selectedForm = window.sessionStorage.getItem(currentActivityKey);
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -38,8 +44,13 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
-  const practitioner = useSelector(getPractitionerById(practitionerId));
-  const timeline = useSelector(getPractitionerTimelineSelector(practitionerId));
+  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+  const prePqaFormData = useSelector(
+    getPrePqaFormDataByIdSelector(practitionerId)
+  );
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -66,11 +77,15 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
-  const currentVisit = timeline?.siteVisits
+  const uncompletedVisits = timeline?.siteVisits?.filter(
+    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+  );
+
+  const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
-    .map(
-      (visit): MenuListDataItem => ({
+    ?.map(
+      (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
@@ -83,6 +98,7 @@ export const CoachPractitionerJourney: React.FC = () => {
           : '',
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
+        extraData: { visitId: visit?.id },
         onActionClick: () => {
           window.sessionStorage.setItem(
             currentActivityKey,
@@ -94,12 +110,33 @@ export const CoachPractitionerJourney: React.FC = () => {
     )
     .shift();
 
+  const onSupportVisit = () => {
+    window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
+    setShowForm(true);
+  };
+
+  const onFormBack = () => {
+    window.sessionStorage.removeItem(currentActivityKey);
+    setShowForm(false);
+  };
+
+  useLayoutEffect(() => {
+    if (selectedForm) {
+      setShowForm(true);
+    }
+  }, [selectedForm]);
+
   useLayoutEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
   }, [appDispatch, practitionerId]);
 
-  if (showForm) {
-    return <Form onBack={() => setShowForm(false)} />;
+  if (
+    (showForm && currentVisit?.extraData?.visitId) ||
+    (showForm && selectedForm === visitTypes.supportVisit)
+  ) {
+    return (
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
+    );
   }
   return (
     <BannerWrapper
@@ -133,7 +170,13 @@ export const CoachPractitionerJourney: React.FC = () => {
             : ''
         }
         messageColor="textMid"
-        customIcon={<BalloonsIcon />}
+        customIcon={
+          timeline?.smartSpaceLicenseColor === 'Success' ? (
+            <BalloonsIcon />
+          ) : (
+            <></>
+          )
+        }
       />
       <Typography
         className="mt-4 mb-2"
@@ -160,11 +203,13 @@ export const CoachPractitionerJourney: React.FC = () => {
         type="outlined"
         textColor="primary"
         icon="LocationMarkerIcon"
-        text="Schedule support visit"
+        text="Start support visit"
+        onClick={onSupportVisit}
       />
       {!!timeline && (
         <Steps
-          items={timelineSteps(timeline)}
+          // @ts-ignore
+          items={timelineSteps(timeline, uncompletedVisits)}
           typeColor={{ completed: 'successMain' }}
         />
       )}

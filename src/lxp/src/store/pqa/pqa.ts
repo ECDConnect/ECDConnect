@@ -1,19 +1,91 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getPractitionerTimeline } from './pqa.actions';
+import {
+  addSupportVisitFormData,
+  addVisitFormData,
+  getPractitionerTimeline,
+} from './pqa.actions';
 import { PQAState } from './pqa.types';
+import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import { setThunkActionStatus } from '../utils';
+import { setFulfilledThunkActionStatus } from '../utils';
 
 const initialState: PQAState = {};
 
 const pqaSlice = createSlice({
   name: 'pqa',
   initialState,
-  reducers: {},
+  reducers: {
+    addVisitFormData: {
+      reducer: (
+        state,
+        action: PayloadAction<
+          CmsVisitDataInputModelInput,
+          string,
+          { userId: string; formType: 'pre-pqa' | 'pqa' }
+        >
+      ) => {
+        const { userId, formType } = action.meta;
+        const visitId = action.payload.visitId;
+        switch (formType) {
+          case 'pqa':
+            break;
+          default:
+            if (state?.prePqaFormData?.length) {
+              if (
+                !state.prePqaFormData.some(
+                  (item) => item.formData.visitId === visitId
+                )
+              ) {
+                state.prePqaFormData = [
+                  ...state.prePqaFormData,
+                  { practitionerId: userId, formData: action.payload },
+                ];
+                return;
+              }
+
+              const newState = state.prePqaFormData.map((item) => {
+                if (item.formData.visitId === visitId) {
+                  return { ...item, formData: action.payload };
+                }
+
+                return item;
+              });
+
+              state.prePqaFormData = newState;
+            } else {
+              state.prePqaFormData = [
+                { practitionerId: userId, formData: action.payload },
+              ];
+            }
+            break;
+        }
+      },
+      prepare: (
+        payload: CmsVisitDataInputModelInput,
+        meta: { userId: string; formType: 'pre-pqa' | 'pqa' }
+      ) => ({ payload, meta }),
+    },
+  },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, addSupportVisitFormData);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       const practitionerId = action.meta.arg.userId;
 
       if (state.coachPractitionersTimeline?.length) {
+        if (
+          !state.coachPractitionersTimeline.some(
+            (item) => item.practitionerId === practitionerId
+          )
+        ) {
+          state.coachPractitionersTimeline = [
+            ...state.coachPractitionersTimeline,
+            { practitionerId, timeline: action.payload },
+          ];
+          return;
+        }
+
         const newState = state.coachPractitionersTimeline.map((item) => {
           if (item.practitionerId === practitionerId) {
             return { ...item, timeline: action.payload };
@@ -31,6 +103,12 @@ const pqaSlice = createSlice({
           },
         ];
       }
+    });
+    builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });
