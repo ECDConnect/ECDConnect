@@ -72,6 +72,20 @@ export type AbsenteesInput = {
   UserId?: InputMaybe<Scalars['String']>;
 };
 
+export type ActionItemMissedProgressReportsDisplay = {
+  __typename?: 'ActionItemMissedProgressReportsDisplay';
+  color?: Maybe<Scalars['String']>;
+  currentReportingPeriodEnd: Scalars['DateTime'];
+  icon?: Maybe<Scalars['String']>;
+  message?: Maybe<Scalars['String']>;
+  nextReportingPeriodEnd: Scalars['DateTime'];
+  notes?: Maybe<Scalars['String']>;
+  practitionerUser?: Maybe<ApplicationUser>;
+  subject?: Maybe<Scalars['String']>;
+  userId: Scalars['UUID'];
+  userType?: Maybe<Scalars['String']>;
+};
+
 export type Activity = {
   __typename?: 'Activity';
   availableLanguages?: Maybe<Array<Maybe<Language>>>;
@@ -2616,6 +2630,7 @@ export type LearnerInput = {
 
 export type License = {
   __typename?: 'License';
+  delicensedDate?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -2630,6 +2645,7 @@ export type License = {
 
 export type LicenseFilterInput = {
   and?: InputMaybe<Array<LicenseFilterInput>>;
+  delicensedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -2644,6 +2660,7 @@ export type LicenseFilterInput = {
 };
 
 export type LicenseInput = {
+  DelicensedDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   LicenseDate?: InputMaybe<Scalars['DateTime']>;
@@ -3091,6 +3108,7 @@ export type Mutation = {
   createVisitVideos?: Maybe<Scalars['String']>;
   createWorkflowStatus?: Maybe<WorkflowStatus>;
   createWorkflowStatusType?: Maybe<WorkflowStatusType>;
+  deActivatePractitioner: Scalars['Boolean'];
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
@@ -3192,6 +3210,7 @@ export type Mutation = {
   deleteVisitVideos?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatus?: Maybe<Scalars['Boolean']>;
   deleteWorkflowStatusType?: Maybe<Scalars['Boolean']>;
+  delicensePractitioner: Scalars['Boolean'];
   demotePractitionerAsPrincipal?: Maybe<Practitioner>;
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
@@ -3883,6 +3902,10 @@ export type MutationCreateWorkflowStatusTypeArgs = {
   input?: InputMaybe<WorkflowStatusTypeInput>;
 };
 
+export type MutationDeActivatePractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationDeleteAbsenteesArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -4336,6 +4359,10 @@ export type MutationDeleteWorkflowStatusArgs = {
 
 export type MutationDeleteWorkflowStatusTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDelicensePractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDemotePractitionerAsPrincipalArgs = {
@@ -6160,6 +6187,7 @@ export type Query = {
   actionItemClassReassignmentHistory?: Maybe<
     Array<Maybe<ClassReassignmentDisplay>>
   >;
+  actionItemMissedProgressReports?: Maybe<ActionItemMissedProgressReportsDisplay>;
   allCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiverByPractitioner?: Maybe<Array<Maybe<Caregiver>>>;
   allCaregiversForHCW?: Maybe<Array<Maybe<Caregiver>>>;
@@ -7235,6 +7263,10 @@ export type QueryActionItemChildProgressArgs = {
 };
 
 export type QueryActionItemClassReassignmentHistoryArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryActionItemMissedProgressReportsArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
 };
 

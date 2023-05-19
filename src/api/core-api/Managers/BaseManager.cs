@@ -22,7 +22,6 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             {
                 result = result + "<li>" + item + "</li>";
             }
-            result = result + "";
 
             return result;
         }
