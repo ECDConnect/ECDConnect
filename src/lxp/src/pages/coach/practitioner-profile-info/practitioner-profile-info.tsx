@@ -187,13 +187,40 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const noClassroomGroupsListItems = [
     {
+      title: 'SmartStarter journey',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Training, PQA rating & performance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BadgeCheckIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
+      classNames: 'bg-uiBg',
+    },
+    {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: 'Location, classes & staff',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
       iconBackgroundColor: 'tertiary',
       chipConfig: {
