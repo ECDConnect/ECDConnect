@@ -33,6 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<IEnumerable<ApplicationUser>> GetUsers([Service]UserManager<ApplicationUser> userManager)
         {
+            // TODO: Add pagination
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
         }
@@ -107,13 +108,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (tokenusr != null)
                 {
                     var user = userManager.FindByIdAsync(tokenusr.UserId).Result;
-                    if (user != null)
+                    
+                    if (user is null)
                     {
-                        tokenuser.FullName = user.FullName;
-                        tokenuser.PhoneNumber = user.PhoneNumber;
-                        tokenuser.UserId = user.Id;
-                        tokenuser.RoleName = (user.practitionerObjectData != null ? "Practitioner" : user.principalObjectData != null ? "Principal" : user.coachObjectData != null ? "Coach" : "User");
+                        throw new Exception("User not found.");
                     }
+
+                    Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+                    if (user.TenantId != tenantId && user.TenantId != null)
+                    {
+                        throw new Exception("Cross tenant access denied.");
+                    }
+
+                    tokenuser.FullName = user.FullName;
+                    tokenuser.PhoneNumber = user.PhoneNumber;
+                    tokenuser.UserId = user.Id;
+                    tokenuser.RoleName = (user.practitionerObjectData != null ? "Practitioner" : user.principalObjectData != null ? "Principal" : user.coachObjectData != null ? "Coach" : "User");
+                    
                 }
             }
             return tokenuser;

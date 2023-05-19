@@ -17,6 +17,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private VisitDataStatusManager _visitDataStatusManager;
+        private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
 
@@ -25,11 +26,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public VisitDataManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitDataStatusManager visitDataStatusManager)
+            VisitDataStatusManager visitDataStatusManager,
+            VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
+            _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -121,7 +124,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
             return true;
         }
-
         public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input)
         {
 
@@ -157,7 +159,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitRepo.Update(entityToUpdate);
 
             // then handle status data
-           // _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+            _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             return true;
         }
 

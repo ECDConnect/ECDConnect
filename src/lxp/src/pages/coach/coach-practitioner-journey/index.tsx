@@ -58,7 +58,7 @@ export const CoachPractitionerJourney: React.FC = () => {
   );
 
   const practitionerFirstName = practitioner?.user?.firstName;
-  const isPrePqaFormViewState = true;
+
   const getTime = (startedDate?: string) => {
     if (!startedDate) return undefined;
     const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
