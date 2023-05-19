@@ -1,7 +1,7 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Visits;
+﻿using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -44,10 +44,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
         }
 
-        public PractitionerTimeLine GetPractitionerTimeline(string userId)
+        public PractitionerTimeline GetPractitionerTimeline(string userId)
         {
 
-            PractitionerTimeLine timeLine = new PractitionerTimeLine();
+            PractitionerTimeline timeLine = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
             // Starter license received
