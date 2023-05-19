@@ -32,7 +32,6 @@ import {
   timelineSteps,
 } from './timeline-steps';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
-import { InputMaybe } from '@/../../../packages/graphql/lib';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
@@ -79,19 +78,14 @@ export const CoachPractitionerJourney: React.FC = () => {
   };
 
   const uncompletedVisits = timeline?.siteVisits?.filter(
-    (visit: { id: InputMaybe<string> | undefined }) =>
-      !prePqaFormData?.some((item) => item.visitId === visit?.id)
+    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
   );
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)
     ?.map(
-      (visit: {
-        visitType: { description: any };
-        plannedVisitDate: string | number | Date;
-        id: any;
-      }): MenuListDataItem<{ visitId?: string }> => ({
+      (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
