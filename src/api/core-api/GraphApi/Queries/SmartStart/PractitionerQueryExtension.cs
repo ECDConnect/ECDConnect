@@ -1,5 +1,3 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
@@ -8,6 +6,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -374,7 +373,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
 
         }
-        public PractitionerTimeLine GetPractitionerTimeline([Service] PractitionerManager practitionerManager, string userId)
+        public PractitionerTimeline GetPractitionerTimeline([Service] PractitionerManager practitionerManager, string userId)
         {
             return practitionerManager.GetPractitionerTimeline(userId);
         }
