@@ -108,7 +108,7 @@ export const OnboardingTraineeDashboard: React.FC<
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep('signupFranchisor'),
+      onActionClick: () => setNotificationStep('startupSupportAgreement'),
     },
   ];
 

@@ -16,10 +16,6 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
 
-  const displayArticle = () => {
-    console.log('jahfjkahdfds');
-  };
-
   return (
     <>
       <div className="flex flex-col justify-around p-4">
@@ -65,11 +61,6 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
                 &nbsp;
                 <Typography
                   onClick={() => setViewPermissionToShare(true)}
-                  //   onClick={() => {
-                  //     displayArticle();
-                  //     //   ContentConsentTypeEnum.DataPermissionsAgreement,
-                  //     //   'Data Permissions Agreement'
-                  //   }}
                   className={'cursor-pointer whitespace-nowrap'}
                   text={`conditions and requirements of ${' '}`}
                   underline={true}
@@ -78,11 +69,6 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
                 />
               </div>
               <Typography
-                // onClick={() => {
-                //   displayArticle();
-                //   //   ContentConsentTypeEnum.DataPermissionsAgreement,
-                //   //   'Data Permissions Agreement'
-                // }}
                 onClick={() => setViewPermissionToShare(true)}
                 className={'cursor-pointer'}
                 text={`becoming a SmartStart franchisee`}
@@ -102,13 +88,13 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             text="Next"
             textColor="white"
             icon="ArrowCircleRightIcon"
-            onClick={() => setAgreementStep('')}
+            onClick={() => setAgreementStep('programmeTypeAgreement')}
           />
         </div>
       </div>
       <Article
         visible={viewPermissionToShare}
-        consentEnumType={ContentConsentTypeEnum.TermsAndConditions}
+        consentEnumType={ContentConsentTypeEnum.FranchiseeAgreement}
         onClose={function (): void {
           setViewPermissionToShare(false);
         }}

@@ -1,8 +1,9 @@
 import { BannerWrapper, Typography } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import { ReadAndAcceptAgreement } from './components/read-and-accept-agreement';
+import { ProgrammeTypeAgreement } from './components/programme-type-agreement/programme-type-agreement';
 
 interface TraineeFranchisorAgreementProps {
   setNotificationStep: any;
@@ -14,15 +15,27 @@ export const TraineeFranchisorAgreement: React.FC<
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const [agreementStep, setAgreementStep] = useState('');
+  const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 2');
 
   const renderStep = (step: string) => {
     switch (step) {
       case 'programmeTypeAgreement':
-        return null;
+        return (
+          <ProgrammeTypeAgreement
+            setNotificationStep={setNotificationStep}
+            setAgreementStep={setAgreementStep}
+          />
+        );
       default:
         return <ReadAndAcceptAgreement setAgreementStep={setAgreementStep} />;
     }
   };
+
+  useEffect(() => {
+    if (agreementStep === 'programmeTypeAgreement') {
+      setAgreementStepCount('Step 2 of 2');
+    }
+  }, [agreementStep]);
 
   return (
     <BannerWrapper
@@ -30,7 +43,7 @@ export const TraineeFranchisorAgreement: React.FC<
       size="medium"
       renderBorder={true}
       title={'Business'}
-      subTitle={'Step 1 of 1'}
+      subTitle={agreementStepCount}
       color={'primary'}
       onBack={history.goBack}
       displayOffline={!isOnline}

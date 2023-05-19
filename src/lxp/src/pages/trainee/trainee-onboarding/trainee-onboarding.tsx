@@ -4,6 +4,7 @@ import { OnboardingTraineeDashboard } from './components/trainee-onboarding-dash
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { TraineeFranchisorAgreement } from './components/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { StartupSupportAgreement } from './components/startup-support-agreement/startup-support-agreement';
 
 export const TraineeOnboarding = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
@@ -19,6 +20,10 @@ export const TraineeOnboarding = () => {
           <TraineeFranchisorAgreement
             setNotificationStep={setNotificationStep}
           />
+        );
+      case 'startupSupportAgreement':
+        return (
+          <StartupSupportAgreement setNotificationStep={setNotificationStep} />
         );
       default:
         return (
