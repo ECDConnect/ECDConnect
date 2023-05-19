@@ -1,7 +1,7 @@
 import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeline,
+  PractitionerTimeLine,
   Visit,
   VisitData,
   VisitModelInput,
@@ -70,15 +70,17 @@ class PQAService {
     return response.data.data.addSupportVisitForPractitioner;
   }
 
-  async getVisitDataForVisitId(visitId: string): Promise<VisitData> {
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { visitDataForVisitId: VisitData };
+      data: { visitDataForVisitId: VisitData[] };
       errors?: {};
     }>(``, {
       query: `
-        GetVisitDataForVisitId($visitId: String) {
+        query GetVisitDataForVisitId($visitId: String) {
           visitDataForVisitId(visitId: $visitId) {
+            insertedDate
+            visitId
             visitName
             visitSection
             question
@@ -100,10 +102,10 @@ class PQAService {
     return response.data.data.visitDataForVisitId;
   }
 
-  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeline> {
+  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { practitionerTimeline: PractitionerTimeline };
+      data: { practitionerTimeline: PractitionerTimeLine };
       errors?: {};
     }>(``, {
       query: `
