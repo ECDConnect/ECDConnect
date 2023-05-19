@@ -239,7 +239,13 @@ export const CoachPractitionerJourney: React.FC = () => {
       />
       {!!timeline && (
         <Steps
-          items={timelineSteps(timeline, onView, isLoading, uncompletedVisits)}
+          items={timelineSteps(
+            timeline,
+            onView,
+            isLoading,
+            isOnline,
+            uncompletedVisits
+          )}
           typeColor={{ completed: 'successMain' }}
         />
       )}

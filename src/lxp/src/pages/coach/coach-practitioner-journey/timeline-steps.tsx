@@ -61,6 +61,7 @@ export const timelineSteps = (
   timeline: PractitionerTimeline,
   onView: (visit: Visit) => void,
   isLoading: boolean,
+  isOnline: boolean,
   visits?: Maybe<Visit>[]
 ): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
@@ -232,7 +233,7 @@ export const timelineSteps = (
                           onClick={() => {}}
                         />
                       )}
-                    {!!visit?.attended && (
+                    {!!visit?.attended && isOnline && (
                       <Button
                         style={{
                           position: 'absolute',

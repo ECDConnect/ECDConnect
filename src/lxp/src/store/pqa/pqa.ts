@@ -10,6 +10,7 @@ import { PQAState } from './pqa.types';
 import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
+import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
 
 const initialState: PQAState = {};
 
@@ -105,6 +106,14 @@ const pqaSlice = createSlice({
           },
         ];
       }
+    });
+    builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
+      // @ts-ignore
+      state.coachPractitionersTimeline = action.payload.map((item) => ({
+        practitionerId: item.userId,
+        // @ts-ignore
+        timeline: item.timeline,
+      }));
     });
     builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
       const visitId = action.meta.arg.visitId;
