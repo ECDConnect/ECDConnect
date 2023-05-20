@@ -22,6 +22,7 @@ import { PractitionerDto } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { userSelectors } from '@store/user';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 type ListDataItem = UserAlertListDataItem<{
   firstName: string;
@@ -72,6 +73,7 @@ export const Practitioners: React.FC = () => {
   const practitionersList = practitioners?.filter((item) =>
     practitionersForCoach?.find((item2) => item.id === item2.id)
   );
+
   const [practitionersMessages, setPractitionersMessages] = useState<any[]>();
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [practitionerUserListData, setPractitionerUserListData] =
@@ -96,6 +98,9 @@ export const Practitioners: React.FC = () => {
   const [filteredChildData, setFilteredChildData] = useState<ListDataItem[]>(
     []
   );
+
+  const { isOnline } = useOnlineStatus();
+
   const [loading, setLoading] = useState(false);
 
   const handleClick = (practitionerId: string) => {
@@ -112,10 +117,10 @@ export const Practitioners: React.FC = () => {
 
   useEffect(() => {
     if (
-      practitionersList &&
-      practitionersMessages &&
-      practitionersList?.length > 0 &&
-      practitionersMessages?.length > 0
+      (isOnline &&
+        !!practitionersList?.length &&
+        !!practitionersMessages?.length) ||
+      (!isOnline && !!practitionersList?.length)
     ) {
       const practitionerListItem: ListDataItem[] = [];
       for (const practitioner of practitionersList) {
@@ -126,8 +131,9 @@ export const Practitioners: React.FC = () => {
       setTaskFilterOptions(getTaskFilterOptions(practitionerListItem));
       setAreaFilterOptions(getAreaFilterOptions(practitionerListItem));
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersMessages]);
+  }, [practitionersList?.length, practitionersMessages]);
 
   const practionersDetailsFor = async (target = 'practitioner') => {
     setLoading(true);
@@ -181,16 +187,19 @@ export const Practitioners: React.FC = () => {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl,
       title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
-      subTitle: `${currentPractitionerMessage?.subject}`,
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      alertSeverity:
-        currentPractitionerMessage?.color === 'Success'
-          ? 'success'
-          : currentPractitionerMessage?.color === 'Warning'
-          ? 'warning'
-          : 'error',
+      ...(isOnline
+        ? { subTitle: `${currentPractitionerMessage?.subject}` }
+        : {}),
+      alertSeverity: !isOnline
+        ? 'none'
+        : currentPractitionerMessage?.color === 'Success'
+        ? 'success'
+        : currentPractitionerMessage?.color === 'Warning'
+        ? 'warning'
+        : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
       extraData: {
@@ -310,10 +319,11 @@ export const Practitioners: React.FC = () => {
       <BannerWrapper
         size={'small'}
         renderBorder={true}
-        title={`SmartStarters`}
+        title={`SmartStarterss`}
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}
+        displayOffline={!isOnline}
       >
         <SearchHeader<ListDataItem>
           searchItems={filteredChildData || []}
@@ -379,7 +389,7 @@ export const Practitioners: React.FC = () => {
         </SearchHeader>
         {practitionersList !== undefined && practitionersList?.length > 0 ? (
           <div className="flex justify-center">
-            {loading ? (
+            {loading && isOnline ? (
               <LoadingSpinner
                 className="mt-6"
                 size={'medium'}

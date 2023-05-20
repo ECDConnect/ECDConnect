@@ -1,23 +1,39 @@
 import {
   Alert,
   ButtonGroup,
+  ButtonGroupOption,
   ButtonGroupTypes,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
-import { replaceBraces } from '@ecdlink/core';
+import { parseBool, replaceBraces } from '@ecdlink/core';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { useSelector } from 'react-redux';
+import {
+  getCurrentCoachVisitByUserId,
+  getVisitDataForVisitIdSelectorByUserId,
+} from '@/store/pqa/pqa.selectors';
+import { currentActivityKey } from '../..';
+import { Maybe } from '@ecdlink/graphql';
 
 const MOCKED_DATA = {
   programmeType: 'Playgroup',
 };
 export const ProgrammeDetails = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<
+    {
+      question: string;
+      answer: null | Maybe<string> | string | boolean | undefined;
+    }[]
+  >([
     {
       question: `Does {client} receive start-up support from SmartStart?`,
       answer: '',
@@ -32,13 +48,63 @@ export const ProgrammeDetails = ({
     },
   ]);
 
-  const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+  const options: ButtonGroupOption<boolean>[] = [
+    { text: 'Yes', value: true, disabled: isView },
+    { text: 'No', value: false, disabled: isView },
   ];
 
   const name = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Programme details';
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const currentVisit = useSelector(
+    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+  );
+  const previousVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+  );
+  const previousSectionAnswers = previousVisitAnswers?.filter(
+    (item) => item.visitSection === visitSection
+  );
+  const previousDate = previousSectionAnswers?.[0].insertedDate;
+
+  const question1 = previousSectionAnswers?.find(
+    (item) => item.question === questions[0].question
+  );
+  const question2 = previousSectionAnswers?.find(
+    (item) => item.question === questions[1].question
+  );
+  const question3 = previousSectionAnswers?.find(
+    (item) => item.question === questions[2].question
+  );
+
+  const setPreviousAnswers = useCallback(() => {
+    setAnswers((prevState) =>
+      prevState.map((item, index) => {
+        if (index === 0) {
+          return {
+            ...item,
+            answer: parseBool(question1?.questionAnswer!),
+          };
+        }
+
+        if (index === 1) {
+          return {
+            ...item,
+            answer: parseBool(question2?.questionAnswer!),
+          };
+        }
+
+        return {
+          ...item,
+          answer: question3?.questionAnswer,
+        };
+      })
+    );
+  }, [question1, question2, question3]);
+
   const onOptionSelected = useCallback(
     (value, index) => {
       const currentQuestion = questions[index];
@@ -73,8 +139,8 @@ export const ProgrammeDetails = ({
       ).length;
 
       if (
-        (!!Boolean(updatedQuestions[1].answer) && count === 3) ||
-        (Boolean(updatedQuestions[1].answer) === false && count === 2)
+        (!!parseBool(updatedQuestions[1].answer) && count === 3) ||
+        (parseBool(updatedQuestions[1].answer) === false && count === 2)
       ) {
         return setEnableButton?.(true);
       }
@@ -84,12 +150,25 @@ export const ProgrammeDetails = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  useEffect(() => {
+    if (isView) {
+      setEnableButton?.(true);
+    }
+  }, [isView, setEnableButton]);
+
+  useEffect(() => {
+    setPreviousAnswers();
+  }, [setPreviousAnswers]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
       <Typography
         type="h4"
-        text={new Date().toLocaleDateString('en-ZA', {
+        text={(isView && !!previousDate
+          ? new Date(previousDate)
+          : new Date()
+        ).toLocaleDateString('en-ZA', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -97,6 +176,13 @@ export const ProgrammeDetails = ({
         })}
         color="textMid"
       />
+      {isView && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot edit responses."
+        />
+      )}
       <Typography
         type="h4"
         text={`Programme type: ${MOCKED_DATA.programmeType}`}
@@ -114,6 +200,11 @@ export const ProgrammeDetails = ({
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
+        selectedOptions={
+          questions[0].answer !== ''
+            ? parseBool(String(questions[0].answer))
+            : undefined
+        }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
       <Typography
@@ -126,19 +217,25 @@ export const ProgrammeDetails = ({
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
+        selectedOptions={
+          questions[1].answer !== ''
+            ? parseBool(String(questions[1].answer))
+            : undefined
+        }
         onOptionSelected={(value) => onOptionSelected(value, 1)}
       />
-      {!!Boolean(questions[1].answer) && (
+      {!!parseBool(String(questions[1].answer)) && (
         <FormInput
+          disabled={isView}
           className="mt-4"
           label={replaceBraces(questions[2].question, name)}
           type="number"
           prefixIcon
-          value={questions[2].answer}
+          value={questions[2].answer !== '' ? String(questions[2].answer) : ''}
           onChange={(event) => onOptionSelected(event.target.value, 2)}
         />
       )}
-      {!!Boolean(questions[0].answer) && (
+      {!!parseBool(String(questions[0].answer)) && (
         <Alert
           className="mt-4"
           type="info"

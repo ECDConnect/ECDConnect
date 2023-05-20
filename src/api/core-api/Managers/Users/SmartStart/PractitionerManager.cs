@@ -1,7 +1,8 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Visits;
+﻿using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -25,6 +26,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         public PractitionerManager(
             IHttpContextAccessor contextAccessor,
@@ -40,14 +42,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
 
+            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
         }
 
-        public PractitionerTimeLine GetPractitionerTimeline(string userId)
+        public PractitionerTimeline GetPractitionerTimeline(string userId)
         {
 
-            PractitionerTimeLine timeLine = new PractitionerTimeLine();
+            PractitionerTimeline timeLine = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
             // Starter license received
@@ -99,34 +102,34 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (visit != null)
                 {
-                    if (visit.VisitType.Name == Constants.SSSettings.visit1)
+                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_1)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         } else
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.first_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         site_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visit2)
+                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_2)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         else
                         {
-                            timeLine.VisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.VisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeLine.VisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
                         }
                         site_visits.Add(visit);
                     }
@@ -143,6 +146,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return timeLine;
         }
 
+    
+        public bool DeActivatePractitioner(string userId)
+        {
+            Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
+
+            if (practitioner != null)
+            {
+                practitioner.IsActive = false;
+                practitioner.UpdatedBy = _applicationUserId;
+                practitioner.UpdatedDate = DateTime.Now;
+                _practitionerRepo.Update(practitioner);
+
+                return true;
+            }
+            return false;
+        }
     }
 }
 

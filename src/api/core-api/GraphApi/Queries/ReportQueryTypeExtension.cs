@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
+using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -115,7 +116,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var startOfYear = DateTime.Now.GetStartOfYear();
             var endOfYear = DateTime.Now.GetEndOfYear();
 
-            var attendaceRepo = attendanceRepo.GetAllByDateRange(startOfYear, endOfYear);
+            var attendaceRepo = attendanceRepo.GetAllByDateRangeByFullMonth(startOfYear, endOfYear);
             var childRepo = repoFactory.CreateRepository<Child>(userContext: userId);
             var documentRepo = repoFactory.CreateRepository<Document>(userContext: userId);
             var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
@@ -153,7 +154,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         {
             var attendedVsAbsent = new List<MetricReportStatItem>();
 
-            var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+            var attendaceRepo = attendanceRepo.GetAllByDateRangeByFullMonth(fromDate, toDate);
 
             var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
             var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
@@ -267,7 +268,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 fromDate = fromDate.AddMonths(-idx);
                 var toDate = reference.AddMonths(idx + 1).AddDays(-1); //todate is always start of the month, + 1 month - 1 day gives the last day of that month
 
-                var attendaceRepo = attendanceRepo.GetAllByDateRange(fromDate, toDate);
+                var attendaceRepo = attendanceRepo.GetAllByDateRangeByFullMonth(fromDate, toDate);
                 var attendanceAttended = attendaceRepo.Where(x => x.Attended).Count();
                 var attendanceUnAttended = attendaceRepo.Where(x => !x.Attended).Count();
 
@@ -300,19 +301,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
-            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            var classroomGroup = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId)
-                    .GetAll().Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
             var classReassignmentHistoryRepo = repoFactory.CreateGenericRepository<ClassReassignmentHistory>();
+
             var notifications = new List<NotificationDisplay>();
 
+            var classroomGroup = classroomGroupRepo.GetAll()
+                .Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
+            var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
+
+            var practitioner = await practRepo.GetByIdAsync(Guid.Parse(practitionerId));
             // TODO: use this to apply:
             // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
             // "Note for all actions:
             // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
             //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
-            var coachHasContactedPractitionerThisMonth = false;
+            var coachHasContactedPractitionerRegardingThisItem = false;
 
             //set basic dates to be last month and before last
             // TODO: Get reporting interval from: `ChildReportOptions`
@@ -326,19 +331,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
 
             // Get Missing Attendance
-            // Todo: move to service?
+            // Todo: move to service
             var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>();
-            var missingRegisterDayCount = GetMissingAttendance(
+            var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
+            var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
+            var missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
                 classProgrammeRepo,
                 attendanceRepo,
                 holidayService,
-                practitionerId,
-                classroomGroup,
-                notifications,
+                classroomGroupRepo,
                 previousMonthStart,
-                previousMonthEnd);
+                previousMonthEnd,
+                practitioner);
 
             if (missingRegisterDayCount > 0)
+            {
                 notifications.Add(new NotificationDisplay()
                 {
                     Subject = $"{missingRegisterDayCount} missing attendance registers",
@@ -350,6 +357,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     UserId = Guid.Parse(practitionerId),
                     UserType = "practitioner"
                 });
+            }
 
             // Get Attendance Rate
             if (classroomGroup?.Id is not null)
@@ -390,7 +398,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             if (classroomGroup?.Id is not null)
             {
-                missedReportCount = GetMissedReports(
+                missedReportCount = await GetMissedReports(
                     repoFactory,
                     practitionerId,
                     user,
@@ -408,10 +416,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     missedReportCount);
             }
 
-            var children = childRepo.GetAll().Where(c => c.IsActive == true
+            var children = await childRepo.GetAll()
+                .Where(c => c.IsActive == true
                     && c.Hierarchy.StartsWith(practitionerHieracry))
-                    .Include(c => c.User)
-                    .ToList();
+                .Include(c => c.User)
+                .ToListAsync();
 
             // Get Child Age Groups
             int percentOfChildrenOutsideAgeGroup = GetPercentChildrenOutsideAgeGroup(currentDate, children);
@@ -513,6 +522,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
         }
 
+        private static DateTime GetNextReportDuePeriodStart(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 11, 1) : new DateOnly(year + 1, 6, 1))
+                                .ToDateTime(TimeOnly.MinValue, DateTimeKind.Utc);
+        }
+
+        private static DateTime GetNextReportDuePeriodEnd(int year, bool isPeriod1)
+        {
+            return (isPeriod1 ? new DateOnly(year, 11, 30) : new DateOnly(year + 1, 6, 30))
+                            .ToDateTime(TimeOnly.MaxValue, DateTimeKind.Utc);
+        }
+
         private static DateTime GetReportPeriodEnd(int year, bool isPeriod1)
         {
             return (isPeriod1 ? new DateOnly(year, 6, 30) : new DateOnly(year, 12, 20))
@@ -588,6 +609,82 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        public async Task<ActionItemMissedProgressReportsDisplay> GetActionItemMissedProgressReportsAsync(
+            IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] IHolidayService<Holiday> holidayService,
+            HierarchyEngine hierarchyEngine,
+            string practitionerId)
+        {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user?.Id ?? throw new ArgumentNullException("User.Id");
+            var uIdGuid = Guid.Parse(uId);
+            var practitionerIdGuid = Guid.Parse(practitionerId);
+
+            var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var practitioner = practRepo.GetByUserId(practitionerId);
+
+            var classroomGroupRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            var classroomGroups = await classroomGroupRepo
+                .GetAll()
+                .Where(c => c.UserId == practitionerIdGuid
+                    || c.Classroom.UserId == practitionerId)
+                .ToListAsync();
+
+            // TODO: use this to apply:
+            // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
+            // "Note for all actions:
+            // - Remove the action item either if the practitioner has completed the associated action and gone online + synced on Funda App(where possible)
+            //   OR where the coach has tapped ""I have contacted Bulelwa""(if relevant) "
+            var coachHasContactedPractitionerRegardingThisItem = false;
+
+            DateTime currentDate = DateTime.Now;
+
+            DateTime previousMonthStart = currentDate.GetStartOfPreviousMonth();
+            DateTime previousMonthEnd = currentDate.GetEndOfPreviousMonth();
+
+            int missingRegisterDayCount = 0;
+            // Get Missing Attendance
+            // Todo: move to service
+            var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>();
+            var programmeRepo = repoFactory.CreateGenericRepository<Programme>();
+            var dailyProgrammeRepo = repoFactory.CreateGenericRepository<DailyProgramme>();
+            missingRegisterDayCount = await GetMissingAttendanceReportsAsync(
+                classProgrammeRepo,
+                attendanceRepo,
+                holidayService,
+                classroomGroupRepo,
+                previousMonthStart,
+                previousMonthEnd,
+                practitioner);
+
+            if (missingRegisterDayCount > 0)
+            {
+                var isPeriod1 = currentDate.Month <= 7;
+                DateTime currentReportingPeriodEnd = GetReportDueEnd(currentDate.Year, isPeriod1);
+                var isPreviousMonthPeriod1 = previousMonthStart.Month <= 7;
+                DateTime nextReportingPeriodEnd = GetNextReportDuePeriodEnd(previousMonthStart.Year, isPreviousMonthPeriod1);
+
+                return new ActionItemMissedProgressReportsDisplay()
+                {
+                    Subject = $"{missingRegisterDayCount} missing attendance registers",
+                    Icon = MetricsIconEnum.Error.ToString(),
+                    Color = MetricsColorEnum.Error.ToString(),
+                    Message = previousMonthStart.ToString("MMMM yyyy"),
+                    Notes = $"Remind {practitioner.User.FirstName} to track progress for the next reporting period ({nextReportingPeriodEnd.ToString("MMMM yyyy")})",
+                    UserId = Guid.Parse(practitionerId),
+                    UserType = "practitioner",
+                    PractitionerUser = practitioner.User,
+                    NextReportingPeriodEnd = nextReportingPeriodEnd,
+                    CurrentReportingPeriodEnd = currentReportingPeriodEnd
+                };
+            }
+
+            return null;
+        }
+
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<List<ChildProgressDisplay>> GetActionItemChildProgress(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
@@ -610,7 +707,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var isPeriod1 = previousMonthStart.Month <= 7;
             DateTime reportPeriodStart = GetReportPeriodStart(previousMonthStart.Year, isPeriod1);
-
+            
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
 
@@ -657,7 +754,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return notifications;
         }
 
-            [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<AgeSpreadDisplay> GetActionItemAgeSpread(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor contextAccessor,
@@ -815,13 +913,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return progressHistory;
         }
 
-        private static int GetMissedReports(IGenericRepositoryFactory repoFactory, string practitionerId, ApplicationIdentityUser user, IGenericRepository<Child, Guid> childRepo, string practitionerHieracry, ClassroomGroup classroomGroup, List<NotificationDisplay> notifications, DateTime currentDate, DateTime reportPeriodStart, DateTime reportPeriodEnd, DateTime reportDueStart, DateTime reportDueEnd, DateTime reportOverDueStart, DateTime reportOverDueEnd, int missedReportCount)
+        private async Task<int> GetMissedReports(IGenericRepositoryFactory repoFactory, string practitionerId, ApplicationIdentityUser user, IGenericRepository<Child, Guid> childRepo, string practitionerHieracry, ClassroomGroup classroomGroup, List<NotificationDisplay> notifications, DateTime currentDate, DateTime reportPeriodStart, DateTime reportPeriodEnd, DateTime reportDueStart, DateTime reportDueEnd, DateTime reportOverDueStart, DateTime reportOverDueEnd, int missedReportCount)
         {
             // None of the below is needed if the reports aren't due yet.
             if (currentDate >= reportPeriodStart)
             {
 
-                var progressReports = repoFactory.CreateRepository<ChildProgressReport>(userContext: user.Id)
+                var progressReports = await repoFactory.CreateRepository<ChildProgressReport>(userContext: user.Id)
                     .GetAll()
                     .Where(x =>
                             x.ClassroomGroupId == classroomGroup.Id
@@ -829,12 +927,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             && x.ReportDate.ToUniversalTime() <= reportOverDueEnd
                             && x.IsActive == true)
                     .OrderBy(x => x.ReportDate)
-                    .ToList();
+                    .ToListAsync();
 
                 var dueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportDueStart && r.ReportDate <= reportDueEnd) ?? 0;
                 var overdueReportsSubmitted = progressReports?.Count(r => r.ReportDate >= reportOverDueStart && r.ReportDate <= reportOverDueEnd) ?? 0;
 
-                var childCount = childRepo.GetAll().Count(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHieracry));
+                var childCount = await childRepo.GetAll().CountAsync(c => c.IsActive == true && c.Hierarchy.StartsWith(practitionerHieracry));
                 var unsibmittedOverdueReportsCount = childCount - overdueReportsSubmitted;
 
                 missedReportCount = childCount - (dueReportsSubmitted + overdueReportsSubmitted);
@@ -888,40 +986,64 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return missedReportCount;
         }
 
-        private int GetMissingAttendance(
+        private async Task<int> GetMissingAttendanceReportsAsync(
             IGenericRepository<ClassProgramme, Guid> classProgrammeRepo,
             AttendanceTrackingRepository attendanceRepo,
             IHolidayService<Holiday> holidayService,
-            string practitionerId,
-            ClassroomGroup classroomGroup,
-            List<NotificationDisplay> notifications,
-            DateTime previousMonthStart,
-            DateTime previousMonthEnd)
+            IGenericRepository<ClassroomGroup, Guid> classroomGroupRepo,
+            DateTime reportingPeriodStart,
+            DateTime reportingPeriodEnd,
+            Practitioner practitioner)
         {
-            var holidays = holidayService.GetHolidays(previousMonthStart, previousMonthEnd, "en-za").ToList();
-            var daysForPeriod = previousMonthStart.DaysBetween(previousMonthEnd);
+            var holidays = holidayService.GetHolidays(reportingPeriodStart, reportingPeriodEnd, "en-za").ToList();
+            var daysForPeriod = reportingPeriodStart.DaysBetween(reportingPeriodEnd);
 
-            var nonHolidayWeekDays = RemoveWeekendDays(RemoveHolidays(daysForPeriod, holidays)).ToList();
-            //var onlyClassDays = nonHolidayWeekDays.
+            var attendanceForClassAllPracPrin = new List<Attendance>();
+            var classroomGroupIds = new List<Guid>();
 
-            var attendance = new List<Attendance>();
+            // Get attendance reports submitted for period
+            if (practitioner?.IsPrincipal == true)
+            {
+                classroomGroupIds = await classroomGroupRepo.GetAll().Where(cg => cg.Classroom.UserId == practitioner.UserId.ToString()).Select(cg=>cg.Id).ToListAsync();
+                
+            }
+            else {
+                classroomGroupIds = await classroomGroupRepo.GetAll()
+                    .Where(cg => cg.UserId.ToString() == practitioner.UserId)
+                    .Select(cg => cg.Id)
+                    .ToListAsync();
+            }
 
-            if (classroomGroup?.Id is not null)
-                attendance = attendanceRepo.GetAllByDateRangeByClassroom(previousMonthStart, previousMonthEnd, classroomGroup.Id, practitionerId);
-
-            var availableMeetingDays = nonHolidayWeekDays
-                .Select(r => DateOnly.FromDateTime(r))
-                .Except(attendance.Select(a => DateOnly.FromDateTime(a.AttendanceDate)));
-
-
+            // Remove weekends and holidays
+            var availableDays = RemoveWeekendDays(RemoveHolidays(daysForPeriod, holidays)).ToList();
             
-            var meetingDays = classProgrammeRepo.GetAll()
-                .Where(p => p.ClassroomGroupId == classroomGroup.Id)
-                .Select(cp => (DayOfWeek)cp.MeetingDay)
-                .ToList();
-            var actualMeetingDays = availableMeetingDays.Where(ad => meetingDays.Contains(ad.DayOfWeek));
-            // TODO: Should absentees be subtracted? what happens if a Prac isn't there or the class is just cancelled?
-            var missingRegisterDayCount = actualMeetingDays.Count();
+            int missingRegisterDayCount = 0;
+
+            foreach (var classroomGroupId in classroomGroupIds) {
+                // Get meeting days for the classroom group
+                var classProgrammes = (await classProgrammeRepo.GetAll()
+                    .Where(p => p.ClassroomGroupId == classroomGroupId)
+                    .ToListAsync());
+                List<Attendance> allAttendanceForPeriod = null;
+
+                // remove days that the class doesn't meet
+                var availableClassDays = availableDays.Where(a => classProgrammes.Select(cp => (DayOfWeek)cp.MeetingDay).Contains(a.DayOfWeek));
+
+                // Get Attendance for period
+                if (practitioner.IsPrincipal == true)
+                {
+                    allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
+                        .Where(c => c.ParentRecordId == practitioner.UserId)
+                        .ToListAsync();
+                } else
+                {
+                    allAttendanceForPeriod = await attendanceRepo.GetAllByDateRange(reportingPeriodStart, reportingPeriodEnd)
+                        .Where(c => classProgrammes.Select(c => c.Id).Contains(c.ClassroomProgrammeId))
+                        .ToListAsync();
+                }
+
+                var numberOfDaysNotAttendedForClassroomGroup = availableClassDays.Except(allAttendanceForPeriod.Select(a=> a.AttendanceDate));
+            }
 
             return missingRegisterDayCount;
         }

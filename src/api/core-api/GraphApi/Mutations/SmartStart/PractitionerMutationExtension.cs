@@ -1,4 +1,6 @@
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -210,6 +212,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             }
 
             return false;
+        }
+
+        public bool DeActivatePractitioner([Service] PractitionerManager practitionerManager, string userId)
+        {
+            return practitionerManager.DeActivatePractitioner(userId);
+        }
+
+        public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, string userId)
+        {
+            return userLicenseManager.DelicenseUser(userId);
         }
 
     }

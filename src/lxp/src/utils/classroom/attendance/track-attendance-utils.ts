@@ -123,9 +123,10 @@ export const getMissedClassAttendance = (
   const returnProgrammes: ClassProgrammeDto[] = [];
 
   for (const group of classRoomGroup) {
-    const groupProgrammes = classProgrammes.filter(
-      (x) => x.classroomGroupId === group.id
-    );
+    const groupProgrammes =
+      dayOfWeek === 1
+        ? classProgrammes
+        : classProgrammes.filter((x) => x.classroomGroupId === group.id);
 
     // all the class programs for up until today but does not check the start date
     const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
@@ -336,7 +337,9 @@ export const classroomGroupHasAttendanceDate = (
   date: Date
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-    ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+    ? getDay(date) !== 1
+      ? classProgrammes.find((x) => x.meetingDay === getDay(date))
+      : classProgrammes.filter((x) => x.meetingDay === getDay(date))[1]
     : undefined;
 };
 

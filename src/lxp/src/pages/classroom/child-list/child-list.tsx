@@ -117,6 +117,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<string>[]
   >([]);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitionerId = practitioner?.id;
   const isPrincipal = practitioner?.isPrincipal === true;
   const principalClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === practitioner?.userId
@@ -437,7 +438,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
-      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING, { practitionerId });
     } else {
       showOnlineOnly();
     }

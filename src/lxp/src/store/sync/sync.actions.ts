@@ -14,6 +14,7 @@ import { userThunkActions } from '../user';
 import { practitionerThunkActions } from '../practitioner';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
+import { pqaThunkActions } from '../pqa';
 
 type SyncStep = {
   title: string;
@@ -200,6 +201,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'Analytics',
         action: analyticsThunkActions.pushAnalytics,
+      },
+      {
+        title: 'PQAs',
+        action: pqaThunkActions.addVisitFormData,
       },
     ];
 
