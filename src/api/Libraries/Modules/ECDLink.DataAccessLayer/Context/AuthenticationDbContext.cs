@@ -104,7 +104,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<IntegrationEntityMapping> IntegrationEntityMappings { get; set; }
         public DbSet<IntegrationColumnMapping> IntegrationColumnMappings { get; set; }
         public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
-
+        public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
 
         // Service Scheduling

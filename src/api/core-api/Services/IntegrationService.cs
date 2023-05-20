@@ -35,6 +35,7 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.Core.Helpers;
 using MediatR;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace ECDLink.Core.Services
 {
@@ -47,6 +48,7 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
+        private IGenericRepository<IntegrationLog, Guid> _logRepo;
         private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
@@ -112,6 +114,7 @@ namespace ECDLink.Core.Services
             _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
             _columnmapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
             _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _logRepo = _repositoryFactory.CreateGenericRepository<IntegrationLog>(userContext: _uId);
             _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
 
             _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
@@ -165,7 +168,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE          
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -182,7 +185,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE          
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -198,7 +201,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetMappedColumns Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -231,7 +234,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE         
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -432,9 +435,9 @@ namespace ECDLink.Core.Services
                                 //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
                                 await MatchPrincipals();
                             }
-                            catch (Exception ex)
+                            catch (Exception e)
                             {
-                                //TODO: LOG ERROR AND HANDLE
+                                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "IntegrationByMappedCoach > " + Newtonsoft.Json.JsonConvert.SerializeObject(remoteFranchisees));
                             }
                             returnOK = true;
                         }
@@ -457,9 +460,9 @@ namespace ECDLink.Core.Services
                 schedulerRepo.Update(scheduledRun);
 
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "IntegrationByMappedCoach > " + franchiseeId);
             }
             return returnOK;
         }
@@ -763,6 +766,7 @@ namespace ECDLink.Core.Services
                 IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
                 if (entity != null)
                 {
+                    entity.IsPrincipal = entity.IsPrincipal.HasValue ? entity.IsPrincipal.Value : false;
                     //basic checks to allow child to be imported
                     if (entity.IdNumber != null && entity.FirstName != null && entity.Surname != null && entity.PersonalNumber != null)
                     {
@@ -917,9 +921,16 @@ namespace ECDLink.Core.Services
                             newPractitioner.SiteAddressId = siteAddressId;
                             insertedAddress = true;
                         }
+                        
+                        //Mark Principal/FAA/Linked Practitioner
+                        if (!(bool)entity.IsPrincipal && entity.Principal == null)
+                        {
+                            newPractitioner.IsFundaAppAdmin = true;
+                            newPractitioner.IsPrincipal = false;
 
-                        //Mark Principal/FAA/Linekd Practitioner
-                        if (!(bool)entity.IsPrincipal && entity.Principal != null)
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                        }
+                        else if(!(bool)entity.IsPrincipal && entity.Principal != null)
                         {
                             string principalRemoteId = entity.Principal.Guid.ToString();
                             //find the principal if they have been mapped already, else flag to add principals at the end
@@ -945,17 +956,10 @@ namespace ECDLink.Core.Services
 
                             await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
                         }
-                        else if (!(bool)entity.IsPrincipal && entity.Principal == null)
-                        {
-                            newPractitioner.IsFundaAppAdmin = true;
-                            newPractitioner.IsPrincipal = false;
-
-                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                        }
                         else if ((bool)entity.IsPrincipal)
                         {
                             newPractitioner.IsPrincipal = true;
-                            newPractitioner.IsFundaAppAdmin = true;
+                            newPractitioner.IsFundaAppAdmin = false;
 
                             await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
                         }
@@ -970,7 +974,7 @@ namespace ECDLink.Core.Services
                         catch (Exception ex)
                         {
                             //TODO: LOG ERROR AND HANDLE
-                            RemoveImportedAndFlag(userId, true, false);
+                            await RemoveImportedAndFlag(userId, true, false);
                         }
 
                         if (pracCreated)
@@ -2238,9 +2242,10 @@ namespace ECDLink.Core.Services
                 }
 
             }
-            catch (Exception)
+            catch (Exception e)
             {
                 //TODO: LOG ERROR AND HANDLE
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "UpdateDocumentEntity");
                 throw;
             }
 
@@ -2465,7 +2470,8 @@ namespace ECDLink.Core.Services
                         }
                         catch (Exception e)
                         {
-                            //TODO: LOG ERROR AND HANDLE              
+                            //TODO: LOG ERROR AND HANDLE
+                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                             throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
                     }
@@ -2474,6 +2480,7 @@ namespace ECDLink.Core.Services
                 catch (Exception e)
                 {
                     //TODO: LOG ERROR AND HANDLE              
+                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates");
                     throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }
 
@@ -2713,6 +2720,7 @@ namespace ECDLink.Core.Services
                         catch (Exception e)
                         {
                             //TODO: LOG ERROR AND HANDLE              
+                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushStatements > GetAPIHandlerResponse");
                             throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
                     }
@@ -2720,7 +2728,8 @@ namespace ECDLink.Core.Services
                 }
                 catch (Exception e)
                 {
-                    //TODO: LOG ERROR AND HANDLE              
+                    //TODO: LOG ERROR AND HANDLE
+                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushStatements");
                     throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }
 
@@ -2744,7 +2753,23 @@ namespace ECDLink.Core.Services
 
         #region Logging
 
+        private async Task<bool> IntegrationLog(string log, string logNotes = null, string relatedId = null, LogRelatedType logRelatedType = LogRelatedType.Error, string relatedArea = "IntegrationService")
+        {
+            logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea : "";
+            _logRepo.Insert(new IntegrationLog()
+            {
+                IsActive = true,
+                InsertedDate = DateTime.Now,
+                UserId = _uId,
+                TenantId = tenantId,
+                RelatedId = relatedId,
+                RelatedType = logRelatedType,
+                LogNotes = logNotes,
+                LogResult = log
+            });
 
+            return true;
+        }
 
         #endregion
 
