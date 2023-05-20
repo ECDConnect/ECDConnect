@@ -1,11 +1,15 @@
-﻿using ECDLink.DataAccessLayer.Entities;
+﻿using ECDLink.DataAccessLayer.Context;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -188,6 +192,130 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return siteName;
         }
 
+        public Practitioner SwitchPrincipal([Service] UserManager<ApplicationUser> userManager, string oldPrincipalUserId, string newPrincipalUserId)
+        {
+            var practitionerToPromote = _practiRepo.GetByUserId(newPrincipalUserId);
+            var practitionerToDemote = _practiRepo.GetByUserId(oldPrincipalUserId);
+            if (practitionerToPromote != null && practitionerToDemote != null)
+            {
+                practitionerToPromote.IsPrincipal = true;
+                practitionerToPromote.ShareInfo = true;
+                _practiRepo.Update(practitionerToPromote);
+
+                practitionerToDemote.IsPrincipal = false;
+                _practiRepo.Update(practitionerToDemote);
+
+                //now list through all practitioners and remove the principalhierarchies and assign new
+                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
+                if (allPrincipalPractitioners.Count > 0)
+                {
+                    foreach (var practi in allPrincipalPractitioners)
+                    {
+                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);                        
+                        _practiRepo.Update(practi);
+                    }
+                }
+
+                //Classrooms swap
+                var classroom = _classRepo.GetByUserId(practitionerToDemote.UserId);
+                if (classroom!=null)
+                {
+                    classroom.UserId = practitionerToPromote.UserId;
+                    _classRepo.Update(classroom);
+                }
+
+                //now add user to principal
+                var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
+                userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER);
+                userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL);
+
+                var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
+                userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL);
+                userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER);
+
+            }
+            return practitionerToPromote;
+        }
+
+        public Practitioner PromotePractitionerToPrincipal(
+         [Service] UserManager<ApplicationUser> userManager,
+         string userId)
+        {
+            var practitionerToPromote = _practiRepo.GetByUserId(userId);            
+            if (practitionerToPromote!=null)
+            {
+                practitionerToPromote.IsPrincipal = true;
+                practitionerToPromote.ShareInfo = true;
+                _practiRepo.Update(practitionerToPromote);
+
+                //now add user to principal
+                var user = userManager.FindByIdAsync(userId).Result;
+                userManager.RemoveFromRoleAsync(user, Roles.PRACTITIONER);
+                userManager.AddToRoleAsync(user, Roles.PRINCIPAL);
+            }
+            return practitionerToPromote;
+        }
+
+        public Practitioner DemotePractitionerAsPrincipal([Service] UserManager<ApplicationUser> userManager,
+             string userId)
+        {
+            var practitionerToDemote = _practiRepo.GetByUserId(userId);
+            if (practitionerToDemote != null)
+            {
+                practitionerToDemote.IsPrincipal = false;
+                _practiRepo.Update(practitionerToDemote);
+
+                //now list through all practitioners and remove the principalhierarchies
+                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(userId)).ToList();
+                if (allPrincipalPractitioners.Count > 0)
+                {
+                    foreach (var practi in allPrincipalPractitioners)
+                    {
+                        practi.PrincipalHierarchy = null;
+                        practi.ShareInfo = false;
+                        _practiRepo.Update(practi);
+                    }
+                }
+
+                //now add user back to practitioner
+                var user = userManager.FindByIdAsync(userId).Result;
+                userManager.RemoveFromRoleAsync(user, Roles.PRINCIPAL);
+                userManager.AddToRoleAsync(user, Roles.PRACTITIONER);
+            }
+
+            return practitionerToDemote;
+        }
+
+        public Principal MapPractitionerToPrincipal(Practitioner practitioner)
+        {
+            Principal userToMap = new Principal()
+            {
+                Id = practitioner.Id,
+                IsActive = practitioner.IsActive,
+                InsertedDate = practitioner.InsertedDate,
+                UpdatedBy = practitioner.UpdatedBy,
+                UpdatedDate = practitioner.UpdatedDate,
+                Hierarchy = practitioner.Hierarchy,
+                AttendanceRegisterLink = practitioner.AttendanceRegisterLink,
+                MaxChildren = practitioner.MaxChildren,
+                ConsentForPhoto = practitioner.ConsentForPhoto,
+                ParentFees = practitioner?.ParentFees,
+                LanguageUsedInGroups = practitioner?.LanguageUsedInGroups,
+                StartDate = practitioner.StartDate,
+                MonthSinceFranchisee = practitioner?.MonthSinceFranchisee,
+                UserId = practitioner.UserId,
+                SiteAddressId = practitioner?.SiteAddressId,
+                IsPrincipal = true,
+                CoachHierarchy = practitioner?.CoachHierarchy,
+                IsFundaAppAdmin = practitioner?.IsFundaAppAdmin,
+                IsTrainee = practitioner?.IsTrainee,
+                SigningSignature = practitioner?.SigningSignature,
+                ShareInfo = practitioner?.ShareInfo,
+                IsRegistered = practitioner.IsRegistered,
+            };
+
+            return userToMap;
+        }
 
         #endregion        
 

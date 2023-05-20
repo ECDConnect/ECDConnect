@@ -376,6 +376,9 @@ namespace ECDLink.Core.Services
                                                             {
                                                                 newChildren.Add(newChild);
                                                                 totalChildrenAddedToSS++;
+
+                                                                //do child docs/notes
+
                                                             }
                                                         }
                                                     }
@@ -386,9 +389,9 @@ namespace ECDLink.Core.Services
                                                 }
 
 
-                                                //2. Documents
+                                                //2. Franchisee Documents
 
-                                                //3. Notes
+                                                //3. Franchisee Notes
 
                                             }
                                         } else
