@@ -319,7 +319,7 @@ namespace ECDLink.Core.Services
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
                         //filter valid entities that havent failed importing before
-                        await PushData();                        
+                        //await PushData();                        
                     }
 
                     //-------------------
