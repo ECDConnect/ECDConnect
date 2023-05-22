@@ -168,7 +168,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitRepo.Update(entityToUpdate);
 
             // then handle status data
-            _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
+            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
+            {
+                _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
+            }
             return true;
         }
 
