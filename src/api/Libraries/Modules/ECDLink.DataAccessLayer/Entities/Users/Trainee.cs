@@ -35,7 +35,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public DateTime? TraineeConvertedDate { get; set; }
-        public virtual List<License> Licenses { get; set; }
         public bool? AttendedFirstAidCourse { get; set; }
         public bool? SiteVisitsCompleted { get; set; }
         public bool? ChildProgressTraining { get; set; }
