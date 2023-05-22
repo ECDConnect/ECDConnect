@@ -3462,7 +3462,7 @@ export type MutationAddRoleArgs = {
 };
 
 export type MutationAddSupportVisitForPractitionerArgs = {
-  input?: InputMaybe<VisitModelInput>;
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddTeamLeadArgs = {
@@ -8820,6 +8820,21 @@ export type StringOperationFilterInput = {
   nstartsWith?: InputMaybe<Scalars['String']>;
   or?: InputMaybe<Array<StringOperationFilterInput>>;
   startsWith?: InputMaybe<Scalars['String']>;
+};
+
+export type SupportVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  risk?: InputMaybe<Scalars['String']>;
+  supportData?: InputMaybe<CmsVisitDataInputModelInput>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type SystemSetting = {

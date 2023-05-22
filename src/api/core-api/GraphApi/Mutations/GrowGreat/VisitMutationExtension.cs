@@ -73,7 +73,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
-            VisitModel input)
+            [Service] VisitDataManager visitDataManager,
+            SupportVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
@@ -81,14 +82,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
-            input.VisitType = visitType;
-            input.Attended = false;
-            input.MotherId = null;
-            input.InfantId = null;
-            input.LinkedVisitId = null;
-            input.PractitionerId = practitioner.Id;
+            // Add Visit
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.Attended = false;
+            visitModel.MotherId = null;
+            visitModel.InfantId = null;
+            visitModel.LinkedVisitId = null;
+            visitModel.PractitionerId = practitioner.Id;
+            visitModel.Attended = true;
+            Visit visit = visitManager.AddSupportVisitForPractitioner(visitModel);
+            // Add VisitData for visit
+            input.SupportData.VisitId = visit.Id.ToString();
+            input.SupportData.PractitionerId = practitioner.Id.ToString();
+            visitDataManager.AddPractitionerVisitData(input.SupportData);
 
-            return visitManager.AddAdditionalVisit(input);
+            return visit;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

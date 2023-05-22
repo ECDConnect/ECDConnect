@@ -63,7 +63,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             foreach (CMSVisitSection section in input.VisitData.Sections) {
                 foreach (CMSQuestion question in section.Questions) {
                     VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    _visitDataRepo.Insert(visitData);
+                    if (ValidateInsertRecord(visitData))
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
                 }
             }
 
@@ -104,7 +107,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             foreach (CMSVisitSection section in input.VisitData.Sections) {
                 foreach (CMSQuestion question in section.Questions) {
                     VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    _visitDataRepo.Insert(visitData);
+                    if (ValidateInsertRecord(visitData))
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
                 }
             }
 
@@ -146,7 +152,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 foreach (CMSQuestion question in section.Questions)
                 {
                     VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
-                    _visitDataRepo.Insert(visitData);
+                    if (ValidateInsertRecord(visitData))
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
                 }
             }
 
@@ -206,7 +215,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
-
         public List<VisitData> GetVisitDataForVisitId(string visitId)
         {
             return (
@@ -250,7 +258,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             ).Distinct().Count();
 
         }
-
         public string GetIDDocCSGStatusForInfant(string id)
         {
             var status = "";
@@ -285,7 +292,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
-
         public string GetCSGStatusForInfant(string id)
         {
             var status = "";
@@ -302,6 +308,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 status = "Not applied for CSG";
             }
             return status;
+        }
+        private bool ValidateInsertRecord(VisitData visitData)
+        {
+            VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitData.VisitId && 
+                                                                  x.VisitName == visitData.VisitName &&
+                                                                  x.VisitSection == visitData.VisitSection &&
+                                                                  x.Question == visitData.Question &&
+                                                                  x.QuestionAnswer == visitData.QuestionAnswer).FirstOrDefault();
+            if (record == null)
+            {
+                return true;
+            }
+            
+            return false;
         }
     }
 }
