@@ -147,7 +147,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         }
 
     
-        public bool DeActivatePractitioner(string userId)
+        public bool DeActivatePractitioner(string userId, string leavingComment)
         {
             Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
 
@@ -156,12 +156,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 practitioner.IsActive = false;
                 practitioner.UpdatedBy = _applicationUserId;
                 practitioner.UpdatedDate = DateTime.Now;
+                practitioner.LeavingComment = leavingComment;
                 _practitionerRepo.Update(practitioner);
 
                 return true;
             }
             return false;
         }
+
+       
     }
 }
 
