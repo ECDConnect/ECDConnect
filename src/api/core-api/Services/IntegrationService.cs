@@ -36,6 +36,7 @@ using ECDLink.Core.Helpers;
 using MediatR;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using Microsoft.EntityFrameworkCore.Metadata.Internal;
+using NPOI.SS.Formula.Functions;
 
 namespace ECDLink.Core.Services
 {
@@ -452,12 +453,15 @@ namespace ECDLink.Core.Services
                 //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
                 var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
                 ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
-                scheduledRun.Results = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|",_errorsList.ToArray());
+                string runResults = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|", _errorsList.ToArray());
+                scheduledRun.Results = runResults;
                 scheduledRun.EndTime = DateTime.Now;
                 scheduledRun.StartTime = startTime;
                 scheduledRun.UpdatedDate = DateTime.Now;
                 scheduledRun.UpdatedBy = _uId;
                 schedulerRepo.Update(scheduledRun);
+
+                await IntegrationLog(runResults, null, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");
 
             }
             catch (Exception e)
@@ -484,7 +488,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetRecordChangesBetweenDates > " + startDate + " " + endDate);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -507,7 +511,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE           
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetColumnChangesBetweenDates > " + startDate + " " + endDate);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -526,7 +530,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetCoaches > " + remoteFranchisorId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -548,7 +552,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE               
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetFranchiseesByCoach > " + remoteCoachId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -571,7 +575,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE                
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -592,7 +596,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetChildren > " + remoteFranchiseeId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -612,7 +616,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetChildById > " + remoteChildId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -630,7 +634,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE              
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetCareGiversByFranchisee > " + remoteFranchiseeId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -668,9 +672,9 @@ namespace ECDLink.Core.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MatchPrincipals");
             }
 
             return returnOK;
@@ -710,9 +714,9 @@ namespace ECDLink.Core.Services
                         returnOK = true;
                     }
                 }
-                catch (Exception ex)
+                catch (Exception e)
                 {
-                    //TODO: LOG ERROR AND HANDLE
+                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "AlignChildHierarchy");
                 }
             }
 
@@ -749,12 +753,13 @@ namespace ECDLink.Core.Services
                             }
                         }
                     }
-                    catch (Exception ex)
+                    catch (Exception e)
                     {
-                        //TODO: LOG ERROR AND HANDLE
+                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "AlignChildClassgroupToUnsure");
                     }
                 }
             }
+
 
             return returnOK;
         }
@@ -971,9 +976,9 @@ namespace ECDLink.Core.Services
                             _practitionerRepo.Insert(newPractitioner);
                             pracCreated = true;
                         }
-                        catch (Exception ex)
+                        catch (Exception e)
                         {
-                            //TODO: LOG ERROR AND HANDLE
+                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapFranchisee > insert newPractitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
                             await RemoveImportedAndFlag(userId, true, false);
                         }
 
@@ -1046,9 +1051,9 @@ namespace ECDLink.Core.Services
                     }
                 }
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
             }
 
             return null;
@@ -1247,9 +1252,9 @@ namespace ECDLink.Core.Services
                                 }
 
                             }
-                            catch (Exception ex)
+                            catch (Exception e)
                             {
-                                //TODO: LOG ERROR AND HANDLE
+                                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
                             }
 
                             if (childCreated)
@@ -1347,9 +1352,9 @@ namespace ECDLink.Core.Services
                 }
                 else return null;
             }
-            catch (Exception ex)
+            catch (Exception e)
             {
-                //TODO: LOG ERROR AND HANDLE
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
                 return null;
             }
 
@@ -2470,7 +2475,6 @@ namespace ECDLink.Core.Services
                         }
                         catch (Exception e)
                         {
-                            //TODO: LOG ERROR AND HANDLE
                             await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                             throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
@@ -2478,8 +2482,7 @@ namespace ECDLink.Core.Services
 
                 }
                 catch (Exception e)
-                {
-                    //TODO: LOG ERROR AND HANDLE              
+                {           
                     await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates");
                     throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }

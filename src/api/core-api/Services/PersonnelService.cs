@@ -11,6 +11,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,6 +29,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<SiteAddress, Guid> _addressRepo;
         private IGenericRepository<ProgrammeType, Guid> _programmeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
+        private IGenericRepository<Trainee, Guid> _traineeRepo;
+
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -44,6 +47,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _addressRepo = _repoFactory.CreateGenericRepository<SiteAddress>(userContext: _applicationUserId);
             _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
+            _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
         }
 
 
@@ -315,6 +319,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             };
 
             return userToMap;
+        }
+
+        public Trainee GetTraineeByUserId(
+            [Service] UserLicenseManager userLicenseManager,
+            string userId)
+        {
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+            if (trainee != null)
+            {
+                trainee.Practitioner = _practiRepo.GetByUserId(userId);
+                //trainee.Licenses = userLicenseManager.GetLicensesForUser(userId);
+
+                return trainee;
+            }
+
+            return null;
         }
 
         #endregion        

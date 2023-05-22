@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -20,14 +21,25 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         IDocumentQueryable, ITrackableType
          where TKey : IEquatable<TKey>
     {
-        public DateTime? StartDate { get; set; }
-
         public virtual ICollection<Document> Documents { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }
         public string UserId { get; set; }
+        public Guid PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? ConsolidationMeetingDate { get; set; }
+        public DateTime? ChildrenAddedDate { get; set; }
+        public Guid? LinkedPrincipalHierarchy { get; set; }
+        public decimal Progress { get; set; }
+        public string ProgrammeType { get; set; }
+        public DateTime? TraineeConvertedDate { get; set; }
+        public virtual List<License> Licenses { get; set; }
+        public bool? AttendedFirstAidCourse { get; set; }
+        public bool? SiteVisitsCompleted { get; set; }
+        public bool? ChildProgressTraining { get; set; }
 
     }
 
