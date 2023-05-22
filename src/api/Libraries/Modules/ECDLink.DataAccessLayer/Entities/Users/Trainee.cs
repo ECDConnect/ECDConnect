@@ -18,10 +18,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Trainee<TKey> : EntityBase<TKey>,
-        IDocumentQueryable, ITrackableType
+        ITrackableType
          where TKey : IEquatable<TKey>
     {
-        public virtual ICollection<Document> Documents { get; set; }
 
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }

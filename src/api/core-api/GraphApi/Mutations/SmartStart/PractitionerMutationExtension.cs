@@ -47,8 +47,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.MaxChildren != null) practitioner.MaxChildren = input.MaxChildren;
                     if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
                     if (input.IsFundaAppAdmin != null) practitioner.IsFundaAppAdmin = input.IsFundaAppAdmin;
-                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;
-                    if (input.IsTrainee != null) practitioner.IsTrainee = input.IsTrainee;
+                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
 
@@ -91,6 +90,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (updateAddressResult != null)
                             practitioner.SiteAddressId = updateAddressResult.Id;
                     }
+
+                    if (input.IsTrainee != null)
+                    {
+                        practitioner.IsTrainee = input.IsTrainee;
+                        if ((bool)input.IsTrainee)
+                        {
+                            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
+                            var trainee = traineeRepo.GetByUserId(input.UserId);
+                            if (trainee == null)
+                            {
+                                //create Trainee record
+                                traineeRepo.Insert(new Trainee() { UserId = input.UserId, IsActive = true, Id = input.Id });
+                            }
+                        }
+                    }
+
                     Practitioner updateResult = dbRepo.Update(practitioner);
                     return updateResult;
                 }
