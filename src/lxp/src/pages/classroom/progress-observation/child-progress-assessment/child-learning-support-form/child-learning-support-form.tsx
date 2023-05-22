@@ -18,7 +18,13 @@ import { ChildLearningSupportFormProps } from './child-learning-support-form.typ
 
 export const ChildLearningSupportForm: React.FC<
   ChildLearningSupportFormProps
-> = ({ childLearningSupportForm, childId, helpingWithSkillId, onSubmit }) => {
+> = ({
+  childLearningSupportForm,
+  childId,
+  helpingWithSkillId,
+  helpingWithText,
+  onSubmit,
+}) => {
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const currentChildUser = useSelector(
     childrenSelectors.getChildUserById(currentChild?.userId)
@@ -42,9 +48,11 @@ export const ChildLearningSupportForm: React.FC<
     control: childLearningSupportFormControl,
   });
 
-  const handleFormSubmit = () => {
-    if (isValid && onSubmit) {
-      onSubmit(getChildLearningSupportFormValues());
+  const handleFormSubmit = (exit: boolean) => {
+    if (exit) {
+      onSubmit(getChildLearningSupportFormValues(), true);
+    } else if (isValid) {
+      onSubmit(getChildLearningSupportFormValues(), false);
     }
   };
 
@@ -82,15 +90,36 @@ export const ChildLearningSupportForm: React.FC<
       />
       <div className={'py-4'}></div>
       <Button
-        onClick={handleFormSubmit}
-        className="w-full"
+        onClick={() => handleFormSubmit(false)}
+        className="mb-4 w-full"
         size="small"
         color="primary"
         type="filled"
         disabled={!isValid}
       >
         {renderIcon('ArrowCircleRightIcon', classNames('h-5 w-5 text-white'))}
-        <Typography type="h6" className="ml-2" text="Next" color="white" />
+        <Typography
+          type="h6"
+          className="ml-2"
+          text="Save & continue"
+          color="white"
+        />
+      </Button>
+      <Button
+        onClick={() => handleFormSubmit(true)}
+        className="w-full"
+        size="small"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+        <Typography
+          type="h6"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
+        />
       </Button>
     </div>
   );

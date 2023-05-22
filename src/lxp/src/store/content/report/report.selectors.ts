@@ -54,6 +54,13 @@ export const getChildProgressReportSummaries = (childId?: string) =>
         )
   );
 
+export const getChildProgressObservationReportByReportId = (reportId: string) =>
+  createSelector(
+    (state: RootState) => state.contentReportData.childProgressionReports || [],
+    (reports: ChildProgressObservationReport[]) =>
+      reports.find((report) => report.id === reportId)
+  );
+
 export const getChildProgressObservationReportByReportingPeriod = (
   reportingDate: Date,
   childId?: string
@@ -103,6 +110,9 @@ export const getChildLatestCompletedReports = (childId?: string) =>
           childFirstName: report.childFirstname,
           childSurname: report.childSurname,
           reportDate: report.reportingDate,
+          reportDateCompleted: report.dateCompleted || '',
+          reportDateCreated: report.dateCreated || '',
+          reportPeriod: report.reportingPeriod,
           reportId: report.id,
           classroomName: report.classroomName,
         }));

@@ -17,11 +17,11 @@ import { progressTrackingSelectors } from '@store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';
 import { useState } from 'react';
 
-interface ChildDevelopmentLevelFormProps
-  extends FormComponentProps<ChildDevelopmentLevelFormModel> {
+interface ChildDevelopmentLevelFormProps {
   childDevelopmentLevelForm?: ChildDevelopmentLevelFormModel;
   childId: string;
   childAchievedLevelId: number;
+  onSubmit: (result: ChildDevelopmentLevelFormModel, exit: boolean) => void;
 }
 
 export const ChildDevelopmentLevelForm: React.FC<
@@ -43,12 +43,15 @@ export const ChildDevelopmentLevelForm: React.FC<
     (level) => level.id === childAchievedLevelId
   );
 
-  const handleFormSubmit = () => {
+  const handleFormSubmit = (exit: boolean) => {
     if (onSubmit) {
-      onSubmit({
-        practitionerAgreeToLevel: true,
-        levelId: currentChildLevel?.id || 0,
-      });
+      onSubmit(
+        {
+          practitionerAgreeToLevel: true,
+          levelId: currentChildLevel?.id || 0,
+        },
+        exit
+      );
     }
   };
 
@@ -105,7 +108,7 @@ export const ChildDevelopmentLevelForm: React.FC<
             }
           />
           <Button
-            onClick={handleFormSubmit}
+            onClick={() => handleFormSubmit(false)}
             className="mt-4 w-full"
             size="small"
             color="primary"
@@ -117,6 +120,22 @@ export const ChildDevelopmentLevelForm: React.FC<
               classNames('h-5 w-5 text-white')
             )}
             <Typography type="h6" className="ml-2" text="Next" color="white" />
+          </Button>
+          <Button
+            onClick={() => handleFormSubmit(true)}
+            className="mt-4 w-full"
+            size="small"
+            color="primary"
+            type="outlined"
+            disabled={false}
+          >
+            {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text="Save & exit"
+              color="primary"
+            />
           </Button>
         </div>
       </div>

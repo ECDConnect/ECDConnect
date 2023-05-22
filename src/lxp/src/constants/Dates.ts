@@ -11,6 +11,7 @@ export const DateFormats: DateFormatOption = {
   dayWithShortMonthName: { day: 'numeric', month: 'short' },
   dayWithLongMonthName: { day: 'numeric', weekday: 'long', month: 'long' },
   shortMonthNameAndYear: { month: 'short', year: 'numeric' },
+  longMonthNameAndYear: { month: 'long', year: 'numeric' },
 };
 
 type DateFormatOption = {
@@ -21,6 +22,7 @@ type DateFormatOption = {
   dayWithShortMonthName: Intl.DateTimeFormatOptions;
   dayWithLongMonthName: Intl.DateTimeFormatOptions;
   shortMonthNameAndYear: Intl.DateTimeFormatOptions;
+  longMonthNameAndYear: Intl.DateTimeFormatOptions;
 };
 
 export const ShortMonths: ShortMonthType[] = [

@@ -96,6 +96,7 @@ export const CaregiverCanHelpChildWith: React.FC<
             <ObservationCategoryCard
               key={`completed-${cat.id}`}
               className={'mt-4'}
+              categoryImageUrl={cat.imageUrl}
               categoryName={cat.name}
               isCompetentWithCategory={
                 [
