@@ -32,6 +32,7 @@ import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 
 interface FormProps {
+  isView: boolean;
   visitId?: string;
   onBack: () => void;
 }
@@ -39,7 +40,7 @@ interface FormProps {
 export const currentActivityKey = 'selectedOption';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ visitId, onBack }: FormProps) => {
+export const Form = ({ visitId, isView, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
@@ -260,6 +261,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       displayOffline={!isOnline}
     >
       <DynamicForm
+        isView={isView}
         name={activityName}
         steps={currentSteps}
         smartStarter={practitioner}

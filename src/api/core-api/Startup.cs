@@ -132,6 +132,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
+            services.AddTransient<VisitDataStatusManager_Practitioner>();
             services.AddTransient<VisitBackReferralManager>();
             services.AddTransient<PractitionerManager>();
             services.AddTransient<UserLicenseManager>();

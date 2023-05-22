@@ -4,11 +4,13 @@ import {
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
+  getVisitDataForVisitId,
 } from './pqa.actions';
 import { PQAState } from './pqa.types';
 import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
+import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
 
 const initialState: PQAState = {};
 
@@ -69,6 +71,7 @@ const pqaSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       const practitionerId = action.meta.arg.userId;
@@ -103,6 +106,47 @@ const pqaSlice = createSlice({
           },
         ];
       }
+    });
+    builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
+      // @ts-ignore
+      state.coachPractitionersTimeline = action.payload.map((item) => ({
+        practitionerId: item.userId,
+        // @ts-ignore
+        timeline: item.timeline,
+      }));
+    });
+    builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
+      const visitId = action.meta.arg.visitId;
+
+      if (state.prePqaPreviousFormData?.length) {
+        if (
+          !state.prePqaPreviousFormData.some((item) => item.visitId === visitId)
+        ) {
+          state.prePqaPreviousFormData = [
+            ...state.prePqaPreviousFormData,
+            { visitId, formData: action.payload },
+          ];
+          return;
+        }
+
+        const newState = state.prePqaPreviousFormData.map((item) => {
+          if (item.visitId === visitId) {
+            return { ...item, formData: action.payload };
+          }
+
+          return item;
+        });
+
+        state.prePqaPreviousFormData = newState;
+      } else {
+        state.prePqaPreviousFormData = [
+          {
+            visitId,
+            formData: action.payload,
+          },
+        ];
+      }
+      setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);

@@ -20,7 +20,11 @@ import {
 import { useLayoutEffect, useState } from 'react';
 import { Form, currentActivityKey } from './forms';
 import { useAppDispatch } from '@/store';
-import { getPractitionerTimeline } from '@/store/pqa/pqa.actions';
+import {
+  PqaActions,
+  getPractitionerTimeline,
+  getVisitDataForVisitId,
+} from '@/store/pqa/pqa.actions';
 import {
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
@@ -32,15 +36,23 @@ import {
   timelineSteps,
 } from './timeline-steps';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { Visit } from '@ecdlink/graphql';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const [isView, setIsView] = useState(false);
 
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const appDispatch = useAppDispatch();
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -120,6 +132,19 @@ export const CoachPractitionerJourney: React.FC = () => {
     setShowForm(false);
   };
 
+  const onView = async (visit: Visit) => {
+    await appDispatch(
+      getVisitDataForVisitId({ visitId: visit.id, userId: practitionerId })
+    );
+
+    window.sessionStorage.setItem(
+      currentActivityKey,
+      visit.visitType?.description!
+    );
+    setIsView(true);
+    setShowForm(true);
+  };
+
   useLayoutEffect(() => {
     if (selectedForm) {
       setShowForm(true);
@@ -131,13 +156,19 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [appDispatch, practitionerId]);
 
   if (
+    (showForm && isView) ||
     (showForm && currentVisit?.extraData?.visitId) ||
     (showForm && selectedForm === visitTypes.supportVisit)
   ) {
     return (
-      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
+      <Form
+        isView={isView}
+        onBack={onFormBack}
+        visitId={currentVisit?.extraData?.visitId}
+      />
     );
   }
+
   return (
     <BannerWrapper
       size="small"
@@ -208,8 +239,13 @@ export const CoachPractitionerJourney: React.FC = () => {
       />
       {!!timeline && (
         <Steps
-          // @ts-ignore
-          items={timelineSteps(timeline, uncompletedVisits)}
+          items={timelineSteps(
+            timeline,
+            onView,
+            isLoading,
+            isOnline,
+            uncompletedVisits
+          )}
           typeColor={{ completed: 'successMain' }}
         />
       )}

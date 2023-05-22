@@ -127,7 +127,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const { generateReport } = useGeneratePdfReport();
 
   const [reportDetails, setReportDetails] =
-  useState<ReportDetailsForPractitionerData>();
+    useState<ReportDetailsForPractitionerData>();
 
   useEffect(() => {
     const getClassroomDetails = async () => {

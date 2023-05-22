@@ -1,4 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities.Licenses;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -48,6 +49,27 @@ namespace EcdLink.Api.CoreApi.Managers.Users
                 join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == type) on license.LicenseTypeId equals licenseType.Id
                 select license
             ).FirstOrDefault();
+        }
+
+
+        public bool DelicenseUser(LicenseModel input)
+        {
+            List<License> license1 = _licenseRepo.GetAll().Where(x => x.UserId == input.UserId).ToList();
+
+            foreach (License license in license1)
+            {
+                license.IsActive = false;
+                license.DelicensedDate = DateTime.Now;
+                if (license.LicenseType.Name == Constants.SSSettings.ss_smart_space_license)
+                {
+                    license.DelicensedComment = input.DelicensedComment;
+                    license.CollectedSSPlaykit = input.CollectedSSPlaykit;
+                    license.CollectedSSHandbook = input.CollectedSSHandbook;
+                }
+
+                _licenseRepo.Update(license);
+            }
+            return true;
         }
 
     }

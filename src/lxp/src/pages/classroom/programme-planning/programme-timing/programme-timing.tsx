@@ -92,7 +92,7 @@ const ProgrammeTiming: React.FC = () => {
     //   variation: 'create',
     // });
     history.push(ROUTES.CLASSROOM, {
-      activeTabIndex: 3,
+      activeTabIndex: 2,
       programmeStartDate: validatedDate,
     });
   };

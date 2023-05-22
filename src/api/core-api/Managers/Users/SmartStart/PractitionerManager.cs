@@ -1,7 +1,8 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
-using EcdLink.Api.CoreApi.Managers.Visits;
+﻿using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -25,6 +26,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
         public PractitionerManager(
             IHttpContextAccessor contextAccessor,
@@ -40,14 +42,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
 
+            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
         }
 
-        public PractitionerTimeLine GetPractitionerTimeline(string userId)
+        public PractitionerTimeline GetPractitionerTimeline(string userId)
         {
 
-            PractitionerTimeLine timeLine = new PractitionerTimeLine();
+            PractitionerTimeline timeLine = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
             // Starter license received
@@ -143,6 +146,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return timeLine;
         }
 
+    
+        public bool DeActivatePractitioner(string userId, string leavingComment)
+        {
+            Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
+
+            if (practitioner != null)
+            {
+                practitioner.IsActive = false;
+                practitioner.UpdatedBy = _applicationUserId;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.LeavingComment = leavingComment;
+                _practitionerRepo.Update(practitioner);
+
+                return true;
+            }
+            return false;
+        }
+
+       
     }
 }
 

@@ -1,10 +1,10 @@
-﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using System;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
+namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
 {
-    public class PractitionerTimeLine
+    public class PractitionerTimeline
     {
         public string StarterLicenseStatus { get; set; }
         public string SmartSpaceLicenseStatus { get; set; }
@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public DateTime? CoachingCircleDate3 { get; set; }
         public DateTime? CoachingCircleDate4 { get; set; }
 
-        public virtual ICollection<Visit> SiteVisits  { get; set; }
+        public virtual ICollection<Visit> SiteVisits { get; set; }
         public virtual ICollection<Visit> SupportVisits { get; set; }
         public virtual ICollection<PractitionerClubMeeting> ClubMeetings { get; set; }
         public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }
@@ -67,6 +67,4 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.SmartStart
         public string Name { get; set; }
         public DateTime? MeetingDate { get; set; }
     }
-
-
 }

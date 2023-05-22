@@ -21,6 +21,7 @@ export interface SectionQuestions {
 }
 
 export interface DynamicFormProps {
+  isView?: boolean;
   name?: string;
   smartStarter?: PractitionerDto;
   currentStep?: number;
@@ -37,6 +38,7 @@ export interface DynamicFormProps {
 }
 
 export const DynamicForm = ({
+  isView,
   name,
   smartStarter,
   currentStep,
@@ -113,6 +115,7 @@ export const DynamicForm = ({
 
     return (
       <CurrentStep
+        isView={isView}
         smartStarter={smartStarter}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
@@ -123,6 +126,7 @@ export const DynamicForm = ({
       />
     );
   }, [
+    isView,
     handleSetQuestions,
     smartStarter,
     currentStep,
@@ -151,11 +155,11 @@ export const DynamicForm = ({
     }
 
     return {
-      action: onSubmit,
-      text: 'Save',
-      icon: 'SaveIcon',
+      action: isView ? onClose : onSubmit,
+      text: isView ? 'Close' : 'Save',
+      icon: isView ? 'XIcon' : 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [isView, onClose, currentStep, handleOnNext, onSubmit, steps?.length]);
 
   return (
     <div className="flex h-full flex-col">
