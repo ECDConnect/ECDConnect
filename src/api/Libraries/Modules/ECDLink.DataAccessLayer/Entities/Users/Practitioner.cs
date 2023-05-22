@@ -75,6 +75,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsClubOwner { get; set; }
         public bool? AttendedChildProgress { get; set; }
         public bool? AttendedBusinessSkills { get; set; }
+        public string LeavingComment { get; set; }
 
         [NotMapped]
         public virtual PractitionerTimeline timeline  { get; set; }

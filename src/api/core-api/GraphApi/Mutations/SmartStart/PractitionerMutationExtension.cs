@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
@@ -214,14 +215,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return false;
         }
 
-        public bool DeActivatePractitioner([Service] PractitionerManager practitionerManager, string userId)
+        public bool DeActivatePractitioner([Service] PractitionerManager practitionerManager, string userId, string leavingComment)
         {
-            return practitionerManager.DeActivatePractitioner(userId);
+            return practitionerManager.DeActivatePractitioner(userId, leavingComment);
         }
 
-        public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, string userId)
+        public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
         {
-            return userLicenseManager.DelicenseUser(userId);
+            return userLicenseManager.DelicenseUser(input);
         }
 
     }

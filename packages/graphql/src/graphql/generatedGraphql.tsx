@@ -2630,6 +2630,9 @@ export type LearnerInput = {
 
 export type License = {
   __typename?: 'License';
+  collectedSSHandbook?: Maybe<Scalars['Boolean']>;
+  collectedSSPlaykit?: Maybe<Scalars['Boolean']>;
+  delicensedComment?: Maybe<Scalars['String']>;
   delicensedDate?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -2645,6 +2648,9 @@ export type License = {
 
 export type LicenseFilterInput = {
   and?: InputMaybe<Array<LicenseFilterInput>>;
+  collectedSSHandbook?: InputMaybe<BooleanOperationFilterInput>;
+  collectedSSPlaykit?: InputMaybe<BooleanOperationFilterInput>;
+  delicensedComment?: InputMaybe<StringOperationFilterInput>;
   delicensedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2660,6 +2666,9 @@ export type LicenseFilterInput = {
 };
 
 export type LicenseInput = {
+  CollectedSSHandbook?: InputMaybe<Scalars['Boolean']>;
+  CollectedSSPlaykit?: InputMaybe<Scalars['Boolean']>;
+  DelicensedComment?: InputMaybe<Scalars['String']>;
   DelicensedDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -2669,6 +2678,14 @@ export type LicenseInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type LicenseModelInput = {
+  collectedSSHandbook?: InputMaybe<Scalars['Boolean']>;
+  collectedSSPlaykit?: InputMaybe<Scalars['Boolean']>;
+  delicensedComment?: InputMaybe<Scalars['String']>;
+  delicensedDate?: InputMaybe<Scalars['DateTime']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type LicenseType = {
@@ -3924,6 +3941,7 @@ export type MutationCreateWorkflowStatusTypeArgs = {
 };
 
 export type MutationDeActivatePractitionerArgs = {
+  leavingComment?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -4383,7 +4401,7 @@ export type MutationDeleteWorkflowStatusTypeArgs = {
 };
 
 export type MutationDelicensePractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+  input?: InputMaybe<LicenseModelInput>;
 };
 
 export type MutationDemotePractitionerAsPrincipalArgs = {
@@ -5340,6 +5358,7 @@ export type Practitioner = {
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
   languageUsedInGroups?: Maybe<Scalars['String']>;
+  leavingComment?: Maybe<Scalars['String']>;
   maxChildren?: Maybe<Scalars['Int']>;
   monthSinceFranchisee?: Maybe<Scalars['Int']>;
   parentFees?: Maybe<Scalars['Decimal']>;
@@ -5440,6 +5459,7 @@ export type PractitionerFilterInput = {
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isTrainee?: InputMaybe<BooleanOperationFilterInput>;
   languageUsedInGroups?: InputMaybe<StringOperationFilterInput>;
+  leavingComment?: InputMaybe<StringOperationFilterInput>;
   maxChildren?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   monthSinceFranchisee?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<PractitionerFilterInput>>;
@@ -5480,6 +5500,7 @@ export type PractitionerInput = {
   IsRegistered?: InputMaybe<Scalars['Boolean']>;
   IsTrainee?: InputMaybe<Scalars['Boolean']>;
   LanguageUsedInGroups?: InputMaybe<Scalars['String']>;
+  LeavingComment?: InputMaybe<Scalars['String']>;
   MaxChildren?: InputMaybe<Scalars['Int']>;
   MonthSinceFranchisee?: InputMaybe<Scalars['Int']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
@@ -5695,6 +5716,7 @@ export type Principal = {
   isRegistered?: Maybe<Scalars['Boolean']>;
   isTrainee?: Maybe<Scalars['Boolean']>;
   languageUsedInGroups?: Maybe<Scalars['String']>;
+  leavingComment?: Maybe<Scalars['String']>;
   maxChildren?: Maybe<Scalars['Int']>;
   monthSinceFranchisee?: Maybe<Scalars['Int']>;
   parentFees?: Maybe<Scalars['Decimal']>;
@@ -5752,6 +5774,7 @@ export type PrincipalFilterInput = {
   isRegistered?: InputMaybe<BooleanOperationFilterInput>;
   isTrainee?: InputMaybe<BooleanOperationFilterInput>;
   languageUsedInGroups?: InputMaybe<StringOperationFilterInput>;
+  leavingComment?: InputMaybe<StringOperationFilterInput>;
   maxChildren?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   monthSinceFranchisee?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   or?: InputMaybe<Array<PrincipalFilterInput>>;
@@ -5792,6 +5815,7 @@ export type PrincipalInput = {
   IsRegistered?: InputMaybe<Scalars['Boolean']>;
   IsTrainee?: InputMaybe<Scalars['Boolean']>;
   LanguageUsedInGroups?: InputMaybe<Scalars['String']>;
+  LeavingComment?: InputMaybe<Scalars['String']>;
   MaxChildren?: InputMaybe<Scalars['Int']>;
   MonthSinceFranchisee?: InputMaybe<Scalars['Int']>;
   ParentFees?: InputMaybe<Scalars['Decimal']>;
