@@ -23,16 +23,23 @@ export default function Login() {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, getValues, formState } = useForm({
+  const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+  const password = watch('password');
+
+  const formValues = getValues();
+  const passwordStrength = zxcvbn(formValues.password);
+  console.log('Password strength score:', passwordStrength.score);
+  console.log('Password feedback:', password);
+
+  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+
   const { errors, isValid } = formState;
 
   const signIn = async () => {
-    const formValues = getValues();
-
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
@@ -58,8 +65,6 @@ export default function Login() {
       }, 5000);
     }
   };
-
-  const passwordScore = 6; // Assuming you have a variable to store the password strength score
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
@@ -102,16 +107,18 @@ export default function Login() {
                 />
               </div>
               <div className="-mx-1 flex">
-                {[...Array(5)].map((_, i) => (
-                  <div className="w-1/5 px-1" key={i}>
+                {[...Array(4)].map((_, i) => (
+                  <div className="w-1/4 px-1" key={i}>
                     <div
                       className={`h-2 rounded-xl transition-colors ${
                         i < passwordScore
                           ? passwordScore <= 2
                             ? 'bg-red-400'
-                            : passwordScore <= 4
+                            : passwordScore <= 3
                             ? 'bg-yellow-400'
-                            : 'bg-green-500'
+                            : passwordScore <= 4
+                            ? 'bg-green-500'
+                            : 'bg-yellow-400'
                           : 'bg-gray-200'
                       }`}
                     ></div>
