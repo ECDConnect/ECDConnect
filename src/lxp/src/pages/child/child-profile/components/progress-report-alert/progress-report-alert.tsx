@@ -58,10 +58,9 @@ export const ChildProgressReportAlert: React.FC<
     !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
 
   const currentReportingPeriodReportSummary = reportSummaries.find(
-    (summary) => {
+    (summary) =>
       summary.childId === child.id &&
-        isMatchingReportingPeriods(new Date(summary.reportDate), currentDate);
-    }
+      isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
   const reportingPeriod = !currentReportingPeriodReportSummary

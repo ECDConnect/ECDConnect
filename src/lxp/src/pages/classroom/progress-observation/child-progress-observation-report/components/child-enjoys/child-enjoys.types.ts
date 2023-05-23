@@ -1,7 +1,6 @@
-import { FormComponentProps } from '@ecdlink/core';
 import { ChildEnjoysFormModel } from '@schemas/classroom/child-progress-observations/child-enjoys-form';
 
-export interface ChildEnjoysProps
-  extends FormComponentProps<ChildEnjoysFormModel> {
+export interface ChildEnjoysProps {
+  onSubmit: (formValue: ChildEnjoysFormModel, exit: boolean) => void;
   childId: string;
 }

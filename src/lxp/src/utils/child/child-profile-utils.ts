@@ -2,7 +2,6 @@ import { Age } from '@models/common/Age';
 import {
   differenceInYears,
   differenceInMonths,
-  isFirstDayOfMonth,
   getMonth,
   isAfter,
   format,
@@ -115,7 +114,6 @@ export const finalMonthOfReportingPeriodDueDate = (
   if (reportingPeriod === 'November') {
     const isDecember = currentMonth === 11;
     if (!isDecember) return undefined;
-    const currentDay = date.getDate();
     return new Date(date.getFullYear(), 11, 20);
   }
 

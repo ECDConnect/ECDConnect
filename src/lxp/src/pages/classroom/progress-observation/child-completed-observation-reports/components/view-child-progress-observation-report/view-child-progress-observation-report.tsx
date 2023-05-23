@@ -1,11 +1,4 @@
-import {
-  BannerWrapper,
-  Button,
-  Divider,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
-import getYear from 'date-fns/getYear';
+import { BannerWrapper, Button, Typography, renderIcon } from '@ecdlink/ui';
 import { childrenSelectors } from '@store/children';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import { useEffect, useState } from 'react';
@@ -112,9 +105,10 @@ export const ViewChildProgressObservationReport: React.FC = () => {
       displayOffline={!isOnline}
     >
       <div className={'flex flex-col p-4'}>
-        <Typography type={'h1'} color={'primary'} text={'Progress report'} />
+        <Typography type={'h2'} color={'textDark'} text={'Progress report'} />
         <Typography
-          type={'body'}
+          type={'h4'}
+          color="textDark"
           text={
             currentReport?.reportingPeriod === 'First'
               ? `First observations ${formattedDate}`
@@ -132,7 +126,7 @@ export const ViewChildProgressObservationReport: React.FC = () => {
             return (
               <ObservationCategoryCard
                 key={`completed-${cat.id}`}
-                className={'mt-4'}
+                className={'border-uiLight mt-4 border-2 bg-white'}
                 categoryImageUrl={cat.imageUrl}
                 categoryName={cat.name}
                 categoryColour={cat.color}

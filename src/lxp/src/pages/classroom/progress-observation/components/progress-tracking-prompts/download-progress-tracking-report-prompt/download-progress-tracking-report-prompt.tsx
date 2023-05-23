@@ -3,25 +3,25 @@ import { DownloadProgressTrackingReportPromptProps } from './download-progress-t
 
 export const DownloadProgressTrackingReportPrompt: React.FC<
   DownloadProgressTrackingReportPromptProps
-> = ({ onClose, onProceed, className }) => {
+> = ({ onClose, onProceed, className, reportingPeriod }) => {
   return (
     <ActionModal
       icon={'ExclamationCircleIcon'}
       className={className}
       iconColor="alertMain"
       iconBorderColor="alertBg"
-      importantText={`Are you sure you want to create the report?`}
+      importantText={`Are you sure you want to create the ${reportingPeriod} caregiver report?`}
       detailText={
         'Once you create the report, you will not be able to edit it.'
       }
       actionButtons={[
         {
-          text: 'Yes create report',
+          text: 'Create report',
           textColour: 'white',
           colour: 'primary',
           type: 'filled',
           onClick: () => onProceed && onProceed(),
-          leadingIcon: 'DownloadIcon',
+          leadingIcon: 'DocumentReportIcon',
         },
         {
           text: 'No, edit report',
@@ -29,7 +29,7 @@ export const DownloadProgressTrackingReportPrompt: React.FC<
           colour: 'primary',
           type: 'outlined',
           onClick: () => onClose && onClose(),
-          leadingIcon: 'XIcon',
+          leadingIcon: 'PencilIcon',
         },
       ]}
     />

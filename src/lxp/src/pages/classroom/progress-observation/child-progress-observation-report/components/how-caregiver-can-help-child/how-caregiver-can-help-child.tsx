@@ -1,11 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Button,
-  Divider,
-  FormInput,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
+import { Button, FormInput, Typography, renderIcon } from '@ecdlink/ui';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '@store/children';
 import {
@@ -45,8 +39,11 @@ export const CaregiverCanHelpChildWith: React.FC<
 
   const { isValid } = useFormState({ control: formControl });
 
-  const handleFormSubmit = (formValue: CaregiverCanHelpChildWithFormModel) => {
-    onSubmit(formValue);
+  const handleFormSubmit = (
+    formValue: CaregiverCanHelpChildWithFormModel,
+    exit: boolean
+  ) => {
+    onSubmit(formValue, exit);
   };
 
   useEffect(() => {
@@ -65,9 +62,10 @@ export const CaregiverCanHelpChildWith: React.FC<
   return (
     <div className={'flex h-full w-full flex-col px-4'}>
       <Typography
-        type={'h1'}
-        color={'primary'}
+        type={'h2'}
+        color={'textDark'}
         text={'Share more detail for the caregiver report'}
+        className="mb-4"
       />
       <FormInput
         type={'text'}
@@ -75,12 +73,12 @@ export const CaregiverCanHelpChildWith: React.FC<
         register={formRegister}
         nameProp={'howCanCaregiverHelpChild'}
         label={`How can ${childUser?.firstName}’s caregiver help ${childUser?.firstName} to learn and grow?`}
-        placeholder={`E.g. Asking them how they are feeling every morning and asking him to name items in and around the house.`}
+        placeholder={`E.g. Asking him how he is feeling every morning and asking him to name items in and around the house.`}
       />
 
       <Typography
-        type={'body'}
-        color={'black'}
+        type={'h3'}
+        color={'textDark'}
         text={`Your plans for supporting ${childUser?.firstName}`}
         className={'mt-4'}
       />
@@ -95,7 +93,7 @@ export const CaregiverCanHelpChildWith: React.FC<
           return (
             <ObservationCategoryCard
               key={`completed-${cat.id}`}
-              className={'mt-4'}
+              className={'border-uiLight mt-4 border-2 bg-white'}
               categoryImageUrl={cat.imageUrl}
               categoryName={cat.name}
               isCompetentWithCategory={
@@ -113,13 +111,11 @@ export const CaregiverCanHelpChildWith: React.FC<
           );
         })}
 
-      <Divider className={'my-4'} />
-
       <Button
         onClick={() => {
-          handleFormSubmit(getFormValue());
+          handleFormSubmit(getFormValue(), false);
         }}
-        className="w-full"
+        className="mt-4 w-full"
         size="small"
         color="primary"
         type="filled"
@@ -127,6 +123,24 @@ export const CaregiverCanHelpChildWith: React.FC<
       >
         {renderIcon('ArrowCircleRightIcon', 'h-5 w-5 text-white')}
         <Typography type="h6" className="ml-2" text="Next" color="white" />
+      </Button>
+      <Button
+        onClick={() => {
+          handleFormSubmit(getFormValue(), true);
+        }}
+        className="mt-4 w-full"
+        size="small"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', 'h-5 w-5 text-primary')}
+        <Typography
+          type="h6"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
+        />
       </Button>
     </div>
   );
