@@ -105,7 +105,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             // Add VisitData for visit
             input.SupportData.VisitId = visit.Id.ToString();
             input.SupportData.PractitionerId = practitioner.Id.ToString();
-            visitDataManager.AddPractitionerVisitData(input.SupportData);
+            visitDataManager.AddPractitionerVisitData(input.SupportData, false);
 
             return visit;
         }
