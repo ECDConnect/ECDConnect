@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -387,6 +388,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practiManager.GetTraineeByUserId(userLicenseManager, userId);
         }
 
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerPQARating(userId);
+        }
+        
 
     }
 

@@ -1,6 +1,5 @@
-using System.Threading.Tasks;
-
-namespace EcdLink.Api.CoreApi {
+namespace EcdLink.Api.CoreApi
+{
     public static class Constants
     {
         public static class ApplicationSettings
@@ -15,6 +14,7 @@ namespace EcdLink.Api.CoreApi {
             public const string client_practitioner = "practitioner";
 
             public const string visitType_support = "support_visit";
+            public const string visitType_call = "support_call";
             public const string pre_pqa_visit_1 = "pre_pqa_visit_1";
             public const string pre_pqa_visit_2 = "pre_pqa_visit_2";
 
@@ -40,6 +40,7 @@ namespace EcdLink.Api.CoreApi {
             public const string workflow_status_pdf_type = "Verified";
 
             // PQA Visit Questions
+            public const string step2 = "A stimulating & adequately resourced learning environment";
             public const string step2_q1 = "Supervision";
             public const string step2_q1_a1 = "0 - Children were often left unsupervised (3 times or more in a session).";
             public const string step2_q1_a2 = "1 - Children were usually supervised (unsupervised 2 times or less in a session).";
@@ -70,6 +71,7 @@ namespace EcdLink.Api.CoreApi {
             public const string step2_q6_a2 = "1 - There were a few posters or examples of children's work displayed (fewer than 5).";
             public const string step2_q6_a3 = "2 - There were lots of posters or examples of children's work displayed (5 or more total).";
 
+            public const string step3 = "Consistent use of the SmartStart routine";
             public const string step3_q1 = "Which of these did you see during the session?";
             public const string step3_q1_a1 = "The venue has enough clean, safe water for children to drink.";
             public const string step3_q1_a2 = "Greeting time";
@@ -84,6 +86,8 @@ namespace EcdLink.Api.CoreApi {
             public const string step3_q1_a11 = "Outside time";
             public const string step3_q1_a12 = "None";
 
+            // step 3 and step 4 is the same
+            public const string step4 = "Consistent use of the SmartStart routine";
             public const string step4_q1 = "SmartStart routine";
             public const string step4_q1_a1 = "0 - The SmartStart routine is not displayed and children do not refer to the names of the different parts of the routine.";
             public const string step4_q1_a2 = "1 - The SmartStart routine is displayed so adults can see it, but the children are unable to.  Adults and children sometimes refer to the names of the different parts of the routine.";
@@ -119,6 +123,7 @@ namespace EcdLink.Api.CoreApi {
             public const string step4_q7_a2 = "1 - The large group activity was too short (less than 10 minutes).";
             public const string step4_q7_a3 = "2 - The large group activity lasted for more than 10 minutes.";
 
+            public const string step5 = "A stable & nurturing environment where children feel safe & loved";
             public const string step5_q1 = "Warm & respectful interactions";
             public const string step5_q1_a1 = "0 - Adults were not warm and respectful when interacting with children.";
             public const string step5_q1_a2 = "1 - Adults spoke and acted warmly and respectfully towards children some of the time, or only to some children.";
@@ -149,6 +154,7 @@ namespace EcdLink.Api.CoreApi {
             public const string step5_q6_a2 = "1 - Adults sometimes imposed solutions to conflicts and did not make enough effort to involve children, listen to their accounts and acknowledge their feelings and ideas.";
             public const string step5_q6_a3 = "2 - Adults actively involved children in solving conflicts, by acknowledging their feelings, listening carefully to their accounts and trying their solutions.";
 
+            public const string step6 = "Positive & plentiful adult-child interactions which encourage a rich use of language";
             public const string step6_q1 = "Talking to children & encouraging communication";
             public const string step6_q1_a1 = "0 - Adults rarely talked to children and did not create opportunities for conversation.  Adults mostly talked to children to give instructions and maintain order.";
             public const string step6_q1_a2 = "1 - There was some adult-child conversation and some activities were used to encourage children to communicate.";
@@ -179,6 +185,7 @@ namespace EcdLink.Api.CoreApi {
             public const string step7_q1_a2 = "1 - Only some children were allowed to make their own choices during free play and other children were told what to do by adults.";
             public const string step7_q1_a3 = "2 - All children were allowed to make their own choices during free play and give support to do so when needed.";
 
+            public const string step7 = "Opportunities for child-directed, open-ended play, supported & directed by adults";
             public const string step7_q2 = "Facilitating children's play";
             public const string step7_q2_a1 = "0 - Adults made little or no effort to make available toys and materials that stimulated children's imagination during play, and to support them to use them.";
             public const string step7_q2_a2 = "1 - Adults made available some toys and materials that stimulated children's imagination and supported some children to use them, but there was not a sufficient range of resources to engage all children.";
@@ -199,6 +206,7 @@ namespace EcdLink.Api.CoreApi {
             public const string step7_q5_a2 = "1 - Adults did not always seem aware what level of activity or game was appropriate for the child.";
             public const string step7_q5_a3 = "2 - Adults allowed children to play and learn at a level and pace which was appropriate for them.";
 
+            public const string step8 = "Interactive storytelling which introduces children to new language & learning";
             public const string step8_q1 = "Encouraging conversation during story time";
             public const string step8_q1_a1 = "0 - Adults did not allow any interaction with children during story time and did not invite children's contributions.";
             public const string step8_q1_a2 = "1 - Adults allowed some interaction with children during story time, but there were only limited contributions from children.";
@@ -254,18 +262,21 @@ namespace EcdLink.Api.CoreApi {
 
             public const string step16_q1 = "Did you observe an adult hitting or smacking a child at this programme?";
             public const string step16_q2 = "Is the SmartStart programme being implemented where children feel save & loved?";
-            public const string step16_q3 = "Are there too many children attending the SmartStart programme?";
+            public const string step16_q3 = "Is the SmartStart programme being implemented for long enough?";
+            public const string step16_q4 = "Are there too many children attending the SmartStart programme?";
 
-            public const string pqa_visit = "PQA Visit";
-            public const string step2 = "Step 2";
-            public const string step3 = "Step 3";
-            public const string step4 = "Step 4";
-            public const string step5 = "Step 5";
-            public const string step6 = "Step 6";
-            public const string step7 = "Step 7";
-            public const string step8 = "Step 8";
+            public const string pqa_visit = "PQA Visit 1";
+
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
+
+            public const int step2_total = 12;
+            public const int step3_total = 2;
+            public const int step4_total = 14;
+            public const int step5_total = 12;
+            public const int step6_total = 10;
+            public const int step7_total = 10;
+            public const int step8_total = 8;
 
         }
 

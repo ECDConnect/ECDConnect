@@ -108,6 +108,9 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                     ChildSurname = report.ChildSurname,
                     ClassroomName = report.ClassroomName,
                     ReportDate = report.ReportingDate,
+                    ReportPeriod = report.ReportingPeriod,
+                    ReportDateCreated = report.DateCreated,
+                    ReportDateCompleted = report.DateCompleted,
                     ChildId = report.ChildId,
                     ReportId = item.Id,
                 };

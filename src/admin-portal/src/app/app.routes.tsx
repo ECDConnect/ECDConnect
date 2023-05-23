@@ -1,6 +1,7 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
 import Login from './components/login/login';
+import Register from './components/register-user/register';
 import Shell from './containers/shell/shell';
 import ContentManagement from './pages/content-management/content-management';
 import Dashboard from './pages/dashboard/dashboard';
@@ -39,6 +40,7 @@ const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
+      <Route exact path="/register" component={Register} />
     </Switch>
   );
 };

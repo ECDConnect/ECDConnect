@@ -1,5 +1,4 @@
-﻿using DotLiquid.Tags;
-using EcdLink.Api.CoreApi.Managers.Integration;
+﻿using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -78,29 +77,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var type = Constants.SSSettings.pqa_visit;
 
             var step2_score = 0;
-            var step2_total = 12;
             var step2_final = 0.0;
 
             var step3_score = 0;
 
             var step4_score = 0;
-            var step4_total = 14;
             var step4_final = 0;
 
             var step5_score = 0;
-            var step5_total = 12;
             var step5_final = 0;
 
             var step6_score = 0;
-            var step6_total = 10;
             var step6_final = 0;
 
             var step7_score = 0;
-            var step7_total = 10;
             var step7_final = 0;
 
             var step8_score = 0;
-            var step8_total = 8;
             var step8_final = 0;
 
             var step12_score = 0;
@@ -476,116 +469,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         step16_score++;
                     }
                 }
-
-
             }
 
 
             var step2 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step2).FirstOrDefault();
-            step2_final = (step2_score / step2_total) * 100;
-            if (step2_final <= 25)
-            {
-                color = _red;
-            } else if (step2_final >= 26 && step2_final <= 69)
-            {
-                color = _amber;
-            } else if (step2_final > 69)
-            {
-                color = _green;
-            }
+            step2_final = (step2_score / Constants.SSSettings.step2_total) * 100;
+            color = GetStepRatingColor(step2_final);
             AddVisitDataStatus(step2, step2_final.ToString(), color, type, step2.VisitSection, false);
 
             var step3 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step3).FirstOrDefault();
-            if (step3_score == 0)
-            {
-                color = _red;
-            } else if (step3_score == 1)
-            {
-                color = _amber;
-            } else if (step3_score == 2)
-            {
-                color = _green;
-            }
+            color = GetStep3RatingColor(step3_score);
             AddVisitDataStatus(step3, step3_score.ToString(), color, type, step3.VisitSection, false);
 
             var step4 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step4).FirstOrDefault();
-            step4_final = (step4_score / step4_total) * 100;
-            if (step4_final <= 25)
-            {
-                color = _red;
-            }
-            else if (step4_final >= 26 && step4_final <= 69)
-            {
-                color = _amber;
-            }
-            else if (step4_final > 69)
-            {
-                color = _green;
-            }
+            step4_final = (step4_score / Constants.SSSettings.step4_total) * 100;
+            color = GetStepRatingColor(step4_final);
             AddVisitDataStatus(step4, step4_final.ToString(), color, type, step4.VisitSection, false);
 
             var step5 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step5).FirstOrDefault();
-            step5_final = (step5_score / step5_total) * 100;
-            if (step5_final <= 25)
-            {
-                color = _red;
-            }
-            else if (step5_final >= 26 && step5_final <= 69)
-            {
-                color = _amber;
-            }
-            else if (step5_final > 69)
-            {
-                color = _green;
-            }
+            step5_final = (step5_score / Constants.SSSettings.step5_total) * 100;
+            color = GetStepRatingColor(step5_final);
             AddVisitDataStatus(step5, step5_final.ToString(), color, type, step5.VisitSection, false);
 
             var step6 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step6).FirstOrDefault();
-            step6_final = (step6_score / step6_total) * 100;
-            if (step6_final <= 25)
-            {
-                color = _red;
-            }
-            else if (step6_final >= 26 && step6_final <= 69)
-            {
-                color = _amber;
-            }
-            else if (step6_final > 69)
-            {
-                color = _green;
-            }
+            step6_final = (step6_score / Constants.SSSettings.step6_total) * 100;
+            color = GetStepRatingColor(step6_final);
             AddVisitDataStatus(step6, step6_final.ToString(), color, type, step6.VisitSection, false);
 
             var step7 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step7).FirstOrDefault();
-            step7_final = (step7_score / step7_total) * 100;
-            if (step7_final <= 25)
-            {
-                color = _red;
-            }
-            else if (step7_final >= 26 && step7_final <= 69)
-            {
-                color = _amber;
-            }
-            else if (step7_final > 69)
-            {
-                color = _green;
-            }
+            step7_final = (step7_score / Constants.SSSettings.step7_total) * 100;
+            color = GetStepRatingColor(step7_final);
             AddVisitDataStatus(step7, step7_final.ToString(), color, type, step7.VisitSection, false);
 
             var step8 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step8).FirstOrDefault();
-            step8_final = (step8_score / step8_total) * 100;
-            if (step8_final <= 25)
-            {
-                color = _red;
-            }
-            else if (step8_final >= 26 && step8_final <= 69)
-            {
-                color = _amber;
-            }
-            else if (step8_final > 69)
-            {
-                color = _green;
-            }
+            step8_final = (step8_score / Constants.SSSettings.step8_total) * 100;
+            color = GetStepRatingColor(step8_final);
             AddVisitDataStatus(step8, step8_final.ToString(), color, type, step8.VisitSection, false);
 
             var step11 = allVisitData.Where(x => x.Question == Constants.SSSettings.step11_q1).FirstOrDefault();
@@ -741,6 +659,47 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Section = ""
             };
         }
+
+        public string GetStepRatingColor(double finalScore)
+        {
+            string color = "";
+
+            if (finalScore <= 25)
+            {
+                color = _red;
+            }
+            else if (finalScore >= 26 && finalScore <= 69)
+            {
+                color = _amber;
+            }
+            else if (finalScore > 69)
+            {
+                color = _green;
+            }
+
+            return color;
+        }
+
+        public string GetStep3RatingColor(int finalScore)
+        {
+            string color = "";
+            if (finalScore == 0)
+            {
+                color = _red;
+            }
+            else if (finalScore == 1)
+            {
+                color = _amber;
+            }
+            else if (finalScore == 2)
+            {
+                color = _green;
+            }
+
+            return color;
+        }
+
+
 
     }
 }
