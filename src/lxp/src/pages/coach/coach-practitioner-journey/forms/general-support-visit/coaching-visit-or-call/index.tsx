@@ -4,19 +4,34 @@ import {
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 import { replaceBraces } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { Maybe } from 'graphql/jsutils/Maybe';
+import { visitIdKey } from '../..';
+
+export const visitOrCallQuestion =
+  'Did you visit the practitioner’s site, or did you have a support phone call?';
+export const callAnswer = 'Call';
 
 export const CoachingAndVisitOrCallStep = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<
     {
-      question:
-        'Did you visit the practitioner’s site, or did you have a support phone call?',
+      question: string;
+      answer: Maybe<string> | string | undefined;
+    }[]
+  >([
+    {
+      question: visitOrCallQuestion,
       answer: '',
     },
     {
@@ -39,12 +54,80 @@ export const CoachingAndVisitOrCallStep = ({
   ]);
 
   const options = [
-    { text: 'Visit', value: 'Visit' },
-    { text: 'Call', value: 'Call' },
+    { text: 'Visit', value: 'Visit', disabled: isView },
+    { text: 'Call', value: callAnswer, disabled: isView },
   ];
 
   const name = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Coaching visit or call';
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const visitId = window.sessionStorage.getItem(visitIdKey);
+
+  const previousVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, visitId || '')
+  );
+  const previousSectionAnswers = previousVisitAnswers?.filter(
+    (item) => item.visitSection === visitSection
+  );
+  const previousDate = previousSectionAnswers?.[0].insertedDate;
+
+  const question1 = previousSectionAnswers?.find(
+    (item) => item.question === questions[0].question
+  );
+  const question2 = previousSectionAnswers?.find(
+    (item) => item.question === questions[1].question
+  );
+  const question3 = previousSectionAnswers?.find(
+    (item) => item.question === questions[2].question
+  );
+  const question4 = previousSectionAnswers?.find(
+    (item) => item.question === questions[3].question
+  );
+  const question5 = previousSectionAnswers?.find(
+    (item) => item.question === questions[4].question
+  );
+
+  const setPreviousAnswers = useCallback(() => {
+    setAnswers((prevState) =>
+      prevState.map((item, index) => {
+        switch (index) {
+          case 0:
+            return {
+              ...item,
+              answer: question1?.questionAnswer,
+            };
+          case 1:
+            return {
+              ...item,
+              answer: question2?.questionAnswer,
+            };
+          case 2:
+            return {
+              ...item,
+              answer: question3?.questionAnswer,
+            };
+          case 3:
+            return {
+              ...item,
+              answer: question4?.questionAnswer,
+            };
+          default:
+            return {
+              ...item,
+              answer: question5?.questionAnswer,
+            };
+        }
+      })
+    );
+  }, [
+    question1?.questionAnswer,
+    question2?.questionAnswer,
+    question3?.questionAnswer,
+    question4?.questionAnswer,
+    question5?.questionAnswer,
+  ]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -84,12 +167,19 @@ export const CoachingAndVisitOrCallStep = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  useEffect(() => {
+    setPreviousAnswers();
+  }, [setPreviousAnswers]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
       <Typography
         type="h4"
-        text={new Date().toLocaleDateString('en-ZA', {
+        text={(isView && !!previousDate
+          ? new Date(previousDate)
+          : new Date()
+        ).toLocaleDateString('en-ZA', {
           year: 'numeric',
           month: 'long',
           day: 'numeric',
@@ -107,6 +197,9 @@ export const CoachingAndVisitOrCallStep = ({
         color="secondary"
         type={ButtonGroupTypes.Button}
         options={options}
+        selectedOptions={
+          questions[0].answer !== '' ? String(questions[0].answer) : undefined
+        }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
       {questions.slice(1, 5).map((item, index) => {
@@ -118,11 +211,16 @@ export const CoachingAndVisitOrCallStep = ({
         ];
         return (
           <FormInput
+            disabled={isView}
             textInputType="textarea"
             className="mt-4"
             placeholder={placeholders[index]}
             label={replaceBraces(item.question, name)}
-            value={item.answer}
+            value={
+              !!questions[index + 1].answer
+                ? String(questions[index + 1].answer)
+                : ''
+            }
             onChange={(value) =>
               onOptionSelected(value.target.value, index + 1)
             }

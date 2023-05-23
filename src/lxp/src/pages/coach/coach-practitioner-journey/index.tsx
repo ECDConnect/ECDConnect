@@ -15,10 +15,11 @@ import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import {
   PractitionerJourneyParams,
+  generalSupportVisitTypes,
   visitTypes,
 } from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
-import { Form, currentActivityKey } from './forms';
+import { Form, currentActivityKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
@@ -129,7 +130,9 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
+    window.sessionStorage.removeItem(visitIdKey);
     setShowForm(false);
+    setIsView(false);
   };
 
   const onView = async (visit: Visit) => {
@@ -137,10 +140,22 @@ export const CoachPractitionerJourney: React.FC = () => {
       getVisitDataForVisitId({ visitId: visit.id, userId: practitionerId })
     );
 
-    window.sessionStorage.setItem(
-      currentActivityKey,
-      visit.visitType?.description!
-    );
+    if (
+      visit.visitType?.name === generalSupportVisitTypes.visit ||
+      visit.visitType?.name === generalSupportVisitTypes.call
+    ) {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.supportVisit
+      );
+      window.sessionStorage.setItem(visitIdKey, visit.id);
+    } else {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visit.visitType?.description!
+      );
+    }
+
     setIsView(true);
     setShowForm(true);
   };

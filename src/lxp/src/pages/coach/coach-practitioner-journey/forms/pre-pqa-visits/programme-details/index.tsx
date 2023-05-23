@@ -13,7 +13,7 @@ import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
@@ -60,7 +60,10 @@ export const ProgrammeDetails = ({
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)

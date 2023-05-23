@@ -11,6 +11,7 @@ import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
+import { handleAddSupportVisit } from './pqa.utils';
 
 const initialState: PQAState = {};
 
@@ -24,13 +25,20 @@ const pqaSlice = createSlice({
         action: PayloadAction<
           CmsVisitDataInputModelInput,
           string,
-          { userId: string; formType: 'pre-pqa' | 'pqa' }
+          { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
         >
       ) => {
         const { userId, formType } = action.meta;
         const visitId = action.payload.visitId;
         switch (formType) {
           case 'pqa':
+            break;
+          case 'support-visit':
+            handleAddSupportVisit({
+              payload: action.payload,
+              state,
+              userId,
+            });
             break;
           default:
             if (state?.prePqaFormData?.length) {
@@ -65,7 +73,7 @@ const pqaSlice = createSlice({
       },
       prepare: (
         payload: CmsVisitDataInputModelInput,
-        meta: { userId: string; formType: 'pre-pqa' | 'pqa' }
+        meta: { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
       ) => ({ payload, meta }),
     },
   },
@@ -116,6 +124,7 @@ const pqaSlice = createSlice({
       }));
     });
     builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
       const visitId = action.meta.arg.visitId;
 
       if (state.prePqaPreviousFormData?.length) {
