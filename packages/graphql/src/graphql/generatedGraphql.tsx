@@ -2822,13 +2822,6 @@ export type ListFilterInputTypeOfLearnerFilterInput = {
   some?: InputMaybe<LearnerFilterInput>;
 };
 
-export type ListFilterInputTypeOfLicenseFilterInput = {
-  all?: InputMaybe<LicenseFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<LicenseFilterInput>;
-  some?: InputMaybe<LicenseFilterInput>;
-};
-
 export type ListFilterInputTypeOfNoteFilterInput = {
   all?: InputMaybe<NoteFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -9186,7 +9179,6 @@ export type Trainee = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  licenses?: Maybe<Array<Maybe<License>>>;
   linkedPrincipalHierarchy?: Maybe<Scalars['UUID']>;
   practitioner?: Maybe<Practitioner>;
   practitionerId: Scalars['UUID'];
@@ -9210,7 +9202,6 @@ export type TraineeFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  licenses?: InputMaybe<ListFilterInputTypeOfLicenseFilterInput>;
   linkedPrincipalHierarchy?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<TraineeFilterInput>>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
@@ -9233,7 +9224,6 @@ export type TraineeInput = {
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  Licenses?: InputMaybe<Array<InputMaybe<LicenseInput>>>;
   LinkedPrincipalHierarchy?: InputMaybe<Scalars['UUID']>;
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId: Scalars['UUID'];
