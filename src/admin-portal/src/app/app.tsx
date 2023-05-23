@@ -9,6 +9,7 @@ import { onError } from '@apollo/client/link/error';
 import {
   Config,
   DialogServiceProvider,
+  LocalStorageKeys,
   NOTIFICATION,
   PanelServiceProvider,
   useNotifications,
@@ -19,7 +20,7 @@ import { useHistory } from 'react-router';
 import { MainRoutes, PublicRoutes } from './app.routes';
 import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
-
+import { Redirect } from 'react-router-dom';
 const cache = new InMemoryCache({});
 export let apolloClient: ApolloClient<any> = null;
 
@@ -28,11 +29,16 @@ const App: React.FC = () => {
   const { setNotification } = useNotifications();
   const [client, setClient] = useState<ApolloClient<any>>();
   const history = useHistory();
+  const existingUser = localStorage.getItem(LocalStorageKeys.existingUser);
 
   useEffect(() => {
     if (!authenticatedUser) {
-      logout();
-      history.push('/');
+      if (existingUser) {
+        logout();
+        history.push('/');
+      } else {
+        history.push('/register'); 
+      }
     } else {
       const linkError = onError(({ graphQLErrors, networkError }) => {
         if (graphQLErrors)

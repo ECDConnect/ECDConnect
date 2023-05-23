@@ -90,6 +90,9 @@ function ThemeProvider({
         DefaultTheme.infoMain = data.colors.infoMain;
         DefaultTheme.infoDark = data.colors.infoDark;
         DefaultTheme.infoBb = data.colors.infoBb;
+        DefaultTheme.infoBb = data.colors.infoBb;
+        DefaultTheme.darkBackground = data.colors.darkBackground;
+
       }
 
       if (data.images) {

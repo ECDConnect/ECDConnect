@@ -1,7 +1,6 @@
 import {
   Config,
   initialLoginValues,
-  LocalStorageKeys,
   LoginRequestModel,
   loginSchema,
   useTheme,
@@ -14,7 +13,7 @@ import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
 
-export default function Login() {
+export default function Register() {
   const { login } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
@@ -28,7 +27,7 @@ export default function Login() {
   });
   const { errors, isValid } = formState;
 
-  const signIn = async () => {
+  const registerUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
@@ -43,10 +42,6 @@ export default function Login() {
       });
 
       if (isAuthenticated) {
-        localStorage.setItem(
-          LocalStorageKeys.existingUser,
-          "true"
-        );
         setIsLoading(false);
         history.push('/dashboard');
       } else {
@@ -82,7 +77,7 @@ export default function Login() {
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
           <h2 className="font-h1 textLight mt-6 text-3xl font-extrabold">
-            Log in to Funda App
+            Register
           </h2>
         </div>
         <div className="mt-8">
@@ -131,7 +126,7 @@ export default function Login() {
                   isLoading={isLoading}
                   color="primary"
                   disabled={!isValid}
-                  onClick={signIn}
+                  onClick={registerUser}
                 >
                   <Typography
                     type="help"
