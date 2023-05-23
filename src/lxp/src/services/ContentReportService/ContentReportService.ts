@@ -174,7 +174,12 @@ class ContentReportService {
             reportId      
             categories {
               achievedLevelId
-              categoryId       
+              categoryId
+              tasks {
+                levelId
+                skillId
+                value
+              }       
             }
             childId
             childFirstname

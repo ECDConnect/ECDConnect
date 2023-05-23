@@ -80,7 +80,7 @@ export const ChildProgressReportAlert: React.FC<
   );
 
   const reportDate = requiresInitialReport
-    ? new Date(2000, 0, 1).setHours(0, 0, 0, 0)
+    ? new Date(2000, 0, 1)
     : new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
 
   const navigateToChildProgressObservation = () => {
