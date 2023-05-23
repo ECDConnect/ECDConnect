@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
             return true;
         }
-        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input)
+        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
         {
 
             if (input.VisitData.Sections == null)
@@ -159,8 +159,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // then handle status data
-            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
+            if (markVisitAsCompleted)
             {
                 // update the visit record to show attended/completed 
                 var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
@@ -169,7 +168,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 entityToUpdate.Attended = true;
                 entityToUpdate.ActualVisitDate = DateTime.Now;
                 _visitRepo.Update(entityToUpdate);
+            }
 
+            // then handle status data
+            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
+            {
                 _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             }
             return true;
