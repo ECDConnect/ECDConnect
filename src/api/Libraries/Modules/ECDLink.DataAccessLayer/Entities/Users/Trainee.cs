@@ -1,0 +1,50 @@
+using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Licenses;
+using ECDLink.Security;
+using ECDLink.Security.Attributes;
+using System;
+using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.DataAccessLayer.Entities.Users
+{
+    [Table(nameof(Trainee))]
+    [EntityPermission(PermissionGroups.USER)]
+    public class Trainee : Trainee<Guid>
+    {
+
+    }
+
+    public class Trainee<TKey> : EntityBase<TKey>,
+        ITrackableType
+         where TKey : IEquatable<TKey>
+    {
+
+        [ForeignKey(nameof(UserId))]
+        public virtual ApplicationUser User { get; set; }
+        public string UserId { get; set; }
+        public Guid PractitionerId { get; set; }
+        public virtual Practitioner Practitioner { get; set; }
+
+        public DateTime? StartDate { get; set; }
+        public DateTime? ConsolidationMeetingDate { get; set; }
+        public DateTime? ChildrenAddedDate { get; set; }
+        public Guid? LinkedPrincipalHierarchy { get; set; }
+        public decimal Progress { get; set; }
+        public string ProgrammeType { get; set; }
+        public DateTime? TraineeConvertedDate { get; set; }
+        public bool? AttendedFirstAidCourse { get; set; }
+        public bool? SiteVisitsCompleted { get; set; }
+        public bool? ChildProgressTraining { get; set; }
+
+    }
+
+    public interface TraineeIdJoin<TKey>
+    {
+        [ForeignKey(nameof(TraineeId))]
+        public Trainee Trainee { get; set; }
+        public TKey TraineeId { get; set; }
+    }
+}

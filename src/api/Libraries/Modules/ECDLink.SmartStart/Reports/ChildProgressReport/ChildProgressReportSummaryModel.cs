@@ -13,6 +13,12 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         public string ReportDate { get; set; }
 
+        public string ReportPeriod { get; set; }
+
+        public string ReportDateCreated { get; set; }
+
+        public string ReportDateCompleted { get; set;  }
+
         public string ClassroomName { get; set; }
 
         public List<ObservationCategorySummary> Categories { get; set; }

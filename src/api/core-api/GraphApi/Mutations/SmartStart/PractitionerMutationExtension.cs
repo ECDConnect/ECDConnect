@@ -47,15 +47,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     if (input.MaxChildren != null) practitioner.MaxChildren = input.MaxChildren;
                     if (input.IsPrincipal != null) practitioner.IsPrincipal = input.IsPrincipal;
                     if (input.IsFundaAppAdmin != null) practitioner.IsFundaAppAdmin = input.IsFundaAppAdmin;
-                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;
-                    if (input.IsTrainee != null) practitioner.IsTrainee = input.IsTrainee;
+                    if (input.PrincipalHierarchy != null) practitioner.PrincipalHierarchy = input.PrincipalHierarchy;                    
                     if (input.SigningSignature != null) practitioner.SigningSignature = input.SigningSignature;
                     if (input.StartDate != null) practitioner.StartDate = input.StartDate;
 
-                    if (input.SiteAddress != null 
-                        && input.SiteAddressId != null && input.SiteAddressId.HasValue)
+                    if (input.SiteAddress != null && input.SiteAddressId.HasValue)
                     {
-                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
                         SiteAddress address = addressRepo.GetById(input.SiteAddressId.Value);
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
@@ -70,12 +68,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (input.SiteAddress.ProvinceId != null)
                             address.ProvinceId = input.SiteAddress.ProvinceId;
                         addressRepo.Update(address);
-                        //TODO: create address if not exists, but it really should
                     }
                     if (input.SiteAddress != null && input.SiteAddressId == null)
                     {
                         //create siteaddress
-                        var addressRepo = repoFactory.CreateRepository<SiteAddress>(userContext: uId);
+                        var addressRepo = repoFactory.CreateGenericRepository<SiteAddress>(userContext: uId);
                         SiteAddress address = new SiteAddress();
                         if (input.SiteAddress.Ward != null)
                             address.Ward = input.SiteAddress.Ward;
@@ -93,6 +90,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         if (updateAddressResult != null)
                             practitioner.SiteAddressId = updateAddressResult.Id;
                     }
+
+                    if (input.IsTrainee != null)
+                    {
+                        practitioner.IsTrainee = input.IsTrainee;
+                        if ((bool)input.IsTrainee)
+                        {
+                            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: uId);
+                            var trainee = traineeRepo.GetByUserId(input.UserId);
+                            if (trainee == null)
+                            {
+                                //create Trainee record
+                                traineeRepo.Insert(new Trainee() { UserId = input.UserId, IsActive = true, Id = input.Id });
+                            }
+                        }
+                    }
+
                     Practitioner updateResult = dbRepo.Update(practitioner);
                     return updateResult;
                 }
@@ -108,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             {
                 if (practitioner != null)
                 {
@@ -128,7 +141,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             {
                 if (practitioner != null)
                 {
@@ -148,7 +161,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             bool bReturn = false;
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId.Equals(practitionerId)).OrderBy(x => x.Id).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             {
                 if (practitioner != null)
                 {

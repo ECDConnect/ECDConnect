@@ -1,3 +1,5 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
@@ -378,6 +380,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return practitionerManager.GetPractitionerTimeline(userId);
         }
 
+        public Trainee GetTraineeByUserId(
+    [Service] PersonnelService practiManager,
+    [Service] UserLicenseManager userLicenseManager,
+    string userId)
+        {
+            return practiManager.GetTraineeByUserId(userLicenseManager, userId);
+        }
+
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerPQARating(userId);
+        }
         
 
     }

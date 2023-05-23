@@ -9,6 +9,11 @@ export interface ChildUndevelopedSkillFormProps extends ComponentBaseProps {
     none: ProgressTrackingSkillDto[];
   };
   allSkillsYes: boolean;
+  supportSkillId?: number;
   childId?: string;
-  onSubmit: (skill: ProgressTrackingSkillDto | undefined) => void;
+  onSubmit: (
+    skill: ProgressTrackingSkillDto | undefined,
+    skipStepSix: boolean,
+    exit: boolean
+  ) => void;
 }

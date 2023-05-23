@@ -123,9 +123,21 @@ export const useChildProgressObservation = (
         ...task,
         todoText: '',
       };
+    } else if (task === undefined) {
+      supportingTask.taskId = undefined;
+      supportingTask.taskDescription = undefined;
+      supportingTask.todoText = '';
     } else {
-      supportingTask.taskId = task?.id;
-      supportingTask.taskDescription = task?.name || task?.description;
+      supportingTask.taskId = task.id;
+      supportingTask.taskDescription = task.name || task.description;
+      const skill = currentCategory.tasks.find((x) => x.skillId === task.id);
+      if (
+        currentCategory.supportingTask?.taskId !== task.id ||
+        !skill ||
+        skill.value !== task.value
+      ) {
+        supportingTask.todoText = '';
+      }
     }
 
     appDispatch(
@@ -655,6 +667,24 @@ export const useChildProgressObservation = (
     }
   };
 
+  const getHelpingWithTask = () => {
+    if (!currentCategory)
+      throw new Error(
+        'Current category is not set, could not set category helping task id'
+      );
+
+    return currentCategory.supportingTask?.taskId;
+  };
+
+  const getHelpingWithTaskText = () => {
+    if (!currentCategory)
+      throw new Error(
+        'Current category is not set, could not set category helping task id'
+      );
+
+    return currentCategory.supportingTask?.todoText;
+  };
+
   const saveReport = async (report: ChildProgressObservationReport) => {
     if (!report)
       throw new Error('Current report is not set, could not save report');
@@ -736,6 +766,8 @@ export const useChildProgressObservation = (
     getSelectedSkillIdsForCategoryLevel,
     getLevelSummaryText,
     getCompletedReports,
+    getHelpingWithTask,
+    getHelpingWithTaskText,
 
     setCurrentReportById,
     setCurrentCategoryById,

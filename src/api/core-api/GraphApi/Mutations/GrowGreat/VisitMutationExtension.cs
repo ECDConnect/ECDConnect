@@ -14,6 +14,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -79,7 +80,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            VisitType visitType;
+            if (input.isSupportCall == true)
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            } else
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            }
+
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
@@ -91,11 +100,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.LinkedVisitId = null;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = true;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             Visit visit = visitManager.AddSupportVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.SupportData.VisitId = visit.Id.ToString();
             input.SupportData.PractitionerId = practitioner.Id.ToString();
-            visitDataManager.AddPractitionerVisitData(input.SupportData);
+            visitDataManager.AddPractitionerVisitData(input.SupportData, false);
 
             return visit;
         }

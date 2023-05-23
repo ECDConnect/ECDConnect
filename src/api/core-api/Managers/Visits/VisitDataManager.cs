@@ -130,7 +130,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
             return true;
         }
-        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input)
+        public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)
         {
 
             if (input.VisitData.Sections == null)
@@ -159,16 +159,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed 
-            var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-            entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.Attended = true;
-            entityToUpdate.ActualVisitDate = DateTime.Now;
-            _visitRepo.Update(entityToUpdate);
+            if (markVisitAsCompleted)
+            {
+                // update the visit record to show attended/completed 
+                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+            }
 
             // then handle status data
-            _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
+            if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
+            {
+                _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
+            }
             return true;
         }
 
@@ -309,6 +315,30 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
+        public PQARating GetPractitionerPQARating(string userId)
+        {
+            /*List<VisitData> sections = (
+                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.ss_smart_space_license)
+                join visitData in _visitDataRepo.GetAll().OrderBy(y => y.VisitSection) on visit.Id equals visitData.VisitId
+                select visitData
+            ).ToList();
+
+            var sectionScore = 0;
+            foreach (string item in sections)
+            {
+                List<string> answers = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.ss_smart_space_license)
+                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitSection == item) on visit.Id equals visitData.VisitId
+                    select visitData).Select(x => x.QuestionAnswer).ToList();
+            }*/
+
+            var rating = new PQARating();
+
+            
+
+            return rating;
+        }
+
         private bool ValidateInsertRecord(VisitData visitData)
         {
             VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitData.VisitId && 

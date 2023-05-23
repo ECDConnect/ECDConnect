@@ -59,9 +59,6 @@ export const CoachChildProgressReportAlert: React.FC<
       isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
-  const isCurrentlyInReportingOverduePeriod =
-    isInFinalMonthOfReportingPeriod(currentDate);
-
   const reportingPeriod = !currentReportingPeriodReportSummary
     ? getReportingPeriod(currentDate)
     : getFollowingReportingPeriod(
@@ -71,6 +68,11 @@ export const CoachChildProgressReportAlert: React.FC<
             : currentReportingPeriodReportSummary.reportDate
         )
       );
+
+  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
+    reportingPeriod.monthName,
+    currentDate
+  );
 
   const reportDate = new Date(
     `${reportingPeriod.monthName}-01-${reportingPeriod.year}`
