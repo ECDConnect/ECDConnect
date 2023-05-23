@@ -38,7 +38,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildCompletedObservsationReportsState>();
 
-  const [latestCompletedSummary, previouslyCompletedSummary] = useSelector(
+  const [latestCompletedSummary] = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
   );
   const currentChild = useSelector(

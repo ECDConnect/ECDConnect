@@ -1,5 +1,5 @@
 import { ProgressTrackingSkillDto, useStepNavigation } from '@ecdlink/core';
-import { BannerWrapper, Dialog, DialogPosition } from '@ecdlink/ui';
+import { BannerWrapper } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
@@ -36,9 +36,6 @@ export const ChildProgressAssessment: React.FC = () => {
   const progressTrackingCategoryId = location.state.progressTrackingCategoryId;
   const firstObservation = location.state.firstObservation;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const category = useSelector(
     progressTrackingSelectors.getProgressTrackingCategoryById(
       location.state.progressTrackingCategoryId

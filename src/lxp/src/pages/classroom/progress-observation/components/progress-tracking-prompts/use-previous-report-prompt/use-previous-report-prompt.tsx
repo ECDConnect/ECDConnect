@@ -1,6 +1,5 @@
 import { ActionModal } from '@ecdlink/ui';
 import { UsePreviousReportPromptProps } from './use-previous-report-prompt.types';
-import { DateFormats } from '@/constants/Dates';
 
 export const UsePreviousReportPrompt: React.FC<
   UsePreviousReportPromptProps

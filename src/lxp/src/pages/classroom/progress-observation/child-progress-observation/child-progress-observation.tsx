@@ -154,12 +154,6 @@ export const ChildProgressObservationPage: React.FC = () => {
 
   const isComplete = completedCategories.length === categories.length;
 
-  const reportSummary = summaries.find(
-    (summary) =>
-      summary.childId === routeState.childId &&
-      isMatchingReportingPeriods(new Date(summary.reportDate), reportingDate)
-  );
-
   const isReturningUser =
     completedCategories.length > 0 || inProgressCategories.length > 0;
 
@@ -586,24 +580,8 @@ export const ChildProgressObservationPage: React.FC = () => {
           )}
           {isComplete && !firstObservation && (
             <div className="mr-2 ml-2 mt-3">
-              {/* {isComplete && !requiresInitialReport && !reportSummary && (
-            <ListItem
-              key={'create-report'}
-              backgroundColor={'white'}
-              withPaddingX={true}
-              withPaddingY={true}
-              iconName={'PresentationChartLineIcon'}
-              iconBackgroundColor={'primary'}
-              iconColor="white"
-              showIcon={true}
-              title={`Create ${reportingPeriod.monthName} caregiver report`}
-              subTitle={`Report due <b>30 ${reportingPeriod.monthName} ${reportingPeriod.year}</>`}
-              showChevronIcon
-              onButtonClick={finalizeReport}
-            />
-          )} */}
               <Button
-                onClick={() => setCompleteFirstObservationsPromptActive(true)}
+                onClick={finalizeReport}
                 className="w-full"
                 size="small"
                 color="primary"
