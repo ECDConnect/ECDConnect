@@ -1,6 +1,5 @@
 import { UseFormRegister } from 'react-hook-form';
 import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
-import { useState } from 'react';
 
 export interface FormFieldProps {
   label: string;
@@ -13,14 +12,16 @@ export interface FormFieldProps {
   validation?: any;
   instructions?: string[];
   placeholder?: string;
+  togglePasswordVisibility?: () => void;
+  showPassword?: boolean;
 }
 
 const checkboxStyle =
-  'focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded';
+  'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
 const errorStyle =
   'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 const defaultInputStyle =
-  'focus:border-primary block w-full sm:text-md border-gray-300 rounded-md p-10';
+  'focus:border-secondary block w-full sm:text-md border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -33,13 +34,9 @@ const FormField: React.FC<FormFieldProps> = ({
   validation,
   instructions,
   placeholder,
+  togglePasswordVisibility,
+  showPassword,
 }) => {
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   const getInputTypeStyles = () => {
     switch (type) {
       case 'checkbox':
@@ -58,20 +55,30 @@ const FormField: React.FC<FormFieldProps> = ({
         {label}
       </label>
       <div>
-        {instructions.length === 1 ? (
-          <p className="text-base">{instructions[0]}</p>
+        {instructions?.length && instructions.length === 1 ? (
+          type === 'email' && <p className="text-base">{instructions[0]}</p>
         ) : (
           <ul className="list-disc pl-6">
-            {instructions.map((i: string) => {
-              return <li>{i}</li>;
+            {instructions?.map((i: string) => {
+              return <li className="text-base">{i}</li>;
             })}
           </ul>
         )}
       </div>
-      <div className={type === 'password' ? 'mt-1 flex' : 'mt-1'}>
+      <div
+        className={
+          type === 'password'
+            ? 'relative mt-1'
+            : type === 'checkbox'
+            ? 'mt-2 flex'
+            : 'mt-1'
+        }
+      >
         <input
           disabled={disabled}
-          type={showPassword ? 'text' : 'password'}
+          type={
+            type === 'password' ? (showPassword ? 'text' : 'password') : type
+          }
           {...register(nameProp, {
             required: required,
             validate: validation,
@@ -79,17 +86,20 @@ const FormField: React.FC<FormFieldProps> = ({
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
         />
+        {type === 'checkbox' && (
+          <a className="text-md pl-2 mb-3 text-secondary" href='/terms'>{instructions[0]}</a>
+        )}
 
         {type === 'password' && (
           <button
             type="button"
-            className="focus:outline-none ml-2"
+            className="absolute inset-y-0 right-0 flex items-center justify-center px-4"
             onClick={togglePasswordVisibility}
           >
             {showPassword ? (
-              <EyeOffIcon className="h-5 w-5 text-gray-500" />
+              <EyeIcon className="h-5 w-5 text-gray-900" />
             ) : (
-              <EyeIcon className="h-5 w-5 text-gray-500" />
+              <EyeOffIcon className="h-5 w-5 text-gray-900" />
             )}
           </button>
         )}

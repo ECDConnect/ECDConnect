@@ -15,7 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
 import logo from '../../../assets/Logo-ECDConnect.png';
 import zxcvbn from 'zxcvbn-typescript';
-import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon } from '@heroicons/react/solid';
 
 export default function Login() {
   const { login } = useAuth();
@@ -29,7 +29,7 @@ export default function Login() {
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
-  
+
   //check password strength
   const password = watch('password');
   const formValues = getValues();
@@ -42,7 +42,7 @@ export default function Login() {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        username: formValues.username,
+        email: formValues.email,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
@@ -92,7 +92,7 @@ export default function Login() {
                   label={'Email address *'}
                   nameProp={'username'}
                   register={register}
-                  error={errors.username?.message}
+                  error={errors.email?.message}
                 />
               </div>
 
@@ -125,14 +125,15 @@ export default function Login() {
                 ))}
               </div>
 
-              <div className="mb-2 flex justify-between">
+              <div className="mb-2 flex ">
                 <a
                   rel="noopener noreferrer"
                   href="/"
-                  className="text-l text-blue-400 hover:underline"
+                  className="text-l text-secondary hover:underline pr-2"
                 >
                   Forgot password?
                 </a>
+                <ArrowRightIcon className="h-6 w-6 text-secondary" />
               </div>
               <Divider></Divider>
 

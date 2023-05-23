@@ -1,9 +1,9 @@
 import {
   Config,
-  initialLoginValues,
+  initialRegisterValues,
   LocalStorageKeys,
-  LoginRequestModel,
-  loginSchema,
+  RegisterRequestModel,
+  registerSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
@@ -24,8 +24,8 @@ export default function Register() {
   const [isLoading, setIsLoading] = useState(false);
 
   const { register, getValues, formState, watch } = useForm({
-    resolver: yupResolver(loginSchema),
-    defaultValues: initialLoginValues,
+    resolver: yupResolver(registerSchema),
+    defaultValues: initialRegisterValues,
     mode: 'onChange',
   });
 
@@ -36,14 +36,22 @@ export default function Register() {
 
   const { errors, isValid } = formState;
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const registerUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
+
       setIsLoading(true);
-      const body: LoginRequestModel = {
-        username: formValues.username,
+      const body: RegisterRequestModel = {
+        email: formValues.email,
         password: formValues.password,
+        acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
         setDisplayError(true);
@@ -89,9 +97,10 @@ export default function Register() {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'username'}
+                  nameProp={'email'}
+                  type='email'
                   register={register}
-                  error={errors.username?.message}
+                  error={errors.email?.message}
                   instructions={[
                     'Make sure to use the same address where you received the invitation email.',
                   ]}
@@ -111,6 +120,8 @@ export default function Register() {
                     'At least 1 number',
                     'At least 1 capital letter',
                   ]}
+                  showPassword={showPassword}
+                  togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
               <div className="-mx-1 flex">
@@ -134,7 +145,17 @@ export default function Register() {
               </div>
 
               <Divider></Divider>
-
+              <div className="flex">
+                <div>
+                  <FormField
+                    label={'Terms and conditions *'}
+                    nameProp={'terms'}
+                    type="checkbox"
+                    register={register}
+                    instructions={["I accept the terms and conditions"]}
+                  />
+                </div>
+              </div>
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
