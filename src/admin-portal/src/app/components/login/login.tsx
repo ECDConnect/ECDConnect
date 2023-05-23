@@ -49,7 +49,7 @@ export default function Login() {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        username: formValues.username,
+        email: formValues.email,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
@@ -97,9 +97,9 @@ export default function Login() {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'username'}
+                  nameProp={'email'}
                   register={register}
-                  error={errors.username?.message}
+                  error={errors.email?.message}
                 />
               </div>
 
