@@ -60,7 +60,7 @@ const FormField: React.FC<FormFieldProps> = ({
         ) : (
           <ul className="list-disc pl-6">
             {instructions?.map((i: string) => {
-              return <li className="text-base">{i}</li>;
+              return <li key={i} className="text-base">{i}</li>;
             })}
           </ul>
         )}

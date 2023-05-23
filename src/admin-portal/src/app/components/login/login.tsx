@@ -30,6 +30,12 @@ export default function Login() {
     mode: 'onChange',
   });
 
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   //check password strength
   const password = watch('password');
   const formValues = getValues();
@@ -38,11 +44,12 @@ export default function Login() {
 
   const { errors, isValid } = formState;
 
+  console.log(isValid)
   const signIn = async () => {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        email: formValues.email,
+        username: formValues.username,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
@@ -92,7 +99,7 @@ export default function Login() {
                   label={'Email address *'}
                   nameProp={'username'}
                   register={register}
-                  error={errors.email?.message}
+                  error={errors.username?.message}
                 />
               </div>
 
@@ -103,6 +110,8 @@ export default function Login() {
                   register={register}
                   type="password"
                   error={errors.password?.message}
+                  showPassword={showPassword}
+                  togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
               <div className="-mx-1 flex">
