@@ -50,6 +50,8 @@ module.exports = {
       },
       minWidth: {
         120: '120px',
+        160: '160px',
+        260: '240px'
       },
       fontSize: {
         12: '0.75rem',

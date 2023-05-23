@@ -1,5 +1,5 @@
 import { getYear, getMonth, getWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch, useAppSelector } from './store';
@@ -187,8 +187,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(contentReportActions.resetContentReportState());
   };
 
-  const initStoreSetup = async () => {
-    if (isOnline) {
+  const initStoreSetup = useCallback(async () => {
+    if (isOnline && !userData) {
       setInitLoading(true);
       await initStaticStoreSetup();
       await initAdditionalStoreSetup();
@@ -196,7 +196,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(false);
       setShouldSaveStateHash(true);
     }
-  };
+  }, [isOnline]);
 
   useEffect(() => {
     if (shouldSaveStateHash) {

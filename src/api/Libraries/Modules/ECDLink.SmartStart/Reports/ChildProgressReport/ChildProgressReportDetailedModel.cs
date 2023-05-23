@@ -12,6 +12,8 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 
         public string DateCompleted { get; set; }
 
+        public string DateCreated { get; set; }
+
         public string ObservationNote { get; set; }
 
         public string ChildSurname { get; set; }

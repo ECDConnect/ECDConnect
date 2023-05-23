@@ -767,6 +767,7 @@ export type ChildProgressReportDetailedModel = {
   childSurname?: Maybe<Scalars['String']>;
   classroomName?: Maybe<Scalars['String']>;
   dateCompleted?: Maybe<Scalars['String']>;
+  dateCreated?: Maybe<Scalars['String']>;
   howCanCaregiverHelpChild?: Maybe<Scalars['String']>;
   id?: Maybe<Scalars['String']>;
   observationNote?: Maybe<Scalars['String']>;
@@ -815,7 +816,10 @@ export type ChildProgressReportSummaryModel = {
   childSurname?: Maybe<Scalars['String']>;
   classroomName?: Maybe<Scalars['String']>;
   reportDate?: Maybe<Scalars['String']>;
+  reportDateCompleted?: Maybe<Scalars['String']>;
+  reportDateCreated?: Maybe<Scalars['String']>;
   reportId: Scalars['UUID'];
+  reportPeriod?: Maybe<Scalars['String']>;
 };
 
 export type ChildTokenAccessModel = {

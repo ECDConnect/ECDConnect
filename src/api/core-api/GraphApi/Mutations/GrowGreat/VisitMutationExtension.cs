@@ -14,6 +14,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
@@ -91,6 +92,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.LinkedVisitId = null;
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = true;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             Visit visit = visitManager.AddSupportVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.SupportData.VisitId = visit.Id.ToString();

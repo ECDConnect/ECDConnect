@@ -181,6 +181,9 @@ class ContentReportService {
             childSurname
             classroomName
             reportDate      
+            reportPeriod
+            reportDateCreated
+            reportDateCompleted
         }
       }
       `,
@@ -231,6 +234,7 @@ class ContentReportService {
           childSurname
           classroomName
           dateCompleted
+          dateCreated
           reportingPeriod
           reportingDate
           howCanCaregiverHelpChild

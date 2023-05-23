@@ -8,5 +8,5 @@ export interface CategoryLevelFormProps extends ComponentBaseProps {
   level: number;
   childId: string;
   optionSelected?: () => void;
-  onSubmit: (result: CategoryLevelFormResult) => void;
+  onSubmit: (result: CategoryLevelFormResult, exit: boolean) => void;
 }
