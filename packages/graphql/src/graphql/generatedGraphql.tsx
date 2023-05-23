@@ -5387,9 +5387,20 @@ export type ObservationCategorySummary = {
 
 export type PqaRating = {
   __typename?: 'PQARating';
-  overallRating: Scalars['Float'];
+  children?: Maybe<Array<Maybe<PqaRatingChild>>>;
+  overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
+  overallScore: Scalars['Int'];
+  plannedDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
+};
+
+export type PqaRatingChild = {
+  __typename?: 'PQARatingChild';
+  sectionRating?: Maybe<Scalars['String']>;
+  sectionRatingColor?: Maybe<Scalars['String']>;
+  sectionScore: Scalars['Int'];
+  visitSection?: Maybe<Scalars['String']>;
 };
 
 export type Permission = {

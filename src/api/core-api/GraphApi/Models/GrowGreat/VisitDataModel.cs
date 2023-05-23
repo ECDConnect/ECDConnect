@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
@@ -39,10 +40,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     public class PQARating
     {
         public string VisitName { get; set; }
-        public float overallRating { get; set; }
-        public string overallRatingColor { get; set; }
+        public int OverallScore { get; set; }
+        public string OverallRating { get; set; }
+        public string OverallRatingColor { get; set; }
+        public DateTime? PlannedDate { get; set; }
+        public virtual ICollection<PQARatingChild> Children { get; set; }
         
     }
 
-}
+    public class PQARatingChild
+    {
+        public string VisitSection { get; set; }
+        public int SectionScore { get; set; }
+        public string SectionRating { get; set; }
+        public string SectionRatingColor { get; set; }
+    }
+
+  }
 
