@@ -159,17 +159,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed 
-            /*var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
-            entityToUpdate.UpdatedDate = DateTime.Now;
-            entityToUpdate.UpdatedBy = _applicationUserId;
-            entityToUpdate.Attended = true;
-            entityToUpdate.ActualVisitDate = DateTime.Now;
-            _visitRepo.Update(entityToUpdate);*/
-
             // then handle status data
             if (input.VisitData.VisitName == Constants.SSSettings.pqa_visit)
             {
+                // update the visit record to show attended/completed 
+                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+
                 _visitDataStatusManager_practitioner.ManageVisitDataStatus(input.PractitionerId, input.VisitId);
             }
             return true;

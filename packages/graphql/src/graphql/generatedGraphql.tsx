@@ -5392,6 +5392,13 @@ export type ObservationCategorySummary = {
   categoryId: Scalars['Int'];
 };
 
+export type PqaRating = {
+  __typename?: 'PQARating';
+  overallRating: Scalars['Float'];
+  overallRatingColor?: Maybe<Scalars['String']>;
+  visitName?: Maybe<Scalars['String']>;
+};
+
 export type Permission = {
   __typename?: 'Permission';
   grouping?: Maybe<Scalars['String']>;
@@ -6576,6 +6583,7 @@ export type Query = {
   practitionerInviteCount: Scalars['Int'];
   practitionerMetrics?: Maybe<PractitionerMetricReport>;
   practitionerNewSignupMetric: Scalars['Int'];
+  practitionerPQARating?: Maybe<PqaRating>;
   practitionerTimeline?: Maybe<PractitionerTimeline>;
   practitionerVisits?: Maybe<Array<Maybe<Visit>>>;
   previousVisitInformationForInfant?: Maybe<Progress_VisitDataStatus>;
@@ -7989,6 +7997,10 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
+export type QueryPractitionerPqaRatingArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -8975,6 +8987,7 @@ export type SupportVisitModelInput = {
   attended?: InputMaybe<Scalars['Boolean']>;
   comment?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['UUID']>;
+  isSupportCall?: InputMaybe<Scalars['Boolean']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
   motherId?: InputMaybe<Scalars['UUID']>;
   plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
@@ -9170,8 +9183,6 @@ export type Trainee = {
   childProgressTraining?: Maybe<Scalars['Boolean']>;
   childrenAddedDate?: Maybe<Scalars['DateTime']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
-  documents?: Maybe<Array<Maybe<Document>>>;
-  filterDocumentsByType?: Maybe<Array<Maybe<Document>>>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -9190,17 +9201,12 @@ export type Trainee = {
   userId?: Maybe<Scalars['String']>;
 };
 
-export type TraineeFilterDocumentsByTypeArgs = {
-  type: FileTypeEnum;
-};
-
 export type TraineeFilterInput = {
   and?: InputMaybe<Array<TraineeFilterInput>>;
   attendedFirstAidCourse?: InputMaybe<BooleanOperationFilterInput>;
   childProgressTraining?: InputMaybe<BooleanOperationFilterInput>;
   childrenAddedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  documents?: InputMaybe<ListFilterInputTypeOfDocumentFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -9225,7 +9231,6 @@ export type TraineeInput = {
   ChildProgressTraining?: InputMaybe<Scalars['Boolean']>;
   ChildrenAddedDate?: InputMaybe<Scalars['DateTime']>;
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
-  Documents?: InputMaybe<Array<InputMaybe<DocumentInput>>>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Licenses?: InputMaybe<Array<InputMaybe<LicenseInput>>>;

@@ -36,5 +36,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Answer { get; set; }
     }
 
+    public class PQARating
+    {
+        public string VisitName { get; set; }
+        public float overallRating { get; set; }
+        public string overallRatingColor { get; set; }
+        
+    }
+
 }
 
