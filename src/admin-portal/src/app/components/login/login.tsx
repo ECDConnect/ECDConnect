@@ -14,6 +14,7 @@ import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
 import logo from '../../../assets/Logo-ECDConnect.png';
+import zxcvbn from 'zxcvbn-typescript';
 
 export default function Login() {
   const { login } = useAuth();
@@ -58,22 +59,24 @@ export default function Login() {
     }
   };
 
+  const passwordScore = 6; // Assuming you have a variable to store the password strength score
+
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-100 w-150" src={logo} alt="Login Logo" />;
+      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
 
   return (
-    <div className="bg-[#50d71e] flex min-h-screen items-center justify-center">
-      <div className="rounded-50 bg-white p-8 shadow sm:w-1/3">
+    <div className="darkBackground flex min-h-screen items-center justify-center">
+      <div className="rounded bg-white p-8 shadow sm:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl font-extrabold">
+          <h2 className="font-h1 textLight mt-6 text-3xl">
             Log in to Funda App
           </h2>
         </div>
@@ -98,6 +101,24 @@ export default function Login() {
                   error={errors.password?.message}
                 />
               </div>
+              <div className="-mx-1 flex">
+                {[...Array(5)].map((_, i) => (
+                  <div className="w-1/5 px-1" key={i}>
+                    <div
+                      className={`h-2 rounded-xl transition-colors ${
+                        i < passwordScore
+                          ? passwordScore <= 2
+                            ? 'bg-red-400'
+                            : passwordScore <= 4
+                            ? 'bg-yellow-400'
+                            : 'bg-green-500'
+                          : 'bg-gray-200'
+                      }`}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+
               <div className="mb-2 flex justify-between">
                 <a
                   rel="noopener noreferrer"
@@ -118,10 +139,10 @@ export default function Login() {
               )}
               <div>
                 <Button
-                  className={'mt-3 w-full'}
+                  className={'mt-3 w-full rounded'}
                   type="filled"
                   isLoading={isLoading}
-                  color="primary"
+                  color="secondary"
                   disabled={!isValid}
                   onClick={signIn}
                 >

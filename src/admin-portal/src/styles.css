@@ -4,6 +4,11 @@
 @tailwind components;
 /* utility classes generated based on our tailwind.config.js */
 @tailwind utilities;
+@import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
+
+.darkBackground.flex.min-h-screen.items-center.justify-center {
+  background-color: #27385A;
+}
 
 .h_iframe iframe {
   width: 100%;
@@ -21,6 +26,7 @@ body,
   position: fixed;
   overflow: hidden;
   width: 100%;
+  font-family:'Quicksand', 'sans-serif' !important;
 }
 
 .dashboard-container {

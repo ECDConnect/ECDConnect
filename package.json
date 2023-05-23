@@ -138,7 +138,8 @@
     "workbox-routing": "^5.1.4",
     "workbox-strategies": "^5.1.4",
     "workbox-streams": "^5.1.4",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "3.3.1",
