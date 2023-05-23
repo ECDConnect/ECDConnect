@@ -3,6 +3,7 @@ import {
   ChildProgressObservationStatus,
   ChildProgressObservationReport,
   capitalizeFirstLetter,
+  ProgressTrackingSkillDto,
 } from '@ecdlink/core';
 import {
   Alert,
@@ -22,7 +23,10 @@ import { ChildProgressNoteCard } from '../components/child-progress-note-card/ch
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
+import {
+  getProgressTrackingCategories,
+  getProgressTrackingSkills,
+} from '@store/progress-tracking/progress-tracking.selectors';
 import {
   finalMonthOfReportingPeriodDueDate,
   getReportingPeriod,
@@ -100,6 +104,9 @@ export const ChildProgressObservationPage: React.FC = () => {
   const categories: ProgressTrackingCategoryDto[] = useSelector(
     getProgressTrackingCategories
   );
+  const skills: ProgressTrackingSkillDto[] = useSelector(
+    getProgressTrackingSkills
+  );
   const summaries = useSelector(
     contentReportSelectors.getChildProgressReportSummaries()
   );
@@ -110,11 +117,6 @@ export const ChildProgressObservationPage: React.FC = () => {
   const [latestCompletedSummary] = reportSummaries;
   const latestCompletedSummaryIsFirstObservation =
     !!latestCompletedSummary && latestCompletedSummary.reportPeriod === 'First';
-  const latestCompletedSummaryObservations = useSelector(
-    contentReportSelectors.getChildProgressObservationReportByReportId(
-      latestCompletedSummary?.reportId
-    )
-  );
 
   const report = useSelector(
     contentReportSelectors.getChildProgressObservationReportByReportingPeriod(
@@ -227,31 +229,22 @@ export const ChildProgressObservationPage: React.FC = () => {
         practitionerSurname: practitionerUser?.surname || '',
         practitionerPhotoUrl: profilePicture?.file,
       };
-      if (
-        usePreviousReportData &&
-        !!latestCompletedSummary &&
-        !!latestCompletedSummaryObservations
-      ) {
-        newReport.categories =
-          latestCompletedSummaryObservations.categories.map((cat) => {
-            return {
-              categoryId: cat.categoryId,
-              achievedLevelId: cat.achievedLevelId,
-              status: ChildProgressObservationStatus.NotStarted,
-              tasks: cat.tasks.map((t) => ({
-                description: t.description,
-                levelId: t.levelId,
-                skillId: t.skillId,
-                value: t.value,
-              })),
-              missingTasks: cat.missingTasks.map((t) => ({
-                description: t.description,
-                levelId: t.levelId,
-                skillId: t.skillId,
-                value: t.value,
-              })),
-            };
-          });
+      if (usePreviousReportData && !!latestCompletedSummary) {
+        newReport.categories = latestCompletedSummary.categories.map((cat) => {
+          return {
+            categoryId: cat.categoryId,
+            achievedLevelId: cat.achievedLevelId,
+            status: ChildProgressObservationStatus.NotStarted,
+            tasks: cat.tasks.map((t) => ({
+              description:
+                skills.find((s) => s.id === t.skillId)?.description || '',
+              levelId: t.levelId,
+              skillId: t.skillId,
+              value: t.value,
+            })),
+            missingTasks: [],
+          };
+        });
       }
     }
 

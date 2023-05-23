@@ -1,4 +1,8 @@
-import { useDialog } from '@ecdlink/core';
+import {
+  ChildProgressObservationReport,
+  ChildProgressReportSummaryModel,
+  useDialog,
+} from '@ecdlink/core';
 import {
   Alert,
   BannerWrapper,
@@ -97,26 +101,25 @@ export const ChildCompletedObservationReports: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const firstProgressReport = childProgressReports.find(
-    (r) => r.reportingPeriod === 'First'
-  );
   const completedFirstProgressReport =
-    !!firstProgressReport &&
     !!childReportSummaries &&
-    childReportSummaries.findIndex(
-      (s) => s.reportId === firstProgressReport?.id
-    ) !== -1;
+    childReportSummaries.findIndex((s) => s.reportPeriod === 'First') !== -1;
   const completedStandardReport =
     childReportSummaries &&
     childReportSummaries.length > (completedFirstProgressReport ? 1 : 0);
 
   const startTrackingProgress = (firstObservation: boolean) => {
+    var reportingDate: Date = new Date();
+    if (firstObservation) {
+      reportingDate = new Date(2000, 0, 1);
+    } else {
+      const period = getReportingPeriod(reportingDate, false);
+      reportingDate = new Date(`${period.monthName}-01-${period.year}`);
+    }
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
       childId: routeState?.childId,
-      firstObservation: firstObservation,
-      reportingDate: firstObservation
-        ? new Date(2000, 0, 1).setHours(0, 0, 0, 0)
-        : new Date(),
+      firstObservation,
+      reportingDate,
     });
   };
 
@@ -162,6 +165,48 @@ export const ChildCompletedObservationReports: React.FC = () => {
     });
   };
 
+  const inProgressAndCompleteReports = () => {
+    const reports: {
+      reportId: string;
+      reportDate: string;
+      reportingPeriod: string;
+      displayDate: string;
+      progressReport: ChildProgressObservationReport | undefined;
+      summaryReport: ChildProgressReportSummaryModel | undefined;
+    }[] = [
+      ...childProgressReports.map((r) => ({
+        reportId: r.id,
+        reportDate: r.reportingDate,
+        reportingPeriod: r.reportingPeriod,
+        displayDate:
+          r.reportingPeriod === 'First' ? r.dateCreated : r.reportingDate,
+        progressReport: r,
+        summaryReport: undefined,
+      })),
+    ];
+    childReportSummaries.forEach((r) => {
+      var report = reports.find((x) => x.reportId === r.reportId);
+      if (!report) {
+        report = {
+          reportId: r.reportId,
+          reportDate: r.reportDate,
+          reportingPeriod: r.reportPeriod,
+          displayDate:
+            r.reportPeriod === 'First' ? r.reportDateCreated : r.reportDate,
+          progressReport: undefined,
+          summaryReport: undefined,
+        };
+        reports.push(report);
+      }
+      report.summaryReport = r;
+    });
+    reports.sort(
+      (a, b) =>
+        new Date(a.reportDate).getTime() - new Date(b.reportDate).getTime()
+    );
+    return reports;
+  };
+
   return (
     <BannerWrapper
       size={'small'}
@@ -184,54 +229,55 @@ export const ChildCompletedObservationReports: React.FC = () => {
             title={`Don't worry if ${currentChildUser?.firstName} hasn't changed a lot in 6 months - child development takes time!`}
           />
         )}
-        {(!childProgressReports || childProgressReports.length === 0) && (
-          <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
-            <div className="grid grid-cols-1 justify-center gap-4">
-              <div className="flex justify-center">
-                <img
-                  width={'30%'}
-                  src={NoProgressEmoticon}
-                  alt="No progress reports"
-                />
-              </div>
-              <div className="flex justify-center">
-                <div className="flex w-8/12 justify-center">
+        {(!childProgressReports || childProgressReports.length === 0) &&
+          childReportSummaries.length === 0 && (
+            <div className={'border-uiLight mt-4 flex flex-col items-stretch'}>
+              <div className="grid grid-cols-1 justify-center gap-4">
+                <div className="flex justify-center">
+                  <img
+                    width={'30%'}
+                    src={NoProgressEmoticon}
+                    alt="No progress reports"
+                  />
+                </div>
+                <div className="flex justify-center">
+                  <div className="flex w-8/12 justify-center">
+                    <Typography
+                      type="h3"
+                      color="textDark"
+                      text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
+                      className={'text-center'}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-center">
                   <Typography
-                    type="h3"
-                    color="textDark"
-                    text={`${currentChildUser?.firstName} doesn't have any progress reports yet!`}
-                    className={'text-center'}
+                    type="body"
+                    color="textMid"
+                    text={'Tap the button below to start'}
+                    className={'mb-4'}
                   />
                 </div>
               </div>
-              <div className="flex justify-center">
+              <Button
+                onClick={() => startTrackingProgress(true)}
+                disabled={false}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+              >
+                {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
                 <Typography
-                  type="body"
-                  color="textMid"
-                  text={'Tap the button below to start'}
-                  className={'mb-4'}
+                  type="h6"
+                  className="ml-2"
+                  text="Start tracking progress"
+                  color="white"
                 />
-              </div>
+              </Button>
             </div>
-            <Button
-              onClick={() => startTrackingProgress(true)}
-              disabled={false}
-              className="w-full"
-              size="small"
-              color="primary"
-              type="filled"
-            >
-              {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text="Start tracking progress"
-                color="white"
-              />
-            </Button>
-          </div>
-        )}
-        {childProgressReports && childProgressReports.length > 0 && (
+          )}
+        {childReportSummaries && childReportSummaries.length > 0 && (
           <div>
             <div className={'mt-4 flex flex-col'}>
               {latestCompletedSummary && (
@@ -239,26 +285,25 @@ export const ChildCompletedObservationReports: React.FC = () => {
                   <table className="body min-w-full text-left">
                     <thead>
                       <tr className="bg-uiBg border-secondary border-b-4">
-                        <th className="min-w-160 p-4 font-medium">
+                        <th className="min-w-160 p-4 font-medium" key="0">
                           <Typography type={'body'} text={' '} />
                         </th>
-                        {childProgressReports.map((report, idx) => {
-                          const summaryReport = childReportSummaries.find(
-                            (x) => x.reportId === report.id
-                          );
-                          if (!summaryReport) return null;
+                        {childReportSummaries.map((report, idx) => {
                           const firstObservation =
-                            report.reportingPeriod === 'First';
+                            report.reportPeriod === 'First';
                           const formattedDate = `${new Date(
                             firstObservation
-                              ? report.dateCreated
-                              : report.reportingDate
+                              ? report.reportDateCreated
+                              : report.reportDate
                           ).toLocaleString(
                             'en-za',
                             DateFormats.longMonthNameAndYear
                           )}`;
                           return (
-                            <th className="min-w-160 p-4 font-medium">
+                            <th
+                              className="min-w-160 p-4 font-medium"
+                              key={`${idx + 1}`}
+                            >
                               <Typography
                                 hasMarkup={true}
                                 type={'body'}
@@ -283,22 +328,19 @@ export const ChildCompletedObservationReports: React.FC = () => {
                             className={`bg-${
                               idx % 2 === 0 ? 'white' : 'uiBg'
                             } text-left`}
+                            key={`${cat.categoryId}`}
                           >
                             <td>
                               <Typography
                                 type={'body'}
                                 className="p-2"
                                 text={categoryDetails?.name || ''}
+                                key={'0'}
                               />
                             </td>
-                            {childProgressReports.map((report, idx) => {
-                              const summaryReport = childReportSummaries.find(
-                                (r) => r.reportId === report.id
-                              );
-                              if (!summaryReport) return null;
-
+                            {childReportSummaries.map((report, idx) => {
                               const summaryReportCategory =
-                                summaryReport.categories.find(
+                                report.categories.find(
                                   (x) => x.categoryId === cat.categoryId
                                 );
                               const achievedLevel = allLevels.find(
@@ -307,7 +349,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
                                   summaryReportCategory?.achievedLevelId
                               );
                               return (
-                                <td className="p-2">
+                                <td className="p-2" key={`${idx + 1}`}>
                                   <div className={'flex flex-row items-center'}>
                                     <img
                                       src={achievedLevel?.imageUrl}
@@ -336,22 +378,21 @@ export const ChildCompletedObservationReports: React.FC = () => {
                 className="mt-8 mb-2"
               />
               <div className="flex flex-col">
-                {childProgressReports.map((report, idx) => {
+                {inProgressAndCompleteReports().map((report, idx) => {
                   const firstObservation = report.reportingPeriod === 'First';
                   const formattedDate = `${new Date(
-                    firstObservation ? report.dateCreated : report.reportingDate
+                    report.displayDate
                   ).toLocaleString(
                     'en-za',
                     DateFormats.shortMonthNameAndYear
                   )}`;
-                  const summaryReport = childReportSummaries.find(
-                    (x) => x.reportId === report.id
-                  );
+                  const summaryReport = report.summaryReport;
                   const isComplete = !!summaryReport;
                   return (
                     <div className={'mb-4'} key={idx.toString()}>
                       <Divider dividerType="dashed" />
                       <ListItem
+                        className="mt-4"
                         key={idx.toString()}
                         title={
                           firstObservation
@@ -359,6 +400,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
                             : formattedDate
                         }
                         titleTypographyType="h4"
+                        titleColor="textDark"
                         subTitle={firstObservation ? formattedDate : undefined}
                         subTitleTypographyType="help"
                         subTitleColor="textMid"
@@ -370,17 +412,13 @@ export const ChildCompletedObservationReports: React.FC = () => {
                         buttonIcon={isComplete ? 'EyeIcon' : 'PencilIcon'}
                         buttonText={isComplete ? 'View' : 'Edit'}
                         buttonTextColor={isComplete ? 'secondary' : 'white'}
-                        withPaddingY
-                        showDivider={idx > 0}
-                        dividerType={'dashed'}
-                        dividerColor={'uiLight'}
                         onButtonClick={() => {
                           if (isComplete) {
-                            viewReport(report.id);
+                            viewReport(report.reportId);
                           } else {
                             editProgress(
                               firstObservation,
-                              new Date(report.reportingDate)
+                              new Date(report.reportDate)
                             );
                           }
                         }}

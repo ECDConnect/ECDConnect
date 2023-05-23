@@ -102,7 +102,13 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                     Categories = report?.Categories?.Select(x => new ObservationCategorySummary
                     {
                         AchievedLevelId = x.AchievedLevelId,
-                        CategoryId = x.CategoryId
+                        CategoryId = x.CategoryId,
+                        Tasks = x.Tasks.Select(x => new ObservationCategoryTaskSummary
+                        {
+                            LevelId = x.LevelId,
+                            SkillId = x.SkillId,
+                            Value = x.Value,
+                        }).ToList() ?? new List<ObservationCategoryTaskSummary>()
                     }).ToList() ?? new List<ObservationCategorySummary>(),
                     ChildFirstname = report.ChildFirstname,
                     ChildSurname = report.ChildSurname,

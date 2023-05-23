@@ -43,9 +43,16 @@ export interface CategoryTask {
   value: string;
 }
 
+export interface ObservationCategoryTaskSummary {
+  levelId: number;
+  skillId: number;
+  value: string;
+}
+
 export interface ObservationCategorySummary {
   achievedLevelId: number;
   categoryId: number;
+  tasks: ObservationCategoryTaskSummary[];
 }
 
 export interface ChildProgressReportSummaryModel {

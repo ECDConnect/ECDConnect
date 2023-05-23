@@ -5383,6 +5383,14 @@ export type ObservationCategorySummary = {
   __typename?: 'ObservationCategorySummary';
   achievedLevelId: Scalars['Int'];
   categoryId: Scalars['Int'];
+  tasks?: Maybe<Array<Maybe<ObservationCategoryTaskSummary>>>;
+};
+
+export type ObservationCategoryTaskSummary = {
+  __typename?: 'ObservationCategoryTaskSummary';
+  levelId: Scalars['Int'];
+  skillId: Scalars['Int'];
+  value?: Maybe<Scalars['String']>;
 };
 
 export type PqaRating = {

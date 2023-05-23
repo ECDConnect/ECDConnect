@@ -24,6 +24,7 @@ import {
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { classroomsSelectors } from '@store/classroom';
 import { analyticsActions } from '@store/analytics';
+import { DateFormats } from '@/constants/Dates';
 
 export const ViewChildProgressObservationReport: React.FC = () => {
   const history = useHistory();
@@ -94,6 +95,12 @@ export const ViewChildProgressObservationReport: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
+  const formattedDate = `${new Date(
+    (currentReport?.reportingPeriod === 'First'
+      ? currentReport?.dateCreated
+      : currentReport?.reportingDate) || 0
+  ).toLocaleString('en-za', DateFormats.shortMonthNameAndYear)}`;
+
   return (
     <BannerWrapper
       size={'small'}
@@ -101,16 +108,18 @@ export const ViewChildProgressObservationReport: React.FC = () => {
         if (loading) return;
         history.goBack();
       }}
-      title={`Track ${currentChildUser?.firstName} progress`}
+      title={`${currentChildUser?.firstName}'s progress`}
       displayOffline={!isOnline}
     >
       <div className={'flex flex-col p-4'}>
         <Typography type={'h1'} color={'primary'} text={'Progress report'} />
         <Typography
           type={'body'}
-          text={`${currentReport?.reportingPeriod} ${getYear(
-            new Date(currentReport?.dateCompleted || 0)
-          )}`}
+          text={
+            currentReport?.reportingPeriod === 'First'
+              ? `First observations ${formattedDate}`
+              : `${formattedDate}`
+          }
         />
 
         {currentReport &&
@@ -142,24 +151,24 @@ export const ViewChildProgressObservationReport: React.FC = () => {
             );
           })}
 
-        <Divider className={'my-4'} />
-
-        <Button
-          onClick={downloadReport}
-          className="w-full"
-          size="small"
-          color="primary"
-          type="filled"
-          isLoading={loading}
-        >
-          {!loading && renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-          <Typography
-            type="h6"
-            className="ml-2"
-            text={`Download ${currentReport?.reportingPeriod} caregiver report`}
-            color="white"
-          />
-        </Button>
+        {currentReport?.reportingPeriod !== 'First' && (
+          <Button
+            onClick={downloadReport}
+            className="w-full"
+            size="small"
+            color="primary"
+            type="filled"
+            isLoading={loading}
+          >
+            {!loading && renderIcon('ShareIcon', 'h-5 w-5 text-white')}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={`Share caregiver report`}
+              color="white"
+            />
+          </Button>
+        )}
       </div>
     </BannerWrapper>
   );

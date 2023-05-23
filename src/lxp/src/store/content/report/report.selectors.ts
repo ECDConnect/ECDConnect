@@ -106,6 +106,12 @@ export const getChildLatestCompletedReports = (childId?: string) =>
           categories: report.categories.map((cat) => ({
             categoryId: cat.categoryId,
             achievedLevelId: cat.achievedLevelId,
+            tasks:
+              cat.tasks.map((t) => ({
+                levelId: t.levelId,
+                skillId: t.skillId,
+                value: t.value,
+              })) || [],
           })),
           childFirstName: report.childFirstname,
           childSurname: report.childSurname,
