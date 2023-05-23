@@ -1,4 +1,6 @@
 import { UseFormRegister } from 'react-hook-form';
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
+import { useState } from 'react';
 
 export interface FormFieldProps {
   label: string;
@@ -9,6 +11,8 @@ export interface FormFieldProps {
   register: UseFormRegister<any>;
   required?: any;
   validation?: any;
+  instructions?: string[];
+  placeholder?: string;
 }
 
 const checkboxStyle =
@@ -27,7 +31,15 @@ const FormField: React.FC<FormFieldProps> = ({
   register,
   required,
   validation,
+  instructions,
+  placeholder,
 }) => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
   const getInputTypeStyles = () => {
     switch (type) {
       case 'checkbox':
@@ -41,20 +53,46 @@ const FormField: React.FC<FormFieldProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block text-md font-medium text-gray-700"
+        className="block text-lg font-medium text-gray-800"
       >
         {label}
       </label>
-      <div className="mt-1">
+      <div>
+        {instructions.length === 1 ? (
+          <p className="text-base">{instructions[0]}</p>
+        ) : (
+          <ul className="list-disc pl-6">
+            {instructions.map((i: string) => {
+              return <li>{i}</li>;
+            })}
+          </ul>
+        )}
+      </div>
+      <div className={type === 'password' ? 'mt-1 flex' : 'mt-1'}>
         <input
           disabled={disabled}
-          type={type}
+          type={showPassword ? 'text' : 'password'}
           {...register(nameProp, {
             required: required,
             validate: validation,
           })}
           className={error ? errorStyle : getInputTypeStyles()}
+          placeholder={placeholder}
         />
+
+        {type === 'password' && (
+          <button
+            type="button"
+            className="focus:outline-none ml-2"
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? (
+              <EyeOffIcon className="h-5 w-5 text-gray-500" />
+            ) : (
+              <EyeIcon className="h-5 w-5 text-gray-500" />
+            )}
+          </button>
+        )}
 
         <span className="text-errorMain text-sm"> {error && error} </span>
       </div>

@@ -79,8 +79,8 @@ export default function Register() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl font-extrabold">
-            Register
+          <h2 className="font-h1 textLight mt-6 text-3xl">
+            Register for Funda App
           </h2>
         </div>
         <div className="mt-8">
@@ -92,6 +92,10 @@ export default function Register() {
                   nameProp={'username'}
                   register={register}
                   error={errors.username?.message}
+                  instructions={[
+                    'Make sure to use the same address where you received the invitation email.',
+                  ]}
+                  placeholder="e.g. work@email.com"
                 />
               </div>
 
@@ -102,6 +106,11 @@ export default function Register() {
                   register={register}
                   type="password"
                   error={errors.password?.message}
+                  instructions={[
+                    'At least 8 characters',
+                    'At least 1 number',
+                    'At least 1 capital letter',
+                  ]}
                 />
               </div>
               <div className="-mx-1 flex">
@@ -123,15 +132,7 @@ export default function Register() {
                   </div>
                 ))}
               </div>
-              <div className="mb-2 flex justify-between">
-                <a
-                  rel="noopener noreferrer"
-                  href="/"
-                  className="text-l text-blue-400 hover:underline"
-                >
-                  Forgot password?
-                </a>
-              </div>
+
               <Divider></Divider>
 
               {displayError && (

@@ -15,6 +15,7 @@ import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
 import logo from '../../../assets/Logo-ECDConnect.png';
 import zxcvbn from 'zxcvbn-typescript';
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 
 export default function Login() {
   const { login } = useAuth();
@@ -28,13 +29,11 @@ export default function Login() {
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+  
+  //check password strength
   const password = watch('password');
-
   const formValues = getValues();
-  const passwordStrength = zxcvbn(formValues.password);
-  console.log('Password strength score:', passwordStrength.score);
-  console.log('Password feedback:', password);
-
+  const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
