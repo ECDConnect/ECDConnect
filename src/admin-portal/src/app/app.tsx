@@ -20,7 +20,7 @@ import { useHistory } from 'react-router';
 import { MainRoutes, PublicRoutes } from './app.routes';
 import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
-import { Redirect } from 'react-router-dom';
+
 const cache = new InMemoryCache({});
 export let apolloClient: ApolloClient<any> = null;
 

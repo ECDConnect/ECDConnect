@@ -13,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
+import logo from '../../../assets/Logo-ECDConnect.png';
 
 export default function Login() {
   const { login } = useAuth();
@@ -43,10 +44,7 @@ export default function Login() {
       });
 
       if (isAuthenticated) {
-        localStorage.setItem(
-          LocalStorageKeys.existingUser,
-          "true"
-        );
+        localStorage.setItem(LocalStorageKeys.existingUser, 'true');
         setIsLoading(false);
         history.push('/dashboard');
       } else {
@@ -62,21 +60,15 @@ export default function Login() {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return (
-        <img
-          className="h-32 w-auto"
-          src={theme.images.portalLoginLogoUrl}
-          alt="Login Logo"
-        />
-      );
+      return <img className="h-100 w-150" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
 
   return (
-    <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+    <div className="bg-[#50d71e] flex min-h-screen items-center justify-center">
+      <div className="rounded-50 bg-white p-8 shadow sm:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
@@ -110,7 +102,7 @@ export default function Login() {
                 <a
                   rel="noopener noreferrer"
                   href="/"
-                  className="text-l hover:underline text-blue-400"
+                  className="text-l text-blue-400 hover:underline"
                 >
                   Forgot password?
                 </a>

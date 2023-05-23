@@ -1,6 +1,7 @@
 import {
   Config,
   initialLoginValues,
+  LocalStorageKeys,
   LoginRequestModel,
   loginSchema,
   useTheme,
@@ -12,6 +13,7 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
+import logo from "../../../assets/Logo-ECDConnect.png"
 
 export default function Register() {
   const { login } = useAuth();
@@ -40,7 +42,10 @@ export default function Register() {
         setDisplayError(true);
         setIsLoading(false);
       });
-
+      localStorage.setItem(
+        LocalStorageKeys.existingUser,
+        "true"
+      );
       if (isAuthenticated) {
         setIsLoading(false);
         history.push('/dashboard');
@@ -59,8 +64,8 @@ export default function Register() {
     if (theme && theme.images) {
       return (
         <img
-          className="h-32 w-auto"
-          src={theme.images.portalLoginLogoUrl}
+          className="h-100 w-150"
+          src={logo}
           alt="Login Logo"
         />
       );

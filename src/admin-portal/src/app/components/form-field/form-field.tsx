@@ -16,7 +16,7 @@ const checkboxStyle =
 const errorStyle =
   'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 const defaultInputStyle =
-  'shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md';
+  'focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
