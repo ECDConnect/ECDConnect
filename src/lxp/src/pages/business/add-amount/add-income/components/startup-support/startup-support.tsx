@@ -31,12 +31,15 @@ import {
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
   const [confirmStartupValue, setConfirmStartupValue] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'Startup Support';
   const incomeTypeValue = incomeTypes.find(
@@ -98,11 +101,12 @@ export const StartupSupport: React.FC<AddIncomeState> = ({ setType }) => {
     await new IncomeStatementsService(
       userAuth?.auth_token!
     ).UpdateStatementsIncome(incomeId, incomeInput);
+
+    await history.push(ROUTES.BUSINESS);
   };
 
   const handleSaveStartupSupportValues = () => {
     sendIncomeUpdate();
-    setType('');
   };
 
   return (
