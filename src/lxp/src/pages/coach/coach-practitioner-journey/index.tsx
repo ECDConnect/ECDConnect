@@ -5,6 +5,7 @@ import {
   AlertType,
   BannerWrapper,
   Button,
+  LoadingSpinner,
   MenuListDataItem,
   StackedList,
   Steps,
@@ -53,6 +54,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   const { isLoading } = useThunkFetchCall(
     'pqa',
     PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
+  const { isLoading: isLoadingTimeline } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_PRACTITIONER_TIMELINE
   );
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
@@ -168,7 +173,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
+  }, [appDispatch, practitionerId, showForm]);
 
   if (
     (showForm && isView) ||
@@ -190,75 +195,86 @@ export const CoachPractitionerJourney: React.FC = () => {
       onBack={() => history.goBack()}
       className="p-4"
     >
-      {!!currentVisit && (
-        <StackedList
-          isFullHeight={false}
-          type="MenuList"
-          listItems={[currentVisit]}
+      {isLoadingTimeline ? (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
+          className="tex pt-4"
         />
-      )}
-      <Alert
-        className="mt-4"
-        type={
-          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-        }
-        title={timeline?.smartSpaceLicenseStatus || ''}
-        message={
-          !!timeline?.smartSpaceLicenseDate
-            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                'en-ZA',
-                dateLongMonthOptions
-              )
-            : ''
-        }
-        messageColor="textMid"
-        customIcon={
-          timeline?.smartSpaceLicenseColor === 'Success' ? (
-            <BalloonsIcon />
-          ) : (
-            <></>
-          )
-        }
-      />
-      <Typography
-        className="mt-4 mb-2"
-        type="h4"
-        text={`${practitionerFirstName} has been a SmartStarter for`}
-      />
-      <div className="mb-4 flex gap-2">
-        <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
-          {getTime(timeline?.starterLicenseDate || new Date())}
-        </p>
-        {!!timeline?.starterLicenseDate && (
-          <Typography
-            type="body"
-            color="textMid"
-            text={`Since ${new Date(
-              timeline.starterLicenseDate
-            ).toLocaleDateString('en-ZA', dateOptions)}`}
-          />
-        )}
-      </div>
-      <Button
-        className="mb-4 w-full"
-        color="primary"
-        type="outlined"
-        textColor="primary"
-        icon="LocationMarkerIcon"
-        text="Start support visit"
-        onClick={onSupportVisit}
-      />
-      {!!timeline && (
-        <Steps
-          items={timelineSteps(
-            timeline,
-            onView,
-            isLoading,
-            isOnline,
-            uncompletedVisits
+      ) : (
+        <>
+          {!!currentVisit && (
+            <StackedList
+              isFullHeight={false}
+              type="MenuList"
+              listItems={[currentVisit]}
+            />
           )}
-          typeColor={{ completed: 'successMain' }}
-        />
+          <Alert
+            className="mt-4"
+            type={
+              timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+            }
+            title={timeline?.smartSpaceLicenseStatus || ''}
+            message={
+              !!timeline?.smartSpaceLicenseDate
+                ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                    'en-ZA',
+                    dateLongMonthOptions
+                  )
+                : ''
+            }
+            messageColor="textMid"
+            customIcon={
+              timeline?.smartSpaceLicenseColor === 'Success' ? (
+                <BalloonsIcon />
+              ) : (
+                <></>
+              )
+            }
+          />
+          <Typography
+            className="mt-4 mb-2"
+            type="h4"
+            text={`${practitionerFirstName} has been a SmartStarter for`}
+          />
+          <div className="mb-4 flex gap-2">
+            <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
+              {getTime(timeline?.starterLicenseDate || new Date())}
+            </p>
+            {!!timeline?.starterLicenseDate && (
+              <Typography
+                type="body"
+                color="textMid"
+                text={`Since ${new Date(
+                  timeline.starterLicenseDate
+                ).toLocaleDateString('en-ZA', dateOptions)}`}
+              />
+            )}
+          </div>
+          <Button
+            className="mb-4 w-full"
+            color="primary"
+            type="outlined"
+            textColor="primary"
+            icon="LocationMarkerIcon"
+            text="Start support visit"
+            onClick={onSupportVisit}
+          />
+          {!!timeline && (
+            <Steps
+              items={timelineSteps(
+                timeline,
+                onView,
+                isLoading,
+                isOnline,
+                uncompletedVisits
+              )}
+              typeColor={{ completed: 'successMain' }}
+            />
+          )}
+        </>
       )}
     </BannerWrapper>
   );

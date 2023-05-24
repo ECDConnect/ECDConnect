@@ -81,7 +81,9 @@ const pqaSlice = createSlice({
     setThunkActionStatus(builder, addVisitFormData);
     setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
+    setThunkActionStatus(builder, getPractitionerTimeline);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
       const practitionerId = action.meta.arg.userId;
 
       if (state.coachPractitionersTimeline?.length) {
