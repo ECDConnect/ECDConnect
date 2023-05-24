@@ -124,11 +124,12 @@ export const ProgrammeObservations = ({
         {questions.map((item) => (
           <CheckboxGroup
             disabled={isView}
-            id={item?.title}
+            id={item.title}
             key={item?.title}
-            title={item.title}
-            description={item.subTitle}
+            title={`<p className="text-white"><strong>${item?.title}</strong> ${item.subTitle}</p>`}
             titleColours="textMid"
+            titleSize="sm"
+            titleWeight="normal"
             checked={answers?.some(
               (option) => option === item.title + item.subTitle
             )}
