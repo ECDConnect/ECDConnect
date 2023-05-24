@@ -1,5 +1,6 @@
 export interface LoginRequestModel {
-  email: string;
+  username?: string;
+  email?: string;
   phoneNumber?: string;
   password: string;
 }
@@ -9,7 +10,6 @@ export interface AuthUser {
   expires_in: string;
   id: string;
 }
-
 
 export interface RegisterRequestModel {
   email: string;
