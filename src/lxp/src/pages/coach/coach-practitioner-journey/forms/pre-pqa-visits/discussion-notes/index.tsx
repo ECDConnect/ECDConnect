@@ -10,7 +10,7 @@ import {
 import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getPreviousCoachVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
@@ -43,7 +43,10 @@ export const DiscussionNotes = ({
     getPreviousCoachVisitByUserId(activityName, smartStarter?.userId!)
   );
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const firstVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, previousVisit?.id)
@@ -99,12 +102,9 @@ export const DiscussionNotes = ({
   useEffect(() => {
     if (isView) {
       setEnableButton?.(true);
+      setPreviousAnswers();
     }
-  }, [isView, setEnableButton]);
-
-  useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+  }, [isView, setEnableButton, setPreviousAnswers]);
 
   return (
     <div className="p-4">

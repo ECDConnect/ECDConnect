@@ -4,9 +4,8 @@ import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeline,
-  Visit,
+  SupportVisitModelInput,
   VisitData,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 
 export const PqaActions = {
@@ -54,15 +53,15 @@ export const addVisitFormData = createAsyncThunk<
 );
 
 export const addSupportVisitFormData = createAsyncThunk<
-  Visit | undefined,
-  VisitModelInput | undefined,
+  any,
+  SupportVisitModelInput | undefined,
   ThunkApiType<RootState>
 >(
   PqaActions.ADD_SUPPORT_VISIT_FORM_DATA,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { prePqaFormData },
+      pqa: { supportVisitFormData },
     } = getState();
 
     try {
@@ -75,15 +74,14 @@ export const addSupportVisitFormData = createAsyncThunk<
           return response;
         }
 
-        // TODO: add sync promises
-        // const promises = prePqaFormData?.map(
-        //   async (item) =>
-        //     await new PQAService(userAuth?.auth_token).addSupportVisitForPractitioner(
-        //       item.formData
-        //     )
-        // );
+        const promises = supportVisitFormData?.map(
+          async (item) =>
+            await new PQAService(
+              userAuth?.auth_token
+            ).addSupportVisitForPractitioner(item.formData)
+        );
 
-        // return promises?.length && Promise.all(promises);
+        return promises?.length && Promise.all(promises);
       }
     } catch (err) {
       return rejectWithValue(err);

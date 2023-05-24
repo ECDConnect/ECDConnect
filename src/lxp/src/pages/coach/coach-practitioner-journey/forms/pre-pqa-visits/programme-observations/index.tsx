@@ -14,7 +14,7 @@ import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.t
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 
@@ -37,7 +37,10 @@ export const ProgrammeObservations = ({
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
@@ -91,8 +94,10 @@ export const ProgrammeObservations = ({
   }, [setEnableButton]);
 
   useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+    if (isView) {
+      setPreviousAnswers();
+    }
+  }, [setPreviousAnswers, isView]);
 
   return (
     <div className="p-4">
@@ -119,11 +124,12 @@ export const ProgrammeObservations = ({
         {questions.map((item) => (
           <CheckboxGroup
             disabled={isView}
-            id={item?.title}
+            id={item.title}
             key={item?.title}
-            title={item.title}
-            description={item.subTitle}
+            title={`<p className="text-white"><strong>${item?.title}</strong> ${item.subTitle}</p>`}
             titleColours="textMid"
+            titleSize="sm"
+            titleWeight="normal"
             checked={answers?.some(
               (option) => option === item.title + item.subTitle
             )}

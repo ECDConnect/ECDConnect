@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { parseBool, useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   ActionModal,
@@ -22,7 +22,7 @@ import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
-  VisitModelInput,
+  SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { usePrevious } from 'react-use';
@@ -30,17 +30,19 @@ import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
+import { callAnswer, visitOrCallQuestion } from './general-support-visit';
 
 interface FormProps {
-  isView: boolean;
   visitId?: string;
   onBack: () => void;
 }
 
 export const currentActivityKey = 'selectedOption';
+export const visitIdKey = 'visitId';
+export const isViewKey = 'isView';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ visitId, isView, onBack }: FormProps) => {
+export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
@@ -52,6 +54,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
   const appDispatch = useAppDispatch();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -64,7 +67,13 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
+  const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
+  );
+
   const wasLoading = usePrevious(isLoading);
+  const wasLoadingSupportVisit = usePrevious(isLoadingSupportVisit);
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -154,28 +163,46 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
+    const payload: CmsVisitDataInputModelInput = {
+      visitId,
+      practitionerId,
+      visitData: {
+        visitName: activityName,
+        sections,
+      },
+    };
+
     switch (activityName) {
       case visitTypes.supportVisit:
-        const supportVisitPayload: VisitModelInput = {
-          actualVisitDate: '',
-          attended: true,
+        const visitOrCallSection = sections?.find((item) =>
+          item?.questions?.some(
+            (question) => question?.question === visitOrCallQuestion
+          )
+        )?.questions;
+        const visitOrCallAnswer = visitOrCallSection?.find(
+          (item) => item?.question === visitOrCallQuestion
+        )?.answer;
+
+        const supportVisitPayload: SupportVisitModelInput = {
+          practitionerId,
           plannedVisitDate: new Date(),
+          isSupportCall: visitOrCallAnswer === callAnswer,
+          // TODO: add schedule option
+          attended: true,
+          supportData: payload,
         };
+        appDispatch(
+          pqaActions.addVisitFormData(supportVisitPayload, {
+            userId: practitionerId,
+            formType: 'support-visit',
+          })
+        );
         appDispatch(
           pqaThunkActions.addSupportVisitFormData(supportVisitPayload)
         );
         break;
 
       default:
-        const payload: CmsVisitDataInputModelInput = {
-          visitId,
-          practitionerId,
-          visitData: {
-            visitName: activityName,
-            sections,
-          },
-        };
-
         appDispatch(
           pqaActions.addVisitFormData(payload, {
             userId: practitionerId,
@@ -207,6 +234,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
                 type: 'filled',
                 leadingIcon: 'CheckCircleIcon',
                 onClick: () => {
+                  onBack?.();
                   history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
                     practitionerId,
                   });
@@ -220,9 +248,8 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: () => {
-                  onSubmit();
+                  setTimeout(() => onSuccess(), 100);
                   onBack?.();
-
                   onClose();
                 },
               },
@@ -231,7 +258,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
         );
       },
     });
-  }, [dialog, history, name, onBack, onSubmit, practitionerId]);
+  }, [dialog, history, name, onBack, onSuccess, practitionerId]);
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
@@ -245,9 +272,21 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
   useEffect(() => {
     if (wasLoading && !isLoading) {
       displayChildrenDialog();
+    }
+
+    if (wasLoadingSupportVisit && !isLoadingSupportVisit) {
+      onBack?.();
       onSuccess();
     }
-  }, [displayChildrenDialog, isLoading, onBack, onSuccess, wasLoading]);
+  }, [
+    displayChildrenDialog,
+    isLoading,
+    isLoadingSupportVisit,
+    onBack,
+    onSuccess,
+    wasLoading,
+    wasLoadingSupportVisit,
+  ]);
 
   return (
     <BannerWrapper
@@ -273,6 +312,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={onSubmit}
+        isLoading={isLoading || isLoadingSupportVisit}
       />
     </BannerWrapper>
   );

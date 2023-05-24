@@ -1,6 +1,11 @@
 import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
-import { CalendarIcon } from '@heroicons/react/solid';
+import {
+  CalendarIcon,
+  PhoneIcon,
+  ClipboardCheckIcon,
+} from '@heroicons/react/solid';
+import { generalSupportVisitTypes } from './coach-practitioner-journey.types';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -144,42 +149,33 @@ export const timelineSteps = (
     )
   );
 
-  const formattedSteps = steps
-    .filter((object) => Object.keys(object).length !== 0)
-    .sort(
-      (
-        stepA,
-        stepB // TODO: fix type
-      ) =>
-        // @ts-ignore
-        (stepA.extraData?.date?.getTime() || 0) -
-        // @ts-ignore
-        (stepB.extraData?.date?.getTime() || 0)
-    ) as StepItem<{ date: Date }>[];
-
   if (!!timeline.siteVisits?.length) {
-    formattedSteps.push({
+    const date =
+      timeline.prePQAVisitDate1Color === 'Success' &&
+      !visits?.some((item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1')
+      )
+        ? new Date(
+            timeline.siteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_2')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions)
+        : new Date(
+            timeline.siteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_1')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions);
+
+    steps.push({
       title: 'Pre-PQA site visits',
-      subTitle: `By ${
-        timeline.prePQAVisitDate1Color === 'Success' &&
-        !visits?.some((item) =>
-          item?.visitType?.name?.includes('pre_pqa_visit_1')
-        )
-          ? new Date(
-              timeline.siteVisits?.find((item) =>
-                item?.visitType?.name?.includes('pre_pqa_visit_2')
-              )?.plannedVisitDate
-            ).toLocaleDateString('en-ZA', dateOptions)
-          : new Date(
-              timeline.siteVisits?.find((item) =>
-                item?.visitType?.name?.includes('pre_pqa_visit_1')
-              )?.plannedVisitDate
-            ).toLocaleDateString('en-ZA', dateOptions)
-      }`,
+      subTitle: `By ${date}`,
       type: timeline.siteVisits?.every((item) => !!item?.attended)
         ? 'completed'
         : 'todo',
       showAccordion: true,
+      extraData: {
+        date: new Date(date),
+      },
       accordionContent: (
         <>
           {timeline.siteVisits
@@ -268,6 +264,98 @@ export const timelineSteps = (
       ),
     });
   }
+
+  if (!!timeline.supportVisits?.length) {
+    const date = new Date(
+      timeline.supportVisits[
+        timeline.supportVisits.length - 1
+      ]?.plannedVisitDate
+    ).toLocaleDateString('en-ZA', dateOptions);
+
+    steps.push({
+      title: 'General support visits',
+      subTitle: `By ${date}`,
+      type: timeline.supportVisits?.every((item) => !!item?.attended)
+        ? 'completed'
+        : 'todo',
+      extraData: {
+        date: new Date(date),
+      },
+      showAccordion: true,
+      accordionContent: (
+        <>
+          {timeline.supportVisits
+            ?.filter(
+              (visit: Maybe<Visit>) =>
+                typeof visit?.visitType?.order !== 'undefined'
+            )
+            ?.sort(sortVisit)
+            ?.map((item) => (
+              <div className="my-4">
+                <div className="relative flex items-center gap-1">
+                  {item?.visitType?.name === generalSupportVisitTypes.call ? (
+                    <span>
+                      <PhoneIcon className="text-primary h-4 w-4" />
+                    </span>
+                  ) : (
+                    <span>
+                      <ClipboardCheckIcon className="text-primary h-4 w-4" />
+                    </span>
+                  )}
+                  <Typography
+                    type="body"
+                    color="textDark"
+                    className="w-6/12 font-bold"
+                    text={item?.visitType?.description || ''}
+                  />
+                  {!!item?.attended && isOnline && (
+                    <Button
+                      style={{
+                        position: 'absolute',
+                        right: -36,
+                      }}
+                      className="z-50 w-24"
+                      type="filled"
+                      color="secondaryAccent2"
+                      textColor="secondary"
+                      text="View"
+                      isLoading={isLoading}
+                      disabled={isLoading}
+                      onClick={() => onView(item)}
+                    />
+                  )}
+                </div>
+                <Typography
+                  type="body"
+                  // TODO: add schedule integration
+                  color={getStepType(String('Success'))?.color || 'textMid'}
+                  text={
+                    !!item?.plannedVisitDate
+                      ? `By ${new Date(
+                          item.plannedVisitDate
+                        ).toLocaleDateString('en-ZA', dateOptions)}`
+                      : ''
+                  }
+                />
+              </div>
+            ))}
+        </>
+      ),
+    });
+  }
+
+  const formattedSteps = steps
+    .filter((object) => Object.keys(object).length !== 0)
+    .sort(
+      (
+        stepA,
+        stepB // TODO: fix type
+      ) =>
+        // @ts-ignore
+        (stepA.extraData?.date?.getTime() || 0) -
+        // @ts-ignore
+        (stepB.extraData?.date?.getTime() || 0)
+    ) as StepItem<{ date: Date }>[];
 
   return formattedSteps;
 };

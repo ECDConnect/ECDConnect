@@ -5,6 +5,7 @@ import {
   AlertType,
   BannerWrapper,
   Button,
+  LoadingSpinner,
   MenuListDataItem,
   StackedList,
   Steps,
@@ -15,10 +16,11 @@ import { useHistory, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import {
   PractitionerJourneyParams,
+  generalSupportVisitTypes,
   visitTypes,
 } from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
-import { Form, currentActivityKey } from './forms';
+import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
@@ -35,15 +37,15 @@ import {
   sortVisit,
   timelineSteps,
 } from './timeline-steps';
-import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { getAgeInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [isView, setIsView] = useState(false);
 
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -52,6 +54,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   const { isLoading } = useThunkFetchCall(
     'pqa',
     PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
+  const { isLoading: isLoadingTimeline } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_PRACTITIONER_TIMELINE
   );
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
@@ -129,6 +135,8 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
+    window.sessionStorage.removeItem(visitIdKey);
+    window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
   };
 
@@ -137,11 +145,23 @@ export const CoachPractitionerJourney: React.FC = () => {
       getVisitDataForVisitId({ visitId: visit.id, userId: practitionerId })
     );
 
-    window.sessionStorage.setItem(
-      currentActivityKey,
-      visit.visitType?.description!
-    );
-    setIsView(true);
+    if (
+      visit.visitType?.name === generalSupportVisitTypes.visit ||
+      visit.visitType?.name === generalSupportVisitTypes.call
+    ) {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.supportVisit
+      );
+      window.sessionStorage.setItem(visitIdKey, visit.id);
+    } else {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visit.visitType?.description!
+      );
+    }
+
+    window.sessionStorage.setItem(isViewKey, 'true');
     setShowForm(true);
   };
 
@@ -153,7 +173,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   useLayoutEffect(() => {
     appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId]);
+  }, [appDispatch, practitionerId, showForm]);
 
   if (
     (showForm && isView) ||
@@ -161,11 +181,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     (showForm && selectedForm === visitTypes.supportVisit)
   ) {
     return (
-      <Form
-        isView={isView}
-        onBack={onFormBack}
-        visitId={currentVisit?.extraData?.visitId}
-      />
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
     );
   }
 
@@ -179,75 +195,86 @@ export const CoachPractitionerJourney: React.FC = () => {
       onBack={() => history.goBack()}
       className="p-4"
     >
-      {!!currentVisit && (
-        <StackedList
-          isFullHeight={false}
-          type="MenuList"
-          listItems={[currentVisit]}
+      {isLoadingTimeline ? (
+        <LoadingSpinner
+          size="medium"
+          spinnerColor="primary"
+          backgroundColor="uiLight"
+          className="tex pt-4"
         />
-      )}
-      <Alert
-        className="mt-4"
-        type={
-          timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
-        }
-        title={timeline?.smartSpaceLicenseStatus || ''}
-        message={
-          !!timeline?.smartSpaceLicenseDate
-            ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
-                'en-ZA',
-                dateLongMonthOptions
-              )
-            : ''
-        }
-        messageColor="textMid"
-        customIcon={
-          timeline?.smartSpaceLicenseColor === 'Success' ? (
-            <BalloonsIcon />
-          ) : (
-            <></>
-          )
-        }
-      />
-      <Typography
-        className="mt-4 mb-2"
-        type="h4"
-        text={`${practitionerFirstName} has been a SmartStarter for`}
-      />
-      <div className="mb-4 flex gap-2">
-        <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
-          {getTime(timeline?.starterLicenseDate || new Date())}
-        </p>
-        {!!timeline?.starterLicenseDate && (
-          <Typography
-            type="body"
-            color="textMid"
-            text={`Since ${new Date(
-              timeline.starterLicenseDate
-            ).toLocaleDateString('en-ZA', dateOptions)}`}
-          />
-        )}
-      </div>
-      <Button
-        className="mb-4 w-full"
-        color="primary"
-        type="outlined"
-        textColor="primary"
-        icon="LocationMarkerIcon"
-        text="Start support visit"
-        onClick={onSupportVisit}
-      />
-      {!!timeline && (
-        <Steps
-          items={timelineSteps(
-            timeline,
-            onView,
-            isLoading,
-            isOnline,
-            uncompletedVisits
+      ) : (
+        <>
+          {!!currentVisit && (
+            <StackedList
+              isFullHeight={false}
+              type="MenuList"
+              listItems={[currentVisit]}
+            />
           )}
-          typeColor={{ completed: 'successMain' }}
-        />
+          <Alert
+            className="mt-4"
+            type={
+              timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
+            }
+            title={timeline?.smartSpaceLicenseStatus || ''}
+            message={
+              !!timeline?.smartSpaceLicenseDate
+                ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
+                    'en-ZA',
+                    dateLongMonthOptions
+                  )
+                : ''
+            }
+            messageColor="textMid"
+            customIcon={
+              timeline?.smartSpaceLicenseColor === 'Success' ? (
+                <BalloonsIcon />
+              ) : (
+                <></>
+              )
+            }
+          />
+          <Typography
+            className="mt-4 mb-2"
+            type="h4"
+            text={`${practitionerFirstName} has been a SmartStarter for`}
+          />
+          <div className="mb-4 flex gap-2">
+            <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
+              {getTime(timeline?.starterLicenseDate || new Date())}
+            </p>
+            {!!timeline?.starterLicenseDate && (
+              <Typography
+                type="body"
+                color="textMid"
+                text={`Since ${new Date(
+                  timeline.starterLicenseDate
+                ).toLocaleDateString('en-ZA', dateOptions)}`}
+              />
+            )}
+          </div>
+          <Button
+            className="mb-4 w-full"
+            color="primary"
+            type="outlined"
+            textColor="primary"
+            icon="LocationMarkerIcon"
+            text="Start support visit"
+            onClick={onSupportVisit}
+          />
+          {!!timeline && (
+            <Steps
+              items={timelineSteps(
+                timeline,
+                onView,
+                isLoading,
+                isOnline,
+                uncompletedVisits
+              )}
+              typeColor={{ completed: 'successMain' }}
+            />
+          )}
+        </>
       )}
     </BannerWrapper>
   );

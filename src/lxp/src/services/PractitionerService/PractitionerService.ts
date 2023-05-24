@@ -40,6 +40,7 @@ class PractitionerService {
           allPractitionersForCoach(userId: $userId) {
             id
             userId
+            programmeType
             timeline {
               clubMeetingDate1
               clubMeetingDate1Color
@@ -153,6 +154,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -216,6 +218,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -259,6 +262,7 @@ class PractitionerService {
             isPrincipal
             isFundaAppAdmin
             isTrainee
+            programmeType
             principalHierarchy
             isActive
             coachHierarchy
@@ -320,6 +324,7 @@ class PractitionerService {
                 isPrincipal
                 id
                 shareInfo
+                programmeType
                 principalHierarchy
                 dateLinked
                 dateAccepted
