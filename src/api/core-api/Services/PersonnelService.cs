@@ -198,25 +198,34 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public Practitioner SwitchPrincipal([Service] UserManager<ApplicationUser> userManager, string oldPrincipalUserId, string newPrincipalUserId)
         {
-            var practitionerToPromote = _practiRepo.GetByUserId(newPrincipalUserId);
-            var practitionerToDemote = _practiRepo.GetByUserId(oldPrincipalUserId);
+            var practitionerToPromote = _practiGenericRepo.GetByUserId(newPrincipalUserId);
+            var practitionerToDemote = _practiGenericRepo.GetByUserId(oldPrincipalUserId);
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
                 practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
-                _practiRepo.Update(practitionerToPromote);
+                practitionerToPromote.PrincipalHierarchy = null;
+                practitionerToPromote.DateLinked = null;
+                practitionerToPromote.DateAccepted = null;
+                practitionerToPromote.DateAccepted = null;
+                _practiGenericRepo.Update(practitionerToPromote);
 
                 practitionerToDemote.IsPrincipal = false;
-                _practiRepo.Update(practitionerToDemote);
+                practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                practitionerToDemote.ShareInfo = true;
+                practitionerToDemote.DateLinked = DateTime.Now;
+                practitionerToDemote.DateAccepted = DateTime.Now;
+                practitionerToPromote.DateAccepted = DateTime.Now;
+                _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
                     {
-                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);                        
-                        _practiRepo.Update(practi);
+                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                        _practiGenericRepo.Update(practi);
                     }
                 }
 
