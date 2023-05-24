@@ -29,7 +29,7 @@ export const addVisitFormData = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        if (!!input) {
+        if (!!Object.keys(input).length) {
           const response = await new PQAService(
             userAuth?.auth_token
           ).addVisitData(input);
@@ -37,14 +37,16 @@ export const addVisitFormData = createAsyncThunk<
           return response;
         }
 
-        const promises = prePqaFormData?.map(
-          async (item) =>
-            await new PQAService(userAuth?.auth_token).addVisitData(
-              item.formData
-            )
-        );
+        if (!!prePqaFormData?.length) {
+          const promises = prePqaFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addVisitData(
+                item.formData
+              )
+          );
 
-        return promises?.length && Promise.all(promises);
+          return promises?.length && Promise.all(promises);
+        }
       }
     } catch (err) {
       return rejectWithValue(err);
@@ -66,7 +68,7 @@ export const addSupportVisitFormData = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        if (!!input) {
+        if (!!input && !!Object.keys(input).length) {
           const response = await new PQAService(
             userAuth?.auth_token
           ).addSupportVisitForPractitioner(input);
@@ -74,14 +76,16 @@ export const addSupportVisitFormData = createAsyncThunk<
           return response;
         }
 
-        const promises = supportVisitFormData?.map(
-          async (item) =>
-            await new PQAService(
-              userAuth?.auth_token
-            ).addSupportVisitForPractitioner(item.formData)
-        );
+        if (!!supportVisitFormData?.length) {
+          const promises = supportVisitFormData?.map(
+            async (item) =>
+              await new PQAService(
+                userAuth?.auth_token
+              ).addSupportVisitForPractitioner(item.formData)
+          );
 
-        return promises?.length && Promise.all(promises);
+          return promises?.length && Promise.all(promises);
+        }
       }
     } catch (err) {
       return rejectWithValue(err);
