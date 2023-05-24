@@ -8,11 +8,7 @@ import { SubmitIncomeStatements } from './submit-income-statements/submit-income
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
-import {
-  statementsActions,
-  statementsSelectors,
-  statementsThunkActions,
-} from '@store/statements';
+import { statementsSelectors, statementsThunkActions } from '@store/statements';
 import { getMonth, getYear } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -35,6 +31,8 @@ export const Money = () => {
   const expense = useSelector(statementsSelectors.getExpenses);
   const year = getYear(new Date());
   const month = getMonth(new Date()) + 1;
+  const [handleAutoStartWalkthrough, setHandleAutoStartWalkthrough] =
+    useState(false);
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
@@ -52,6 +50,7 @@ export const Money = () => {
         })
       );
     }
+    setHandleAutoStartWalkthrough(true);
   };
 
   useEffect(() => {
@@ -119,11 +118,19 @@ export const Money = () => {
   const { setState } = useAppContext();
 
   useEffect(() => {
-    if (!hasIncomeStatements) {
+    if (
+      !hasIncomeStatements &&
+      income?.length === 0 &&
+      expense?.length === 0 &&
+      handleAutoStartWalkthrough &&
+      state?.stepIndex !== 7 &&
+      state?.stepIndex !== 8 &&
+      state?.stepIndex !== 9
+    ) {
       handleClickStart();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasIncomeStatements]);
+  }, [hasIncomeStatements, income, expense, handleAutoStartWalkthrough]);
 
   return (
     <>
