@@ -16,3 +16,7 @@ export interface RegisterRequestModel {
   password: string;
   acceptedTerms: boolean;
 }
+
+export interface ResetPasswordRequestModel {
+  email: string;
+}

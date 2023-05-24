@@ -44,7 +44,7 @@ export default function Login() {
 
   const { errors, isValid } = formState;
 
-  console.log(isValid)
+
   const signIn = async () => {
     if (isValid) {
       setIsLoading(true);
@@ -79,7 +79,6 @@ export default function Login() {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
-
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
       <div className="rounded bg-white p-8 shadow sm:w-1/3">
@@ -87,7 +86,7 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl">
+          <h2 className="font-h1 textLight mt-6 text-2xl">
             Log in to Funda App
           </h2>
         </div>
@@ -137,7 +136,7 @@ export default function Login() {
               <div className="mb-2 flex ">
                 <a
                   rel="noopener noreferrer"
-                  href="/"
+                  onClick={()=>history.push("/reset")}
                   className="text-l text-secondary hover:underline pr-2"
                 >
                   Forgot password?

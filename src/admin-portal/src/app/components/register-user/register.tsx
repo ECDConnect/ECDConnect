@@ -17,7 +17,7 @@ import logo from '../../../assets/Logo-ECDConnect.png';
 import zxcvbn from 'zxcvbn-typescript';
 
 export default function Register() {
-  const { login } = useAuth();
+  const { registerUser } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
@@ -41,8 +41,9 @@ export default function Register() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
+  console.log(isValid)
 
-  const registerUser = async () => {
+  const registerNewUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
@@ -53,7 +54,7 @@ export default function Register() {
         password: formValues.password,
         acceptedTerms: formValues.acceptedTerms,
       };
-      const isAuthenticated = await login(body, Config.authApi).catch(() => {
+      const isAuthenticated = await registerUser(body, Config.authApi).catch(() => {
         setDisplayError(true);
         setIsLoading(false);
       });
@@ -87,7 +88,7 @@ export default function Register() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl">
+          <h2 className="font-h1 textLight mt-6 text-2xl">
             Register for Funda App
           </h2>
         </div>
@@ -130,11 +131,11 @@ export default function Register() {
                     <div
                       className={`h-2 rounded-xl transition-colors ${
                         i < passwordScore
-                          ? passwordScore <= 2
+                          ? passwordScore <= 1
                             ? 'bg-red-400'
-                            : passwordScore <= 3
+                            : passwordScore <= 2
                             ? 'bg-yellow-400'
-                            : passwordScore <= 4
+                            : passwordScore <= 4 
                             ? 'bg-green-500'
                             : 'bg-yellow-400'
                           : 'bg-gray-200'
@@ -159,7 +160,7 @@ export default function Register() {
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={'Password or Username incorrect. Please try again'}
+                  message={'Oh no! There are 2 problems above. Please fix them:'}
                   type={'error'}
                 />
               )}
@@ -170,7 +171,7 @@ export default function Register() {
                   isLoading={isLoading}
                   color="secondary"
                   disabled={!isValid}
-                  onClick={registerUser}
+                  onClick={registerNewUser}
                 >
                   <Typography
                     type="help"

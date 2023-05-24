@@ -20,7 +20,7 @@ import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
 export interface AuthContextType {
   authenticatedUser?: AuthUser;
   loading: boolean;
-  register: (body: RegisterRequestModel, baseEndPoint: string) => Promise<boolean>;
+  registerUser: (body: RegisterRequestModel, baseEndPoint: string) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
   logout: () => void;
   getAccessTokenPromise: () => Promise<any>;
@@ -67,7 +67,7 @@ export function AuthProvider({
   };
 
 
-  const register = async (
+  const registerUser = async (
     body: LoginRequestModel,
     baseEndPoint: string
   ): Promise<boolean> => {
@@ -151,7 +151,7 @@ export function AuthProvider({
       authenticatedUser,
       login,
       logout,
-      getAccessTokenPromise,
+      getAccessTokenPromise
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [authenticatedUser]
