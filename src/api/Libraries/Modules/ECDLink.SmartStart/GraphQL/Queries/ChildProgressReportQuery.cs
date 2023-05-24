@@ -37,8 +37,8 @@ namespace ECDLink.SmartStart.GraphQL.Queries
             var progressReportEntity = progressReportRepo
                                             .GetAll()
                                             .Where(x =>
-                                                    x.ClassroomGroupId == classgroupId
-                                                    && x.ChildId == childId
+                                                    // x.ClassroomGroupId == classgroupId
+                                                    x.ChildId == childId
                                                     && x.ReportDate.Month == reportDate.Month && x.ReportDate.Year == reportDate.Year)
                                             .OrderBy(x => x.Id)
                                             .FirstOrDefault();
@@ -73,6 +73,33 @@ namespace ECDLink.SmartStart.GraphQL.Queries
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
+        public async Task<IEnumerable<ChildProgressReportDetailedModel>> GetChildProgressReports(
+            IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            int count)
+        {
+            var reportRepo = repoFactory.CreateRepository<ChildProgressReport>();
+            reportRepo.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
+
+            var reports = reportRepo.GetAll()
+                               .OrderByDescending(x => x.UpdatedDate)
+                               .Take(count)
+                               .ToList();
+
+            var result = new List<ChildProgressReportDetailedModel>();
+            foreach (var report in reports)
+            {
+                var detail = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(report.ReportContent);
+                if (detail == default(ChildProgressReportDetailedModel))
+                {
+                    continue;
+                }
+                result.Add(detail);
+            }
+            return result;
+        }
+
+        [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<IEnumerable<ChildProgressReportSummaryModel>> GetChildProgressReportSummary(
             IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -82,7 +109,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
             reportRepo.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
 
             var summaryEntities = reportRepo.GetAll()
-                                    .OrderByDescending(x => x.ReportDate)
+                                    .OrderByDescending(x => x.UpdatedDate)
                                     .Take(count)
                                     .ToList();
 
@@ -93,6 +120,10 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                 var report = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(item.ReportContent);
 
                 if (report == default(ChildProgressReportDetailedModel))
+                {
+                    continue;
+                }
+                if (string.IsNullOrEmpty(report.DateCompleted))
                 {
                     continue;
                 }
