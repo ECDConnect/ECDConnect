@@ -13,15 +13,13 @@ import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
 import { Maybe } from '@ecdlink/graphql';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 
-const MOCKED_DATA = {
-  programmeType: 'Playgroup',
-};
 export const ProgrammeDetails = ({
   isView,
   smartStarter,
@@ -58,9 +56,13 @@ export const ProgrammeDetails = ({
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
+  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
@@ -185,7 +187,7 @@ export const ProgrammeDetails = ({
       )}
       <Typography
         type="h4"
-        text={`Programme type: ${MOCKED_DATA.programmeType}`}
+        text={`Programme type: ${practitioner?.programmeType || ''}`}
         color="textDark"
         className="my-4"
       />

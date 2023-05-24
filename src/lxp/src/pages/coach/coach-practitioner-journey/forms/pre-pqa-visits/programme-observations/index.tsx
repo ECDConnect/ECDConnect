@@ -14,7 +14,7 @@ import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.t
 import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 
@@ -37,7 +37,10 @@ export const ProgrammeObservations = ({
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
