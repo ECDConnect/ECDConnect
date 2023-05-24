@@ -49,7 +49,7 @@ export default function Login() {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        email: formValues.email,
+        username: formValues.email,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
