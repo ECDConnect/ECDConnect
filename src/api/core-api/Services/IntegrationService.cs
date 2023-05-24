@@ -33,10 +33,9 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.Core.Helpers;
-using MediatR;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
-using NPOI.SS.Formula.Functions;
+using ECDLink.SmartStart.Reports.Models;
+using NPOI.Util;
 
 namespace ECDLink.Core.Services
 {
@@ -2524,12 +2523,28 @@ namespace ECDLink.Core.Services
 
         private async Task<bool> PushInserts(List<IntegrationAudit> audits)
         {
+
             //User entities
-            PushNewEntities(audits);
+            List<Child> newChildren = new List<Child>();
+            var childrenInserted = audits.Where(a => a.Entity.Equals("Child"));
+            foreach (var childAudit in childrenInserted)
+            {
+                var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
+                string remoteChildEntityId = await PushNewChild(newChild);
+                var caregiverAudit = audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.Equals(newChild.CaregiverId)).FirstOrDefault();
+                //write back that these have been processed
+                childAudit.Submitted = DateTime.Now;
+                caregiverAudit.Submitted = DateTime.Now;
+                _auditRepo.Update(childAudit);
+                _auditRepo.Update(caregiverAudit);
+            }
+
+
+
             //Attendance
-            PushAttendance(audits);
+            //PushAttendance(); -- monthly push
             //Income Statements
-            PushStatements(audits);
+            //PushStatements(); -- monthly push
             //Documents
             PushDocuments(audits);
 
@@ -2541,18 +2556,19 @@ namespace ECDLink.Core.Services
             int changesCheckTime = 1620;
             List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
 
+            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            if (deletes.Count > 0)
+                await PushDeletes(deletes);
+
             //Inserts
             var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
             if (inserts.Count > 0)
                 await PushInserts(inserts);
 
+            //Updates & Deactivates
             var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
             if (updates.Count > 0)
                 await PushUpdates(updates);
-
-            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
-            if (deletes.Count > 0)
-                await PushDeletes(deletes);
 
             return true;
         }
@@ -2585,21 +2601,197 @@ namespace ECDLink.Core.Services
                     var edu = _staticEducationRepo.GetById(Guid.Parse(valueToSend));
                     valueToSend = (edu != null ? edu.Description : null);
                     break;
+                case "Grant":
+                    var grant = _staticGrantRepo.GetById(Guid.Parse(valueToSend));
+                    valueToSend = (grant != null ? grant.Description : null);
+                    break;
             }
 
             return valueToSend;
         }
 
-        
-        private async Task<bool> PushNewEntities(List<IntegrationAudit> audits)
+ 
+
+
+        private async Task<string> PushNewChild(Child newChild)
         {
             /*
              //1) use all insert lines - retrieve column mappings and create
-             
+            Find all children to insert, then get their caregivers and write the api call for caregivers
+            Pluck thecaregiver out of the audits
+            then write the child insert api call
              */
+            try
+            {
+                /*
 
-            return true;
+
+{{RouteStart}}Caregiver/Multiple
+
+    [
+{
+    "FirstName": "Lucky",
+"Surname": "Mthembi",
+"IdNumber": "9007085867089",
+"ContactNumber": "0813003040",
+"EmergencyContactSurname": "Mthembi",
+"EmergencyContactPhoneNumber": "0813003040",
+"EmergencyContactFirstname": "Lucky",
+"HomeAddressLine1": "123 Unit 123",
+"HomeAddressLine2": "Soweto",
+"HomeAddressLine3": "Johannesburg",
+"HomeAddressPostalCode": "1685",
+"RelationshipType": "Father",
+"HighestEducationLevel": "Matric",
+//"Language": "English",
+"Franchisee": {
+        "Guid": "fbd16c49-19ef-ed11-8354-00155dee5a05"
+},
+"Province": "Gauteng"
+}
+]
+
+{{RouteStart}}Child/Multiple                  
+
+
+
+[
+{
+"FirstName": "Kamogelo",
+"Surname": "Tinyane",
+"IdNumber": "",
+"AllergyType": "peanuts",
+"DisabilityType": "b",
+"HealthConditions": "",
+"EmergencyContactNumber": "0758962389",
+"EmergencyContactFirstName": "Nhlanhla",
+"EmergencyContactSurname": "Tinyane",
+"AlternativePickupFirstName": "",
+"AlternativePickupSurname": "",
+"AlternativePickupContactNumber": "",
+"BirthDate": "2020-01-31T00:00:00.000Z",
+"StartDate": "2023-05-19T11:14:44.107Z",
+"HasAllergy": true,
+"HasDisability": true,
+"CaregiverPopiaConsent": true,
+"CaregiverPhotographyAndFilmingConsent": true,
+"IsSouthAfricanCitizen": true,
+"HasIdNumber": false,
+//"Gender": "Female",
+//"EthnicGroup": "Coloured",
+"HomeLanguage": "Sepedi",
+//"GrantType": "Child Grant",
+//"PlaygroupGroup": "Phoenix class",
+"Franchisee": {
+"Guid": "af130d6b-18ef-ed11-8354-00155dee5a05"
+},
+"Caregiver": {
+"Guid": "0c9b46d8-35f9-ed11-8354-00155dee5a05"
+}
+}
+]
+
+
+ */
+
+
+                /*
+                                var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("CareGiver")).ToList();
+                                    StringBuilder jsonCaregiverString = new StringBuilder();
+                                    string url = "";
+                                jsonCaregiverString.AppendLine("[");
+                                            url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.CreateMultiple;
+                                jsonCaregiverString.AppendLine("{");
+                                            if (caregiverColumns.Count() > 0)
+                                            {
+                                                foreach (var changeLine in caregiverColumns)
+                                                {
+                                                    var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                                    if (mappedColumnLine != null)
+                                                    {
+                                                        if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                                        {
+                                                            if (changeLine.Property == "IsActive") //special logic for deactivating
+                                                            {
+                                                                //TODO: complete status change logic
+                                                            }
+
+                                                            string valueToSend = changeLine.ValueAfter;
+
+                                                            //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                            if (mappedColumnLine.RemapToString)
+                                                            {
+                                                                if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                                {
+                                                                    valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                                }
+                                                            }
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        }
+                                                    }
+                                                    //remove entry from audits list as we have processed it here and sending
+                                                    completedList.Add(changeLine);
+                                                    audits.Remove(changeLine);
+                                                }
+                                            }
+                                            jsonString.AppendLine("},");
+                                        }
+                                    }
+                                    jsonString.AppendLine("]");
+                                    try
+                                    {
+                                        //now send to API call <entity type>/Multiple
+                                        var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                                        if (!string.IsNullOrEmpty(responseString))
+                                        {
+                                            if (responseString == "1") //success
+                                            {
+                                                //mark entries as submitted
+                                                await UpdateAuditSubmitted(completedList);
+                                            }
+                                            else if (responseString == "0")
+                                            {
+                                                //there was a reason why these entries did not update
+
+                                            }
+                                            else //error
+                                            {
+                                                //updated failed, log and try again later
+                                            }
+                                        }
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                                    }
+
+
+
+
+
+                                    IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
+                            childMapping.LocalEntity = SSIntegrationSettings.SSChild;
+                            childMapping.RemoteEntity = SSIntegrationSettings.SLChild;
+                            childMapping.LocalId = newChild.Id.ToString();
+                            childMapping.RemoteId = remoteChildEntityId;
+                            childMapping.UserId = newChild.UserId;
+                            childMapping.UpdatedBy = _uId;
+                            childMapping.UpdatedDate = DateTime.Now;
+                            childMapping.IsComplete = true;
+                            childMapping.BeforeJSON = JsonSerializer.Serialize(newChild);
+                            _mapperRepo.Insert(childMapping);
+                */
+            }
+            catch (Exception e)
+            {
+                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+
+            return "<new remote string>";
         }
+
         private async Task<bool> PushAttendance(List<IntegrationAudit> audits)
         {
             return true;
