@@ -99,8 +99,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.InfantId = null;
             visitModel.LinkedVisitId = null;
             visitModel.PractitionerId = practitioner.Id;
-            visitModel.Attended = true;
+            visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
             Visit visit = visitManager.AddSupportVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.SupportData.VisitId = visit.Id.ToString();
