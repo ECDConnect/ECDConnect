@@ -33,7 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
         public Guid? LinkedVisitId { get; set; }
-
+        public bool? isSupportCall { get; set; }
         public CMSVisitDataInputModel SupportData { get; set; }
     }
 }

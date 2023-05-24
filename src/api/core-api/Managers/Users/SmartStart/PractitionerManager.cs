@@ -133,7 +133,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         }
                         site_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
                     {
                         support_visits.Add(visit);
                     }

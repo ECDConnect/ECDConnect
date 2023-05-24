@@ -1,4 +1,4 @@
-import { capitalizeFirstLetter, capitalizeWords } from '@ecdlink/core';
+import { capitalizeFirstLetter } from '@ecdlink/core';
 import {
   Button,
   Divider,
@@ -31,6 +31,12 @@ export const ObservationCategoryCard: React.FC<
   const skill = useSelector(
     progressTrackingSelectors.getProgressTrackingSkillById(helpingSkillId)
   );
+
+  if (!className) {
+    className = 'bg-uiBg';
+  } else if (className.indexOf('bg-') === -1) {
+    className = `${className} bg-uiBg`;
+  }
 
   return (
     <div className={classNames(styles.wrapper, className)}>
@@ -73,8 +79,8 @@ export const ObservationCategoryCard: React.FC<
               <Typography
                 type={'small'}
                 weight={'bold'}
-                color={'textMid'}
-                text={capitalizeWords(achievedLevel.name.toLowerCase())}
+                color={'textDark'}
+                text={achievedLevel.name.toUpperCase()}
               />
             </div>
           </div>
@@ -85,7 +91,7 @@ export const ObservationCategoryCard: React.FC<
               className={styles.spaceTopBig}
               type={'help'}
               color={'textLight'}
-              text={`Support area`}
+              text={!!childName ? `Helping ${childName} with` : `Support area`}
             />
             <Typography
               className={styles.spaceTopSmall}

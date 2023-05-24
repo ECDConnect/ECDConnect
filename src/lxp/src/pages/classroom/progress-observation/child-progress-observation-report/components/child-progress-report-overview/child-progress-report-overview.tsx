@@ -2,7 +2,6 @@ import { ProgressTrackingCategoryDto, useDialog } from '@ecdlink/core';
 import {
   Alert,
   Button,
-  Divider,
   Typography,
   DialogPosition,
   renderIcon,
@@ -24,6 +23,7 @@ import { getReportingPeriod } from '@utils/child/child-profile-utils';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
+import { useState } from 'react';
 
 export const ChildProgressReportOverview: React.FC<
   ChildProgressReportOverviewProps
@@ -43,6 +43,7 @@ export const ChildProgressReportOverview: React.FC<
     ? new Date(reportingDate)
     : new Date();
   const { isOnline } = useOnlineStatus();
+  const [showObservations, setShowObservations] = useState<boolean>(false);
   const reportingPeriod = getReportingPeriod(reportingDateAsDate);
 
   const report = useSelector(
@@ -72,12 +73,13 @@ export const ChildProgressReportOverview: React.FC<
       : `July to November ${reportingPeriod.year}`;
   };
 
-  const displayDownloadReportPrompt = () => {
+  const createCaregiverReport = () => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit, onClose) => {
         return (
           <DownloadProgressTrackingReportPrompt
+            reportingPeriod={currentReport?.reportingPeriod || ''}
             onClose={onClose}
             onProceed={() => {
               onSubmit();
@@ -122,21 +124,60 @@ export const ChildProgressReportOverview: React.FC<
     <>
       <div className={'flex h-full w-full flex-col px-4'}>
         <Typography
-          type={'h1'}
-          color={'primary'}
-          text={`Check your progress observations:`}
+          type={'h2'}
+          color={'textDark'}
+          text={`Check and edit your observations & create report`}
+          className="mb-2"
         />
         <Typography
-          type={'body'}
-          color={'black'}
+          type={'h4'}
+          color={'textDark'}
           text={getReportingPeriodText()}
           className={'mb-4'}
         />
         <Alert
           type={'info'}
-          message={`Check and edit your responses to the four categories or download the report. Your responses below will be shared with ${childUser?.firstName}’s caregiver.`}
+          title={`Check and edit your responses to the four categories or create the report.`}
+          message={` Your responses below will be shared with ${childUser?.firstName}’s caregiver.`}
+          messageColor="textDark"
         />
-        {currentReport &&
+        <Button
+          className="mt-4 w-full"
+          size="small"
+          color="primary"
+          type="filled"
+          onClick={createCaregiverReport}
+        >
+          {renderIcon('DocumentReportIcon', 'h-5 w-5 text-white')}
+          <Typography
+            type="h6"
+            className="ml-2"
+            text="Create caregiver report"
+            color="white"
+          />
+        </Button>
+        <Button
+          className="mt-4 w-full"
+          size="small"
+          color="primary"
+          type="outlined"
+          onClick={() => setShowObservations(!showObservations)}
+        >
+          {renderIcon(
+            showObservations ? 'EyeOffIcon' : 'EyeIcon',
+            'h-5 w-5 text-primary'
+          )}
+          <Typography
+            type="h6"
+            className="ml-2"
+            text={
+              showObservations ? 'Hide observations' : 'See & edit observations'
+            }
+            color="primary"
+          />
+        </Button>
+        {showObservations &&
+          currentReport &&
           categories.map((cat: ProgressTrackingCategoryDto) => {
             const categoryFromReport = getCategoryFromCurrentReport(
               cat.id,
@@ -165,24 +206,6 @@ export const ChildProgressReportOverview: React.FC<
               />
             );
           })}
-
-        <Divider className={'my-4'} />
-
-        <Button
-          className="w-full"
-          size="small"
-          color="primary"
-          type="filled"
-          onClick={displayDownloadReportPrompt}
-        >
-          {renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-          <Typography
-            type="h6"
-            className="ml-2"
-            text="Create report"
-            color="white"
-          />
-        </Button>
       </div>
     </>
   );

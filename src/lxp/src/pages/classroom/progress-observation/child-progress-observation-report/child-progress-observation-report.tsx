@@ -78,20 +78,29 @@ export const ChildProgressObservationReport: React.FC = () => {
     history.goBack();
   };
 
-  const onChildEnjoysSubmitted = (formValue: ChildEnjoysFormModel) => {
+  const onBannerClose = () => {
+    history.goBack();
+  };
+
+  const onChildEnjoysSubmitted = (
+    formValue: ChildEnjoysFormModel,
+    exit: boolean
+  ) => {
     setChildEnjoys(formValue.childEnjoys);
     goToStep(ChildProgressObservationReportSteps.ChildMadeProgressWith);
   };
 
   const onChildProgressedWithSubmitted = (
-    formValue: ChildProgressedWithFormModel
+    formValue: ChildProgressedWithFormModel,
+    exit: boolean
   ) => {
     setChildProgressedWith(formValue.childProgressedWith);
     goToStep(ChildProgressObservationReportSteps.HowCanCaregiverHelpChild);
   };
 
   const onHowCaregiverCanHelpChildSubmitted = (
-    formValue: CaregiverCanHelpChildWithFormModel
+    formValue: CaregiverCanHelpChildWithFormModel,
+    exit: boolean
   ) => {
     setHowCategiverCanHelpChild(formValue.howCanCaregiverHelpChild);
 
@@ -134,11 +143,12 @@ export const ChildProgressObservationReport: React.FC = () => {
     <BannerWrapper
       size={'small'}
       onBack={onBannerBack}
+      onClose={onBannerClose}
       title={`${currentChildUser?.firstName}'s ${currentReport?.reportingPeriod} report`}
       subTitle={`step ${activeStepKey} of 4`}
       displayOffline={!isOnline}
     >
-      <div className={'pb-4'}>{renderStep()}</div>
+      <div className={'mt-4 pb-4'}>{renderStep()}</div>
     </BannerWrapper>
   );
 };

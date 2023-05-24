@@ -56,7 +56,9 @@ export function Theme() {
       initialThemeFonts.fontUrl = DefaultTheme.fontUrl;
       initialThemeFonts.mainHeadingOverrideFontUrl =
         DefaultTheme.mainHeadingOverrideFontUrl;
+      initialThemeColours.darkBackground = DefaultTheme.darkBackground;
     }
+    console.log(initialThemeColours.darkBackground);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [DefaultTheme]);
 
@@ -323,19 +325,19 @@ export function Theme() {
           <Typography type={'h2'} color={'white'} text="Colours" />
 
           {hasPermission(PermissionEnum.update_system) && (
-            <div className="sm:flex-1 sm:min-w-0 sm:flex sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
-              <div className="flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+            <div className="sm:flex sm:min-w-0 sm:flex-1 sm:items-center sm:justify-end sm:space-x-6 sm:pb-1">
+              <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <button
                   onClick={() => resetTheme()}
-                  className="disabled:opacity-50 ml-3 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  className="bg-uiMid hover:bg-uiLight focus:outline-none ml-3 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
                 >
                   Reset Theme
                 </button>
               </div>
-              <div className="flex flex-col justify-stretch space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
+              <div className="justify-stretch flex flex-col space-y-3 sm:flex-row sm:space-y-0 sm:space-x-4">
                 <button
                   onClick={() => saveTheme()}
-                  className="disabled:opacity-50 inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2 disabled:opacity-50"
                 >
                   Save Theme
                 </button>
@@ -343,31 +345,31 @@ export function Theme() {
             </div>
           )}
         </div>
-        <div className="mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-2 rounded-lg border-b border-gray-200 px-4 py-5">
           <ColoursForm
             getValues={colorGetValues}
             setValue={colorSetValue}
             register={colorRegister}
           />
         </div>
-        <div className="flex mt-6 pb-4">
+        <div className="mt-6 flex pb-4">
           <Typography
             type={'h2'}
             color={'white'}
             text="Images: Accepted extensions are '.png, .svg'"
           />
         </div>
-        <div className="mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-2 rounded-lg border-b border-gray-200 px-4 py-5">
           <ImagesForm
             getValues={imagesGetValues}
             setValue={imagesSetValue}
             register={imagesRegister}
           />
         </div>
-        <div className="flex mt-6 pb-4">
+        <div className="mt-6 flex pb-4">
           <Typography type={'h2'} color={'white'} text="Google fonts:" />
         </div>
-        <div className="mt-2 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        <div className="bg-uiBg mt-2 rounded-lg border-b border-gray-200 px-4 py-5">
           <FontsForm
             getValues={fontsGetValues}
             setValue={fontsSetValue}

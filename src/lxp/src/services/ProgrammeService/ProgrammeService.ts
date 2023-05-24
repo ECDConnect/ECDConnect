@@ -1,7 +1,11 @@
 import { api } from '../axios.helper';
 import { Config } from '@ecdlink/core';
 import { ProgrammeDto } from '@ecdlink/core';
-import { DailyProgrammeInput, ProgrammeInput } from '@ecdlink/graphql';
+import {
+  DailyProgrammeInput,
+  ProgrammeInput,
+  ProgrammeModelInput,
+} from '@ecdlink/graphql';
 class ProgrammeService {
   _accessToken: string;
 
@@ -45,12 +49,35 @@ class ProgrammeService {
     return response.data.data.GetAllProgramme;
   }
 
+  async updateProgrammes(
+    programmeInput: ProgrammeModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateProgrammes($programmeInput: ProgrammeModelInput) {
+          updateProgrammes(programmeInput: $programmeInput) {
+          }
+        }
+      `,
+      variables: {
+        programmeInput: programmeInput,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Updating programmes failed - Server connection error');
+    }
+
+    return true;
+  }
+
   async updateProgramme(id: string, input: ProgrammeInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateProgramme($input: ProgrammeInput, $id: UUID) {
-          updateProgramme(input: $input, id: $id) {
+          updateProgramme(id: $id, input: $input) {
             id
           }
         }
@@ -76,7 +103,7 @@ class ProgrammeService {
     const response = await apiInstance.post<any>(``, {
       query: `
         mutation updateDailyProgramme($input: DailyProgrammeInput, $id: UUID) {
-          updateDailyProgramme(input: $input, id: $id) {
+          updateDailyProgramme(id: $id, input: $input) {
             id
           } 
         }

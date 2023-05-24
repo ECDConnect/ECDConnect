@@ -29,5 +29,17 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
         public int CategoryId { get; set; }
 
         public int AchievedLevelId { get; set; }
+
+        public List<ObservationCategoryTaskSummary> Tasks { get; set; }
+    }
+
+    public class ObservationCategoryTaskSummary
+    {
+        public int LevelId { get; set; }
+
+        public int SkillId { get; set; }
+
+        public string Value { get; set; }
+
     }
 }

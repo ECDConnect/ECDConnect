@@ -63,8 +63,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     useProgrammePlanningRecommendations();
   const recommendedActivities =
     getCurrentProgrammeRecommendedActivities(programme);
-  const routineContainsIncompleteDays =
-    programmeWeeks.filter((week) => week.totalIncompleteDays > 0).length > 0;
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -349,17 +347,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         selectedDate={selectedDate}
         isWeekendDay={isWeekendDay}
       />
-
-      {!isCurrentDayEmpty &&
-        routineContainsIncompleteDays &&
-        !isCurrentDayHoliday && (
-          <Alert
-            className={'mx-4 mb-4'}
-            type={'warning'}
-            title={'There are incomplete days in your programme.'}
-            message={'Tap on Programme summary to complete your programme.'}
-          />
-        )}
 
       {(isCurrentDayEmpty || currentDailyProgramme) &&
         (isCurrentDayHoliday || isWeekendDay ? (
