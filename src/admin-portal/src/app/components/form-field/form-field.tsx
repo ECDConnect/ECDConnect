@@ -16,7 +16,7 @@ const checkboxStyle =
 const errorStyle =
   'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 const defaultInputStyle =
-  'shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md';
+  'focus:border-primary block w-full sm:text-md border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -41,7 +41,7 @@ const FormField: React.FC<FormFieldProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block text-sm font-medium text-gray-700"
+        className="text-md block font-medium text-gray-700"
       >
         {label}
       </label>
@@ -56,7 +56,7 @@ const FormField: React.FC<FormFieldProps> = ({
           className={error ? errorStyle : getInputTypeStyles()}
         />
 
-        <span className="text-errorMain text-xs"> {error && error} </span>
+        <span className="text-errorMain text-sm"> {error && error} </span>
       </div>
     </>
   );

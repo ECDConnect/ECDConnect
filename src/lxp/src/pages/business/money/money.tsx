@@ -8,7 +8,11 @@ import { SubmitIncomeStatements } from './submit-income-statements/submit-income
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
-import { statementsSelectors, statementsThunkActions } from '@store/statements';
+import {
+  statementsActions,
+  statementsSelectors,
+  statementsThunkActions,
+} from '@store/statements';
 import { getMonth, getYear } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -18,6 +22,7 @@ import {
 } from '@/../../../packages/graphql/lib';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { useAppContext } from '@/walkthrougContext';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const Money = () => {
   const history = useHistory();
@@ -105,6 +110,20 @@ export const Money = () => {
   }, [income, expense, balanceSheet]);
 
   const { state } = useAppContext();
+
+  const handleClickStart = () => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    history.push(ROUTES.BUSINESS);
+  };
+
+  const { setState } = useAppContext();
+
+  useEffect(() => {
+    if (!hasIncomeStatements) {
+      handleClickStart();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [hasIncomeStatements]);
 
   return (
     <>

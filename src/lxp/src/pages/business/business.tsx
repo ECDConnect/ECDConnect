@@ -18,6 +18,7 @@ import { getStorageItem } from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
+import { useAppContext } from '@/walkthrougContext';
 
 export const Business: React.FC = () => {
   const history = useHistory();

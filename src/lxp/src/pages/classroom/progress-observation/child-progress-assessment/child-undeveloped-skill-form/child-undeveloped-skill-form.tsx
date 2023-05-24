@@ -77,10 +77,6 @@ export const ChildUndevelopedSkillForm: React.FC<
     setSelectedUndevelopedSkill(skill);
   };
 
-  const getCurrentSkill = () => {
-    return selectedUndevelopedSkill?.id || -1;
-  };
-
   return (
     <div className={'bg-white px-4 pt-2'}>
       <Typography

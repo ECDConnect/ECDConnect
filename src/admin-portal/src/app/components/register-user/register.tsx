@@ -16,7 +16,7 @@ import FormField from '../form-field/form-field';
 import logo from '../../../assets/Logo-ECDConnect.png';
 import zxcvbn from 'zxcvbn-typescript';
 
-export default function Login() {
+export default function Register() {
   const { login } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
@@ -28,18 +28,17 @@ export default function Login() {
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+
+  //check password strength
   const password = watch('password');
-
-  const formValues = getValues();
-  const passwordStrength = zxcvbn(formValues.password);
-  console.log('Password strength score:', passwordStrength.score);
-  console.log('Password feedback:', password);
-
+  const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
 
-  const signIn = async () => {
+  const registerUser = async () => {
+    const formValues = getValues();
+
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
@@ -50,9 +49,8 @@ export default function Login() {
         setDisplayError(true);
         setIsLoading(false);
       });
-
+      localStorage.setItem(LocalStorageKeys.existingUser, 'true');
       if (isAuthenticated) {
-        localStorage.setItem(LocalStorageKeys.existingUser, 'true');
         setIsLoading(false);
         history.push('/dashboard');
       } else {
@@ -68,7 +66,7 @@ export default function Login() {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
+      return <img className="h-100 w-150" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
@@ -81,8 +79,8 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl">
-            Log in to Funda App
+          <h2 className="font-h1 textLight mt-6 text-3xl font-extrabold">
+            Register
           </h2>
         </div>
         <div className="mt-8">
@@ -125,7 +123,6 @@ export default function Login() {
                   </div>
                 ))}
               </div>
-
               <div className="mb-2 flex justify-between">
                 <a
                   rel="noopener noreferrer"
@@ -146,12 +143,12 @@ export default function Login() {
               )}
               <div>
                 <Button
-                  className={'mt-3 w-full rounded'}
+                  className={'mt-3 w-full'}
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
                   disabled={!isValid}
-                  onClick={signIn}
+                  onClick={registerUser}
                 >
                   <Typography
                     type="help"

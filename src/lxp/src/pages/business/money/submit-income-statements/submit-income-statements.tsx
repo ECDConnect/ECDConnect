@@ -581,7 +581,9 @@ export const SubmitIncomeStatements: React.FC = () => {
           type="filled"
           icon="DocumentSearchIcon"
           onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
-          className="mt-6 rounded-2xl"
+          className={`mt-6 rounded-2xl ${
+            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+          }`}
           id="seeAllStatements"
         >
           <Typography type="help" color="white" text="See all statements" />
@@ -595,7 +597,9 @@ export const SubmitIncomeStatements: React.FC = () => {
             type={'filled'}
             color={'primary'}
             shape={'round'}
-            className="mt-8 py-2.5"
+            className={`mt-8 py-2.5 ${
+              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+            } `}
             click={() => {
               history.push(ROUTES.BUSINESS_ADD_AMOUNT);
               nextStep();
