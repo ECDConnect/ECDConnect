@@ -58,10 +58,9 @@ export const ChildProgressReportAlert: React.FC<
     !latestCompletedSummary && isChildInitialRegistrationPeriod(child);
 
   const currentReportingPeriodReportSummary = reportSummaries.find(
-    (summary) => {
+    (summary) =>
       summary.childId === child.id &&
-        isMatchingReportingPeriods(new Date(summary.reportDate), currentDate);
-    }
+      isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
   const reportingPeriod = !currentReportingPeriodReportSummary
@@ -80,7 +79,7 @@ export const ChildProgressReportAlert: React.FC<
   );
 
   const reportDate = requiresInitialReport
-    ? new Date(2000, 0, 1).setHours(0, 0, 0, 0)
+    ? new Date(2000, 0, 1)
     : new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
 
   const navigateToChildProgressObservation = () => {

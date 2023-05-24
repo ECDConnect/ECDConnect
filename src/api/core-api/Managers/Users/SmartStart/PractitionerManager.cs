@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.Managers.Visits;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -23,6 +24,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
+        private VisitDataManager _visitDataManager;
 
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
@@ -32,7 +34,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitManager visitManager,
-            VisitDataStatusManager visitDataStatusManager)
+            VisitDataStatusManager visitDataStatusManager,
+            VisitDataManager visitDataManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -41,10 +44,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
+            _visitDataManager = visitDataManager;
 
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
+            _visitDataManager = visitDataManager;
         }
 
         public PractitionerTimeline GetPractitionerTimeline(string userId)
@@ -102,7 +107,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (visit != null)
                 {
-                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_1)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
@@ -117,7 +122,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         }
                         site_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.pre_pqa_visit_2)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
@@ -133,7 +138,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         }
                         site_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        site_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1_follow_up)
+                    {
+                        site_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
                     {
                         support_visits.Add(visit);
                     }

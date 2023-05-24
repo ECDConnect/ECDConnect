@@ -47,7 +47,7 @@ export const mapTheme = (variables: ITheme): IMappedTheme => {
     '--h1-font': variables.mainHeadingOverrideFontUrl || '',
     '--logo': variables.logoUrl || '',
     '--banner': variables.graphicOverlayUrl || '',
-    '--darkBackground': variables.darkBackground || ''
+    '--darkBackground': variables.darkBackground || '',
   };
 };
 

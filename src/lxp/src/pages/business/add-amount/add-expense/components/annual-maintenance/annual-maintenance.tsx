@@ -32,11 +32,14 @@ import {
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
   const {
     trigger,
     control,
@@ -122,8 +125,9 @@ export const AnnualMaintenance: React.FC<AddIncomeState> = ({ setType }) => {
       ).UpdateStatementsExpense(incomeId, expensesInput);
     }
 
+    await history.push(ROUTES.BUSINESS);
+
     setIsLoading(false);
-    setType('');
   };
 
   return (

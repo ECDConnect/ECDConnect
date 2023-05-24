@@ -1,13 +1,5 @@
 import { yupResolver } from '@hookform/resolvers/yup';
-import {
-  Button,
-  Card,
-  Divider,
-  FormInput,
-  Typography,
-  renderIcon,
-} from '@ecdlink/ui';
-import { getYear } from 'date-fns';
+import { Button, FormInput, Typography, renderIcon } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import { useSelector } from 'react-redux';
@@ -23,8 +15,7 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
   childId,
   onSubmit,
 }) => {
-  const { currentReport, previousReport } =
-    useChildProgressObservation(childId);
+  const { currentReport } = useChildProgressObservation(childId);
   const child = useSelector(childrenSelectors.getChildById(childId));
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -42,8 +33,8 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
 
   const { isValid } = useFormState({ control: formControl });
 
-  const handleFormSubmit = (formValue: ChildEnjoysFormModel) => {
-    onSubmit(formValue);
+  const handleFormSubmit = (formValue: ChildEnjoysFormModel, exit: boolean) => {
+    onSubmit(formValue, exit);
   };
 
   useEffect(() => {
@@ -58,9 +49,10 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
   return (
     <div className={'flex h-full w-full flex-col px-4'}>
       <Typography
-        type={'h1'}
-        color={'primary'}
+        type={'h2'}
+        color={'textDark'}
         text={'Share more detail for the caregiver report'}
+        className="mb-4"
       />
       <FormInput
         type={'text'}
@@ -68,68 +60,13 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
         register={formRegister}
         nameProp={'childEnjoys'}
         label={`${childUser?.firstName} enjoys:`}
-        placeholder={`E.g. Playing with balls. Soccer is their favourite. They are active. They like playing with other children.`}
+        placeholder={`E.g. Playing with balls. Soccer is his favourite. He is active. He likes playing with other children.`}
       />
-
-      {currentReport && currentReport.observationNote && (
-        <Card shadowSize="lg" borderRaduis={'lg'} className={'mt-4 p-4'}>
-          <Typography
-            type={'body'}
-            weight={'bold'}
-            color={'black'}
-            text={'Your observation notes'}
-          />
-          {previousReport && currentReport && (
-            <Typography
-              type={'help'}
-              weight={'skinny'}
-              color={'textLight'}
-              text={`${currentReport.reportingPeriod} report (This report)`}
-            />
-          )}
-          <Typography
-            type={'body'}
-            weight={'skinny'}
-            color={'black'}
-            text={currentReport?.observationNote || ''}
-          />
-        </Card>
-      )}
-
-      {previousReport && previousReport.observationNote && (
-        <Card shadowSize="lg" borderRaduis={'lg'} className={'my-4 p-4'}>
-          <Typography
-            type={'body'}
-            weight={'bold'}
-            color={'black'}
-            text={'Your previous answer'}
-          />
-          <Typography
-            type={'help'}
-            weight={'skinny'}
-            color={'textLight'}
-            text={`${previousReport.reportingPeriod} ${
-              previousReport.reportingDate
-                ? `${getYear(new Date(previousReport.reportingDate))}`
-                : ''
-            } report`}
-          />
-          <Typography
-            type={'body'}
-            weight={'skinny'}
-            color={'black'}
-            text={previousReport.observationNote || ''}
-          />
-        </Card>
-      )}
-
-      <Divider className={'my-4'} />
-
       <Button
         onClick={() => {
-          handleFormSubmit(getFormValue());
+          handleFormSubmit(getFormValue(), false);
         }}
-        className="w-full"
+        className="mt-4 w-full"
         size="small"
         color="primary"
         type="filled"
@@ -137,6 +74,24 @@ export const ChildEnjoys: React.FC<ChildEnjoysProps> = ({
       >
         {renderIcon('ArrowCircleRightIcon', 'h-5 w-5 text-white')}
         <Typography type="h6" className="ml-2" text="Next" color="white" />
+      </Button>
+      <Button
+        onClick={() => {
+          handleFormSubmit(getFormValue(), true);
+        }}
+        className="mt-4 w-full"
+        size="small"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', 'h-5 w-5 text-primary')}
+        <Typography
+          type="h6"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
+        />
       </Button>
     </div>
   );

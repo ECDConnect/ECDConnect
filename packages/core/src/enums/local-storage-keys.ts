@@ -11,5 +11,5 @@ export enum LocalStorageKeys {
   coachProfilePicture = 'CoachProfilePicture',
   hasClosedSuccessAttendanceSubmitted = 'hasClosedSuccessAttendanceSubmitted',
   offlineStatments = 'offlineStatments',
-  existingUser = "ExistingECDUser",
+  existingUser = 'ExistingECDUser',
 }

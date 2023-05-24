@@ -81,7 +81,7 @@ const ProgrammeTiming: React.FC = () => {
 
     if (isOnline) {
       try {
-        appDispatch(programmeThunkActions.upsertProgrammes({}));
+        appDispatch(programmeThunkActions.updateProgrammes({}));
       } catch (err) {
         console.log(err);
       }

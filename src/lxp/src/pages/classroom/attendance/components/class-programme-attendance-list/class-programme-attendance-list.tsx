@@ -7,7 +7,6 @@ import { childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import * as styles from './class-programme-attendance-list.styles';
 import { ClassProgrammeAttendanceListProps } from './class-programme-attendance-list.types';
-import { isBefore, isAfter, isSameDay } from 'date-fns';
 
 export const ClassProgrammeAttendanceList: React.FC<
   ClassProgrammeAttendanceListProps
@@ -29,7 +28,6 @@ export const ClassProgrammeAttendanceList: React.FC<
   const attendance = useSelector(
     attendanceSelectors.getClassroomProgrammeAttendanceFor(attendanceDate)
   );
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
 
   useEffect(() => {
     if (!classroomGroup) return;

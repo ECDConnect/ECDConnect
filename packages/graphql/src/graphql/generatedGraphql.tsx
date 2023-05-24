@@ -1631,6 +1631,19 @@ export type DailyProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type DailyProgrammeModelInput = {
+  day: Scalars['Int'];
+  dayDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  largeGroupActivityId: Scalars['Int'];
+  messageBoardText?: InputMaybe<Scalars['String']>;
+  programmeId: Scalars['UUID'];
+  smallGroupActivityId: Scalars['Int'];
+  storyActivityId: Scalars['Int'];
+  storyBookId: Scalars['Int'];
+};
+
 export type DisplaySet = {
   __typename?: 'DisplaySet';
   color?: Maybe<Scalars['String']>;
@@ -1943,6 +1956,21 @@ export type FileTypeEnumOperationFilterInput = {
   in?: InputMaybe<Array<FileTypeEnum>>;
   neq?: InputMaybe<FileTypeEnum>;
   nin?: InputMaybe<Array<FileTypeEnum>>;
+};
+
+export type FollowUpVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type Franchisor = {
@@ -3091,6 +3119,7 @@ export type Mutation = {
   addDefaultVisitsForPractitioner: Scalars['Boolean'];
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
+  addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
@@ -3407,6 +3436,7 @@ export type Mutation = {
   updateProgrammeRoutineItem?: Maybe<ProgrammeRoutineItem>;
   updateProgrammeRoutineSubItem?: Maybe<ProgrammeRoutineSubItem>;
   updateProgrammeType?: Maybe<ProgrammeType>;
+  updateProgrammes: Scalars['Boolean'];
   updateProgressTrackingCategory?: Maybe<ProgressTrackingCategory>;
   updateProgressTrackingLevel?: Maybe<ProgressTrackingLevel>;
   updateProgressTrackingSkill?: Maybe<ProgressTrackingSkill>;
@@ -3490,6 +3520,10 @@ export type MutationAddEventRecordArgs = {
 
 export type MutationAddEventRecordTypeArgs = {
   input?: InputMaybe<EventRecordTypeModelInput>;
+};
+
+export type MutationAddFollowUpVisitForPractitionerArgs = {
+  input?: InputMaybe<FollowUpVisitModelInput>;
 };
 
 export type MutationAddHealthCareWorkerArgs = {
@@ -3743,10 +3777,6 @@ export type MutationCreateIntegrationEntityMappingArgs = {
   input?: InputMaybe<IntegrationEntityMappingInput>;
 };
 
-export type MutationCreateIntegrationLogArgs = {
-  input?: InputMaybe<IntegrationLogInput>;
-};
-
 export type MutationCreateLanguageArgs = {
   input?: InputMaybe<LanguageInput>;
 };
@@ -3955,10 +3985,6 @@ export type MutationCreateThemeDayArgs = {
   input: ThemeDayInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationCreateTraineeArgs = {
-  input?: InputMaybe<TraineeInput>;
 };
 
 export type MutationCreateUserConsentArgs = {
@@ -4193,10 +4219,6 @@ export type MutationDeleteIntegrationEntityMappingArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
-export type MutationDeleteIntegrationLogArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-};
-
 export type MutationDeleteLanguageArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -4421,10 +4443,6 @@ export type MutationDeleteThemeDayArgs = {
   localeId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationDeleteTraineeArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-};
-
 export type MutationDeleteUserArgs = {
   id?: InputMaybe<Scalars['String']>;
 };
@@ -4499,6 +4517,10 @@ export type MutationGenerateCaregiverChildTokenArgs = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationMapPractitionerToPrincipalArgs = {
+  practitioner?: InputMaybe<PractitionerInput>;
+};
+
 export type MutationOpenAccessAddChildArgs = {
   caregiver?: InputMaybe<AddChildCaregiverTokenModelInput>;
   child?: InputMaybe<AddChildTokenModelInput>;
@@ -4568,11 +4590,6 @@ export type MutationSendPractitionerInviteToApplicationArgs = {
 export type MutationSubmitStatementArgs = {
   id?: InputMaybe<Scalars['String']>;
   input?: InputMaybe<StatementsSubmitInput>;
-};
-
-export type MutationSwitchPrincipalArgs = {
-  newPrincipalUserId?: InputMaybe<Scalars['String']>;
-  oldPrincipalUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationTrackAttendanceArgs = {
@@ -4815,11 +4832,6 @@ export type MutationUpdateIntegrationEntityMappingArgs = {
   input?: InputMaybe<IntegrationEntityMappingInput>;
 };
 
-export type MutationUpdateIntegrationLogArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<IntegrationLogInput>;
-};
-
 export type MutationUpdateLanguageArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LanguageInput>;
@@ -4975,6 +4987,10 @@ export type MutationUpdateProgrammeRoutineSubItemArgs = {
 export type MutationUpdateProgrammeTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<ProgrammeTypeInput>;
+};
+
+export type MutationUpdateProgrammesArgs = {
+  programmeInput?: InputMaybe<ProgrammeModelInput>;
 };
 
 export type MutationUpdateProgressTrackingCategoryArgs = {
@@ -5143,11 +5159,6 @@ export type MutationUpdateThemeDayArgs = {
   input: ThemeDayInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateTraineeArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<TraineeInput>;
 };
 
 export type MutationUpdateUserArgs = {
@@ -5383,6 +5394,14 @@ export type ObservationCategorySummary = {
   __typename?: 'ObservationCategorySummary';
   achievedLevelId: Scalars['Int'];
   categoryId: Scalars['Int'];
+  tasks?: Maybe<Array<Maybe<ObservationCategoryTaskSummary>>>;
+};
+
+export type ObservationCategoryTaskSummary = {
+  __typename?: 'ObservationCategoryTaskSummary';
+  levelId: Scalars['Int'];
+  skillId: Scalars['Int'];
+  value?: Maybe<Scalars['String']>;
 };
 
 export type PqaRating = {
@@ -6027,6 +6046,18 @@ export type ProgrammeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ProgrammeModelInput = {
+  classroomGroupId: Scalars['UUID'];
+  classroomId: Scalars['UUID'];
+  dailyProgrammes?: InputMaybe<Array<InputMaybe<DailyProgrammeModelInput>>>;
+  endDate: Scalars['DateTime'];
+  id: Scalars['UUID'];
+  isActive: Scalars['Boolean'];
+  name?: InputMaybe<Scalars['String']>;
+  preferredLanguage?: InputMaybe<Scalars['String']>;
+  startDate: Scalars['DateTime'];
+};
+
 export type ProgrammeRoutine = {
   __typename?: 'ProgrammeRoutine';
   description?: Maybe<Scalars['String']>;
@@ -6298,7 +6329,6 @@ export type Query = {
   GetAllIntegrationEntityMapping?: Maybe<
     Array<Maybe<IntegrationEntityMapping>>
   >;
-  GetAllIntegrationLog?: Maybe<Array<Maybe<IntegrationLog>>>;
   GetAllLanguage?: Maybe<Array<Maybe<Language>>>;
   GetAllLearner?: Maybe<Array<Maybe<Learner>>>;
   GetAllLicense?: Maybe<Array<Maybe<License>>>;
@@ -6793,10 +6823,6 @@ export type QueryGetAllIntegrationEntityMappingArgs = {
   where?: InputMaybe<IntegrationEntityMappingFilterInput>;
 };
 
-export type QueryGetAllIntegrationLogArgs = {
-  where?: InputMaybe<IntegrationLogFilterInput>;
-};
-
 export type QueryGetAllLanguageArgs = {
   where?: InputMaybe<LanguageFilterInput>;
 };
@@ -6992,10 +7018,6 @@ export type QueryGetAllThemeArgs = {
 export type QueryGetAllThemeDayArgs = {
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetAllTraineeArgs = {
-  where?: InputMaybe<TraineeFilterInput>;
 };
 
 export type QueryGetAllUserConsentArgs = {
@@ -7229,11 +7251,6 @@ export type QueryGetIntegrationColumnMappingByIdArgs = {
 export type QueryGetIntegrationEntityMappingByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<IntegrationEntityMappingFilterInput>;
-};
-
-export type QueryGetIntegrationLogByIdArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  where?: InputMaybe<IntegrationLogFilterInput>;
 };
 
 export type QueryGetLanguageByIdArgs = {
@@ -7477,11 +7494,6 @@ export type QueryGetThemeDayByIdArgs = {
   id?: InputMaybe<Scalars['Int']>;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryGetTraineeByIdArgs = {
-  id?: InputMaybe<Scalars['UUID']>;
-  where?: InputMaybe<TraineeFilterInput>;
 };
 
 export type QueryGetUserConsentByIdArgs = {
@@ -8001,10 +8013,6 @@ export type QueryPractitionerNewSignupMetricArgs = {
   toDate: Scalars['DateTime'];
 };
 
-export type QueryPractitionerPqaRatingArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryPractitionerTimelineArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -8061,10 +8069,6 @@ export type QueryStatementsIncomeExpensesPdfDataArgs = {
 };
 
 export type QueryTotalDaysAbsentArgs = {
-  userId?: InputMaybe<Scalars['String']>;
-};
-
-export type QueryTraineeByUserIdArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -9392,6 +9396,7 @@ export type Visit = {
   mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
   orderDate?: Maybe<Scalars['DateTime']>;
+  overallRatingColor?: Maybe<Scalars['String']>;
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
@@ -9591,6 +9596,7 @@ export type VisitFilterInput = {
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<VisitFilterInput>>;
   orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  overallRatingColor?: InputMaybe<StringOperationFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -9705,6 +9711,7 @@ export type VisitInput = {
   Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
   OrderDate?: InputMaybe<Scalars['DateTime']>;
+  OverallRatingColor?: InputMaybe<Scalars['String']>;
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;

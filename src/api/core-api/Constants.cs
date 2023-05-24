@@ -13,12 +13,15 @@ namespace EcdLink.Api.CoreApi
     {
             public const string client_practitioner = "practitioner";
 
+            // Visit types
             public const string visitType_support = "support_visit";
             public const string visitType_call = "support_call";
-            public const string pre_pqa_visit_1 = "pre_pqa_visit_1";
-            public const string pre_pqa_visit_2 = "pre_pqa_visit_2";
+            public const string visitType_pqa_visit_1 = "pqa_visit_1";
+            public const string visitType_pqa_visit_1_follow_up = "pqa_visit_1_follow_up";
+            public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
+            public const string visitType_pre_pqa_visit_2 = "pre_pqa_visit_2";
 
-            public const string pqa_visit_1 = "pqa_visit_1";
+            
 
             // Licenses
             public const string ss_starter_license = "ss_starter_license";

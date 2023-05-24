@@ -28,11 +28,14 @@ import {
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'DBE Subsidy';
@@ -99,11 +102,12 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     await new IncomeStatementsService(
       userAuth?.auth_token!
     ).UpdateStatementsIncome(incomeId, incomeInput);
+
+    await history.push(ROUTES.BUSINESS);
   };
 
   const handleSaveStartupSupportValues = () => {
     sendIncomeUpdate();
-    setType('');
   };
 
   return (

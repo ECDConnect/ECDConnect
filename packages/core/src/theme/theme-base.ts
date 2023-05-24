@@ -87,7 +87,7 @@ export const WhiteLabelTheme: DefaultThemeType = {
   portalLoginBackgroundUrl: '',
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
-  darkBackground: '#27385A'
+  darkBackground: '#27385A',
 };
 
 export const DefaultTheme: DefaultThemeType = {
@@ -127,7 +127,7 @@ export const DefaultTheme: DefaultThemeType = {
   portalLoginBackgroundUrl: '',
   fontUrl: 'Quicksand, sans-serif',
   mainHeadingOverrideFontUrl: 'Inter, sans-serif',
-  darkBackground: '#27385A'
+  darkBackground: '#27385A',
 };
 
 export const DefaultAvatarColors = [

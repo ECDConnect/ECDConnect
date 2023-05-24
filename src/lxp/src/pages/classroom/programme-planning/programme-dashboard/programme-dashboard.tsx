@@ -6,7 +6,6 @@ import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { programmeSelectors } from '@store/programme';
-import { IconInformationIndicator } from '../components/icon-information-indicator/icon-information-indicator';
 import { DailyRoutine } from './components/daily-routine/daily-routine';
 import ROUTES from '@routes/routes';
 import { useState } from 'react';

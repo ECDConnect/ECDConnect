@@ -37,7 +37,7 @@ const App: React.FC = () => {
         logout();
         history.push('/');
       } else {
-        history.push('/register'); 
+        history.push('/register');
       }
     } else {
       const linkError = onError(({ graphQLErrors, networkError }) => {
