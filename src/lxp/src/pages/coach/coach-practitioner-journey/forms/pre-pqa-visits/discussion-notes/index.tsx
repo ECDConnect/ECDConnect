@@ -102,12 +102,9 @@ export const DiscussionNotes = ({
   useEffect(() => {
     if (isView) {
       setEnableButton?.(true);
+      setPreviousAnswers();
     }
-  }, [isView, setEnableButton]);
-
-  useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+  }, [isView, setEnableButton, setPreviousAnswers]);
 
   return (
     <div className="p-4">

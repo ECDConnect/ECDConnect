@@ -94,8 +94,10 @@ export const ProgrammeObservations = ({
   }, [setEnableButton]);
 
   useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+    if (isView) {
+      setPreviousAnswers();
+    }
+  }, [setPreviousAnswers, isView]);
 
   return (
     <div className="p-4">

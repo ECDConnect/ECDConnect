@@ -19,7 +19,7 @@ import {
   visitTypes,
 } from './coach-practitioner-journey.types';
 import { useLayoutEffect, useState } from 'react';
-import { Form, currentActivityKey, visitIdKey } from './forms';
+import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
   PqaActions,
@@ -36,15 +36,15 @@ import {
   sortVisit,
   timelineSteps,
 } from './timeline-steps';
-import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { getAgeInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
-  const [isView, setIsView] = useState(false);
 
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
@@ -131,8 +131,8 @@ export const CoachPractitionerJourney: React.FC = () => {
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
+    window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
-    setIsView(false);
   };
 
   const onView = async (visit: Visit) => {
@@ -156,7 +156,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       );
     }
 
-    setIsView(true);
+    window.sessionStorage.setItem(isViewKey, 'true');
     setShowForm(true);
   };
 
@@ -176,11 +176,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     (showForm && selectedForm === visitTypes.supportVisit)
   ) {
     return (
-      <Form
-        isView={isView}
-        onBack={onFormBack}
-        visitId={currentVisit?.extraData?.visitId}
-      />
+      <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />
     );
   }
 
