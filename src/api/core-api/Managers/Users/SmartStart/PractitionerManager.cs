@@ -140,7 +140,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
                     {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId);
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
                         visit.OverallRatingColor = pqaRating.OverallRatingColor;
                         site_visits.Add(visit);
                     }

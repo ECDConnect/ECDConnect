@@ -3123,10 +3123,12 @@ export type Mutation = {
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
+  addPGARatingVisitForPractitioner: Scalars['Boolean'];
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
   addPractitionerToPrincipal?: Maybe<Practitioner>;
+  addReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
@@ -3538,6 +3540,10 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
+export type MutationAddPgaRatingVisitForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationAddPermissionsToNavigationArgs = {
   navigationId: Scalars['UUID'];
   permissionIds?: InputMaybe<Array<Scalars['UUID']>>;
@@ -3558,6 +3564,10 @@ export type MutationAddPractitionerToPrincipalArgs = {
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddReAccreditationVisitForPractitionerArgs = {
+  input?: InputMaybe<ReAccreditationVisitModelInput>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
@@ -8143,6 +8153,21 @@ export type RaceInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type ReAccreditationVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type ReasonForLeaving = {
