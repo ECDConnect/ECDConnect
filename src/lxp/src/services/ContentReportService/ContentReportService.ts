@@ -71,7 +71,9 @@ class ContentReportService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating child failed - Server connection error');
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
     }
 
     return response.data.data.createChildProgressReport;
@@ -99,7 +101,9 @@ class ContentReportService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating child failed - Server connection error');
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
     }
 
     return true;
@@ -202,6 +206,64 @@ class ContentReportService {
       );
     }
     return response.data.data.childProgressReportSummary;
+  }
+
+  async getDetailedProgressReports(
+    count: number = 5
+  ): Promise<ChildProgressObservationReport[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query childProgressReports($count: Int!) {
+          childProgressReports(count: $count) {  
+            id
+            categories {
+              achievedLevelId
+              categoryId
+              missingTasks {
+                description
+                levelId
+                skillId
+                value
+              }
+              supportingTask {
+                taskDescription
+                taskId
+                todoText
+              }
+              tasks {
+                description
+                levelId
+                skillId
+                value
+              }
+            }
+            childId
+            childFirstname
+            childSurname
+            classroomName
+            dateCompleted
+            dateCreated
+            reportingPeriod
+            reportingDate
+            howCanCaregiverHelpChild
+            practitionerPhotoUrl
+            practitionerSurname
+            practitionerFirstname
+            childEnjoys 
+          }
+        }
+      `,
+      variables: {
+        count: count,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Get child progress reports failed - Server connection error'
+      );
+    }
+    return response.data.data.childProgressReports;
   }
 
   async getDetailedProgressReport(

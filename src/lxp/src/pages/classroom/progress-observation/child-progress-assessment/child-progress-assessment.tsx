@@ -24,6 +24,7 @@ import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import { useAppDispatch } from '@store';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const ChildProgressAssessment: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -36,6 +37,9 @@ export const ChildProgressAssessment: React.FC = () => {
   const progressTrackingCategoryId = location.state.progressTrackingCategoryId;
   const firstObservation = location.state.firstObservation;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const currentChildLearner = useSelector(
+    classroomsSelectors.getChildLearner(currentChild)
+  );
   const category = useSelector(
     progressTrackingSelectors.getProgressTrackingCategoryById(
       location.state.progressTrackingCategoryId
@@ -79,6 +83,7 @@ export const ChildProgressAssessment: React.FC = () => {
     setHelpingWithTaskText,
     clearHelpingWithTaskId,
     isAllSkillsYes,
+    saveReportLocally,
   } = useChildProgressObservation(childId, report);
 
   const [childDevelopmentLevelForm, setChildDevelopmentLevelForm] =
@@ -102,7 +107,7 @@ export const ChildProgressAssessment: React.FC = () => {
   ) => {
     setCategoryAchievedLevel(form.levelId);
     if (exit) {
-      exitAssessment();
+      exitAssessment(true);
     } else {
       goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
     }
@@ -128,7 +133,10 @@ export const ChildProgressAssessment: React.FC = () => {
     });
   };
 
-  const exitAssessment = () => {
+  const exitAssessment = (save: boolean) => {
+    // if (save &&!!report) {
+    //   saveReportLocally(report, currentChildLearner?.classroomGroupId || '');
+    // }
     if (returnToOverview) {
       returnToReportOverview();
       return;
@@ -143,7 +151,7 @@ export const ChildProgressAssessment: React.FC = () => {
   ) => {
     setHelpingWithTaskText(form.learningSupport || '');
     if (exit) {
-      exitAssessment();
+      exitAssessment(true);
     } else {
       completeCurrentCategoryTracking();
       if (returnToOverview) {
@@ -171,7 +179,7 @@ export const ChildProgressAssessment: React.FC = () => {
                 result.missedSkills
               );
               if (exit) {
-                exitAssessment();
+                exitAssessment(true);
               } else {
                 goToStep(ChildProgressAssessmentSteps.assessmentStepThree);
               }
@@ -193,7 +201,7 @@ export const ChildProgressAssessment: React.FC = () => {
                 result.missedSkills
               );
               if (exit) {
-                exitAssessment();
+                exitAssessment(true);
               } else {
                 setChildDevelopmentLevelForm({ levelId: achievedLevelId });
                 goToStep(ChildProgressAssessmentSteps.assessmentStepFour);
@@ -230,7 +238,7 @@ export const ChildProgressAssessment: React.FC = () => {
                 setHelpingWithTask(undefined);
               }
               if (exit) {
-                exitAssessment();
+                exitAssessment(true);
               } else {
                 if (!skipStepSix) {
                   goToStep(ChildProgressAssessmentSteps.assessmentStepSix);
@@ -282,7 +290,7 @@ export const ChildProgressAssessment: React.FC = () => {
                 result.missedSkills
               );
               if (exit) {
-                exitAssessment();
+                exitAssessment(true);
               } else {
                 goToStep(ChildProgressAssessmentSteps.assessmentStepTwo);
               }
@@ -302,12 +310,12 @@ export const ChildProgressAssessment: React.FC = () => {
         onBack={() => {
           if (canGoBack()) goBackOneStep();
           else {
-            exitAssessment();
+            exitAssessment(false);
           }
         }}
         renderOverflow
         backgroundColour={'white'}
-        onClose={exitAssessment}
+        onClose={() => exitAssessment(false)}
         displayOffline={!isOnline}
       >
         {childProgressAssessmentSteps(activeStepKey)}
