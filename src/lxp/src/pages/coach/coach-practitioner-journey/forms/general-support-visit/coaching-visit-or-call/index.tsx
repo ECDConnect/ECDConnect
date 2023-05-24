@@ -168,6 +168,12 @@ export const CoachingAndVisitOrCallStep = ({
   );
 
   useEffect(() => {
+    if (isView) {
+      setEnableButton?.(true);
+    }
+  }, [isView, setEnableButton]);
+
+  useEffect(() => {
     setPreviousAnswers();
   }, [setPreviousAnswers]);
 

@@ -134,9 +134,9 @@ export const DynamicForm = ({
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
-        action: onSubmit,
-        text: 'Save',
-        icon: 'SaveIcon',
+        action: isView ? onClose : onSubmit,
+        text: isView ? 'Close' : 'Save',
+        icon: isView ? 'XIcon' : 'SaveIcon',
       };
     }
 
