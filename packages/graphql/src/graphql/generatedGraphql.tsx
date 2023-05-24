@@ -1945,6 +1945,21 @@ export type FileTypeEnumOperationFilterInput = {
   nin?: InputMaybe<Array<FileTypeEnum>>;
 };
 
+export type FollowUpVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type Franchisor = {
   __typename?: 'Franchisor';
   areaOfOperation?: Maybe<Scalars['String']>;
@@ -3494,7 +3509,7 @@ export type MutationAddEventRecordTypeArgs = {
 };
 
 export type MutationAddFollowUpVisitForPractitionerArgs = {
-  input?: InputMaybe<SupportVisitModelInput>;
+  input?: InputMaybe<FollowUpVisitModelInput>;
 };
 
 export type MutationAddHealthCareWorkerArgs = {
@@ -9003,7 +9018,6 @@ export type SupportVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
   comment?: InputMaybe<Scalars['String']>;
-  followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
   isSupportCall?: InputMaybe<Scalars['Boolean']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;

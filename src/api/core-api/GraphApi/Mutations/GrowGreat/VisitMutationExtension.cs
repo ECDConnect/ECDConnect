@@ -121,7 +121,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
-            SupportVisitModel input)
+            FollowUpVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
