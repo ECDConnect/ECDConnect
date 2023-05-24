@@ -35,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? LinkedVisitId { get; set; }
         public bool? isSupportCall { get; set; }
         public CMSVisitDataInputModel SupportData { get; set; }
+        public CMSVisitDataInputModel FollowUpData { get; set; }
     }
 }
 

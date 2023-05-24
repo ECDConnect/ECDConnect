@@ -3091,6 +3091,7 @@ export type Mutation = {
   addDefaultVisitsForPractitioner: Scalars['Boolean'];
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
+  addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
@@ -3490,6 +3491,10 @@ export type MutationAddEventRecordArgs = {
 
 export type MutationAddEventRecordTypeArgs = {
   input?: InputMaybe<EventRecordTypeModelInput>;
+};
+
+export type MutationAddFollowUpVisitForPractitionerArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddHealthCareWorkerArgs = {
@@ -8998,6 +9003,7 @@ export type SupportVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
   comment?: InputMaybe<Scalars['String']>;
+  followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
   isSupportCall?: InputMaybe<Scalars['Boolean']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
@@ -9400,6 +9406,7 @@ export type Visit = {
   mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
   orderDate?: Maybe<Scalars['DateTime']>;
+  overallRatingColor?: Maybe<Scalars['String']>;
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
@@ -9599,6 +9606,7 @@ export type VisitFilterInput = {
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<VisitFilterInput>>;
   orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  overallRatingColor?: InputMaybe<StringOperationFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -9713,6 +9721,7 @@ export type VisitInput = {
   Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
   OrderDate?: InputMaybe<Scalars['DateTime']>;
+  OverallRatingColor?: InputMaybe<Scalars['String']>;
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;
