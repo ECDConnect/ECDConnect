@@ -155,12 +155,9 @@ export const ProgrammeDetails = ({
   useEffect(() => {
     if (isView) {
       setEnableButton?.(true);
+      setPreviousAnswers();
     }
-  }, [isView, setEnableButton]);
-
-  useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+  }, [isView, setEnableButton, setPreviousAnswers]);
 
   return (
     <div className="p-4">
@@ -209,6 +206,13 @@ export const ProgrammeDetails = ({
         }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
+      {!!parseBool(String(questions[0].answer)) && (
+        <Alert
+          className="mt-4"
+          type="info"
+          title={`Check if ${name} has any questions about fees or needs support.`}
+        />
+      )}
       <Typography
         type="h4"
         text={replaceBraces(questions[1].question, name)}
@@ -237,7 +241,7 @@ export const ProgrammeDetails = ({
           onChange={(event) => onOptionSelected(event.target.value, 2)}
         />
       )}
-      {!!parseBool(String(questions[0].answer)) && (
+      {!!parseBool(String(questions[1].answer)) && (
         <Alert
           className="mt-4"
           type="info"

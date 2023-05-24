@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { parseBool, useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import {
   ActionModal,
@@ -33,16 +33,16 @@ import { useAppDispatch } from '@/store';
 import { callAnswer, visitOrCallQuestion } from './general-support-visit';
 
 interface FormProps {
-  isView: boolean;
   visitId?: string;
   onBack: () => void;
 }
 
 export const currentActivityKey = 'selectedOption';
 export const visitIdKey = 'visitId';
+export const isViewKey = 'isView';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ visitId, isView, onBack }: FormProps) => {
+export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
@@ -54,6 +54,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
   const appDispatch = useAppDispatch();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -233,6 +234,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
                 type: 'filled',
                 leadingIcon: 'CheckCircleIcon',
                 onClick: () => {
+                  onBack?.();
                   history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
                     practitionerId,
                   });
@@ -246,6 +248,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
                 type: 'outlined',
                 leadingIcon: 'XIcon',
                 onClick: () => {
+                  setTimeout(() => onSuccess(), 100);
                   onBack?.();
                   onClose();
                 },
@@ -255,7 +258,7 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
         );
       },
     });
-  }, [dialog, history, name, onBack, practitionerId]);
+  }, [dialog, history, name, onBack, onSuccess, practitionerId]);
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
@@ -269,7 +272,6 @@ export const Form = ({ visitId, isView, onBack }: FormProps) => {
   useEffect(() => {
     if (wasLoading && !isLoading) {
       displayChildrenDialog();
-      onSuccess();
     }
 
     if (wasLoadingSupportVisit && !isLoadingSupportVisit) {
