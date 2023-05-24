@@ -57,6 +57,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             _visitId = visitId;
 
+            Visit visitRecord = _visitRepo.GetById(new Guid(visitId));
             List<VisitData> allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
             Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.User.Id == id).OrderBy(x => x.Id).FirstOrDefault();
@@ -66,12 +67,151 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 select visitData.Id.ToString()
             ).ToList();
 
-            ManageVisitDataStatusForPractitioner(allVisitData, practitioner.Id.ToString(), practitioner.User.FirstName);
+            if (visitRecord.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+            {
+                ManagePQAVisitData(allVisitData, practitioner.Id.ToString(), practitioner.User.FirstName);
+            }
+            if (visitRecord.VisitType.Name == Constants.SSSettings.visitType_re_accreditation)
+            {
+                ManageReAccreditationVisitData(allVisitData, practitioner.Id.ToString(), practitioner.User.FirstName);
+            }
 
             return true;
         }
-        
-        private Boolean ManageVisitDataStatusForPractitioner(List<VisitData> allVisitData, string practitionerId, string firstName)
+        private Boolean ManageReAccreditationVisitData(List<VisitData> allVisitData, string practitionerId, string firstName)
+        {
+            var color = "";
+            var type = Constants.SSSettings.pqa_re_accreditation;
+
+            var step2_score = 0;
+            var step2_final = 0;
+
+            var step3_score = 0;
+            var step3_final = 0;
+
+            var step8_score = 0;
+            var step8_final = 0;
+
+            var step10_score = 0;
+            var step10_final = 0;
+
+            var step11_score = 0;
+            var step11_final = 0;
+
+            var step12_score = 0;
+            var step12_final = 0;
+
+
+            // loop through data and add status data
+            foreach (VisitData vData in allVisitData)
+            {
+
+                // Step 2
+                if (vData.Question == Constants.SSSettings.step12_q1_b)
+                {
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a1) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a3) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a4) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a5) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a6) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a7) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a8) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a9) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a10) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a11) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a12) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a13) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a14) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a15) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a16) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a17) { step2_score++; }
+                }
+
+                // Step 3
+                if (vData.Question == Constants.SSSettings.step13_q1_b)
+                {
+                    if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a1) { step3_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a2) { step3_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a3) { step3_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a4) { step3_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a5) { step3_score++; }
+                }
+
+                // Step 8
+                if (vData.Question == Constants.SSSettings.step_8_re_accreditation)
+                {
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a1) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a2) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a3) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a4) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a5) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a6) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a7) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a8) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a9) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a10) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a11) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_re_accreditation_a12) { step8_score++; }
+                }
+
+                // Step 10 
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q1) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q2) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q3) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q4) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q5) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q6) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q7) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q8) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q9) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q10) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+
+                // Step 11
+                if (vData.Question == Constants.SSSettings.step_11_re_accreditation_q1)
+                {
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a1) { step11_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a2) { step11_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a3) { step11_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a4) { step11_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a5) { step11_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_11_re_accreditation_a6) { step11_score++; }
+                }
+
+                // Step 12
+                if (vData.Question == Constants.SSSettings.step_12_re_accreditation_q1)
+                {
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a1) { step12_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a2) { step12_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a3) { step12_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a4) { step12_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a5) { step12_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step_12_re_accreditation_a6) { step12_score++; }
+                }
+
+                // Step 15
+                if (vData.Question == Constants.SSSettings.step16_q1)
+                {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) { }
+                }
+                if (vData.Question == Constants.SSSettings.step16_q3)
+                {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_no) { }
+                }
+                if (vData.Question == Constants.SSSettings.step16_q4)
+                {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) { }
+                }
+                if (vData.Question == Constants.SSSettings.step16_q5)
+                {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_no) { }
+                }
+
+            }
+
+            return true;
+        }
+        private Boolean ManagePQAVisitData(List<VisitData> allVisitData, string practitionerId, string firstName)
         {
             var color = "";
             var type = Constants.SSSettings.pqa_visit;
@@ -96,6 +236,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var step8_score = 0;
             var step8_final = 0;
 
+            var step10_score = 0;
+
             var step12_score = 0;
             var step13_score = 0;
             var step16_score = 0;
@@ -106,69 +248,33 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // Step 2
                 if (vData.Question == Constants.SSSettings.step2_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q1_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q1_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q1_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q1_a3) { step2_score += 2; }
                 }
                 if (vData.Question == Constants.SSSettings.step2_q2)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q2_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q2_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q2_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q2_a3) { step2_score += 2; }
                 }
                 if (vData.Question == Constants.SSSettings.step2_q3)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q3_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q3_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q3_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q3_a3) { step2_score += 2; }
                 }
                 if (vData.Question == Constants.SSSettings.step2_q4)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q4_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q4_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q4_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q4_a3) { step2_score += 2; }
                 }
                 if (vData.Question == Constants.SSSettings.step2_q5)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q5_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q5_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q5_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q5_a3) { step2_score += 2; }
                 }
                 if (vData.Question == Constants.SSSettings.step2_q6)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q6_a2)
-                    {
-                        step2_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step2_q6_a3)
-                    {
-                        step2_score = step2_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q6_a2) { step2_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step2_q6_a3) { step2_score += 2; }
                 }
                 // Step 3
                 if (vData.Question == Constants.SSSettings.step3_q1)
@@ -185,255 +291,105 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (vData.QuestionAnswer == Constants.SSSettings.step3_q1_a9) { _score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step3_q1_a10) { _score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step3_q1_a11) { _score++; }
-                    
+
                     if (_score == 4)
                     {
-                        step3_score = step3_score + 1;
+                        step3_score += 1;
                     }
                     else if (_score > 4)
                     {
-                        step3_score = step3_score + 2;
+                        step3_score += 2;
                     }
 
                 }
                 // Step 4
                 if (vData.Question == Constants.SSSettings.step4_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q1_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q1_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q2_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q2_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q3_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q3_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q4_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q4_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q5_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q5_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q6_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q6_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q7_a2)
-                    {
-                        step4_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step4_q7_a3)
-                    {
-                        step4_score = step4_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q1_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q1_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q2_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q2_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q3_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q3_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q4_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q4_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q5_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q5_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q6_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q6_a3) { step4_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q7_a2) { step4_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step4_q7_a3) { step4_score += 2; }
                 }
                 // Step 5
                 if (vData.Question == Constants.SSSettings.step5_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q1_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q1_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q2_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q2_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q3_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q3_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q4_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q4_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q5_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q5_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q6_a2)
-                    {
-                        step5_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step5_q6_a3)
-                    {
-                        step5_score = step5_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q1_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q1_a3) { step5_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q2_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q2_a3) { step5_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q3_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q3_a3) { step5_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q4_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q4_a3) { step5_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q5_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q5_a3) { step5_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q6_a2) { step5_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step5_q6_a3) { step5_score += 2; }
                 }
                 // Step 6
                 if (vData.Question == Constants.SSSettings.step6_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q1_a2)
-                    {
-                        step6_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step6_q1_a3)
-                    {
-                        step6_score = step6_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q2_a2)
-                    {
-                        step6_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step6_q2_a3)
-                    {
-                        step6_score = step6_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q3_a2)
-                    {
-                        step6_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step6_q3_a3)
-                    {
-                        step6_score = step6_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q4_a2)
-                    {
-                        step6_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step6_q4_a3)
-                    {
-                        step6_score = step6_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q5_a2)
-                    {
-                        step6_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step6_q5_a3)
-                    {
-                        step6_score = step6_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q1_a2) { step6_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q1_a3) { step6_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q2_a2) { step6_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q2_a3) { step6_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q3_a2) { step6_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q3_a3) { step6_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q4_a2) { step6_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q4_a3) { step6_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q5_a2) { step6_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step6_q5_a3) { step6_score += 2; }
                 }
                 // Step 7
                 if (vData.Question == Constants.SSSettings.step7_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q1_a2)
-                    {
-                        step7_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step7_q1_a3)
-                    {
-                        step7_score = step7_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q2_a2)
-                    {
-                        step7_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step7_q2_a3)
-                    {
-                        step7_score = step7_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q3_a2)
-                    {
-                        step7_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step7_q3_a3)
-                    {
-                        step7_score = step7_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q4_a2)
-                    {
-                        step7_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step7_q4_a3)
-                    {
-                        step7_score = step7_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q5_a2)
-                    {
-                        step7_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step7_q5_a3)
-                    {
-                        step7_score = step7_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q1_a2) { step7_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q1_a3) { step7_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q2_a2) { step7_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q2_a3) { step7_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q3_a2) { step7_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q3_a3) { step7_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q4_a2) { step7_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q4_a3) { step7_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q5_a2) { step7_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step7_q5_a3) { step7_score += 2; }
                 }
                 // Step 8
                 if (vData.Question == Constants.SSSettings.step8_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q1_a2)
-                    {
-                        step8_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step8_q1_a3)
-                    {
-                        step8_score = step8_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q2_a2)
-                    {
-                        step8_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step8_q2_a3)
-                    {
-                        step8_score = step8_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q3_a2)
-                    {
-                        step8_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step8_q3_a3)
-                    {
-                        step8_score = step8_score + 2;
-                    }
-                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a2)
-                    {
-                        step8_score++;
-                    }
-                    else if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a3)
-                    {
-                        step8_score = step8_score + 2;
-                    }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q1_a2) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q1_a3) { step8_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q2_a2) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q2_a3) { step8_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q3_a2) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q3_a3) { step8_score += 2; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a2) { step8_score++; }
+                    if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a3) { step8_score += 2; }
                 }
-                // Step 12
-                if (vData.Question == Constants.SSSettings.step12_q1)
+                // Step 10 Re-accreditation
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q1) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q2) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q3) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q4) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q5) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q6) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q7) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q8) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q9) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q10) { step10_score += Int32.Parse(vData.QuestionAnswer); }
+
+                // Step 12 OR Re-accreditation 
+                if (vData.Question == Constants.SSSettings.step12_q1 || vData.Question == Constants.SSSettings.step12_q1_b)
                 {
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a1) { step12_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a2) { step12_score++; }
@@ -453,8 +409,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a16) { step12_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a17) { step12_score++; }
                 }
-                // Step 13
-                if (vData.Question == Constants.SSSettings.step13_q1)
+                // Step 13 OR Re-accreditation 
+                if (vData.Question == Constants.SSSettings.step13_q1 || vData.Question == Constants.SSSettings.step13_q1_b)
                 {
                     if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a1) { step13_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a2) { step13_score++; }
@@ -465,7 +421,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // Step 16
                 if (vData.Question == Constants.SSSettings.step16_q1)
                 {
-                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+                    if (vData.QuestionAnswer == Constants.GGSettings.answer_yes)
+                    {
                         step16_score++;
                     }
                 }
@@ -513,23 +470,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (step12_score == 17)
                 {
                     color = _green;
-                } else if (step12_score >= 1 && step12_score < 17 )
+                }
+                else if (step12_score >= 1 && step12_score < 17)
                 {
                     color = _amber;
-                } else if (step12_score == 0)
+                }
+                else if (step12_score == 0)
                 {
                     color = _red;
                 }
                 AddVisitDataStatus(step12, step12_score.ToString(), color, type, step12.VisitSection, false);
 
                 var step13 = allVisitData.Where(x => x.VisitSection == Constants.SSSettings.step13).FirstOrDefault();
-                if (step13_score  == 5)
+                if (step13_score == 5)
                 {
                     color = _green;
-                } else if (step13_score >=1 && step13_score < 5 )
+                }
+                else if (step13_score >= 1 && step13_score < 5)
                 {
                     color = _amber;
-                } else if (step13_score == 0)
+                }
+                else if (step13_score == 0)
                 {
                     color = _red;
                 }
@@ -576,14 +537,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(step14, comment, _amber, type, step14.VisitSection, false);
                     }
                 }
-                else {
+                else
+                {
                     // red flag
                     AddVisitDataStatus(step14, Constants.SSSettings.step14_not_reissue.Replace("{client}", firstName), _red, type, step14.VisitSection, false);
                 }
 
             }
 
-           
             var step16a = allVisitData.Where(x => x.Question == Constants.SSSettings.step16_q1).FirstOrDefault();
             if (step16_score == 1)
             {
@@ -591,7 +552,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             var step16b = allVisitData.Where(x => x.Question == Constants.SSSettings.step16_q2).FirstOrDefault();
-            if (step16b.QuestionAnswer ==  Constants.GGSettings.answer_no)
+            if (step16b.QuestionAnswer == Constants.GGSettings.answer_no)
             {
                 AddVisitDataStatus(step16b, step16b.QuestionAnswer, _amber, type, step16b.VisitSection, false);
             }
@@ -604,7 +565,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return true;
         }
-
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
         {
             if (input != null) {
@@ -659,7 +619,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 Section = ""
             };
         }
-
         public string GetStepRatingColor(double finalScore)
         {
             string color = "";
@@ -679,7 +638,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return color;
         }
-
         public string GetStep3RatingColor(int finalScore)
         {
             string color = "";
@@ -698,8 +656,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return color;
         }
-
-
 
     }
 }

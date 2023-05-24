@@ -1958,6 +1958,21 @@ export type FileTypeEnumOperationFilterInput = {
   nin?: InputMaybe<Array<FileTypeEnum>>;
 };
 
+export type FollowUpVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type Franchisor = {
   __typename?: 'Franchisor';
   areaOfOperation?: Maybe<Scalars['String']>;
@@ -3104,13 +3119,16 @@ export type Mutation = {
   addDefaultVisitsForPractitioner: Scalars['Boolean'];
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
+  addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
+  addPGARatingVisitForPractitioner: Scalars['Boolean'];
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
   addPractitionerToPrincipal?: Maybe<Practitioner>;
+  addReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
@@ -3506,6 +3524,10 @@ export type MutationAddEventRecordTypeArgs = {
   input?: InputMaybe<EventRecordTypeModelInput>;
 };
 
+export type MutationAddFollowUpVisitForPractitionerArgs = {
+  input?: InputMaybe<FollowUpVisitModelInput>;
+};
+
 export type MutationAddHealthCareWorkerArgs = {
   input?: InputMaybe<HealthCareWorkerModelInput>;
 };
@@ -3516,6 +3538,10 @@ export type MutationAddInfantArgs = {
 
 export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
+};
+
+export type MutationAddPgaRatingVisitForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddPermissionsToNavigationArgs = {
@@ -3538,6 +3564,10 @@ export type MutationAddPractitionerToPrincipalArgs = {
   idNumber?: InputMaybe<Scalars['String']>;
   lastName?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddReAccreditationVisitForPractitionerArgs = {
+  input?: InputMaybe<ReAccreditationVisitModelInput>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
@@ -8125,6 +8155,21 @@ export type RaceInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ReAccreditationVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  comment?: InputMaybe<Scalars['String']>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
+  risk?: InputMaybe<Scalars['String']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type ReasonForLeaving = {
   __typename?: 'ReasonForLeaving';
   description?: Maybe<Scalars['String']>;
@@ -9376,6 +9421,7 @@ export type Visit = {
   mother?: Maybe<Mother>;
   motherId?: Maybe<Scalars['UUID']>;
   orderDate?: Maybe<Scalars['DateTime']>;
+  overallRatingColor?: Maybe<Scalars['String']>;
   plannedVisitDate: Scalars['DateTime'];
   practitioner?: Maybe<Practitioner>;
   practitionerId?: Maybe<Scalars['UUID']>;
@@ -9575,6 +9621,7 @@ export type VisitFilterInput = {
   motherId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<VisitFilterInput>>;
   orderDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  overallRatingColor?: InputMaybe<StringOperationFilterInput>;
   plannedVisitDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   practitioner?: InputMaybe<PractitionerFilterInput>;
   practitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -9689,6 +9736,7 @@ export type VisitInput = {
   Mother?: InputMaybe<MotherInput>;
   MotherId?: InputMaybe<Scalars['UUID']>;
   OrderDate?: InputMaybe<Scalars['DateTime']>;
+  OverallRatingColor?: InputMaybe<Scalars['String']>;
   PlannedVisitDate: Scalars['DateTime'];
   Practitioner?: InputMaybe<PractitionerInput>;
   PractitionerId?: InputMaybe<Scalars['UUID']>;

@@ -13,12 +13,15 @@ namespace EcdLink.Api.CoreApi
     {
             public const string client_practitioner = "practitioner";
 
+            // Visit types
             public const string visitType_support = "support_visit";
             public const string visitType_call = "support_call";
-            public const string pre_pqa_visit_1 = "pre_pqa_visit_1";
-            public const string pre_pqa_visit_2 = "pre_pqa_visit_2";
+            public const string visitType_pqa_visit_1 = "pqa_visit_1";
+            public const string visitType_pqa_visit_1_follow_up = "pqa_visit_1_follow_up";
+            public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
+            public const string visitType_pre_pqa_visit_2 = "pre_pqa_visit_2";
+            public const string visitType_re_accreditation = "re_accreditation";
 
-            public const string pqa_visit_1 = "pqa_visit_1";
 
             // Licenses
             public const string ss_starter_license = "ss_starter_license";
@@ -230,6 +233,7 @@ namespace EcdLink.Api.CoreApi
             public const string step11_q1 = "Do you have concerns about health & safety at this venue?";
 
             public const string step12_q1 = "Walk around the site and make sure the following standards are in place.";
+            public const string step12_q1_b = "{client} - SmartSpace check";
             public const string step12_q1_a1 = "The venue has enough clean, safe water for children to drink.";
             public const string step12_q1_a2 = "The venue has a safe, clean and hygienic place for children to go to the toilet.";
             public const string step12_q1_a3 = "There is a tap, a tippy-tap, a water dispenser or similar for handwashing under clean running water with measures that allow for physical distancing as appropriate.";
@@ -249,6 +253,7 @@ namespace EcdLink.Api.CoreApi
             public const string step12_q1_a17 = "There is an emergency plan displayed on the wall (can use one from Start pack).";
 
             public const string step13_q1 = "These standards are also required.  If they are not in place, SmartStarters should be able to show how they are working towards them.";
+            public const string step13_q1_b = "Additional standards";
             public const string step13_q1_a1 = "The venue offers children enough space to play freely (about one square metre per child).";
             public const string step13_q1_a2 = "If children use an outdoor area, it is fenced with a lockable gate.";
             public const string step13_q1_a3 = "There is a list of emergency numbers visible on the wall.";
@@ -264,8 +269,52 @@ namespace EcdLink.Api.CoreApi
             public const string step16_q2 = "Is the SmartStart programme being implemented where children feel save & loved?";
             public const string step16_q3 = "Is the SmartStart programme being implemented for long enough?";
             public const string step16_q4 = "Are there too many children attending the SmartStart programme?";
+            public const string step16_q5 = "Are there enough assistants for the programme?";
+
+            public const string step_8_re_accreditation = "The learning environment & use of the SmartStart routine";
+            public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
+            public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
+            public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
+            public const string step8_re_accreditation_a4 = "Displays: the learning space is interesting with posters and children's work on the walls.";
+            public const string step8_re_accreditation_a5 = "SmartStart routine: the SmartStart routine is displayed at a height that children cna reach.";
+            public const string step8_re_accreditation_a6 = "SmartStart activities: all the activities in the SmartStart routine (below) were included today.";
+            public const string step8_re_accreditation_a7 = "Free play: at least 45 minutes was set aside for free play.";
+            public const string step8_re_accreditation_a8 = "Planning & recall: children had the chance to plan and recall activities before and after free play.";
+            public const string step8_re_accreditation_a9 = "Small group time: there was small group time (at least 15 minutes).";
+            public const string step8_re_accreditation_a10 = "Story time: there was story time (at least 20 minutes).";
+            public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
+            public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
+
+            public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
+            public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
+            public const string step_10_re_accreditation_q3 = "Adults use calm and appropriate methods to keep order, and do not use harsh words, a raised voice or physical methods.";
+            public const string step_10_re_accreditation_q4 = "Children are comforted if they are upset.";
+            public const string step_10_re_accreditation_q5 = "Children are involved in solving conflicts.";
+            public const string step_10_re_accreditation_q6 = "Adults create opportunities to talk with children, and listen and respond to their questions and ideas.";
+            public const string step_10_re_accreditation_q7 = "Adults encourage children to make their own choices during the session and to things for themselves where they can.";
+            public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children's play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
+            public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
+            public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
+
+            public const string step_11_re_accreditation_q1 = "Records";
+            public const string step_11_re_accreditation_a1 = "Register: the attendance register is up to date.";
+            public const string step_11_re_accreditation_a2 = "Planning: weekly reflection and planning notes are completed and filed.";
+            public const string step_11_re_accreditation_a3 = "Activities: planning notes are filed and show a variety of small and large group activities are being used.";
+            public const string step_11_re_accreditation_a4 = "Child progress: the child progress tools are completed for each child.";
+            public const string step_11_re_accreditation_a5 = "Accidents: there is an accident register.";
+            public const string step_11_re_accreditation_a6 = "Caregiver meetings: there are attendance registers for the last two monthly caregiver meetings.";
+
+            public const string step_12_re_accreditation_q1 = "Operational standards";
+            public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in the last year).";
+            public const string step_12_re_accreditation_a2 = "Club meetings: the franchisee is attending monthly club meetings (at least 9 in the last year).";
+            public const string step_12_re_accreditation_a3 = "Age range: all or nearly all (more than 80%) of the children are aged three and four years old.";
+            public const string step_12_re_accreditation_a4 = "Dosage: at least three-quarters of children receive a dosage of six hours per week (playgroups) or 20 hours per week (day mothers and ECD centres).";
+            public const string step_12_re_accreditation_a5 = "Reports: the Franchisee is submitting child attendance regularly (weekly child attendance received for the last 12 months).";
+            public const string step_12_re_accreditation_a6 = "Parent satisfaction: parent satisfaction surveys - 3 surveys with total score from parents of more than 3 (to be collected at the meeting).";
+
 
             public const string pqa_visit = "PQA Visit 1";
+            public const string pqa_re_accreditation = "Re-accreditation visit";
 
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
@@ -277,6 +326,11 @@ namespace EcdLink.Api.CoreApi
             public const int step6_total = 10;
             public const int step7_total = 10;
             public const int step8_total = 8;
+            public const int step12_total = 17;
+
+            public const int step2_re_accreditation_total = 17;
+            public const int step3_re_accreditation_total = 5;
+            public const int step8_re_accreditation_total = 12;
 
         }
 

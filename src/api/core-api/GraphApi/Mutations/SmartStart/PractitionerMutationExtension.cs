@@ -228,6 +228,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return false;
         }
 
+        // TODO: add licenses for practitioner end point here
+
         public bool DeActivatePractitioner([Service] PractitionerManager practitionerManager, string userId, string leavingComment)
         {
             return practitionerManager.DeActivatePractitioner(userId, leavingComment);

@@ -7,6 +7,7 @@ import localForage from 'localforage';
 import {
   generateChildProgressReport,
   getChildProgressReportSummary,
+  getDetailedProgressReports,
   getUserContentChildProgressReports,
   saveUserContentChildProgressReport,
   updateChildProgressReport,
@@ -49,6 +50,8 @@ const contentReportSlice = createSlice({
       state.childProgressionReports[reportIndex].categories[
         categoryIndex
       ].missingTasks = action.payload.missingTasks;
+
+      // contentReportSlice.caseReducers.markReportForSyncing(state, action.payload);
     },
     setCategoryStatus: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -195,7 +198,10 @@ const contentReportSlice = createSlice({
 
       if (reportIndex < 0) {
         state.unsyncedChildProgressReportsIds.push(action.payload);
+        return;
       }
+
+      // state.unsyncedChildProgressReportsIds[reportIndex] = action.payload;
     },
   },
   extraReducers: (builder) => {
@@ -229,6 +235,16 @@ const contentReportSlice = createSlice({
         }
 
         state.childProgressionReports[reportIndex] = reportContent;
+      }
+    );
+    builder.addCase(
+      getDetailedProgressReports.fulfilled,
+      (state, action: PayloadAction<ChildProgressObservationReport[]>) => {
+        if (!state.childProgressionReports) {
+          state.childProgressionReports = [];
+        }
+
+        state.childProgressionReports = action.payload;
       }
     );
     builder.addCase(

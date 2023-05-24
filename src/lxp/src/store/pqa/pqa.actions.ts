@@ -4,9 +4,8 @@ import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeline,
-  Visit,
+  SupportVisitModelInput,
   VisitData,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 
 export const PqaActions = {
@@ -30,7 +29,7 @@ export const addVisitFormData = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        if (!!input) {
+        if (!!Object.keys(input).length) {
           const response = await new PQAService(
             userAuth?.auth_token
           ).addVisitData(input);
@@ -38,14 +37,16 @@ export const addVisitFormData = createAsyncThunk<
           return response;
         }
 
-        const promises = prePqaFormData?.map(
-          async (item) =>
-            await new PQAService(userAuth?.auth_token).addVisitData(
-              item.formData
-            )
-        );
+        if (!!prePqaFormData?.length) {
+          const promises = prePqaFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addVisitData(
+                item.formData
+              )
+          );
 
-        return promises?.length && Promise.all(promises);
+          return promises?.length && Promise.all(promises);
+        }
       }
     } catch (err) {
       return rejectWithValue(err);
@@ -54,20 +55,20 @@ export const addVisitFormData = createAsyncThunk<
 );
 
 export const addSupportVisitFormData = createAsyncThunk<
-  Visit | undefined,
-  VisitModelInput | undefined,
+  any,
+  SupportVisitModelInput | undefined,
   ThunkApiType<RootState>
 >(
   PqaActions.ADD_SUPPORT_VISIT_FORM_DATA,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { prePqaFormData },
+      pqa: { supportVisitFormData },
     } = getState();
 
     try {
       if (userAuth?.auth_token) {
-        if (!!input) {
+        if (!!input && !!Object.keys(input).length) {
           const response = await new PQAService(
             userAuth?.auth_token
           ).addSupportVisitForPractitioner(input);
@@ -75,15 +76,16 @@ export const addSupportVisitFormData = createAsyncThunk<
           return response;
         }
 
-        // TODO: add sync promises
-        // const promises = prePqaFormData?.map(
-        //   async (item) =>
-        //     await new PQAService(userAuth?.auth_token).addSupportVisitForPractitioner(
-        //       item.formData
-        //     )
-        // );
+        if (!!supportVisitFormData?.length) {
+          const promises = supportVisitFormData?.map(
+            async (item) =>
+              await new PQAService(
+                userAuth?.auth_token
+              ).addSupportVisitForPractitioner(item.formData)
+          );
 
-        // return promises?.length && Promise.all(promises);
+          return promises?.length && Promise.all(promises);
+        }
       }
     } catch (err) {
       return rejectWithValue(err);

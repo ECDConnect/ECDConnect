@@ -2,9 +2,9 @@ import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeline,
+  SupportVisitModelInput,
   Visit,
   VisitData,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
@@ -39,22 +39,18 @@ class PQAService {
     return true;
   }
 
-  async addSupportVisitForPractitioner(input: VisitModelInput): Promise<Visit> {
+  async addSupportVisitForPractitioner(
+    input: SupportVisitModelInput
+  ): Promise<Visit> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { addSupportVisitForPractitioner: Visit };
       errors?: {};
     }>(``, {
       query: `
-        mutation AddSupportVisitForPractitioner($input: VisitModelInput) {          
-          addSupportVisitForPractitioner(input: $input) {          
-            actualVisitDate
-            attended,
-            visitType{
+        mutation AddSupportVisitForPractitioner($input: SupportVisitModelInput) {
+          addSupportVisitForPractitioner(input: $input) {
               id
-              normalizedName
-              name
-            }
           }
         }
       `,
@@ -175,6 +171,15 @@ class PQAService {
               id
               plannedVisitDate
               attended
+              visitType {
+                description
+                id
+                isActive
+                name
+                normalizedName
+                order
+                type
+              }
             }
           }
         }

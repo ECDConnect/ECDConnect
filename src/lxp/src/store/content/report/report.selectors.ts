@@ -33,7 +33,11 @@ export const getChildCompletedObservationReports = (childId?: string) =>
     (state: RootState) => state.contentReportData.childProgressionReports || [],
     (reports: ChildProgressObservationReport[]) =>
       reports.filter(
-        (x) => x.childId === childId && x.dateCompleted !== undefined
+        (x) =>
+          x.childId === childId &&
+          x.dateCompleted !== undefined &&
+          x.dateCompleted !== null &&
+          x.dateCompleted !== ''
       )
   );
 
@@ -88,7 +92,9 @@ export const getChildLatestCompletedReports = (childId?: string) =>
         contentReportState.childProgressionReports?.filter(
           (report) =>
             (!childId ? true : report.childId === childId) &&
-            report.dateCompleted !== undefined
+            report.dateCompleted !== undefined &&
+            report.dateCompleted !== null &&
+            report.dateCompleted !== ''
         ) || [];
 
       const excludingSummaries =

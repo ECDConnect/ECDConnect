@@ -26,7 +26,7 @@ export const getPrePqaFormDataByIdSelector = (userId: string) => {
   );
 };
 
-export const getCurrentCoachVisitByUserId = (
+export const getCurrentCoachPractitionerVisitByUserId = (
   currentVisitDescription: string,
   userId: string
 ) =>

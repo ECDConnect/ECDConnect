@@ -103,6 +103,39 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
+        public Visit AddFollowUpVisitForPractitioner(VisitModel input)
+        {
+            var visit = GetFollowUpVisitFromInputModel(input);
+            return _visitRepo.Insert(visit);
+        }
+
+        private Visit GetFollowUpVisitFromInputModel(VisitModel input)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            return new Visit()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                Attended = input.Attended,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                VisitTypeId = input.VisitType.Id,
+                MotherId = input.MotherId,
+                InfantId = input.InfantId,
+                PractitionerId = input.PractitionerId,
+                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Comment = input.Comment,
+                UpdatedBy = _applicationUserId,
+                LinkedVisitId = input.LinkedVisitId,
+                ActualVisitDate = input.ActualVisitDate,
+                PlannedVisitDate = input.PlannedVisitDate
+            };
+        }
+
         private Visit GetAdditionalVisitFromInputModel(VisitModel input)
         {
             if (input == null)

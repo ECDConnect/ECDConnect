@@ -77,10 +77,11 @@ export const seperateCategoriesByStatus = (
   const notStartedCategories =
     report?.categories.filter(
       (cat) =>
-        cat.status === ChildProgressObservationStatus.NotStarted &&
-        !inProgressCategories.some(
-          (compCat) => compCat.categoryId === cat.categoryId
-        )
+        cat.status === undefined ||
+        (cat.status === ChildProgressObservationStatus.NotStarted &&
+          !inProgressCategories.some(
+            (compCat) => compCat.categoryId === cat.categoryId
+          ))
     ) || [];
 
   return {

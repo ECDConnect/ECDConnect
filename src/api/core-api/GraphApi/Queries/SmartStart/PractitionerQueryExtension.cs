@@ -390,7 +390,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
         {
-            return visitDataManager.GetPractitionerPQARating(userId);
+            return visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
         }
         
 

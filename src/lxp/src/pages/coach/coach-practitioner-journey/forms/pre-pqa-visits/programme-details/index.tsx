@@ -13,15 +13,13 @@ import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
 import { Maybe } from '@ecdlink/graphql';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 
-const MOCKED_DATA = {
-  programmeType: 'Playgroup',
-};
 export const ProgrammeDetails = ({
   isView,
   smartStarter,
@@ -58,9 +56,13 @@ export const ProgrammeDetails = ({
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
+  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
@@ -153,12 +155,9 @@ export const ProgrammeDetails = ({
   useEffect(() => {
     if (isView) {
       setEnableButton?.(true);
+      setPreviousAnswers();
     }
-  }, [isView, setEnableButton]);
-
-  useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+  }, [isView, setEnableButton, setPreviousAnswers]);
 
   return (
     <div className="p-4">
@@ -185,7 +184,7 @@ export const ProgrammeDetails = ({
       )}
       <Typography
         type="h4"
-        text={`Programme type: ${MOCKED_DATA.programmeType}`}
+        text={`Programme type: ${practitioner?.programmeType || ''}`}
         color="textDark"
         className="my-4"
       />
@@ -207,6 +206,13 @@ export const ProgrammeDetails = ({
         }
         onOptionSelected={(value) => onOptionSelected(value, 0)}
       />
+      {!!parseBool(String(questions[0].answer)) && (
+        <Alert
+          className="mt-4"
+          type="info"
+          title={`Check if ${name} has any questions about fees or needs support.`}
+        />
+      )}
       <Typography
         type="h4"
         text={replaceBraces(questions[1].question, name)}
@@ -235,7 +241,7 @@ export const ProgrammeDetails = ({
           onChange={(event) => onOptionSelected(event.target.value, 2)}
         />
       )}
-      {!!parseBool(String(questions[0].answer)) && (
+      {!!parseBool(String(questions[1].answer)) && (
         <Alert
           className="mt-4"
           type="info"
