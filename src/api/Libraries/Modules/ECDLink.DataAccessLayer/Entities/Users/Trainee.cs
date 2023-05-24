@@ -34,10 +34,20 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Guid? LinkedPrincipalHierarchy { get; set; }
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
+        public string SiteArea { get; set; }
         public DateTime? TraineeConvertedDate { get; set; }
         public bool? AttendedFirstAidCourse { get; set; }
         public bool? SiteVisitsCompleted { get; set; }
         public bool? ChildProgressTraining { get; set; }
+        public bool? StarterLicenceReceived { get; set; }
+        public bool? PlayKitReceived { get; set; }
+        public bool? AdminFileReceived { get; set; }
+        public bool? SmartSpaceVisitPassed { get; set; }
+        public bool? AttendedStartUpTraining { get; set; }
+        public bool? IsOnStipend { get; set; }
+        public bool? IsSmartSpaceVisitValidated { get; set; }
+        public bool? IsAdminFileAndPlaykitValidated { get; set; }
+        public string HighestEducationLevel { get; set; }
 
     }
 
