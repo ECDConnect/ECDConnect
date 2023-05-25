@@ -185,7 +185,7 @@ export const SubmitIncomeStatements: React.FC = () => {
 
   const {
     setState,
-    state: { stepIndex, run },
+    state: { stepIndex },
   } = useAppContext();
 
   const nextStep = () => {
@@ -590,7 +590,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end" id="startStatements">
+        <div className="flex justify-end">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
@@ -606,6 +606,7 @@ export const SubmitIncomeStatements: React.FC = () => {
               history.push(ROUTES.BUSINESS_ADD_AMOUNT);
               nextStep();
             }}
+            id="startStatements"
           />
         </div>
       </div>

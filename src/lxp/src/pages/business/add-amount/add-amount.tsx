@@ -42,7 +42,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             className="mt-4"
           />
           <div className="flex gap-2">
-            <div id="createIncome">
+            <div>
               <Button
                 type="filled"
                 color="primary"
@@ -53,6 +53,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                   history.push(ROUTES.BUSINESS_ADD_INCOME);
                   nextStep();
                 }}
+                id="createIncome"
               >
                 {renderIcon('PlusIcon', styles.buttonIconPrimary)}
                 <Typography
