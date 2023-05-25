@@ -206,7 +206,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            License smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_license);
+            License smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
 
             // 3 visit pqa first visit types
@@ -277,7 +277,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
             List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
 
-            var smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_license);
+            var smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
 
             if (smartSpaceLic != null)
             {

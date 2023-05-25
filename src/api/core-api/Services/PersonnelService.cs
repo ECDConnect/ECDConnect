@@ -369,37 +369,37 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // Starter license received
             var starterDate = (
                 from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_license) on license.LicenseTypeId equals licenseType.Id
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_licence) on license.LicenseTypeId equals licenseType.Id
                 select license
             ).Select(x => x.LicenseDate).FirstOrDefault();
             if (starterDate != null)
             {
-                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_license_received;
+                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
                 timeLine.StarterLicenseDate = starterDate;
                 timeLine.StarterLicenseColor = MetricsColorEnum.Success.ToString();
             }
             else
             {
-                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_license_not_received;
+                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
                 timeLine.StarterLicenseColor = MetricsColorEnum.Warning.ToString();
             }
 
             // SmartSpace license received
             var smartSpaceDate = (
                 from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_license) on license.LicenseTypeId equals licenseType.Id
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_licence) on license.LicenseTypeId equals licenseType.Id
                 select license
             ).Select(x => x.LicenseDate).FirstOrDefault();
 
             if (smartSpaceDate != null)
             {
-                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_license_received;
+                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
                 timeLine.SmartSpaceLicenseDate = smartSpaceDate;
                 timeLine.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
             }
             else
             {
-                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_license_not_received;
+                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
                 timeLine.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
             }
 

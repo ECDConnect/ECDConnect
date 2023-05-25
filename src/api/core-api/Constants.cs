@@ -26,23 +26,19 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
             public const string visitType_re_accreditation = "re_accreditation";
 
-
-
-
-            // Licenses
-            public const string ss_starter_license = "ss_starter_license";
-            public const string ss_smart_space_license = "ss_smart_space_license";
+            // Licences
+            public const string ss_starter_licence = "ss_starter_licence";
+            public const string ss_smart_space_licence = "ss_smart_space_licence";
 
             // Timeline messages
-            public const string starter_license_received = "Starter License received";
-            public const string starter_license_not_received = "Starter License not received";
+            public const string starter_licence_received = "Starter Licence received";
+            public const string starter_licence_not_received = "Starter Licence not received";
 
-            public const string smart_space_license_received = "SmartSpace License received";
-            public const string smart_space_license_not_received = "SmartSpace License not received";
+            public const string smart_space_licence_received = "SmartSpace Licence received";
+            public const string smart_space_licence_not_received = "SmartSpace Licence not received";
 
             public const string first_site_visit = "First site visit before PQA";
             public const string second_site_visit = "Second site visit before PQA";
-
 
             public const string income_statement_pdf_type = "IncomeStatementPDF";
             public const string workflow_pdf_type = "Document";
@@ -268,7 +264,7 @@ namespace EcdLink.Api.CoreApi
 
             public const string step14_q1 = "Are you re-issuing the SmartSpace certificate for {client}'s venue.";
             public const string step14_success = "{client} venue meets all the basic SmartSpace standards as well as the additional standards.";
-            public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace License.";
+            public const string step14_not_reissue = "You cannot reissue {client}'s SmartSpace Licence.";
             public const string step14_not_meet = "{client}'s venue does not meet the basic SmartSpace standards.";
 
             public const string step16_q1 = "Did you observe an adult hitting or smacking a child at this programme?";
