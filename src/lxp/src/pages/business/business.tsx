@@ -150,7 +150,7 @@ export const Business: React.FC = () => {
   }, [walkThroughState?.stepIndex]);
 
   return (
-    <>
+    <div key={String(hasIncomeStatements)} className="h-screen">
       <BannerWrapper
         showBackground={false}
         size="medium"
@@ -183,7 +183,7 @@ export const Business: React.FC = () => {
           setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
         />
       </Dialog>
-    </>
+    </div>
   );
 };
 

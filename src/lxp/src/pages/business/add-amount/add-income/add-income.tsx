@@ -161,7 +161,9 @@ export const AddIncome: React.FC = () => {
             <div
               id="incomeList"
               className={`${
-                state?.stepIndex === 3 ? 'pointer-events-none' : ''
+                state?.stepIndex === 3 && state?.run === true
+                  ? 'pointer-events-none'
+                  : ''
               }`}
             >
               <StackedList
