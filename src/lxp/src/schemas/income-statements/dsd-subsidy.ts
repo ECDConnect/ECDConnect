@@ -1,5 +1,4 @@
 import * as Yup from 'yup';
-const digitsOnly = (value: any) => /^\d+$/.test(value);
 export interface DsdSubsidyModel {
   date: Date | string;
   childrenNumber: number;
