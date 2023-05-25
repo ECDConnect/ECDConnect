@@ -31,7 +31,7 @@ export const getCurrentCoachPractitionerVisitByUserId = (
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const currentVisit = timeline?.siteVisits?.find(
+    const currentVisit = timeline?.prePQASiteVisits?.find(
       (visit) => visit?.visitType?.description === currentVisitDescription
     );
 
@@ -43,12 +43,12 @@ export const getPreviousCoachVisitByUserId = (
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const currentVisit = timeline?.siteVisits?.find(
+    const currentVisit = timeline?.prePQASiteVisits?.find(
       (visit) => visit?.visitType?.description === currentVisitDescription
     );
 
     if (currentVisit) {
-      const previousVisit = timeline?.siteVisits?.find(
+      const previousVisit = timeline?.prePQASiteVisits?.find(
         (visit) =>
           visit?.visitType?.order === Number(currentVisit?.visitType?.order) - 1
       );
