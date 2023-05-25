@@ -3541,6 +3541,7 @@ export type MutationAddMotherArgs = {
 };
 
 export type MutationAddPgaRatingVisitForPractitionerArgs = {
+  ratingColor?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 

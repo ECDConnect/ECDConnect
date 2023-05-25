@@ -455,7 +455,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         visit.OverallRatingColor = pqaRating.OverallRatingColor;
                         pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1_follow_up)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                     {
                         pqa_visits.Add(visit);
                     }
