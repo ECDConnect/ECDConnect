@@ -375,9 +375,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
 
         }
-        public PractitionerTimeline GetPractitionerTimeline([Service] PractitionerManager practitionerManager, string userId)
+        public PractitionerTimeline GetPractitionerTimeline([Service] PersonnelService personnelService, string userId)
         {
-            return practitionerManager.GetPractitionerTimeline(userId);
+            return personnelService.GetPractitionerTimeline(userId);
         }
 
         public Trainee GetTraineeByUserId(

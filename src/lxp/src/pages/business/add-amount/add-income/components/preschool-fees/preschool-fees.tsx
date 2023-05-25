@@ -236,7 +236,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
 
   const {
     setState,
-    state: { stepIndex },
+    state: { stepIndex, run },
   } = useAppContext();
 
   useEffect(() => {
@@ -295,6 +295,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
                 : firstDateOfMonth!
             }
             maxDate={lastDateOfMonth}
+            disabled={(stepIndex === 5 || stepIndex === 6) && run === true}
           />
           <Dropdown
             placeholder={'Select child'}
@@ -307,6 +308,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             onChange={(item: any) => {
               setPreschoolFeesValue('child', item);
             }}
+            disabled={(stepIndex === 5 || stepIndex === 6) && run === true}
           />
         </div>
         <Dropdown
@@ -323,6 +325,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           onChange={(item: any) => {
             setPreschoolFeesValue('contributionType', item);
           }}
+          disabled={(stepIndex === 5 || stepIndex === 6) && run === true}
         />
         {contributionType === moneyContributionTypeId && (
           <FormInput<PreschoolFeesModel>
@@ -335,6 +338,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             type={'text'}
             textInputType={'moneyInput'}
             prefixIcon={!!amount}
+            disabled={(stepIndex === 5 || stepIndex === 6) && run === true}
           />
         )}
         <label className={classNames(styles.label, 'mt-4')}>
@@ -369,10 +373,10 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
           nameProp={'note'}
           register={register}
           placeholder={'e.g. Paid for two months'}
+          disabled={(stepIndex === 5 || stepIndex === 6) && run === true}
         />
-        <div id="savePreschoolFee">
+        <div>
           <Button
-            id="preeschoolFee1"
             type="filled"
             color="primary"
             className={'mx-auto mt-8 w-full rounded-2xl'}
@@ -383,6 +387,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
                 contributionType === moneyContributionTypeId &&
                 stepIndex !== 6)
             }
+            id="savePreschoolFee"
           >
             {renderIcon('SaveIcon', styles.buttonIcon)}
             <Typography

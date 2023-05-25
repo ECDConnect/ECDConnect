@@ -20,8 +20,8 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const nextStep = () => {
     setState({ stepIndex: 3 });
   };
-  const stateStepIndex1 = state?.stepIndex === 1;
-  const stateStepIndex2 = state?.stepIndex === 2;
+  const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
+  const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
 
   return (
     <BannerWrapper
@@ -42,7 +42,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             className="mt-4"
           />
           <div className="flex gap-2">
-            <div id="createIncome">
+            <div>
               <Button
                 type="filled"
                 color="primary"
@@ -53,6 +53,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                   history.push(ROUTES.BUSINESS_ADD_INCOME);
                   nextStep();
                 }}
+                id="createIncome"
               >
                 {renderIcon('PlusIcon', styles.buttonIconPrimary)}
                 <Typography

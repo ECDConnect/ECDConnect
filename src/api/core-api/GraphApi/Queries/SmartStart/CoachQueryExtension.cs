@@ -27,7 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] PractitionerManager practitionerManager,
+            [Service] PersonnelService personnelService,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -38,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (Practitioner item in practitioners)
             {
-                item.timeline = practitionerManager.GetPractitionerTimeline(item.UserId);
+                item.timeline = personnelService.GetPractitionerTimeline(item.UserId);
             }
             return practitioners;
         }

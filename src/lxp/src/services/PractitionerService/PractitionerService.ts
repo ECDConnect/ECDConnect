@@ -83,7 +83,33 @@ class PractitionerService {
               prePQAVisitDate2
               prePQAVisitDate2Color
               prePQAVisitDate2Status
-              siteVisits {
+              supportVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              prePQASiteVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              pQASiteVisits {
                 id
                 plannedVisitDate
                 attended

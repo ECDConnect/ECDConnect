@@ -148,7 +148,20 @@ class PQAService {
             prePQAVisitDate2
             prePQAVisitDate2Color
             prePQAVisitDate2Status
-            siteVisits {
+            prePQASiteVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+            }
+            pQASiteVisits {
               id
               plannedVisitDate
               attended
