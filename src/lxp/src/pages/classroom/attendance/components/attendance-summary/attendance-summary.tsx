@@ -87,7 +87,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     useState<boolean>(false);
   const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
     useState<string>();
-  const todayDate = new Date();
+  const [todayDate] = useState(new Date());
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -145,6 +145,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         setSuccessMessageVisible(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackedAttendance]);
 
   useEffect(() => {

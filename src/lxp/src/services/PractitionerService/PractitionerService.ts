@@ -40,6 +40,7 @@ class PractitionerService {
           allPractitionersForCoach(userId: $userId) {
             id
             userId
+            programmeType
             timeline {
               clubMeetingDate1
               clubMeetingDate1Color
@@ -82,7 +83,33 @@ class PractitionerService {
               prePQAVisitDate2
               prePQAVisitDate2Color
               prePQAVisitDate2Status
-              siteVisits {
+              supportVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              prePQASiteVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              pQASiteVisits {
                 id
                 plannedVisitDate
                 attended
@@ -153,6 +180,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -171,6 +199,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -216,6 +245,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -233,6 +263,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -259,6 +290,7 @@ class PractitionerService {
             isPrincipal
             isFundaAppAdmin
             isTrainee
+            programmeType
             principalHierarchy
             isActive
             coachHierarchy
@@ -291,6 +323,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -320,6 +353,7 @@ class PractitionerService {
                 isPrincipal
                 id
                 shareInfo
+                programmeType
                 principalHierarchy
                 dateLinked
                 dateAccepted
@@ -327,6 +361,7 @@ class PractitionerService {
                 isLeaving
                 progress
                 isTrainee
+                attendedChildProgress
               }
             }
             note

@@ -387,7 +387,6 @@ export const ChildRegistration: React.FC = () => {
 
   const updateChild = async (child: ChildDto) => {
     if (!child && caregiverData) return;
-
     await appDispatch(
       childrenThunkActions.updateChild({ child: child, id: String(child.id) })
     ).unwrap();

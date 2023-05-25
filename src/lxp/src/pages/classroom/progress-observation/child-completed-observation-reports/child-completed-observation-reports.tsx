@@ -124,6 +124,17 @@ export const ChildCompletedObservationReports: React.FC = () => {
   };
 
   const trackProgress = () => {
+    const reports = inProgressAndCompleteReports();
+    if (reports.length > 0) {
+      const lastReport = reports[reports.length - 1];
+      if (!lastReport.summaryReport) {
+        editProgress(
+          lastReport.reportingPeriod === 'First',
+          new Date(lastReport.reportDate)
+        );
+        return;
+      }
+    }
     startTrackingProgress(false);
   };
 
@@ -218,8 +229,8 @@ export const ChildCompletedObservationReports: React.FC = () => {
       <div className={'flex flex-col px-4 pb-4'}>
         <Typography
           className={'mt-4'}
-          type="h1"
-          color={'primary'}
+          type="h2"
+          color={'textDark'}
           text={`How has ${currentChildUser?.firstName} grown?`}
         />
         {childReportSummaries.length > 1 && (
@@ -277,7 +288,8 @@ export const ChildCompletedObservationReports: React.FC = () => {
               </Button>
             </div>
           )}
-        {childReportSummaries && childReportSummaries.length > 0 && (
+        {((childReportSummaries && childReportSummaries.length > 0) ||
+          (childProgressReports && childProgressReports.length > 0)) && (
           <div>
             <div className={'mt-4 flex flex-col'}>
               {latestCompletedSummary && (

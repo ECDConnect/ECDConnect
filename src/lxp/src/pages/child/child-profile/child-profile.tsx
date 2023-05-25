@@ -1,6 +1,7 @@
 import {
   AttendanceDto,
   ChildAttendanceReportModel,
+  useDialog,
   useTheme,
   Document,
   ContentConsentTypeEnum,
@@ -11,6 +12,7 @@ import {
   WorkflowStatusEnum,
 } from '@ecdlink/graphql';
 import {
+  ActionModal,
   Alert,
   BannerWrapper,
   Button,
@@ -60,7 +62,6 @@ import { newGuid } from '@utils/common/uuid.utils';
 import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
-import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
@@ -89,6 +90,7 @@ export const ChildProfile: React.FC = () => {
   const { theme } = useTheme();
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
   const location = useLocation<ChildProfileRouteState>();
   const childId = location.state.childId;
   const { getDocumentTypeIdByEnum, getWorkflowStatusIdByEnum } =
@@ -100,6 +102,7 @@ export const ChildProfile: React.FC = () => {
     WorkflowStatusEnum.DocumentPendingVerification
   );
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const progressTrainingDone = practitioner?.attendedChildProgress || false;
   const isPrincipal = practitioner?.isPrincipal;
   const childrenForPrincipal = useSelector(
     childrenForPractitionerSelectors?.getChildrenForPractitioner
@@ -146,10 +149,6 @@ export const ChildProfile: React.FC = () => {
     documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
   );
 
-  const allCompletedReports = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports(child?.id)
-  );
-
   const caregiverHasBeenContacted = useSelector(
     caregiverSelectors.findCaregiverContactHistoryLog(
       child?.caregiverId,
@@ -180,7 +179,7 @@ export const ChildProfile: React.FC = () => {
       key: 'personal-information',
       title: 'Personal Information',
       subTitle: 'Child & caregiver information',
-      buttonType: 'outlined',
+      buttonType: 'filled',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
       buttonTextColor: 'secondary',
@@ -211,6 +210,36 @@ export const ChildProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
+  const progressTrackerNotAvailablePrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'QuestionMarkCircleIcon'}
+          iconClassName="w-32 h-32"
+          className="bg-white"
+          iconColor="infoMain"
+          importantText={`Child progress tracker not available`}
+          detailText={`The child progress tracker is not available to you because you have not attended child progress training yet.
+
+          Please speak to your coach to find out when you can attend this training.`}
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                onSubmit();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
   useEffect(() => {
     if (playGroup?.name === NoPlaygroupClassroomType.name) {
       setBelongsToNoPlaygroup(true);
@@ -221,10 +250,12 @@ export const ChildProfile: React.FC = () => {
     profileOptionsCopy.unshift({
       key: 'progress',
       title: 'Progress',
-      subTitle: 'See observations & reports',
-      buttonType: 'outlined',
+      subTitle: progressTrainingDone
+        ? 'See observations & reports'
+        : 'Not available before training',
+      buttonType: 'filled',
       buttonIcon: 'EyeIcon',
-      buttonText: 'View',
+      buttonText: progressTrainingDone ? 'View' : 'Info',
       buttonTextColor: 'secondary',
       buttonColor: 'secondaryAccent2',
       showButton: true,
@@ -232,14 +263,18 @@ export const ChildProfile: React.FC = () => {
       dividerType: 'dashed',
       withPaddingY: true,
       onButtonClick: () => {
-        viewChildProgressObservationReports();
+        if (progressTrainingDone) {
+          viewChildProgressObservationReports();
+        } else {
+          progressTrackerNotAvailablePrompt();
+        }
       },
     });
 
     profileOptionsCopy.unshift({
       key: 'attendance-record',
       title: 'Attendance Record',
-      buttonType: 'outlined',
+      buttonType: 'filled',
       buttonIcon: 'EyeIcon',
       buttonText: 'View',
       buttonTextColor: 'secondary',
@@ -391,7 +426,7 @@ export const ChildProfile: React.FC = () => {
       baseNotesOptions = {
         ...baseNotesOptions,
         subTitle: getLastNoteDate(notes),
-        buttonType: 'outlined',
+        buttonType: 'filled',
         buttonIcon: 'EyeIcon',
         buttonText: 'View',
         buttonTextColor: 'secondary',
@@ -656,7 +691,9 @@ export const ChildProfile: React.FC = () => {
                   key={`child-profile-notification-${notification.key}`}
                 />
               ))}
-              <ChildProgressReportAlert child={child} />
+              {progressTrainingDone && (
+                <ChildProgressReportAlert child={child} />
+              )}
             </div>
           )}
         <div className={styles.profileOptionsWrapper}>

@@ -22,6 +22,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
+        private IGenericRepository<VisitType, Guid> _visitTypeRepo;
 
         private string _applicationUserId;
 
@@ -39,6 +40,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
+            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
         }
 
         public Boolean AddChildVisitData(CMSVisitDataInputModel input)
@@ -325,19 +327,23 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             var rating = new PQARating();
 
-            List<VisitData> vData = (
-                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && (
-                                                                y.VisitSection == Constants.SSSettings.step2 ||
-                                                                y.VisitSection == Constants.SSSettings.step3 ||
-                                                                y.VisitSection == Constants.SSSettings.step4 ||
-                                                                y.VisitSection == Constants.SSSettings.step5 ||
-                                                                y.VisitSection == Constants.SSSettings.step6 ||
-                                                                y.VisitSection == Constants.SSSettings.step7 ||
-                                                                y.VisitSection == Constants.SSSettings.step8
-                                                                )) on visit.Id equals visitData.VisitId
-                select visitData
-            ).ToList();
+            Visit PQAVisit =
+            (
+                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == pqa_visit_type) on visit.VisitTypeId equals visitType.Id
+                select visit
+            ).FirstOrDefault();
+
+
+            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id && (
+                                                    y.VisitSection == Constants.SSSettings.step2 ||
+                                                    y.VisitSection == Constants.SSSettings.step3 ||
+                                                    y.VisitSection == Constants.SSSettings.step4 ||
+                                                    y.VisitSection == Constants.SSSettings.step5 ||
+                                                    y.VisitSection == Constants.SSSettings.step6 ||
+                                                    y.VisitSection == Constants.SSSettings.step7 ||
+                                                    y.VisitSection == Constants.SSSettings.step8
+                                                    )).ToList();
 
             if (vData.Count > 0 )
             {
@@ -413,31 +419,31 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 rating.OverallRating = totalScores + "/" + totalSections;
 
                 VisitData step14_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
                     join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step14_q1) on visit.Id equals visitData.VisitId
                     select visitData
                 ).FirstOrDefault();
 
                 VisitData step16_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
                     join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q1) on visit.Id equals visitData.VisitId
                     select visitData
                 ).FirstOrDefault();
 
                 VisitData step16_q3 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
                     join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q3) on visit.Id equals visitData.VisitId
                     select visitData
                 ).FirstOrDefault();
 
                 VisitData step16_q4 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
                     join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q4) on visit.Id equals visitData.VisitId
                     select visitData
                 ).FirstOrDefault();
 
                 VisitData step11_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
                     join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step11_q1) on visit.Id equals visitData.VisitId
                     select visitData
                 ).FirstOrDefault();

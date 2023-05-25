@@ -32,7 +32,6 @@ import {
   getReportingPeriod,
   isInFinalMonthOfReportingPeriod,
   isInReportPeriod,
-  isMatchingReportingPeriods,
 } from '@utils/child/child-profile-utils';
 import { newGuid } from '@utils/common/uuid.utils';
 
@@ -106,9 +105,6 @@ export const ChildProgressObservationPage: React.FC = () => {
   );
   const skills: ProgressTrackingSkillDto[] = useSelector(
     getProgressTrackingSkills
-  );
-  const summaries = useSelector(
-    contentReportSelectors.getChildProgressReportSummaries()
   );
 
   const reportSummaries = useSelector(

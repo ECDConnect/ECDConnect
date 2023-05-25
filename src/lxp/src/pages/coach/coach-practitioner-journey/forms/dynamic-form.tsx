@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { PqaActions } from '@/store/pqa/pqa.actions';
 
 export interface Question {
   question: string;
@@ -28,6 +26,7 @@ export interface DynamicFormProps {
   isTipPage?: boolean;
   steps?: any[];
   sectionQuestions?: SectionQuestions[];
+  isLoading?: boolean;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -39,11 +38,11 @@ export interface DynamicFormProps {
 
 export const DynamicForm = ({
   isView,
-  name,
   smartStarter,
   currentStep,
   steps,
   isTipPage,
+  isLoading,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
@@ -53,11 +52,6 @@ export const DynamicForm = ({
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
-
-  const { isLoading } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_VISIT_FORM_DATA
-  );
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -140,9 +134,9 @@ export const DynamicForm = ({
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
-        action: onSubmit,
-        text: 'Save',
-        icon: 'SaveIcon',
+        action: isView ? onClose : onSubmit,
+        text: isView ? 'Close' : 'Save',
+        icon: isView ? 'XIcon' : 'SaveIcon',
       };
     }
 

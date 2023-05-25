@@ -34,7 +34,6 @@ export const mapChildUserDto = (
     childInformationForm.dobMonth ?? 0,
     childInformationForm.dobDay ?? 0
   );
-
   if (user) {
     return {
       ...user,
@@ -42,6 +41,8 @@ export const mapChildUserDto = (
       firstName: childInformationForm.firstname,
       surname: childInformationForm.surname,
       dateOfBirth: dateOfBirth.toISOString() || '',
+      genderId: childExtraInformationForm?.genderId,
+      raceId: childExtraInformationForm?.race,
     };
   }
 

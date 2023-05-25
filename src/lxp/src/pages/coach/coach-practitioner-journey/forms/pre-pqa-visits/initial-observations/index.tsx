@@ -7,7 +7,7 @@ import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentCoachVisitByUserId,
+  getCurrentCoachPractitionerVisitByUserId,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 import { Maybe } from '@ecdlink/graphql';
@@ -46,7 +46,10 @@ export const InitialObservations = ({
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const currentVisit = useSelector(
-    getCurrentCoachVisitByUserId(activityName, smartStarter?.userId!)
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
   );
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
@@ -113,13 +116,10 @@ export const InitialObservations = ({
 
   useEffect(() => {
     if (isView) {
+      setPreviousAnswers();
       setEnableButton?.(true);
     }
-  }, [isView, setEnableButton]);
-
-  useEffect(() => {
-    setPreviousAnswers();
-  }, [setPreviousAnswers]);
+  }, [isView, setEnableButton, setPreviousAnswers]);
 
   return (
     <div className="p-4">
@@ -139,7 +139,7 @@ export const InitialObservations = ({
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>
@@ -156,7 +156,7 @@ export const InitialObservations = ({
       <Typography
         type="h4"
         text={replaceBraces(questions[1].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>

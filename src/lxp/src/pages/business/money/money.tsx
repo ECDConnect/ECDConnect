@@ -1,18 +1,14 @@
 import { Typography, FADButton } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@store/auth';
 import { useAppDispatch } from '@/store';
-import {
-  statementsActions,
-  statementsSelectors,
-  statementsThunkActions,
-} from '@store/statements';
+import { statementsSelectors, statementsThunkActions } from '@store/statements';
 import { getMonth, getYear } from 'date-fns';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -22,13 +18,21 @@ import {
 } from '@/../../../packages/graphql/lib';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { useAppContext } from '@/walkthrougContext';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
-export const Money = () => {
+interface MoneyProps {
+  setHasIncomeStatements: (item: boolean) => void;
+  hasIncomeStatements: boolean;
+  setHandleAutoStartWalkthrough: (item: boolean) => void;
+}
+
+export const Money: React.FC<MoneyProps> = ({
+  hasIncomeStatements,
+  setHasIncomeStatements,
+  setHandleAutoStartWalkthrough,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-  const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
@@ -52,6 +56,7 @@ export const Money = () => {
         })
       );
     }
+    setHandleAutoStartWalkthrough(true);
   };
 
   useEffect(() => {
@@ -107,23 +112,10 @@ export const Money = () => {
     ) {
       setHasIncomeStatements(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, expense, balanceSheet]);
 
   const { state } = useAppContext();
-
-  const handleClickStart = () => {
-    setState({ run: true, tourActive: true, stepIndex: 0 });
-    history.push(ROUTES.BUSINESS);
-  };
-
-  const { setState } = useAppContext();
-
-  useEffect(() => {
-    if (!hasIncomeStatements) {
-      handleClickStart();
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [hasIncomeStatements]);
 
   return (
     <>

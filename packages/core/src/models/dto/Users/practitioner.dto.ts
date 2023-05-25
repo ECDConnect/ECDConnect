@@ -28,5 +28,7 @@ export interface PractitionerDto extends EntityBase {
   dateAccepted?: Date;
   dateToBeRemoved?: Date;
   isLeaving?: boolean;
+  programmeType?: string;
   progress?: number;
+  attendedChildProgress?: boolean;
 }

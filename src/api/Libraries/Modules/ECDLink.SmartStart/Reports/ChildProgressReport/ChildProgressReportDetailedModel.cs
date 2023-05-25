@@ -23,6 +23,7 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
         public string ReportingPeriod { get; set; }
 
         public string ClassroomName { get; set; }
+
         public string ReportingDate { get; set; }
 
         public string PractitionerFirstname { get; set; }

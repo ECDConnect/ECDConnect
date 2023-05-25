@@ -100,10 +100,12 @@ export const BreastfeedingIssuesStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        const none = 'None of the above';
         if (
-          (event.value === none && checkboxAnswers?.length) ||
-          checkboxAnswers?.includes(none)
+          (event.value === breastfeedingIssuesCheckboxOptions.noneOption &&
+            checkboxAnswers?.length) ||
+          checkboxAnswers?.includes(
+            breastfeedingIssuesCheckboxOptions.noneOption
+          )
         ) {
           return dialog({
             blocking: false,

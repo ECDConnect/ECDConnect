@@ -5,13 +5,7 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import {
-  addDays,
-  getDayOfYear,
-  getDaysInYear,
-  isSameDay,
-  startOfWeek,
-} from 'date-fns';
+import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -24,7 +18,6 @@ import {
   classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
-  getMissedClassAttendance,
   isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
@@ -82,7 +75,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
-  const currentDate = new Date();
+  const [currentDate] = useState(new Date());
 
   const { errorDialog } = useRequestResponseDialog();
 

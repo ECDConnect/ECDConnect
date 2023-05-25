@@ -24,4 +24,5 @@ export type PQAState = {
   prePqaFormData?: FormData[];
   prePqaPreviousFormData?: PreviousFormData[];
   pqaFormData?: FormData[];
+  supportVisitFormData?: FormData[];
 };
