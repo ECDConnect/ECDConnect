@@ -182,12 +182,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays,
         currentDate
       );
-      const missedAttendance = getMissedClassAttendance(
-        classroomGroups,
-        classProgrammes,
-        attendance,
-        currentDate
-      );
 
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
