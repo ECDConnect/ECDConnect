@@ -53,12 +53,18 @@ const Snackbar: React.FC<SnackbarProps> = ({
       <Alert
         type={type}
         title={message}
+        variant="outlined"
         button={
           <button
             onClick={handleClose}
             className="absolute top-0 bottom-0 right-4 my-0"
           >
-            {renderIcon('XIcon', 'text-successDark h-6 w-6')}
+            {renderIcon(
+              'XIcon',
+              `${
+                type === 'success' ? 'text-white' : 'text-successDark'
+              } h-6 w-6`
+            )}
           </button>
         }
       />
