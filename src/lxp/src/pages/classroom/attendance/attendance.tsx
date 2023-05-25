@@ -196,12 +196,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         currentDate
       );
 
-   
-    // missedDays
-    let notSubmitted = missedDays.filter(
-      (x) => getDay(x.missedDay) === getDay(currentDate)
-    );
-
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
