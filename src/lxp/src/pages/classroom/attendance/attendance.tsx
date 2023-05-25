@@ -204,8 +204,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     } else {
       setAttendanceComponentType('summary');
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  },[previousClassroomGroupId]);
+
+  },[allChildrenInsertedBeforeToday, attendance, classProgrammesUpdated, classroomGroups, classroomGroupsForPrincipal, currentDate, holidays, learners, practitioner?.isPrincipal, publicHolidays, seeRegister, previousClassroomGroupId, classProgrammes]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // is attendance complete for whole weeek?
