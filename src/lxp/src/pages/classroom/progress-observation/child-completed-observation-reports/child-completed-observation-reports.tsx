@@ -124,6 +124,17 @@ export const ChildCompletedObservationReports: React.FC = () => {
   };
 
   const trackProgress = () => {
+    const reports = inProgressAndCompleteReports();
+    if (reports.length > 0) {
+      const lastReport = reports[reports.length - 1];
+      if (!lastReport.summaryReport) {
+        editProgress(
+          lastReport.reportingPeriod === 'First',
+          new Date(lastReport.reportDate)
+        );
+        return;
+      }
+    }
     startTrackingProgress(false);
   };
 

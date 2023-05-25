@@ -199,6 +199,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -262,6 +263,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -321,6 +323,7 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
           }
         }
       `,
@@ -358,6 +361,7 @@ class PractitionerService {
                 isLeaving
                 progress
                 isTrainee
+                attendedChildProgress
               }
             }
             note
