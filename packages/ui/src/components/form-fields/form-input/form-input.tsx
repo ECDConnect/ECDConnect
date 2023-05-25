@@ -56,6 +56,18 @@ export const FormInput = <T extends FieldValues>({
   prefixIcon,
   ...restProps
 }: FormFieldProps<T>) => {
+  const getInputStyle = () => {
+    if (error) {
+      return styles.errorStyle;
+    }
+
+    if (disabled) {
+      return styles.disabledInputStyle;
+    }
+
+    return styles.defaultInputStyle;
+  };
+
   const getInputToRender = () => {
     switch (textInputType) {
       case 'textarea':
@@ -68,7 +80,7 @@ export const FormInput = <T extends FieldValues>({
               maxLength={maxLength}
               rows={4}
               {...register(nameProp)}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              className={getInputStyle()}
               defaultValue={''}
               {...restProps}
             />
@@ -81,7 +93,7 @@ export const FormInput = <T extends FieldValues>({
               disabled={disabled}
               rows={4}
               maxLength={maxLength}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              className={getInputStyle()}
               defaultValue={value ?? ''}
               {...restProps}
             />
@@ -141,7 +153,7 @@ export const FormInput = <T extends FieldValues>({
               type={type}
               maxLength={maxLength}
               {...register(nameProp)}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              className={getInputStyle()}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : 16,
@@ -158,7 +170,7 @@ export const FormInput = <T extends FieldValues>({
               type={type}
               value={value ?? ''}
               maxLength={maxLength}
-              className={error ? styles.errorStyle : styles.defaultInputStyle}
+              className={getInputStyle()}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : 16,
@@ -175,7 +187,10 @@ export const FormInput = <T extends FieldValues>({
       {visible && (
         <div className={className}>
           {label && (
-            <label htmlFor={nameProp} className={styles.label}>
+            <label
+              htmlFor={nameProp}
+              className={disabled ? styles.disabledLabel : styles.label}
+            >
               {label}
             </label>
           )}
@@ -189,7 +204,11 @@ export const FormInput = <T extends FieldValues>({
             {getInputToRender()}
             <div className={styles.iconWrapperLeft} onClick={suffixIconAction}>
               {!!prefixIcon && (
-                <span className="text-textDark align-center items-center pl-1 font-semibold">
+                <span
+                  className={`text-${
+                    disabled ? 'textLight' : 'textDark'
+                  } align-center items-center pl-1 font-semibold`}
+                >
                   R
                 </span>
               )}
