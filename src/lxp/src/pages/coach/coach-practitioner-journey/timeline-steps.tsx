@@ -149,19 +149,19 @@ export const timelineSteps = (
     )
   );
 
-  if (!!timeline.siteVisits?.length) {
+  if (!!timeline.prePQASiteVisits?.length) {
     const date =
       timeline.prePQAVisitDate1Color === 'Success' &&
       !visits?.some((item) =>
         item?.visitType?.name?.includes('pre_pqa_visit_1')
       )
         ? new Date(
-            timeline.siteVisits?.find((item) =>
+            timeline.prePQASiteVisits?.find((item) =>
               item?.visitType?.name?.includes('pre_pqa_visit_2')
             )?.plannedVisitDate
           ).toLocaleDateString('en-ZA', dateOptions)
         : new Date(
-            timeline.siteVisits?.find((item) =>
+            timeline.prePQASiteVisits?.find((item) =>
               item?.visitType?.name?.includes('pre_pqa_visit_1')
             )?.plannedVisitDate
           ).toLocaleDateString('en-ZA', dateOptions);
@@ -169,7 +169,7 @@ export const timelineSteps = (
     steps.push({
       title: 'Pre-PQA site visits',
       subTitle: `By ${date}`,
-      type: timeline.siteVisits?.every((item) => !!item?.attended)
+      type: timeline.prePQASiteVisits?.every((item) => !!item?.attended)
         ? 'completed'
         : 'todo',
       showAccordion: true,
@@ -178,7 +178,7 @@ export const timelineSteps = (
       },
       accordionContent: (
         <>
-          {timeline.siteVisits
+          {timeline.prePQASiteVisits
             ?.filter(
               (visit: Maybe<Visit>) =>
                 typeof visit?.visitType?.order !== 'undefined'
@@ -186,7 +186,7 @@ export const timelineSteps = (
             ?.sort(sortVisit)
             ?.map((visit, index) => {
               const previousVisit =
-                index > 1 ? timeline.siteVisits?.[index - 1] : undefined;
+                index > 1 ? timeline.prePQASiteVisits?.[index - 1] : undefined;
               const title =
                 (index === 0 && timeline.prePQAVisitDate1Status) ||
                 (index === 1 && timeline.prePQAVisitDate2Status) ||

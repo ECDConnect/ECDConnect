@@ -17,7 +17,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -230,9 +229,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
         // TODO: add licenses for practitioner end point here
 
-        public bool DeActivatePractitioner([Service] PractitionerManager practitionerManager, string userId, string leavingComment)
+        public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
         {
-            return practitionerManager.DeActivatePractitioner(userId, leavingComment);
+            return personnelService.DeActivatePractitioner(userId, leavingComment);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
