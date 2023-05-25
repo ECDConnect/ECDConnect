@@ -44,6 +44,8 @@ import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAtte
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [previousClassroomGroupId,   setPreviousClassroomGroupId] = useState<string>('');
+
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
@@ -115,11 +117,14 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const currentWeekAttendance: AttendanceDto[] = attendance;
     const _learners: LearnerDto[] = learners;
 
+
     const currentClassProgramme = classroomGroupHasAttendanceDate(
       classProgrammesUpdated,
-      currentDate
+      currentDate,
+      previousClassroomGroupId
     );
 
+    
     const currentDayClassroomGroup = classroomGroups.find(
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
@@ -169,7 +174,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       meetingDays || [],
       publicHolidays || []
     );
-    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
+    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
     }
@@ -184,29 +189,29 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays,
         currentDate
       );
+      const missedAttendance = getMissedClassAttendance(
+        classroomGroups,
+        classProgrammes,
+        attendance,
+        currentDate
+      );
+
+   
+    // missedDays
+    let notSubmitted = missedDays.filter(
+      (x) => getDay(x.missedDay) === getDay(currentDate)
+    );
 
     if (!attendanceAlreadyTaken && isValidDayForAttendance) {
       setAttendanceComponentType('attendance');
       return;
-    }
-    if (missedDays.length === 0) {
+    } else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
     }
-  }, [
-    allChildrenInsertedBeforeToday,
-    attendance,
-    classProgrammesUpdated,
-    classroomGroups,
-    classroomGroupsForPrincipal,
-    currentDate,
-    holidays,
-    learners,
-    practitioner?.isPrincipal,
-    publicHolidays,
-    seeRegister,
-  ]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  },[previousClassroomGroupId]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
     // is attendance complete for whole weeek?
@@ -215,6 +220,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const classgroup = classroomGroups?.find(
       (x) => x.id === attendanceResult.classroomGroupId
     );
+
+    setPreviousClassroomGroupId(attendanceResult.classroomGroupId)
 
     if (!classgroup) return;
 
@@ -230,7 +237,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
 
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) === getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
@@ -239,7 +246,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-    if (removeHolidays.length === 0) {
+    if (removeHolidays.length === 0 && missedClassAttendance) {
+
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
@@ -247,12 +255,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   };
 
   const gotToReports = () => {
-    if (!seeRegister) {
-      setSeeRegister(!seeRegister);
-      setAttendanceComponentType('report');
-    } else {
-      setAttendanceComponentType('summary');
-    }
+    setAttendanceComponentType('report');
   };
 
   const getComponentToRender = (type?: AttendanceComponentType) => {
