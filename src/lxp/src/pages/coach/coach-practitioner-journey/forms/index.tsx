@@ -1,13 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseBool, useDialog } from '@ecdlink/core';
+import { parseBool, useDialog, useSnackbar } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  ActionModal,
-  Alert,
-  BannerWrapper,
-  DialogPosition,
-  renderIcon,
-} from '@ecdlink/ui';
+import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
@@ -52,6 +46,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const dialog = useDialog();
   const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
@@ -118,25 +113,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   }, [dialog, onBack]);
 
   const onSuccess = useCallback(() => {
-    dialog({
-      position: DialogPosition.Bottom,
-      color: 'bg-transparent',
-      render: (onClose) => {
-        return (
-          <Alert
-            className="mb-4"
-            type="success"
-            title={`${activityName} complete!`}
-            button={
-              <button onClick={onClose} className="absolute right-4 top-5">
-                {renderIcon('XIcon', 'text-successDark h-6 w-6')}
-              </button>
-            }
-          />
-        );
-      },
-    });
-  }, [activityName, dialog]);
+    showMessage({ message: `${activityName} complete!` });
+  }, [activityName, showMessage]);
 
   const handleOnBack = useCallback(() => {
     if (isTip) {

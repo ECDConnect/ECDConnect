@@ -78,7 +78,7 @@ export const DiscussionNotes = ({
     const value = event.target.value;
     setAnswer(value);
     setSectionQuestions?.([
-      { visitSection, questions: [{ answer: String(answer), question }] },
+      { visitSection, questions: [{ answer: String(value), question }] },
     ]);
 
     if (value !== '') {
