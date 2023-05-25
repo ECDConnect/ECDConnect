@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             {
                 license.IsActive = false;
                 license.DelicensedDate = DateTime.Now;
-                if (license.LicenseType.Name == Constants.SSSettings.ss_smart_space_license)
+                if (license.LicenseType.Name == Constants.SSSettings.ss_smart_space_licence)
                 {
                     license.DelicensedComment = input.DelicensedComment;
                     license.CollectedSSPlaykit = input.CollectedSSPlaykit;
