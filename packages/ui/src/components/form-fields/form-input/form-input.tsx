@@ -29,6 +29,7 @@ interface FormFieldProps<T extends FieldValues> extends ComponentBaseProps {
   register?: UseFormRegister<T>;
   maxLength?: number;
   min?: number;
+  onKeyDown?: (event: React.KeyboardEvent<HTMLElement>) => void;
   suffixIconAction?: () => void;
   onChange?: (
     event: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -82,6 +83,7 @@ export const FormInput = <T extends FieldValues>({
               {...register(nameProp)}
               className={getInputStyle()}
               defaultValue={''}
+              onKeyDown={(e: any) => {}}
               {...restProps}
             />
           );
@@ -111,6 +113,7 @@ export const FormInput = <T extends FieldValues>({
               disabled={disabled}
               type={type}
               maxLength={maxLength}
+              disableAbbreviations={true}
               {...register(nameProp)}
               className={
                 error ? styles.errorStyle : styles.defaultMoneyInputStyle
@@ -131,6 +134,7 @@ export const FormInput = <T extends FieldValues>({
               type={type}
               maxLength={maxLength}
               value={value ?? ''}
+              disableAbbreviations={true}
               className={
                 error ? styles.errorStyle : styles.defaultMoneyInputStyle
               }
@@ -171,6 +175,7 @@ export const FormInput = <T extends FieldValues>({
               value={value ?? ''}
               maxLength={maxLength}
               className={getInputStyle()}
+              // onKeyDown={}
               style={{
                 paddingRight: suffixIcon ? 38 : 16,
                 paddingLeft: prefixIcon ? 20 : 16,
