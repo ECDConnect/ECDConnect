@@ -344,17 +344,6 @@ export const CoachChildProfile: React.FC = () => {
     });
   };
 
-  const contactAttendanceCaregiver = (
-    actualDaysAttended: number,
-    expectedDaysAttended: number
-  ) => {
-    history.push(ROUTES.CHILD_ATTENDANCE_CAREGIVER, {
-      actualDaysAttended,
-      expectedDaysAttended,
-      childId: child?.id,
-    });
-  };
-
   const deleteProfileImage = async () => {
     if (!profilePicture) return;
 

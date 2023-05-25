@@ -62,7 +62,6 @@ import { newGuid } from '@utils/common/uuid.utils';
 import { userSelectors } from '@store/user';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { ChildProgressReportAlert } from './components/progress-report-alert/progress-report-alert';
-import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
@@ -148,10 +147,6 @@ export const ChildProfile: React.FC = () => {
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const profilePicture = useSelector(
     documentSelectors.getDocumentByTypeId(childUser?.id, typeId)
-  );
-
-  const allCompletedReports = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports(child?.id)
   );
 
   const caregiverHasBeenContacted = useSelector(

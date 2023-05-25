@@ -197,6 +197,7 @@ export const EditChildInformation: React.FC = () => {
     if (isFromEditClass) {
       setChangeClassroomGroupPromptVisible(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const openChildConfirmEditClassPrompt = () => {
