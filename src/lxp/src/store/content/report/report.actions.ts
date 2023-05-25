@@ -65,8 +65,10 @@ export const saveUserContentChildProgressReport = createAsyncThunk<
         const content = await new ContentReportService(
           userAuth?.auth_token,
           userLocalePreference
-        ).createChildProgressReport(childProgressReportInput);
-
+        ).updateChildProgressReport(
+          childProgressReportInput,
+          childProgressReportInput.Id
+        );
         return content;
       } else {
         return rejectWithValue('no access token');

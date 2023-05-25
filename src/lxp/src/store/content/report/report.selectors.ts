@@ -25,7 +25,8 @@ export const getChildProgressObservationReports = (childId: string) =>
 export const hasUnsyncedReports = createSelector(
   (state: RootState) =>
     state.contentReportData.unsyncedChildProgressReportsIds || [],
-  (reportIds: UnSyncedReportItem[]) => reportIds.length > 0
+  (reportIds: UnSyncedReportItem[]) =>
+    reportIds.length > 0 && reportIds.some((r) => r.promptUser === true)
 );
 
 export const getChildCompletedObservationReports = (childId?: string) =>

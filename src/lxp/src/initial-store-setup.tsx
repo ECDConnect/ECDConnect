@@ -225,8 +225,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
     await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(10)
+      contentReportThunkActions.getChildProgressReportSummary(50)
     ).unwrap();
     await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(

@@ -211,7 +211,7 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<ChildProgressReport>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.ChildId, e.Id });
+                x.HasKey(e => new { e.Id });
             });
         }
     }
