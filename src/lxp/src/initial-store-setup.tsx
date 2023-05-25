@@ -196,6 +196,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(false);
       setShouldSaveStateHash(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
   useEffect(() => {

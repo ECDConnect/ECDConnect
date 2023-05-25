@@ -1,6 +1,5 @@
 import {
   ActionModal,
-  Alert,
   Button,
   Typography,
   DialogPosition,
@@ -380,6 +379,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                   />
                 );
               }
+              return null;
             })}
           </div>
         ))}

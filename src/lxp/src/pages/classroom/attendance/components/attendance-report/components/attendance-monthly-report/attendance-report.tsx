@@ -16,7 +16,6 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { attendanceActions } from '@/store/attendance';
 
 export interface ChildAttendanceReportState {
   childId: string;

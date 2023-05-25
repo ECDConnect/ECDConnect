@@ -21,7 +21,6 @@ import { useSetState } from 'react-use';
 export const WalkthroughTutorial = ({
   onComplete,
   onClose,
-  updatePractitionerProgress,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 2;
@@ -36,14 +35,13 @@ export const WalkthroughTutorial = ({
     avatarColor: getAvatarColor(),
   });
 
-  const [attendanceItem2, setAttendanceItem2] =
-    useState<AttendanceListDataItem>({
-      title: 'Jane Mokoena',
-      profileText: 'AM',
-      attenendeeId: '1',
-      status: AttendanceStatus.Present,
-      avatarColor: getAvatarColor(),
-    });
+  const [attendanceItem2] = useState<AttendanceListDataItem>({
+    title: 'Jane Mokoena',
+    profileText: 'AM',
+    attenendeeId: '1',
+    status: AttendanceStatus.Present,
+    avatarColor: getAvatarColor(),
+  });
 
   const updateItemAttendance = (
     currentAttendanceItem: AttendanceListDataItem
@@ -86,7 +84,7 @@ export const WalkthroughTutorial = ({
 
   const {
     setState,
-    state: { tourActive, attendanceStatus },
+    state: { tourActive },
   } = useAppContext();
 
   useSetState(() => {
