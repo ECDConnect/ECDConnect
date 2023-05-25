@@ -216,9 +216,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
       //this is used when classes is created today and user has multiple classes
       const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
 
-      if (missedClasses.length >= 1) {
+      if (missedClasses.length > 0) {
         setMissedAttendanceGroups(missedClasses);
-      } else if (attendanceToDoList) {
+      } else if (attendanceToDoList.length > 0) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }
