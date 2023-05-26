@@ -77,6 +77,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
+  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
   const uncompletedVisits = timeline?.siteVisits?.filter(
     (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
   );
