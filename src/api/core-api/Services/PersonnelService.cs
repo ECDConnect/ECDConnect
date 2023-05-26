@@ -412,6 +412,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> pre_pqa_visits = new List<Visit>();
             List<Visit> pqa_visits = new List<Visit>();
             List<Visit> support_visits = new List<Visit>();
+            List<Visit> reaccreditation_visits = new List<Visit>();
 
             foreach (Visit visit in visits)
             {
@@ -463,13 +464,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
                     {
-                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
-                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        PQARating rating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
                         pqa_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
                     {
                         pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation)
+                    {
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
                     {
@@ -481,6 +488,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeLine.PrePQASiteVisits = pre_pqa_visits;
             timeLine.PQASiteVisits = pqa_visits;
             timeLine.SupportVisits = support_visits;
+            timeLine.ReAccreditationVisits = reaccreditation_visits;
 
             return timeLine;
         }
