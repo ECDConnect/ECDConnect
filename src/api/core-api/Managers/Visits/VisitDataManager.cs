@@ -335,15 +335,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             ).FirstOrDefault();
 
 
-            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id && (
-                                                    y.VisitSection == Constants.SSSettings.step2 ||
-                                                    y.VisitSection == Constants.SSSettings.step3 ||
-                                                    y.VisitSection == Constants.SSSettings.step4 ||
-                                                    y.VisitSection == Constants.SSSettings.step5 ||
-                                                    y.VisitSection == Constants.SSSettings.step6 ||
-                                                    y.VisitSection == Constants.SSSettings.step7 ||
-                                                    y.VisitSection == Constants.SSSettings.step8
-                                                    )).ToList();
+            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id).ToList();
 
             if (vData.Count > 0 )
             {
@@ -418,42 +410,18 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 rating.OverallScore = totalScores;
                 rating.OverallRating = totalScores + "/" + totalSections;
 
-                VisitData step14_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step14_q1) on visit.Id equals visitData.VisitId
-                    select visitData
-                ).FirstOrDefault();
-
-                VisitData step16_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q1) on visit.Id equals visitData.VisitId
-                    select visitData
-                ).FirstOrDefault();
-
-                VisitData step16_q3 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q3) on visit.Id equals visitData.VisitId
-                    select visitData
-                ).FirstOrDefault();
-
-                VisitData step16_q4 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step16_q4) on visit.Id equals visitData.VisitId
-                    select visitData
-                ).FirstOrDefault();
-
-                VisitData step11_q1 = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitType.Name == pqa_visit_type)
-                    join visitData in _visitDataRepo.GetAll().Where(y => y.VisitName == Constants.SSSettings.pqa_visit && y.Question == Constants.SSSettings.step11_q1) on visit.Id equals visitData.VisitId
-                    select visitData
-                ).FirstOrDefault();
+                VisitData step14_q1 = vData.Where(x => x.Question == Constants.SSSettings.step14_q1).FirstOrDefault();
+                VisitData step16_q1 = vData.Where(x => x.Question == Constants.SSSettings.step16_q1).FirstOrDefault();
+                VisitData step16_q3 = vData.Where(x => x.Question == Constants.SSSettings.step16_q3).FirstOrDefault();
+                VisitData step16_q4 = vData.Where(x => x.Question == Constants.SSSettings.step16_q4).FirstOrDefault();
+                VisitData step11_q1 = vData.Where(x => x.Question == Constants.SSSettings.step11_q1).FirstOrDefault();
 
                 // Green Rating
                 // "Scenario: practitioner received a score over 42 AND
                 // user either did not do the smartspace check (ie responded ""No"" in use case 15) OR
                 // re-issued the SmartSpace licence (ie the use case 18 scenario);
 
-                if (rating.OverallScore > 42 || step11_q1.QuestionAnswer == Constants.GGSettings.answer_no || step14_q1.QuestionAnswer == Constants.GGSettings.answer_yes)
+                if (rating.OverallScore > 42 || step11_q1.QuestionAnswer == Constants.GGSettings.answer_no || step14_q1.QuestionAnswer == Constants.SSSettings.answer_yes)
                 {
                     rating.OverallRatingColor = MetricsColorEnum.Success.ToString();
                 }
@@ -463,7 +431,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // 1.overall score is greater than or equal to 18 and less than or equal to 42 out of 68
                 // 2. if user selected ""No"" to the second question in use case 21(ie, ""Is the SmartStart programme being implemented for long enough?""
                 // 3. if user selected ""Yes"" to the third question in use case 21(ie, ""Are there too many children attending the SmartStart programme ? "")
-                if (rating.OverallScore >= 18 && rating.OverallScore <= 42 || step16_q3.QuestionAnswer == Constants.GGSettings.answer_no || step16_q4.QuestionAnswer == Constants.GGSettings.answer_yes)
+                if (rating.OverallScore >= 18 && rating.OverallScore <= 42 || step16_q3.QuestionAnswer == Constants.GGSettings.answer_no || step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes)
                 {
                     rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
                 }
@@ -474,10 +442,131 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // 2. if the score for step 5 of the PQA(ie, section 3, use case 9) was less than 5
                 // 3. if the user did NOT re-issue the SmartSpace license(use case 16)
                 // (4.note that if the user selected ""Yes"" to the first question in use case 21, then the scenario in use case 23 applies - please see use case 23 above for that red rating case, not covered here) 
-                if (rating.OverallScore < 18 || rating.Children.GetItemByIndex(4).SectionScore < 5 || step14_q1.QuestionAnswer == Constants.GGSettings.answer_no || step16_q1.QuestionAnswer == Constants.GGSettings.answer_yes)
+                if (rating.OverallScore < 18 || rating.Children.GetItemByIndex(4).SectionScore < 5 || step14_q1.QuestionAnswer == Constants.GGSettings.answer_no || step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes)
                 {
                     rating.OverallRatingColor = MetricsColorEnum.Error.ToString();
                 }
+            }
+
+            return rating;
+        }
+        public PQARating GetPractitionerReAccreditationRating(string userId, string pqa_visit_type) {
+
+            PQARating rating = new PQARating();
+
+            int totalSections = Constants.SSSettings.re_accreditation_A_total + Constants.SSSettings.re_accreditation_B_total +
+                                Constants.SSSettings.re_accreditation_C_total + Constants.SSSettings.re_accreditation_D_total;
+            var totalScores = 0;
+
+            Visit RAVisit =
+            (
+                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == pqa_visit_type) on visit.VisitTypeId equals visitType.Id
+                select visit
+            ).FirstOrDefault();
+
+            List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
+
+            if (vData.Count > 0)
+            {
+                List<VisitData> stepA = vData.Where(x => x.VisitSection == Constants.SSSettings.step_8_re_accreditation).ToList();
+                List<VisitData> stepB = vData.Where(x => x.VisitSection == Constants.SSSettings.step_10_re_accreditation).ToList();
+                List<VisitData> stepC = vData.Where(x => x.VisitSection == Constants.SSSettings.step_11_re_accreditation).ToList();
+                List<VisitData> stepD = vData.Where(x => x.VisitSection == Constants.SSSettings.step_12_re_accreditation).ToList();
+
+                rating.VisitName = stepA.GetItemByIndex(0).VisitName;
+                rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
+
+                // Section A
+                var child = new PQARatingChild();
+                child.VisitSection = stepA.GetItemByIndex(0).VisitSection;
+                child.SectionScore = getCheckBoxScore(stepA);
+                child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_A_total;
+                child.SectionRatingColor = GetSectionRatingColor((child.SectionScore / Constants.SSSettings.re_accreditation_A_total) * 100);
+                rating.Children.Add(child);
+                totalScores = totalScores + child.SectionScore;
+
+                // Section B
+                child = new PQARatingChild();
+                child.VisitSection = stepB.GetItemByIndex(0).VisitSection;
+                var stepBScore = 0;
+                foreach (VisitData vRecord in stepB)
+                {
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q1) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q2) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q3) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q4) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q5) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q6) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q7) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q8) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q9) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                    if (vRecord.Question == Constants.SSSettings.step_10_re_accreditation_q10) { stepBScore += Int32.Parse(vRecord.QuestionAnswer); }
+                }
+                child.SectionScore = (stepBScore);
+                child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_B_total;
+                child.SectionRatingColor = GetSectionRatingColor((child.SectionScore / Constants.SSSettings.re_accreditation_B_total) * 100);
+                rating.Children.Add(child);
+                totalScores = totalScores + child.SectionScore;
+
+                // Section C
+                child = new PQARatingChild();
+                child.VisitSection = stepC.GetItemByIndex(0).VisitSection;
+                child.SectionScore = getCheckBoxScore(stepC);
+                child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_C_total;
+                child.SectionRatingColor = GetSectionRatingColor((child.SectionScore / Constants.SSSettings.re_accreditation_C_total) * 100);
+                rating.Children.Add(child);
+                totalScores = totalScores + child.SectionScore;
+
+                // Section D
+                child = new PQARatingChild();
+                child.VisitSection = stepD.GetItemByIndex(0).VisitSection;
+                child.SectionScore = getCheckBoxScore(stepD);
+                child.SectionRating = child.SectionScore + "/" + Constants.SSSettings.re_accreditation_D_total;
+                child.SectionRatingColor = GetSectionRatingColor((child.SectionScore / Constants.SSSettings.re_accreditation_D_total) * 100);
+                rating.Children.Add(child);
+                totalScores = totalScores + child.SectionScore;
+            }
+
+            // overall rating calc
+            rating.OverallScore = totalScores;
+            rating.OverallRating = totalScores + "/" + totalSections;
+
+            VisitData step16_q1 = vData.Where(x => x.Question == Constants.SSSettings.step16_q1).FirstOrDefault();
+            VisitData step16_q3 = vData.Where(x => x.Question == Constants.SSSettings.step16_q3).FirstOrDefault();
+            VisitData step16_q4 = vData.Where(x => x.Question == Constants.SSSettings.step16_q4).FirstOrDefault();
+            VisitData step16_q5 = vData.Where(x => x.Question == Constants.SSSettings.step16_q5).FirstOrDefault();
+
+            // Green Rating
+            if (totalScores >= 39 && totalScores <= 44)
+            {
+                rating.OverallRatingColor = MetricsColorEnum.Success.ToString();
+                rating.OverallRatingStars = Constants.SSSettings.four_stars;
+            }
+            if (totalScores >= 33 && totalScores <= 38)
+            {
+                rating.OverallRatingColor = MetricsColorEnum.Success.ToString();
+                rating.OverallRatingStars = Constants.SSSettings.three_stars;
+            }
+
+            // Orange Rating
+            if (totalScores >= 27 && totalScores <= 32)
+            {
+                rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
+                rating.OverallRatingStars = Constants.SSSettings.two_stars;
+            }
+            if (totalScores >= 13 && totalScores <= 26 || 
+                (step16_q3.QuestionAnswer == Constants.SSSettings.answer_no && step16_q4.QuestionAnswer == Constants.SSSettings.answer_yes && step16_q5.QuestionAnswer == Constants.SSSettings.answer_no))
+            {
+                rating.OverallRatingColor = MetricsColorEnum.Warning.ToString();
+                rating.OverallRatingStars = Constants.SSSettings.one_star;
+            }
+
+            // Red Rating
+            if (totalScores < 13 || step16_q1.QuestionAnswer == Constants.SSSettings.answer_yes)
+            {
+                rating.OverallRatingColor = MetricsColorEnum.Error.ToString();
+                rating.OverallRatingStars = Constants.SSSettings.zero_stars;
             }
 
             return rating;
@@ -492,6 +581,45 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return score;
+        }
+
+        private int getCheckBoxScore(List<VisitData> records)
+        {
+            int score = 0;
+            Boolean parsedValue;
+
+            foreach (VisitData record in records)
+            {
+                if (Boolean.TryParse(record.QuestionAnswer, out parsedValue))
+                {
+                    if (parsedValue)
+                    {
+                        score++;
+                    }
+                }
+            }
+
+            return score;
+        }
+
+        public string GetSectionRatingColor(double finalScore)
+        {
+            string color = "";
+
+            if (finalScore < 28)
+            {
+                color = MetricsColorEnum.Error.ToString();
+            }
+            else if (finalScore >= 28 && finalScore <= 74)
+            {
+                color = MetricsColorEnum.Warning.ToString();
+            }
+            else if (finalScore > 74)
+            {
+                color = MetricsColorEnum.Success.ToString();
+            }
+
+            return color;
         }
 
         private bool ValidateInsertRecord(VisitData visitData)
