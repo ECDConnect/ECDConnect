@@ -13,11 +13,13 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.png';
+import logo from '../../../assets/Logo-ECDConnect.svg';
+import thumbs_up from '../../../assets/icon_thumbsup.svg';
 
 export default function ResetPassword() {
   const { theme } = useTheme();
   const [isLoading, setIsLoading] = useState(false);
+  const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(resetSchema),
@@ -33,49 +35,47 @@ export default function ResetPassword() {
 
   const resetPassword = async () => {
     if (isValid) {
+      setIsLoading(!isLoading)
     }
   };
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
+      return <img className="h-100 w-3/12" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
-  return (
-    <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
-        <div className="flex flex-shrink-0 items-center justify-center">
-          {getLogoUrl()}
-        </div>
-        <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
-        </div>
-        <p className="text-md text-gray-700 mb-3 pt-2 text-center">
-          Fill in your email address and we will send you a link to reset your
-          password.
-        </p>
+  if (isLoading) {
+    return (
+      <div className="darkBackground flex min-h-screen items-center justify-center">
+        <div className="rounded bg-white p-8 shadow sm:w-1/3">
+          <div className="flex flex-shrink-0 items-center justify-center">
+            {getLogoUrl()}
+          </div>
+          <div className="flex flex-shrink-0 items-center justify-center">
+            <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
+          </div>
 
-        <div className="mt-8">
-          <div className="mt-6">
-            <form className="space-y-6">
-              <div>
-                <FormField
-                  label={'Email address *'}
-                  nameProp={'email'}
-                  register={register}
-                  error={errors.email?.message}
-                />
-              </div>
+          <div className="flex flex-shrink-0 items-center justify-center pt-8">
+            <img className="h-100 w-4/8" src={thumbs_up} alt="Login Logo" />
+          </div>
+          <h4 className="font-h1 mt-4 text-lg text-center">Email sent! </h4>
 
+          <p className="text-lg mb-3 pt-2 text-center text-gray-700">
+            If there's an account registered with your email, you'll
+            receive a password reset link. Please check your inbox and follow
+            the instructions in the email.
+          </p>
+
+          <div className="mt-8">
+            <div className="mt-6">
               <div>
                 <Button
-                  className={'mt-3 w-full rounded'}
+                  className={'mt-3 w-full rounded-xl'}
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!isValid}
                   onClick={resetPassword}
                 >
                   <Typography
@@ -85,10 +85,76 @@ export default function ResetPassword() {
                   ></Typography>
                 </Button>
               </div>
-            </form>
+              <div>
+                <Button
+                  className={'mt-3 w-full rounded-xl'}
+                  type="outlined"
+                  isLoading={isLoading}
+                  color="secondary"
+                  onClick={() => history.goBack()}
+                  icon="ArrowLeftIcon"
+                  textColor="secondary"
+                >
+                  <Typography
+                    type="help"
+                    color="secondary"
+                    text={'Back to Login'}
+                  ></Typography>
+                </Button>
+              </div>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-  );
+    );
+  } else {
+    return (
+      <div className="darkBackground flex min-h-screen items-center justify-center">
+        <div className="rounded bg-white p-8 shadow sm:w-1/3">
+          <div className="flex flex-shrink-0 items-center justify-center">
+            {getLogoUrl()}
+          </div>
+          <div className="flex flex-shrink-0 items-center justify-center">
+            <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
+          </div>
+          <p className="text-md mb-3 pt-2 text-center text-gray-700">
+            Fill in your email address and we will send you a link to reset your
+            password.
+          </p>
+
+          <div className="mt-8">
+            <div className="mt-6">
+              <form className="space-y-6">
+                <div>
+                  <FormField
+                    label={'Email address *'}
+                    nameProp={'email'}
+                    register={register}
+                    error={errors.email?.message}
+                  />
+                </div>
+
+                <div>
+                  <Button
+                    className={'mt-3 w-full rounded'}
+                    type="filled"
+                    isLoading={isLoading}
+                    color="secondary"
+                    disabled={!isValid}
+                    onClick={resetPassword}
+                  >
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Send link'}
+                    ></Typography>
+                  </Button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
 }

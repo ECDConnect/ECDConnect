@@ -13,7 +13,8 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.png';
+import logo from '../../../assets/Logo-ECDConnect.svg';
+
 import zxcvbn from 'zxcvbn-typescript';
 
 export default function Register() {

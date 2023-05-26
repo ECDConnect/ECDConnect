@@ -13,7 +13,7 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.png';
+import logo from '../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 
@@ -43,7 +43,6 @@ export default function Login() {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
-
 
   const signIn = async () => {
     if (isValid) {
@@ -133,17 +132,20 @@ export default function Login() {
                 ))}
               </div>
 
-              <div className="mb-2 flex ">
-                <a
-                  rel="noopener noreferrer"
-                  onClick={()=>history.push("/reset")}
-                  className="text-l text-secondary hover:underline pr-2"
-                >
-                  Forgot password?
-                </a>
-                <ArrowRightIcon className="h-6 w-6 text-secondary" />
-              </div>
-              <Divider></Divider>
+              <Button
+                className={'mt-3 w-full rounded'}
+                type="ghost"
+                isLoading={isLoading}
+                color="secondary"
+                onClick={() => history.push('/reset')}
+              >
+                <Typography
+                  type="help"
+                  color="secondary"
+                  text={' Forgot password?'}
+                ></Typography>
+                <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
+              </Button>
 
               {displayError && (
                 <Alert
