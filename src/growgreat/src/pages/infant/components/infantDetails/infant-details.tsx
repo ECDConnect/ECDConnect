@@ -109,20 +109,6 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
     }
   }, [myDay, setInfantDetailsFormValue]);
 
-  useEffect(() => {
-    if (name) {
-      setInfantDetailsFormValue('firstName', name);
-    }
-  }, [name, setInfantDetailsFormValue]);
-
-  useEffect(() => {
-    if (genderId) {
-      setInfantDetailsFormValue('genderId', genderId as string, {
-        shouldValidate: true,
-      });
-    }
-  }, [genderId, setInfantDetailsFormValue]);
-
   const renderDayContents = (day: any, date: any) => {
     if (date < minDate || date > maxDate) {
       return <span></span>;
@@ -301,7 +287,6 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           className={'w-full'}
-          selectedOptions={genderId!!}
         />
       </div>
       <div className="flex h-full items-end">
