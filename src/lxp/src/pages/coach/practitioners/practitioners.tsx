@@ -319,7 +319,7 @@ export const Practitioners: React.FC = () => {
       <BannerWrapper
         size={'small'}
         renderBorder={true}
-        title={`SmartStarterss`}
+        title={`SmartStarters`}
         subTitle={format(new Date(), 'dd MMM yyyy')}
         color={'primary'}
         onBack={() => history.push(ROUTES.DASHBOARD)}

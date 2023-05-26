@@ -62,6 +62,10 @@ export const ReferralsTab: React.FC = () => {
   const { walkthroughState, isWalkthroughSession, walkthroughDispatch } =
     useWalkthrough();
 
+  const completedReferralsForInfant = useSelector(
+    infantSelectors.getCompletedReferralsForInfantSelector
+  );
+
   const { id: infantId } = useParams<InfantParams>();
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
@@ -97,9 +101,6 @@ export const ReferralsTab: React.FC = () => {
     infantSelectors.getReferralsForInfantSelector
   );
 
-  const completedReferralsForInfant = useSelector(
-    infantSelectors.getCompletedReferralsForInfantSelector
-  );
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
@@ -191,13 +192,13 @@ export const ReferralsTab: React.FC = () => {
   };
 
   // all sections
-  const sections =
-    walkthroughData.sections ||
-    (groupedData &&
+  const sections = isWalkthrough
+    ? walkthroughData.sections
+    : groupedData &&
       Object.keys(groupedData)?.map((item) => ({
         label: groupedData[item][0].section,
         value: item,
-      })));
+      }));
 
   const [questions, setAnswers] = useState(groupedData);
 
@@ -208,8 +209,16 @@ export const ReferralsTab: React.FC = () => {
 
     if (isWalkthrough) return;
 
+    if (questions) return;
+
     return setAnswers(groupedData);
-  }, [groupedData, isWalkthrough, walkthroughData.questions, wasWalkthrough]);
+  }, [
+    groupedData,
+    questions,
+    isWalkthrough,
+    walkthroughData.questions,
+    wasWalkthrough,
+  ]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -454,8 +463,8 @@ export const ReferralsTab: React.FC = () => {
           Number(walkthroughState?.stepIndex) < 3)) && (
         <div className="px-4 pb-4 pt-7">
           {(
-            (walkthroughData.completedReferrals as VisitDataStatus[]) ||
-            completedReferralsForInfant
+            completedReferralsForInfant ||
+            (walkthroughData.completedReferrals as VisitDataStatus[])
           )?.map((item: VisitDataStatus) => (
             <div key={item?.id}>
               {/* Not completed back referrals */}
