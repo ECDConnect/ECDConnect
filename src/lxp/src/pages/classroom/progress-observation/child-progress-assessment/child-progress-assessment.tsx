@@ -1,10 +1,8 @@
 import { ProgressTrackingSkillDto, useStepNavigation } from '@ecdlink/core';
-import { BannerWrapper, Dialog, DialogPosition } from '@ecdlink/ui';
+import { BannerWrapper } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
-import { ProgressTrackingAlertLevelOnePrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-one-prompt/progress-tracking-alert-level-one-prompt';
-import { ProgressTrackingAlertLevelTwoPrompt } from '../components/progress-tracking-prompts/progress-tracking-alert-level-two-prompt/progress-tracking-alert-level-two-prompt';
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
@@ -36,10 +34,8 @@ export const ChildProgressAssessment: React.FC = () => {
   const childId = location.state.childId;
   const returnToOverview = location.state.returnToOverview;
   const progressTrackingCategoryId = location.state.progressTrackingCategoryId;
+  const firstObservation = location.state.firstObservation;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildUser = useSelector(
-    childrenSelectors.getChildUserById(currentChild?.userId)
-  );
   const category = useSelector(
     progressTrackingSelectors.getProgressTrackingCategoryById(
       location.state.progressTrackingCategoryId
@@ -75,33 +71,18 @@ export const ChildProgressAssessment: React.FC = () => {
     submitLevelSkills,
     getChildAchievedLevelId,
     getSkills,
+    getHelpingWithTask,
+    getHelpingWithTaskText,
     setCategoryAchievedLevel,
     completeCurrentCategoryTracking,
     setHelpingWithTask,
     setHelpingWithTaskText,
-    isCompetentInLevel,
     clearHelpingWithTaskId,
     isAllSkillsYes,
   } = useChildProgressObservation(childId, report);
 
-  const [
-    progressTrackingLevelOneAlertVisible,
-    setProgressTrackingLevelOneAlertVisible,
-  ] = useState<boolean>(false);
-
-  const [
-    progressTrackingLevelTwoAlertVisible,
-    setProgressTrackingLevelTwoAlertVisible,
-  ] = useState<boolean>(false);
-
   const [childDevelopmentLevelForm, setChildDevelopmentLevelForm] =
     useState<ChildDevelopmentLevelFormModel>();
-
-  const [userObservedLevelOneWarning, setUserObservedLevelOneWarning] =
-    useState<boolean>(false);
-
-  const [userObservedLevelTwoWarning, setUserObservedLevelTwoWarning] =
-    useState<boolean>(false);
 
   const { goToStep, canGoBack, goBackOneStep, activeStepKey } =
     useStepNavigation(
@@ -116,79 +97,64 @@ export const ChildProgressAssessment: React.FC = () => {
   }, [currentReport]);
 
   const saveChildDevelopmentLevelForm = (
-    form: ChildDevelopmentLevelFormModel
+    form: ChildDevelopmentLevelFormModel,
+    exit: boolean
   ) => {
     setCategoryAchievedLevel(form.levelId);
-    goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
+    if (exit) {
+      exitAssessment(true);
+    } else {
+      goToStep(ChildProgressAssessmentSteps.assessmentStepFive);
+    }
   };
 
   const returnToReportOverview = () => {
     history.replace(
       `/child-progress-observation-report?step=${ChildProgressAssessmentSteps.assessmentStepFour}`,
-      { childId: childId, reportingDate: reportingDate.toISOString() }
+      {
+        childId: childId,
+        reportingDate: reportingDate.toISOString(),
+        firstObservation,
+      }
     );
   };
 
-  const returnToReportDashboard = () => {
+  const returnToReportDashboard = (nextCategory: boolean) => {
     history.replace('/child-progress-observation', {
       childId: childId,
       reportingDate: reportingDate.toISOString(),
+      firstObservation,
+      nextCategory,
     });
   };
 
-  const saveChildLearningSupportForm = (
-    form: ChildLearningSupportFormModel
-  ) => {
-    setHelpingWithTaskText(form.learningSupport || '');
-    completeCurrentCategoryTracking();
-    exitAssessment();
-  };
-
-  const setChildUndevelopedTask = (skill: ProgressTrackingSkillDto) => {
-    setHelpingWithTask(skill);
-    goToStep(ChildProgressAssessmentSteps.assessmentStepSix);
-  };
-
-  const validateLevelOneSelection = () => {
-    if (userObservedLevelOneWarning) return;
-
-    const childIsCompetentWithLevelOne = isCompetentInLevel(
-      ProgressTrackingLevels.LevelOne
-    );
-
-    if (childIsCompetentWithLevelOne) return;
-
-    setProgressTrackingLevelOneAlertVisible(true);
-  };
-
-  const validateLevelOneAndTwoSelection = () => {
-    if (userObservedLevelTwoWarning) return;
-
-    const childIsCompetentWithLevelOne = isCompetentInLevel(
-      ProgressTrackingLevels.LevelOne
-    );
-
-    if (!childIsCompetentWithLevelOne) {
-      setProgressTrackingLevelTwoAlertVisible(true);
-      return;
-    }
-
-    const childIsCompetentWithLevelTwo = isCompetentInLevel(
-      ProgressTrackingLevels.LevelTwo
-    );
-
-    if (!childIsCompetentWithLevelTwo) {
-      setProgressTrackingLevelTwoAlertVisible(true);
-    }
-  };
-
-  const exitAssessment = () => {
+  const exitAssessment = (save: boolean) => {
+    // if (save &&!!report) {
+    //   saveReportLocally(report, currentChildLearner?.classroomGroupId || '');
+    // }
     if (returnToOverview) {
       returnToReportOverview();
       return;
     }
 
-    returnToReportDashboard();
+    returnToReportDashboard(false);
+  };
+
+  const saveChildLearningSupportForm = (
+    form: ChildLearningSupportFormModel,
+    exit: boolean
+  ) => {
+    setHelpingWithTaskText(form.learningSupport || '');
+    if (exit) {
+      exitAssessment(true);
+    } else {
+      completeCurrentCategoryTracking();
+      if (returnToOverview) {
+        returnToReportOverview();
+      } else {
+        returnToReportDashboard(true);
+      }
+    }
   };
 
   const childProgressAssessmentSteps = (step: ChildProgressAssessmentSteps) => {
@@ -200,14 +166,18 @@ export const ChildProgressAssessment: React.FC = () => {
             levelId={ProgressTrackingLevels.LevelTwo}
             level={2}
             childId={currentChild?.id || ''}
-            optionSelected={validateLevelOneSelection}
-            onSubmit={(result: CategoryLevelFormResult) => {
+            optionSelected={() => {}}
+            onSubmit={(result: CategoryLevelFormResult, exit: boolean) => {
               submitLevelSkills(
                 ProgressTrackingLevels.LevelTwo,
                 result.selectedSkills,
                 result.missedSkills
               );
-              goToStep(ChildProgressAssessmentSteps.assessmentStepThree);
+              if (exit) {
+                exitAssessment(true);
+              } else {
+                goToStep(ChildProgressAssessmentSteps.assessmentStepThree);
+              }
             }}
           />
         );
@@ -217,17 +187,20 @@ export const ChildProgressAssessment: React.FC = () => {
             progressTrackingCategoryId={category?.id || 1}
             levelId={ProgressTrackingLevels.LevelThree}
             level={3}
-            optionSelected={validateLevelOneAndTwoSelection}
+            optionSelected={() => {}}
             childId={currentChild?.id || ''}
-            onSubmit={(result: CategoryLevelFormResult) => {
+            onSubmit={(result: CategoryLevelFormResult, exit: boolean) => {
               const achievedLevelId = submitLevelSkills(
                 ProgressTrackingLevels.LevelThree,
                 result.selectedSkills,
                 result.missedSkills
               );
-
-              setChildDevelopmentLevelForm({ levelId: achievedLevelId });
-              goToStep(ChildProgressAssessmentSteps.assessmentStepFour);
+              if (exit) {
+                exitAssessment(true);
+              } else {
+                setChildDevelopmentLevelForm({ levelId: achievedLevelId });
+                goToStep(ChildProgressAssessmentSteps.assessmentStepFour);
+              }
             }}
           />
         );
@@ -237,8 +210,8 @@ export const ChildProgressAssessment: React.FC = () => {
             childDevelopmentLevelForm={childDevelopmentLevelForm}
             childId={currentChild?.id || ''}
             childAchievedLevelId={getChildAchievedLevelId()}
-            onSubmit={(form: ChildDevelopmentLevelFormModel) => {
-              saveChildDevelopmentLevelForm(form);
+            onSubmit={(form: ChildDevelopmentLevelFormModel, exit: boolean) => {
+              saveChildDevelopmentLevelForm(form, exit);
             }}
           />
         );
@@ -247,17 +220,31 @@ export const ChildProgressAssessment: React.FC = () => {
           <ChildUndevelopedSkillForm
             skills={getSkills()}
             allSkillsYes={isAllSkillsYes()}
+            supportSkillId={getHelpingWithTask()}
             childId={currentChild?.id}
-            onSubmit={(skill: ProgressTrackingSkillDto | undefined) => {
+            onSubmit={(
+              skill: ProgressTrackingSkillDto | undefined,
+              skipStepSix: boolean,
+              exit: boolean
+            ) => {
               if (skill) {
-                setChildUndevelopedTask(skill);
+                setHelpingWithTask(skill);
               } else {
-                clearHelpingWithTaskId();
-                completeCurrentCategoryTracking();
-                if (returnToOverview) {
-                  returnToReportOverview();
+                setHelpingWithTask(undefined);
+              }
+              if (exit) {
+                exitAssessment(true);
+              } else {
+                if (!skipStepSix) {
+                  goToStep(ChildProgressAssessmentSteps.assessmentStepSix);
                 } else {
-                  returnToReportDashboard();
+                  clearHelpingWithTaskId();
+                  completeCurrentCategoryTracking();
+                  if (returnToOverview) {
+                    returnToReportOverview();
+                  } else {
+                    returnToReportDashboard(true);
+                  }
                 }
               }
             }}
@@ -270,12 +257,15 @@ export const ChildProgressAssessment: React.FC = () => {
         );
         return (
           <ChildLearningSupportForm
+            childLearningSupportForm={{
+              learningSupport: getHelpingWithTaskText(),
+            }}
             childId={currentChild?.id as string}
             helpingWithSkillId={
               currentCategoryDetails?.supportingTask?.taskId || 0
             }
-            onSubmit={(form: ChildLearningSupportFormModel) => {
-              saveChildLearningSupportForm(form);
+            onSubmit={(form: ChildLearningSupportFormModel, exit: boolean) => {
+              saveChildLearningSupportForm(form, exit);
             }}
           />
         );
@@ -288,13 +278,17 @@ export const ChildProgressAssessment: React.FC = () => {
             levelId={ProgressTrackingLevels.LevelOne}
             level={1}
             childId={currentChild?.id || ''}
-            onSubmit={(result: CategoryLevelFormResult) => {
+            onSubmit={(result: CategoryLevelFormResult, exit: boolean) => {
               submitLevelSkills(
                 ProgressTrackingLevels.LevelOne,
                 result.selectedSkills,
                 result.missedSkills
               );
-              goToStep(ChildProgressAssessmentSteps.assessmentStepTwo);
+              if (exit) {
+                exitAssessment(true);
+              } else {
+                goToStep(ChildProgressAssessmentSteps.assessmentStepTwo);
+              }
             }}
           />
         );
@@ -311,54 +305,16 @@ export const ChildProgressAssessment: React.FC = () => {
         onBack={() => {
           if (canGoBack()) goBackOneStep();
           else {
-            exitAssessment();
+            exitAssessment(false);
           }
         }}
         renderOverflow
         backgroundColour={'white'}
-        onClose={exitAssessment}
+        onClose={() => exitAssessment(false)}
         displayOffline={!isOnline}
       >
         {childProgressAssessmentSteps(activeStepKey)}
       </BannerWrapper>
-
-      <Dialog
-        visible={progressTrackingLevelOneAlertVisible}
-        position={DialogPosition.Middle}
-        className={'mx-4'}
-      >
-        <ProgressTrackingAlertLevelOnePrompt
-          childUser={currentChildUser}
-          onProceed={() => {
-            setProgressTrackingLevelOneAlertVisible(false);
-            setUserObservedLevelOneWarning(true);
-            goToStep(ChildProgressAssessmentSteps.assessmentStepOne);
-          }}
-          onClose={() => {
-            setProgressTrackingLevelOneAlertVisible(false);
-            setUserObservedLevelOneWarning(true);
-          }}
-        />
-      </Dialog>
-
-      <Dialog
-        visible={progressTrackingLevelTwoAlertVisible}
-        position={DialogPosition.Middle}
-        className={'mx-4'}
-      >
-        <ProgressTrackingAlertLevelTwoPrompt
-          childUser={currentChildUser}
-          onProceed={() => {
-            setProgressTrackingLevelTwoAlertVisible(false);
-            setUserObservedLevelTwoWarning(true);
-            goToStep(ChildProgressAssessmentSteps.assessmentStepTwo);
-          }}
-          onClose={() => {
-            setProgressTrackingLevelTwoAlertVisible(false);
-            setUserObservedLevelTwoWarning(true);
-          }}
-        />
-      </Dialog>
     </>
   );
 };

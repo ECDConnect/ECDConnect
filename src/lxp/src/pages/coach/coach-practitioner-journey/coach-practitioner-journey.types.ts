@@ -8,3 +8,8 @@ export const visitTypes = {
     firstPQA: 'First PQA',
   },
 };
+
+export const generalSupportVisitTypes = {
+  visit: 'support_visit',
+  call: 'support_call',
+};

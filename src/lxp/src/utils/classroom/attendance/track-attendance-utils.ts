@@ -122,37 +122,46 @@ export const getMissedClassAttendance = (
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
   const returnProgrammes: ClassProgrammeDto[] = [];
 
-  for (const group of classRoomGroup) {
+  const groupProgrammes = classProgrammes;
 
-      const groupProgrammes = (dayOfWeek === 1) ? classProgrammes : classProgrammes.filter(
-        (x) => x.classroomGroupId === group.id
-      );
+  // all the class programs for up until today but does not check the start date
+  const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+    const programStartDateDay = getDayOfYear(programStartDate);
+    const dateDay = getDayOfYear(date);
 
-      // all the class programs for up until today but does not check the start date
-      const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
-        const programStartDate =
-          typeof x.programmeStartDate !== 'undefined'
-            ? new Date(x.programmeStartDate)
-            : new Date();
-        const programStartDateDay = getDayOfYear(programStartDate);
-        const dateDay = getDayOfYear(date);
-        return (
-          (x.meetingDay || -1) <= currentDayFilter &&
-          isBefore(programStartDateDay, dateDay)
-        );
-      });
+    return programStartDateDay === dateDay
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          isBefore(programStartDateDay, dateDay);
+  });
 
-      if (classProgrammesUpToCurrentDay)
-      for (const programme of classProgrammesUpToCurrentDay) {
-        if (
-          !attendance.some((att) => att.classroomProgrammeId === programme.id)
-        ) {
-          returnProgrammes.push(programme);
-        }
+  if (classProgrammesUpToCurrentDay)
+    for (const programme of classProgrammesUpToCurrentDay) {
+      if (
+        !attendance.some((att) => att.classroomProgrammeId === programme.id)
+      ) {
+        returnProgrammes.push(programme);
       }
-    
-  }
+    }
+
   return returnProgrammes;
+};
+
+export const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
+  const seen = new Set();
+
+  return arr.filter((obj) => {
+    const classroomGroupId = obj.classroomGroup.id;
+    if (!seen.has(classroomGroupId)) {
+      seen.add(classroomGroupId);
+      return true;
+    }
+    return false;
+  });
 };
 
 export const isPractitionerAttendanceMissingForLearner = (
@@ -247,7 +256,6 @@ export const getMissedAttendanceSummaryGroups = (
         const currentGroupMissedAttendance = missedAttendance.filter(
           (x) => x.classroomGroupId === classroomGroup.id
         );
-
         for (const missedAttendanceClassProgramme of currentGroupMissedAttendance) {
           const missedDayDate = addDays(
             startOfWeekDate,
@@ -335,12 +343,17 @@ export const classroomGroupHasAttendanceOnDate = (
 
 export const classroomGroupHasAttendanceDate = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date
+  date: Date,
+  previousClassroomID?: string
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-    ? getDay(date) !== 1
-      ? classProgrammes.find((x) => x.meetingDay === getDay(date))
-      : classProgrammes.filter((x) => x.meetingDay === getDay(date))[1]
+    ? classProgrammes.length > 5
+      ? classProgrammes.find(
+          (x) =>
+            x.classroomGroupId !== previousClassroomID &&
+            x.meetingDay === getDay(date)
+        )
+      : classProgrammes.find((x) => x.meetingDay === getDay(date))
     : undefined;
 };
 

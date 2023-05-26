@@ -80,7 +80,7 @@ export const syncOfflineData = createAsyncThunk<
     },
     {
       title: 'Programmes',
-      action: programmeThunkActions.upsertProgrammes,
+      action: programmeThunkActions.updateProgrammes,
     },
     {
       title: 'Documents',
@@ -188,7 +188,7 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       },
       {
         title: 'Programmes',
-        action: programmeThunkActions.upsertProgrammes,
+        action: programmeThunkActions.updateProgrammes,
       },
       {
         title: 'Documents',
@@ -205,6 +205,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'PQAs',
         action: pqaThunkActions.addVisitFormData,
+      },
+      {
+        title: 'PQAs Support Visits',
+        action: pqaThunkActions.addSupportVisitFormData,
       },
     ];
 

@@ -78,7 +78,7 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [levelId, currentCategory]);
 
-  const submitAssessment = () => {
+  const submitAssessment = (exit: boolean) => {
     const result: CategoryLevelFormResult = {
       progressTrackingCategoryId: progressTrackingCategoryId,
       levelId: levelId,
@@ -88,7 +88,7 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
           (skill) => !selectedTasks.some((task) => task.id === skill.id)
         ) || [],
     };
-    onSubmit(result);
+    onSubmit(result, exit);
   };
 
   const skillOptionSelected = (skillId: number, value: string) => {
@@ -115,6 +115,9 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
     if (skill === undefined || !skill.value) return undefined;
     return skill?.value;
   };
+
+  const isComplete =
+    selectedTasks.length === subCategoryAssessmentTasks?.length;
 
   return (
     <>
@@ -165,8 +168,8 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
         <Button
           color={'primary'}
           type={'filled'}
-          disabled={false}
-          onClick={() => submitAssessment()}
+          disabled={!isComplete}
+          onClick={() => submitAssessment(false)}
           className={styles.startButton}
         >
           {renderIcon(
@@ -178,6 +181,21 @@ export const CategoryLevelForm: React.FC<CategoryLevelFormProps> = ({
             type={'help'}
             weight={'normal'}
             text={'Next'}
+          />
+        </Button>
+        <Button
+          color="primary"
+          type="outlined"
+          disabled={false}
+          onClick={() => submitAssessment(true)}
+          className={styles.saveAndExitButton}
+        >
+          {renderIcon('XIcon', classNames('h-5 w-5 mr-2 text-primary'))}
+          <Typography
+            color={'primary'}
+            type={'help'}
+            weight={'normal'}
+            text={'Save & exit'}
           />
         </Button>
       </div>

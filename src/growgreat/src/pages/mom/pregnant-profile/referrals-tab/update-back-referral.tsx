@@ -118,17 +118,18 @@ export const MotherBackReferralUpdate: React.FC<
       title="Update back-referral"
       subTitle={`${selectedReferral?.comment}`}
       backgroundColour="white"
+      className="p-4"
     >
       <Typography
         type="h2"
         align="left"
         weight="bold"
         color="textDark"
-        className="mt-2"
+        className="mt-2 mb-2"
         text="Update back-referral"
       />
 
-      <div className="bg-uiBg mt-2 flex gap-2 p-4">
+      <div className="bg-errorBg rounded-10 mb-2 flex gap-3 p-4">
         <DocumentTextIcon color="darkred" className="h-12 w-12" />
         <div>
           <Typography
@@ -151,15 +152,17 @@ export const MotherBackReferralUpdate: React.FC<
             text={`Date ${mother?.user?.firstName} was referred`}
             className="text-sm"
           />
-          <Typography
-            type="body"
-            align="left"
-            text={format(
-              new Date(selectedReferral?.insertedDate),
-              'dd MMM yyyy'
-            )}
-            className="text-sm"
-          />
+          {selectedReferral?.insertedDate && (
+            <Typography
+              type="body"
+              align="left"
+              text={format(
+                new Date(selectedReferral?.insertedDate),
+                'dd MMM yyyy'
+              )}
+              className="text-sm"
+            />
+          )}
         </div>
       </div>
       {isClinicalReferral && (
@@ -188,7 +191,7 @@ export const MotherBackReferralUpdate: React.FC<
         </div>
       )}
       {hasAnswered && hasReferred && (
-        <div className="mt-3 gap-2">
+        <div className="mt-3 mb-2 gap-2">
           <Typography
             type="h3"
             align="left"

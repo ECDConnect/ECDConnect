@@ -4,7 +4,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
-    "portal": "cd ./src/admin-portal && SET PORT=3000 && yarn start",
+    "portal": "cd ./src/admin-portal && yarn start",
     "portal-gg": "cd ./src/admin-portal && SET PORT=3001 && yarn start",
     "portal-wl": "cd ./src/admin-portal && SET PORT=3005 && yarn start",
     "fe": "cd ./src/lxp && yarn start",
@@ -138,7 +138,8 @@
     "workbox-routing": "^5.1.4",
     "workbox-strategies": "^5.1.4",
     "workbox-streams": "^5.1.4",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "3.3.1",

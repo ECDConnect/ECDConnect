@@ -1,4 +1,8 @@
-import { DialogServiceProvider, useDialog } from '@ecdlink/core';
+import {
+  DialogServiceProvider,
+  SnackbarProvider,
+  useDialog,
+} from '@ecdlink/core';
 import { DialogPosition } from '@ecdlink/ui';
 import { IonApp, IonRouterOutlet } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
@@ -61,12 +65,14 @@ const App: React.FC = () => {
     if (user && user.isTempUser !== true) {
       return (
         <InitialStoreSetup>
-          <DialogServiceProvider>
-            <InitialNotificationSetup>
-              <AuthRoutes />
-              <BackgroundSync />
-            </InitialNotificationSetup>
-          </DialogServiceProvider>
+          <SnackbarProvider>
+            <DialogServiceProvider>
+              <InitialNotificationSetup>
+                <AuthRoutes />
+                <BackgroundSync />
+              </InitialNotificationSetup>
+            </DialogServiceProvider>
+          </SnackbarProvider>
         </InitialStoreSetup>
       );
     } else {

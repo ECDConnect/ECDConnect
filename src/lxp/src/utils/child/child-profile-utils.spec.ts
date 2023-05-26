@@ -2,7 +2,6 @@ import {
   getAge,
   getChildAttendancePercentageAtPlaygroup,
   hasMonthPassed,
-  isReportDue,
 } from './child-profile-utils';
 import {
   attendance,
@@ -61,23 +60,6 @@ describe('child-profile-utils', () => {
 
     test('should return false time when passed is less than a month from the current date', () => {
       const result = hasMonthPassed(new Date());
-      expect(result).toBe(false);
-    });
-  });
-
-  describe('isReportOverdueDate', () => {
-    test('should return true current date is 1 July', () => {
-      const result = isReportDue(new Date('2021-07-01'));
-      expect(result).toBe(true);
-    });
-
-    test('should return true current date is 1 December', () => {
-      const result = isReportDue(new Date('2021-12-01'));
-      expect(result).toBe(true);
-    });
-
-    test('should return false if current date is not 1 December or 1 July', () => {
-      const result = isReportDue(new Date('2021-06-01'));
       expect(result).toBe(false);
     });
   });

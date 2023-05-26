@@ -16,7 +16,7 @@ export const Alert: React.FC<AlertProps> = ({
   listColor = 'black',
   button,
 }) => {
-  const icon = styles.alertIcon(type);
+  const icon = styles.alertIcon(type, variant);
 
   return (
     <div
@@ -36,7 +36,7 @@ export const Alert: React.FC<AlertProps> = ({
                 text={title}
                 weight="normal"
                 className={styles.title}
-                color={titleColor || styles.alertTextColor(type)}
+                color={titleColor || styles.alertTextColor(type, variant)}
               />
             )}
             {message && (
@@ -45,7 +45,7 @@ export const Alert: React.FC<AlertProps> = ({
                 hasMarkup
                 text={message}
                 className={styles.message(!!title)}
-                color={messageColor || styles.alertTextColor(type)}
+                color={messageColor || styles.alertTextColor(type, variant)}
               />
             )}
             {list && (

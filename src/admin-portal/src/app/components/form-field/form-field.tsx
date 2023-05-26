@@ -1,4 +1,5 @@
 import { UseFormRegister } from 'react-hook-form';
+import { EyeIcon, EyeOffIcon } from '@heroicons/react/solid';
 
 export interface FormFieldProps {
   label: string;
@@ -9,14 +10,18 @@ export interface FormFieldProps {
   register: UseFormRegister<any>;
   required?: any;
   validation?: any;
+  instructions?: string[];
+  placeholder?: string;
+  togglePasswordVisibility?: () => void;
+  showPassword?: boolean;
 }
 
 const checkboxStyle =
-  'focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded';
+  'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
 const errorStyle =
   'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 const defaultInputStyle =
-  'shadow-sm focus:ring-primary focus:border-primary block w-full sm:text-sm border-gray-300 rounded-md';
+  'focus:border-secondary block w-full sm:text-md border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -27,6 +32,10 @@ const FormField: React.FC<FormFieldProps> = ({
   register,
   required,
   validation,
+  instructions,
+  placeholder,
+  togglePasswordVisibility,
+  showPassword,
 }) => {
   const getInputTypeStyles = () => {
     switch (type) {
@@ -41,22 +50,67 @@ const FormField: React.FC<FormFieldProps> = ({
     <>
       <label
         htmlFor={nameProp}
-        className="block text-sm font-medium text-gray-700"
+        className="block text-lg font-medium text-gray-800"
       >
         {label}
       </label>
-      <div className="mt-1">
+      <div>
+        {instructions?.length && instructions.length === 1 ? (
+          type === 'email' && <p className="text-base">{instructions[0]}</p>
+        ) : (
+          <ul className="list-disc pl-6">
+            {instructions?.map((i: string) => {
+              return (
+                <li key={i} className="text-base">
+                  {i}
+                </li>
+              );
+            })}
+          </ul>
+        )}
+      </div>
+      <div
+        className={
+          type === 'password'
+            ? 'relative mt-1'
+            : type === 'checkbox'
+            ? 'mt-2 flex'
+            : 'mt-1'
+        }
+      >
         <input
           disabled={disabled}
-          type={type}
+          type={
+            type === 'password' ? (showPassword ? 'text' : 'password') : type
+          }
           {...register(nameProp, {
             required: required,
             validate: validation,
           })}
           className={error ? errorStyle : getInputTypeStyles()}
+          placeholder={placeholder}
         />
+        {type === 'checkbox' && (
+          <a className="text-md text-secondary mb-3 pl-2" href="/terms">
+            {instructions[0]}
+          </a>
+        )}
 
-        <span className="text-errorMain text-xs"> {error && error} </span>
+        {type === 'password' && (
+          <button
+            type="button"
+            className="absolute inset-y-0 right-0 flex items-center justify-center px-4"
+            onClick={togglePasswordVisibility}
+          >
+            {showPassword ? (
+              <EyeIcon className="h-5 w-5 text-gray-900" />
+            ) : (
+              <EyeOffIcon className="h-5 w-5 text-gray-900" />
+            )}
+          </button>
+        )}
+
+        <span className="text-errorMain text-sm"> {error && error} </span>
       </div>
     </>
   );

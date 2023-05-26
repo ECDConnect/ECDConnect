@@ -16,7 +16,7 @@ import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon
 
 export const ChildUndevelopedSkillForm: React.FC<
   ChildUndevelopedSkillFormProps
-> = ({ skills, allSkillsYes, childId, onSubmit }) => {
+> = ({ skills, allSkillsYes, supportSkillId, childId, onSubmit }) => {
   const noTryingToDoAndAtLeastOneNotYet =
     !allSkillsYes &&
     skills.tryingToDo &&
@@ -35,38 +35,38 @@ export const ChildUndevelopedSkillForm: React.FC<
     useState<ProgressTrackingSkillDto>();
 
   useEffect(() => {
+    var skillsRadioList: RadioGroupOption[] = [];
     if (noTryingToDoAndAtLeastOneNotYet) {
       if (skills.notYet && skills.notYet.length > 0) {
-        const skillsRadioList: RadioGroupOption[] = skills.notYet.map(
-          (skill) => ({
-            id: skill.id || 0,
-            label: skill?.name,
-            value: skill.id || 0,
-          })
-        );
+        skillsRadioList = skills.notYet.map((skill) => ({
+          id: skill.id || 0,
+          label: skill?.name,
+          value: skill.id || 0,
+        }));
         setSkillsRadioGroupOptions(skillsRadioList);
       }
     } else {
       if (skills.tryingToDo && skills.tryingToDo.length > 0) {
-        const skillsRadioList: RadioGroupOption[] = skills.tryingToDo.map(
-          (skill) => ({
-            id: skill.id || 0,
-            label: skill?.name,
-            value: skill.id || 0,
-          })
-        );
+        skillsRadioList = skills.tryingToDo.map((skill) => ({
+          id: skill.id || 0,
+          label: skill?.name,
+          value: skill.id || 0,
+        }));
         setSkillsRadioGroupOptions(skillsRadioList);
       }
+    }
+    if (supportSkillId !== undefined && skillsRadioList.length > 0) {
+      onSkillSelected(supportSkillId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const submitAssessment = () => {
+  const submitAssessment = (exit: boolean) => {
     if (allSkillsYes) {
-      onSubmit(undefined);
+      onSubmit(undefined, true, exit);
     } else {
-      if (!selectedUndevelopedSkill) return;
-      onSubmit(selectedUndevelopedSkill);
+      if (!exit && !selectedUndevelopedSkill) return;
+      onSubmit(selectedUndevelopedSkill, false, exit);
     }
   };
 
@@ -130,7 +130,9 @@ export const ChildUndevelopedSkillForm: React.FC<
               colour="uiBg"
               selectedOptionBackgroundColor={'infoBb'}
               onChange={onSkillSelected}
-              currentValue={selectedUndevelopedSkill}
+              currentValue={
+                selectedUndevelopedSkill?.id || supportSkillId || -1
+              }
             />
           </div>
         )}
@@ -140,7 +142,7 @@ export const ChildUndevelopedSkillForm: React.FC<
         color={'primary'}
         type={'filled'}
         disabled={!allSkillsYes && !selectedUndevelopedSkill}
-        onClick={() => submitAssessment()}
+        onClick={() => submitAssessment(false)}
         className={'mt-4 mb-4 w-full'}
       >
         {renderIcon(
@@ -152,6 +154,21 @@ export const ChildUndevelopedSkillForm: React.FC<
           type={'help'}
           weight={'normal'}
           text={'Next'}
+        />
+      </Button>
+      <Button
+        onClick={() => submitAssessment(true)}
+        className="w-full"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+        <Typography
+          type="help"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
         />
       </Button>
     </div>

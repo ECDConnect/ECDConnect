@@ -57,6 +57,21 @@ CREATE TABLE public."IntegrationEntityMapping" (
 	CONSTRAINT "PK_IntegrationMapping" PRIMARY KEY ("Id")
 );
 
+CREATE TABLE public."IntegrationLog" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"UserId" text NULL,
+	"TenantId" uuid NULL,
+	"RelatedId" text NULL,
+	"RelatedType" text NOT NULL,
+	"LogNotes" text NULL,
+	"LogResult" text NULL,
+	CONSTRAINT "PK_IntegrationLog" PRIMARY KEY ("Id")
+);
+
 INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'General.Proxies.UrlShortner','General.Proxies.UrlShortner.RedirectUrl','RedirectUrl','https://ecd-connect-develop-api.azurewebsites.net',true,true,'2023-04-03 13:56:51.790','2023-04-03 13:56:51.790',NULL,'ded52f9f-2603-40d8-ae49-0525121096e6'),
 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'General.Proxies.Integration.SmartLinkApi','General.Proxies.Integration.SmartLinkApi.BaseUrl','BaseUrl','https://devapi.smartstart.org.za/v1/',true,true,'2022-10-31 07:39:37.330','2022-10-31 07:39:37.330',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8'),

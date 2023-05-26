@@ -1,8 +1,6 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { PqaActions } from '@/store/pqa/pqa.actions';
 
 export interface Question {
   question: string;
@@ -21,12 +19,14 @@ export interface SectionQuestions {
 }
 
 export interface DynamicFormProps {
+  isView?: boolean;
   name?: string;
   smartStarter?: PractitionerDto;
   currentStep?: number;
   isTipPage?: boolean;
   steps?: any[];
   sectionQuestions?: SectionQuestions[];
+  isLoading?: boolean;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -37,11 +37,12 @@ export interface DynamicFormProps {
 }
 
 export const DynamicForm = ({
-  name,
+  isView,
   smartStarter,
   currentStep,
   steps,
   isTipPage,
+  isLoading,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
@@ -51,11 +52,6 @@ export const DynamicForm = ({
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
-
-  const { isLoading } = useThunkFetchCall(
-    'pqa',
-    PqaActions.ADD_VISIT_FORM_DATA
-  );
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -113,6 +109,7 @@ export const DynamicForm = ({
 
     return (
       <CurrentStep
+        isView={isView}
         smartStarter={smartStarter}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
@@ -123,6 +120,7 @@ export const DynamicForm = ({
       />
     );
   }, [
+    isView,
     handleSetQuestions,
     smartStarter,
     currentStep,
@@ -136,9 +134,9 @@ export const DynamicForm = ({
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
-        action: onSubmit,
-        text: 'Save',
-        icon: 'SaveIcon',
+        action: isView ? onClose : onSubmit,
+        text: isView ? 'Close' : 'Save',
+        icon: isView ? 'XIcon' : 'SaveIcon',
       };
     }
 
@@ -151,11 +149,11 @@ export const DynamicForm = ({
     }
 
     return {
-      action: onSubmit,
-      text: 'Save',
-      icon: 'SaveIcon',
+      action: isView ? onClose : onSubmit,
+      text: isView ? 'Close' : 'Save',
+      icon: isView ? 'XIcon' : 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [isView, onClose, currentStep, handleOnNext, onSubmit, steps?.length]);
 
   return (
     <div className="flex h-full flex-col">

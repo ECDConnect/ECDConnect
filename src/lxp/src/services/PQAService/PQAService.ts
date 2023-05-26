@@ -1,10 +1,10 @@
 import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeLine,
+  PractitionerTimeline,
+  SupportVisitModelInput,
   Visit,
   VisitData,
-  VisitModelInput,
 } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
@@ -39,22 +39,18 @@ class PQAService {
     return true;
   }
 
-  async addSupportVisitForPractitioner(input: VisitModelInput): Promise<Visit> {
+  async addSupportVisitForPractitioner(
+    input: SupportVisitModelInput
+  ): Promise<Visit> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { addSupportVisitForPractitioner: Visit };
       errors?: {};
     }>(``, {
       query: `
-        mutation AddSupportVisitForPractitioner($input: VisitModelInput) {          
-          addSupportVisitForPractitioner(input: $input) {          
-            actualVisitDate
-            attended,
-            visitType{
+        mutation AddSupportVisitForPractitioner($input: SupportVisitModelInput) {
+          addSupportVisitForPractitioner(input: $input) {
               id
-              normalizedName
-              name
-            }
           }
         }
       `,
@@ -70,15 +66,17 @@ class PQAService {
     return response.data.data.addSupportVisitForPractitioner;
   }
 
-  async getVisitDataForVisitId(visitId: string): Promise<VisitData> {
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { visitDataForVisitId: VisitData };
+      data: { visitDataForVisitId: VisitData[] };
       errors?: {};
     }>(``, {
       query: `
-        GetVisitDataForVisitId($visitId: String) {
+        query GetVisitDataForVisitId($visitId: String) {
           visitDataForVisitId(visitId: $visitId) {
+            insertedDate
+            visitId
             visitName
             visitSection
             question
@@ -100,10 +98,10 @@ class PQAService {
     return response.data.data.visitDataForVisitId;
   }
 
-  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {
+  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeline> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { practitionerTimeline: PractitionerTimeLine };
+      data: { practitionerTimeline: PractitionerTimeline };
       errors?: {};
     }>(``, {
       query: `
@@ -150,7 +148,20 @@ class PQAService {
             prePQAVisitDate2
             prePQAVisitDate2Color
             prePQAVisitDate2Status
-            siteVisits {
+            prePQASiteVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+            }
+            pQASiteVisits {
               id
               plannedVisitDate
               attended
@@ -173,6 +184,15 @@ class PQAService {
               id
               plannedVisitDate
               attended
+              visitType {
+                description
+                id
+                isActive
+                name
+                normalizedName
+                order
+                type
+              }
             }
           }
         }

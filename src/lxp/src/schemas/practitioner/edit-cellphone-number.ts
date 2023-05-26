@@ -17,7 +17,8 @@ export const initialEditPractitionerValues: EditCellphoneModel = {
   email: '',
 };
 
-const phoneRegExp = /^((?:\+27|27)|0)(=72|82|73|83|74|84)(\d{7})$/;
+const phoneRegExp =
+  /^((?:\+27|27)|0)(=72|71|82|73|83|74|84|61|62|63|64)(\d{7})$/;
 
 export const editCelphoneNumberSchema = Yup.object().shape({
   name: Yup.string(),

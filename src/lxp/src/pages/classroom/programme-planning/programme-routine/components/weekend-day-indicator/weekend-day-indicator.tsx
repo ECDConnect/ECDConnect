@@ -15,7 +15,6 @@ export const WeekendDayIndicator: React.FC<HolidayProps> = ({
   setSelectedDate,
 }) => {
   const isSaturdayDay = isSaturday(new Date(date!));
-  console.log({ nextProgrammeDaysWithoutActivity });
 
   return (
     <div className={'flex flex-auto flex-col items-center justify-center'}>

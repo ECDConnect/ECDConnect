@@ -99,7 +99,7 @@ export const Practitioners: React.FC = () => {
     []
   );
 
-  const isOnline = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   const [loading, setLoading] = useState(false);
 
@@ -187,16 +187,19 @@ export const Practitioners: React.FC = () => {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl,
       title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
-      subTitle: `${currentPractitionerMessage?.subject}`,
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      alertSeverity:
-        currentPractitionerMessage?.color === 'Success'
-          ? 'success'
-          : currentPractitionerMessage?.color === 'Warning'
-          ? 'warning'
-          : 'error',
+      ...(isOnline
+        ? { subTitle: `${currentPractitionerMessage?.subject}` }
+        : {}),
+      alertSeverity: !isOnline
+        ? 'none'
+        : currentPractitionerMessage?.color === 'Success'
+        ? 'success'
+        : currentPractitionerMessage?.color === 'Warning'
+        ? 'warning'
+        : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
       extraData: {

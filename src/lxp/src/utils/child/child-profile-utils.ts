@@ -2,7 +2,6 @@ import { Age } from '@models/common/Age';
 import {
   differenceInYears,
   differenceInMonths,
-  isFirstDayOfMonth,
   getMonth,
   isAfter,
   format,
@@ -40,28 +39,85 @@ export const hasMonthPassed = (date: Date | undefined): boolean => {
   return monthsPassed >= 1;
 };
 
-export const isReportDue = (date: Date) => {
-  const currentDate = date;
-  const currentMonth = currentDate.getMonth();
-  const isFirstOfMonth = isFirstDayOfMonth(currentDate);
-  const isJulyOrDecember = currentMonth === 6 || currentMonth === 11;
+export const isInReportPeriod = (reportingPeriod: string, date: Date) => {
+  if (reportingPeriod === 'First') return true;
 
-  return isJulyOrDecember && isFirstOfMonth;
+  const currentMonth = date.getMonth();
+  if (reportingPeriod === 'June') {
+    return currentMonth === 5 || currentMonth === 6;
+  }
+  if (reportingPeriod === 'November') {
+    return currentMonth === 10 || (currentMonth === 11 && date.getDate() <= 20);
+  }
+  return false;
 };
 
-export const isInFinalMonthOfReportingPeriod = (date: Date) => {
+export const isInReportPeriodDates = (reportingPeriod: string, date: Date) => {
+  if (reportingPeriod === 'First') return [];
+
+  const currentMonth = date.getMonth();
+  if (reportingPeriod === 'June') {
+    if (currentMonth === 5 || currentMonth === 6)
+      return [
+        new Date(date.getFullYear(), 5, 1),
+        new Date(date.getFullYear(), 6, 31),
+      ];
+  }
+  if (reportingPeriod === 'November') {
+    if (currentMonth === 10 || (currentMonth === 11 && date.getDate() <= 20))
+      return [
+        new Date(date.getFullYear(), 10, 1),
+        new Date(date.getFullYear(), 11, 20),
+      ];
+  }
+  return [];
+};
+
+export const isInFinalMonthOfReportingPeriod = (
+  reportingPeriod: string,
+  date: Date
+) => {
+  if (reportingPeriod === 'First') return true;
+
   const currentMonth = date.getMonth();
 
-  const isJuly = currentMonth === 6;
-  const isDecember = currentMonth === 11;
+  if (reportingPeriod === 'June') {
+    const isJuly = currentMonth === 6;
+    if (isJuly) return true;
+    return false;
+  }
 
-  if (isJuly) return true;
+  if (reportingPeriod === 'November') {
+    const isDecember = currentMonth === 11;
+    if (!isDecember) return false;
+    const currentDay = date.getDate();
+    return currentDay <= 20;
+  }
 
-  if (!isDecember) return false;
+  return false;
+};
 
-  const currentDay = date.getDate();
+export const finalMonthOfReportingPeriodDueDate = (
+  reportingPeriod: string,
+  date: Date
+) => {
+  if (reportingPeriod === 'First') return undefined;
 
-  return currentDay <= 20;
+  const currentMonth = date.getMonth();
+
+  if (reportingPeriod === 'June') {
+    const isJuly = currentMonth === 6;
+    if (isJuly) return new Date(date.getFullYear(), 6, 31);
+    return false;
+  }
+
+  if (reportingPeriod === 'November') {
+    const isDecember = currentMonth === 11;
+    if (!isDecember) return undefined;
+    return new Date(date.getFullYear(), 11, 20);
+  }
+
+  return undefined;
 };
 
 export const getFollowingReportingPeriod = (
@@ -85,8 +141,18 @@ export const getFollowingReportingPeriod = (
   };
 };
 
-export const getReportingPeriod = (date: Date): ReportingPeriod => {
+export const getReportingPeriod = (
+  date: Date,
+  firstObservation?: boolean
+): ReportingPeriod => {
   const [month, year] = [getMonth(date), getYear(date)];
+
+  if (firstObservation === true || (year === 2000 && month === 0)) {
+    return {
+      monthName: 'First',
+      year,
+    };
+  }
 
   if (month <= 5)
     return {
@@ -101,25 +167,12 @@ export const getReportingPeriod = (date: Date): ReportingPeriod => {
 };
 
 export const isMatchingReportingPeriods = (dateLeft: Date, dateRight: Date) => {
-  const [dateLeftYear, dateRightYear] = [getYear(dateLeft), getYear(dateRight)];
-
-  const [dateLeftReportingPeriod, dateRightReportingPeriod] = [
-    getReportingPeriod(dateLeft),
-    getReportingPeriod(dateRight),
-  ];
-
+  const periodLeft = getReportingPeriod(dateLeft);
+  const periodRight = getReportingPeriod(dateRight);
   return (
-    dateLeftYear === dateRightYear &&
-    dateLeftReportingPeriod.monthName === dateRightReportingPeriod.monthName
+    periodLeft.year === periodRight.year &&
+    periodLeft.monthName === periodRight.monthName
   );
-};
-
-export const getReportingPeriodNumber = (date: Date): number => {
-  const month = getMonth(date);
-
-  if (month <= 5) return 6;
-
-  return 11;
 };
 
 export const getChildAttendancePercentageAtPlaygroup = (

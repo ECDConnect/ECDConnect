@@ -1,4 +1,3 @@
-import { UserDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -8,11 +7,9 @@ import {
   Alert,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
@@ -40,15 +37,8 @@ export const AddIncome: React.FC = () => {
     }
   }, [appDispatch, isOnline]);
 
-  const user = useSelector(userSelectors.getUser);
-  const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
+  // const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
-
-  useEffect(() => {
-    if (user) {
-      setNewStackListItems(user);
-    }
-  }, [user]);
 
   const incomeType = (type?: string) => {
     switch (type) {
@@ -67,66 +57,67 @@ export const AddIncome: React.FC = () => {
     }
   };
 
-  const setNewStackListItems = (currentUser: UserDto) => {
-    const list: ActionListDataItem[] = [
-      {
-        title: 'Preschool fees',
-        titleStyle: 'text-textDark font-semibold',
-        subTitle: 'Caregiver contributions',
-        subTitleStyle: 'text-textMid',
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => {
-          setType('PreschoolFees');
-          nextStep();
-        },
+  const statementsListItems: ActionListDataItem[] = [
+    {
+      title: 'Preschool fees',
+      titleStyle: 'text-textDark font-semibold',
+      subTitle: 'Caregiver contributions',
+      subTitleStyle: 'text-textMid',
+      actionName: 'Add',
+      actionIcon: 'PlusIcon',
+      buttonType: 'filled',
+      onActionClick: () => {
+        setType('PreschoolFees');
+        nextStep();
       },
-      {
-        title: 'Start-up support',
-        titleStyle: 'text-textDark font-semibold',
-        subTitle: 'Organised by SmartStart',
-        subTitleStyle: 'text-textMid',
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => setType('StartupSupport'),
-      },
-      {
-        title: 'Donations or vouchers',
-        titleStyle: 'text-textDark font-semibold',
-        subTitle: 'Fundraising contributions',
-        subTitleStyle: 'text-textMid',
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => setType('DonationsOrvouchers'),
-      },
-      {
-        title: 'DBE subsidy',
-        titleStyle: 'text-textDark font-semibold',
-        subTitle: 'Department of Basic Education',
-        subTitleStyle: 'text-textMid',
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => setType('DsdSubsidy'),
-      },
-      {
-        title: 'Other',
-        titleStyle: 'text-textDark font-semibold',
-        subTitle: 'Add your own income type',
-        subTitleStyle: 'text-textMid',
-        actionName: 'Add',
-        actionIcon: 'PlusIcon',
-        buttonType: 'filled',
-        onActionClick: () => setType('OtherIncome'),
-      },
-    ];
+    },
+    {
+      title: 'Start-up support',
+      titleStyle: 'text-textDark font-semibold',
+      subTitle: 'Organised by SmartStart',
+      subTitleStyle: 'text-textMid',
+      actionName: 'Add',
+      actionIcon: 'PlusIcon',
+      buttonType: 'filled',
+      onActionClick: () =>
+        state?.stepIndex === 4 ? null : setType('StartupSupport'),
+    },
+    {
+      title: 'Donations or vouchers',
+      titleStyle: 'text-textDark font-semibold',
+      subTitle: 'Fundraising contributions',
+      subTitleStyle: 'text-textMid',
+      actionName: 'Add',
+      actionIcon: 'PlusIcon',
+      buttonType: 'filled',
+      onActionClick: () =>
+        state?.stepIndex === 4 ? null : setType('DonationsOrvouchers'),
+    },
+    {
+      title: 'DBE subsidy',
+      titleStyle: 'text-textDark font-semibold',
+      subTitle: 'Department of Basic Education',
+      subTitleStyle: 'text-textMid',
+      actionName: 'Add',
+      actionIcon: 'PlusIcon',
+      buttonType: 'filled',
+      onActionClick: () =>
+        state?.stepIndex === 4 ? null : setType('DsdSubsidy'),
+    },
+    {
+      title: 'Other',
+      titleStyle: 'text-textDark font-semibold',
+      subTitle: 'Add your own income type',
+      subTitleStyle: 'text-textMid',
+      actionName: 'Add',
+      actionIcon: 'PlusIcon',
+      buttonType: 'filled',
+      onActionClick: () =>
+        state?.stepIndex === 4 ? null : setType('OtherIncome'),
+    },
+  ];
 
-    setListItems(list);
-  };
-  const { setState } = useAppContext();
+  const { setState, state } = useAppContext();
 
   const nextStep = () => {
     setState({ stepIndex: 5 });
@@ -163,10 +154,17 @@ export const AddIncome: React.FC = () => {
               />
             </div>
             <Divider dividerType="dashed" className="mt-4" />
-            <div id="incomeList">
+            <div
+              id="incomeList"
+              className={`${
+                state?.stepIndex === 3 && state?.run === true
+                  ? 'pointer-events-none'
+                  : ''
+              }`}
+            >
               <StackedList
                 className={'h-auto'}
-                listItems={listItems}
+                listItems={statementsListItems}
                 type={'ActionList'}
               ></StackedList>
             </div>
