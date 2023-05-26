@@ -1,45 +1,34 @@
 import {
   Config,
-  initialRegisterValues,
+  initialLoginValues,
   LocalStorageKeys,
-  RegisterRequestModel,
-  registerSchema,
+  LoginRequestModel,
+  loginSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.svg';
+import { useHistory } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { ArrowRightIcon } from '@heroicons/react/solid';
 
-interface RouteParams {
-  userId: string;
-}
-
-export default function Register(props: RouteComponentProps<RouteParams>) {
-  const { registerUser } = useAuth();
+export default function Login() {
+  const { login } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
-    resolver: yupResolver(registerSchema),
-    defaultValues: initialRegisterValues,
+    resolver: yupResolver(loginSchema),
+    defaultValues: initialLoginValues,
     mode: 'onChange',
   });
-
-  //check password strength
-  const password = watch('password');
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-
-  const { errors, isValid } = formState;
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -47,27 +36,28 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
     setShowPassword(!showPassword);
   };
 
-  //useriD FROM be INVITATION
-  console.log('', userId);
+  //check password strength
+  const password = watch('password');
+  const formValues = getValues();
+  const passwordStrength = zxcvbn(password);
+  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-  const registerNewUser = async () => {
-    const formValues = getValues();
+  const { errors, isValid } = formState;
 
+  const signIn = async () => {
     if (isValid) {
       setIsLoading(true);
-      const body: RegisterRequestModel = {
-        email: formValues.email,
+      const body: LoginRequestModel = {
+        username: formValues.email,
         password: formValues.password,
-        acceptedTerms: formValues.acceptedTerms,
       };
-      const isAuthenticated = await registerUser(body, Config.authApi).catch(
-        () => {
-          setDisplayError(true);
-          setIsLoading(false);
-        }
-      );
-      localStorage.setItem(LocalStorageKeys.existingUser, 'true');
+      const isAuthenticated = await login(body, Config.authApi).catch(() => {
+        setDisplayError(true);
+        setIsLoading(false);
+      });
+
       if (isAuthenticated) {
+        localStorage.setItem(LocalStorageKeys.existingUser, 'true');
         setIsLoading(false);
         history.push('/dashboard');
       } else {
@@ -83,21 +73,20 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return <img className="h-100 w-150" src={logo} alt="Login Logo" />;
+      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
-
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
+      <div className="m-8 rounded-xl bg-white p-8 shadow md:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
           <h2 className="font-h1 textLight mt-6 text-2xl">
-            Register for Funda App
+            Log in to Funda App
           </h2>
         </div>
         <div className="mt-8">
@@ -107,13 +96,8 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                 <FormField
                   label={'Email address *'}
                   nameProp={'email'}
-                  type="email"
                   register={register}
                   error={errors.email?.message}
-                  instructions={[
-                    'Make sure to use the same address where you received the invitation email.',
-                  ]}
-                  placeholder="e.g. work@email.com"
                 />
               </div>
 
@@ -124,11 +108,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   register={register}
                   type="password"
                   error={errors.password?.message}
-                  instructions={[
-                    'At least 8 characters',
-                    'At least 1 number',
-                    'At least 1 capital letter',
-                  ]}
                   showPassword={showPassword}
                   togglePasswordVisibility={togglePasswordVisibility}
                 />
@@ -139,9 +118,9 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     <div
                       className={`h-2 rounded-xl transition-colors ${
                         i < passwordScore
-                          ? passwordScore <= 1
+                          ? passwordScore <= 2
                             ? 'bg-red-400'
-                            : passwordScore <= 2
+                            : passwordScore <= 3
                             ? 'bg-yellow-400'
                             : passwordScore <= 4
                             ? 'bg-green-500'
@@ -153,35 +132,36 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                 ))}
               </div>
 
-              <Divider></Divider>
-              <div className="flex">
-                <div>
-                  <FormField
-                    label={'Terms and conditions *'}
-                    nameProp={'terms'}
-                    type="checkbox"
-                    register={register}
-                    instructions={['I accept the terms and conditions']}
-                  />
-                </div>
-              </div>
+              <Button
+                className={'mt-3 w-full rounded'}
+                type="ghost"
+                isLoading={isLoading}
+                color="secondary"
+                onClick={() => history.push('/forgot-password')}
+              >
+                <Typography
+                  type="help"
+                  color="secondary"
+                  text={' Forgot password?'}
+                ></Typography>
+                <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
+              </Button>
+
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={
-                    'Oh no! There are 2 problems above. Please fix them:'
-                  }
+                  message={'Password or Username incorrect. Please try again'}
                   type={'error'}
                 />
               )}
               <div>
                 <Button
-                  className={'mt-3 w-full'}
+                  className={'mt-3 w-full rounded'}
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
                   disabled={!isValid}
-                  onClick={registerNewUser}
+                  onClick={signIn}
                 >
                   <Typography
                     type="help"

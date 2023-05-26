@@ -1,9 +1,9 @@
 import {
   Config,
-  initialResetValues,
+  initialResetPasswordValues,
   LocalStorageKeys,
   ResetPasswordRequestModel,
-  resetPasswordSchema,
+  resetSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Button, Typography } from '@ecdlink/ui';
@@ -11,12 +11,12 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.svg';
-import thumbs_up from '../../../assets/icon_thumbsup.svg';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
+import thumbs_up from '../../../../assets/icon_thumbsup.svg';
 
-export default function ResetPassword() {
+export default function ForgotPassword() {
   const { theme } = useTheme();
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -24,28 +24,24 @@ export default function ResetPassword() {
   const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
-    resolver: yupResolver(resetPasswordSchema),
-    defaultValues: initialResetValues,
+    resolver: yupResolver(resetSchema),
+    defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
   //check password strength
-  const password = watch('password');
+  const email = watch('email');
   const formValues = getValues();
 
   const { errors, isValid } = formState;
 
+  console.log(isValid)
   const resetPassword = async () => {
     if (isValid) {
-      setResetLinkSent(!resetLinkSent);
-      setIsLoading(!isLoading);
+      setResetLinkSent(!resetLinkSent)
+      setIsLoading(!isLoading)
     }
+
   };
 
   const getLogoUrl = () => {
@@ -58,21 +54,23 @@ export default function ResetPassword() {
   if (resetLinkSent) {
     return (
       <div className="darkBackground flex min-h-screen items-center justify-center">
-        <div className="rounded-xl bg-white p-8 m-8 shadow lg:w-1/3">
+        <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
           <div className="flex flex-shrink-0 items-center justify-center">
             {getLogoUrl()}
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
-            <h2 className="font-h1 textLight mt-6 text-2xl">
-              Password reset successful!
-            </h2>
+            <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
           </div>
 
           <div className="flex flex-shrink-0 items-center justify-center pt-8">
             <img className="h-100 w-4/8" src={thumbs_up} alt="Login Logo" />
           </div>
-          <p className="mb-3 pt-2 text-center text-lg text-gray-700">
-            Please log in again to use ECD Connect.
+          <h4 className="font-h1 mt-4 text-lg text-center">Email sent! </h4>
+
+          <p className="text-lg mb-3 pt-2 text-center text-gray-700">
+            If there's an account registered with your email, you'll
+            receive a password reset link. Please check your inbox and follow
+            the instructions in the email.
           </p>
 
           <div className="mt-8">
@@ -80,9 +78,24 @@ export default function ResetPassword() {
               <div>
                 <Button
                   className={'mt-3 w-full rounded-xl'}
+                  type="filled"
+                  isLoading={resetLinkSent}
+                  color="secondary"
+                  onClick={resetPassword}
+                >
+                  <Typography
+                    type="help"
+                    color="white"
+                    text={'Send link'}
+                  ></Typography>
+                </Button>
+              </div>
+              <div>
+                <Button
+                  className={'mt-3 w-full rounded-xl'}
                   type="outlined"
                   color="secondary"
-                  onClick={() => history.push("/")}
+                  onClick={() => history.goBack()}
                   icon="ArrowLeftIcon"
                   textColor="secondary"
                 >
@@ -106,9 +119,7 @@ export default function ResetPassword() {
             {getLogoUrl()}
           </div>
           <div className="flex flex-shrink-0 items-center justify-center">
-            <h2 className="font-h1 textLight mt-6 text-2xl">
-              Enter new password
-            </h2>
+            <h2 className="font-h1 textLight mt-6 text-2xl">Forgot password</h2>
           </div>
           <p className="text-md mb-3 pt-2 text-center text-gray-700">
             Fill in your email address and we will send you a link to reset your
@@ -118,20 +129,12 @@ export default function ResetPassword() {
           <div className="mt-8">
             <div className="mt-6">
               <form className="space-y-6">
-                <div className="space-y-1">
+                <div>
                   <FormField
-                    label={'Password *'}
-                    nameProp={'password'}
+                    label={'Email address *'}
+                    nameProp={'email'}
                     register={register}
-                    type="password"
-                    error={errors.password?.message}
-                    instructions={[
-                      'At least 8 characters',
-                      'At least 1 number',
-                      'At least 1 capital letter',
-                    ]}
-                    showPassword={showPassword}
-                    togglePasswordVisibility={togglePasswordVisibility}
+                    error={errors.email?.message}
                   />
                 </div>
 
