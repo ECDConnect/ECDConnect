@@ -71,7 +71,7 @@ export default function ConfirmPractitioners({
   useEffect(() => {
     if (isSmartLinkImported) {
       const _practitionersList: SetStateAction<RegisterPractitioner[]> = [];
-      practitioners?.map((item) => {
+      practitioners?.forEach((item) => {
         if (item?.userId !== user?.id)
           listItems.push(
             createStackItem({

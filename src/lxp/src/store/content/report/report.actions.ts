@@ -65,8 +65,10 @@ export const saveUserContentChildProgressReport = createAsyncThunk<
         const content = await new ContentReportService(
           userAuth?.auth_token,
           userLocalePreference
-        ).createChildProgressReport(childProgressReportInput);
-
+        ).updateChildProgressReport(
+          childProgressReportInput,
+          childProgressReportInput.Id
+        );
         return content;
       } else {
         return rejectWithValue('no access token');
@@ -103,6 +105,7 @@ export const syncChildProgressReports = createAsyncThunk<
           const currentReportCopy = childProgressionReports?.find(
             (z) => z.id === x.reportId
           );
+          if (!currentReportCopy) return Promise.resolve<boolean>(true);
 
           const childProgressReportInput: ChildProgressReportInput = {
             ChildId: currentReportCopy?.childId,
@@ -236,6 +239,42 @@ export const getChildProgressReportSummary = createAsyncThunk<
   }
 );
 
+export const getDetailedProgressReports = createAsyncThunk<
+  any,
+  number,
+  ThunkApiType<RootState>
+>(
+  'getDetailedProgressReports',
+  // eslint-disable-next-line no-empty-pattern
+  async (count, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      user: { userLocalePreference },
+    } = getState();
+
+    try {
+      let content: ChildProgressObservationReport[] | undefined;
+
+      if (userAuth?.auth_token) {
+        content = await new ContentReportService(
+          userAuth?.auth_token,
+          userLocalePreference
+        ).getDetailedProgressReports(count);
+      } else {
+        return rejectWithValue('no access token');
+      }
+
+      if (!content) {
+        return rejectWithValue('Error getting Child Progress Reports');
+      }
+
+      return content;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export const getDetailedProgressReport = createAsyncThunk<
   any,
   string,
@@ -262,7 +301,7 @@ export const getDetailedProgressReport = createAsyncThunk<
       }
 
       if (!content) {
-        return rejectWithValue('Error getting Progress Reports');
+        return rejectWithValue('Error getting Progress Report');
       }
 
       return content;

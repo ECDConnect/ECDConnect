@@ -1,6 +1,7 @@
 import {
   Config,
   initialLoginValues,
+  LocalStorageKeys,
   LoginRequestModel,
   loginSchema,
   useTheme,
@@ -12,6 +13,8 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
+import logo from '../../../assets/Logo-ECDConnect.png';
+import zxcvbn from 'zxcvbn-typescript';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,16 +23,23 @@ export default function Login() {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, getValues, formState } = useForm({
+  const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+  const password = watch('password');
+
+  const formValues = getValues();
+  const passwordStrength = zxcvbn(formValues.password);
+  console.log('Password strength score:', passwordStrength.score);
+  console.log('Password feedback:', password);
+
+  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+
   const { errors, isValid } = formState;
 
   const signIn = async () => {
-    const formValues = getValues();
-
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
@@ -42,6 +52,7 @@ export default function Login() {
       });
 
       if (isAuthenticated) {
+        localStorage.setItem(LocalStorageKeys.existingUser, 'true');
         setIsLoading(false);
         history.push('/dashboard');
       } else {
@@ -57,100 +68,101 @@ export default function Login() {
 
   const getLogoUrl = () => {
     if (theme && theme.images) {
-      return (
-        <img
-          className="h-32 w-auto"
-          src={theme.images.portalLoginLogoUrl}
-          alt="Login Logo"
-        />
-      );
+      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
     } else {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
 
-  const getBackgroundUrl = () => {
-    if (theme && theme.images) {
-      return (
-        <img
-          className="absolute inset-0 h-full w-full object-cover"
-          src={theme.images.portalLoginBackgroundUrl}
-          alt="Login Background"
-        />
-      );
-    } else {
-      return (
-        <div className="absolute inset-0 h-full w-full object-cover">
-          &nbsp;
-        </div>
-      );
-    }
-  };
-
   return (
-    <div className="min-h-full bg-white flex">
-      <div className="flex-1 flex flex-col justify-center py-12 px-4 sm:px-6 lg:flex-none lg:px-20 xl:px-24">
-        <div className="mx-auto w-full max-w-sm lg:w-96">
-          <div className="flex items-center justify-center flex-shrink-0">
-            {getLogoUrl()}
-          </div>
-          <div className="flex items-center justify-center flex-shrink-0">
-            <h2 className="mt-6 text-3xl font-extrabold text-gray-900 font-h1">
-              Sign in to your account
-            </h2>
-          </div>
-          <div className="mt-8">
-            <div className="mt-6">
-              <form className="space-y-6">
-                <div>
-                  <FormField
-                    label={'Username'}
-                    nameProp={'username'}
-                    register={register}
-                    error={errors.username?.message}
-                  />
-                </div>
+    <div className="darkBackground flex min-h-screen items-center justify-center">
+      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+        <div className="flex flex-shrink-0 items-center justify-center">
+          {getLogoUrl()}
+        </div>
+        <div className="flex flex-shrink-0 items-center justify-center">
+          <h2 className="font-h1 textLight mt-6 text-3xl">
+            Log in to Funda App
+          </h2>
+        </div>
+        <div className="mt-8">
+          <div className="mt-6">
+            <form className="space-y-6">
+              <div>
+                <FormField
+                  label={'Email address *'}
+                  nameProp={'username'}
+                  register={register}
+                  error={errors.username?.message}
+                />
+              </div>
 
-                <div className="space-y-1">
-                  <FormField
-                    label={'Password'}
-                    nameProp={'password'}
-                    register={register}
-                    type="password"
-                    error={errors.password?.message}
-                  />
-                </div>
-                <Divider></Divider>
-                {displayError && (
-                  <Alert
-                    className={'mt-5 mb-3'}
-                    message={'Password or Username incorrect. Please try again'}
-                    type={'error'}
-                  />
-                )}
-                <div>
-                  <Button
-                    className={'w-full mt-3'}
-                    type="filled"
-                    isLoading={isLoading}
-                    color="primary"
-                    disabled={!isValid}
-                    onClick={signIn}
-                  >
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Log in'}
-                    ></Typography>
-                  </Button>
-                </div>
-              </form>
-            </div>
+              <div className="space-y-1">
+                <FormField
+                  label={'Password *'}
+                  nameProp={'password'}
+                  register={register}
+                  type="password"
+                  error={errors.password?.message}
+                />
+              </div>
+              <div className="-mx-1 flex">
+                {[...Array(4)].map((_, i) => (
+                  <div className="w-1/4 px-1" key={i}>
+                    <div
+                      className={`h-2 rounded-xl transition-colors ${
+                        i < passwordScore
+                          ? passwordScore <= 2
+                            ? 'bg-red-400'
+                            : passwordScore <= 3
+                            ? 'bg-yellow-400'
+                            : passwordScore <= 4
+                            ? 'bg-green-500'
+                            : 'bg-yellow-400'
+                          : 'bg-gray-200'
+                      }`}
+                    ></div>
+                  </div>
+                ))}
+              </div>
+
+              <div className="mb-2 flex justify-between">
+                <a
+                  rel="noopener noreferrer"
+                  href="/"
+                  className="text-l text-blue-400 hover:underline"
+                >
+                  Forgot password?
+                </a>
+              </div>
+              <Divider></Divider>
+
+              {displayError && (
+                <Alert
+                  className={'mt-5 mb-3'}
+                  message={'Password or Username incorrect. Please try again'}
+                  type={'error'}
+                />
+              )}
+              <div>
+                <Button
+                  className={'mt-3 w-full rounded'}
+                  type="filled"
+                  isLoading={isLoading}
+                  color="secondary"
+                  disabled={!isValid}
+                  onClick={signIn}
+                >
+                  <Typography
+                    type="help"
+                    color="white"
+                    text={'Log in'}
+                  ></Typography>
+                </Button>
+              </div>
+            </form>
           </div>
         </div>
-      </div>
-      <div className="hidden lg:block relative w-0 flex-1">
-        {getBackgroundUrl()}
       </div>
     </div>
   );

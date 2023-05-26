@@ -1,5 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
@@ -8,6 +8,7 @@ using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -374,11 +375,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
 
         }
-        public PractitionerTimeLine GetPractitionerTimeline([Service] PractitionerManager practitionerManager, string userId)
+        public PractitionerTimeline GetPractitionerTimeline([Service] PersonnelService personnelService, string userId)
         {
-            return practitionerManager.GetPractitionerTimeline(userId);
+            return personnelService.GetPractitionerTimeline(userId);
         }
 
+        public Trainee GetTraineeByUserId(
+    [Service] PersonnelService practiManager,
+    [Service] UserLicenseManager userLicenseManager,
+    string userId)
+        {
+            return practiManager.GetTraineeByUserId(userLicenseManager, userId);
+        }
+
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+        }
         
 
     }

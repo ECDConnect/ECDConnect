@@ -4,4 +4,5 @@ export interface DownloadProgressTrackingReportPromptProps
   extends ComponentBaseProps {
   onProceed?: () => void;
   onClose?: () => void;
+  reportingPeriod: string;
 }

@@ -3,6 +3,7 @@ import {
   ChildProgressObservationStatus,
   ChildProgressObservationReport,
   capitalizeFirstLetter,
+  ProgressTrackingSkillDto,
 } from '@ecdlink/core';
 import {
   Alert,
@@ -22,10 +23,15 @@ import { ChildProgressNoteCard } from '../components/child-progress-note-card/ch
 import { ProgressTrackingLevels } from '@enums/ProgressTrackingLevels';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 
-import { getProgressTrackingCategories } from '@store/progress-tracking/progress-tracking.selectors';
 import {
+  getProgressTrackingCategories,
+  getProgressTrackingSkills,
+} from '@store/progress-tracking/progress-tracking.selectors';
+import {
+  finalMonthOfReportingPeriodDueDate,
   getReportingPeriod,
-  isMatchingReportingPeriods,
+  isInFinalMonthOfReportingPeriod,
+  isInReportPeriod,
 } from '@utils/child/child-profile-utils';
 import { newGuid } from '@utils/common/uuid.utils';
 
@@ -54,6 +60,9 @@ import ROUTES from '@routes/routes';
 import { childRegistrationConstants } from '@/constants/Child';
 import { DateFormats } from '@/constants/Dates';
 import { addDays } from 'date-fns';
+import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
+import { CompleteFirstObservationsPrompt } from '../components/progress-tracking-prompts/complete-first-observations-prompt/complete-first-observations-prompt';
+import { UsePreviousReportPrompt } from '../components/progress-tracking-prompts/use-previous-report-prompt/use-previous-report-prompt';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
@@ -64,20 +73,29 @@ export const ChildProgressObservationPage: React.FC = () => {
   const { getDocumentTypeIdByEnum } = useStaticData();
   const typeId = getDocumentTypeIdByEnum(FileTypeEnum.ProfileImage);
   const [hideCompletedSection, setHideCompletedSection] =
-    useState<boolean>(false);
+    useState<boolean>(true);
 
+  const nextCategory = routeState.nextCategory || false;
+  const firstObservation =
+    routeState.firstObservation === undefined
+      ? false
+      : routeState.firstObservation;
   const reportingDate = routeState.reportingDate
     ? new Date(routeState.reportingDate)
     : new Date();
-  const reportingPeriod = getReportingPeriod(reportingDate);
+  const reportingPeriod = getReportingPeriod(reportingDate, firstObservation);
 
   const child = useSelector(childrenSelectors.getChildById(routeState.childId));
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
-
+  const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const [tutorialActive, setTutorialActive] = useState<boolean>(false);
+  const [
+    completeFirstObservationsPromptActive,
+    setCompleteFirstObservationsPromptActive,
+  ] = useState<boolean>(false);
   const practitionerUser = useSelector(userSelectors.getUser);
   const profilePicture = useSelector(
     documentSelectors.getDocumentByTypeId(practitionerUser?.id, typeId)
@@ -85,14 +103,16 @@ export const ChildProgressObservationPage: React.FC = () => {
   const categories: ProgressTrackingCategoryDto[] = useSelector(
     getProgressTrackingCategories
   );
-  const summaries = useSelector(
-    contentReportSelectors.getChildProgressReportSummaries()
+  const skills: ProgressTrackingSkillDto[] = useSelector(
+    getProgressTrackingSkills
   );
 
   const reportSummaries = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(routeState.childId)
   );
   const [latestCompletedSummary] = reportSummaries;
+  const latestCompletedSummaryIsFirstObservation =
+    !!latestCompletedSummary && latestCompletedSummary.reportPeriod === 'First';
 
   const report = useSelector(
     contentReportSelectors.getChildProgressObservationReportByReportingPeriod(
@@ -120,10 +140,8 @@ export const ChildProgressObservationPage: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const { saveReport } = useChildProgressObservation(
-    routeState.childId,
-    report
-  );
+  const { currentReport, saveReport, completeReport, completeReportLocally } =
+    useChildProgressObservation(routeState.childId, report);
 
   const reportNote = report?.observationNote;
 
@@ -132,14 +150,19 @@ export const ChildProgressObservationPage: React.FC = () => {
 
   const isComplete = completedCategories.length === categories.length;
 
-  const reportSummary = summaries.find(
-    (summary) =>
-      summary.childId === routeState.childId &&
-      isMatchingReportingPeriods(new Date(summary.reportDate), reportingDate)
-  );
-
   const isReturningUser =
     completedCategories.length > 0 || inProgressCategories.length > 0;
+
+  const [previousReportDataActive, setPreviousReportDataActive] =
+    useState<boolean>(!requiresInitialReport && !report);
+  const [usePreviousReportData, setUsePreviousReportData] =
+    useState<boolean>(false);
+
+  useEffect(() => {
+    if (isComplete) {
+      setHideCompletedSection(true);
+    }
+  }, [isComplete]);
 
   const onCategoryNavigation = async (
     categoryId: number,
@@ -148,13 +171,14 @@ export const ChildProgressObservationPage: React.FC = () => {
     if (!categoryId) return;
 
     if (!report) {
-      await persistReport();
+      await persistReport(usePreviousReportData);
     }
 
     if (status === ChildProgressObservationStatus.NotStarted)
       history.push(ROUTES.PROGRESS_TRACKING_CATEGORY, {
         childId: child?.id,
         progressTrackingCategoryId: categoryId,
+        firstObservation: firstObservation,
         reportingDate: reportingDate.toISOString(),
       });
     else {
@@ -162,12 +186,15 @@ export const ChildProgressObservationPage: React.FC = () => {
         step: ChildProgressAssessmentSteps.assessmentStepOne,
         childId: routeState.childId,
         progressTrackingCategoryId: categoryId,
+        firstObservation: firstObservation,
         reportingDate: reportingDate.toISOString(),
       });
     }
   };
 
-  const persistReport = async (): Promise<ChildProgressObservationReport> => {
+  const persistReport = async (
+    usePreviousReportData: boolean
+  ): Promise<ChildProgressObservationReport> => {
     let newReport: ChildProgressObservationReport | undefined = report;
 
     if (!newReport) {
@@ -192,6 +219,23 @@ export const ChildProgressObservationPage: React.FC = () => {
         practitionerSurname: practitionerUser?.surname || '',
         practitionerPhotoUrl: profilePicture?.file,
       };
+      if (usePreviousReportData && !!latestCompletedSummary) {
+        newReport.categories = latestCompletedSummary.categories.map((cat) => {
+          return {
+            categoryId: cat.categoryId,
+            achievedLevelId: cat.achievedLevelId,
+            status: ChildProgressObservationStatus.NotStarted,
+            tasks: cat.tasks.map((t) => ({
+              description:
+                skills.find((s) => s.id === t.skillId)?.description || '',
+              levelId: t.levelId,
+              skillId: t.skillId,
+              value: t.value,
+            })),
+            missingTasks: [],
+          };
+        });
+      }
     }
 
     return await saveReport(newReport);
@@ -199,7 +243,7 @@ export const ChildProgressObservationPage: React.FC = () => {
 
   const updateReportObservationNote = async () => {
     if (!report) {
-      await persistReport();
+      await persistReport(usePreviousReportData);
     }
 
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION_NOTE, {
@@ -213,6 +257,57 @@ export const ChildProgressObservationPage: React.FC = () => {
       reportingDate,
     });
   };
+
+  const saveAndCompleteFirstObservations = async () => {
+    setCompleteFirstObservationsPromptActive(false);
+    if (!!currentReport) {
+      if (isOnline) {
+        await completeReport(
+          currentReport,
+          childLearner?.classroomGroupId || ''
+        );
+        history.replace(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
+          childId: routeState.childId,
+        });
+      } else {
+        completeReportLocally(
+          currentReport,
+          childLearner?.classroomGroupId || ''
+        );
+        history.replace(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
+          childId: routeState.childId,
+        });
+      }
+    }
+  };
+
+  const cancelFirstObservations = () => {
+    setCompleteFirstObservationsPromptActive(false);
+  };
+
+  const previousReportPeriodText = () => {
+    if (!latestCompletedSummary) return '';
+    if (latestCompletedSummaryIsFirstObservation) {
+      return `first observations (${new Date(
+        latestCompletedSummary.reportDateCreated
+      ).toLocaleString('en-za', DateFormats.longMonthNameAndYear)})`;
+    }
+    return `previous reporting period (${new Date(
+      latestCompletedSummary.reportDate
+    ).toLocaleString('en-za', DateFormats.longMonthNameAndYear)})`;
+  };
+
+  const startReportWithPreviousData = (usePreviousObservations: boolean) => {
+    setPreviousReportDataActive(false);
+    setUsePreviousReportData(usePreviousObservations);
+  };
+
+  if (nextCategory && notStartedCategories && notStartedCategories.length) {
+    onCategoryNavigation(
+      notStartedCategories[0].id,
+      ChildProgressObservationStatus.NotStarted
+    );
+  }
 
   return (
     <>
@@ -250,7 +345,7 @@ export const ChildProgressObservationPage: React.FC = () => {
                   ? 'First progress observations'
                   : `${reportingPeriod.monthName} progress observations`
               }
-              type={'body'}
+              type={'h2'}
               weight={'bold'}
             />
             <Typography
@@ -266,26 +361,99 @@ export const ChildProgressObservationPage: React.FC = () => {
                   ? `January to June ${reportingPeriod.year}`
                   : `July to December ${reportingPeriod.year}`
               }
-              type={'body'}
+              type={'h4'}
               lineHeight="snug"
             />
           </div>
-          {isComplete && !reportSummary && (
-            <ListItem
-              key={'create-report'}
-              backgroundColor={'white'}
-              withPaddingX={true}
-              withPaddingY={true}
-              iconName={'PresentationChartLineIcon'}
-              iconBackgroundColor={'primary'}
-              iconColor="white"
-              showIcon={true}
-              title={`Create ${reportingPeriod.monthName} caregiver report`}
-              subTitle={`Report due <b>30 ${reportingPeriod.monthName} ${reportingPeriod.year}</>`}
-              showChevronIcon
-              onButtonClick={finalizeReport}
-            />
+          {!firstObservation &&
+            isInFinalMonthOfReportingPeriod(
+              reportingPeriod.monthName,
+              new Date()
+            ) && (
+              <div className={'mt-4 mb-4 px-2'}>
+                <Alert
+                  type={'warning'}
+                  title={`Complete this report by ${finalMonthOfReportingPeriodDueDate(
+                    reportingPeriod.monthName,
+                    new Date()
+                  )?.toLocaleString('en-za', DateFormats.dayFullMonthYear)}`}
+                />
+              </div>
+            )}
+          {isComplete && firstObservation && (
+            <div>
+              <div className={styles.completeWrapper}>
+                <div className={styles.completeImage}>
+                  <img
+                    className={''}
+                    src={PositiveBonusEmoticon}
+                    alt="complete"
+                  />
+                </div>
+                <div>
+                  <Typography
+                    className={'w-full'}
+                    type={'body'}
+                    color={'white'}
+                    text={`You have completed ${childUser?.firstName}'s first progress observations!`}
+                  />
+                </div>
+              </div>
+              <div className={styles.completeNotes}>
+                <Typography
+                  text={
+                    'You can edit your observations, add a note, or save the first progress observations.'
+                  }
+                  type="body"
+                  color="textMid"
+                />
+              </div>
+            </div>
           )}
+          {isComplete &&
+            !firstObservation &&
+            !isInReportPeriod(reportingPeriod.monthName, new Date()) && (
+              <div className={'mt-4 px-2'}>
+                <Alert
+                  type={'info'}
+                  title={`You have completed ${childUser?.firstName}'s ${reportingPeriod.monthName} progress observations! You can create the caregiver report from 1 ${reportingPeriod.monthName}.`}
+                  messageColor="textDark"
+                  message={`Keep observing ${childUser?.firstName} & tap "See completed sections" to edit your observations.`}
+                />
+              </div>
+            )}
+          {isComplete &&
+            !firstObservation &&
+            isInReportPeriod(reportingPeriod.monthName, new Date()) && (
+              <div>
+                <div className={styles.completeWrapper}>
+                  <div className={styles.completeImage}>
+                    <img
+                      className={''}
+                      src={PositiveBonusEmoticon}
+                      alt="complete"
+                    />
+                  </div>
+                  <div>
+                    <Typography
+                      className={'w-full'}
+                      type={'body'}
+                      color={'white'}
+                      text={`You have completed ${childUser?.firstName}'s ${reportingPeriod.monthName} progress observations!`}
+                    />
+                  </div>
+                </div>
+                <div className={styles.completeNotes}>
+                  <Typography
+                    text={
+                      'You can edit your observations or create the caregiver report.'
+                    }
+                    type="body"
+                    color="textMid"
+                  />
+                </div>
+              </div>
+            )}
           {notStartedCategories &&
             notStartedCategories.length > 0 &&
             notStartedCategories.map((cat: ProgressTrackingCategoryDto) => {
@@ -384,12 +552,52 @@ export const ChildProgressObservationPage: React.FC = () => {
               onButtonClick={updateReportObservationNote}
             />
           )}
-          {reportNote && (
-            <ChildProgressNoteCard
-              note={reportNote}
-              onEdit={updateReportObservationNote}
-              className={'m-4'}
-            />
+          {isComplete && firstObservation && (
+            <div className="mr-2 ml-2 mt-3">
+              <Button
+                onClick={() => setCompleteFirstObservationsPromptActive(true)}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+              >
+                {renderIcon(
+                  'CheckCircleIcon',
+                  classNames('h-5 w-5 text-white')
+                )}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Save & complete"
+                  color="white"
+                />
+              </Button>
+            </div>
+          )}
+          {isComplete && !firstObservation && (
+            <div className="mr-2 ml-2 mt-3">
+              <Button
+                onClick={finalizeReport}
+                className="w-full"
+                size="small"
+                color="primary"
+                type="filled"
+                disabled={
+                  !isInReportPeriod(reportingPeriod.monthName, new Date())
+                }
+              >
+                {renderIcon(
+                  'DocumentReportIcon',
+                  classNames('h-5 w-5 text-white')
+                )}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Create caregiver report"
+                  color="white"
+                />
+              </Button>
+            </div>
           )}
           {isReturningUser && completedCategories.length > 0 && (
             <div className="mr-2 ml-2 mt-3">
@@ -398,60 +606,78 @@ export const ChildProgressObservationPage: React.FC = () => {
                 className="w-full"
                 size="small"
                 color="primary"
-                type="filled"
+                type={isComplete ? 'outlined' : 'filled'}
               >
-                {renderIcon('EyeIcon', classNames('h-5 w-5 text-white'))}
+                {renderIcon(
+                  'EyeIcon',
+                  classNames(
+                    isComplete ? 'h-5 w-5 text-primary' : 'h-5 w-5 text-white'
+                  )
+                )}
                 <Typography
                   type="h6"
                   className="ml-2"
                   text={`${
-                    hideCompletedSection ? 'Show' : 'Hide'
+                    hideCompletedSection ? 'See' : 'Hide'
                   } completed sections`}
-                  color="white"
+                  color={isComplete ? 'primary' : 'white'}
                 />
               </Button>
             </div>
           )}
           {isReturningUser &&
-            completedCategories.length > 0 &&
+            (completedCategories.length > 0 || !!reportNote) &&
             !hideCompletedSection && (
-              <div className={'px-4'}>
-                {completedCategories.map((cat: ProgressTrackingCategoryDto) => {
-                  const categoryFromReport = getCategoryFromCurrentReport(
-                    cat.id,
-                    report
-                  );
+              <div>
+                {reportNote && (
+                  <ChildProgressNoteCard
+                    note={reportNote}
+                    onEdit={updateReportObservationNote}
+                    className={'m-4'}
+                  />
+                )}
+                <div className={'px-4'}>
+                  {completedCategories.map(
+                    (cat: ProgressTrackingCategoryDto) => {
+                      const categoryFromReport = getCategoryFromCurrentReport(
+                        cat.id,
+                        report
+                      );
 
-                  return (
-                    <ObservationCategoryCard
-                      key={`completed-${cat.id}`}
-                      className={'mt-4'}
-                      categoryName={cat.name}
-                      categoryColour={cat.color}
-                      isCompetentWithCategory={
-                        [
-                          ProgressTrackingLevels.LevelThree,
-                          ProgressTrackingLevels.LevelTwo,
-                        ].includes(categoryFromReport?.achievedLevelId ?? 0) &&
-                        !categoryFromReport?.supportingTask
-                      }
-                      levelId={categoryFromReport?.achievedLevelId || 0}
-                      childName={`${childUser?.firstName} ${childUser?.surname}`}
-                      helpingSkillId={
-                        categoryFromReport?.supportingTask?.taskId || 0
-                      }
-                      toDoNote={
-                        categoryFromReport?.supportingTask?.todoText || ''
-                      }
-                      onEdit={() =>
-                        onCategoryNavigation(
-                          cat.id,
-                          ChildProgressObservationStatus.Completed
-                        )
-                      }
-                    />
-                  );
-                })}
+                      return (
+                        <ObservationCategoryCard
+                          key={`completed-${cat.id}`}
+                          className={'mt-4'}
+                          categoryImageUrl={cat.imageUrl}
+                          categoryName={cat.name}
+                          categoryColour={cat.color}
+                          isCompetentWithCategory={
+                            [
+                              ProgressTrackingLevels.LevelThree,
+                              ProgressTrackingLevels.LevelTwo,
+                            ].includes(
+                              categoryFromReport?.achievedLevelId ?? 0
+                            ) && !categoryFromReport?.supportingTask
+                          }
+                          levelId={categoryFromReport?.achievedLevelId || 0}
+                          childName={`${childUser?.firstName} ${childUser?.surname}`}
+                          helpingSkillId={
+                            categoryFromReport?.supportingTask?.taskId || 0
+                          }
+                          toDoNote={
+                            categoryFromReport?.supportingTask?.todoText || ''
+                          }
+                          onEdit={() =>
+                            onCategoryNavigation(
+                              cat.id,
+                              ChildProgressObservationStatus.Completed
+                            )
+                          }
+                        />
+                      );
+                    }
+                  )}
+                </div>
               </div>
             )}
           {!isComplete && (
@@ -466,11 +692,35 @@ export const ChildProgressObservationPage: React.FC = () => {
           )}
         </div>
       </BannerWrapper>
+      <Dialog
+        visible={completeFirstObservationsPromptActive}
+        position={DialogPosition.Middle}
+      >
+        <div className={styles.dialogContent}>
+          <CompleteFirstObservationsPrompt
+            firstName={childUser?.firstName || ''}
+            onSaveAndComplete={() => saveAndCompleteFirstObservations()}
+            onCancel={() => cancelFirstObservations()}
+          />
+        </div>
+      </Dialog>
       <Dialog fullScreen visible={tutorialActive} position={DialogPosition.Top}>
         <div className={styles.dialogContent}>
           <ProgressTrackingTutorial
             onComplete={() => setTutorialActive(false)}
             onClose={() => setTutorialActive(false)}
+          />
+        </div>
+      </Dialog>
+      <Dialog
+        visible={previousReportDataActive}
+        position={DialogPosition.Middle}
+      >
+        <div className={styles.dialogContent}>
+          <UsePreviousReportPrompt
+            previousReportPeriod={previousReportPeriodText()}
+            onProceed={() => startReportWithPreviousData(true)}
+            onClose={() => startReportWithPreviousData(false)}
           />
         </div>
       </Dialog>

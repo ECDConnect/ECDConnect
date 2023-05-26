@@ -33,11 +33,14 @@ import { UTILITIES__EXPENSE_ID } from '@/store/statements/statements.selectors';
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
   const expensesTypes = useSelector(statementsSelectors.getExpensesTypes);
   const viewTitle = 'Utilities (electricity, water & other running costs)';
   const expensesTypeValue = expensesTypes.find(
@@ -123,8 +126,8 @@ export const Utilities: React.FC<AddIncomeState> = ({ setType }) => {
       ).UpdateStatementsExpense(incomeId, expensesInput);
     }
 
+    await history.push(ROUTES.BUSINESS);
     setIsLoading(false);
-    setType('');
   };
 
   return (

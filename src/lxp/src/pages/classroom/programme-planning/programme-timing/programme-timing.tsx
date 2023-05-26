@@ -81,7 +81,7 @@ const ProgrammeTiming: React.FC = () => {
 
     if (isOnline) {
       try {
-        appDispatch(programmeThunkActions.upsertProgrammes({}));
+        appDispatch(programmeThunkActions.updateProgrammes({}));
       } catch (err) {
         console.log(err);
       }
@@ -92,7 +92,7 @@ const ProgrammeTiming: React.FC = () => {
     //   variation: 'create',
     // });
     history.push(ROUTES.CLASSROOM, {
-      activeTabIndex: 3,
+      activeTabIndex: 2,
       programmeStartDate: validatedDate,
     });
   };
@@ -171,6 +171,7 @@ const ProgrammeTiming: React.FC = () => {
         type: 'success',
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedDate, selectedTheme]
   );
 

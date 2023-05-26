@@ -63,11 +63,8 @@ export const ChildProgressReportAlert: React.FC<
       isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
-  const isCurrentlyInReportingOverduePeriod =
-    isInFinalMonthOfReportingPeriod(currentDate);
-
   const reportingPeriod = !currentReportingPeriodReportSummary
-    ? getReportingPeriod(currentDate)
+    ? getReportingPeriod(currentDate, requiresInitialReport)
     : getFollowingReportingPeriod(
         new Date(
           latestCompletedSummary?.reportDate
@@ -76,13 +73,19 @@ export const ChildProgressReportAlert: React.FC<
         )
       );
 
-  const reportDate = new Date(
-    `${reportingPeriod.monthName}-01-${reportingPeriod.year}`
+  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
+    reportingPeriod.monthName,
+    currentDate
   );
+
+  const reportDate = requiresInitialReport
+    ? new Date(2000, 0, 1)
+    : new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
       childId: child.id,
+      firstObservation: requiresInitialReport,
       reportingDate: reportDate,
     });
   };

@@ -2,11 +2,15 @@ export const checkboxStyle = 'h-4 w-4 text-primary border-gray-300 rounded';
 export const errorStyle =
   'block w-full py-3 pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
 export const defaultInputStyle =
-  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 pl-4 placeholder-textLight font-h1';
+  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark py-3 placeholder-textLight font-h1';
+export const disabledInputStyle =
+  'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textLight py-3 placeholder-textLight font-h1';
 export const defaultMoneyInputStyle =
   'font-h1 bg-uiBg focus:bg-white focus:ring-uiMidDark border border-transparent focus:border focus:border-uiMidDark block w-full sm:text-sm rounded-md text-textDark items-center py-3 pl-5 placeholder-textLight font-h1';
 export const label =
   'block text-base leading-snug font-body font-semibold text-textDark';
+export const disabledLabel =
+  'block text-base leading-snug font-body font-semibold text-textLight';
 export const subLabel =
   'block text-sm font-body leading-snug text-textMid self-stretch';
 export const navStyle = '-mb-px flex flex-1 space-x-8';

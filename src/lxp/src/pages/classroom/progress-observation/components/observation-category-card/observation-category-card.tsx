@@ -1,5 +1,11 @@
-import { capitalizeFirstLetter, capitalizeWords } from '@ecdlink/core';
-import { Button, Typography, classNames, renderIcon } from '@ecdlink/ui';
+import { capitalizeFirstLetter } from '@ecdlink/core';
+import {
+  Button,
+  Divider,
+  Typography,
+  classNames,
+  renderIcon,
+} from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { progressTrackingSelectors } from '@store/progress-tracking';
 import * as styles from './observation-category-card.styles';
@@ -8,6 +14,7 @@ import { ObservationCategoryCardProps } from './observation-category-card.types'
 export const ObservationCategoryCard: React.FC<
   ObservationCategoryCardProps
 > = ({
+  categoryImageUrl,
   categoryName,
   categoryColour,
   levelId,
@@ -25,64 +32,83 @@ export const ObservationCategoryCard: React.FC<
     progressTrackingSelectors.getProgressTrackingSkillById(helpingSkillId)
   );
 
+  if (!className) {
+    className = 'bg-uiBg';
+  } else if (className.indexOf('bg-') === -1) {
+    className = `${className} bg-uiBg`;
+  }
+
   return (
-    <div
-      className={classNames(styles.wrapper, className)}
-      style={{ borderTopWidth: '4px', borderTopColor: categoryColour }}
-    >
-      <div className={styles.contentWrapper}>
+    <div className={classNames(styles.wrapper, className)}>
+      <div
+        className={styles.contentWrapper}
+        onClick={!onEdit ? undefined : () => onEdit()}
+      >
         <div className={styles.headerBar}>
-          <Typography
-            className={achievedLevel ? 'w-9/12' : 'w-full'}
-            weight={'bold'}
-            type={'body'}
-            color={'textMid'}
-            text={capitalizeFirstLetter(categoryName.toLowerCase())}
-          />
-          {achievedLevel && (
-            <div className={styles.levelContainer}>
-              {achievedLevel && (
-                <img
-                  className={'m-auto'}
-                  src={achievedLevel.imageUrl}
-                  alt="category"
-                />
-              )}
+          <div
+            className="mr-4 rounded-full p-4"
+            style={{ backgroundColor: categoryColour }}
+          >
+            <img
+              className={'w-22 h-22'}
+              src={categoryImageUrl}
+              alt="category"
+            />
+          </div>
+          <div>
+            <Typography
+              className={'w-full'}
+              weight={'bold'}
+              type={'h4'}
+              color={'textDark'}
+              text={capitalizeFirstLetter(categoryName.toLowerCase())}
+            />
+          </div>
+        </div>
+        <Divider dividerType="dashed" />
+        {achievedLevel && (
+          <div className={styles.levelContainer}>
+            <div className="mr-4">
+              <img
+                className={'m-auto'}
+                src={achievedLevel.imageUrl}
+                alt="category"
+              />
+            </div>
+            <div>
               <Typography
                 type={'small'}
                 weight={'bold'}
-                color={'textMid'}
-                text={capitalizeWords(achievedLevel.name.toLowerCase())}
+                color={'textDark'}
+                text={achievedLevel.name.toUpperCase()}
               />
             </div>
-          )}
-        </div>
+          </div>
+        )}
         {!isCompetentWithCategory && (
           <>
             <Typography
               className={styles.spaceTopBig}
               type={'help'}
               color={'textLight'}
-              text={`Helping ${childName} with:`}
+              text={!!childName ? `Helping ${childName} with` : `Support area`}
             />
             <Typography
               className={styles.spaceTopSmall}
               type={'body'}
               color={'textMid'}
-              weight="bold"
               text={skill?.name || ''}
             />
             <Typography
               className={styles.spaceTopMedium}
               type={'help'}
               color={'textLight'}
-              text={`To do:`}
+              text={`To do`}
             />
             <Typography
               className={styles.spaceTopSmall}
               type={'body'}
               color={'textMid'}
-              weight="bold"
               text={toDoNote}
             />
           </>
@@ -101,18 +127,18 @@ export const ObservationCategoryCard: React.FC<
         {onEdit && (
           <Button
             className={styles.spaceTopBig}
-            type={'outlined'}
+            type={'filled'}
             color="primary"
             size="small"
             onClick={() => onEdit()}
           >
-            {renderIcon('PencilIcon', styles.buttonIcon)}
             <Typography
               className={styles.spaceRight}
               type={'small'}
-              color={'primary'}
+              color={'white'}
               text={'Edit'}
             ></Typography>
+            {renderIcon('PencilIcon', styles.buttonIcon)}
           </Button>
         )}
       </div>

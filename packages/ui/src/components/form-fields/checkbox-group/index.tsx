@@ -8,6 +8,8 @@ export interface CheckboxGroupProps<T extends FieldValues = {}>
   icon?: ReactElement;
   title: string;
   titleColours?: Colours;
+  titleWeight?: string;
+  titleSize?: string;
   description?: string;
   extraChildren?: JSX.Element;
   onChange?: (e: CheckboxChange) => void;
@@ -27,6 +29,8 @@ export const CheckboxGroup = ({
   icon,
   title,
   titleColours = 'textDark',
+  titleWeight = 'bold',
+  titleSize = 'base',
   description,
   onChange,
   value,
@@ -96,7 +100,7 @@ export const CheckboxGroup = ({
           <article
             className={classNames(
               'prose',
-              `text-${titleColours} text-base font-bold`
+              `text-${titleColours} text-${titleSize} font-${titleWeight}`
             )}
             dangerouslySetInnerHTML={{ __html: title || '' }}
           />

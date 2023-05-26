@@ -1,26 +1,76 @@
 import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
-import { ChangeEvent, useState } from 'react';
+import {
+  ChangeEvent,
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useState,
+} from 'react';
 import { replaceBraces } from '@ecdlink/core';
+import { useSelector } from 'react-redux';
+import {
+  getCurrentCoachPractitionerVisitByUserId,
+  getPreviousCoachVisitByUserId,
+  getVisitDataForVisitIdSelectorByUserId,
+} from '@/store/pqa/pqa.selectors';
+import { currentActivityKey } from '../..';
+import { useAppDispatch } from '@/store';
+import { getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { Maybe } from 'graphql/jsutils/Maybe';
 
-const MOCKED_DATA = {
-  followUp: {
-    text: 'Use the daily routine marker etc.',
-    date: '6 December 2021',
-  },
-};
 export const DiscussionNotes = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [answer, setAnswer] = useState('');
+  const [answer, setAnswer] = useState<string | Maybe<string> | undefined>('');
 
   const question = `What next steps or plans to improve did you discuss with {client}?`;
   const name = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Discussion notes';
-  // TODO: add integration (15.1.4)
-  const isFollowUp = false;
+
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const appDispatch = useAppDispatch();
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const previousVisit = useSelector(
+    getPreviousCoachVisitByUserId(activityName, smartStarter?.userId!)
+  );
+  const currentVisit = useSelector(
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
+  );
+  const firstVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, previousVisit?.id)
+  );
+
+  const discussionNotesAnswer = firstVisitAnswers?.find(
+    (item) => item.visitSection === visitSection
+  );
+  const isFollowUp = !!discussionNotesAnswer;
+
+  const previousVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+  );
+  const previousSectionAnswers = previousVisitAnswers?.filter(
+    (item) => item.visitSection === visitSection
+  );
+
+  const question1 = previousSectionAnswers?.find(
+    (item) => item.question === question
+  );
+
+  const setPreviousAnswers = useCallback(() => {
+    setAnswer(question1?.questionAnswer);
+  }, [question1]);
 
   const onChange = (
     event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
@@ -28,7 +78,7 @@ export const DiscussionNotes = ({
     const value = event.target.value;
     setAnswer(value);
     setSectionQuestions?.([
-      { visitSection, questions: [{ answer, question }] },
+      { visitSection, questions: [{ answer: String(value), question }] },
     ]);
 
     if (value !== '') {
@@ -38,16 +88,42 @@ export const DiscussionNotes = ({
     setEnableButton?.(false);
   };
 
+  useLayoutEffect(() => {
+    if (previousVisit) {
+      appDispatch(
+        getVisitDataForVisitId({
+          visitId: previousVisit.id,
+          userId: practitionerId,
+        })
+      );
+    }
+  }, [appDispatch, practitionerId, previousVisit]);
+
+  useEffect(() => {
+    if (isView) {
+      setEnableButton?.(true);
+      setPreviousAnswers();
+    }
+  }, [isView, setEnableButton, setPreviousAnswers]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
+      {isView && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot edit responses."
+        />
+      )}
       <Divider dividerType="dashed" className="my-3" />
       <FormInput
         label={replaceBraces(question, name)}
         subLabel={`These notes will be shared with client.`}
         textInputType="textarea"
         className="mb-4"
-        value={answer}
+        value={String(answer)}
+        disabled={isView}
         onChange={onChange}
       />
 
@@ -61,12 +137,18 @@ export const DiscussionNotes = ({
           <Typography
             type="markdown"
             className="text-14"
-            text={MOCKED_DATA.followUp.date}
+            text={new Date(
+              discussionNotesAnswer.insertedDate
+            ).toLocaleDateString('en-ZA', {
+              year: 'numeric',
+              month: 'long',
+              day: 'numeric',
+            })}
             color="textDark"
           />
           <Typography
             type="body"
-            text={MOCKED_DATA.followUp.text}
+            text={discussionNotesAnswer.questionAnswer || ''}
             color="textMid"
             className="mt-4"
           />

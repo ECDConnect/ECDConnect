@@ -1,11 +1,13 @@
+import { useDialog } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
-  Divider,
   Dropdown,
   DropDownOption,
   Typography,
   renderIcon,
+  DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
 import { childrenSelectors } from '@store/children';
 import { useSelector } from 'react-redux';
@@ -22,6 +24,7 @@ import { classroomsSelectors } from '@store/classroom';
 import { saveBase64Pdf } from '@utils/child/child-progress-report.utils';
 import { ChildProgressReportSummaryModel } from '@ecdlink/graphql';
 import { getReportingPeriod } from '@utils/child/child-profile-utils';
+import ROUTES from '@/routes/routes';
 
 export const DownloadChildProgressReport: React.FC = () => {
   const history = useHistory();
@@ -45,21 +48,23 @@ export const DownloadChildProgressReport: React.FC = () => {
   const [summaryDropDownItems, setSummaryDropDownItems] = useState<
     DropDownOption<string>[]
   >([]);
+  const dialog = useDialog();
+  const [downloaded, setDownloaded] = useState<boolean>(false);
 
   useEffect(() => {
     if (reportSummaries) {
-      const options = reportSummaries.map((summary) => {
-        const summaryReportingPeriod = getReportingPeriod(
-          new Date(summary.reportDate)
-        );
+      const options = reportSummaries
+        .filter((summary) => summary.reportPeriod !== 'First')
+        .map((summary) => {
+          const summaryReportingPeriod = getReportingPeriod(
+            new Date(summary.reportDate)
+          );
 
-        return {
-          label: `${summaryReportingPeriod.monthName.substr(0, 3)} ${
-            summaryReportingPeriod.year
-          }`,
-          value: summary.reportId,
-        };
-      });
+          return {
+            label: `${summaryReportingPeriod.monthName} ${summaryReportingPeriod.year}`,
+            value: summary.reportId,
+          };
+        });
 
       setSummaryDropDownItems(options);
     }
@@ -75,7 +80,35 @@ export const DownloadChildProgressReport: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
 
-  const downloadReports = async () => {
+  const fetchReportFailed = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, close) => {
+        return (
+          <ActionModal
+            className={'mx-4'}
+            title="Report could not generated"
+            paragraphs={['Unable to generate report, please try again later.']}
+            icon={'ExclamationIcon'}
+            iconColor={'infoDark'}
+            iconBorderColor={'infoBb'}
+            actionButtons={[
+              {
+                text: 'Close',
+                colour: 'primary',
+                onClick: close,
+                type: 'filled',
+                textColour: 'white',
+                leadingIcon: 'XIcon',
+              },
+            ]}
+          />
+        );
+      },
+    });
+  };
+
+  const shareReport = async () => {
     if (!selectedReport) return;
 
     setLoading(true);
@@ -92,24 +125,36 @@ export const DownloadChildProgressReport: React.FC = () => {
 
     setLoading(false);
 
-    const summaryReportingPeriod = getReportingPeriod(
-      new Date(selectedReport.reportDate || '')
-    );
+    if (!!base64Pdf) {
+      const summaryReportingPeriod = getReportingPeriod(
+        new Date(selectedReport.reportDate || '')
+      );
 
-    saveBase64Pdf(
-      base64Pdf,
-      `${currentChildUser?.firstName}-${currentChildUser?.surname}-${summaryReportingPeriod.monthName}-${summaryReportingPeriod.year}`
-    );
+      saveBase64Pdf(
+        base64Pdf,
+        `${currentChildUser?.firstName}-${currentChildUser?.surname}-${summaryReportingPeriod.monthName}-${summaryReportingPeriod.year}`
+      );
+
+      setDownloaded(true);
+    } else {
+      fetchReportFailed();
+    }
   };
 
   return (
     <BannerWrapper
       size={'small'}
       color={'primary'}
-      title={'Download caregiver report'}
+      title={'Share caregiver report'}
       onBack={() => {
         if (!loading) {
-          history.goBack();
+          if (downloaded) {
+            history.replace(ROUTES.CHILD_PROFILE, {
+              childId: currentChild?.id,
+            });
+          } else {
+            history.goBack();
+          }
         }
       }}
       displayOffline={!isOnline}
@@ -117,40 +162,32 @@ export const DownloadChildProgressReport: React.FC = () => {
       <div className={'flex flex-col p-4'}>
         <Typography
           type={'h1'}
-          color={'primary'}
-          text={'Download report to share'}
+          color={'textDark'}
+          text={'Share a report'}
+          className="mt-2"
         />
         <Dropdown
           placeholder={'Tap to choose a report'}
           className={'mt-4 justify-between'}
-          label={'Which report would you like to download?'}
+          label={'Which report would you like to share?'}
           disabled={loading}
           list={summaryDropDownItems}
           onChange={onReportSelected}
           fullWidth
         />
-
         <Typography
-          type={'body'}
+          type={'h4'}
           className={'mt-4'}
           text={'Tips for sharing the report'}
           weight={'bold'}
         />
-        <div className={'text-textLight px-5'}>
+        <div className={'text-textMid px-5'}>
           <ul className={'list-disc'}>
             <li className={'mt-2'}>
               <Typography
                 type={'help'}
                 hasMarkup
-                color={'textLight'}
-                text={`Download the report to your phone, then share it with ${currentChildUser?.firstName}'s caregiver over WhatsApp or SMS`}
-              />
-            </li>
-            <li className={'mt-2'}>
-              <Typography
-                type={'help'}
-                hasMarkup
-                color={'textLight'}
+                color={'textMid'}
                 text={`Send a voice note with a short summary of what makes ${currentChildUser?.firstName} special, how ${currentChildUser?.firstName} is growing, and the activities that ${currentChildUser?.firstName} enjoys`}
               />
             </li>
@@ -158,7 +195,7 @@ export const DownloadChildProgressReport: React.FC = () => {
               <Typography
                 type={'help'}
                 hasMarkup
-                color={'textLight'}
+                color={'textMid'}
                 text={`Have a meeting with caregivers to explain the report and help them understand ${currentChildUser?.firstName}’s progress`}
               />
             </li>
@@ -166,32 +203,24 @@ export const DownloadChildProgressReport: React.FC = () => {
               <Typography
                 type={'help'}
                 hasMarkup
-                color={'textLight'}
+                color={'textMid'}
                 text={`Let the caregiver know what they can do to help ${currentChildUser?.firstName} grow`}
               />
             </li>
           </ul>
         </div>
-
-        <Divider className={'my-4'} />
-
         <Button
           id="gtm-download-child-progress-report"
-          onClick={downloadReports}
-          className="w-full"
+          onClick={shareReport}
+          className="mt-4 w-full"
           size="small"
           color="primary"
           type="filled"
           disabled={!isOnline}
           isLoading={loading}
         >
-          {!loading && renderIcon('DownloadIcon', 'h-5 w-5 text-white')}
-          <Typography
-            type="h6"
-            className="ml-2"
-            text="Download a report"
-            color="white"
-          />
+          {!loading && renderIcon('ShareIcon', 'h-5 w-5 text-white')}
+          <Typography type="h6" className="ml-2" text="Share" color="white" />
         </Button>
       </div>
     </BannerWrapper>

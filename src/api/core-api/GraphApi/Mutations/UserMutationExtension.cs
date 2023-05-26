@@ -87,7 +87,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserModel input)
         {
             var user = await userManager.FindByIdAsync(id);
+            
+            if (user is null)
+            {
+                throw new Exception("User not found.");
+            }
+            
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            // Cross tenant, but allow admin user which has no tenant... 
+            if (user.TenantId != tenantId && user.TenantId != null)
+            {
+                throw new Exception("Cross tenant access denied.");
+            }
+
             input.Id = id;
 
             //audit user changes
@@ -169,7 +182,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.WhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
             }
 
-            user.TenantId = tenantId;
+            // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
+            user.TenantId = user.TenantId == null ? null : tenantId;
 
             if (!string.IsNullOrWhiteSpace(input.IdNumber))
             {

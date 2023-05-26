@@ -17,7 +17,7 @@ import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
-  getMissedClassAttendance,
+  getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
@@ -32,10 +32,14 @@ import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [previousClassroomGroupId, setPreviousClassroomGroupId] =
+    useState<string>('');
+
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
@@ -72,7 +76,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
-  const currentDate = new Date();
+  const [currentDate] = useState(new Date());
 
   const { errorDialog } = useRequestResponseDialog();
 
@@ -90,10 +94,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
       const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
-
-      return getDay(insertedDate) < getDay(currentDate);
+      return getDayOfYear(insertedDate) <= getDayOfYear(currentDate);
     });
-
     return filteredArray.every((value) => value === true);
   }
 
@@ -149,13 +151,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       return;
     }
 
-    if (!currentLearners.length && allChildrenInsertedBeforeToday) {
-      setAttendanceComponentType('summary');
-      return;
-    } else {
-      setAttendanceComponentType('report');
-    }
-
     const currentClassProgrammes = classProgrammesUpdated.filter(
       (x) => x.classroomGroupId === currentDayClassroomGroup.id
     );
@@ -171,50 +166,42 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       publicHolidays || []
     );
 
+    const missedDays: MissedAttendanceGroups[] =
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance,
+        holidays,
+        currentDate
+      );
+
     if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
       setAttendanceComponentType('attendance');
-      return;
-    }
-
-    const missedClassAttendance = getMissedClassAttendance(
-      [currentDayClassroomGroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === currentDayClassroomGroup.id
-      ),
-      attendance || [],
-      currentDate
-    );
-
-    const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(currentDate)
-    );
-
-    const removeHolidays = removeTodaysAttendance.filter((x) => {
-      return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
-        holidays
-      );
-    });
-    if (removeHolidays.length === 0) {
+    } else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
+      return;
     }
   }, [
-    classroomGroups,
-    attendance,
-    learners,
-    classProgrammesUpdated,
-    currentDate,
     allChildrenInsertedBeforeToday,
+    attendance,
+    classProgrammesUpdated,
+    classroomGroups,
+    classroomGroupsForPrincipal,
+    currentDate,
+    holidays,
+    learners,
+    practitioner?.isPrincipal,
     publicHolidays,
     seeRegister,
-    holidays,
+    previousClassroomGroupId,
+    classProgrammes,
   ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
-    // setSeeRegister(true);
-
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -222,39 +209,35 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       (x) => x.id === attendanceResult.classroomGroupId
     );
 
+    setPreviousClassroomGroupId(attendanceResult.classroomGroupId);
+
     if (!classgroup) return;
 
-    const missedClassAttendance = getMissedClassAttendance(
-      [classgroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === classgroup.id
-      ),
-      attendance || [],
-      currentDate
-    );
+    const missedClassAttendance: MissedAttendanceGroups[] =
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance || [],
+        holidays,
+        currentDate
+      );
+
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
+        addDays(startOfWeek(currentDate), getDay(x.missedDay)),
         holidays
       );
     });
 
-    if (removeHolidays.length === 0) {
+    if (removeHolidays.length === 0 && missedClassAttendance) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
-    }
-  };
-
-  const gotToReports = () => {
-    if (seeRegister) {
-      setSeeRegister(!seeRegister);
-      setAttendanceComponentType('report');
-    } else {
-      setAttendanceComponentType('report');
     }
   };
 
@@ -294,17 +277,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   return (
     <div>
       <MultiRouteWrapper />
-      {attendanceComponentType ? (
-        getComponentToRender(attendanceComponentType)
-      ) : (
-        <AttendanceSummary
-          hidePopup={seeRegister}
-          openReports={gotToReports}
-          currentUserId={userData?.id || ''}
-        />
-      )}
+      {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' && !seeRegister && (
+        {attendanceComponentType === 'attendance' && (
           <Button
             type="outlined"
             color="primary"

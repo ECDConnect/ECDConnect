@@ -16,7 +16,7 @@ export const getPrincipalPractitioners = (
 ): PrincipalPractitioners[] | undefined =>
   state.practitioner.principalPractitioners;
 
-export const getPractitionerById = (id: string) =>
+export const getPractitionerByUserId = (id: string) =>
   createSelector(
     (state: RootState) => state.practitioner.practitioners,
     (practitioners: PractitionerDto[] | undefined) => {

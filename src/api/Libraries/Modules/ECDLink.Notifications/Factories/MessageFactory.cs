@@ -27,15 +27,14 @@ namespace ECDLink.Notifications.Factories
             var query = _entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
 
             query = FilterTypes(query, messageProtocol);
-
             query = AssignTemplate(query, templateType);
             
             // If both null tenant and tenantId found, result will be unpredictable without this:
-            // descending will use tenant before null tenant?
-            query.OrderByDescending(q => q.TenantId)
+            // sort current tenant before null tenant
+            query = query.OrderBy(q => q.TenantId)
                 .ThenBy(q => q.TemplateType)
                 .ThenBy(q => q.Protocol);
-
+            
             return query.FirstOrDefault();
         }
 

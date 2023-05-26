@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -26,6 +27,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] PersonnelService personnelService,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -34,6 +36,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
             practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
 
+            foreach (Practitioner item in practitioners)
+            {
+                item.timeline = personnelService.GetPractitionerTimeline(item.UserId);
+            }
             return practitioners;
         }
 
