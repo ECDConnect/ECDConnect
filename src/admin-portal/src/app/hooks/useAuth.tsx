@@ -13,12 +13,14 @@ import {
   Config,
   LocalStorageKeys,
   LoginRequestModel,
+  RegisterRequestModel,
 } from '@ecdlink/core';
 import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
 
 export interface AuthContextType {
   authenticatedUser?: AuthUser;
   loading: boolean;
+  registerUser: (body: RegisterRequestModel, baseEndPoint: string) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
   logout: () => void;
   getAccessTokenPromise: () => Promise<any>;
@@ -48,6 +50,29 @@ export function AuthProvider({
     baseEndPoint: string
   ): Promise<boolean> => {
     try {
+      const response = await AuthenticateUser(baseEndPoint, body);
+
+      if (response.data) {
+        localStorage.setItem(
+          LocalStorageKeys.user,
+          JSON.stringify(response.data)
+        );
+        setAuthenticatedUser(response.data);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+
+  const registerUser = async (
+    body: LoginRequestModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      console.log(">>>>>");
       const response = await AuthenticateUser(baseEndPoint, body);
 
       if (response.data) {
@@ -126,7 +151,7 @@ export function AuthProvider({
       authenticatedUser,
       login,
       logout,
-      getAccessTokenPromise,
+      getAccessTokenPromise
     }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
     [authenticatedUser]
