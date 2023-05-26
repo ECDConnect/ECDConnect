@@ -1,5 +1,5 @@
 import { getYear, getMonth, getWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch, useAppSelector } from './store';
@@ -187,8 +187,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(contentReportActions.resetContentReportState());
   };
 
-  const initStoreSetup = async () => {
-    if (isOnline) {
+  const initStoreSetup = useCallback(async () => {
+    if (isOnline && !userData) {
       setInitLoading(true);
       await initStaticStoreSetup();
       await initAdditionalStoreSetup();
@@ -196,7 +196,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(false);
       setShouldSaveStateHash(true);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   useEffect(() => {
     if (shouldSaveStateHash) {
@@ -225,8 +226,9 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
     await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(10)
+      contentReportThunkActions.getChildProgressReportSummary(50)
     ).unwrap();
     await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(

@@ -3,14 +3,10 @@ import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
   BannerWrapper,
-  Button,
   Dialog,
   DialogPosition,
-  FormInput,
   ProfileAvatar,
-  renderIcon,
   StackedList,
-  Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
@@ -21,7 +17,6 @@ import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import {
   initialPractitionerAboutValues,
   PractitionerAboutModel,

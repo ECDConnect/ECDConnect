@@ -13,4 +13,5 @@ export interface ChildProgressAssessmentRouteState {
   progressTrackingCategoryId: number;
   returnToOverview?: boolean;
   reportingDate?: string;
+  firstObservation?: boolean;
 }

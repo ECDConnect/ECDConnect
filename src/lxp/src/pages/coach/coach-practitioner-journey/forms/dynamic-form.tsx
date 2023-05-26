@@ -19,30 +19,35 @@ export interface SectionQuestions {
 }
 
 export interface DynamicFormProps {
+  isView?: boolean;
   name?: string;
   smartStarter?: PractitionerDto;
   currentStep?: number;
   isTipPage?: boolean;
   steps?: any[];
   sectionQuestions?: SectionQuestions[];
+  isLoading?: boolean;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
   onNextStep?: () => void;
   onPreviousStep?: () => void;
   onClose?: () => void;
+  onSubmit?: () => void;
 }
 
 export const DynamicForm = ({
-  name,
+  isView,
   smartStarter,
   currentStep,
   steps,
   isTipPage,
+  isLoading,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
   onClose,
+  onSubmit,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
@@ -95,10 +100,6 @@ export const DynamicForm = ({
     onNextStep?.();
   }, [onNextStep]);
 
-  const onSubmit = useCallback(async () => {
-    console.log('submitting...', sectionQuestions);
-  }, [sectionQuestions]);
-
   const renderContent = useMemo(() => {
     if (!steps) return;
 
@@ -108,6 +109,7 @@ export const DynamicForm = ({
 
     return (
       <CurrentStep
+        isView={isView}
         smartStarter={smartStarter}
         isTipPage={isTipPage}
         setIsTip={setIsTip}
@@ -118,6 +120,7 @@ export const DynamicForm = ({
       />
     );
   }, [
+    isView,
     handleSetQuestions,
     smartStarter,
     currentStep,
@@ -131,16 +134,9 @@ export const DynamicForm = ({
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
-        action: onSubmit,
-        text: 'Save',
-        icon: 'SaveIcon',
-      };
-    }
-    if (Number(currentStep) === 0) {
-      return {
-        action: handleOnNext,
-        text: name?.startsWith('Care for') ? 'Start' : 'Next',
-        icon: 'ClipboardListIcon',
+        action: isView ? onClose : onSubmit,
+        text: isView ? 'Close' : 'Save',
+        icon: isView ? 'XIcon' : 'SaveIcon',
       };
     }
 
@@ -153,11 +149,11 @@ export const DynamicForm = ({
     }
 
     return {
-      action: onSubmit,
-      text: 'Save',
-      icon: 'SaveIcon',
+      action: isView ? onClose : onSubmit,
+      text: isView ? 'Close' : 'Save',
+      icon: isView ? 'XIcon' : 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length, name]);
+  }, [isView, onClose, currentStep, handleOnNext, onSubmit, steps?.length]);
 
   return (
     <div className="flex h-full flex-col">
@@ -172,7 +168,8 @@ export const DynamicForm = ({
             className="mb-4 w-full"
             text={renderButton.text}
             onClick={renderButton.action}
-            disabled={!isEnableButton}
+            isLoading={isLoading}
+            disabled={!isEnableButton || isLoading}
           />
         </div>
       )}

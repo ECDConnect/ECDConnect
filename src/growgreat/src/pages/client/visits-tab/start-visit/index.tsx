@@ -21,6 +21,8 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { MotherActions } from '@/store/mother/mother.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { VisitDto } from '@ecdlink/core';
+import { VisitModelInput } from '@ecdlink/graphql';
 
 interface DropdownOnChange {
   id: string | undefined;
@@ -99,25 +101,52 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
     history.push(ROUTES.CLIENTS.ROOT, { activeTabIndex: CLIENT_TABS.VISIT });
   };
 
-  const onStartVisit = () => {
-    // TODO: add integration
-    if (!infantCurrentVisit) {
-      return errorDialog(
-        'Integration for additional visit and visit for mom coming soon'
-      );
-    }
-
+  const onStartVisit = async () => {
     switch (client?.type) {
-      case 'infant':
-        history.push(
-          `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${client.id}/activities-form/${infantCurrentVisit?.id}`
-        );
-        break;
+      case 'infant': {
+        const input: VisitModelInput = {
+          infantId: client.id,
+          plannedVisitDate: new Date().toISOString(),
+          actualVisitDate: new Date().toISOString(),
+          attended: false,
+        };
 
-      case 'mother':
+        const response = await appDispatch(
+          infantThunkActions.addAdditionalVisitForInfant(input)
+        );
+
+        const otherVisit = (response.payload as VisitDto) || undefined;
+        if (otherVisit?.id) {
+          history.push(
+            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${client.id}/activities-form/${otherVisit?.id}`
+          );
+        }
+        return;
+      }
+      case 'mother': {
+        const input: VisitModelInput = {
+          motherId: client.id,
+          plannedVisitDate: new Date().toISOString(),
+          actualVisitDate: new Date().toISOString(),
+          attended: false,
+        };
+
+        const response = await appDispatch(
+          motherThunkActions.addAdditionalVisitForMother(input)
+        );
+
+        const otherVisit = (response.payload as VisitDto) || undefined;
+        if (otherVisit?.id) {
+          history.push(
+            `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${client.id}/activities-form/${otherVisit?.id}`
+          );
+        }
+        return;
+      }
       default:
-        // TODO: add integration
-        break;
+        history.push(ROUTES.CLIENTS.ROOT, {
+          activeTabIndex: CLIENT_TABS.VISIT,
+        });
     }
   };
   return (

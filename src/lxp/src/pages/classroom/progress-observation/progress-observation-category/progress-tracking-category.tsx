@@ -60,6 +60,7 @@ export const ProgressObservationCategory = () => {
       childId: childId,
       progressTrackingCategoryId: progressTrackingCategoryId,
       reportingDate: locationState.reportingDate,
+      firstObservation: locationState.firstObservation,
     });
   };
 

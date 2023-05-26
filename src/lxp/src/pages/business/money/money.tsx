@@ -1,7 +1,7 @@
 import { Typography, FADButton } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import React, { useEffect, useLayoutEffect, useState } from 'react';
+import React, { useEffect, useLayoutEffect } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
@@ -19,11 +19,20 @@ import {
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { useAppContext } from '@/walkthrougContext';
 
-export const Money = () => {
+interface MoneyProps {
+  setHasIncomeStatements: (item: boolean) => void;
+  hasIncomeStatements: boolean;
+  setHandleAutoStartWalkthrough: (item: boolean) => void;
+}
+
+export const Money: React.FC<MoneyProps> = ({
+  hasIncomeStatements,
+  setHasIncomeStatements,
+  setHandleAutoStartWalkthrough,
+}) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
-  const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
@@ -47,6 +56,7 @@ export const Money = () => {
         })
       );
     }
+    setHandleAutoStartWalkthrough(true);
   };
 
   useEffect(() => {
@@ -102,6 +112,7 @@ export const Money = () => {
     ) {
       setHasIncomeStatements(true);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [income, expense, balanceSheet]);
 
   const { state } = useAppContext();

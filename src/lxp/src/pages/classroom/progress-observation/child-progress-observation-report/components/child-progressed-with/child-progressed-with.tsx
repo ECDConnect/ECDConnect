@@ -1,13 +1,11 @@
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Button,
-  Card,
   Divider,
   FormInput,
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { getYear } from 'date-fns';
 import { useForm, useFormState } from 'react-hook-form';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '@store/children';
@@ -23,8 +21,7 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
   childId,
   onSubmit,
 }) => {
-  const { currentReport, previousReport } =
-    useChildProgressObservation(childId);
+  const { currentReport } = useChildProgressObservation(childId);
 
   const child = useSelector(childrenSelectors.getChildById(childId));
   const childUser = useSelector(
@@ -43,8 +40,11 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
 
   const { isValid } = useFormState({ control: formControl });
 
-  const handleFormSubmit = (formValue: ChildProgressedWithFormModel) => {
-    onSubmit(formValue);
+  const handleFormSubmit = (
+    formValue: ChildProgressedWithFormModel,
+    exit: boolean
+  ) => {
+    onSubmit(formValue, exit);
   };
 
   useEffect(() => {
@@ -59,9 +59,10 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
   return (
     <div className={'flex h-full w-full flex-col px-4'}>
       <Typography
-        type={'h1'}
-        color={'primary'}
+        type={'h2'}
+        color={'textDark'}
         text={'Share more detail for the caregiver report'}
+        className="mb-4"
       />
       <FormInput
         type={'text'}
@@ -69,68 +70,30 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
         register={formRegister}
         nameProp={'childProgressedWith'}
         label={`${childUser?.firstName} has made good progress with:`}
-        placeholder={`E.g. Sharing their emotions. They can talk about how they are feeling.`}
+        placeholder={`E.g. Sharing his emotions. He can talk about how he is feeling.`}
       />
-
       {currentReport && currentReport.observationNote && (
-        <Card shadowSize="lg" borderRaduis={'lg'} className={'mt-4 p-4'}>
+        <div className="mt-4">
+          <Divider dividerType="dashed" className="mb-4" />
           <Typography
-            type={'body'}
-            weight={'bold'}
-            color={'black'}
+            type={'h4'}
+            weight={'semibold'}
+            color={'textDark'}
             text={'Your observation notes'}
+            className="mb-2"
           />
-          {previousReport && currentReport && (
-            <Typography
-              type={'help'}
-              weight={'skinny'}
-              color={'textLight'}
-              text={`${currentReport.reportingPeriod} report (This report)`}
-            />
-          )}
           <Typography
             type={'body'}
-            weight={'skinny'}
-            color={'black'}
+            color={'textMid'}
             text={currentReport?.observationNote || ''}
           />
-        </Card>
+        </div>
       )}
-
-      {previousReport && previousReport.observationNote && (
-        <Card shadowSize="lg" borderRaduis={'lg'} className={'my-4 p-4'}>
-          <Typography
-            type={'body'}
-            weight={'bold'}
-            color={'black'}
-            text={'Your previous answer'}
-          />
-          <Typography
-            type={'help'}
-            weight={'skinny'}
-            color={'textLight'}
-            text={`${previousReport.reportingPeriod} ${
-              previousReport.reportingDate
-                ? `${getYear(new Date(previousReport.reportingDate))}`
-                : ''
-            } report`}
-          />
-          <Typography
-            type={'body'}
-            weight={'skinny'}
-            color={'black'}
-            text={previousReport.observationNote || ''}
-          />
-        </Card>
-      )}
-
-      <Divider className={'my-4'} />
-
       <Button
         onClick={() => {
-          handleFormSubmit(getFormValue());
+          handleFormSubmit(getFormValue(), false);
         }}
-        className="w-full"
+        className="mt-4 w-full"
         size="small"
         color="primary"
         type="filled"
@@ -138,6 +101,24 @@ export const ChildProgressedWith: React.FC<ChildProgressedWithProps> = ({
       >
         {renderIcon('ArrowCircleRightIcon', 'h-5 w-5 text-white')}
         <Typography type="h6" className="ml-2" text="Next" color="white" />
+      </Button>
+      <Button
+        onClick={() => {
+          handleFormSubmit(getFormValue(), true);
+        }}
+        className="mt-4 w-full"
+        size="small"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', 'h-5 w-5 text-primary')}
+        <Typography
+          type="h6"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
+        />
       </Button>
     </div>
   );

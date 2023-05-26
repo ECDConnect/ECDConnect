@@ -1,4 +1,5 @@
 import {
+  Alert,
   CheckboxChange,
   CheckboxGroup,
   Divider,
@@ -8,22 +9,58 @@ import { questions } from './questions';
 import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 import { replaceBraces } from '@ecdlink/core';
+import { currentActivityKey } from '../..';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { useParams } from 'react-router';
+import { useSelector } from 'react-redux';
+import {
+  getCurrentCoachPractitionerVisitByUserId,
+  getVisitDataForVisitIdSelectorByUserId,
+} from '@/store/pqa/pqa.selectors';
 
 export const ProgrammeObservations = ({
+  isView,
   smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [question, setAnswers] = useState({
     question: "Think about {client}'s SmartStart programme delivery.",
-    answer: [] as (string | number | undefined)[],
+    answer: [] as (string | number | undefined)[] | string[] | undefined,
   });
 
   const answers = question.answer as string[];
-
   const name = smartStarter?.user?.firstName || 'the smartStarter';
-
   const visitSection = 'Programme observations';
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const currentVisit = useSelector(
+    getCurrentCoachPractitionerVisitByUserId(
+      activityName,
+      smartStarter?.userId!
+    )
+  );
+  const previousVisitAnswers = useSelector(
+    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+  );
+  const previousSectionAnswers = previousVisitAnswers?.filter(
+    (item) => item.visitSection === visitSection
+  );
+
+  const question1 = previousSectionAnswers?.find(
+    (item) => item.question === question.question
+  );
+
+  const setPreviousAnswers = useCallback(() => {
+    if (!question.answer?.length) {
+      setAnswers((prevState) => ({
+        ...prevState,
+        answer: question1?.questionAnswer?.split(/,(?=[A-Z])/),
+      }));
+    }
+  }, [question.answer, question1]);
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -56,6 +93,12 @@ export const ProgrammeObservations = ({
     setEnableButton?.(true);
   }, [setEnableButton]);
 
+  useEffect(() => {
+    if (isView) {
+      setPreviousAnswers();
+    }
+  }, [setPreviousAnswers, isView]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
@@ -64,6 +107,13 @@ export const ProgrammeObservations = ({
         text={replaceBraces(question.question, name)}
         color="textMid"
       />
+      {isView && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot edit responses."
+        />
+      )}
       <Divider dividerType="dashed" className="p-3" />
       <div className="flex flex-col gap-2">
         <Typography
@@ -73,11 +123,13 @@ export const ProgrammeObservations = ({
         />
         {questions.map((item) => (
           <CheckboxGroup
-            id={item?.title}
+            disabled={isView}
+            id={item.title}
             key={item?.title}
-            title={item.title}
-            description={item.subTitle}
+            title={`<p className="text-white"><strong>${item?.title}</strong> ${item.subTitle}</p>`}
             titleColours="textMid"
+            titleSize="sm"
+            titleWeight="normal"
             checked={answers?.some(
               (option) => option === item.title + item.subTitle
             )}
