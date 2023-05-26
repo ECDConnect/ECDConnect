@@ -216,6 +216,7 @@ export const CoachPractitionerJourney: React.FC = () => {
             type={
               timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
             }
+            variant="flat"
             title={timeline?.smartSpaceLicenseStatus || ''}
             message={
               !!timeline?.smartSpaceLicenseDate
