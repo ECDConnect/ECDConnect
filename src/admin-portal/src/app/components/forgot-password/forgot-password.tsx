@@ -40,8 +40,8 @@ export default function ForgotPassword() {
     if (isValid) {
       setResetLinkSent(!resetLinkSent)
       setIsLoading(!isLoading)
-      history.push("/reset")
     }
+
   };
 
   const getLogoUrl = () => {
@@ -54,7 +54,7 @@ export default function ForgotPassword() {
   if (resetLinkSent) {
     return (
       <div className="darkBackground flex min-h-screen items-center justify-center">
-        <div className="rounded bg-white p-8 shadow lg:w-full">
+        <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
           <div className="flex flex-shrink-0 items-center justify-center">
             {getLogoUrl()}
           </div>

@@ -16,13 +16,15 @@ import {
 } from '@ecdlink/core';
 import { createUploadLink } from 'apollo-upload-client';
 import React, { useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
 import { MainRoutes, PublicRoutes } from './app.routes';
 import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
-
+import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
 const cache = new InMemoryCache({});
 export let apolloClient: ApolloClient<any> = null;
+interface RouteParams {
+  userId: string;
+}
 
 const App: React.FC = () => {
   const { authenticatedUser, getAccessTokenPromise, logout } = useAuth();
@@ -30,14 +32,15 @@ const App: React.FC = () => {
   const [client, setClient] = useState<ApolloClient<any>>();
   const history = useHistory();
   const existingUser = localStorage.getItem(LocalStorageKeys.existingUser);
+  const { userId } = useParams<RouteParams>();
 
   useEffect(() => {
     if (!authenticatedUser) {
-      if (existingUser) {
+      if (userId?.length === 0) {
         logout();
         history.push('/');
-      } else {
-        history.push('/register');
+      } else if (userId) {
+        history.push(`/register/${userId}`);
       }
     } else {
       const linkError = onError(({ graphQLErrors, networkError }) => {

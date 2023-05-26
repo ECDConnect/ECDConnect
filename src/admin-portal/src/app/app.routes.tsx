@@ -42,9 +42,9 @@ const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
-      <Route exact path="/register" component={Register} />
+      <Route exact path="/register/:userId" component={Register} />
       <Route exact path="/forgot-password" component={ForgotPassword} />
-      <Route exact path="/reset" component={ResetPassword} />
+      <Route exact path="/reset/:userId" component={ResetPassword} />
     </Switch>
   );
 };
