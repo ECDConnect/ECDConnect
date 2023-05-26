@@ -17,8 +17,11 @@ import {
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
-import { Maybe } from '@ecdlink/graphql';
+import { ClassroomGroup, Maybe } from '@ecdlink/graphql';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { PractitionerService } from '@/services/PractitionerService';
+import { authSelectors } from '@/store/auth';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const ProgrammeDetails = ({
   isView,
@@ -45,6 +48,8 @@ export const ProgrammeDetails = ({
       answer: '',
     },
   ]);
+  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
+    useState<ClassroomGroup[]>();
 
   const options: ButtonGroupOption<boolean>[] = [
     { text: 'Yes', value: true, disabled: isView },
@@ -55,8 +60,11 @@ export const ProgrammeDetails = ({
   const visitSection = 'Programme details';
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
+  const { isOnline } = useOnlineStatus();
+
   const { practitionerId } = useParams<PractitionerJourneyParams>();
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
+  const userAuth = useSelector(authSelectors.getAuthUser);
 
   const currentVisit = useSelector(
     getCurrentCoachPractitionerVisitByUserId(
@@ -152,6 +160,21 @@ export const ProgrammeDetails = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  const classroomsDetailsForPractitioner = useCallback(async () => {
+    const classroomDetails = (await new PractitionerService(
+      userAuth?.auth_token!
+    ).getClassroomGroupClassroomsForPractitioner(
+      practitioner?.userId!
+    )) as unknown;
+
+    setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
+    return classroomDetails;
+  }, [practitioner?.userId, userAuth?.auth_token]);
+
+  useEffect(() => {
+    classroomsDetailsForPractitioner();
+  }, [classroomsDetailsForPractitioner]);
+
   useEffect(() => {
     if (isView) {
       setEnableButton?.(true);
@@ -182,17 +205,29 @@ export const ProgrammeDetails = ({
           title="You are viewing this form and cannot edit responses."
         />
       )}
-      <Typography
-        type="h4"
-        text={`Programme type: ${practitioner?.programmeType || ''}`}
-        color="textDark"
-        className="my-4"
-      />
+      <div className="flex">
+        <Typography
+          type="h4"
+          text="Programme type:"
+          color="textDark"
+          className="my-4"
+        />
+        <Typography
+          type="h4"
+          text={
+            isOnline
+              ? practitionerClassroomDetails?.[0].classroom?.name || ''
+              : 'Not available offline'
+          }
+          color={isOnline ? 'textDark' : 'errorMain'}
+          className="my-4 ml-1 font-bold"
+        />
+      </div>
 
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>
@@ -216,7 +251,7 @@ export const ProgrammeDetails = ({
       <Typography
         type="h4"
         text={replaceBraces(questions[1].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>
@@ -241,13 +276,11 @@ export const ProgrammeDetails = ({
           onChange={(event) => onOptionSelected(event.target.value, 2)}
         />
       )}
-      {!!parseBool(String(questions[1].answer)) && (
-        <Alert
-          className="mt-4"
-          type="info"
-          title={`Check if ${name} has any questions about fees or needs support.`}
-        />
-      )}
+      <Alert
+        className="mt-4"
+        type="info"
+        title={`Check if ${name} has any questions about fees or needs support.`}
+      />
     </div>
   );
 };

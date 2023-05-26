@@ -1,4 +1,4 @@
-import { Card, RoundIcon, Typography } from '@ecdlink/ui';
+import { RoundIcon, Typography } from '@ecdlink/ui';
 
 export type SkillCardProps = {
   className: string;
@@ -8,7 +8,6 @@ export type SkillCardProps = {
 };
 
 const SkillCard: React.FC<SkillCardProps> = ({
-  className,
   icon,
   title,
   hexBackgroundColor,

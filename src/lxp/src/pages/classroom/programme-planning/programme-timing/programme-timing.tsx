@@ -171,6 +171,7 @@ const ProgrammeTiming: React.FC = () => {
         type: 'success',
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedDate, selectedTheme]
   );
 

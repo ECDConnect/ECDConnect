@@ -57,10 +57,9 @@ export const DangerSignsStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        const none = 'None of the above';
         if (
-          (event.value === none && answers?.length) ||
-          answers?.includes(none)
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
         ) {
           return dialog({
             blocking: false,

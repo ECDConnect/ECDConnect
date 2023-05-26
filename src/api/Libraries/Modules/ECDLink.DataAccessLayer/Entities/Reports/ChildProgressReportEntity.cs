@@ -6,6 +6,7 @@ using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Reports
@@ -17,12 +18,13 @@ namespace ECDLink.DataAccessLayer.Entities.Reports
 
     }
 
-    public class ChildProgressReport<TKey> : EntityBase<TKey>, IUserScoped, ClassroomGroupJoin<TKey>, ChildJoin<TKey>
+    public class ChildProgressReport<TKey> : EntityBase<TKey>, IUserScoped, ClassroomGroupJoin<Guid?>, ChildJoin<TKey>
          where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(ClassroomGroupId))]
         public virtual ClassroomGroup ClassroomGroup { get; set; }
-        public TKey ClassroomGroupId { get; set; }
+
+        public Guid? ClassroomGroupId { get; set; }
 
         public DateTime ReportDate { get; set; }
 

@@ -110,6 +110,8 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     sendIncomeUpdate();
   };
 
+  const numberInputInvalidChars = ['-', '+', 'e'];
+
   return (
     <BannerWrapper
       title={`Add a new income type`}
@@ -153,6 +155,11 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           placeholder={'e.g. 20'}
           className="mt-2"
           type={'number'}
+          onKeyDown={(e: any) => {
+            if (numberInputInvalidChars.includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
         />
         <FormInput<DsdSubsidyModel>
           label={'How much did you receive from the DBE subsidy?'}

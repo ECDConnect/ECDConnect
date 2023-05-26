@@ -139,7 +139,7 @@ export const InitialObservations = ({
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>
@@ -156,7 +156,7 @@ export const InitialObservations = ({
       <Typography
         type="h4"
         text={replaceBraces(questions[1].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<boolean>

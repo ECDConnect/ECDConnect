@@ -1,7 +1,12 @@
-﻿using ECDLink.DataAccessLayer.Context;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -9,9 +14,7 @@ using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.EntityFrameworkCore;
 using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -30,11 +33,17 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<ProgrammeType, Guid> _programmeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
         private IGenericRepository<Trainee, Guid> _traineeRepo;
+        private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
+        private IGenericRepository<License, Guid> _licenseRepo;
 
+        private VisitDataManager _visitDataManager;
+        private VisitManager _visitManager;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            VisitDataManager visitDataManager,
+            VisitManager visitManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -48,6 +57,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _programmeRepo = _repoFactory.CreateGenericRepository<ProgrammeType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
             _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
+            _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
+            _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
+
+            _visitDataManager = visitDataManager;
+            _visitManager = visitManager;
         }
 
 
@@ -198,25 +212,34 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         public Practitioner SwitchPrincipal([Service] UserManager<ApplicationUser> userManager, string oldPrincipalUserId, string newPrincipalUserId)
         {
-            var practitionerToPromote = _practiRepo.GetByUserId(newPrincipalUserId);
-            var practitionerToDemote = _practiRepo.GetByUserId(oldPrincipalUserId);
+            var practitionerToPromote = _practiGenericRepo.GetByUserId(newPrincipalUserId);
+            var practitionerToDemote = _practiGenericRepo.GetByUserId(oldPrincipalUserId);
             if (practitionerToPromote != null && practitionerToDemote != null)
             {
                 practitionerToPromote.IsPrincipal = true;
                 practitionerToPromote.ShareInfo = true;
-                _practiRepo.Update(practitionerToPromote);
+                practitionerToPromote.PrincipalHierarchy = null;
+                practitionerToPromote.DateLinked = null;
+                practitionerToPromote.DateAccepted = null;
+                practitionerToPromote.DateAccepted = null;
+                _practiGenericRepo.Update(practitionerToPromote);
 
                 practitionerToDemote.IsPrincipal = false;
-                _practiRepo.Update(practitionerToDemote);
+                practitionerToDemote.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                practitionerToDemote.ShareInfo = true;
+                practitionerToDemote.DateLinked = DateTime.Now;
+                practitionerToDemote.DateAccepted = DateTime.Now;
+                practitionerToPromote.DateAccepted = DateTime.Now;
+                _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
                     {
-                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);                        
-                        _practiRepo.Update(practi);
+                        practi.PrincipalHierarchy = Guid.Parse(practitionerToPromote.UserId);
+                        _practiGenericRepo.Update(practi);
                     }
                 }
 
@@ -335,6 +358,149 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             return null;
+        }
+
+        public PractitionerTimeline GetPractitionerTimeline(string userId)
+        {
+
+            PractitionerTimeline timeLine = new PractitionerTimeline();
+            DateTime today = DateTime.Today;
+
+            // Starter license received
+            var starterDate = (
+                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_licence) on license.LicenseTypeId equals licenseType.Id
+                select license
+            ).Select(x => x.LicenseDate).FirstOrDefault();
+            if (starterDate != null)
+            {
+                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
+                timeLine.StarterLicenseDate = starterDate;
+                timeLine.StarterLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+            else
+            {
+                timeLine.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
+                timeLine.StarterLicenseColor = MetricsColorEnum.Warning.ToString();
+            }
+
+            // SmartSpace license received
+            var smartSpaceDate = (
+                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_licence) on license.LicenseTypeId equals licenseType.Id
+                select license
+            ).Select(x => x.LicenseDate).FirstOrDefault();
+
+            if (smartSpaceDate != null)
+            {
+                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
+                timeLine.SmartSpaceLicenseDate = smartSpaceDate;
+                timeLine.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+            else
+            {
+                timeLine.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                timeLine.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+            }
+
+            // TODO: meetings -> consolidation meetings + club meetings - waiting for development to be completed
+
+            // TODO: first aid -> waiting for development to be completed
+
+            // PQA visits
+            List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+            List<Visit> pre_pqa_visits = new List<Visit>();
+            List<Visit> pqa_visits = new List<Visit>();
+            List<Visit> support_visits = new List<Visit>();
+
+            foreach (Visit visit in visits)
+            {
+                if (visit != null)
+                {
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                    {
+                        if (visit.PlannedVisitDate.Date > today.Date)
+                        {
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                        }
+                        else
+                        {
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.first_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                        }
+                        pre_pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                    {
+                        if (visit.PlannedVisitDate.Date > today.Date)
+                        {
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                        }
+                        else
+                        {
+                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                        }
+                        pre_pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_2)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_3)
+                    {
+                        PQARating pqaRating = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+                        visit.OverallRatingColor = pqaRating.OverallRatingColor;
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_pqa_visit_follow_up)
+                    {
+                        pqa_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
+                    {
+                        support_visits.Add(visit);
+                    }
+                }
+            }
+
+            timeLine.PrePQASiteVisits = pre_pqa_visits;
+            timeLine.PQASiteVisits = pqa_visits;
+            timeLine.SupportVisits = support_visits;
+
+            return timeLine;
+        }
+
+
+        public bool DeActivatePractitioner(string userId, string leavingComment)
+        {
+            Practitioner practitioner = _practiGenericRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
+
+            if (practitioner != null)
+            {
+                practitioner.IsActive = false;
+                practitioner.UpdatedBy = _applicationUserId;
+                practitioner.UpdatedDate = DateTime.Now;
+                practitioner.LeavingComment = leavingComment;
+                _practiGenericRepo.Update(practitioner);
+
+                return true;
+            }
+            return false;
         }
 
         #endregion        

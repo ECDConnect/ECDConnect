@@ -19,6 +19,9 @@ import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
 import { useAppContext } from '@/walkthrougContext';
+import ROUTES from '@/routes/routes';
+import { useSelector } from 'react-redux';
+import { statementsSelectors } from '@/store/statements';
 
 export const Business: React.FC = () => {
   const history = useHistory();
@@ -37,6 +40,13 @@ export const Business: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const [showInfo, setShowInfo] = useState(false);
+  const [hasIncomeStatements, setHasIncomeStatements] = useState(false);
+  const income = useSelector(statementsSelectors.getIncome);
+  const expense = useSelector(statementsSelectors.getExpenses);
+  const [handleAutoStartWalkthrough, setHandleAutoStartWalkthrough] =
+    useState(false);
+  const [isFromAutomaticallyStart, setIsFromAutomaticallyStart] =
+    useState(false);
 
   const backToDashboard = () => {
     history.push('/');
@@ -75,7 +85,13 @@ export const Business: React.FC = () => {
     {
       title: 'Money',
       initActive: true,
-      child: <Money />,
+      child: (
+        <Money
+          hasIncomeStatements={hasIncomeStatements}
+          setHasIncomeStatements={setHasIncomeStatements}
+          setHandleAutoStartWalkthrough={setHandleAutoStartWalkthrough}
+        />
+      ),
     },
     {
       title: 'Resources',
@@ -100,8 +116,41 @@ export const Business: React.FC = () => {
   const displayHelp =
     currentTab?.title === 'Money' || currentTab?.title === 'Programme';
 
+  const { setState, state: walkThroughState } = useAppContext();
+
+  useEffect(() => {
+    if (
+      !hasIncomeStatements &&
+      income?.length === 0 &&
+      expense?.length === 0 &&
+      handleAutoStartWalkthrough &&
+      walkThroughState?.stepIndex !== 7 &&
+      walkThroughState?.stepIndex !== 8 &&
+      walkThroughState?.stepIndex !== 9
+    ) {
+      setShowInfo(true);
+      setIsFromAutomaticallyStart(true);
+    }
+  }, [
+    hasIncomeStatements,
+    income,
+    expense,
+    handleAutoStartWalkthrough,
+    walkThroughState?.stepIndex,
+  ]);
+
+  useEffect(() => {
+    if (
+      walkThroughState?.stepIndex === 9 ||
+      walkThroughState?.stepIndex === 10
+    ) {
+      setShowInfo(false);
+      setHandleAutoStartWalkthrough(false);
+    }
+  }, [walkThroughState?.stepIndex]);
+
   return (
-    <>
+    <div key={String(hasIncomeStatements)} className="h-screen">
       <BannerWrapper
         showBackground={false}
         size="medium"
@@ -128,9 +177,13 @@ export const Business: React.FC = () => {
         visible={showInfo}
         position={DialogPosition.Full}
       >
-        <StatementsInfoPage setShowInfo={setShowInfo} />
+        <StatementsInfoPage
+          setShowInfo={setShowInfo}
+          isFromAutomaticallyStart={isFromAutomaticallyStart}
+          setIsFromAutomaticallyStart={setIsFromAutomaticallyStart}
+        />
       </Dialog>
-    </>
+    </div>
   );
 };
 

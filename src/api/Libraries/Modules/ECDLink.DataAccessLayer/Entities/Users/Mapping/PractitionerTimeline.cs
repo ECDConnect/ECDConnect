@@ -50,7 +50,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public DateTime? CoachingCircleDate3 { get; set; }
         public DateTime? CoachingCircleDate4 { get; set; }
 
-        public virtual ICollection<Visit> SiteVisits { get; set; }
+        public virtual ICollection<Visit> PrePQASiteVisits { get; set; }
+        public virtual ICollection<Visit> PQASiteVisits { get; set; }
         public virtual ICollection<Visit> SupportVisits { get; set; }
         public virtual ICollection<PractitionerClubMeeting> ClubMeetings { get; set; }
         public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }

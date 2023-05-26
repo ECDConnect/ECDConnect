@@ -1,6 +1,5 @@
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import { useDialog } from '@ecdlink/core';
-import alertImage from '@/assets/alert-icon.png';
 import successImage from '@/assets/cebisa.svg';
 
 export const useRequestResponseDialog = () => {

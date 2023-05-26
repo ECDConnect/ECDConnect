@@ -31,23 +31,25 @@ export const Training: React.FC = () => {
     }
   };
 
-  useEffect(() => {
-    if (userData?.id) {
-      // creating user in moodle database if doesn't exist.
-      createMoodleUser();
-    }
-  }, [userData?.id]);
-
-  useEffect(() => {
-    getContext();
-  }, []);
-
   const getContext = async () => {
     const data = await new ContextService(
       userAuth?.auth_token!
     ).tenantContext();
     setMoodleUrl(data?.moodleUrlVar);
   };
+
+  useEffect(() => {
+    if (userData?.id) {
+      // creating user in moodle database if doesn't exist.
+      createMoodleUser();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [userData?.id]);
+
+  useEffect(() => {
+    getContext();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   useEffect(() => {
     if (formRef && formRef.current && !!moodleUserCreated && !!moodleUrl) {

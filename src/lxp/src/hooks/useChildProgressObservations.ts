@@ -750,6 +750,27 @@ export const useChildProgressObservation = (
     setCurrentReport(currentReportCopy);
   };
 
+  const saveReportLocally = (
+    report: ChildProgressObservationReport,
+    classroomGroupId: string
+  ) => {
+    if (!report)
+      throw new Error('Current report is not set, could not complete report');
+
+    const currentReportCopy: ChildProgressObservationReport = JSON.parse(
+      JSON.stringify(report)
+    );
+
+    appDispatch(contentReportActions.saveReport(currentReportCopy));
+    appDispatch(
+      contentReportActions.markReportForSyncing({
+        reportId: currentReportCopy.id,
+        classroomGroupId: classroomGroupId,
+      })
+    );
+    setCurrentReport(currentReportCopy);
+  };
+
   const sortChildReportsByDateCreatedDesc = (
     reportA: ChildProgressObservationReport,
     reportB: ChildProgressObservationReport
@@ -788,6 +809,7 @@ export const useChildProgressObservation = (
     currentCategory,
     isCompetentInLevel,
     saveReport,
+    saveReportLocally,
     completeReport,
     completeReportLocally,
     isAllSkillsYes,
