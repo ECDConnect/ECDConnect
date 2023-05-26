@@ -18,7 +18,9 @@ import thumbs_up from '../../../assets/icon_thumbsup.svg';
 
 export default function ResetPassword() {
   const { theme } = useTheme();
+  const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+
   const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
@@ -35,6 +37,7 @@ export default function ResetPassword() {
 
   const resetPassword = async () => {
     if (isValid) {
+      setResetLinkSent(!resetLinkSent)
       setIsLoading(!isLoading)
     }
   };
@@ -46,7 +49,7 @@ export default function ResetPassword() {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
-  if (isLoading) {
+  if (resetLinkSent) {
     return (
       <div className="darkBackground flex min-h-screen items-center justify-center">
         <div className="rounded bg-white p-8 shadow sm:w-1/3">
@@ -74,7 +77,7 @@ export default function ResetPassword() {
                 <Button
                   className={'mt-3 w-full rounded-xl'}
                   type="filled"
-                  isLoading={isLoading}
+                  isLoading={resetLinkSent}
                   color="secondary"
                   onClick={resetPassword}
                 >
@@ -89,7 +92,6 @@ export default function ResetPassword() {
                 <Button
                   className={'mt-3 w-full rounded-xl'}
                   type="outlined"
-                  isLoading={isLoading}
                   color="secondary"
                   onClick={() => history.goBack()}
                   icon="ArrowLeftIcon"
