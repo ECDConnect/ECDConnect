@@ -154,13 +154,13 @@ export const ReferralsTab: React.FC = () => {
   };
 
   // all sections
-  const sections =
-    walkthroughData.sections ||
-    (groupedData &&
+  const sections = isWalkthrough
+    ? walkthroughData.sections
+    : groupedData &&
       Object.keys(groupedData)?.map((item) => ({
         label: groupedData[item][0].section,
         value: item,
-      })));
+      }));
 
   const [questions, setAnswers] = useState(groupedData);
 
@@ -171,8 +171,16 @@ export const ReferralsTab: React.FC = () => {
 
     if (isWalkthrough) return;
 
+    if (questions) return;
+
     return setAnswers(groupedData);
-  }, [groupedData, isWalkthrough, walkthroughData.questions, wasWalkthrough]);
+  }, [
+    groupedData,
+    isWalkthrough,
+    questions,
+    walkthroughData.questions,
+    wasWalkthrough,
+  ]);
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -450,8 +458,8 @@ export const ReferralsTab: React.FC = () => {
           Number(walkthroughState?.stepIndex) < 3)) && (
         <div className="px-4 pb-4 pt-7">
           {(
-            (walkthroughData.completedReferrals as VisitDataStatus[]) ||
-            completedreferralsForMother
+            completedreferralsForMother ||
+            (walkthroughData.completedReferrals as VisitDataStatus[])
           )?.map((item: VisitDataStatus) => (
             <div key={item?.id}>
               {/* Not completed back referrals */}
@@ -479,7 +487,7 @@ export const ReferralsTab: React.FC = () => {
                       type="body"
                       align="left"
                       weight="skinny"
-                      text={`Reffered on ${format(
+                      text={`Referred on ${format(
                         new Date(item.insertedDate),
                         'dd MMM yyyy'
                       )}`}
