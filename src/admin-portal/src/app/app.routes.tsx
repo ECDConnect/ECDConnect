@@ -35,13 +35,15 @@ import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
 import Users from './pages/users/users';
 import Clinics from './pages/users/sub-pages/clincs/clinics';
 import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
-import ResetPassword from './components/forgot-password/forgot-password';
+import ForgotPassword from './components/forgot-password/forgot-password';
+import ResetPassword from './components/reset-password/reset-password';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
       <Route exact path="/register" component={Register} />
+      <Route exact path="/forgot-password" component={ForgotPassword} />
       <Route exact path="/reset" component={ResetPassword} />
     </Switch>
   );

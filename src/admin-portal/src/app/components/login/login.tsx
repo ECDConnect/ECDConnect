@@ -137,7 +137,7 @@ export default function Login() {
                 type="ghost"
                 isLoading={isLoading}
                 color="secondary"
-                onClick={() => history.push('/reset')}
+                onClick={() => history.push('/forgot-password')}
               >
                 <Typography
                   type="help"

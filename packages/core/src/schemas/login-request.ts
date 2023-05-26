@@ -15,6 +15,10 @@ export const initialLoginValues: LoginRequestModel = {
 export const initialResetPasswordValues: ResetPasswordRequestModel = {
   email: '',
 };
+
+export const initialResetValues: ResetPasswordRequestModel = {
+  password: '',
+};
 export const registerSchema = Yup.object().shape({
   email: Yup.string().required(),
   // email: Yup.string().email().required(),
@@ -41,4 +45,14 @@ export const loginSchema = Yup.object().shape({
 
 export const resetSchema = Yup.object().shape({
   email: Yup.string().email().required(),
+});
+
+export const resetPasswordSchema = Yup.object().shape({
+  password: Yup.string()
+    .min(8, 'Password must be at least 8 characters')
+    .matches(
+      /^(?=.*[A-Z])(?=.*[0-9])/,
+      'Password must contain at least 1 capital letter and 1 number'
+    )
+    .required('Password is required'),
 });
