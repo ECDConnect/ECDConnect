@@ -37,6 +37,7 @@ import {
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
+  removeDuplicates,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   getStorageItem,
@@ -201,19 +202,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         (x) => getDay(x.missedDay) === getDay(todayDate)
       );
 
-      const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
-        const seen = new Set();
-
-        return arr.filter((obj) => {
-          const classroomGroupId = obj.classroomGroup.id;
-          if (!seen.has(classroomGroupId)) {
-            seen.add(classroomGroupId);
-            return true;
-          }
-          return false;
-        });
-      };
-
       //this is used when classes is created today and user has multiple classes
       const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
 
@@ -254,7 +242,6 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         item: ActionListDataItem;
         group: ClassroomGroupDto;
       }[] = [];
-
       for (const classProgramme of classProgrammesUpdated) {
         const group =
           practitioner?.isPrincipal === true
@@ -274,11 +261,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           const programmeStartDate = new Date(
             classProgramme.programmeStartDate
           ).valueOf();
-
-          if (
-            getDay(theDate) < getDay(new Date().valueOf()) &&
-            getDay(theDate) > getDay(programmeStartDate)
-          ) {
+          if (theDate < new Date().valueOf() && theDate > programmeStartDate) {
             actionListToDisplayWrapper.push({
               date: dayDate,
               group: group,

@@ -113,8 +113,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const currentClassProgramme = classroomGroupHasAttendanceDate(
       classProgrammesUpdated,
-      currentDate,
-      previousClassroomGroupId
+      currentDate
     );
 
     const currentDayClassroomGroup = classroomGroups.find(
@@ -178,13 +177,13 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       currentDate
     );
 
-    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister ) {
+    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
       setAttendanceComponentType('attendance');
-      return;
     } else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
+      return;
     }
   }, [
     allChildrenInsertedBeforeToday,
@@ -226,7 +225,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
 
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => getDay(x.missedDay) === getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(

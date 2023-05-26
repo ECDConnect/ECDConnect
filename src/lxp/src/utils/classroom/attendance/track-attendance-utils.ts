@@ -122,7 +122,7 @@ export const getMissedClassAttendance = (
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
   const returnProgrammes: ClassProgrammeDto[] = [];
 
-  for (const group of classRoomGroup) {
+
     const groupProgrammes = classProgrammes;
 
     // all the class programs for up until today but does not check the start date
@@ -148,9 +148,22 @@ export const getMissedClassAttendance = (
           returnProgrammes.push(programme);
         }
       }
-  }
+
 
   return returnProgrammes;
+};
+
+export const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
+  const seen = new Set();
+
+  return arr.filter((obj) => {
+    const classroomGroupId = obj.classroomGroup.id;
+    if (!seen.has(classroomGroupId)) {
+      seen.add(classroomGroupId);
+      return true;
+    }
+    return false;
+  });
 };
 
 export const isPractitionerAttendanceMissingForLearner = (
