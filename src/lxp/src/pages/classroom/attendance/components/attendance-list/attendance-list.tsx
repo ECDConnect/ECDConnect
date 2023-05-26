@@ -187,13 +187,13 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
     const currentProgramme = getPlaygroup(
       classProgrammesUpdated,
       attendanceDate,
-      editAttendanceRegisterVisible ? classroomgroupId : ''
+      selectedClassroomGroups[0].id  ?? ''
     );
 
     if (!currentProgramme) return;
 
     const allAttendanceGroupLists = attendanceGroups?.reduce((prev, curr) => {
-      return [...prev, ...curr.list];
+      return [...curr.list];
     }, [] as AttendanceListDataItem[]);
 
     const allAttendedChildren: ChildAttendance[] =
@@ -229,23 +229,21 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
       newAttDate,
       currentProgramme.id ?? ''
     );
-
     appDispatch(attendanceActions.trackAttendance(trackAttendanceInput));
     appDispatch(
       attendanceThunkActions.trackAttendanceSync(trackAttendanceInput)
     );
-
     appDispatch(
       analyticsActions.createEventTracking({
         action: 'Attendance tracking click',
         category: 'Attendance tracking click',
       })
     );
-
     onSubmitSuccess({
       attendanceDate,
-      classroomGroupId: currentAttendanceGroup.cacheId,
+      classroomGroupId: selectedClassroomGroups[0].id ?? '',
     });
+
     setAttendanceGroups([]);
     setSelectedClassroomGroups([]);
     updateAttendanceState([]);

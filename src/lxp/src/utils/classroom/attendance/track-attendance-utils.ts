@@ -123,10 +123,7 @@ export const getMissedClassAttendance = (
   const returnProgrammes: ClassProgrammeDto[] = [];
 
   for (const group of classRoomGroup) {
-    const groupProgrammes =
-      dayOfWeek === 1
-        ? classProgrammes
-        : classProgrammes.filter((x) => x.classroomGroupId === group.id);
+    const groupProgrammes = classProgrammes;
 
     // all the class programs for up until today but does not check the start date
     const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
@@ -136,10 +133,11 @@ export const getMissedClassAttendance = (
           : new Date();
       const programStartDateDay = getDayOfYear(programStartDate);
       const dateDay = getDayOfYear(date);
-      return (
-        (x.meetingDay || -1) <= currentDayFilter &&
-        isBefore(programStartDateDay, dateDay)
-      );
+
+      return programStartDateDay === dateDay
+        ? (x.meetingDay || -1) === currentDayFilter
+        : (x.meetingDay || -1) <= currentDayFilter &&
+            isBefore(programStartDateDay, dateDay);
     });
 
     if (classProgrammesUpToCurrentDay)
@@ -151,6 +149,7 @@ export const getMissedClassAttendance = (
         }
       }
   }
+
   return returnProgrammes;
 };
 
@@ -246,7 +245,6 @@ export const getMissedAttendanceSummaryGroups = (
         const currentGroupMissedAttendance = missedAttendance.filter(
           (x) => x.classroomGroupId === classroomGroup.id
         );
-
         for (const missedAttendanceClassProgramme of currentGroupMissedAttendance) {
           const missedDayDate = addDays(
             startOfWeekDate,
@@ -334,12 +332,17 @@ export const classroomGroupHasAttendanceOnDate = (
 
 export const classroomGroupHasAttendanceDate = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date
+  date: Date,
+  previousClassroomID?: string
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-    ? getDay(date) !== 1
-      ? classProgrammes.find((x) => x.meetingDay === getDay(date))
-      : classProgrammes.filter((x) => x.meetingDay === getDay(date))[1]
+    ? classProgrammes.length > 5
+      ? classProgrammes.find(
+          (x) =>
+            x.classroomGroupId !== previousClassroomID &&
+            x.meetingDay === getDay(date)
+        )
+      : classProgrammes.find((x) => x.meetingDay === getDay(date))
     : undefined;
 };
 

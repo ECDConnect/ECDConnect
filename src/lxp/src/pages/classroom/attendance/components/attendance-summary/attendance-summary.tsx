@@ -197,7 +197,29 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           todayDate
         );
 
-      if (attendanceToDoList) {
+      let classCreatedTodayMissedAttendance = attendanceToDoList.filter(
+        (x) => getDay(x.missedDay) === getDay(todayDate)
+      );
+
+      const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
+        const seen = new Set();
+
+        return arr.filter((obj) => {
+          const classroomGroupId = obj.classroomGroup.id;
+          if (!seen.has(classroomGroupId)) {
+            seen.add(classroomGroupId);
+            return true;
+          }
+          return false;
+        });
+      };
+
+      //this is used when classes is created today and user has multiple classes
+      const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
+
+      if (missedClasses.length > 0) {
+        setMissedAttendanceGroups(missedClasses);
+      } else if (attendanceToDoList.length > 0) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }
@@ -232,6 +254,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         item: ActionListDataItem;
         group: ClassroomGroupDto;
       }[] = [];
+
       for (const classProgramme of classProgrammesUpdated) {
         const group =
           practitioner?.isPrincipal === true
@@ -251,7 +274,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           const programmeStartDate = new Date(
             classProgramme.programmeStartDate
           ).valueOf();
-          if (theDate < new Date().valueOf() && theDate > programmeStartDate) {
+
+          if (
+            getDay(theDate) < getDay(new Date().valueOf()) &&
+            getDay(theDate) > getDay(programmeStartDate)
+          ) {
             actionListToDisplayWrapper.push({
               date: dayDate,
               group: group,

@@ -37,6 +37,9 @@ import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAtte
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [previousClassroomGroupId, setPreviousClassroomGroupId] =
+    useState<string>('');
+
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
@@ -110,7 +113,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
     const currentClassProgramme = classroomGroupHasAttendanceDate(
       classProgrammesUpdated,
-      currentDate
+      currentDate,
+      previousClassroomGroupId
     );
 
     const currentDayClassroomGroup = classroomGroups.find(
@@ -162,27 +166,22 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       meetingDays || [],
       publicHolidays || []
     );
-    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
-      setAttendanceComponentType('attendance');
-      return;
-    }
 
     const missedDays: MissedAttendanceGroups[] =
-      getMissedAttendanceSummaryGroups(
-        practitioner?.isPrincipal === true
-          ? classroomGroupsForPrincipal
-          : classroomGroups || [],
-        classProgrammesUpdated,
-        attendance,
-        holidays,
-        currentDate
-      );
+    getMissedAttendanceSummaryGroups(
+      practitioner?.isPrincipal === true
+        ? classroomGroupsForPrincipal
+        : classroomGroups || [],
+      classProgrammesUpdated,
+      attendance,
+      holidays,
+      currentDate
+    );
 
-    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
+    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister ) {
       setAttendanceComponentType('attendance');
       return;
-    }
-    if (missedDays.length === 0) {
+    } else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
@@ -199,6 +198,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     practitioner?.isPrincipal,
     publicHolidays,
     seeRegister,
+    previousClassroomGroupId,
+    classProgrammes,
   ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
@@ -208,6 +209,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const classgroup = classroomGroups?.find(
       (x) => x.id === attendanceResult.classroomGroupId
     );
+
+    setPreviousClassroomGroupId(attendanceResult.classroomGroupId);
 
     if (!classgroup) return;
 
@@ -223,7 +226,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
 
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) === getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
@@ -232,16 +235,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       );
     });
 
-    if (removeHolidays.length === 0) {
-      setAttendanceComponentType('report');
-    } else {
-      setAttendanceComponentType('summary');
-    }
-  };
-
-  const gotToReports = () => {
-    if (!seeRegister) {
-      setSeeRegister(!seeRegister);
+    if (removeHolidays.length === 0 && missedClassAttendance) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
@@ -284,17 +278,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   return (
     <div>
       <MultiRouteWrapper />
-      {attendanceComponentType ? (
-        getComponentToRender(attendanceComponentType)
-      ) : (
-        <AttendanceSummary
-          hidePopup={seeRegister}
-          openReports={gotToReports}
-          currentUserId={userData?.id || ''}
-        />
-      )}
+      {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' && !seeRegister && (
+        {attendanceComponentType === 'attendance' && (
           <Button
             type="outlined"
             color="primary"
