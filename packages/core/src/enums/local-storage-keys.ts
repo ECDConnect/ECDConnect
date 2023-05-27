@@ -12,4 +12,5 @@ export enum LocalStorageKeys {
   hasClosedSuccessAttendanceSubmitted = 'hasClosedSuccessAttendanceSubmitted',
   offlineStatments = 'offlineStatments',
   existingUser = 'ExistingECDUser',
+  incomeStatementTutorialComplete = 'IncomeStatementTutorialComplete',
 }

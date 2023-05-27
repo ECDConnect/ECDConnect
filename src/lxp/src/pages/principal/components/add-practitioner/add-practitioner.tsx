@@ -52,6 +52,8 @@ export const AddPractitioner = ({
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const [isValidPractitioner, setIsValidPractitioner] = useState<boolean>();
+  const [isPractitionerRegistered, setIsPractitionerRegistered] =
+    useState<boolean>();
   const [newPractitioner, setNewPractitioner] =
     useState<AddNewPractitionerModel>(AddPractitinerInitialState);
   const userData = useSelector(userSelectors.getUser);
@@ -96,6 +98,15 @@ export const AddPractitioner = ({
         if (p?.note !== undefined) {
           setAddNote(p?.note);
         }
+        if (
+          p?.appUser?.practitionerObjectData?.isRegistered === false ||
+          p?.appUser?.practitionerObjectData?.isRegistered === null
+        ) {
+          setIsPractitionerRegistered(false);
+        }
+        if (p?.appUser?.practitionerObjectData?.isRegistered === true) {
+          setIsPractitionerRegistered(true);
+        }
         setIsValidPractitioner(!!p?.appUser?.idNumber);
         setNewPractitioner({
           firstName: p?.appUser?.firstName,
@@ -134,7 +145,7 @@ export const AddPractitioner = ({
       userAuth?.auth_token!
     ).AddPractitionerToPrincipal(input);
 
-    history.push(ROUTES.CLASSROOM);
+    history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
   };
 
   const callForHelp = () => {
@@ -220,23 +231,26 @@ export const AddPractitioner = ({
                 )}
               </div>
             </div>
-
-            <FormInput<AddPractitionerModel>
-              label={'First name'}
-              visible={true}
-              nameProp={'firstName'}
-              placeholder="First Name"
-              error={errors['firstName']}
-              register={register}
-            />
-            <FormInput<AddPractitionerModel>
-              label={'Surname'}
-              placeholder="Surname/Family name"
-              visible={true}
-              nameProp={'surname'}
-              error={errors['surname']}
-              register={register}
-            />
+            {isValidPractitioner === true && !addNote && (
+              <>
+                <FormInput<AddPractitionerModel>
+                  label={'First name'}
+                  visible={true}
+                  nameProp={'firstName'}
+                  placeholder="First Name"
+                  error={errors['firstName']}
+                  register={register}
+                />
+                <FormInput<AddPractitionerModel>
+                  label={'Surname'}
+                  placeholder="Surname/Family name"
+                  visible={true}
+                  nameProp={'surname'}
+                  error={errors['surname']}
+                  register={register}
+                />
+              </>
+            )}
             {isValidPractitioner === false && (
               <div className="mb-8">
                 <Alert
@@ -284,6 +298,37 @@ export const AddPractitioner = ({
                       textColor={'white'}
                       onClick={() => callForHelp()}
                     />
+                  }
+                />
+              </div>
+            )}
+            {!addNote && isPractitionerRegistered !== undefined && (
+              <div>
+                <Alert
+                  type={isPractitionerRegistered ? 'success' : 'error'}
+                  title={
+                    isPractitionerRegistered
+                      ? 'This practitioner is registered on Funda app.'
+                      : 'This practitioner is not registered on Funda App. Ask all of your SmartStart practitioners to register.'
+                  }
+                  list={[
+                    isPractitionerRegistered
+                      ? 'Practitioner has been notified.'
+                      : 'If your practitioner needs help, please contact the SmartStart call centre.',
+                  ]}
+                  button={
+                    !isPractitionerRegistered ? (
+                      <Button
+                        text="Contact call centre"
+                        icon="PhoneIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                        onClick={() => callForHelp()}
+                      />
+                    ) : (
+                      <></>
+                    )
                   }
                 />
               </div>
