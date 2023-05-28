@@ -29,6 +29,9 @@ import { ChildCompletedObservsationReportsState } from './child-completed-observ
 import NoProgressEmoticon from '../../../../assets/no-progress-emoticon.png';
 import ROUTES from '@/routes/routes';
 import { getReportingPeriod } from '@/utils/child/child-profile-utils';
+import { practitionerSelectors } from '@/store/practitioner';
+import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
+import { classroomsSelectors } from '@/store/classroom';
 
 export const ChildCompletedObservationReports: React.FC = () => {
   const history = useHistory();
@@ -38,14 +41,26 @@ export const ChildCompletedObservationReports: React.FC = () => {
   const { state: routeState } =
     useLocation<ChildCompletedObservsationReportsState>();
 
-  const [latestCompletedSummary] = useSelector(
-    contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
+  const childId = routeState?.childId;
+  const currentChild = useSelector(childrenSelectors.getChildById(childId));
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
+  const childrenForPrincipal = useSelector(
+    childrenForPractitionerSelectors?.getChildrenForPractitioner
   );
-  const currentChild = useSelector(
-    childrenSelectors.getChildById(routeState?.childId)
+  const isPrincipalChild = childrenForPrincipal?.find(
+    (item) => item?.userId === currentChild?.userId
   );
+
+  const allowTracking = (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
+  const hideInprogressReports =
+    (!!isPrincipal && !!isPrincipalChild) || !isPrincipal;
+
   const currentChildUser = useSelector(
     childrenSelectors.getChildUserById(currentChild?.userId)
+  );
+  const [latestCompletedSummary] = useSelector(
+    contentReportSelectors.getChildLatestCompletedReports(routeState?.childId)
   );
   const hasUnsyncedReports = useSelector(
     contentReportSelectors.hasUnsyncedReports
@@ -58,6 +73,16 @@ export const ChildCompletedObservationReports: React.FC = () => {
       routeState?.childId
     )
   );
+  const classroomGroupId = useSelector(
+    classroomsSelectors.getLearnerClassGroupId(currentChild?.userId)
+  );
+  const classroomGroup = useSelector(
+    classroomsSelectors.getClassroomGroupById(classroomGroupId)
+  );
+  const childPractioner = useSelector(
+    practitionerSelectors.getPractitionerByUserId(classroomGroup?.userId || '')
+  );
+
   const allCategories = useSelector(
     progressTrackingSelectors.getProgressTrackingCategories
   );
@@ -261,31 +286,51 @@ export const ChildCompletedObservationReports: React.FC = () => {
                     />
                   </div>
                 </div>
-                <div className="flex justify-center">
-                  <Typography
-                    type="body"
-                    color="textMid"
-                    text={'Tap the button below to start'}
-                    className={'mb-4'}
-                  />
-                </div>
+                {!!isPrincipal && !isPrincipalChild && (
+                  <div className="flex justify-center">
+                    <div className="flex w-8/12 justify-center">
+                      <Typography
+                        type="body"
+                        color="textMid"
+                        text={`Encourage ${
+                          childPractioner?.user?.firstName || 'the practioner'
+                        } to start observing ${
+                          currentChildUser?.firstName
+                        } & track progress on Funda App.`}
+                        className={'text-center'}
+                      />
+                    </div>
+                  </div>
+                )}
+                {allowTracking && (
+                  <div className="flex justify-center">
+                    <Typography
+                      type="body"
+                      color="textMid"
+                      text={'Tap the button below to start'}
+                      className={'mb-4'}
+                    />
+                  </div>
+                )}
               </div>
-              <Button
-                onClick={() => startTrackingProgress(true)}
-                disabled={false}
-                className="w-full"
-                size="small"
-                color="primary"
-                type="filled"
-              >
-                {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
-                <Typography
-                  type="h6"
-                  className="ml-2"
-                  text="Start tracking progress"
-                  color="white"
-                />
-              </Button>
+              {allowTracking && (
+                <Button
+                  onClick={() => startTrackingProgress(true)}
+                  disabled={false}
+                  className="w-full"
+                  size="small"
+                  color="primary"
+                  type="filled"
+                >
+                  {renderIcon('PencilIcon', 'h-5 w-5 text-white')}
+                  <Typography
+                    type="h6"
+                    className="ml-2"
+                    text="Start tracking progress"
+                    color="white"
+                  />
+                </Button>
+              )}
             </div>
           )}
         {((childReportSummaries && childReportSummaries.length > 0) ||
@@ -391,6 +436,7 @@ export const ChildCompletedObservationReports: React.FC = () => {
               />
               <div className="flex flex-col">
                 {inProgressAndCompleteReports().map((report, idx) => {
+                  if (hideInprogressReports) return null;
                   const firstObservation = report.reportingPeriod === 'First';
                   const formattedDate = `${new Date(
                     report.displayDate
@@ -458,25 +504,29 @@ export const ChildCompletedObservationReports: React.FC = () => {
                 </Button>
               )}
             </div>
-            <Button
-              onClick={() => trackProgress()}
-              disabled={false}
-              className="mt-4 w-full"
-              size="small"
-              color="primary"
-              type={completedStandardReport ? 'outlined' : 'filled'}
-            >
-              {renderIcon(
-                'ArrowCircleRightIcon',
-                `h-5 w-5 text-${completedStandardReport ? 'primary' : 'white'}`
-              )}
-              <Typography
-                type="h6"
-                className="ml-2"
-                text="Track progress"
-                color={completedStandardReport ? 'primary' : 'white'}
-              />
-            </Button>
+            {allowTracking && (
+              <Button
+                onClick={() => trackProgress()}
+                disabled={false}
+                className="mt-4 w-full"
+                size="small"
+                color="primary"
+                type={completedStandardReport ? 'outlined' : 'filled'}
+              >
+                {renderIcon(
+                  'ArrowCircleRightIcon',
+                  `h-5 w-5 text-${
+                    completedStandardReport ? 'primary' : 'white'
+                  }`
+                )}
+                <Typography
+                  type="h6"
+                  className="ml-2"
+                  text="Track progress"
+                  color={completedStandardReport ? 'primary' : 'white'}
+                />
+              </Button>
+            )}
           </div>
         )}
       </div>

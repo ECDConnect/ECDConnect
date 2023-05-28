@@ -63,6 +63,7 @@ import { addDays } from 'date-fns';
 import PositiveBonusEmoticon from '../../../../assets/positive-bonus-emoticon.png';
 import { CompleteFirstObservationsPrompt } from '../components/progress-tracking-prompts/complete-first-observations-prompt/complete-first-observations-prompt';
 import { UsePreviousReportPrompt } from '../components/progress-tracking-prompts/use-previous-report-prompt/use-previous-report-prompt';
+import LanguageSelector from '@/components/language-selector/language-selector';
 
 export const ChildProgressObservationPage: React.FC = () => {
   const history = useHistory();
@@ -380,6 +381,15 @@ export const ChildProgressObservationPage: React.FC = () => {
                 />
               </div>
             )}
+          <div className={styles.languageWrapper}>
+            <LanguageSelector
+              disabled={true}
+              labelText="Progress tracker language:"
+              labelClassName="font-medium font-body text-textDark pr-2 mt-1"
+              currentLocale="en-za"
+              selectLanguage={(data) => {}}
+            />
+          </div>
           {isComplete && firstObservation && (
             <div>
               <div className={styles.completeWrapper}>
