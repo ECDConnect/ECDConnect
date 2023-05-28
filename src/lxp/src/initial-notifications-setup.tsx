@@ -9,7 +9,6 @@ import {
   notificationsSelectors,
 } from './store/notifications';
 import { settingSelectors } from './store/settings';
-import { practitionerSelectors } from '@/store/practitioner';
 
 type IntialNotificationSetupContextValues = {
   startService: () => void;

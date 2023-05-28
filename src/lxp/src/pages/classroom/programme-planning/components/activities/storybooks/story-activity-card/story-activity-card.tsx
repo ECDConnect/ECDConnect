@@ -1,14 +1,10 @@
 import { limitStringLength } from '@/utils/common/string.utils';
 import {
-  Button,
   Card,
-  FADButton,
   Typography,
   Dialog,
-  Alert,
   DialogPosition,
   classNames,
-  StatusChip,
   renderIcon,
   Radio,
 } from '@ecdlink/ui';
@@ -23,13 +19,9 @@ const StoryActivityCard: React.FC<StoryActivityCardProps> = ({
   selected,
   material,
   onSelected,
-  warningText,
-  buttonIcon,
-  buttonText,
   className,
   onCleared,
   onStoryCleared,
-  hideDetails,
 }) => {
   const [displayDetails, setDisplayDetails] = useState(false);
   const handleDetailsClick = () => {

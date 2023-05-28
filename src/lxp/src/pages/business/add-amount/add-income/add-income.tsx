@@ -1,4 +1,3 @@
-import { UserDto } from '@ecdlink/core';
 import {
   ActionListDataItem,
   BannerWrapper,
@@ -8,11 +7,9 @@ import {
   Alert,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
-import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import * as styles from './add-income.styles';
 import ROUTES from '@routes/routes';
@@ -40,7 +37,6 @@ export const AddIncome: React.FC = () => {
     }
   }, [appDispatch, isOnline]);
 
-  const user = useSelector(userSelectors.getUser);
   // const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
   const [type, setType] = useState('');
 

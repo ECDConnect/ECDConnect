@@ -24,7 +24,6 @@ import { getCategoryFromCurrentReport } from '@utils/child/child-progress-report
 import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import { useAppDispatch } from '@store';
-import { classroomsSelectors } from '@/store/classroom';
 
 export const ChildProgressAssessment: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -37,9 +36,6 @@ export const ChildProgressAssessment: React.FC = () => {
   const progressTrackingCategoryId = location.state.progressTrackingCategoryId;
   const firstObservation = location.state.firstObservation;
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
-  const currentChildLearner = useSelector(
-    classroomsSelectors.getChildLearner(currentChild)
-  );
   const category = useSelector(
     progressTrackingSelectors.getProgressTrackingCategoryById(
       location.state.progressTrackingCategoryId
@@ -83,7 +79,6 @@ export const ChildProgressAssessment: React.FC = () => {
     setHelpingWithTaskText,
     clearHelpingWithTaskId,
     isAllSkillsYes,
-    saveReportLocally,
   } = useChildProgressObservation(childId, report);
 
   const [childDevelopmentLevelForm, setChildDevelopmentLevelForm] =

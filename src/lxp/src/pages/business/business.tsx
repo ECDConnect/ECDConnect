@@ -158,7 +158,10 @@ export const Business: React.FC = () => {
         title={'Business'}
         subTitle={date}
         color={'primary'}
-        onBack={() => backToDashboard()}
+        onBack={() => {
+          backToDashboard();
+          setState({ run: false });
+        }}
         displayHelp={displayHelp}
         onHelp={() => displayTutorial()}
         displayOffline={!isOnline}

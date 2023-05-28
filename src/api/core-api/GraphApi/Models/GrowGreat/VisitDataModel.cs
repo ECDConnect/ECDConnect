@@ -42,10 +42,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string VisitName { get; set; }
         public int OverallScore { get; set; }
         public string OverallRating { get; set; }
+        public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
         public DateTime? PlannedDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }
-        
     }
 
     public class PQARatingChild
@@ -55,6 +55,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string SectionRating { get; set; }
         public string SectionRatingColor { get; set; }
     }
+
 
   }
 
