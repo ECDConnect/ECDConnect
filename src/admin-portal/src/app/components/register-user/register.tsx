@@ -42,23 +42,24 @@ export default function Register() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  console.log(isValid)
+  console.log(isValid);
 
   const registerNewUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
-
       setIsLoading(true);
       const body: RegisterRequestModel = {
         email: formValues.email,
         password: formValues.password,
         acceptedTerms: formValues.acceptedTerms,
       };
-      const isAuthenticated = await registerUser(body, Config.authApi).catch(() => {
-        setDisplayError(true);
-        setIsLoading(false);
-      });
+      const isAuthenticated = await registerUser(body, Config.authApi).catch(
+        () => {
+          setDisplayError(true);
+          setIsLoading(false);
+        }
+      );
       localStorage.setItem(LocalStorageKeys.existingUser, 'true');
       if (isAuthenticated) {
         setIsLoading(false);
@@ -100,7 +101,7 @@ export default function Register() {
                 <FormField
                   label={'Email address *'}
                   nameProp={'email'}
-                  type='email'
+                  type="email"
                   register={register}
                   error={errors.email?.message}
                   instructions={[
@@ -136,7 +137,7 @@ export default function Register() {
                             ? 'bg-red-400'
                             : passwordScore <= 2
                             ? 'bg-yellow-400'
-                            : passwordScore <= 4 
+                            : passwordScore <= 4
                             ? 'bg-green-500'
                             : 'bg-yellow-400'
                           : 'bg-gray-200'
@@ -154,14 +155,16 @@ export default function Register() {
                     nameProp={'terms'}
                     type="checkbox"
                     register={register}
-                    instructions={["I accept the terms and conditions"]}
+                    instructions={['I accept the terms and conditions']}
                   />
                 </div>
               </div>
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={'Oh no! There are 2 problems above. Please fix them:'}
+                  message={
+                    'Oh no! There are 2 problems above. Please fix them:'
+                  }
                   type={'error'}
                 />
               )}

@@ -472,7 +472,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation || visit.VisitType.Name == Constants.SSSettings.visitType_annual_re_accreditation)
                     {
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation);
                         visit.OverallRatingColor = rating.OverallRatingColor;
