@@ -11,9 +11,9 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.svg';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 
@@ -80,7 +80,7 @@ export default function Login() {
   };
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+      <div className="m-8 rounded-xl bg-white p-8 shadow md:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
@@ -137,7 +137,7 @@ export default function Login() {
                 type="ghost"
                 isLoading={isLoading}
                 color="secondary"
-                onClick={() => history.push('/reset')}
+                onClick={() => history.push('/forgot-password')}
               >
                 <Typography
                   type="help"
