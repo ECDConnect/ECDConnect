@@ -238,6 +238,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
     setState,
     state: { stepIndex, run },
   } = useAppContext();
+  const walkThroughSteps = stepIndex === 5 || stepIndex === 6;
 
   useEffect(() => {
     if (stepIndex === 6) {
@@ -253,6 +254,20 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
       (!date || !child || !contributionType || !feeType) && stepIndex !== 6
     );
   }, [child, contributionType, date, feeType, stepIndex]);
+
+  const walkthroughSetDateOrNot = useMemo(() => {
+    if (walkThroughSteps && run) {
+      return new Date();
+    }
+    return selectedDate ? new Date(selectedDate) : undefined;
+  }, [run, selectedDate, walkThroughSteps]);
+
+  useEffect(() => {
+    if (walkThroughSteps && run) {
+      handleFeeTypeValue(['bafa31fb-5b63-9e1b-ec43-855c059f65ce']);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [walkThroughSteps]);
 
   return (
     <BannerWrapper
@@ -284,7 +299,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             placeholderText={`Please select a date`}
             wrapperClassName="text-center"
             className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
-            selected={selectedDate ? new Date(selectedDate) : undefined}
+            selected={walkthroughSetDateOrNot}
             onChange={(date: Date) => {
               setPreschoolFeesValue('date', date ? date.toISOString() : '');
             }}

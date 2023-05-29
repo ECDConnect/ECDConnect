@@ -19,10 +19,11 @@ export const ProgressLevelBar: React.FC<ProgressLevelBarProps> = ({
 
   useEffect(() => {
     if (levels) {
-      const initialFilter = levels.filter((x) => x.name !== 'LEVEL P');
-      setFilteredLevels(initialFilter);
+      const filtered = levels.length > 3 ? levels.slice(1) : levels;
+      setFilteredLevels(filtered);
     }
   }, [levels]);
+
   if (filteredLevels) {
     return (
       <div className={styles.barWrapper}>

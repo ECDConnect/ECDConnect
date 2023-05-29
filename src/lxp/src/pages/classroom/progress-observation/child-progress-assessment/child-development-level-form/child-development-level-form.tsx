@@ -72,7 +72,7 @@ export const ChildDevelopmentLevelForm: React.FC<
           <Typography
             className={'ml-2'}
             type={'body'}
-            text={currentChildLevel?.name || 'Beginning'}
+            text={currentChildLevel?.name || ''}
             color={'textMid'}
           />
         </div>
