@@ -34,8 +34,7 @@ using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
-using ECDLink.SmartStart.Reports.Models;
-using NPOI.Util;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace ECDLink.Core.Services
 {
@@ -48,6 +47,7 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
+        private PersonnelService _personnelService;
         private IGenericRepository<IntegrationLog, Guid> _logRepo;
         private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
@@ -73,6 +73,8 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Grant, Guid> _staticGrantRepo;
         private IGenericRepository<WorkflowStatus, Guid> _staticWorkflowRepo;
         private IGenericRepository<Document, Guid> _docRepo;
+        private IGenericRepository<DocumentType, Guid> _docTypeRepo;
+        private IGenericRepository<WorkflowStatus, Guid> _workflowRepo;
 
         private MappingMode _apiMode;
         private MappingMaskDataMode _maskMode;
@@ -96,7 +98,8 @@ namespace ECDLink.Core.Services
             //[Service] AuthenticationDbContext context,
             [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
             [Service] InvitationNotificationManager notificationManager,
-             AuthenticationDbContext dbContext
+             AuthenticationDbContext dbContext,
+             [Service] PersonnelService personnelService
             )//, HttpClient httpClient
         {
             _repositoryFactory = repositoryFactory;
@@ -137,7 +140,10 @@ namespace ECDLink.Core.Services
             _staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
             _staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
             _docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _docTypeRepo = _repositoryFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
+            _workflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
             _dbContext = dbContext;
+            _personnelService = personnelService;
         }
 
         #region Utilities
@@ -168,7 +174,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -185,7 +191,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -201,7 +207,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAudits > " + entityType);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
                 throw new HttpRequestException("GetMappedColumns Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
@@ -234,7 +240,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -353,55 +359,21 @@ namespace ECDLink.Core.Services
                                 {
                                     if (franchisee != null)
                                     {
+                                        Practitioner newPractitioner = null;
                                         if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
                                         {
                                             //Create franchisee and map in SS system
                                             franchisee.localParentEntityId = coach.LocalId;
-                                            Practitioner newPractitioner = await MapFranchisee(franchisee);
-                                            if (newPractitioner != null)
-                                            {
-                                                totalFranchiseesAddedToSS++;
-                                                //get all elements underneath and map those too
-
-                                                //1. Children
-                                                List<MappedChild> remoteChildren = await GetChildren(franchisee.Guid);
-                                                if (remoteChildren != null)
-                                                {
-                                                    //List of allocated children to new practitioner
-                                                    List<Child> newChildren = new List<Child>();
-
-                                                    foreach (var remoteChild in remoteChildren)
-                                                    {
-                                                        if (remoteChild != null)
-                                                        {
-                                                            var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
-                                                            if (newChild != null)
-                                                            {
-                                                                newChildren.Add(newChild);
-                                                                totalChildrenAddedToSS++;
-
-                                                                //do child docs/notes
-
-                                                            }
-                                                        }
-                                                    }
-
-                                                    //realign hirarchy and learners to Unsure classgroups
-                                                    await AlignChildHierarchy(newPractitioner, newChildren);
-                                                    await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
-                                                }
-
-
-                                                //2. Franchisee Documents
-
-                                                //3. Franchisee Notes
-
-                                            }
-                                        } else
+                                            newPractitioner = await MapFranchisee(franchisee);
+                                        }
+                                        else
                                         {
                                             var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
-                                            Practitioner newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+                                            newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+                                        }
 
+                                        if (newPractitioner != null)
+                                        {
                                             totalFranchiseesAddedToSS++;
                                             //get all elements underneath and map those too
 
@@ -421,6 +393,11 @@ namespace ECDLink.Core.Services
                                                         {
                                                             newChildren.Add(newChild);
                                                             totalChildrenAddedToSS++;
+
+                                                            remoteChild.localId = newChild.Id.ToString();
+                                                            remoteChild.localUserId = newChild.UserId;
+                                                            remoteChild.localParentEntityId = newPractitioner.Id.ToString();
+                                                            remoteChild.localParentEntityUserId = newPractitioner.UserId;                                                                
                                                         }
                                                     }
                                                 }
@@ -429,6 +406,12 @@ namespace ECDLink.Core.Services
                                                 await AlignChildHierarchy(newPractitioner, newChildren);
                                                 await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
                                             }
+                                            //2. Franchisee Documents
+                                            List<MappedDocument> newDocuments = await GetFranchiseeDocuments(franchisee.Guid);
+                                            if (newDocuments.Any())
+                                            {
+                                                List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                            }                                            
                                         }
                                     }
                                 }
@@ -437,7 +420,7 @@ namespace ECDLink.Core.Services
                             }
                             catch (Exception e)
                             {
-                                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "IntegrationByMappedCoach > " + Newtonsoft.Json.JsonConvert.SerializeObject(remoteFranchisees));
+                                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + Newtonsoft.Json.JsonConvert.SerializeObject(remoteFranchisees));
                             }
                             returnOK = true;
                         }
@@ -465,7 +448,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "IntegrationByMappedCoach > " + franchiseeId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + franchiseeId);
             }
             return returnOK;
         }
@@ -487,7 +470,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetRecordChangesBetweenDates > " + startDate + " " + endDate);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetRecordChangesBetweenDates > " + startDate + " " + endDate);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -510,7 +493,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetColumnChangesBetweenDates > " + startDate + " " + endDate);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetColumnChangesBetweenDates > " + startDate + " " + endDate);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -529,7 +512,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetCoaches > " + remoteFranchisorId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetCoaches > " + remoteFranchisorId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -551,7 +534,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetFranchiseesByCoach > " + remoteCoachId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetFranchiseesByCoach > " + remoteCoachId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -574,7 +557,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -595,7 +578,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetChildren > " + remoteFranchiseeId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetChildren > " + remoteFranchiseeId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -615,7 +598,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetChildById > " + remoteChildId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetChildById > " + remoteChildId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -633,11 +616,50 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "GetCareGiversByFranchisee > " + remoteFranchiseeId);
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetCareGiversByFranchisee > " + remoteFranchiseeId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
 
+        private async Task<List<MappedDocument>> GetFranchiseeDocuments(string remoteFranchiseeId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = SSIntegrationSettings.SLPractitioner, Operator = "Equals", Value = remoteFranchiseeId });
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "True", Columns = "" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
+                return JsonConvert.DeserializeObject<List<MappedDocument>>(responseString);
+            }
+            catch (Exception e)
+            {
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetFranchiseeDocuments > " + remoteFranchiseeId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+
+        private async Task<List<MappedDocument>> GetChildDocuments(string remoteChildId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = SSIntegrationSettings.SLChild, Operator = "Equals", Value = remoteChildId });
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "DocumentType", AllColumns = "False", Columns = "Name" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
+                return JsonConvert.DeserializeObject<List<MappedDocument>>(responseString);
+            }
+            catch (Exception e)
+            {
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetChildDocuments > " + remoteChildId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
 
         #endregion
 
@@ -673,7 +695,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MatchPrincipals");
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MatchPrincipals");
             }
 
             return returnOK;
@@ -715,7 +737,7 @@ namespace ECDLink.Core.Services
                 }
                 catch (Exception e)
                 {
-                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "AlignChildHierarchy");
+                    await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "AlignChildHierarchy");
                 }
             }
 
@@ -754,7 +776,7 @@ namespace ECDLink.Core.Services
                     }
                     catch (Exception e)
                     {
-                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "AlignChildClassgroupToUnsure");
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "AlignChildClassgroupToUnsure");
                     }
                 }
             }
@@ -796,7 +818,9 @@ namespace ECDLink.Core.Services
                             AttendedBusinessSkills = entity.AttendedBusinessSkills,
                             AttendedChildProgress = entity.AttendedChildProgress,
                             MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
-                            ConsentForPhoto = entity.ConsentForPhoto                            
+                            ConsentForPhoto = entity.ConsentForPhoto,
+                            StipendType = entity.StipendType,
+                            StartDate = entity.StartDate,
                         };
 
                         //check phone number is valid
@@ -977,7 +1001,7 @@ namespace ECDLink.Core.Services
                         }
                         catch (Exception e)
                         {
-                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapFranchisee > insert newPractitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapFranchisee > insert newPractitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
                             await RemoveImportedAndFlag(userId, true, false);
                         }
 
@@ -1024,6 +1048,7 @@ namespace ECDLink.Core.Services
                             mapperLine.UpdatedDate = DateTime.Now;
                             mapperLine.IsComplete = true;
                             mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                            mapperLine.IsComplete = true;
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
 
@@ -1044,6 +1069,7 @@ namespace ECDLink.Core.Services
                         mapperLine.IsComplete = true;
                         mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
                         mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+                        mapperLine.IsComplete = false;
 
                         //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                         _mapperRepo.Insert(mapperLine);
@@ -1052,7 +1078,7 @@ namespace ECDLink.Core.Services
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
             }
 
             return null;
@@ -1253,7 +1279,7 @@ namespace ECDLink.Core.Services
                             }
                             catch (Exception e)
                             {
-                                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+                                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
                             }
 
                             if (childCreated)
@@ -1288,7 +1314,7 @@ namespace ECDLink.Core.Services
                                 {
                                     try
                                     {
-                                        UserConsent consentPopia = new UserConsent() { Id=Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                        UserConsent consentPopia = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
                                         _dbContext.UserConsents.Add(consentPopia);
                                         _dbContext.SaveChanges();
                                     }
@@ -1298,7 +1324,8 @@ namespace ECDLink.Core.Services
                                         return null;
                                     }
                                 }
-                                if ((bool)entity.CaregiverPhotographyAndFilmingConsent) {
+                                if ((bool)entity.CaregiverPhotographyAndFilmingConsent)
+                                {
 
                                     try
                                     {
@@ -1313,6 +1340,9 @@ namespace ECDLink.Core.Services
                                     }
                                 }
 
+                                //manage child documents
+
+
                                 //ManageChildClassrooms();
 
                                 mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
@@ -1324,15 +1354,17 @@ namespace ECDLink.Core.Services
                                 mapperLine.UpdatedDate = DateTime.Now;
                                 mapperLine.IsComplete = true;
                                 mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                                mapperLine.IsComplete = true;
                                 //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                                 _mapperRepo.Insert(mapperLine);
 
                                 return newChild;
                             }
                         }
-                        else {
+                        else
+                        {
                             //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
-                            
+
                             mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
                             mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
                             mapperLine.LocalId = null;
@@ -1343,28 +1375,144 @@ namespace ECDLink.Core.Services
                             mapperLine.IsComplete = true;
                             mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
                             mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+                            mapperLine.IsComplete = false;
 
                             //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
                             _mapperRepo.Insert(mapperLine);
                         }
                     }
+                    else { return _childRepo.GetByUserId(existingUser.Id.ToString()); }
                 }
                 else return null;
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
                 return null;
             }
 
             return null;
         }
-       
-        #endregion
 
-        #region Local Updates
+        private async Task<List<Document>> MapFranchiseeChildDocuments(List<MappedDocument> docs, List<MappedChild> children, Practitioner ownerPractitioner)
+        {
+            List<Document> ssDocuments = new List<Document>();
+            try
+            {
+                /*
+                     {
+                        "Guid": "f8a2f444-d8fa-ed11-8354-00155dee5a05",
+                        "Name": "Child Registration Form-2023/05/26-angie surn",
+                        "FinalRejectReasonOther": null,
+                        "DocumentDate": "2023-05-26T00:00:00",
+                        "ValidationStatus": "Pending Check",
+                        "FinalValidity": "Pending",
+                        "FinalRejectReason": null,
+                        "Franchisee": {
+                            "Guid": "f583d4a1-17ef-ed11-8354-00155dee5a05"
+                        },
+                        "DocumentType": {
+                            "Name": "Child Registration Form",
+                            "Guid": "78ec9b65-20dd-ed11-8354-00155dee5a05"
+                        },
+                        "Child": {
+                            "Guid": "459ec83b-24ef-ed11-8354-00155dee5a05"
+                        },
+                        "Status": "Active"
+                    },
+                 */
+                var docTypes = _mappedEntities.Where(x => x.EntityGrouping == "DocumentType").ToList(); //Get SL mapped document types
+                foreach (var doc in docs)
+                {
 
-        private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model)
+                    Document newDoc = new Document()
+                    {
+                        Name = doc.Name,
+                        InsertedDate = doc.DocumentDate,
+                        UpdatedDate = doc.DocumentDate,
+                        CreatedUserId = ownerPractitioner.UserId,
+                        Hierarchy = ownerPractitioner.Hierarchy
+                    };
+
+                    if (doc.Child != null)
+                    {
+                        MappedChild docForChild = children.Where(x => x.Guid.Equals(doc.Child.Guid)).FirstOrDefault();
+                        if (docForChild != null) {
+                            newDoc.UserId = docForChild.localUserId;
+                        } else
+                        {
+                            newDoc.UserId = ownerPractitioner.UserId;
+                        }
+                    } else {
+                        newDoc.UserId = ownerPractitioner.UserId;
+                    }
+
+                    //status - validity -- check if valid/Invalid and set status according
+                    /* FinalValidity - Invalid, Valid, Pending */
+                    newDoc.IsActive = true;
+
+                    //doc type
+                    /* SL API - Proof of Account, Attendance Register, Income Statement, Franchisee Agreement,Child Registration Form,Monthly Attendance Register, Child Birth Certificate   {{RouteStart}}DocumentType/Query */
+                    if (doc.DocumentType != null)
+                    {
+                        var docType = docTypes.Where(d => d.RemoteEntity.Equals(doc.DocumentType.Name)).FirstOrDefault();
+                        if (docType != null)
+                        {
+                            newDoc.DocumentTypeId = Guid.Parse(docType.LocalId);
+                        }
+                    }
+
+                    //workflowstatus
+                    /* ValidationStatus - Pending Check,Waiting for Document,Pending Moderation, Complete (Moderated) */
+                    var wfPending = _workflowRepo.GetAll().Where(w => w.Description.Equals("Pending Verification")).FirstOrDefault();
+                    if (doc.ValidationStatus != null) { 
+                        string workflow = "";
+                        switch (doc.ValidationStatus)
+                        {
+                            case "Waiting for Document":
+                                workflow = "Pending Upload";
+                                break;
+                            case "Pending Moderation":
+                                workflow = "Pending";
+                                break;
+                            case "Complete (Moderated)":
+                                workflow = "Active";
+                                break;
+                            default:
+                                workflow = "Pending Verification";
+                                break;
+                        }
+
+                        var wf = _workflowRepo.GetAll().Where(w => w.Description.Equals(workflow)).FirstOrDefault();
+                        if (wf != null)
+                        {
+                            newDoc.WorkflowStatusId = wf.Id;
+                        } else
+                        {
+                            newDoc.WorkflowStatusId = wfPending.Id;
+                        }
+                    } else {
+                        newDoc.WorkflowStatusId = wfPending.Id;
+                    }
+
+                    Document childDoc = _docRepo.Insert(newDoc);
+                    ssDocuments.Add(childDoc);
+
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return ssDocuments;
+        }
+
+                #endregion
+
+                #region Local Updates
+
+                private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model)
         {
             //TODO: convert to reflection to simplify
             bool updatedEntity = false;
@@ -2249,7 +2397,7 @@ namespace ECDLink.Core.Services
             catch (Exception e)
             {
                 //TODO: LOG ERROR AND HANDLE
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "UpdateDocumentEntity");
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "UpdateDocumentEntity");
                 throw;
             }
 
@@ -2474,7 +2622,7 @@ namespace ECDLink.Core.Services
                         }
                         catch (Exception e)
                         {
-                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                             throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
                     }
@@ -2482,7 +2630,7 @@ namespace ECDLink.Core.Services
                 }
                 catch (Exception e)
                 {           
-                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates");
+                    await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates");
                     throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }
 
@@ -2529,14 +2677,32 @@ namespace ECDLink.Core.Services
             var childrenInserted = audits.Where(a => a.Entity.Equals("Child"));
             foreach (var childAudit in childrenInserted)
             {
+                
                 var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
-                string remoteChildEntityId = await PushNewChild(newChild);
-                var caregiverAudit = audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.Equals(newChild.CaregiverId)).FirstOrDefault();
-                //write back that these have been processed
-                childAudit.Submitted = DateTime.Now;
-                caregiverAudit.Submitted = DateTime.Now;
-                _auditRepo.Update(childAudit);
-                _auditRepo.Update(caregiverAudit);
+                if (newChild != null)
+                {
+                    //find the franchisee owning this child and retrieve its remote id and pass in for SL update
+                    var practitioner = _personnelService.GetPractitionerForChild(newChild.UserId);
+                    if (practitioner != null)
+                    {
+                        //get remoteId
+                        var mappedPractitioner = _mappedEntities.Where(x => x.UserId.Equals(practitioner.UserId)).FirstOrDefault();
+
+                        if (mappedPractitioner != null)
+                        {
+                            if (!string.IsNullOrEmpty(mappedPractitioner.RemoteId))
+                            {
+                                string remoteChildEntityId = await PushNewChild(newChild, mappedPractitioner.RemoteId);
+                                var caregiverAudit = audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.Equals(newChild.CaregiverId)).FirstOrDefault();
+                                //write back that these have been processed
+                                childAudit.Submitted = DateTime.Now;
+                                caregiverAudit.Submitted = DateTime.Now;
+                                _auditRepo.Update(childAudit);
+                                _auditRepo.Update(caregiverAudit);
+                            }
+                        }
+                    }
+                }
             }
 
 
@@ -2613,7 +2779,7 @@ namespace ECDLink.Core.Services
  
 
 
-        private async Task<string> PushNewChild(Child newChild)
+        private async Task<string> PushNewChild(Child newChild, string franchiseeRemoteId)
         {
             /*
              //1) use all insert lines - retrieve column mappings and create
@@ -2693,99 +2859,166 @@ namespace ECDLink.Core.Services
 
 
  */
+                //insert caregiver and map
+                StringBuilder jsonCaregiverString = new StringBuilder();
+                string cgUrl = "";
+                string cgRemoteId = "";
+                Type tCG = typeof(Caregiver);
+                var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Caregiver")).ToList();
+
+                
+                cgUrl = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.CreateMultiple;
+                jsonCaregiverString.AppendLine("[{");
+                if (caregiverColumns.Count() > 0)
+                {
+                    foreach (var changeLine in caregiverColumns)
+                    {
+                        if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                        {
+                            string valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver).ToString() : null;
+                            //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                            if (changeLine.RemapToString)
+                            {
+                                if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                {
+                                    valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                }
+                            }
+                        jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                        }
+                        
+                        ////remove entry from audits list as we have processed it here and sending
+                        //completedList.Add(changeLine);
+                        //audits.Remove(changeLine);
+                    }
+                    jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"},");
+                }
+                jsonCaregiverString.AppendLine("}");
+                jsonCaregiverString.AppendLine("]");
+                //create caregiver
+                try
+                {
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await GetAPIHandlerResponse(cgUrl, null, null, false, true, jsonCaregiverString.ToString());
+                    if (!string.IsNullOrEmpty(responseString))
+                    {
+                        if (responseString != "[]")
+                        {
+
+                            cgRemoteId = JsonConvert.DeserializeObject<string>(responseString);
+                            //there was a reason why these entries did not update
+                            //await UpdateAuditSubmitted(completedList);
+                            IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                            cgMapping.LocalEntity = SSIntegrationSettings.SSCaregiver;
+                            cgMapping.RemoteEntity = SSIntegrationSettings.SLCaregiver;
+                            cgMapping.LocalId = newChild.CaregiverId.ToString();
+                            cgMapping.RemoteId = cgRemoteId;
+                            cgMapping.UserId = newChild.UserId;
+                            cgMapping.UpdatedBy = _uId;
+                            cgMapping.UpdatedDate = DateTime.Now;
+                            cgMapping.IsComplete = true;
+                            cgMapping.BeforeJSON = JsonSerializer.Serialize(newChild.Caregiver);
+                            _mapperRepo.Insert(cgMapping);
+                        }
+                        else //error empty response received
+                        {
+                            //await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            //updated failed, log and try again later
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewChild > GetAPIHandlerResponse");
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
 
 
-                /*
-                                var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("CareGiver")).ToList();
-                                    StringBuilder jsonCaregiverString = new StringBuilder();
-                                    string url = "";
-                                jsonCaregiverString.AppendLine("[");
-                                            url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.CreateMultiple;
-                                jsonCaregiverString.AppendLine("{");
-                                            if (caregiverColumns.Count() > 0)
-                                            {
-                                                foreach (var changeLine in caregiverColumns)
-                                                {
-                                                    var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
-                                                    if (mappedColumnLine != null)
-                                                    {
-                                                        if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
-                                                        {
-                                                            if (changeLine.Property == "IsActive") //special logic for deactivating
-                                                            {
-                                                                //TODO: complete status change logic
-                                                            }
+                //create child and map
+                StringBuilder jsonChildString = new StringBuilder();
+                string childUrl = "";
+                string childRemoteId = "";
+                Type tC = typeof(Child);
+                var childColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Child")).ToList();
+                childUrl = SSIntegrationSettings.SLChild + SSIntegrationSettings.CreateMultiple;
+                jsonChildString.AppendLine("[{");
+                if (childColumns.Count() > 0)
+                {
+                    foreach (var changeLine in childColumns)
+                    {
+                        if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                        {
+                            string valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
+                            //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                            if (changeLine.RemapToString)
+                            {
+                                if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                {
+                                    valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                }
+                            }
+                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                        }
 
-                                                            string valueToSend = changeLine.ValueAfter;
+                        ////remove entry from audits list as we have processed it here and sending
+                        //completedList.Add(changeLine);
+                        //audits.Remove(changeLine);
+                    }
+                    jsonChildString.AppendLine("\"Caregiver\":{\"Guid\": \"" + cgRemoteId + "\"},");
+                    jsonChildString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"},");
+                }
+                jsonChildString.AppendLine("}");
+                jsonChildString.AppendLine("]");
+                //create caregiver
+                try
+                {
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await GetAPIHandlerResponse(cgUrl, null, null, false, true, jsonChildString.ToString());
+                    if (!string.IsNullOrEmpty(responseString))
+                    {
+                        if (responseString != "[]")
+                        {
 
-                                                            //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
-                                                            if (mappedColumnLine.RemapToString)
-                                                            {
-                                                                if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
-                                                                {
-                                                                    valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
-                                                                }
-                                                            }
-                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
-                                                        }
-                                                    }
-                                                    //remove entry from audits list as we have processed it here and sending
-                                                    completedList.Add(changeLine);
-                                                    audits.Remove(changeLine);
-                                                }
-                                            }
-                                            jsonString.AppendLine("},");
-                                        }
-                                    }
-                                    jsonString.AppendLine("]");
-                                    try
-                                    {
-                                        //now send to API call <entity type>/Multiple
-                                        var responseString = await GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
-                                        if (!string.IsNullOrEmpty(responseString))
-                                        {
-                                            if (responseString == "1") //success
-                                            {
-                                                //mark entries as submitted
-                                                await UpdateAuditSubmitted(completedList);
-                                            }
-                                            else if (responseString == "0")
-                                            {
-                                                //there was a reason why these entries did not update
-
-                                            }
-                                            else //error
-                                            {
-                                                //updated failed, log and try again later
-                                            }
-                                        }
-                                    }
-                                    catch (Exception e)
-                                    {
-                                        await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
-                                        throw new HttpRequestException("SmartLink API Error: " + e.Message);
-                                    }
-
-
-
-
-
-                                    IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
+                            childRemoteId = JsonConvert.DeserializeObject<string>(responseString);
+                            //there was a reason why these entries did not update
+                            //await UpdateAuditSubmitted(completedList);
+                            IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
                             childMapping.LocalEntity = SSIntegrationSettings.SSChild;
                             childMapping.RemoteEntity = SSIntegrationSettings.SLChild;
                             childMapping.LocalId = newChild.Id.ToString();
-                            childMapping.RemoteId = remoteChildEntityId;
+                            childMapping.RemoteId = childRemoteId;
                             childMapping.UserId = newChild.UserId;
                             childMapping.UpdatedBy = _uId;
                             childMapping.UpdatedDate = DateTime.Now;
                             childMapping.IsComplete = true;
                             childMapping.BeforeJSON = JsonSerializer.Serialize(newChild);
                             _mapperRepo.Insert(childMapping);
-                */
+                        }
+                        else //error empty response received
+                        {
+                            //await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            //updated failed, log and try again later
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+
+
+
+
+
+
+
+
             }
             catch (Exception e)
             {
-                await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
 
@@ -2915,7 +3148,7 @@ namespace ECDLink.Core.Services
                         catch (Exception e)
                         {
                             //TODO: LOG ERROR AND HANDLE              
-                            await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushStatements > GetAPIHandlerResponse");
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushStatements > GetAPIHandlerResponse");
                             throw new HttpRequestException("SmartLink API Error: " + e.Message);
                         }
                     }
@@ -2924,7 +3157,7 @@ namespace ECDLink.Core.Services
                 catch (Exception e)
                 {
                     //TODO: LOG ERROR AND HANDLE
-                    await IntegrationLog(e.Message, e.InnerException.ToString(), null, LogRelatedType.Error, "PushStatements");
+                    await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushStatements");
                     throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }
 

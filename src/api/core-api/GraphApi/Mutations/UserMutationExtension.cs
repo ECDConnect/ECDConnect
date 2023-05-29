@@ -189,8 +189,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 if (input.IdNumber != user.IdNumber)
                 {
-                    user.UserName = input.IdNumber;
                     fields.Add(new AuditChanges() { FieldName = "UserName", ValueBefore = user.UserName, ValueAfter = input.IdNumber });
+                    user.UserName = input.IdNumber;
+                    
                 }
             }
 
@@ -226,9 +227,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && !string.IsNullOrWhiteSpace(input.Email)
                 && user.Id == httpContextAccessor.HttpContext.GetUser().Id)
             {
-                user.Email = input.Email;
-                user.EmailConfirmed = false;
                 fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                user.Email = input.Email;
+                user.EmailConfirmed = false;                
             }
 
             if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
