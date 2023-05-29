@@ -20,6 +20,8 @@ import { useHistory } from 'react-router';
 
 interface StatementsShowInfoProps {
   setShowInfo: any;
+  setIsFromAutomaticallyStart: (item: boolean) => void;
+  isFromAutomaticallyStart: boolean;
 }
 
 interface Dataprops {
@@ -30,6 +32,7 @@ interface Dataprops {
 
 export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
   setShowInfo,
+  isFromAutomaticallyStart,
 }) => {
   const dialog = useDialog();
   const history = useHistory();
@@ -142,6 +145,13 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
     });
   };
 
+  useEffect(() => {
+    if (isFromAutomaticallyStart) {
+      gotToStatementsWalkthrough();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   const renderData = useMemo(() => {
     return (
       <>
@@ -168,7 +178,9 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 
   return (
     <BannerWrapper
-      size="small"
+      showBackground={false}
+      size="medium"
+      renderBorder={true}
       onBack={() => setShowInfo(false)}
       title="Income statements"
       renderOverflow

@@ -85,8 +85,8 @@ class ContentReportService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation createChildProgressReport($input: ChildProgressReportInput) {
-          createChildProgressReport(input: $input) {
+        mutation updateChildProgressReport($input: ChildProgressReportInput, $id: UUID) {
+          updateChildProgressReport(input: $input, id: $id) {
             id
             reportContent
             classroomGroupId
@@ -97,6 +97,7 @@ class ContentReportService {
       `,
       variables: {
         input: input,
+        id: input.Id,
       },
     });
 
@@ -220,12 +221,7 @@ class ContentReportService {
             categories {
               achievedLevelId
               categoryId
-              missingTasks {
-                description
-                levelId
-                skillId
-                value
-              }
+              status
               supportingTask {
                 taskDescription
                 taskId
@@ -278,6 +274,7 @@ class ContentReportService {
           categories {
             achievedLevelId
             categoryId
+            status
             missingTasks {
               description
               levelId

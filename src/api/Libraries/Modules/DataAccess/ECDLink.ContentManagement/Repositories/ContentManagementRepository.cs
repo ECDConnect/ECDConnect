@@ -258,7 +258,7 @@ namespace ECDLink.ContentManagement.Repositories
                 {
 
                     // if we get the string base64 in the value we know it is a file upload 
-                    var fileIndex = value?.ToString().IndexOf("base64");
+                    var fileIndex = value?.ToString()?.IndexOf("base64");
 
                     if (fileIndex != null && fileIndex != -1)
                     {
@@ -432,7 +432,7 @@ namespace ECDLink.ContentManagement.Repositories
 
                         // if we get the string base64 in the value we know it is a file upload 
                         // TODO: Security, also what if "base64" is missing?
-                        var fileIndex = inputValueString.IndexOf("base64");
+                        var fileIndex = inputValueString?.IndexOf("base64");
                         if (fileIndex > -1)
                         {
                             var fileStr = inputValueString;
@@ -514,7 +514,7 @@ namespace ECDLink.ContentManagement.Repositories
 
                         // if we get the string base64 in the value we know it is a file upload 
                         // TODO: Security, also what if "base64" is missing?
-                        var fileIndex = inputValueString.IndexOf("base64");
+                        var fileIndex = inputValueString?.IndexOf("base64");
                         if (fileIndex > -1)
                         {
                             var fileStr = inputValueString;

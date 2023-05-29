@@ -1,4 +1,5 @@
 import {
+  Alert,
   ButtonGroup,
   ButtonGroupTypes,
   FormInput,
@@ -193,10 +194,17 @@ export const CoachingAndVisitOrCallStep = ({
         })}
         color="textMid"
       />
+      {isView && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot edit responses."
+        />
+      )}
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}
-        color="textDark"
+        color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<string>

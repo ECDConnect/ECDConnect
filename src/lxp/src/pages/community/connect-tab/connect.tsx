@@ -73,7 +73,8 @@ export const Connect: React.FC = () => {
       })
     );
     return { sectionItems };
-  }, [connectSections, connectSectionItems, getChildren]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [connectSections]);
 
   const onLinkClicked = (link: string) => {
     window.open(link, '_blank');

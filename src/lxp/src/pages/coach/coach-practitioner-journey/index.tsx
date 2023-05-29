@@ -95,7 +95,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
-  const uncompletedVisits = timeline?.siteVisits?.filter(
+  const uncompletedVisits = timeline?.pQASiteVisits?.filter(
     (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
   );
 
@@ -216,6 +216,7 @@ export const CoachPractitionerJourney: React.FC = () => {
             type={
               timeline?.smartSpaceLicenseColor?.toLocaleLowerCase() as AlertType
             }
+            variant="flat"
             title={timeline?.smartSpaceLicenseStatus || ''}
             message={
               !!timeline?.smartSpaceLicenseDate

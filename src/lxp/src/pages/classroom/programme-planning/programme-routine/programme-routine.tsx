@@ -583,6 +583,7 @@ export const ProgrammeRoutine: React.FC = () => {
                     />
                   );
                 }
+                return null;
               })}
 
             {!isDayCompleted &&

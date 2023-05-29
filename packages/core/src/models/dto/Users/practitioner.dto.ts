@@ -30,4 +30,5 @@ export interface PractitionerDto extends EntityBase {
   isLeaving?: boolean;
   programmeType?: string;
   progress?: number;
+  attendedChildProgress?: boolean;
 }

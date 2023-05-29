@@ -7,7 +7,7 @@ import {
   ButtonGroupTypes,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   EditCellPhoneNUmberProps,
@@ -16,7 +16,7 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   EditCellphoneModel,
-  editCelphoneNumberSchema,
+  editCellphoneNumberSchema,
   initialEditPractitionerValues,
 } from '@/schemas/practitioner/edit-cellphone-number';
 import { useAppDispatch } from '@store';
@@ -48,16 +48,19 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 
   const {
     getValues: getPractitionerInfoFormValues,
-    formState: practitionerInfoFormState,
     register: practitionerInfoFormRegister,
+    control: practitionerInfoFormControl,
+    watch,
+    clearErrors,
   } = useForm<EditCellphoneModel>({
-    resolver: yupResolver(editCelphoneNumberSchema),
+    resolver: yupResolver(editCellphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = practitionerInfoFormState;
+  const { errors } = useFormState({ control: practitionerInfoFormControl });
+  const { whatsapp, cellphone } = watch();
 
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
@@ -92,7 +95,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Edit practitioner'}
+        title={'Edit Cellphone Number'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
         onBack={() => setEditiCellPhoneNumber(false)}
@@ -111,11 +114,12 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
             <div className="mt-2 flex w-full flex-col justify-center gap-4">
               <FormInput<EditCellphoneModel>
                 label={'Cellphone number'}
-                visible={true}
                 nameProp={'cellphone'}
                 placeholder="+27735279059"
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                type={'number'}
+                error={!!errors.cellphone ? errors.cellphone : undefined}
               />
               <div className="mt-4 w-11/12">
                 <Typography
@@ -129,6 +133,7 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 <ButtonGroup<boolean>
                   options={yesNoOptions}
                   onOptionSelected={(value: boolean | boolean[]) => {
+                    clearErrors();
                     setIsWhatsappNumber(value as boolean);
                   }}
                   color="secondary"
@@ -142,10 +147,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   label={'What phone number do you use for WhatsApp?'}
                   hint={'Optional. Leave blank if you do not use WhatsApp.'}
                   placeholder="073 527 9059"
-                  visible={true}
+                  type={'number'}
                   nameProp={'whatsapp'}
                   className="w-full"
                   register={practitionerInfoFormRegister}
+                  error={!!errors.whatsapp ? errors.whatsapp : undefined}
                 />
               )}
             </div>
@@ -158,7 +164,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
-                disabled={!isValid}
+                disabled={
+                  !!Object.keys(errors).length ||
+                  (!!isWhatsappNumber ? !cellphone : !whatsapp || !cellphone)
+                }
                 onClick={() => {
                   savePractitionerUserData();
                   setEditiCellPhoneNumber(false);

@@ -46,7 +46,7 @@ export const EditClass = ({
     practitionerSelectors.getPractitioner
   );
 
-  const { setValue, getValues, formState, register, control, trigger } =
+  const { setValue, getValues, register, control, trigger } =
     useForm<EditClassModel>({
       defaultValues: {
         ...classToEdit,

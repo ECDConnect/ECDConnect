@@ -35,6 +35,7 @@ export default function StatementsWrapper() {
           placement: 'bottom',
           offset: 10,
           disableBeacon: true,
+          spotlightPadding: 16,
         },
         {
           target: '#createIncome',
@@ -64,7 +65,7 @@ export default function StatementsWrapper() {
           target: '#preeschoolFee1',
           content: 'You will need to fill in all the info on this screen',
           placement: 'bottom-end',
-          offset: 50,
+          offset: 20,
           spotlightClicks: true,
           disableBeacon: true,
         },
@@ -205,6 +206,14 @@ export default function StatementsWrapper() {
         showProgress
         showSkipButton
         disableOverlayClose
+        styles={{
+          spotlight: {
+            borderWidth: 4,
+            borderRadius: 20,
+            borderColor: '#99231b',
+            borderStyle: 'solid',
+          },
+        }}
       />
     </div>
   );

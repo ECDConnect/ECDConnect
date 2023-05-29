@@ -2,7 +2,7 @@ import {
   ChildProgressObservationReport,
   ChildProgressReportSummaryModel,
 } from '@ecdlink/core';
-import { createSlice, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   generateChildProgressReport,
@@ -16,6 +16,42 @@ import { ContentReportState, UnSyncedReportItem } from './report.types';
 const initialState: ContentReportState = {
   childProgressionReports: [],
   unsyncedChildProgressReportsIds: [],
+};
+
+const _markReportForSyncing = (
+  state: Draft<ContentReportState>,
+  payload: UnSyncedReportItem
+) => {
+  if (!state.childProgressionReports) return;
+
+  if (!state.unsyncedChildProgressReportsIds)
+    state.unsyncedChildProgressReportsIds = [];
+
+  const reportIndex = state.unsyncedChildProgressReportsIds.findIndex(
+    (reportItem) => reportItem.reportId === payload.reportId
+  );
+
+  if (reportIndex < 0) {
+    state.unsyncedChildProgressReportsIds.push(payload);
+  } else {
+    state.unsyncedChildProgressReportsIds[reportIndex].promptUser =
+      payload.promptUser || false;
+  }
+};
+
+const _reportSynced = (state: Draft<ContentReportState>, reportId: string) => {
+  if (!state.childProgressionReports) return;
+
+  if (!state.unsyncedChildProgressReportsIds)
+    state.unsyncedChildProgressReportsIds = [];
+
+  const reportIndex = state.unsyncedChildProgressReportsIds.findIndex(
+    (reportItem) => reportItem.reportId === reportId
+  );
+
+  if (reportIndex < 0) return;
+
+  state.unsyncedChildProgressReportsIds.splice(reportIndex, 1);
 };
 
 const contentReportSlice = createSlice({
@@ -51,7 +87,11 @@ const contentReportSlice = createSlice({
         categoryIndex
       ].missingTasks = action.payload.missingTasks;
 
-      // contentReportSlice.caseReducers.markReportForSyncing(state, action.payload);
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setCategoryStatus: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -72,6 +112,12 @@ const contentReportSlice = createSlice({
       state.childProgressionReports[reportIndex].categories[
         categoryIndex
       ].status = action.payload.status;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setCategoryAchievedLevelId: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -92,6 +138,12 @@ const contentReportSlice = createSlice({
       state.childProgressionReports[reportIndex].categories[
         categoryIndex
       ].achievedLevelId = action.payload.levelId;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setCategorySupportTask: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -117,6 +169,12 @@ const contentReportSlice = createSlice({
       state.childProgressionReports[reportIndex].categories[
         categoryIndex
       ].supportingTask = action.payload.supportingTask;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setReportObservationNote: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -129,6 +187,12 @@ const contentReportSlice = createSlice({
 
       state.childProgressionReports[reportIndex].observationNote =
         action.payload.note;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setChildEnjoys: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -141,6 +205,12 @@ const contentReportSlice = createSlice({
 
       state.childProgressionReports[reportIndex].childEnjoys =
         action.payload.childEnjoys;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setChildProgressedWith: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -153,6 +223,12 @@ const contentReportSlice = createSlice({
 
       state.childProgressionReports[reportIndex].childProgressedWith =
         action.payload.childProgressedWith;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     setHowCaregiverCanHelpChild: (state, action) => {
       if (!state.childProgressionReports) return;
@@ -165,6 +241,12 @@ const contentReportSlice = createSlice({
 
       state.childProgressionReports[reportIndex].howCanCaregiverHelpChild =
         action.payload.howCanCaregiverHelpChild;
+
+      _markReportForSyncing(state, {
+        reportId: action.payload.reportId,
+        classroomGroupId: action.payload.classroomGroupId || null,
+        promptUser: false,
+      });
     },
     saveReport: (
       state,
@@ -187,21 +269,9 @@ const contentReportSlice = createSlice({
       state,
       action: PayloadAction<UnSyncedReportItem>
     ) => {
-      if (!state.childProgressionReports) return;
-
-      if (!state.unsyncedChildProgressReportsIds)
-        state.unsyncedChildProgressReportsIds = [];
-
-      const reportIndex = state.unsyncedChildProgressReportsIds.findIndex(
-        (reportItem) => reportItem.reportId === action.payload.reportId
-      );
-
-      if (reportIndex < 0) {
-        state.unsyncedChildProgressReportsIds.push(action.payload);
-        return;
-      }
-
-      // state.unsyncedChildProgressReportsIds[reportIndex] = action.payload;
+      if (action.payload.promptUser === undefined)
+        action.payload.promptUser = true;
+      _markReportForSyncing(state, action.payload);
     },
   },
   extraReducers: (builder) => {
@@ -231,10 +301,11 @@ const contentReportSlice = createSlice({
 
         if (reportIndex && reportIndex < 0) {
           state.childProgressionReports.push(reportContent);
-          return;
+        } else {
+          state.childProgressionReports[reportIndex] = reportContent;
         }
 
-        state.childProgressionReports[reportIndex] = reportContent;
+        _reportSynced(state, reportContent.id);
       }
     );
     builder.addCase(
@@ -274,6 +345,8 @@ const contentReportSlice = createSlice({
       }
 
       state.childProgressionReports[reportIndex] = reportContent;
+
+      _reportSynced(state, reportContent.id);
     });
 
     builder.addCase(generateChildProgressReport.fulfilled, () => {});

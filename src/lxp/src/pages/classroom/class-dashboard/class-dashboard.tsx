@@ -31,14 +31,11 @@ import {
   practitionerThunkActions,
 } from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import walktroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');

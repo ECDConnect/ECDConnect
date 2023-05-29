@@ -16,7 +16,8 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { attendanceActions } from '@/store/attendance';
+import ROUTES from '@routes/routes';
+import { useHistory } from 'react-router';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -57,7 +58,7 @@ export const MonthlyAttendanceReport = ({
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date().toDateString();
-
+  const history = useHistory();
   const { errorDialog } = useRequestResponseDialog();
 
   const numDays = totalAttendance.length;
@@ -246,6 +247,12 @@ export const MonthlyAttendanceReport = ({
                 weight="bold"
                 color={'black'}
                 text={report.childFullName}
+                onClick={() => {
+                  history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+                    childId: report?.childUserId,
+                    classroomGroupId: report?.classgroupId,
+                  });
+                }}
               />
               <div className={'flex w-1/2 flex-row items-center pl-6'}>
                 <div

@@ -1,8 +1,10 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -105,7 +107,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 visitModel.ActualVisitDate = DateTime.Now;
             }
 
-            Visit visit = visitManager.AddSupportVisitForPractitioner(visitModel);
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.SupportData.VisitId = visit.Id.ToString();
             input.SupportData.PractitionerId = practitioner.Id.ToString();
@@ -127,7 +129,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1_follow_up).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_follow_up).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
@@ -144,7 +146,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 visitModel.ActualVisitDate = DateTime.Now;
             }
 
-            Visit visit = visitManager.AddFollowUpVisitForPractitioner(visitModel);
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
+            // Add VisitData for visit
+            input.FollowUpData.VisitId = visit.Id.ToString();
+            input.FollowUpData.PractitionerId = practitioner.Id.ToString();
+            visitDataManager.AddPractitionerVisitData(input.FollowUpData, false);
+
+            return visit;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddReAccreditationFollowUpVisitForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            FollowUpVisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_follow_up).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+
+            // Add Visit
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.MotherId = null;
+            visitModel.InfantId = null;
+            visitModel.LinkedVisitId = null;
+            visitModel.PractitionerId = practitioner.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.FollowUpData.VisitId = visit.Id.ToString();
             input.FollowUpData.PractitionerId = practitioner.Id.ToString();
@@ -165,7 +205,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
@@ -182,7 +222,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 visitModel.ActualVisitDate = DateTime.Now;
             }
 
-            Visit visit = visitManager.AddFollowUpVisitForPractitioner(visitModel);
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
+            // Add VisitData for visit
+            input.ReAccreditationData.VisitId = visit.Id.ToString();
+            input.ReAccreditationData.PractitionerId = practitioner.Id.ToString();
+            visitDataManager.AddPractitionerVisitData(input.ReAccreditationData, false);
+
+            return visit;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddAnnualReAccreditationVisitForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            ReAccreditationVisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_annual_re_accreditation).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+
+            // Add Visit
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.MotherId = null;
+            visitModel.InfantId = null;
+            visitModel.LinkedVisitId = null;
+            visitModel.PractitionerId = practitioner.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
             // Add VisitData for visit
             input.ReAccreditationData.VisitId = visit.Id.ToString();
             input.ReAccreditationData.PractitionerId = practitioner.Id.ToString();
@@ -196,20 +274,66 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] UserLicenseManager userLicenseManager,
-            [Service] VisitDataManager visitDataManager,
-            string userId)
+            string userId,
+            string ratingColor)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            License smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
 
-            // get rating of first pqa visit
-            PQARating rating = visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+            // 3 visit pqa first visit types
+            VisitType pqaType1 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
+            VisitType pqaType2 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
+            VisitType pqaType3 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
 
-            // add pqa 
+            Visit firstPQA = visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitTypeId == pqaType1.Id).FirstOrDefault();
+            Visit secondPQA = visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitTypeId == pqaType2.Id).FirstOrDefault();
+
             var input = new VisitModel();
+            input.MotherId = null;
+            input.InfantId = null;
+            input.LinkedVisitId = null;
+            input.PractitionerId = practitioner.Id;
+
+            // Red rating follow up -- if the practitioner receives a red rating:
+            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
+            if (ratingColor == MetricsColorEnum.Error.ToString())
+            {
+                if (firstPQA != null && secondPQA == null)
+                {
+                    DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                    DateTime newDate = dt.AddDays(14);
+                    input.PlannedVisitDate = newDate;
+                    input.VisitType = pqaType2;
+                    visitManager.AddVisit(input);
+                }
+
+            }
+
+            // Orange rating follow up -- if the practitioner receives an orange rating:
+            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
+            if (ratingColor == MetricsColorEnum.Warning.ToString())
+            {
+                if (secondPQA != null)
+                {
+                    DateTime dt = secondPQA.PlannedVisitDate;
+                    DateTime newDate = dt.AddDays(60);
+                    input.PlannedVisitDate = newDate;
+                    input.VisitType = pqaType3;
+                } else
+                {
+                    DateTime dt = firstPQA.PlannedVisitDate;
+                    DateTime newDate = dt.AddDays(60);
+                    input.PlannedVisitDate = newDate;
+                    input.VisitType = pqaType2;
+                }
+                
+                visitManager.AddVisit(input);
+            }
 
             return true;
         }
@@ -229,7 +353,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
             List<VisitType> visitTypes = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
 
-            var smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_license);
+            var smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
 
             if (smartSpaceLic != null)
             {
