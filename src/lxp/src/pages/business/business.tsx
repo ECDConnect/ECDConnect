@@ -14,12 +14,14 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useAppDispatch } from '@store';
 import { analyticsActions } from '@store/analytics';
-import { getStorageItem } from '@utils/common/local-storage.utils';
+import {
+  getStorageItem,
+  setStorageItem,
+} from '@utils/common/local-storage.utils';
 import { ClassDashboardRouteState } from './business.types';
 import { Money } from './money/money';
 import { StatementsInfoPage } from './components/statements-info-page';
 import { useAppContext } from '@/walkthrougContext';
-import ROUTES from '@/routes/routes';
 import { useSelector } from 'react-redux';
 import { statementsSelectors } from '@/store/statements';
 
@@ -27,9 +29,7 @@ export const Business: React.FC = () => {
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
-  const [attendanceTutorialActive, setAttendanceTutorialActive] =
-    useState<boolean>(false);
-  const [attendanceTutorialComplete, setAttendanceTutorialComplete] =
+  const [incomeStatementTutorialComplete, setIncomeStatementTutorialComplete] =
     useState<boolean>(false);
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 0
@@ -54,10 +54,10 @@ export const Business: React.FC = () => {
 
   useEffect(() => {
     const isTutorialComplete = getStorageItem<boolean>(
-      LocalStorageKeys.attendanceTutorialComplete
+      LocalStorageKeys.incomeStatementTutorialComplete
     );
     if (isTutorialComplete !== undefined) {
-      setAttendanceTutorialComplete(isTutorialComplete);
+      setIncomeStatementTutorialComplete(isTutorialComplete);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
@@ -126,7 +126,8 @@ export const Business: React.FC = () => {
       handleAutoStartWalkthrough &&
       walkThroughState?.stepIndex !== 7 &&
       walkThroughState?.stepIndex !== 8 &&
-      walkThroughState?.stepIndex !== 9
+      walkThroughState?.stepIndex !== 9 &&
+      !incomeStatementTutorialComplete
     ) {
       setShowInfo(true);
       setIsFromAutomaticallyStart(true);
@@ -137,6 +138,7 @@ export const Business: React.FC = () => {
     expense,
     handleAutoStartWalkthrough,
     walkThroughState?.stepIndex,
+    incomeStatementTutorialComplete,
   ]);
 
   useEffect(() => {
@@ -144,6 +146,8 @@ export const Business: React.FC = () => {
       walkThroughState?.stepIndex === 9 ||
       walkThroughState?.stepIndex === 10
     ) {
+      setStorageItem(true, LocalStorageKeys.incomeStatementTutorialComplete);
+      setIncomeStatementTutorialComplete(true);
       setShowInfo(false);
       setHandleAutoStartWalkthrough(false);
     }
@@ -176,7 +180,7 @@ export const Business: React.FC = () => {
         />
       </BannerWrapper>
       <Dialog
-        fullScreen={false}
+        fullScreen={true}
         visible={showInfo}
         position={DialogPosition.Full}
       >

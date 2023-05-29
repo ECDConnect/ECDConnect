@@ -178,7 +178,9 @@ export const StatementsInfoPage: React.FC<StatementsShowInfoProps> = ({
 
   return (
     <BannerWrapper
-      size="small"
+      showBackground={false}
+      size="medium"
+      renderBorder={true}
       onBack={() => setShowInfo(false)}
       title="Income statements"
       renderOverflow
