@@ -5,7 +5,13 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  getDate,
+  getDayOfYear,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -142,17 +148,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       }
     }
 
-    if (!currentDayClassroomGroup) {
-      if (allChildrenInsertedBeforeToday) {
-        setAttendanceComponentType('summary');
-      } else {
-        setAttendanceComponentType('report');
-      }
-      return;
-    }
-
     const currentClassProgrammes = classProgrammesUpdated.filter(
-      (x) => x.classroomGroupId === currentDayClassroomGroup.id
+      (x) => x.classroomGroupId === currentDayClassroomGroup?.id
     );
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
@@ -167,16 +164,23 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
 
     const missedDays: MissedAttendanceGroups[] =
-    getMissedAttendanceSummaryGroups(
-      practitioner?.isPrincipal === true
-        ? classroomGroupsForPrincipal
-        : classroomGroups || [],
-      classProgrammesUpdated,
-      attendance,
-      holidays,
-      currentDate
-    );
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance,
+        holidays,
+        currentDate
+      );
+      console.log('>>', missedDays);
 
+    //weekend check
+    if (!currentDayClassroomGroup && missedDays.length === 0) {
+      console.log('>>', missedDays);
+      setAttendanceComponentType('report');
+      return;
+    }
     if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
       setAttendanceComponentType('attendance');
     } else if (missedDays.length === 0) {
@@ -238,6 +242,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
+      console.log('>>');
     }
   };
 
