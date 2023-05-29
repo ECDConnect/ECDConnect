@@ -123,6 +123,16 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             else return new List<Child>();
         }
 
+        public Practitioner GetPractitionerForChild(string childUserId)
+        {
+            Child child = _childRepo.GetByUserId(childUserId);
+            if (child != null && !string.IsNullOrEmpty(child.Hierarchy))
+            {
+                return _practiGenericRepo.GetAll().Where(x => x.Hierarchy.StartsWith(child.Hierarchy)).FirstOrDefault();                
+            }
+            else return null;
+        }
+
         public List<ClassroomGroup> GetAllClassroomGroupsForPractitioner(string practitionerId)
         {            
             return _classGroupRepo.GetListByUserId(practitionerId.ToString());

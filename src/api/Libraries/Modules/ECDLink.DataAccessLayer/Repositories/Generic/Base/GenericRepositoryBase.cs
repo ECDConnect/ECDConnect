@@ -110,19 +110,27 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (entity == null)
                 throw new ArgumentNullException("entity");
 
-            //T oneMoreCheck = GetById(entity.Id);
-            //T onemoreprecheck = entities.Find(entity.Id);
-
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             if (Exists(entity.Id))
             {
-                T beforeUpdate = Retrieve(entity.Id);
-
                 entity.UpdatedBy = _userId;
                 // Notify update would get input values without this:
                 entity.TenantId = entities.Entry(entity).Property(e => e.TenantId).OriginalValue;
                 entity.InsertedDate = entities.Entry(entity).Property(e => e.InsertedDate).OriginalValue;
+                //Populate Audit records
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                    if (DoAudit(entity, "Update", entity))
+                    {
+                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
+                        entity.UpdatedDate = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    entity.UpdatedDate = DateTime.Now;
+                }
 
                 entities.Update(entity);
                 // Do not update Inserted Date:
@@ -133,18 +141,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                 // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
 
-                //Populate Audit records
-                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
-                {
-                   if (DoAudit(entity, "Update", beforeUpdate))
-                    {
-                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
-                        entity.UpdatedDate = DateTime.Now;
-                    }
-                } else
-                {
-                    entity.UpdatedDate = DateTime.Now;
-                }
+
 
             }
             else
@@ -175,7 +172,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
         }
 
-        public virtual bool DoAudit(T entity, string changeType = "Update", T beforeObj = null)
+        public virtual bool DoAudit(T entity, string changeType = "Update", T entityBefore = null)
         {
             bool isValidChange = false;
             GenericRepositoryBase<IntegrationAudit> auditInsertRepo = new GenericRepositoryBase<IntegrationAudit>(context, _domainEventService);
@@ -214,7 +211,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                         if (propType.IsPrimitive || (propType == typeof(string)) || (propType == typeof(System.Guid)) || propType.IsValueType && prop.Name != "UpdatedDate") //ignore navigation types due to lazyloading And do not flag UpdatedDate as Valid change
                         {
                             //Determine changes and convert all to string
-                            string beforeValue = entities.Entry(beforeObj).Property(prop.Name).OriginalValue != null ? entities.Entry(beforeObj).Property(prop.Name).OriginalValue.ToString() :  "";
+                            string beforeValue = entities.Entry(entityBefore).Property(prop.Name).OriginalValue != null ? entities.Entry(entityBefore).Property(prop.Name).OriginalValue.ToString() :  "";
                             string afterValue = prop.GetValue(entity, null) != null ? prop.GetValue(entity, null).ToString() : "";
 
                             if (beforeValue != afterValue)
