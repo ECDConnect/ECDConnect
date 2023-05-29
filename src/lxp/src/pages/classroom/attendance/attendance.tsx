@@ -173,11 +173,9 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays,
         currentDate
       );
-      console.log('>>', missedDays);
-
+      
     //weekend check
     if (!currentDayClassroomGroup && missedDays.length === 0) {
-      console.log('>>', missedDays);
       setAttendanceComponentType('report');
       return;
     }
@@ -242,7 +240,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
-      console.log('>>');
     }
   };
 
