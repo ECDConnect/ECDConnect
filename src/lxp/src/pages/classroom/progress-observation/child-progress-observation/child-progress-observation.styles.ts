@@ -5,3 +5,5 @@ export const completeWrapper =
   'rounded-lg m-4 flex flex-row flex-nowrap bg-successMain items-center';
 export const completeImage = 'mr-4 rounded-full p-4';
 export const completeNotes = 'm-4';
+export const languageWrapper =
+  'w-full flex flex-row justify-start items-center';

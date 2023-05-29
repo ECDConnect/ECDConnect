@@ -140,6 +140,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
               placeholder={'Enter a number'}
               type={'number'}
               hint={'If there are no other practitioners, enter 0'}
+              onKeyDown={(e: any) => {}}
             ></FormInput>
 
             <FormInput<EditProgrammeModel>
@@ -150,6 +151,7 @@ export const EditProgrammeForm: React.FC<EditProgrammeFormProps> = ({
               nameProp={'nonSmartStartPractitioners'}
               placeholder={'Enter a number'}
               type={'number'}
+              onKeyDown={(e: any) => {}}
             ></FormInput>
           </>
         )}

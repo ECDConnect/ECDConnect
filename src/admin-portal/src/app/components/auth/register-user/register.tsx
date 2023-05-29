@@ -47,9 +47,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
     setShowPassword(!showPassword);
   };
 
-  //useriD FROM be INVITATION
-  console.log('', userId);
-
   const registerNewUser = async () => {
     const formValues = getValues();
 

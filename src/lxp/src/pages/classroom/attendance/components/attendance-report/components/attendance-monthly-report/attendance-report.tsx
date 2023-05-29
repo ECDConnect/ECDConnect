@@ -16,6 +16,8 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import ROUTES from '@routes/routes';
+import { useHistory } from 'react-router';
 
 export interface ChildAttendanceReportState {
   childId: string;
@@ -56,7 +58,7 @@ export const MonthlyAttendanceReport = ({
   const appDispatch = useAppDispatch();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const today = new Date().toDateString();
-
+  const history = useHistory();
   const { errorDialog } = useRequestResponseDialog();
 
   const numDays = totalAttendance.length;
@@ -140,10 +142,10 @@ export const MonthlyAttendanceReport = ({
     footer.push(obj.value.toString());
   });
 
-  let attendnaceSum = 0;
+  let attendanceSum = 0;
 
   for (let i = 0; i < totalAttendance.length; i++) {
-    attendnaceSum += totalAttendance[i].value;
+    attendanceSum += totalAttendance[i].value;
   }
 
   const tableTopContent = {
@@ -159,9 +161,13 @@ export const MonthlyAttendanceReport = ({
   };
 
   const tableBottomContent = [
-    `Total monthly attendance: ${attendnaceSum}`,
+    `Total monthly attendance: ${attendanceSum}`,
     `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
-    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions}`,
+    `Number of children who attended all sessions: ${
+      attendanceSum === 0
+        ? "0"
+        : totalAttendanceStatsReport?.totalChildrenAttendedSessions
+    }`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {
@@ -245,6 +251,12 @@ export const MonthlyAttendanceReport = ({
                 weight="bold"
                 color={'black'}
                 text={report.childFullName}
+                onClick={() => {
+                  history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+                    childId: report?.childUserId,
+                    classroomGroupId: report?.classgroupId,
+                  });
+                }}
               />
               <div className={'flex w-1/2 flex-row items-center pl-6'}>
                 <div

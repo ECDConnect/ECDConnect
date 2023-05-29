@@ -60,7 +60,11 @@ const FormField: React.FC<FormFieldProps> = ({
         ) : (
           <ul className="list-disc pl-6">
             {instructions?.map((i: string) => {
-              return <li key={i} className="text-base">{i}</li>;
+              return (
+                <li key={i} className="text-base">
+                  {i}
+                </li>
+              );
             })}
           </ul>
         )}
@@ -87,7 +91,9 @@ const FormField: React.FC<FormFieldProps> = ({
           placeholder={placeholder}
         />
         {type === 'checkbox' && (
-          <a className="text-md pl-2 mb-3 text-secondary" href='/terms'>{instructions[0]}</a>
+          <a className="text-md text-secondary mb-3 pl-2" href="/terms">
+            {instructions[0]}
+          </a>
         )}
 
         {type === 'password' && (

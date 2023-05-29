@@ -24,7 +24,9 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_3 = "pqa_visit_3";
 
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
+            public const string visitType_annual_re_accreditation = "annual_re_accreditation";
             public const string visitType_re_accreditation = "re_accreditation";
+            public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";

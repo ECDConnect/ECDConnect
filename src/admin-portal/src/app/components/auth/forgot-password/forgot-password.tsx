@@ -38,8 +38,8 @@ export default function ForgotPassword() {
   console.log(isValid)
   const resetPassword = async () => {
     if (isValid) {
-      setResetLinkSent(!resetLinkSent)
-      setIsLoading(!isLoading)
+      setResetLinkSent(!resetLinkSent);
+      setIsLoading(!isLoading);
     }
 
   };
@@ -65,12 +65,12 @@ export default function ForgotPassword() {
           <div className="flex flex-shrink-0 items-center justify-center pt-8">
             <img className="h-100 w-4/8" src={thumbs_up} alt="Login Logo" />
           </div>
-          <h4 className="font-h1 mt-4 text-lg text-center">Email sent! </h4>
+          <h4 className="font-h1 mt-4 text-center text-lg">Email sent! </h4>
 
-          <p className="text-lg mb-3 pt-2 text-center text-gray-700">
-            If there's an account registered with your email, you'll
-            receive a password reset link. Please check your inbox and follow
-            the instructions in the email.
+          <p className="mb-3 pt-2 text-center text-lg text-gray-700">
+            If there's an account registered with your email, you'll receive a
+            password reset link. Please check your inbox and follow the
+            instructions in the email.
           </p>
 
           <div className="mt-8">
