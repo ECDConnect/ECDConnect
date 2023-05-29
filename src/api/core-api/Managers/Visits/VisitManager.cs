@@ -70,46 +70,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return _visitRepo.Insert(visit);
         }
 
-        public Visit AddSupportVisitForPractitioner(VisitModel input)
+        public Visit AddVisitForPractitioner(VisitModel input)
         {
-            var visit = GetSupportVisitFromInputModel(input);
+            var visit = GetPractitionerVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
 
-        private Visit GetSupportVisitFromInputModel(VisitModel input)
-        {
-            if (input == null)
-            {
-                return null;
-            }
-
-            return new Visit()
-            {
-                Id = Guid.NewGuid(),
-                IsActive = true,
-                Attended = input.Attended,
-                InsertedDate = DateTime.Now,
-                UpdatedDate = DateTime.Now,
-                VisitTypeId = input.VisitType.Id,
-                MotherId = input.MotherId,
-                InfantId = input.InfantId,
-                PractitionerId = input.PractitionerId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
-                Comment = input.Comment,
-                UpdatedBy = _applicationUserId,
-                LinkedVisitId = input.LinkedVisitId,
-                ActualVisitDate = input.ActualVisitDate,
-                PlannedVisitDate = input.PlannedVisitDate
-            };
-        }
-
-        public Visit AddFollowUpVisitForPractitioner(VisitModel input)
-        {
-            var visit = GetFollowUpVisitFromInputModel(input);
-            return _visitRepo.Insert(visit);
-        }
-
-        private Visit GetFollowUpVisitFromInputModel(VisitModel input)
+        private Visit GetPractitionerVisitFromInputModel(VisitModel input)
         {
             if (input == null)
             {

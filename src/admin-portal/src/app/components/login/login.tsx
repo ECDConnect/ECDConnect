@@ -13,8 +13,9 @@ import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../hooks/useAuth';
 import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.png';
+import logo from '../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { ArrowRightIcon } from '@heroicons/react/solid';
 
 export default function Login() {
   const { login } = useAuth();
@@ -28,13 +29,17 @@ export default function Login() {
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
+
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  //check password strength
   const password = watch('password');
-
   const formValues = getValues();
-  const passwordStrength = zxcvbn(formValues.password);
-  console.log('Password strength score:', passwordStrength.score);
-  console.log('Password feedback:', password);
-
+  const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
@@ -43,7 +48,7 @@ export default function Login() {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
-        username: formValues.username,
+        username: formValues.email,
         password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
@@ -73,7 +78,6 @@ export default function Login() {
       return <div className="h-32 w-32">&nbsp;</div>;
     }
   };
-
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
       <div className="rounded bg-white p-8 shadow sm:w-1/3">
@@ -81,7 +85,7 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl">
+          <h2 className="font-h1 textLight mt-6 text-2xl">
             Log in to Funda App
           </h2>
         </div>
@@ -91,9 +95,9 @@ export default function Login() {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'username'}
+                  nameProp={'email'}
                   register={register}
-                  error={errors.username?.message}
+                  error={errors.email?.message}
                 />
               </div>
 
@@ -104,6 +108,8 @@ export default function Login() {
                   register={register}
                   type="password"
                   error={errors.password?.message}
+                  showPassword={showPassword}
+                  togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
               <div className="-mx-1 flex">
@@ -126,16 +132,20 @@ export default function Login() {
                 ))}
               </div>
 
-              <div className="mb-2 flex justify-between">
-                <a
-                  rel="noopener noreferrer"
-                  href="/"
-                  className="text-l text-blue-400 hover:underline"
-                >
-                  Forgot password?
-                </a>
-              </div>
-              <Divider></Divider>
+              <Button
+                className={'mt-3 w-full rounded'}
+                type="ghost"
+                isLoading={isLoading}
+                color="secondary"
+                onClick={() => history.push('/reset')}
+              >
+                <Typography
+                  type="help"
+                  color="secondary"
+                  text={' Forgot password?'}
+                ></Typography>
+                <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
+              </Button>
 
               {displayError && (
                 <Alert

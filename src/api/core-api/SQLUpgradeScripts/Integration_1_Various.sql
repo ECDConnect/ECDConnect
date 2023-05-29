@@ -162,4 +162,61 @@ ALTER TABLE public."Practitioner" ADD "AttendedBusinessSkills" bool NULL;
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Deceased',NULL),
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Maternity leave',NULL),
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Other',NULL);
+
+
+	 ALTER TABLE public."IntegrationEntityMapping" ADD "EntityGrouping" text NULL;
+	 ALTER TABLE public."Practitioner" ADD "StipendType" varchar NULL;
+
+	 INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","Description","EnumId","TenantId") VALUES
+	 ('5258d1f1-f9b6-e571-cbbe-067f4a823c8c',true,'2023-05-10 12:04:40.889','2023-05-10 12:04:40.889',NULL,'AttendancePDF','Saving an attendance pdf',16,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
+	 CREATE TABLE public."Trainee" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"Hierarchy" text NULL,
+	"StartDate" timestamp NULL,
+	"TraineeConvertedDate" timestamp NULL,
+	"ConsolidationMeetingDate" timestamp NULL,
+	"ChildrenAddedDate" timestamp NULL,
+	"UserId" text NULL,
+	"LinkedPrincipalHierarchy" uuid NULL,
+	"TenantId" uuid NULL,
+	"Progress" numeric NOT NULL DEFAULT 0,
+	"ProgrammeType" text NULL,
+	"PractitionerId" uuid NOT NULL,
+	"AttendedFirstAidCourse" bool NULL,
+	"SiteVisitsCompleted" bool NULL,
+	"ChildProgressTraining" bool NULL,
+	"StarterLicenceReceived" bool NULL,
+	"PlayKitReceived" bool NULL,
+	"AdminFileReceived" bool NULL,
+	"SmartSpaceVisitPassed" bool NULL,
+	"AttendedStartUpTraining" bool NULL,
+	"IsOnStipend" bool NULL,
+	"IsSmartSpaceVisitValidated" bool NULL,
+	"IsAdminFileAndPlaykitValidated" bool NULL,
+	"HighestEducationLevel" text NULL,
+	"SiteArea" text NULL,
+	CONSTRAINT "PK_Trainee" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_Trainee_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+CREATE INDEX "IX_Trainee_UserId" ON public."Trainee" USING btree ("UserId");
+
+
+
+INSERT INTO "IntegrationEntityMapping" ("Id","IsActive","InsertedDate","UpdatedDate","LastUpdatedDate", "LastCheckedDate", "LocalEntity","RemoteEntity","LocalId","RemoteId","IntegrationSystem","TenantId","IsComplete", "EntityGrouping") VALUES
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Child','Child Birth Certificate',(select "Id" from "DocumentType" where "Name" = 'Child'),'0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Child','Child Registration Form',(select "Id" from "DocumentType" where "Name" = 'Child'),'78ec9b65-20dd-ed11-8354-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'AttendancePDF','Monthly Attendance Register',(select "Id" from "DocumentType" where "Name" = 'AttendancePDF'),'0b887bae-f2ef-ed11-8354-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'IncomeStatementPDF','Income Statement',(select "Id" from "DocumentType" where "Name" = 'IncomeStatementPDF'),'85de53bd-8426-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),	 
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Franchisee Agreement',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Identity Document',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'891d084f-9394-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Stipend Agreement',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'bf8ca50e-8526-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Attendance Register',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'fc22a1a8-8226-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'), 
+ 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Proof of Account',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'7f1c1f22-a925-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType'),
+ 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,NOW(),NOW(),NOW(),NOW(),'Practitioner','Proof of Site Address',(select "Id" from "DocumentType" where "Name" = 'Practitioner'),'accea691-9394-ec11-834e-00155dee5a05','SmartLink','258a15e6-3736-45ea-875c-48d9377de4c8',true, 'DocumentType');
+ 	
 	 */

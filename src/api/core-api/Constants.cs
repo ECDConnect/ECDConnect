@@ -24,7 +24,12 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_3 = "pqa_visit_3";
 
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
+            public const string visitType_annual_re_accreditation = "annual_re_accreditation";
             public const string visitType_re_accreditation = "re_accreditation";
+            public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
+
+            public const string answer_yes = "true";
+            public const string answer_no = "false";
 
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";
@@ -273,7 +278,7 @@ namespace EcdLink.Api.CoreApi
             public const string step16_q4 = "Are there too many children attending the SmartStart programme?";
             public const string step16_q5 = "Are there enough assistants for the programme?";
 
-            public const string step_8_re_accreditation = "The learning environment & use of the SmartStart routine";
+            public const string step_8_re_accreditation = "A. The learning environment & use of the SmartStart routine";
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
@@ -287,6 +292,7 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
             public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
 
+            public const string step_10_re_accreditation = "B. Programme implementation";
             public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
             public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
             public const string step_10_re_accreditation_q3 = "Adults use calm and appropriate methods to keep order, and do not use harsh words, a raised voice or physical methods.";
@@ -298,7 +304,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
 
-            public const string step_11_re_accreditation_q1 = "Records";
+            public const string step_11_re_accreditation = "C. Records";
             public const string step_11_re_accreditation_a1 = "Register: the attendance register is up to date.";
             public const string step_11_re_accreditation_a2 = "Planning: weekly reflection and planning notes are completed and filed.";
             public const string step_11_re_accreditation_a3 = "Activities: planning notes are filed and show a variety of small and large group activities are being used.";
@@ -306,7 +312,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_11_re_accreditation_a5 = "Accidents: there is an accident register.";
             public const string step_11_re_accreditation_a6 = "Caregiver meetings: there are attendance registers for the last two monthly caregiver meetings.";
 
-            public const string step_12_re_accreditation_q1 = "Operational standards";
+            public const string step_12_re_accreditation = "D. Operational standards";
             public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in the last year).";
             public const string step_12_re_accreditation_a2 = "Club meetings: the franchisee is attending monthly club meetings (at least 9 in the last year).";
             public const string step_12_re_accreditation_a3 = "Age range: all or nearly all (more than 80%) of the children are aged three and four years old.";
@@ -332,7 +338,16 @@ namespace EcdLink.Api.CoreApi
 
             public const int step2_re_accreditation_total = 17;
             public const int step3_re_accreditation_total = 5;
-            public const int step8_re_accreditation_total = 12;
+            public const int re_accreditation_A_total = 12;
+            public const int re_accreditation_B_total = 20;
+            public const int re_accreditation_C_total = 6;
+            public const int re_accreditation_D_total = 6;
+
+            public const string zero_stars = "0 stars";
+            public const string one_star = "1 star";
+            public const string two_stars = "2 stars";
+            public const string three_stars = "3 stars";
+            public const string four_stars = "4 stars";
 
         }
 

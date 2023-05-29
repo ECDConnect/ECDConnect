@@ -392,7 +392,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             return visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
         }
-        
+
+        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation);
+        }
+
 
     }
 

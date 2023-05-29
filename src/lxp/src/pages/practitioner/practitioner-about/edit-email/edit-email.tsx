@@ -1,6 +1,6 @@
 import { FormInput, Button, BannerWrapper, Typography } from '@ecdlink/ui';
 import * as Yup from 'yup';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
@@ -48,8 +48,8 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
 
   const {
     getValues: getPractitionerInfoFormValues,
-    formState: practitionerInfoFormState,
     register: practitionerInfoFormRegister,
+    control: practitionerInfoControl,
   } = useForm<PractitionerAboutModel>({
     resolver: yupResolver(editEmailModelSchema),
     defaultValues: getDefaultFormvalues(),
@@ -57,7 +57,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = practitionerInfoFormState;
+  const { errors } = useFormState({ control: practitionerInfoControl });
 
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
@@ -80,7 +80,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Edit practitioner'}
+        title={'Edit Email Address'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
         onBack={() => setEditEmail(false)}
@@ -103,6 +103,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
                 nameProp={'email'}
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                error={!!errors.email ? errors.email : undefined}
               />
             </div>
             <div className="mt-4 -mb-4 h-full w-full self-end">
@@ -114,7 +115,7 @@ export const EditEmail: React.FC<EditEmailProps> = ({ setEditEmail, user }) => {
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
-                disabled={!isValid}
+                disabled={!!Object.keys(errors).length}
                 onClick={() => {
                   savePractitionerUserData();
                   setEditEmail(false);
