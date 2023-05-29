@@ -583,14 +583,14 @@ export const SubmitIncomeStatements: React.FC = () => {
           type="filled"
           icon="DocumentSearchIcon"
           onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
-          className={`mt-6 rounded-2xl ${
+          className={`mt-6 mb-8 rounded-2xl ${
             stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
           }`}
           id="seeAllStatements"
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end">
+        <div className="flex justify-end pt-8">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
@@ -599,7 +599,7 @@ export const SubmitIncomeStatements: React.FC = () => {
             type={'filled'}
             color={'primary'}
             shape={'round'}
-            className={`mt-8 py-2.5 ${
+            className={`'m-3 py-2.5' absolute bottom-4 right-0 z-10 px-3.5 ${
               stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
             } `}
             click={() => {
