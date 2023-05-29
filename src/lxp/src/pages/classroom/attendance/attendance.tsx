@@ -154,7 +154,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
-      return isSameDay(new Date(att.attendanceDate as Date), currentDate);
+      return isSameDay(
+        getDay(new Date(att.attendanceDate as Date)) - 1,
+        getDay(currentDate)
+      );
     });
 
     const isValidDayForAttendance = isValidAttendableDate(
@@ -173,7 +176,7 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         holidays,
         currentDate
       );
-      
+
     //weekend check
     if (!currentDayClassroomGroup && missedDays.length === 0) {
       setAttendanceComponentType('report');
