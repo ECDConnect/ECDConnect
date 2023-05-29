@@ -13,7 +13,9 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public DateTime CreatedOn { get; set; }
         public Owner Owner { get; set; }
         public string localId { get; set; }
+        public string localUserId { get; set; }
         public string localParentEntityId { get; set; }
+        public string localParentEntityUserId { get; set; }
 
     }
 }
