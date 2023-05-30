@@ -142,10 +142,10 @@ export const MonthlyAttendanceReport = ({
     footer.push(obj.value.toString());
   });
 
-  let attendnaceSum = 0;
+  let attendanceSum = 0;
 
   for (let i = 0; i < totalAttendance.length; i++) {
-    attendnaceSum += totalAttendance[i].value;
+    attendanceSum += totalAttendance[i].value;
   }
 
   const tableTopContent = {
@@ -161,9 +161,13 @@ export const MonthlyAttendanceReport = ({
   };
 
   const tableBottomContent = [
-    `Total monthly attendance: ${attendnaceSum}`,
+    `Total monthly attendance: ${attendanceSum}`,
     `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
-    `Number of children who attended all sessions: ${totalAttendanceStatsReport?.totalChildrenAttendedSessions}`,
+    `Number of children who attended all sessions: ${
+      attendanceSum === 0
+        ? '0'
+        : totalAttendanceStatsReport?.totalChildrenAttendedSessions
+    }`,
   ];
 
   const tableHeadStyles: UserOptions['headStyles'] = {

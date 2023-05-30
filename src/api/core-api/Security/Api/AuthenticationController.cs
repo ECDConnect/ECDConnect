@@ -6,10 +6,13 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.Providers;
+using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
+using System;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -28,14 +31,20 @@ namespace ECDLink.Security.Api
         // POST api/auth/login
         [AllowAnonymous]
         [HttpPost("login")]
-        public async Task<IActionResult> Post([FromBody] LoginRequestModel login)
+        public async Task<IActionResult> Post(
+            [FromServices] IHttpContextAccessor _httpContextAccessor,
+            [FromServices] UserManager<ApplicationUser> _userManager,
+            [FromBody] LoginRequestModel login)
         {
             if (!ModelState.IsValid)
             {
                 return BadRequest(ModelState);
             }
 
-            if (login.Password.StartsWith('<') || (login.PhoneNumber != null ? login.PhoneNumber.StartsWith('<') : login.Username.StartsWith('<'))) //exclude funny script attempts
+            //exclude funny script attempts
+            if ((login?.Password?.StartsWith('<') ?? true) 
+                || (login?.PhoneNumber?.StartsWith('<') ?? false)
+                || (login?.Username?.StartsWith('<') ?? true))
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
@@ -56,10 +65,37 @@ namespace ECDLink.Security.Api
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
 
+
+            // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
+            var isAdminPortal = checkHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                _httpContextAccessor.HttpContext.Request.Host.Value);
+
+            if (isAdminPortal)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
+                if (hasAccess)
+                {
+                    var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+                    // TODO: Callcenter number should be in the tenant config?
+                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                }
+            }
+
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             var package = new OkObjectResult(jwtObj);
             return package;
+        }
+
+        private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
+        {
+#if DEBUG
+            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress) || hostAddress.Contains("localhost");
+#endif
+            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
         }
 
         // This API should always return an OK result as to not give away emails

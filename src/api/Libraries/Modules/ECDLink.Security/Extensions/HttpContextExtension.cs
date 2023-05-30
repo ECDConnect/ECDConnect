@@ -1,5 +1,6 @@
 using ECDLink.Core.Models;
 using Microsoft.AspNetCore.Http;
+using static ECDLink.Security.SecurityConstants.Strings;
 
 namespace ECDLink.Security.Extensions
 {
@@ -9,14 +10,22 @@ namespace ECDLink.Security.Extensions
         {
             return context.Items[SecurityConstants.ContextKeys.User] as ApplicationIdentityUser;
         }
+
         public static bool IsAdmin(this HttpContext context)
         {
-            return context.User.HasClaim("rol", Roles.ADMINISTRATOR);
+            return context.User.HasClaim(JwtClaimIdentifiers.Rol, Roles.ADMINISTRATOR);
         }
 
         public static bool IsInRole(this HttpContext context, string role)
         {
-            return context.User.HasClaim("rol", role);
+            return context.User.HasClaim(JwtClaimIdentifiers.Rol, role);
+        }
+
+        public static string GetUserTenant(this HttpContext context)
+        {
+            return context.Request.Headers.ContainsKey(JwtClaimIdentifiers.TenantId)
+                ? context.Request.Headers[JwtClaimIdentifiers.TenantId].ToString()
+                : string.Empty;
         }
     }
 }

@@ -24,7 +24,6 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly IClaimsManager _claimsManager;
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
-        protected AuthenticationDbContext _dbContext;
 
         public UserManager<ApplicationUser> _userManager { get; set; }
 
@@ -71,7 +70,10 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
             // get the user to verifty
-            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username) 
+            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
+                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+
+            userToVerify ??= _userManager.Users.FirstOrDefault(user => user.Email == username
                     && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))

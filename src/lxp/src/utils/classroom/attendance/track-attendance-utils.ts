@@ -8,6 +8,7 @@ import {
 import { AttendanceStatus, Colours, SubTitleShape } from '@ecdlink/ui';
 import {
   addDays,
+  endOfMonth,
   format,
   getDay,
   getDayOfYear,
@@ -22,6 +23,8 @@ import {
   nextThursday,
   nextTuesday,
   nextWednesday,
+  parse,
+  startOfMonth,
   startOfWeek,
 } from 'date-fns';
 import {
@@ -122,33 +125,31 @@ export const getMissedClassAttendance = (
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
   const returnProgrammes: ClassProgrammeDto[] = [];
 
+  const groupProgrammes = classProgrammes;
 
-    const groupProgrammes = classProgrammes;
+  // all the class programs for up until today but does not check the start date
+  const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+    const programStartDateDay = getDayOfYear(programStartDate);
+    const dateDay = getDayOfYear(date);
 
-    // all the class programs for up until today but does not check the start date
-    const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
-      const programStartDate =
-        typeof x.programmeStartDate !== 'undefined'
-          ? new Date(x.programmeStartDate)
-          : new Date();
-      const programStartDateDay = getDayOfYear(programStartDate);
-      const dateDay = getDayOfYear(date);
+    return programStartDateDay === dateDay
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          isBefore(programStartDateDay, dateDay);
+  });
 
-      return programStartDateDay === dateDay
-        ? (x.meetingDay || -1) === currentDayFilter
-        : (x.meetingDay || -1) <= currentDayFilter &&
-            isBefore(programStartDateDay, dateDay);
-    });
-
-    if (classProgrammesUpToCurrentDay)
-      for (const programme of classProgrammesUpToCurrentDay) {
-        if (
-          !attendance.some((att) => att.classroomProgrammeId === programme.id)
-        ) {
-          returnProgrammes.push(programme);
-        }
+  if (classProgrammesUpToCurrentDay)
+    for (const programme of classProgrammesUpToCurrentDay) {
+      if (
+        !attendance.some((att) => att.classroomProgrammeId === programme.id)
+      ) {
+        returnProgrammes.push(programme);
       }
-
+    }
 
   return returnProgrammes;
 };
@@ -207,6 +208,17 @@ export const getMonthName = (monthOfYear: number) => {
   if (monthOfYear < 0 || monthOfYear > 12) return 'Invalid month';
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
+export function getMonthRange(monthName: string) {
+  const year = new Date().getFullYear();
+  // Parse the month name and get the corresponding month number
+  const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
+  // Get the start and end date of the month
+  const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
+
+  const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
+
+  return { startDate, endDate };
+}
 
 export const getClassroomGroupSchoolDays = (
   classProgrammes: ClassProgrammeDto[]

@@ -28,12 +28,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
-          UserModel input)
+          UserModel input,
+          bool createAdmin = false)
         {
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            ApplicationUser currentUser = null;
+            bool currentUserIsAdmin = false;
+
+            if (input is null || currentUserId is null)
+            {
+                throw new Exception("Invalid input.");
+            }
+
+            // Cross tenant, but allow admin user which has no tenant... 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            if (httpContextAccessor.HttpContext.GetUserTenant() != tenantId.ToString())
+            {
+                throw new Exception("Cross tenant access denied.");
+            }
+
+            if (createAdmin)
+            {
+                currentUser = await userManager.FindByIdAsync(currentUserId);
+                currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+                if (currentUserIsAdmin)
+                {
+                    throw new Exception("You may not create an admin user.");
+                }
+            }
+
             var newUser = new ApplicationUser
             {
-                Id = input.Id,
+                Id = input.Id ?? Guid.NewGuid().ToString(),
                 PhoneNumber = input.PhoneNumber,
                 UserName = input?.IdNumber ?? Guid.NewGuid().ToString(),
                 IdNumber = input.IdNumber,
@@ -55,11 +82,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var userCreatedResult = await userManager.CreateAsync(newUser);
 
-            DoAudit(httpContextAccessor, repoFactory, null, newUser.Id);
-
             if (!userCreatedResult.Succeeded)
             {
                 throw new Exception(userCreatedResult.Errors.Count() > 0 ? userCreatedResult.Errors.First().Description : "Could not add user");
+            }
+
+            DoAudit(currentUserId, repoFactory, null, newUser.Id);
+
+            // If requested, and allowed, add the admin role to the new user
+            if (createAdmin)
+            {
+                if (currentUserIsAdmin)
+                {
+                    var adminRoleResult = await userManager.AddToRoleAsync(newUser, Roles.ADMINISTRATOR);
+
+                    if (!adminRoleResult.Succeeded)
+                    {
+                        throw new Exception(adminRoleResult.Errors.Count() > 0
+                            ? adminRoleResult.Errors.First().Description
+                            : "Could not add user to admin role.");
+                    }
+
+                    // Audit log the role change
+                    DoAudit(
+                        currentUserId,
+                        repoFactory, new List<AuditChanges>() { new AuditChanges() {
+                            FieldName = "Roles",
+                            ValueBefore  = "",
+                            ValueAfter = Roles.ADMINISTRATOR } },
+                        newUser.Id);
+                }
             }
 
             if (!string.IsNullOrWhiteSpace(input.Password))
@@ -87,12 +139,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           UserModel input)
         {
             var user = await userManager.FindByIdAsync(id);
-            
-            if (user is null)
+            var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+
+            if (user is null || currentUserId is null)
             {
                 throw new Exception("User not found.");
             }
-            
+
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             // Cross tenant, but allow admin user which has no tenant... 
@@ -197,10 +250,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // If the user changing the email, is different to the user being changed
             // Don't allow changing email address without verification first.
-            if (!string.IsNullOrWhiteSpace(input.Email) 
-                && !string.IsNullOrWhiteSpace(user.Email) 
+            if (!string.IsNullOrWhiteSpace(input.Email)
+                && !string.IsNullOrWhiteSpace(user.Email)
                 && user.Email != input.Email
-                && user.Id != httpContextAccessor.HttpContext.GetUser().Id)
+                && user.Id != currentUserId)
             {
                 user.PendingEmail = input.Email;
                 fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
@@ -223,9 +276,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // and if there's an email to set,
             // and if the user is changing their own email (changes from portal must be verified)
             // allow them to change it without verification
-            if (user.Email != input.Email 
+            if (user.Email != input.Email
                 && !string.IsNullOrWhiteSpace(input.Email)
-                && user.Id == httpContextAccessor.HttpContext.GetUser().Id)
+                && user.Id == currentUserId)
             {
                 fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
                 user.Email = input.Email;
@@ -241,7 +294,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             var updateResult = await userManager.UpdateAsync(user);
 
-            DoAudit(httpContextAccessor, repoFactory, fields, id);
+            DoAudit(currentUserId, repoFactory, fields, id);
 
             if (!updateResult.Succeeded)
             {
@@ -256,11 +309,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return string.IsNullOrWhiteSpace(@new) ? original : @new;
         }
 
-        private static bool replaceIfNotNull(bool original, bool? @new)
-        {
-            return @new is null ? original : @new ?? false;
-        }
-
+        // TODO: Don't let users disable each other
         [Permission(PermissionGroups.USER, GraphActionEnum.Delete)]
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
@@ -269,6 +318,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string id)
         {
             var user = await userManager.FindByIdAsync(id);
+            var currentUserId = httpContextAccessor.HttpContext.GetUser().Id;
+
+            // Don't let normal users disable admins...
+            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+            if (isAdmin)
+            {
+                var currentUser = await userManager.FindByIdAsync(currentUserId);
+                var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+                if (!isAlsoAdmin)
+                {
+                    throw new Exception("You may not disable an administrator.");
+                }
+            }
 
             if (user == default(ApplicationUser))
             {
@@ -278,17 +341,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             user.IsActive = false;
 
             var updateResult = await userManager.UpdateAsync(user);
-            DoAudit(httpContextAccessor, repoFactory, null, id);
+            DoAudit(currentUserId, repoFactory, null, id);
             return updateResult.Succeeded;
         }
 
+        // TODO: Shouldn't we check Hierarchy here?
+        // TODO: Should a user be able to reset another user's password?
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
         public async Task<bool> ResetUserPassword(
           UserManager<ApplicationUser> userManager,
+          [Service] IHttpContextAccessor httpContextAccessor,
           string id,
           string newPassword)
         {
             var user = await userManager.FindByIdAsync(id);
+
+            // Don't let normal users reset admin passwords...
+            var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
+            if (isAdmin)
+            {
+                var currentUser = await userManager.FindByIdAsync(httpContextAccessor.HttpContext.GetUser().Id);
+                var isAlsoAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+                if (!isAlsoAdmin)
+                {
+                    throw new Exception("You may not disable an administrator.");
+                }
+            }
 
             var passwordToken = await userManager.GeneratePasswordResetTokenAsync(user);
             var updatedPassword = await userManager.ResetPasswordAsync(user, passwordToken, newPassword);
@@ -300,12 +379,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return updatedPassword.Succeeded;
         }
 
-        private bool DoAudit([Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory, 
-            List<AuditChanges> changes,string id, string changeType = "Update")
+        private bool DoAudit(string userId,
+            IGenericRepositoryFactory repoFactory,
+            List<AuditChanges> changes, string id, string changeType = "Update")
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: uId);
+            var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: userId);
             //Populate Audit records
             switch (changeType)
             {
@@ -317,7 +395,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Property = "IsActive",
                         ValueAfter = "false",
                         ValueBefore = "true",
-                        UserId = uId,
+                        UserId = userId,
                         RelatedId = id,
                     });
                     break;
@@ -326,32 +404,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         ChangeType = changeType,
                         Entity = "ApplicationUser",
-                        UserId = uId,
+                        UserId = userId,
                         RelatedId = id,
                     });
                     break;
                 default:
-                    if (changes != null)
+                    if (changes != null && changes.Any())
                     {
-                        List<IntegrationAudit> changesList = new List<IntegrationAudit>();
-                        foreach (var prop in changes)
+                        IEnumerable<IntegrationAudit> changesList = changes.Select(change => new IntegrationAudit()
                         {
-                            changesList.Add(new IntegrationAudit()
-                            {
-                                ChangeType = changeType,
-                                Entity = "ApplicationUser",
-                                Property = prop.FieldName,
-                                ValueBefore = prop.ValueBefore,
-                                ValueAfter = prop.ValueAfter,
-                                UserId = uId,
-                                RelatedId = id
-                            });
-                        }
+                            ChangeType = changeType,
+                            Entity = "ApplicationUser",
+                            Property = change.FieldName,
+                            ValueBefore = change.ValueBefore,
+                            ValueAfter = change.ValueAfter,
+                            UserId = userId,
+                            RelatedId = id
+                        });
 
-                        foreach (var auditItem in changesList)
-                        {
-                            auditInsertRepo.Insert(auditItem);
-                        }
+                        auditInsertRepo.InsertMany(changesList);
                     }
                     break;
             }

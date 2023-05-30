@@ -10,19 +10,23 @@ import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.svg';
-
+import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 
-export default function Register() {
+interface RouteParams {
+  userId: string;
+}
+
+export default function Register(props: RouteComponentProps<RouteParams>) {
   const { registerUser } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { userId } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(registerSchema),
@@ -42,7 +46,6 @@ export default function Register() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  console.log(isValid);
 
   const registerNewUser = async () => {
     const formValues = getValues();
@@ -85,7 +88,7 @@ export default function Register() {
 
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+      <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
