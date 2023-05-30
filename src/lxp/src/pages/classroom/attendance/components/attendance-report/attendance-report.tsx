@@ -184,8 +184,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          (!hasClosedAttendanceSmartStartPointsMessage ??
-            displaySmartStartMessage)
+          !hasClosedAttendanceSmartStartPointsMessage ??
+          displaySmartStartMessage
         }
         icon={'GiftIcon'}
         className={'mt-4'}

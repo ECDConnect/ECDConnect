@@ -35,13 +35,12 @@ export default function ForgotPassword() {
 
   const { errors, isValid } = formState;
 
-  console.log(isValid)
+  console.log(isValid);
   const resetPassword = async () => {
     if (isValid) {
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
     }
-
   };
 
   const getLogoUrl = () => {
