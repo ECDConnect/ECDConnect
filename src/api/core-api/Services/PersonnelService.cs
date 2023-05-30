@@ -8,6 +8,7 @@ using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -138,12 +139,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             else return new List<Child>();
         }
 
-        public Practitioner GetPractitionerForChild(string childUserId)
+        public Practitioner GetPractitionerForChild([Service] HierarchyEngine hierarchyEngine, string childUserId)
         {
-            Child child = _childRepo.GetByUserId(childUserId);
-            if (child != null && !string.IsNullOrEmpty(child.Hierarchy))
+            if (childUserId != null)
             {
-                return _practiGenericRepo.GetAll().Where(x => x.Hierarchy.StartsWith(child.Hierarchy)).FirstOrDefault();                
+                var parentUserId = hierarchyEngine.GetUserParentUserId(childUserId);
+                return _practiGenericRepo.GetByUserId(parentUserId);          
             }
             else return null;
         }
