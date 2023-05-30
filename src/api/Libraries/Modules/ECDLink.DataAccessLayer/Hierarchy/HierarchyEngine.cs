@@ -299,6 +299,24 @@ namespace ECDLink.DataAccessLayer.Hierarchy
 
             return entity?.Hierarchy;
         }
+
+        public string GetUserParentUserId(string userId)
+        {
+            if (string.IsNullOrEmpty(userId))
+            {
+                throw new Exception("No user specified");
+            }
+
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+
+            var entity = userHierarchyRepo.GetAll()
+                               .Where(x => string.Equals(x.UserId, userId))
+                               .OrderBy(x => x.Id)
+                               .FirstOrDefault();
+
+            return entity?.ParentId;
+        }
+
         public IQueryable<string> GetManyUserHierarchy(IEnumerable<string> userIds)
         {
             if (!(userIds?.Any() ?? false))
