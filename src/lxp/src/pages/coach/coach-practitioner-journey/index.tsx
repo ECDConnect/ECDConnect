@@ -96,20 +96,13 @@ export const CoachPractitionerJourney: React.FC = () => {
   };
 
   // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
-  const uncompletedVisits = [
-    {
-      id: '01',
-      visitType: { description: visitTypes.pqa.firstPQA },
-      plannedVisitDate: new Date(),
-    },
-  ];
-  // timeline?.pQASiteVisits?.filter(
-  //   (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
-  // );
+  const uncompletedVisits = timeline?.prePQASiteVisits?.filter(
+    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+  );
 
   const currentVisit = uncompletedVisits
-    // ?.filter(filterVisit)
-    // .sort(sortVisit)
+    ?.filter(filterVisit)
+    .sort(sortVisit)
     ?.map(
       (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
