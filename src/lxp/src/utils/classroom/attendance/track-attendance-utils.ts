@@ -8,6 +8,7 @@ import {
 import { AttendanceStatus, Colours, SubTitleShape } from '@ecdlink/ui';
 import {
   addDays,
+  endOfMonth,
   format,
   getDay,
   getDayOfYear,
@@ -22,6 +23,8 @@ import {
   nextThursday,
   nextTuesday,
   nextWednesday,
+  parse,
+  startOfMonth,
   startOfWeek,
 } from 'date-fns';
 import {
@@ -205,6 +208,17 @@ export const getMonthName = (monthOfYear: number) => {
   if (monthOfYear < 0 || monthOfYear > 12) return 'Invalid month';
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
+export function getMonthRange(monthName: string) {
+  const year = new Date().getFullYear();
+  // Parse the month name and get the corresponding month number
+  const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
+  // Get the start and end date of the month
+  const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
+
+  const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
+
+  return { startDate, endDate };
+}
 
 export const getClassroomGroupSchoolDays = (
   classProgrammes: ClassProgrammeDto[]

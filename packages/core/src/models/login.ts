@@ -18,5 +18,6 @@ export interface RegisterRequestModel {
 }
 
 export interface ResetPasswordRequestModel {
-  email: string;
+  email?: string;
+  password?: string;
 }

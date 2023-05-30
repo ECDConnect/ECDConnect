@@ -35,6 +35,12 @@ namespace ECDLink.Abstractrions.Enums
         [Description("content-image")]
         ContentImage,
         [Description("income-statement-pdf")]
-        IncomeStatementPDF
+        IncomeStatementPDF,
+        [Description("childregistrationform")]
+        ChildRegistrationForm, 
+        [Description("child-clinic-card")]
+        ChildClinicCard, 
+        [Description("child-birth-certificate")]
+        ChildBirthCertificate
     }
 }

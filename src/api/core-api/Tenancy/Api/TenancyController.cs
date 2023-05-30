@@ -9,7 +9,7 @@ using Microsoft.AspNetCore.Mvc;
 namespace EcdLink.Api.CoreApi.Tenancy.Api
 {
     [Route("api/tenancy")]
-    //[BasicAuth]
+    [Authorize]
     [ApiController]
     public class TenancyController : ControllerBase
     {

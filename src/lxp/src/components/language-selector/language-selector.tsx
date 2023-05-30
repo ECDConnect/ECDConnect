@@ -7,11 +7,17 @@ import * as styles from './language-selector.styles';
 
 export interface LanguageSelectorProps extends ComponentBaseProps {
   currentLocale: string;
+  disabled?: boolean;
+  labelText?: string;
+  labelClassName?: string;
   selectLanguage: (value: LanguageDto) => void;
 }
 
 export const LanguageSelector = ({
   currentLocale,
+  disabled,
+  labelText,
+  labelClassName,
   selectLanguage,
 }: LanguageSelectorProps) => {
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -32,10 +38,17 @@ export const LanguageSelector = ({
 
   return (
     <div className={styles.localeDropDownWrapper}>
-      <label className={styles.languageLabel}>{'Change Language:'}</label>
+      <label
+        className={
+          labelClassName === undefined ? styles.languageLabel : labelClassName
+        }
+      >
+        {labelText === undefined ? 'Change Language:' : labelText}
+      </label>
       <Dropdown
         fillType="clear"
         selectedValue={locale}
+        disabled={disabled}
         list={
           (languages &&
             languages

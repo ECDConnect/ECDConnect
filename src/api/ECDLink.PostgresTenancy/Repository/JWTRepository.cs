@@ -95,10 +95,15 @@ namespace ECDLink.PostgresTenancy.Repository
 
         public bool DeleteAllTokensById(string id)
         {
-            if (id == null) throw new ArgumentNullException("entity");
+            if (id == null) throw new ArgumentNullException("id");
             List<JWTUserTokensEntity> tokens = entities.Where(x => x.UserId.Equals(id)).Where(g => string.Equals(g.TenantId, _tenantId)).ToList();
-            entities.RemoveRange(tokens);
-            _context.SaveChanges();
+            
+            if (tokens?.Any() ?? false)
+            {
+                entities.RemoveRange(tokens);
+                _context.SaveChanges();
+            }
+
             return true;
         }
     }
