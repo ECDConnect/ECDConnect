@@ -8,7 +8,10 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { AttendanceService } from '@services/AttendanceService';
-import { getMonthName, getMonthRange } from '@utils/classroom/attendance/track-attendance-utils';
+import {
+  getMonthName,
+  getMonthRange,
+} from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
@@ -50,8 +53,6 @@ export const AttendanceMonthlyReport: React.FC<
   const closeReport = () => {
     setDisplayReport(!displayReport);
   };
-
-
 
   useEffect(() => {
     if (viewReportDate) {

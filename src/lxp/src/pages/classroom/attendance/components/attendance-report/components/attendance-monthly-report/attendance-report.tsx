@@ -165,7 +165,7 @@ export const MonthlyAttendanceReport = ({
     `Total number of sessions: ${totalAttendanceStatsReport?.totalSessions}`,
     `Number of children who attended all sessions: ${
       attendanceSum === 0
-        ? "0"
+        ? '0'
         : totalAttendanceStatsReport?.totalChildrenAttendedSessions
     }`,
   ];
