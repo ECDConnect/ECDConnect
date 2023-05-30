@@ -157,6 +157,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
+      console.log('!activityId');
       onEditActivityItem(routineItem);
       return;
     }
@@ -174,11 +175,15 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
               console.log('onActivitySelected');
               // onEditActivityItem(routineItem, day);
             }}
-            onActivityChanged={() => {
-              onClose();
-              onEditActivityItem(routineItem, day);
-              console.log('onActivityChanged');
-            }}
+            onActivityChanged={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                    console.log('onActivityChanged');
+                  }
+                : () => {}
+            }
             onBack={onClose}
           />
         ) : (
@@ -237,7 +242,12 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openInfoItem(routineItem);
       return;
     }
+    if (currentDailyProgramme) {
+      openActivityItem(routineItem, currentDailyProgramme);
+      return;
+    }
 
+    console.log('hahahaha');
     openActivityItem(routineItem);
   };
 
