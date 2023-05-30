@@ -60,8 +60,6 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
 
-  console.log('oiiiiiii');
-
   const allActivities = useSelector(
     activitySelectors.getActivitiesByType(title)
   );

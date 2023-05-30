@@ -157,7 +157,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     );
 
     if (!activityId) {
-      console.log('!activityId');
       onEditActivityItem(routineItem);
       return;
     }
@@ -172,7 +171,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             disabled={false}
             onActivitySelected={() => {
               onClose();
-              console.log('onActivitySelected');
               // onEditActivityItem(routineItem, day);
             }}
             onActivityChanged={
@@ -180,7 +178,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
                 ? () => {
                     onClose();
                     onEditActivityItem(routineItem, day);
-                    console.log('onActivityChanged');
                   }
                 : () => {}
             }
@@ -198,7 +195,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       },
     });
   };
-  console.log({ currentDailyProgramme });
+
   const onMessageBoardUpdated = (message: string) => {
     if (!currentDailyProgramme) return;
 
@@ -229,7 +226,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   };
 
   const onProgrammeClick = (routineItem: ProgrammeRoutineItemDto) => {
-    console.log({ routineItem });
     if (routineItem.name === DailyRoutineItemType.messageBoard) {
       openMessageBoardItem(routineItem);
       return;
@@ -247,51 +243,35 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       return;
     }
 
-    console.log('hahahaha');
     openActivityItem(routineItem);
   };
 
-  const onActivitySelected = (
+  const onActivitySelected = async (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto,
     activityId?: number
   ) => {
-    console.log('onActivitySelected 1');
-    console.log({ routineItem, day, activityId });
-    if (!day) return;
-    const currentDayCopy = { ...day };
-    switch (routineItem.name) {
-      case DailyRoutineItemType.largeGroup:
-        currentDayCopy.largeGroupActivityId = activityId;
-        break;
-      case DailyRoutineItemType.smallGroup:
-        currentDayCopy.smallGroupActivityId = activityId;
-        break;
+    if (!currentDailyProgramme) {
+      await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
     }
-    console.log('onActivitySelected', day);
-    saveCurrentDay(currentDayCopy);
+
+    if (day) {
+      const currentDayCopy = { ...day };
+      switch (routineItem.name) {
+        case DailyRoutineItemType.largeGroup:
+          currentDayCopy.largeGroupActivityId = activityId;
+          break;
+        case DailyRoutineItemType.smallGroup:
+          currentDayCopy.smallGroupActivityId = activityId;
+          break;
+      }
+
+      saveCurrentDay(currentDayCopy);
+    }
   };
-
-  // const saveCurrentDay = (day: DailyProgrammeDto) => {
-  //   if (!day) return;
-
-  //   appDispatch(
-  //     programmeActions.updateProgrammeDay({
-  //       programmeId: state.programmeId,
-  //       programmeDay: day,
-  //     })
-  //   );
-
-  //   setCurrentDay(day);
-
-  //   editNextOutstandingActivity(day);
-  // };
-
-  console.log({ currentDailyProgramme, routineItemSet, triggerSaveActivity });
 
   useEffect(() => {
     if (currentDailyProgramme && routineItemSet && triggerSaveActivity) {
-      console.log('useEffect', currentDailyProgramme);
       const currentDayCopy = { ...currentDailyProgramme! };
       if (routineItemSet) {
         switch (routineItemSet.name) {
@@ -331,7 +311,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     dialog({
       position: DialogPosition.Full,
       render: (onSubmit, onClose) => {
-        console.log('onEditActivityItem', routineItem);
         return routineItem.name !== DailyRoutineItemType.storyBook ? (
           <ActivitySearch
             title={routineItem.name}
@@ -381,7 +360,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
 
   const saveCurrentDay = (day: DailyProgrammeDto) => {
     if (!day) return;
-    console.log('saveCurrentDay', day);
 
     appDispatch(
       programmeActions.updateProgrammeDay({
