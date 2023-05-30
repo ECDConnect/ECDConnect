@@ -95,7 +95,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
-  const uncompletedVisits = timeline?.pQASiteVisits?.filter(
+  const uncompletedVisits = timeline?.prePQASiteVisits?.filter(
     (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
   );
 

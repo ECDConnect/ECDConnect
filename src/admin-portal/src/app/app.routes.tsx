@@ -1,7 +1,7 @@
 import React from 'react';
 import { Route, Switch } from 'react-router-dom';
-import Login from './components/login/login';
-import Register from './components/register-user/register';
+import Login from './components/auth/login/login';
+import Register from './components/auth/register-user/register';
 import Shell from './containers/shell/shell';
 import ContentManagement from './pages/content-management/content-management';
 import Dashboard from './pages/dashboard/dashboard';
@@ -35,14 +35,16 @@ import Franchisors from './pages/users/sub-pages/franchisors/franchisors';
 import Users from './pages/users/users';
 import Clinics from './pages/users/sub-pages/clincs/clinics';
 import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
-import ResetPassword from './components/forgot-password/forgot-password';
+import ForgotPassword from './components/auth/forgot-password/forgot-password';
+import ResetPassword from './components/auth/reset-password/reset-password';
 
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
       <Route exact path="/" component={Login} />
-      <Route exact path="/register" component={Register} />
-      <Route exact path="/reset" component={ResetPassword} />
+      <Route exact path="/register/:userId" component={Register} />
+      <Route exact path="/forgot-password" component={ForgotPassword} />
+      <Route exact path="/reset/:userId" component={ResetPassword} />
     </Switch>
   );
 };
