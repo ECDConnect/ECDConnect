@@ -1,4 +1,5 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using AngleSharp.Common;
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -503,7 +504,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return timeLine;
         }
 
-
         public bool DeActivatePractitioner(string userId, string leavingComment)
         {
             Practitioner practitioner = _practiGenericRepo.GetAll().Where(x => x.User.Id == userId).FirstOrDefault();
@@ -521,7 +521,66 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             return false;
         }
 
-        #endregion        
+        #endregion
+
+        #region Trainees
+
+        public TraineeOnBoardTimeline GetOnBoardTraineeTimeline(string userId)
+        {
+            var timeline = new TraineeOnBoardTimeline();
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+
+
+            // DayOneStartUpTraining
+
+            // StarterLicense
+            var starterDate = (
+                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_licence) on license.LicenseTypeId equals licenseType.Id
+                select license
+            ).Select(x => x.LicenseDate).FirstOrDefault();
+            if (starterDate != null)
+            {
+                timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
+                timeline.StarterLicenseDate = starterDate;
+                timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+
+            // ConsolidationMeeting -> smartLink
+
+            // SmartSpaceChecklist
+            Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
+            if (visit != null)
+            {
+                if (visit.Attended == true)
+                {
+                    timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
+                    timeline.SmartSpaceChecklistStatus = "SmartSpace Checklist done";
+                    timeline.SmartSpaceChecklistDate = visit.UpdatedDate;
+                }
+            }
+
+            // CommunitySupport
+
+            // ThreeChildrenRegistered
+            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
+            if (allChildren.Count >= 3)
+            {
+                timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
+                timeline.ThreeChildrenRegisteredStatus = "3 or more children registered";
+                timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
+            }
+
+            // SSCoachVisit
+
+            // SignFranchiseeAgreement
+
+            // SignStartUpSupportAgreement
+
+            return timeline;
+        }
+
+        #endregion
 
 
         private string GetUserIdOrGenerateNew(string userId)
