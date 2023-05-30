@@ -76,7 +76,7 @@ namespace ECDLink.Security.Api
             {
                 var userRoles = await _userManager.GetRolesAsync(user);
                 var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
-                if (hasAccess)
+                if (!hasAccess)
                 {
                     var organisationName = TenantExecutionContext.Tenant.OrganisationName;
                     // TODO: Callcenter number should be in the tenant config?
