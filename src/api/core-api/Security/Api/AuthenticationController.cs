@@ -66,23 +66,23 @@ namespace ECDLink.Security.Api
             }
 
 
-            // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
-            var isAdminPortal = checkHostUrlForAdminPortal(
-                TenantExecutionContext.Tenant.AdminSiteAddress,
-                TenantExecutionContext.Tenant.AdminTestSiteAddress,
-                _httpContextAccessor.HttpContext.Request.Host.Value);
+            //// Check if logging into admin portal and deny non "administrators" or "Coaches" access.
+            //var isAdminPortal = checkHostUrlForAdminPortal(
+            //    TenantExecutionContext.Tenant.AdminSiteAddress,
+            //    TenantExecutionContext.Tenant.AdminTestSiteAddress,
+            //    _httpContextAccessor.HttpContext.Request.Host.Value);
 
-            if (isAdminPortal)
-            {
-                var userRoles = await _userManager.GetRolesAsync(user);
-                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
-                if (!hasAccess)
-                {
-                    var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-                    // TODO: Callcenter number should be in the tenant config?
-                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
-                }
-            }
+            //if (isAdminPortal)
+            //{
+            //    var userRoles = await _userManager.GetRolesAsync(user);
+            //    var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
+            //    if (!hasAccess)
+            //    {
+            //        var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+            //        // TODO: Callcenter number should be in the tenant config?
+            //        return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+            //    }
+            //}
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
