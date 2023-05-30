@@ -35,7 +35,10 @@ namespace ECDLink.Security.Api
                 return BadRequest(ModelState);
             }
 
-            if (login.Password.StartsWith('<') || (login.PhoneNumber != null ? login.PhoneNumber.StartsWith('<') : login.Username.StartsWith('<'))) //exclude funny script attempts
+            //exclude funny script attempts
+            if ((login?.Password?.StartsWith('<') ?? true) 
+                || (login?.PhoneNumber?.StartsWith('<') ?? false)
+                || (login?.Username?.StartsWith('<') ?? true))
             {
                 return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
