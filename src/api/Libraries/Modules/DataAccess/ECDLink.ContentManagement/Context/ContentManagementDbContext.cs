@@ -34,12 +34,24 @@ namespace ECDLink.DataAccessLayer.Context
         {
             base.OnModelCreating(builder);
 
+            builder.Entity<Content>(entity =>
+            {
+                entity.HasOne(c => c.ContentType)
+                     .WithMany(ct => ct.Content)
+                     .HasForeignKey(c => c.ContentTypeId)
+                     .OnDelete(DeleteBehavior.Restrict);
+            });
+
             builder.Entity<ContentValue>(entity =>
             {
                 // Allow nulls in the TenantId Column (Unique Primary key removed)
                 entity.HasKey(e => e.Id);
                 entity.HasIndex(e => new { e.ContentId, e.ContentTypeFieldId, e.LocaleId, e.TenantId })
                     .IsUnique();
+                entity.HasOne(e => e.Content)
+                    .WithMany(e => e.ContentValues)
+                    .HasForeignKey(e => e.ContentId)
+                    .OnDelete(DeleteBehavior.Cascade);
             });
         }
     }

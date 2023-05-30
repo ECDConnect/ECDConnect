@@ -40,6 +40,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public MappedCoach Coach { get; set; }
         public Principal Principal { get; set; }
         public MappedAddress SiteAddress { get; set; }
+        public string StipendType { get; set; }
 
     }
 }

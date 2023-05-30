@@ -113,6 +113,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
+  const regex = /(<([^>]+)>)/gi;
+  const secondRegEx = /((&nbsp;))*/gim;
+
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {
     dialog({
       position: DialogPosition.Middle,
@@ -122,7 +125,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             className={'mx-4'}
             title={routineItem.name}
             importantText={`${routineItem.timeSpan}`}
-            detailText={routineItem.description}
+            detailText={routineItem.description
+              .replace(regex, '')
+              .replace(secondRegEx, '')}
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
