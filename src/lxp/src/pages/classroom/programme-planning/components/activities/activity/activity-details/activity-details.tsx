@@ -22,6 +22,8 @@ const ActivityDetails: React.FC<ActivityDetailsProps> = ({
 
   const date = new Date();
 
+  console.log({ isSelected, disabled });
+
   if (!activityDetail) return <></>;
 
   return (

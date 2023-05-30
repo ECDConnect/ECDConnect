@@ -60,6 +60,8 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
     progressTrackingSelectors.getProgressTrackingSubCategories
   );
 
+  console.log('oiiiiiii');
+
   const allActivities = useSelector(
     activitySelectors.getActivitiesByType(title)
   );
@@ -449,7 +451,10 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             text={submitButtonText}
             textColor="white"
             iconPosition="start"
-            disabled={!selectedActivityId}
+            disabled={
+              !selectedActivityId ||
+              (hasActiveFilters && filteredActivities.length === 0)
+            }
             onClick={() => onSave(selectedActivityId)}
           />
         </div>

@@ -53,22 +53,29 @@ const programmeSlice = createSlice({
       }
     },
     updateProgrammeDay: (state, action: PayloadAction<UpdateProgrammeDay>) => {
+      console.log({ state, action });
       if (!state.programmes) return;
-
+      console.log(state.programmes);
       const indexOfProgramme = state.programmes.findIndex(
         (programme) => programme.id === action.payload.programmeId
       );
+      console.log({ indexOfProgramme });
 
       if (indexOfProgramme < 0) return;
 
       const programmeDays = state.programmes[indexOfProgramme].dailyProgrammes;
+      console.log({ programmeDays });
 
       const indexOfDay = programmeDays.findIndex(
         (day) => day.day === action.payload.programmeDay.day
       );
 
-      if (indexOfDay < 0) return;
+      console.log({ indexOfDay });
 
+      if (indexOfDay < 0) return;
+      console.log(
+        state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay]
+      );
       state.programmes[indexOfProgramme].dailyProgrammes[indexOfDay] =
         action.payload.programmeDay;
     },
