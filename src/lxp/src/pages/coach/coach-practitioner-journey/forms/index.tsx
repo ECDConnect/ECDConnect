@@ -10,7 +10,7 @@ import {
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { generalSupportVisit, prePqaVisits } from './steps';
+import { firstPqa, generalSupportVisit, prePqaVisits } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
@@ -240,6 +240,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
+      case visitTypes.pqa.firstPQA:
+        return firstPqa;
       case visitTypes.supportVisit:
         return generalSupportVisit;
       default:
