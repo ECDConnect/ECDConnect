@@ -183,7 +183,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   <Typography
                     type="help"
                     color="white"
-                    text={'Log in'}
+                    text={'Register'}
                   ></Typography>
                 </Button>
               </div>
