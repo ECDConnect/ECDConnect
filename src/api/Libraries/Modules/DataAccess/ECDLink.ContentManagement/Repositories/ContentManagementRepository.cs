@@ -51,7 +51,7 @@ namespace ECDLink.ContentManagement.Repositories
                             && x.TenantId == currentTenant)
                     .OrderBy(x => x.Id)
                     .ToList();
-            
+
             // Use global tenant as a fallback, mostly for static and dynamic links
             contents = contents?.Any() ?? false ? contents
                 : contentType?.Content
@@ -64,8 +64,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (contents == default)
             {
                 var errorMessage = "Could not find any 'Content' for ContentTypeId: {contentTypeId}.";
-                _logger.LogError(errorMessage, contentTypeId);
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentTypeId);
             }
 
             var allContentValuePairs = new List<object>();
@@ -101,9 +100,9 @@ namespace ECDLink.ContentManagement.Repositories
                             .Include(i => i.ContentType)
                             .Include(i => i.ContentValues)
                                 .ThenInclude(ti => ti.ContentTypeField)
-                            .Where(x => x.Id == contentId)
-                            .Where(x => x.IsActive)
-                            .Where(x => x.TenantId == currentTenant)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.TenantId == currentTenant)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
@@ -112,9 +111,9 @@ namespace ECDLink.ContentManagement.Repositories
                     .Include(i => i.ContentType)
                     .Include(i => i.ContentValues)
                         .ThenInclude(ti => ti.ContentTypeField)
-                    .Where(x => x.Id == contentId)
-                    .Where(x => x.IsActive)
-                    .Where(x => x.TenantId == null)
+                    .Where(x => x.Id == contentId
+                        && x.IsActive
+                        && x.TenantId == null)
                     .OrderBy(x => x.Id)
                     .FirstOrDefault();
 
@@ -122,8 +121,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (content == default)
             {
                 var errorMessage = "Could not find any 'Content' with Id: {contentId}.";
-                _logger.LogError(errorMessage, contentId);
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentId);
             }
 
             var contentValues = content.ContentValues
@@ -139,6 +137,7 @@ namespace ECDLink.ContentManagement.Repositories
 
         public IEnumerable<object> GetByIds(Guid localeId, params int[] contentIds)
         {
+            // TODO: Do we need to selectively skip the IsActive check?
             var content = _context.Contents
                             .Include(i => i.ContentType)
                             .Include(i => i.ContentValues)
@@ -148,7 +147,7 @@ namespace ECDLink.ContentManagement.Repositories
                                 && x.TenantId == TenantExecutionContext.Tenant.Id)
                             .OrderBy(c => c.Id)
                             .ToList();
-            
+
             // Use global tenant as a fallback, mostly for static and dynamic links
             content = content?.Any() ?? false ? content
                     : _context.Contents
@@ -165,8 +164,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (content == default || !content.Any())
             {
                 var errorMessage = "Could not find any 'Content' with Ids:";
-                _logger.LogError($"{errorMessage} {{contentIds}}.", contentIds);
-                throw new Exception($"{errorMessage} {string.Join(',', contentIds)}");
+                _logger.LogWarning($"{errorMessage} {{contentIds}}.", contentIds);
             }
 
             var dynamicContentList = new List<object>();
@@ -194,19 +192,21 @@ namespace ECDLink.ContentManagement.Repositories
                     .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
                             && x.ContentType.Name == contentType
                             && x.IsActive
+                            && x.ContentValues.Any(y => y.LocaleId == localeId)
                             && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
                             && x.ContentValues.Any(y => y.Value == value))
                     .ToList();
 
             // Use global tenant as a fallback, mostly for static and dynamic links
-            content = content?.Any() ?? false ? content  
+            content = content?.Any() ?? false ? content
                     : _context.Contents
                         .Include(i => i.ContentType)
                         .Include(i => i.ContentValues)
                             .ThenInclude(ti => ti.ContentTypeField)
-                        .Where(x => x.TenantId == TenantExecutionContext.Tenant.Id
+                        .Where(x => x.TenantId == null
                                 && x.ContentType.Name == contentType
                                 && x.IsActive
+                                && x.ContentValues.Any(y => y.LocaleId == localeId)
                                 && x.ContentValues.Any(y => y.ContentTypeField.FieldName == key)
                                 && x.ContentValues.Any(y => y.Value == value))
                         .ToList();
@@ -215,8 +215,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (content == default || !content.Any())
             {
                 var errorMessage = "Could not find 'ContentType' with Name, key or value: {contentType}, {key}, {value}.";
-                _logger.LogError(errorMessage, contentType.ToString(), key, value);
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentType.ToString(), key, value);
             }
 
             var dynamicContentList = new List<object>();
@@ -250,8 +249,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (contentType == default)
             {
                 var errorMessage = "Could not find ContentType with Id: {contentTypeId}.";
-                _logger.LogError(errorMessage, contentTypeId.ToString());
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentTypeId.ToString());
             }
 
             var fieldList = contentType.Fields.Where(x => x.IsActive);
@@ -329,7 +327,7 @@ namespace ECDLink.ContentManagement.Repositories
             {
                 fileExt = ".png";
             }
-            if (fileStr.ToLower().EndsWith("jpg")|| fileStr.ToLower().EndsWith("jpeg"))
+            if (fileStr.ToLower().EndsWith("jpg") || fileStr.ToLower().EndsWith("jpeg"))
             {
                 fileExt = ".jpg";
             }
@@ -366,21 +364,21 @@ namespace ECDLink.ContentManagement.Repositories
                                 .ThenInclude(ti => ti.Fields)
                             .Include(i => i.ContentValues)
                                 .ThenInclude(ti => ti.ContentTypeField)
-                            .Where(x => x.Id == contentId)
-                            .Where(x => x.IsActive)
-                            .Where(x => x.TenantId == currentTenant)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.TenantId == currentTenant)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
-            
+
             // Use global tenant as a fallback, mostly for static and dynamic links            
             content ??= _context.Contents
                             .Include(i => i.ContentType)
                                 .ThenInclude(ti => ti.Fields)
                             .Include(i => i.ContentValues)
                                 .ThenInclude(ti => ti.ContentTypeField)
-                            .Where(x => x.Id == contentId)
-                            .Where(x => x.IsActive)
-                            .Where(x => x.TenantId == null)
+                            .Where(x => x.Id == contentId
+                                    && x.IsActive
+                                    && x.TenantId == null)
                             .OrderBy(x => x.Id)
                             .FirstOrDefault();
 
@@ -388,8 +386,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (content == default)
             {
                 var errorMessage = "Could not find content with Id: {contentId}.";
-                _logger.LogError(errorMessage, contentId.ToString());
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentId.ToString());
             }
 
             // Remove existing data for this locale
@@ -464,7 +461,7 @@ namespace ECDLink.ContentManagement.Repositories
                             && x.TenantId == TenantExecutionContext.Tenant.Id)
                           .OrderBy(x => x.Id)
                           .FirstOrDefault();
-            
+
             // Use global tenant as a fallback, mostly for static and dynamic links            
             content ??= _context.Contents
                           .Where(x => x.Id == contentId
@@ -476,8 +473,7 @@ namespace ECDLink.ContentManagement.Repositories
             if (content == default)
             {
                 var errorMessage = "Could not find content with Id: {contentId}.";
-                _logger.LogError(errorMessage, contentId.ToString());
-                throw new Exception($"{errorMessage}");
+                _logger.LogWarning(errorMessage, contentId.ToString());
             }
 
             content.IsActive = false;
