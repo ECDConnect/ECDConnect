@@ -1,30 +1,47 @@
-import { Typography } from '@ecdlink/ui';
+import { Divider, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
+import { useLayoutEffect } from 'react';
 
-export const Step6 = ({
-  smartStarter,
-  setSectionQuestions,
-  setEnableButton,
-}: DynamicFormProps) => {
-  const visitSection = 'Step 6';
+export const Step10 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
+  const name = smartStarter?.user?.firstName;
+
+  // TODO: add N7
+  const isFilledSelfAssessment = false;
+
+  useLayoutEffect(() => {
+    setEnableButton?.(true);
+  }, [setEnableButton]);
 
   return (
     <div className="p-4">
       <Typography
         type="h2"
-        text="6. Interactive storytelling that introduces children to new language & learning"
+        text="Discuss the self-assessment form"
         color="textDark"
       />
       <Typography
         type="h4"
-        text={new Date().toLocaleDateString('en-ZA', {
-          year: 'numeric',
-          month: 'long',
-          day: 'numeric',
-          weekday: 'long',
-        })}
+        text="Go through all of the points below with the franchisee."
         color="textMid"
       />
+      <Divider dividerType="dashed" className="my-4" />
+      {isFilledSelfAssessment ? (
+        <>{/* TODO: add N7 */}</>
+      ) : (
+        <>
+          <Typography
+            type="h3"
+            text={`${name} did not fill in the self-assessment form on Funda App.`}
+            color="textDark"
+          />
+          <Typography
+            type="body"
+            text={`If ${name} filled in the paper version of the self-assessment form, please review ${name}’s answers now.`}
+            color="textDark"
+            className="mt-4"
+          />
+        </>
+      )}
     </div>
   );
 };
