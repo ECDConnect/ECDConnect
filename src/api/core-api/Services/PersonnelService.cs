@@ -526,13 +526,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         #region Trainees
 
+        public Trainee ScheduleConsolidationMeetingDate(string userId, DateTime? scheduledDate)
+        {
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+            trainee.ScheduledConsolidationMeetingDate = scheduledDate;
+
+            _traineeRepo.Update(trainee);
+
+            return trainee;
+        }
+
         public TraineeOnBoardTimeline GetOnBoardTraineeTimeline(string userId)
         {
             var timeline = new TraineeOnBoardTimeline();
             Trainee trainee = _traineeRepo.GetByUserId(userId);
-
-
-            // DayOneStartUpTraining
 
             // StarterLicense
             var starterDate = (
@@ -545,9 +552,56 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
                 timeline.StarterLicenseDate = starterDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
+
+                timeline.SignFranchiseeAgreementDeadlineDate = starterDate.Value.AddDays(7);
+                timeline.SignStartUpSupportDeadlineDate = starterDate.Value.AddDays(7);
+            }
+
+            // DayOneStartUpTraining
+            if (trainee.AttendedStartUpTraining == true)
+            {
+                timeline.DayOneStartUpTrainingStatus = "";
+                timeline.DayOneStartUpTrainingColor = MetricsColorEnum.Success.ToString();
+                timeline.DayOneStartUpTrainingDate = trainee.StartDate;
             }
 
             // ConsolidationMeeting -> smartLink
+            if (starterDate != null)
+            {
+                // Consolidation meeting = date of starter license + 7 days
+                timeline.ConsolidationDeadlineDate = starterDate.Value.AddDays(7);
+            }
+            if (trainee != null)
+            {
+                if (trainee.ConsolidationMeetingDate != null) {
+                    timeline.ConsolidationMeetingStatus = Constants.SSSettings.consolidation_meeting;
+                    timeline.ConsolidationMeetingStatus = MetricsColorEnum.Success.ToString();
+                    timeline.ConsolidationMeetingDate = trainee.ConsolidationMeetingDate;
+                }
+                timeline.ConsolidationMeetingDateScheduled = trainee.ScheduledConsolidationMeetingDate;
+            }
+            List<DateTime> consolidationDates = new List<DateTime>();
+            if (timeline.ConsolidationDeadlineDate != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationDeadlineDate.Value);
+            }
+            if (timeline.ConsolidationMeetingDate != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationMeetingDate.Value);
+            }
+            if (timeline.ConsolidationMeetingDateScheduled != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationMeetingDateScheduled.Value);
+            }
+
+            // Deadline dates
+            if (consolidationDates.Count > 0)
+            {
+                DateTime latestConsolidationDate = consolidationDates.OrderBy(x => x.Date).LastOrDefault();
+                timeline.SmartSpaceChecklistDeadlineDate = latestConsolidationDate.AddDays(14);
+                timeline.CommunitySupportDeadlineDate = latestConsolidationDate.AddDays(14);
+                timeline.ThreeChildrenRegisteredDeadlineDate = latestConsolidationDate.AddDays(14);
+            }
 
             // SmartSpaceChecklist
             Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
@@ -556,19 +610,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 if (visit.Attended == true)
                 {
                     timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
-                    timeline.SmartSpaceChecklistStatus = "SmartSpace Checklist done";
+                    timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
                     timeline.SmartSpaceChecklistDate = visit.UpdatedDate;
                 }
             }
 
             // CommunitySupport
+            
 
             // ThreeChildrenRegistered
             var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
             if (allChildren.Count >= 3)
             {
                 timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
-                timeline.ThreeChildrenRegisteredStatus = "3 or more children registered";
+                timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
                 timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
             }
 
