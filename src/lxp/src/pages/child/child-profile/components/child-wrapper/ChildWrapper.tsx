@@ -53,7 +53,7 @@ export default function ChildWrapper() {
           spotlightClicks: true,
         },
         {
-          target: '#child_walkthrough_step_3',
+          target: '#child_walkthrough_step_4',
           content:
             'Add notes about the child',
           placement: 'bottom-end',
