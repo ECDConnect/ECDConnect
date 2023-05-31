@@ -57,6 +57,21 @@ CREATE TABLE public."IntegrationEntityMapping" (
 	CONSTRAINT "PK_IntegrationMapping" PRIMARY KEY ("Id")
 );
 
+CREATE TABLE public."IntegrationLog" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"UserId" text NULL,
+	"TenantId" uuid NULL,
+	"RelatedId" text NULL,
+	"RelatedType" text NOT NULL,
+	"LogNotes" text NULL,
+	"LogResult" text NULL,
+	CONSTRAINT "PK_IntegrationLog" PRIMARY KEY ("Id")
+);
+
 INSERT INTO "SystemSetting" ("Id","Grouping","FullPath","Name","Value","IsSystemValue","IsActive","InsertedDate","UpdatedDate","UpdatedBy","TenantId") VALUES
 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'General.Proxies.UrlShortner','General.Proxies.UrlShortner.RedirectUrl','RedirectUrl','https://ecd-connect-develop-api.azurewebsites.net',true,true,'2023-04-03 13:56:51.790','2023-04-03 13:56:51.790',NULL,'ded52f9f-2603-40d8-ae49-0525121096e6'),
 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),'General.Proxies.Integration.SmartLinkApi','General.Proxies.Integration.SmartLinkApi.BaseUrl','BaseUrl','https://devapi.smartstart.org.za/v1/',true,true,'2022-10-31 07:39:37.330','2022-10-31 07:39:37.330',NULL,'258a15e6-3736-45ea-875c-48d9377de4c8'),
@@ -147,4 +162,72 @@ ALTER TABLE public."Practitioner" ADD "AttendedBusinessSkills" bool NULL;
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Deceased',NULL),
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Maternity leave',NULL),
 	 (uuid_in(md5(random()::text || clock_timestamp()::text)::cstring),true,'2022-01-31 07:39:36.986','0001-01-01 00:00:00.000',NULL,'Other',NULL);
+
+
+	 ALTER TABLE public."IntegrationEntityMapping" ADD "EntityGrouping" text NULL;
+	 ALTER TABLE public."Practitioner" ADD "StipendType" varchar NULL;
+	 ALTER TABLE public."IntegrationColumnMapping" ADD "EntityDataType" text NULL;
+
+	 INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","Description","EnumId","TenantId") VALUES
+	 ('5258d1f1-f9b6-e571-cbbe-067f4a823c8c',true,'2023-05-10 12:04:40.889','2023-05-10 12:04:40.889',NULL,'AttendancePDF','Saving an attendance pdf',16,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
+	 CREATE TABLE public."Trainee" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"Hierarchy" text NULL,
+	"StartDate" timestamp NULL,
+	"TraineeConvertedDate" timestamp NULL,
+	"ConsolidationMeetingDate" timestamp NULL,
+	"ChildrenAddedDate" timestamp NULL,
+	"UserId" text NULL,
+	"LinkedPrincipalHierarchy" uuid NULL,
+	"TenantId" uuid NULL,
+	"Progress" numeric NOT NULL DEFAULT 0,
+	"ProgrammeType" text NULL,
+	"PractitionerId" uuid NOT NULL,
+	"AttendedFirstAidCourse" bool NULL,
+	"SiteVisitsCompleted" bool NULL,
+	"ChildProgressTraining" bool NULL,
+	"StarterLicenceReceived" bool NULL,
+	"PlayKitReceived" bool NULL,
+	"AdminFileReceived" bool NULL,
+	"SmartSpaceVisitPassed" bool NULL,
+	"AttendedStartUpTraining" bool NULL,
+	"IsOnStipend" bool NULL,
+	"IsSmartSpaceVisitValidated" bool NULL,
+	"IsAdminFileAndPlaykitValidated" bool NULL,
+	"HighestEducationLevel" text NULL,
+	"SiteArea" text NULL,
+	CONSTRAINT "PK_Trainee" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_Trainee_AspNetUsers_UserId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+CREATE INDEX "IX_Trainee_UserId" ON public."Trainee" USING btree ("UserId");
+
+
+
+INSERT INTO "IntegrationEntityMapping" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","UserId","LocalEntity","RemoteEntity","LocalId","RemoteId","IntegrationSystem","LastUpdatedDate","LastCheckedDate","BeforeJSON","AfterJSON","TenantId","IsComplete","Notes","EntityGrouping") VALUES
+	 ('6cb08e37-738a-517f-ed7b-2abb3a354bf8',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ChildBirthCertificate','Child Birth Certificate','5c464272-2f22-438f-8154-4aa1ff8bf047','0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('fefbb983-9d0c-146d-2f1c-0b85e4b42b2e',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ChildRegistrationForm','Child Registration Form','5c37eb53-b528-4dfc-9814-5d2aa14e5298','78ec9b65-20dd-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('f1e3843a-70f2-2389-1d1e-59b4514c09e4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'AttendancePDF','Monthly Attendance Register','5258d1f1-f9b6-e571-cbbe-067f4a823c8c','0b887bae-f2ef-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('7f0a7d74-c44c-e2d8-5f56-9fbeff8f33ba',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'IncomeStatementPDF','Income Statement','9aae913e-47f8-45c7-a0ff-142dd425cf94','85de53bd-8426-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('d088a1c9-9112-2aed-bf31-62cc317ce812',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Franchisee Agreement','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('edd1479a-55fb-ff82-a86f-a6efbbd3a531',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Identity Document','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','891d084f-9394-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('6b47bba4-fb36-22b9-126b-e555d6969c06',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Stipend Agreement','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','bf8ca50e-8526-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('01930d35-6dcf-6da2-8fde-448f873d1fb4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Attendance Register','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','fc22a1a8-8226-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('82d0084e-367e-4790-4652-07265e4f65e4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Proof of Account','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','7f1c1f22-a925-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('f42e13d2-8dd4-0a32-e2d1-764cb7501f5a',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Proof of Site Address','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','accea691-9394-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType');
+
+
+	INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","Description","EnumId","TenantId") VALUES
+	 ('5c37eb53-b528-4dfc-9814-5d2aa14e5298',true,NOW(),NOW(),NULL,'ChildRegistrationForm','Child Registration Form',17,'258a15e6-3736-45ea-875c-48d9377de4c8'),
+	 ('fe6c6e71-1eb7-424a-8844-5bab1c60104c',true,NOW(),NOW(),NULL,'ChildClinicCard','Child Clinic Card',18,'258a15e6-3736-45ea-875c-48d9377de4c8'),
+	('5c464272-2f22-438f-8154-4aa1ff8bf047',true,NOW(),NOW(),NULL,'ChildBirthCertificate','Child Birth Certificate',19,'258a15e6-3736-45ea-875c-48d9377de4c8');
+
+
+	update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildRegistrationForm') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'F4-registrationform.png';
+update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildBirthCertificate') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'birthCertificate.png';
+update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildClinicCard') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'clinicCard.png';
 	 */

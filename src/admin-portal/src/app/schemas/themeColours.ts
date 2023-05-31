@@ -31,6 +31,7 @@ export interface ThemeColours extends DefaultThemeColors {
   infoMain: string;
   infoDark: string;
   infoBb: string;
+  darkBackground: string;
 }
 
 //TODO: (Tenancy) we can't have these hardcoded for multiple tenenats
@@ -64,6 +65,7 @@ export const initialThemeColours: ThemeColours = {
   infoMain: '#1D67D5',
   infoDark: '#1752AB',
   infoBb: '#EBF3FF',
+  darkBackground: 'red',
 };
 
 export const themeColoursScheme = Yup.object().shape({
@@ -77,4 +79,5 @@ export const themeColoursScheme = Yup.object().shape({
   uiMid: Yup.string().required(),
   uiLight: Yup.string().required(),
   uiBg: Yup.string().required(),
+  darkBackground: Yup.string().required(),
 });

@@ -28,18 +28,19 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string MonthsSinceFranchisee { get; set; }
         public bool? VerifiedByHomeAffairs { get; set; }
         public bool? ConsentForPhoto { get; set; }
-        public bool? IsPrincipal { get; set; }
+        public bool? IsPrincipal { get; set; } = false;
         public bool? AttendedChildProgress { get; set; }
         public bool? AttendedBusinessSkills { get; set; }
-        public bool? IsClubLeader { get; set; }
+        public bool? IsClubLeader { get; set; } = false;
         public DateTime? StartDate { get; set; }
         public string LanguageUsedInGroups { get; set; }
         public string ReasonForLeaving { get; set; }
         public string PreferredCommunicationLanguage { get; set; }
         public MappedFranchisor Franchisor { get; set; }
         public MappedCoach Coach { get; set; }
-        public Principal? Principal { get; set; }
-        public MappedAddress? SiteAddress { get; set; }
+        public Principal Principal { get; set; }
+        public MappedAddress SiteAddress { get; set; }
+        public string StipendType { get; set; }
 
     }
 }

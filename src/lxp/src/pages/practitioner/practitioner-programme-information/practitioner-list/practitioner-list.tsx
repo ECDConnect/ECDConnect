@@ -1,4 +1,4 @@
-import { useTheme } from '@ecdlink/core';
+import { PractitionerDto, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Typography,
@@ -17,13 +17,17 @@ import { useSelector } from 'react-redux';
 import { useState, useEffect } from 'react';
 import { PractitionerListProps } from './practitioner-list.types';
 import { renderIcon } from '@ecdlink/ui';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { EditPractitioner } from './edit-practitioner/edit-practitioner';
 import { userSelectors } from '@store/user';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { OtherPractitionerProfile } from './other-practitioner-view/other-practitioner';
 import ROUTES from '@routes/routes';
+import { useAppDispatch } from '@store';
 
 export const PractitionerList: React.FC<PractitionerListProps> = () => {
   const history = useHistory();
@@ -46,6 +50,7 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     []
   );
   const [colleagueProfile, setColleagueProfile] = useState({});
+  const appDispatch = useAppDispatch();
 
   const getPractitionerColleagues = async () => {
     // Check if the practitioner exists
@@ -85,6 +90,30 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
     }
   }, [otherColleagues, user?.firstName]);
 
+  const removePractitioner = async (practitioner: PractitionerDto) => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
+  };
+
   const stackedListItems: ActionListDataItem[] =
     practitionersList && practitionersList?.length! > 0
       ? practitionersList?.map((item) => {
@@ -98,7 +127,9 @@ export const PractitionerList: React.FC<PractitionerListProps> = () => {
             switchTextStyles: true,
             actionName: 'Remove',
             actionIcon: 'PencilIcon',
-            onActionClick: () => {}, // Disabled the editPractitioner view state
+            onActionClick: () => {
+              removePractitioner(item);
+            }, // Disabled the editPractitioner view state
           };
         })
       : otherColleaguesFiltered?.map((item: any) => {

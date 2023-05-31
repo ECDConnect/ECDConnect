@@ -26,7 +26,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 visitDataManager.AddChildVisitData(input);
             } else if (input.PractitionerId != null)
             {
-                visitDataManager.AddPractitionerVisitData(input);
+                visitDataManager.AddPractitionerVisitData(input, true);
+            }
+            else if (input.TraineeId != null)
+            {
+                visitDataManager.AddTraineeVisitData(input);
             }
             return true;
         }

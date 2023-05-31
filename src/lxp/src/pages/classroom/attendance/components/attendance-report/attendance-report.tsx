@@ -3,14 +3,7 @@ import {
   LocalStorageKeys,
   MonthlyAttendanceRecord,
 } from '@ecdlink/core';
-import {
-  Button,
-  MessageModal,
-  renderIcon,
-  SearchDropDown,
-  SearchDropDownOption,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { OfflineCard } from '../../../../../components/offline-card/offline-card';
@@ -28,7 +21,6 @@ import { AttendanceMonthlyReport } from './components/attendance-monthly-report/
 import { attendanceThunkActions } from '@/store/attendance';
 import { addDays, startOfYear } from 'date-fns';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
@@ -71,12 +63,12 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     }
   }, []);
 
-  const closeNotification = () => {
-    setSuccessMessageVisible(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
-    const today = new Date().toDateString();
-    localStorage.setItem('lastDate', today);
-  };
+  // const closeNotification = () => {
+  //   setSuccessMessageVisible(false);
+  //   setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+  //   const today = new Date().toDateString();
+  //   localStorage.setItem('lastDate', today);
+  // };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
@@ -192,10 +184,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          // todo: remove 'false' once needed.
-          false &&
-          (!hasClosedAttendanceSmartStartPointsMessage ??
-            displaySmartStartMessage)
+          !hasClosedAttendanceSmartStartPointsMessage ??
+          displaySmartStartMessage
         }
         icon={'GiftIcon'}
         className={'mt-4'}

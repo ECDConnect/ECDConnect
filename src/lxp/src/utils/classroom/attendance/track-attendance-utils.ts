@@ -8,6 +8,7 @@ import {
 import { AttendanceStatus, Colours, SubTitleShape } from '@ecdlink/ui';
 import {
   addDays,
+  endOfMonth,
   format,
   getDay,
   getDayOfYear,
@@ -22,6 +23,8 @@ import {
   nextThursday,
   nextTuesday,
   nextWednesday,
+  parse,
+  startOfMonth,
   startOfWeek,
 } from 'date-fns';
 import {
@@ -122,26 +125,46 @@ export const getMissedClassAttendance = (
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
   const returnProgrammes: ClassProgrammeDto[] = [];
 
-  for (const group of classRoomGroup) {
-    const groupProgrammes = classProgrammes;
+  const groupProgrammes = classProgrammes;
 
-    // all the class programs for up until today but does not check the start date
-    const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
-      return (
-        x.meetingDay === currentDayFilter && x.classroomGroupId === group.id
-      );
-    });
+  // all the class programs for up until today but does not check the start date
+  const classProgrammesUpToCurrentDay = groupProgrammes?.filter((x) => {
+    const programStartDate =
+      typeof x.programmeStartDate !== 'undefined'
+        ? new Date(x.programmeStartDate)
+        : new Date();
+    const programStartDateDay = getDayOfYear(programStartDate);
+    const dateDay = getDayOfYear(date);
 
-    if (classProgrammesUpToCurrentDay)
-      for (const programme of classProgrammesUpToCurrentDay) {
-        if (
-          !attendance.some((att) => att.classroomProgrammeId === programme.id)
-        ) {
-          returnProgrammes.push(programme);
-        }
+    return programStartDateDay === dateDay
+      ? (x.meetingDay || -1) === currentDayFilter
+      : (x.meetingDay || -1) <= currentDayFilter &&
+          isBefore(programStartDateDay, dateDay);
+  });
+
+  if (classProgrammesUpToCurrentDay)
+    for (const programme of classProgrammesUpToCurrentDay) {
+      if (
+        !attendance.some((att) => att.classroomProgrammeId === programme.id)
+      ) {
+        returnProgrammes.push(programme);
       }
-  }
+    }
+
   return returnProgrammes;
+};
+
+export const removeDuplicates = (arr: MissedAttendanceGroups[]) => {
+  const seen = new Set();
+
+  return arr.filter((obj) => {
+    const classroomGroupId = obj.classroomGroup.id;
+    if (!seen.has(classroomGroupId)) {
+      seen.add(classroomGroupId);
+      return true;
+    }
+    return false;
+  });
 };
 
 export const isPractitionerAttendanceMissingForLearner = (
@@ -185,6 +208,17 @@ export const getMonthName = (monthOfYear: number) => {
   if (monthOfYear < 0 || monthOfYear > 12) return 'Invalid month';
   return format(new Date().setMonth(monthOfYear), 'MMMM');
 };
+export function getMonthRange(monthName: string) {
+  const year = new Date().getFullYear();
+  // Parse the month name and get the corresponding month number
+  const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
+  // Get the start and end date of the month
+  const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
+
+  const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
+
+  return { startDate, endDate };
+}
 
 export const getClassroomGroupSchoolDays = (
   classProgrammes: ClassProgrammeDto[]
@@ -236,7 +270,6 @@ export const getMissedAttendanceSummaryGroups = (
         const currentGroupMissedAttendance = missedAttendance.filter(
           (x) => x.classroomGroupId === classroomGroup.id
         );
-
         for (const missedAttendanceClassProgramme of currentGroupMissedAttendance) {
           const missedDayDate = addDays(
             startOfWeekDate,
@@ -324,12 +357,17 @@ export const classroomGroupHasAttendanceOnDate = (
 
 export const classroomGroupHasAttendanceDate = (
   classProgrammes: ClassProgrammeDto[],
-  date: Date
+  date: Date,
+  previousClassroomID?: string
 ): ClassProgrammeDto | undefined => {
   return classProgrammes
-    ? getDay(date) !== 1
-      ? classProgrammes.find((x) => x.meetingDay === getDay(date))
-      : classProgrammes.filter((x) => x.meetingDay === getDay(date))[1]
+    ? classProgrammes.length > 5
+      ? classProgrammes.find(
+          (x) =>
+            x.classroomGroupId !== previousClassroomID &&
+            x.meetingDay === getDay(date)
+        )
+      : classProgrammes.find((x) => x.meetingDay === getDay(date))
     : undefined;
 };
 

@@ -1,11 +1,13 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P4 from '@/assets/pillar/p4.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { replaceBraces, useDialog } from '@ecdlink/core';
 import {
   Alert,
+  ActionModal,
   CheckboxChange,
   Colours,
+  DialogPosition,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
@@ -51,6 +53,8 @@ export const DangerSignsStep = ({
     answer: [] as (string | number | undefined)[],
   });
 
+  const dialog = useDialog();
+
   const answers = question.answer as string[];
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
@@ -60,6 +64,38 @@ export const DangerSignsStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
+        if (
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
+        ) {
+          return dialog({
+            blocking: false,
+            position: DialogPosition.Middle,
+            color: 'bg-white',
+            render: (onClose) => {
+              return (
+                <ActionModal
+                  className="z-50"
+                  icon="ExclamationCircleIcon"
+                  iconColor="alertMain"
+                  iconClassName="h-10 w-10"
+                  title="You can only select “None of the above” if there are no danger signs"
+                  detailText={`If ${name} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'primary',
+                      type: 'outlined',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              );
+            },
+          });
+        }
         const currentAnswers = answers
           ? [...answers, event.value]
           : [event.value];
@@ -87,7 +123,7 @@ export const DangerSignsStep = ({
         },
       ]);
     },
-    [answers, question, setEnableButton, setQuestions]
+    [answers, dialog, name, question, setEnableButton, setQuestions]
   );
 
   const handleOnChangeSelectedOptions = useCallback(() => {

@@ -81,18 +81,14 @@ const ProgrammeTiming: React.FC = () => {
 
     if (isOnline) {
       try {
-        appDispatch(programmeThunkActions.upsertProgrammes({}));
+        appDispatch(programmeThunkActions.updateProgrammes({}));
       } catch (err) {
         console.log(err);
       }
     }
 
-    // history.replace(ROUTES.PROGRAMMES.SUMMARY, {
-    //   programmeId: newProgramme.id,
-    //   variation: 'create',
-    // });
     history.push(ROUTES.CLASSROOM, {
-      activeTabIndex: 3,
+      activeTabIndex: 2,
       programmeStartDate: validatedDate,
     });
   };
@@ -171,6 +167,7 @@ const ProgrammeTiming: React.FC = () => {
         type: 'success',
       });
     },
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     [selectedDate, selectedTheme]
   );
 
@@ -241,8 +238,10 @@ const ProgrammeTiming: React.FC = () => {
             setAlert(date);
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={addDays(new Date(), 1)}
-          maxDate={getThemedProgrammeEndDate(validStartdDate!)}
+          minDate={
+            getThemedProgrammeEndDate(validStartdDate!) ||
+            addDays(new Date(), 20)
+          }
         />
 
         {alertState && <Alert className="mt-4" {...alertState} />}

@@ -16,6 +16,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
+using System.ArrayExtensions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -33,6 +34,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<IEnumerable<ApplicationUser>> GetUsers([Service]UserManager<ApplicationUser> userManager)
         {
+            // TODO: Add pagination
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             return userManager.Users.Where(x => x.TenantId.Equals(tenantId));
         }
@@ -107,13 +109,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 if (tokenusr != null)
                 {
                     var user = userManager.FindByIdAsync(tokenusr.UserId).Result;
-                    if (user != null)
+                    
+                    if (user is null)
                     {
-                        tokenuser.FullName = user.FullName;
-                        tokenuser.PhoneNumber = user.PhoneNumber;
-                        tokenuser.UserId = user.Id;
-                        tokenuser.RoleName = (user.practitionerObjectData != null ? "Practitioner" : user.principalObjectData != null ? "Principal" : user.coachObjectData != null ? "Coach" : "User");
+                        throw new Exception("User not found.");
                     }
+
+                    Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+                    if (user.TenantId != tenantId && user.TenantId != null)
+                    {
+                        throw new Exception("Cross tenant access denied.");
+                    }
+
+                    tokenuser.FullName = user.FullName;
+                    tokenuser.PhoneNumber = user.PhoneNumber;
+                    tokenuser.UserId = user.Id;
+                    tokenuser.RoleName = (user.practitionerObjectData != null ? "Practitioner" : user.principalObjectData != null ? "Principal" : user.coachObjectData != null ? "Coach" : "User");
+                    
                 }
             }
             return tokenuser;
@@ -135,20 +148,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             string moodleConfigVar = TenantExecutionContext.Tenant.MoodleConfigVar;
             if (!string.IsNullOrEmpty(moodleConfigVar))
             {
-                var moodleConfig = JsonConvert.DeserializeObject<dynamic>(moodleConfigVar);
-                var cohort = moodleConfig["default"].cohort;
-                cohorts.Add(cohort.ToString());
+                var moodleConfig = JsonConvert.DeserializeObject<MoodleConfig>(moodleConfigVar);
+                var allCohorts = moodleConfig.All.Cohorts;
+                foreach (var cohort in allCohorts)
+                {
+                    cohorts.Add(cohort);
+                }
             }
 
-
-            //string cohortName = "Grow Great";
-            //string orgName = TenantExecutionContext.Tenant.OrganisationName;
-            //if (orgName == "SmartStart")
-            //{
-            //    cohortName = "Smart Start";
-            //}
-
-            // create the moodle user
             var moodleUser = new MoodleUser()
             {
                 UserName = moodleUserName,
@@ -156,8 +163,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 IdNumber = user.IdNumber,
                 Firstname = user.FirstName,
                 Lastname = user.Surname,
-                Email = user.Email,
-                Phone1 = user.PhoneNumber
+                Email = moodleUserName, // user.Email,
+                Phone1 = string.IsNullOrEmpty(user.PhoneNumber) ? "" : user.PhoneNumber
             };
             // create user for moodle
             return moodleManager.CreateUserAsync(moodleUser, cohorts).Result.ToString();

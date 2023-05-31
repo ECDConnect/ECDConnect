@@ -25,7 +25,8 @@ export const getChildProgressObservationReports = (childId: string) =>
 export const hasUnsyncedReports = createSelector(
   (state: RootState) =>
     state.contentReportData.unsyncedChildProgressReportsIds || [],
-  (reportIds: UnSyncedReportItem[]) => reportIds.length > 0
+  (reportIds: UnSyncedReportItem[]) =>
+    reportIds.length > 0 && reportIds.some((r) => r.promptUser === true)
 );
 
 export const getChildCompletedObservationReports = (childId?: string) =>
@@ -33,7 +34,11 @@ export const getChildCompletedObservationReports = (childId?: string) =>
     (state: RootState) => state.contentReportData.childProgressionReports || [],
     (reports: ChildProgressObservationReport[]) =>
       reports.filter(
-        (x) => x.childId === childId && x.dateCompleted !== undefined
+        (x) =>
+          x.childId === childId &&
+          x.dateCompleted !== undefined &&
+          x.dateCompleted !== null &&
+          x.dateCompleted !== ''
       )
   );
 
@@ -52,6 +57,13 @@ export const getChildProgressReportSummaries = (childId?: string) =>
         .sort((a, b) =>
           new Date(a.reportDate) > new Date(b.reportDate) ? 1 : -1
         )
+  );
+
+export const getChildProgressObservationReportByReportId = (reportId: string) =>
+  createSelector(
+    (state: RootState) => state.contentReportData.childProgressionReports || [],
+    (reports: ChildProgressObservationReport[]) =>
+      reports.find((report) => report.id === reportId)
   );
 
 export const getChildProgressObservationReportByReportingPeriod = (
@@ -81,7 +93,9 @@ export const getChildLatestCompletedReports = (childId?: string) =>
         contentReportState.childProgressionReports?.filter(
           (report) =>
             (!childId ? true : report.childId === childId) &&
-            report.dateCompleted !== undefined
+            report.dateCompleted !== undefined &&
+            report.dateCompleted !== null &&
+            report.dateCompleted !== ''
         ) || [];
 
       const excludingSummaries =
@@ -99,10 +113,19 @@ export const getChildLatestCompletedReports = (childId?: string) =>
           categories: report.categories.map((cat) => ({
             categoryId: cat.categoryId,
             achievedLevelId: cat.achievedLevelId,
+            tasks:
+              cat.tasks.map((t) => ({
+                levelId: t.levelId,
+                skillId: t.skillId,
+                value: t.value,
+              })) || [],
           })),
           childFirstName: report.childFirstname,
           childSurname: report.childSurname,
           reportDate: report.reportingDate,
+          reportDateCompleted: report.dateCompleted || '',
+          reportDateCreated: report.dateCreated || '',
+          reportPeriod: report.reportingPeriod,
           reportId: report.id,
           classroomName: report.classroomName,
         }));

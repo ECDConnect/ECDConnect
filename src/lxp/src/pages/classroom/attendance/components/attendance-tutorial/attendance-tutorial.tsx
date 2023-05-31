@@ -25,9 +25,8 @@ export const AttendanceTutorial = ({
   const tutorialResetClicks = 4;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
-  const [displayTutorialComplete, setDisplayTutorialComplete] =
-    useState<boolean>(false);
-  const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
+  const [, setDisplayTutorialComplete] = useState<boolean>(false);
+  const [, setAttendanceItem] = useState<AttendanceListDataItem>({
     title: 'Amahle Khumalo',
     profileText: 'AM',
     attenendeeId: '1',

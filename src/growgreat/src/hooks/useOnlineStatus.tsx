@@ -36,7 +36,6 @@ export const OnlineStatusProvider: React.FC<{
           return setOnlineStatus(online);
         }}
         render={({ online }) => {
-          setOnlineStatus(online);
           return <></>;
         }}
       />

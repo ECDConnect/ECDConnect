@@ -118,6 +118,7 @@ export const InfantBackReferralUpdate: React.FC<
       title="Update back-referral"
       subTitle={`${selectedReferral?.section}`}
       backgroundColour="white"
+      className="p-4"
     >
       <Typography
         type="h2"
@@ -128,7 +129,7 @@ export const InfantBackReferralUpdate: React.FC<
         text="Update back-referral"
       />
 
-      <div className="bg-uiBg mt-2 flex gap-2 p-4">
+      <div className="bg-errorBg rounded-10 mb-2 flex gap-3 p-4">
         <DocumentTextIcon color="darkred" className="h-12 w-12" />
         <div>
           <Typography

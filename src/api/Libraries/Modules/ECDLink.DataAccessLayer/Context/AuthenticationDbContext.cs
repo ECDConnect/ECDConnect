@@ -84,6 +84,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
         public DbSet<Mother> Mothers { get; set; }
         public DbSet<Infant> Infants { get; set; }
+        public DbSet<Trainee> Trainees { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -103,7 +104,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<IntegrationEntityMapping> IntegrationEntityMappings { get; set; }
         public DbSet<IntegrationColumnMapping> IntegrationColumnMappings { get; set; }
         public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
-
+        public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
 
         // Service Scheduling
@@ -148,6 +149,7 @@ namespace ECDLink.DataAccessLayer.Context
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -209,7 +211,7 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<ChildProgressReport>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.ChildId, e.Id });
+                x.HasKey(e => new { e.Id });
             });
         }
     }

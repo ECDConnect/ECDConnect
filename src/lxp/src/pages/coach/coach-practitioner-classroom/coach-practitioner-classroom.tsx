@@ -28,7 +28,6 @@ import { ClassroomAttendance } from './components/classroom-attendance/classroom
 import { authSelectors } from '@/store/auth';
 import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroupService } from '@/services/ClassroomGroupService';
-import { userSelectors } from '@store/user';
 
 export const CoachPractitionerClassroom: React.FC = () => {
   const appDispatch = useAppDispatch();
@@ -63,10 +62,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
     useState<any[]>();
 
   const [actionItems, setActionItems] = useState<any>();
-
-  const userData = useSelector(userSelectors.getUser);
-  const isCoach =
-    userData?.roles?.some((role) => role.name === 'Coach') ?? false;
 
   const classroomsMetrics = async () => {
     const today = new Date();

@@ -16,7 +16,7 @@ namespace ECDLink.DataAccessLayer.Entities.Documents
 
     }
 
-    public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>, IUserScoped
+    public class Document<TKey> : EntityBase<TKey>, ApplicationUserJoin, DocumentTypeJoin<TKey>, WorkflowStatusJoin<TKey>, IUserScoped, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string CreatedUserId { get; set; }

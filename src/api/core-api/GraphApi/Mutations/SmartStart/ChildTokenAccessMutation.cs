@@ -319,13 +319,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             //reinsert
                             context.UserGrants.AddRange(grantsToAdd);
                             context.SaveChanges();
+                            return true;
                         }
                         catch (Exception e)
                         {
                             // Error
                             return false;
                         }
-                        return true;
                     }
                     else return false;
                 }

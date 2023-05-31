@@ -54,7 +54,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === theme?.name);
   const isCurrentDay = isSameDay(selectedDate!, new Date());
-  console.log({ month });
   const addDay = useCallback(() => {
     setSelectedDate(addDays(selectedDate!, 1));
   }, [selectedDate, setSelectedDate]);
@@ -68,8 +67,6 @@ export const ProgrammePlanningHeaderUpdated: React.FC<
   const setDayCurrentDate = () => {
     setSelectedDate(new Date());
   };
-
-  console.log({ monthsList });
 
   return (
     <div>

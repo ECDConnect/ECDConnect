@@ -3,7 +3,7 @@ import { ChildProgressObservationStatus } from '../enums/child-progress-observat
 export interface ChildProgressObservationReport {
   id: string;
   dateCompleted?: string;
-  dateCreated?: string;
+  dateCreated: string;
   reportingDate: string;
   reportingPeriod: string;
   observationNote?: string;
@@ -43,9 +43,16 @@ export interface CategoryTask {
   value: string;
 }
 
+export interface ObservationCategoryTaskSummary {
+  levelId: number;
+  skillId: number;
+  value: string;
+}
+
 export interface ObservationCategorySummary {
   achievedLevelId: number;
   categoryId: number;
+  tasks: ObservationCategoryTaskSummary[];
 }
 
 export interface ChildProgressReportSummaryModel {
@@ -56,4 +63,7 @@ export interface ChildProgressReportSummaryModel {
   childSurname: string;
   classroomName: string;
   reportDate: string;
+  reportPeriod: string;
+  reportDateCreated: string;
+  reportDateCompleted: string;
 }

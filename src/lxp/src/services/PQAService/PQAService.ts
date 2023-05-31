@@ -1,5 +1,11 @@
 import { Config } from '@ecdlink/core';
-import { PractitionerTimeLine } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  PractitionerTimeline,
+  SupportVisitModelInput,
+  Visit,
+  VisitData,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
 class PQAService {
@@ -9,10 +15,93 @@ class PQAService {
     this._accessToken = accessToken;
   }
 
-  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeLine> {
+  async addVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
-      data: { practitionerTimeline: PractitionerTimeLine };
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation addVisitData($input: CMSVisitDataInputModelInput) {
+          addVisitData(input: $input) {
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add visit failed - Server connection error');
+    }
+
+    return true;
+  }
+
+  async addSupportVisitForPractitioner(
+    input: SupportVisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addSupportVisitForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddSupportVisitForPractitioner($input: SupportVisitModelInput) {
+          addSupportVisitForPractitioner(input: $input) {
+              id
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add support visit failed - Server connection error');
+    }
+
+    return response.data.data.addSupportVisitForPractitioner;
+  }
+
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { visitDataForVisitId: VisitData[] };
+      errors?: {};
+    }>(``, {
+      query: `
+        query GetVisitDataForVisitId($visitId: String) {
+          visitDataForVisitId(visitId: $visitId) {
+            insertedDate
+            visitId
+            visitName
+            visitSection
+            question
+            questionAnswer
+          }
+        }
+          `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get Visit Data For Visit Id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.visitDataForVisitId;
+  }
+
+  async getPractitionerTimeline(userId: string): Promise<PractitionerTimeline> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { practitionerTimeline: PractitionerTimeline };
       errors?: {};
     }>(``, {
       query: `
@@ -59,7 +148,20 @@ class PQAService {
             prePQAVisitDate2
             prePQAVisitDate2Color
             prePQAVisitDate2Status
-            siteVisits {
+            prePQASiteVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+            }
+            pQASiteVisits {
               id
               plannedVisitDate
               attended
@@ -82,6 +184,15 @@ class PQAService {
               id
               plannedVisitDate
               attended
+              visitType {
+                description
+                id
+                isActive
+                name
+                normalizedName
+                order
+                type
+              }
             }
           }
         }

@@ -8,7 +8,7 @@ using ECDLink.Security.JwtSecurity.Enums;
 using ECDLink.Security.JwtSecurity.Factories;
 using ECDLink.Security.JwtSecurity.Managers;
 using ECDLink.Security.Managers;
-using ECDLink.Security.Providers;
+using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
@@ -24,7 +24,6 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly IClaimsManager _claimsManager;
         private readonly SecurityNotificationManager _notificationManager;
         private readonly ShortUrlManager _shortUrlManager;
-        protected AuthenticationDbContext _dbContext;
 
         public UserManager<ApplicationUser> _userManager { get; set; }
 
@@ -52,9 +51,15 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
         public async Task<ApplicationUser> LogInWithPhoneNumberAsync(string phoneNumber, string password)
         {
-            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.PhoneNumber, phoneNumber));
+            var userToVerify = _userManager.Users.FirstOrDefault(user => user.PhoneNumber == phoneNumber
+                                && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
+            {
+                return default(ApplicationUser);
+            }
+
+            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
             {
                 return default(ApplicationUser);
             }
@@ -65,9 +70,18 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task<ApplicationUser> LogInWithUsernameAsync(string username, string password)
         {
             // get the user to verifty
-            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username));
+            var userToVerify = _userManager.Users.FirstOrDefault(user => string.Equals(user.UserName, username)
+                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
+
+            userToVerify ??= _userManager.Users.FirstOrDefault(user => user.Email == username
+                    && (user.TenantId == TenantExecutionContext.Tenant.Id || user.TenantId == null));
 
             if (!await _passwordManager.IsPasswordValidAsync(userToVerify, password))
+            {
+                return default(ApplicationUser);
+            }
+
+            if (userToVerify.TenantId != TenantExecutionContext.Tenant.Id && userToVerify.TenantId != null)
             {
                 return default(ApplicationUser);
             }
@@ -108,7 +122,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Id, user.Id),
                     new Claim(SecurityConstants.Strings.JwtClaimIdentifiers.Rol, string.Join(',', roles))
                 ); //TODO: CB Remove ROL again when portal login errors have been resolved
-            //Remove the Rol and tenantId and add to table and obfuscate     
+            //Remove the Rol and tenantId and add to table and obfuscate
             var jwt = await _jwtTokenManager.GenerateJwt(claimIdentity, user.Id, jwtType);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
             await ObfuscateJwtToken(jwtObj.auth_token, jwtObj.expires_in, user.Id, string.Join(',', roles));

@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -74,6 +75,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsClubOwner { get; set; }
         public bool? AttendedChildProgress { get; set; }
         public bool? AttendedBusinessSkills { get; set; }
+        public string LeavingComment { get; set; }
+        public string StipendType { get; set; }
+
+        [NotMapped]
+        public virtual PractitionerTimeline timeline  { get; set; }
 
     }
 

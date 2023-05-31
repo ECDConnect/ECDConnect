@@ -1,11 +1,4 @@
-import {
-  BannerWrapper,
-  Button,
-  Card,
-  Divider,
-  RoundIcon,
-  Typography,
-} from '@ecdlink/ui';
+import { BannerWrapper, Button, Card, Divider, Typography } from '@ecdlink/ui';
 import LanguageSelector from '../../../../../../../components/language-selector/language-selector';
 import { activitySelectors } from '@store/content/activity';
 import React from 'react';

@@ -37,6 +37,7 @@ import {
   getClassroomGroupSchoolDays,
   getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
+  removeDuplicates,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import {
   getStorageItem,
@@ -87,7 +88,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     useState<boolean>(false);
   const [currentEditClassroomGroupId, setCurrentEditClassroomGroupId] =
     useState<string>();
-  const todayDate = new Date();
+  const [todayDate] = useState(new Date());
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -145,6 +146,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
         setSuccessMessageVisible(false);
       }
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [trackedAttendance]);
 
   useEffect(() => {
@@ -196,7 +198,16 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           todayDate
         );
 
-      if (attendanceToDoList) {
+      let classCreatedTodayMissedAttendance = attendanceToDoList.filter(
+        (x) => getDay(x.missedDay) === getDay(todayDate)
+      );
+
+      //this is used when classes is created today and user has multiple classes
+      const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
+
+      if (missedClasses.length > 0) {
+        setMissedAttendanceGroups(missedClasses);
+      } else if (attendanceToDoList.length > 0) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }

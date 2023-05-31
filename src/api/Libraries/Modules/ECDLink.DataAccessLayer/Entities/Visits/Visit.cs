@@ -28,9 +28,13 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public Guid? LinkedVisitId { get; set; }
         public Guid? PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
+        public Guid? TraineeId { get; set; }
+        public virtual Trainee Trainee { get; set; }
 
         [NotMapped]
         public DateTime? OrderDate { get; set; }
+        [NotMapped]
+        public string OverallRatingColor { get; set; }
     }
 
     public interface VisitJoin<TKey>

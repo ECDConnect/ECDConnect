@@ -1,6 +1,11 @@
-import { Button, StepItem, Typography } from '@ecdlink/ui';
-import { Maybe, PractitionerTimeLine, Visit } from '@ecdlink/graphql';
-import { CalendarIcon } from '@heroicons/react/solid';
+import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
+import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
+import {
+  CalendarIcon,
+  PhoneIcon,
+  ClipboardCheckIcon,
+} from '@heroicons/react/solid';
+import { generalSupportVisitTypes } from './coach-practitioner-journey.types';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -11,22 +16,26 @@ export const dateOptions: Intl.DateTimeFormatOptions = {
 export const filterVisit = (visit: Maybe<Visit>) =>
   !visit?.attended && typeof visit?.visitType?.order !== 'undefined';
 
-export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) =>
-  (Number(visitA?.visitType?.order) || 0) -
-  (Number(visitB?.visitType?.order) || 0);
+export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
+  const orderA = Number(visitA?.visitType?.order) || 0;
+  const orderB = Number(visitB?.visitType?.order) || 0;
+  return orderA - orderB;
+};
 
-export const getStepType = (color?: Maybe<string>): StepItem['type'] => {
-  if (!color) return 'todo';
+export const getStepType = (
+  color?: Maybe<string>
+): { type: StepItem['type']; color?: Colours } => {
+  if (!color) return { type: 'todo' };
 
   switch (color.toLowerCase()) {
     case 'success':
-      return 'completed';
+      return { type: 'completed' };
     case 'warning':
-      return 'inProgress';
+      return { type: 'inProgress', color: 'alertDark' };
     case 'error':
-      return 'inProgress';
+      return { type: 'inProgress', color: 'alertDark' };
     default:
-      return 'todo';
+      return { type: 'todo' };
   }
 };
 
@@ -42,15 +51,24 @@ export const setStep = (
     return {
       title: status,
       subTitle: getStepDate(date),
-      type: getStepType(color),
+      inProgressStepIcon:
+        (color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon',
+      subTitleColor: getStepType(color)?.color || '',
+      type: getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
-    };
+    } as StepItem;
   }
 
   return {};
 };
 
-export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
+export const timelineSteps = (
+  timeline: PractitionerTimeline,
+  onView: (visit: Visit) => void,
+  isLoading: boolean,
+  isOnline: boolean,
+  visits?: Maybe<Visit>[]
+): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
   steps.push(
@@ -131,77 +149,230 @@ export const timelineSteps = (timeline: PractitionerTimeLine): StepItem[] => {
     )
   );
 
-  const formattedSteps = steps
-    .filter((object) => Object.keys(object).length !== 0)
-    .sort(
-      // @ts-ignore
-      (stepA, stepB) => (stepA.extraData?.date || null) - stepB?.extraData?.date
-    ) as StepItem<{ date: Date }>[];
+  if (!!timeline.prePQASiteVisits?.length) {
+    const date =
+      timeline.prePQAVisitDate1Color === 'Success' &&
+      !visits?.some((item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1')
+      )
+        ? new Date(
+            timeline.prePQASiteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_2')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions)
+        : new Date(
+            timeline.prePQASiteVisits?.find((item) =>
+              item?.visitType?.name?.includes('pre_pqa_visit_1')
+            )?.plannedVisitDate
+          ).toLocaleDateString('en-ZA', dateOptions);
 
-  formattedSteps.push({
-    title: 'Pre-PQA site visits',
-    subTitle: `By 10 Apr 2020`,
-    type: 'todo',
-    showAccordion: true,
-    accordionContent: (
-      <>
-        {timeline.siteVisits
-          ?.filter(filterVisit)
-          ?.sort(sortVisit)
-          ?.map((visit, index) => {
-            const previousVisit =
-              index > 1 ? timeline.siteVisits?.[index - 1] : undefined;
-            const title =
-              (index === 0 && timeline.prePQAVisitDate1Status) ||
-              (index === 1 && timeline.prePQAVisitDate2Status) ||
-              visit?.visitType?.description ||
-              'Visit';
-            return (
+    const isLateDate =
+      new Date(date) < new Date() &&
+      timeline.prePQASiteVisits.some((item) => !item?.attended);
+    const isAllCompleted = timeline.prePQASiteVisits?.every(
+      (item) => !!item?.attended
+    );
+    const getType = (): StepItem['type'] => {
+      if (isAllCompleted) {
+        return 'completed';
+      }
+
+      if (isLateDate) {
+        return 'inProgress';
+      }
+
+      return 'todo';
+    };
+    steps.push({
+      title: 'Pre-PQA site visits',
+      subTitle: `By ${date}`,
+      type: getType(),
+      inProgressStepIcon: 'ExclamationCircleIcon',
+      subTitleColor: isLateDate ? 'alertDark' : 'textMid',
+      showAccordion: true,
+      extraData: {
+        date: new Date(date),
+      },
+      accordionContent: (
+        <>
+          {timeline.prePQASiteVisits
+            ?.filter(
+              (visit: Maybe<Visit>) =>
+                typeof visit?.visitType?.order !== 'undefined'
+            )
+            ?.sort(sortVisit)
+            ?.map((visit, index) => {
+              const previousVisit =
+                index > 1 ? timeline.prePQASiteVisits?.[index - 1] : undefined;
+              const title =
+                (index === 0 && timeline.prePQAVisitDate1Status) ||
+                (index === 1 && timeline.prePQAVisitDate2Status) ||
+                visit?.visitType?.description ||
+                'Visit';
+
+              const color =
+                (index === 0 && timeline.prePQAVisitDate1Color) ||
+                (index === 1 && timeline.prePQAVisitDate2Color);
+
+              const attendedRule =
+                (visit?.visitType?.order === 1 && !visit.attended) ||
+                (!!previousVisit?.attended && !visit?.attended);
+
+              return (
+                <div className="my-4">
+                  <div className="relative flex items-center gap-1">
+                    <span>
+                      <CalendarIcon className="text-primary h-4 w-4" />
+                    </span>
+                    <Typography
+                      type="body"
+                      color="textDark"
+                      className="w-6/12 font-bold"
+                      text={title}
+                    />
+                    {visits?.some((item) => item?.id === visit?.id) &&
+                      attendedRule && (
+                        <Button
+                          style={{
+                            position: 'absolute',
+                            right: -36,
+                          }}
+                          className="z-50 w-32"
+                          type="outlined"
+                          color="primary"
+                          text="Schedule"
+                          icon="CalendarIcon"
+                          // TODO: add integration
+                          onClick={() => {}}
+                        />
+                      )}
+                    {!!visit?.attended && isOnline && (
+                      <Button
+                        style={{
+                          position: 'absolute',
+                          right: -36,
+                        }}
+                        className="z-50 w-24"
+                        type="filled"
+                        color="secondaryAccent2"
+                        textColor="secondary"
+                        text="View"
+                        isLoading={isLoading}
+                        disabled={isLoading}
+                        onClick={() => onView(visit)}
+                      />
+                    )}
+                  </div>
+                  <Typography
+                    type="body"
+                    color={getStepType(String(color))?.color || 'textMid'}
+                    text={
+                      !!visit?.plannedVisitDate
+                        ? `By ${new Date(
+                            visit.plannedVisitDate
+                          ).toLocaleDateString('en-ZA', dateOptions)}`
+                        : ''
+                    }
+                  />
+                </div>
+              );
+            })}
+        </>
+      ),
+    });
+  }
+
+  if (!!timeline.supportVisits?.length) {
+    const date = new Date(
+      timeline.supportVisits[
+        timeline.supportVisits.length - 1
+      ]?.plannedVisitDate
+    ).toLocaleDateString('en-ZA', dateOptions);
+
+    steps.push({
+      title: 'General support visits',
+      subTitle: `By ${date}`,
+      type: timeline.supportVisits?.every((item) => !!item?.attended)
+        ? 'completed'
+        : 'todo',
+      extraData: {
+        date: new Date(date),
+      },
+      showAccordion: true,
+      accordionContent: (
+        <>
+          {timeline.supportVisits
+            ?.filter(
+              (visit: Maybe<Visit>) =>
+                typeof visit?.visitType?.order !== 'undefined'
+            )
+            ?.sort(sortVisit)
+            ?.map((item) => (
               <div className="my-4">
                 <div className="relative flex items-center gap-1">
-                  <span>
-                    <CalendarIcon className="text-primary h-4 w-4" />
-                  </span>
+                  {item?.visitType?.name === generalSupportVisitTypes.call ? (
+                    <span>
+                      <PhoneIcon className="text-primary h-4 w-4" />
+                    </span>
+                  ) : (
+                    <span>
+                      <ClipboardCheckIcon className="text-primary h-4 w-4" />
+                    </span>
+                  )}
                   <Typography
                     type="body"
                     color="textDark"
                     className="w-6/12 font-bold"
-                    text={title}
+                    text={item?.visitType?.description || ''}
                   />
-                  {((visit?.visitType?.order === 1 && !visit.attended) ||
-                    (!!previousVisit?.attended && !visit?.attended)) && (
+                  {!!item?.attended && isOnline && (
                     <Button
                       style={{
                         position: 'absolute',
                         right: -36,
                       }}
-                      className="z-50 w-32"
-                      type="outlined"
-                      color="primary"
-                      text="Schedule"
-                      icon="CalendarIcon"
-                      // TODO: add integration
-                      onClick={() => {}}
+                      className="z-50 w-24"
+                      type="filled"
+                      color="secondaryAccent2"
+                      textColor="secondary"
+                      text="View"
+                      isLoading={isLoading}
+                      disabled={isLoading}
+                      onClick={() => onView(item)}
                     />
                   )}
                 </div>
                 <Typography
                   type="body"
-                  color="textMid"
+                  // TODO: add schedule integration
+                  color={getStepType(String('Success'))?.color || 'textMid'}
                   text={
-                    !!visit?.plannedVisitDate
+                    !!item?.plannedVisitDate
                       ? `By ${new Date(
-                          visit.plannedVisitDate
+                          item.plannedVisitDate
                         ).toLocaleDateString('en-ZA', dateOptions)}`
                       : ''
                   }
                 />
               </div>
-            );
-          })}
-      </>
-    ),
-  });
+            ))}
+        </>
+      ),
+    });
+  }
+
+  const formattedSteps = steps
+    .filter((object) => Object.keys(object).length !== 0)
+    .sort(
+      (
+        stepA,
+        stepB // TODO: fix type
+      ) =>
+        // @ts-ignore
+        (stepA.extraData?.date?.getTime() || 0) -
+        // @ts-ignore
+        (stepB.extraData?.date?.getTime() || 0)
+    ) as StepItem<{ date: Date }>[];
 
   return formattedSteps;
 };

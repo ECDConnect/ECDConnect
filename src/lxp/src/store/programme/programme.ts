@@ -5,6 +5,7 @@ import {
   getProgrammes,
   getUserProgrammes,
   upsertProgrammes,
+  updateProgrammes,
 } from './programme.actions';
 import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
@@ -40,9 +41,19 @@ const programmeSlice = createSlice({
         state.programmes?.push(action.payload.programme);
       }
     },
+    updateProgrammes: (state, action: PayloadAction<UpdateProgramme>) => {
+      if (state.programmes) {
+        for (let i = 0; i < state.programmes.length; i++) {
+          if (state.programmes[i].id === action.payload.programme.id)
+            state.programmes[i] = action.payload.programme;
+        }
+      } else {
+        state.programmes = [];
+        state.programmes?.push(action.payload.programme);
+      }
+    },
     updateProgrammeDay: (state, action: PayloadAction<UpdateProgrammeDay>) => {
       if (!state.programmes) return;
-
       const indexOfProgramme = state.programmes.findIndex(
         (programme) => programme.id === action.payload.programmeId
       );
@@ -65,6 +76,7 @@ const programmeSlice = createSlice({
     setThunkActionStatus(builder, getProgrammes);
     setThunkActionStatus(builder, getUserProgrammes);
     setThunkActionStatus(builder, upsertProgrammes);
+    setThunkActionStatus(builder, updateProgrammes);
     builder.addCase(getProgrammes.fulfilled, (state, action) => {
       state.programmes = action.payload;
       setFulfilledThunkActionStatus(state, action);
@@ -74,6 +86,9 @@ const programmeSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(upsertProgrammes.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateProgrammes.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
   },

@@ -1,4 +1,5 @@
 import * as Yup from 'yup';
+import { SA_CELL_REGEX } from '@ecdlink/ui';
 export interface EditCellphoneModel {
   id?: string;
   userId?: string;
@@ -17,11 +18,13 @@ export const initialEditPractitionerValues: EditCellphoneModel = {
   email: '',
 };
 
-const phoneRegExp = /^((?:\+27|27)|0)(=72|82|73|83|74|84)(\d{7})$/;
-
-export const editCelphoneNumberSchema = Yup.object().shape({
+export const editCellphoneNumberSchema = Yup.object().shape({
   name: Yup.string(),
   cellphone: Yup.string()
     .required('Cellphone number is required')
-    .matches(phoneRegExp, 'Phone number is not valid'),
+    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
+  whatsapp: Yup.string().matches(
+    SA_CELL_REGEX,
+    'Please enter a valid cell number'
+  ),
 });

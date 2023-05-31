@@ -6,6 +6,7 @@ import {
 export type UnSyncedReportItem = {
   reportId: string;
   classroomGroupId: string;
+  promptUser?: boolean;
 };
 
 export type ContentReportState = {

@@ -1,22 +1,43 @@
-import { useCallback, useMemo, useState } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { parseBool, useDialog, useSnackbar } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useParams } from 'react-router';
+import { useHistory, useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
-import { PractitionerJourneyParams } from '../coach-practitioner-journey.types';
-import { getPractitionerById } from '@/store/practitioner/practitioner.selectors';
-import { currentActivityKey } from '..';
-import { prePqaVisits } from './steps';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from '../coach-practitioner-journey.types';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
+import { generalSupportVisit, getFirstPqaSteps, prePqaVisits } from './steps';
+import { pqaActions, pqaThunkActions } from '@/store/pqa';
+import {
+  CmsVisitDataInputModelInput,
+  CmsVisitSectionInput,
+  InputMaybe,
+  SupportVisitModelInput,
+} from '@ecdlink/graphql';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { usePrevious } from 'react-use';
+import { PqaActions } from '@/store/pqa/pqa.actions';
+import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
+import ROUTES from '@/routes/routes';
+import { useAppDispatch } from '@/store';
+import { callAnswer, visitOrCallQuestion } from './general-support-visit';
+import { step11VisitSection } from './pqa-visits/first-pqa';
 
 interface FormProps {
+  visitId?: string;
   onBack: () => void;
 }
 
+export const currentActivityKey = 'selectedOption';
+export const visitIdKey = 'visitId';
+export const isViewKey = 'isView';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ onBack }: FormProps) => {
+export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
@@ -25,12 +46,34 @@ export const Form = ({ onBack }: FormProps) => {
   const { isOnline } = useOnlineStatus();
 
   const dialog = useDialog();
+  const appDispatch = useAppDispatch();
+  const { showMessage } = useSnackbar();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
-  const practitioner = useSelector(getPractitionerById(practitionerId));
+  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
+  const name = practitioner?.user?.firstName;
+
+  const history = useHistory();
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_VISIT_FORM_DATA
+  );
+  const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
+  );
+
+  const wasLoading = usePrevious(isLoading);
+  const wasLoadingSupportVisit = usePrevious(isLoadingSupportVisit);
+
+  const isStep11AnswerTrue =
+    sectionQuestions?.find((item) => item.visitSection === step11VisitSection)
+      ?.questions[0].answer === true;
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -74,6 +117,10 @@ export const Form = ({ onBack }: FormProps) => {
     });
   }, [dialog, onBack]);
 
+  const onSuccess = useCallback(() => {
+    showMessage({ message: `${activityName} complete!` });
+  }, [activityName, showMessage]);
+
   const handleOnBack = useCallback(() => {
     if (isTip) {
       return setIsTip(false);
@@ -90,12 +137,141 @@ export const Form = ({ onBack }: FormProps) => {
     setStep((preState) => preState + 1);
   }, []);
 
+  const onSubmit = useCallback(() => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+
+    const payload: CmsVisitDataInputModelInput = {
+      visitId,
+      practitionerId,
+      visitData: {
+        visitName: activityName,
+        sections,
+      },
+    };
+
+    switch (activityName) {
+      case visitTypes.supportVisit:
+        const visitOrCallSection = sections?.find((item) =>
+          item?.questions?.some(
+            (question) => question?.question === visitOrCallQuestion
+          )
+        )?.questions;
+        const visitOrCallAnswer = visitOrCallSection?.find(
+          (item) => item?.question === visitOrCallQuestion
+        )?.answer;
+
+        const supportVisitPayload: SupportVisitModelInput = {
+          practitionerId,
+          plannedVisitDate: new Date(),
+          isSupportCall: visitOrCallAnswer === callAnswer,
+          // TODO: add schedule option
+          attended: true,
+          supportData: payload,
+        };
+        appDispatch(
+          pqaActions.addVisitFormData(supportVisitPayload, {
+            userId: practitionerId,
+            formType: 'support-visit',
+          })
+        );
+        appDispatch(
+          pqaThunkActions.addSupportVisitFormData(supportVisitPayload)
+        );
+        break;
+
+      default:
+        appDispatch(
+          pqaActions.addVisitFormData(payload, {
+            userId: practitionerId,
+            formType: 'pre-pqa',
+          })
+        );
+        appDispatch(pqaThunkActions.addVisitFormData(payload));
+        break;
+    }
+  }, [activityName, appDispatch, practitionerId, sectionQuestions, visitId]);
+
+  const displayChildrenDialog = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            customIcon={<IconRobot className="mb-4" />}
+            title={`Would you like to register any children for ${name}’s programme?`}
+            detailText={`You can register children on your phone now. Or, help ${name} to register children on her phone.`}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Yes, register children now',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onBack?.();
+                  history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
+                    practitionerId,
+                  });
+                  onClose();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'No, skip',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: () => {
+                  setTimeout(() => onSuccess(), 100);
+                  onBack?.();
+                  onClose();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog, history, name, onBack, onSuccess, practitionerId]);
+
   const currentSteps = useMemo(() => {
     switch (activityName) {
+      case visitTypes.pqa.firstPQA:
+        return getFirstPqaSteps({ isStep11AnswerTrue });
+      case visitTypes.supportVisit:
+        return generalSupportVisit;
       default:
         return prePqaVisits;
     }
-  }, [activityName]);
+  }, [activityName, isStep11AnswerTrue]);
+
+  useEffect(() => {
+    if (wasLoading && !isLoading) {
+      displayChildrenDialog();
+    }
+
+    if (wasLoadingSupportVisit && !isLoadingSupportVisit) {
+      onBack?.();
+      onSuccess();
+    }
+  }, [
+    displayChildrenDialog,
+    isLoading,
+    isLoadingSupportVisit,
+    onBack,
+    onSuccess,
+    wasLoading,
+    wasLoadingSupportVisit,
+  ]);
 
   return (
     <BannerWrapper
@@ -109,16 +285,24 @@ export const Form = ({ onBack }: FormProps) => {
       displayOffline={!isOnline}
     >
       <DynamicForm
+        isView={isView}
         name={activityName}
         steps={currentSteps}
         smartStarter={practitioner}
         isTipPage={isTip}
         currentStep={step}
+        nextButtonText={
+          step === 10 && isStep11AnswerTrue
+            ? 'Continue to SmartSpace checklist'
+            : 'Next'
+        }
         setIsTip={setIsTip}
         setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
         onClose={onBack}
+        onSubmit={onSubmit}
+        isLoading={isLoading || isLoadingSupportVisit}
       />
     </BannerWrapper>
   );
