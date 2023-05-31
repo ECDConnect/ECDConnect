@@ -46,17 +46,15 @@ export default function ChildWrapper() {
         },
         {
           target: '#child_walkthrough_step_2',
-          content:
-            'See child & caregiver information',
+          content: 'See child & caregiver information',
           placement: 'bottom-end',
           offset: 10,
           spotlightClicks: true,
         },
         {
           target: '#child_walkthrough_step_4',
-          content:
-            'Add notes about the child',
-          placement: 'bottom-end',
+          content: 'Add notes about the child',
+          placement: 'auto',
           offset: 10,
           spotlightClicks: true,
         },
@@ -64,14 +62,14 @@ export default function ChildWrapper() {
           target: '#child_remove',
           content:
             'When the child graduates or leaves, remove them from your programme',
-          placement: 'bottom-end',
+          placement: 'auto',
           offset: 10,
           disableBeacon: true,
         },
         {
           target: '#lastStep',
           content: 'Great job, you’re ready to start!',
-          placement: 'bottom-end',
+          placement: 'auto',
           offset: 10,
         },
       ],
@@ -145,6 +143,8 @@ export default function ChildWrapper() {
       setState({ run: true, stepIndex: 4 });
     } else if (type === 'step:after' && index === 4) {
       setState({ run: true, stepIndex: 5 });
+    } else if (type === 'step:after' && index === 5) {
+      setState({ run: true, stepIndex: 6 });
     } else if (action === 'reset' || lifecycle === 'complete') {
       setStorageItem(true, LocalStorageKeys.childProfileTutorialComplete);
 

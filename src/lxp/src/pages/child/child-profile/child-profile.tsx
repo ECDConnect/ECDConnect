@@ -643,6 +643,11 @@ export const ChildProfile: React.FC = () => {
   ) {
     return <ChildPending child={child} childUser={childUser} />;
   }
+
+  const displayWalkthrough = ()=>{
+    gotToStatementsWalkthrough();
+
+  }
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -655,6 +660,8 @@ export const ChildProfile: React.FC = () => {
         renderOverflow={false}
         onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
         displayOffline={!isOnline}
+        onHelp={()=>gotToStatementsWalkthrough()}
+        displayHelp={true}
       >
         <div className={styles.avatarWrapper}>
           <ProfileAvatar
