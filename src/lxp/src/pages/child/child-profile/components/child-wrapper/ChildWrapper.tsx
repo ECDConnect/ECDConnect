@@ -47,7 +47,15 @@ export default function ChildWrapper() {
         {
           target: '#child_walkthrough_step_2',
           content:
-            'See child & caregiver information or add notes about the child',
+            'See child & caregiver information',
+          placement: 'bottom-end',
+          offset: 10,
+          spotlightClicks: true,
+        },
+        {
+          target: '#child_walkthrough_step_3',
+          content:
+            'Add notes about the child',
           placement: 'bottom-end',
           offset: 10,
           spotlightClicks: true,
