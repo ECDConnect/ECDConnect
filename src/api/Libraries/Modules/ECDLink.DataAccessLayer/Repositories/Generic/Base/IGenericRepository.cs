@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         T GetByUserId(string id);
         List<T> GetListByUserId(string id);
         T Insert(T entity);
+        IEnumerable<T> InsertMany(IEnumerable<T> entity);
         T Update(T entity);
         void Delete(TKey id);
         bool Exists(TKey id);

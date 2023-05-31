@@ -100,8 +100,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var step8_score = 0;
             var step8_final = 0;
 
-            var step10_score = 0;
-
             var step12_score = 0;
             var step13_score = 0;
             var step16_score = 0;
@@ -240,20 +238,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a2) { step8_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step8_q4_a3) { step8_score += 2; }
                 }
-                // Step 10 Re-accreditation
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q1) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q2) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q3) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q4) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q5) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q6) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q7) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q8) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q9) { step10_score += Int32.Parse(vData.QuestionAnswer); }
-                if (vData.Question == Constants.SSSettings.step_10_re_accreditation_q10) { step10_score += Int32.Parse(vData.QuestionAnswer); }
 
-                // Step 12 OR Re-accreditation 
-                if (vData.Question == Constants.SSSettings.step12_q1 || vData.Question == Constants.SSSettings.step12_q1_b)
+                // Step 12 
+                if (vData.Question == Constants.SSSettings.step12_q1)
                 {
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a1) { step12_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a2) { step12_score++; }
@@ -273,8 +260,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a16) { step12_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step12_q1_a17) { step12_score++; }
                 }
-                // Step 13 OR Re-accreditation 
-                if (vData.Question == Constants.SSSettings.step13_q1 || vData.Question == Constants.SSSettings.step13_q1_b)
+                // Step 13
+                if (vData.Question == Constants.SSSettings.step13_q1)
                 {
                     if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a1) { step13_score++; }
                     if (vData.QuestionAnswer == Constants.SSSettings.step13_q1_a2) { step13_score++; }

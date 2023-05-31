@@ -1,11 +1,8 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
@@ -30,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
         public DateTime? StartDate { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }
+        public DateTime? ScheduledConsolidationMeetingDate { get; set; }
         public DateTime? ChildrenAddedDate { get; set; }
         public Guid? LinkedPrincipalHierarchy { get; set; }
         public decimal Progress { get; set; }
@@ -48,7 +46,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsSmartSpaceVisitValidated { get; set; }
         public bool? IsAdminFileAndPlaykitValidated { get; set; }
         public string HighestEducationLevel { get; set; }
-
     }
 
     public interface TraineeIdJoin<TKey>

@@ -182,6 +182,49 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return true;
         }
 
+        public Boolean AddTraineeVisitData(CMSVisitDataInputModel input)
+        {
+
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    if (ValidateInsertRecord(visitData))
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
+                }
+            }
+
+            int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.SSSettings.smart_space_checklist).Select(y => y.VisitSection).Distinct().Count();
+            if (count == 4)
+            {
+                // update the visit record to show attended/completed 
+                var entityToUpdate = _visitRepo.GetById(Guid.Parse(input.VisitId));
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.Attended = true;
+                entityToUpdate.ActualVisitDate = DateTime.Now;
+                _visitRepo.Update(entityToUpdate);
+            }
+                return true;
+        }
+
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)

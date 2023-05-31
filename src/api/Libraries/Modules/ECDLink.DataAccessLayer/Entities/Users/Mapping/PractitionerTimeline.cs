@@ -38,7 +38,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string CoachingCircle4Color { get; set; }
         public string ChildProgressTrainingColor { get; set; }
 
-
         public DateTime? StarterLicenseDate { get; set; }
         public DateTime? SmartSpaceLicenseDate { get; set; }
         public DateTime? PracticeLicenseDate { get; set; }
