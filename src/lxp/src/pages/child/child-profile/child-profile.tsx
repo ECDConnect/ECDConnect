@@ -5,6 +5,7 @@ import {
   useTheme,
   Document,
   ContentConsentTypeEnum,
+  LocalStorageKeys,
 } from '@ecdlink/core';
 import {
   FileTypeEnum,
@@ -69,6 +70,11 @@ import { childrenForPractitionerSelectors } from '@/store/childrenForPractitione
 import { practitionerSelectors } from '@/store/practitioner';
 import ChildWrapper from './components/child-wrapper/ChildWrapper';
 import { useAppContext } from '@/walkthrougContext';
+import walktroughImage from '../../../assets/walktroughImage.png';
+import {
+  getStorageItem,
+  setStorageItem,
+} from '@/utils/common/local-storage.utils';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -212,21 +218,59 @@ export const ChildProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const { setState, state } = useAppContext();
+  const { setState, state: { run, stepIndex }, } = useAppContext();
 
-  const nextStep = () => {
-    setState({ stepIndex: 3 });
-  };
-  const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
-  const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
-
+  const childTutorialTaken = getStorageItem(
+    LocalStorageKeys.childProfileTutorialComplete
+  );
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
-    // setShowInfo(false);
-    history.push(ROUTES.BUSINESS);
   };
 
+  useEffect(() => {
+    if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
+      gotToStatementsWalkthrough();
+    }
+  }, []);
+
+  const gotToStatementsWalkthrough = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <ActionModal
+          customIcon={
+            <div className="flex">
+              <img src={walktroughImage} alt="profile" className="mb-2" />
+            </div>
+          }
+          importantText={`Welcome to the child profile on Funda App!`}
+          detailText={'Can I show you how to use this section?'}
+          actionButtons={[
+            {
+              text: 'Yes, help me!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+                handleClickStart();
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => onCancel(),
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const progressTrackerNotAvailablePrompt = () => {
     dialog({
@@ -710,16 +754,20 @@ export const ChildProfile: React.FC = () => {
                 />
               ))}
               {progressTrainingDone && (
-                <ChildProgressReportAlert child={child} />
+                <div id={`child_progress_observations`} aria-disabled={run}>
+                  <ChildProgressReportAlert child={child} />
+                </div>
               )}
             </div>
           )}
         <div className={styles.profileOptionsWrapper}>
-          {profileOptions.map((options) => (
-            <ListItem
-              {...options}
-              key={`child-profile-option-${options.key}`}
-            />
+          {profileOptions.map((options, index) => (
+            <div id={`child_walkthrough_step_${index}`}>
+              <ListItem
+                {...options}
+                key={`child-profile-option-${options.key}`}
+              />
+            </div>
           ))}
 
           <Divider dividerType="dashed" className="-mt-1.5" />
@@ -733,15 +781,21 @@ export const ChildProfile: React.FC = () => {
             {renderIcon('ChatAlt2Icon', styles.buttonIcon)}
             <Typography type="button" text="Contact caregiver" color="white" />
           </Button>
-          <Button className={styles.button} color={'errorMain'} type="outlined">
-            {renderIcon('TrashIcon', styles.buttonIcon)}
-            <Typography
-              type="button"
-              text={`Remove ${childUser?.firstName}`}
-              color="errorMain"
-              onClick={() => setRemoveChildConfirmationVisible(true)}
-            />
-          </Button>
+          <div id="child_remove">
+            <Button
+              className={styles.button}
+              color={'errorMain'}
+              type="outlined"
+            >
+              {renderIcon('TrashIcon', styles.buttonIcon)}
+              <Typography
+                type="button"
+                text={`Remove ${childUser?.firstName}`}
+                color="errorMain"
+                onClick={() => setRemoveChildConfirmationVisible(true)}
+              />
+            </Button>
+          </div>
         </div>
       </BannerWrapper>
       <Dialog
@@ -785,6 +839,7 @@ export const ChildProfile: React.FC = () => {
           ></PhotoPrompt>
         </div>
       </Dialog>
+      <div id="lastStep"></div>
     </div>
   );
 };

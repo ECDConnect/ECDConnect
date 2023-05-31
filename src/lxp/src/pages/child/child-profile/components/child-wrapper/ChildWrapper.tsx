@@ -9,14 +9,14 @@ import {
 import { useSetState } from 'react-use';
 import WalktroughImage from '../../../../../assets/walktroughImage.png';
 import { useAppContext } from '@/walkthrougContext';
+import { LocalStorageKeys } from '@ecdlink/core';
+import { setStorageItem } from '@/utils/common/local-storage.utils';
 
 export default function ChildWrapper() {
   const {
     setState,
     state: { run, stepIndex, steps },
   } = useAppContext();
-  const disableNextButton =
-    stepIndex === 0 || stepIndex === 2 || stepIndex === 4 || stepIndex === 6;
 
   useSetState(() => {
     setState({
@@ -29,17 +29,25 @@ export default function ChildWrapper() {
           spotlightClicks: true,
         },
         {
-          target: '#child_record_progress_attendance',
-          content:
-            'See the child’s attendance or progress reports',
+          target: '#child_walkthrough_step_0',
+          content: 'See the child’s attendance  ',
           placement: 'bottom',
           offset: 10,
           disableBeacon: true,
           spotlightPadding: 16,
         },
         {
-          target: '#child_care_giver_info',
-          content: "See child & caregiver information or add notes about the child",
+          target: '#child_walkthrough_step_1',
+          content: 'See the child’s progress reports',
+          placement: 'bottom',
+          offset: 10,
+          disableBeacon: true,
+          spotlightPadding: 16,
+        },
+        {
+          target: '#child_walkthrough_step_2',
+          content:
+            'See child & caregiver information or add notes about the child',
           placement: 'bottom-end',
           offset: 10,
           spotlightClicks: true,
@@ -54,7 +62,7 @@ export default function ChildWrapper() {
         },
         {
           target: '#lastStep',
-          content: "Great job, you’re ready to start!",
+          content: 'Great job, you’re ready to start!',
           placement: 'bottom-end',
           offset: 10,
         },
@@ -90,29 +98,26 @@ export default function ChildWrapper() {
           </div>
           <div className="mt-4 flex items-center justify-end gap-4">
             <SliderPagination
-              totalItems={4}
+              totalItems={5}
               activeIndex={index}
               className={'p-4'}
             />
-            {!disableNextButton && (
-              <div {...primaryProps} className={'w-full'}>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className={'w-6/12'}
-                  icon={'SaveIcon'}
-                  onClick={() => {}}
-                >
-                  {renderIcon('XIcon', `w-5 h-5 text-white mr-2`)}
-                  <Typography
-                    type="help"
-                    className="mr-2"
-                    color="white"
-                    text={isLastStep ? 'Close' : 'Next'}
-                  />
-                </Button>
-              </div>
-            )}
+
+            <div {...primaryProps} className={'w-full'}>
+              <Button
+                type="filled"
+                color="primary"
+                className={'ml-10 w-6/12'}
+                onClick={() => {}}
+              >
+                <Typography
+                  type="body"
+                  color="white"
+                  text={isLastStep ? 'Close' : 'Next'}
+                />
+                {renderIcon('ArrowRightIcon', `w-5 h-5 text-white text-lg`)}
+              </Button>
+            </div>
           </div>
         </Card>
       </div>
@@ -130,7 +135,11 @@ export default function ChildWrapper() {
       setState({ run: true, stepIndex: 3 });
     } else if (type === 'step:after' && index === 3) {
       setState({ run: true, stepIndex: 4 });
+    } else if (type === 'step:after' && index === 4) {
+      setState({ run: true, stepIndex: 5 });
     } else if (action === 'reset' || lifecycle === 'complete') {
+      setStorageItem(true, LocalStorageKeys.childProfileTutorialComplete);
+
       setState({ run: false, stepIndex: 0, tourActive: false });
     }
   };
@@ -152,7 +161,7 @@ export default function ChildWrapper() {
           spotlight: {
             borderWidth: '4px',
             borderRadius: 20,
-            borderColor: '#ED145B',
+            borderColor: stepIndex === 5 ? ' ' : '#ED145B',
             borderStyle: 'solid',
           },
         }}
