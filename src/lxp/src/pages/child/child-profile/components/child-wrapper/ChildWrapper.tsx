@@ -21,13 +21,13 @@ export default function ChildWrapper() {
   useSetState(() => {
     setState({
       steps: [
-        {
-          target: '#child_progress_observations',
-          content: 'See all of your upcoming tasks for the child at the top',
-          placement: 'bottom',
-          disableBeacon: true,
-          spotlightClicks: true,
-        },
+        // {
+        //   target: '#child_progress_observations',
+        //   content: 'See all of your upcoming tasks for the child at the top',
+        //   placement: 'bottom',
+        //   disableBeacon: true,
+        //   spotlightClicks: true,
+        // },
         {
           target: '#child_walkthrough_step_0',
           content: 'See the child’s attendance  ',
