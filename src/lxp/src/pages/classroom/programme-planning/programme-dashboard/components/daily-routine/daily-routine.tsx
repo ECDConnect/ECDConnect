@@ -190,6 +190,22 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             disabled={false}
             viewType={'StoryActivity'}
             onBack={onClose}
+            onStoryBookSwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
+            onActivitySwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
           />
         );
       },
