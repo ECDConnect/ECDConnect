@@ -67,6 +67,8 @@ import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { childrenForPractitionerSelectors } from '@/store/childrenForPractitioner';
 import { practitionerSelectors } from '@/store/practitioner';
+import ChildWrapper from './components/child-wrapper/ChildWrapper';
+import { useAppContext } from '@/walkthrougContext';
 
 const baseNotificationListItem: ListItemProps = {
   key: 'message-caregiver',
@@ -209,6 +211,22 @@ export const ChildProfile: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
+
+  const { setState, state } = useAppContext();
+
+  const nextStep = () => {
+    setState({ stepIndex: 3 });
+  };
+  const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
+  const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
+
+
+  const handleClickStart = () => {
+    setState({ run: true, tourActive: true, stepIndex: 0 });
+    // setShowInfo(false);
+    history.push(ROUTES.BUSINESS);
+  };
+
 
   const progressTrackerNotAvailablePrompt = () => {
     dialog({
@@ -705,7 +723,7 @@ export const ChildProfile: React.FC = () => {
           ))}
 
           <Divider dividerType="dashed" className="-mt-1.5" />
-
+          <ChildWrapper />
           <Button
             className={styles.button.replace('mt-4', 'mt-3')}
             color={'primary'}
