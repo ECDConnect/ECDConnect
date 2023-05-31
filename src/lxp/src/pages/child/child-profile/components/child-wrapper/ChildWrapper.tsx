@@ -143,6 +143,8 @@ export default function ChildWrapper() {
       setState({ run: true, stepIndex: 4 });
     } else if (type === 'step:after' && index === 4) {
       setState({ run: true, stepIndex: 5 });
+    } else if (type === 'step:after' && index === 5) {
+      setState({ run: true, stepIndex: 6 });
     } else if (action === 'reset' || lifecycle === 'complete') {
       setStorageItem(true, LocalStorageKeys.childProfileTutorialComplete);
 
