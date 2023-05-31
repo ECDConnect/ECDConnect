@@ -281,7 +281,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   const input = {
     period: 'Monthly',
     userId: userAuth?.id!,
-    month: statementMonth,
+    month: statementMonth + 1,
     year: statementYear,
   };
 
@@ -580,7 +580,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                 updateStatements().then(async () => {
                   await appDispatch(
                     statementsThunkActions.getIncomeExpensesPDFreport({
-                      month: statementMonth,
+                      month: statementMonth + 1,
                       year: statementYear,
                     })
                   );

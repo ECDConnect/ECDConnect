@@ -27,6 +27,7 @@ export interface DynamicFormProps {
   steps?: any[];
   sectionQuestions?: SectionQuestions[];
   isLoading?: boolean;
+  nextButtonText?: string;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -43,6 +44,7 @@ export const DynamicForm = ({
   steps,
   isTipPage,
   isLoading,
+  nextButtonText = 'Next',
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
@@ -143,7 +145,7 @@ export const DynamicForm = ({
     if (Number(currentStep) < Number(steps?.length) - 1) {
       return {
         action: handleOnNext,
-        text: 'Next',
+        text: nextButtonText,
         icon: 'ArrowCircleRightIcon',
       };
     }
@@ -153,7 +155,15 @@ export const DynamicForm = ({
       text: isView ? 'Close' : 'Save',
       icon: isView ? 'XIcon' : 'SaveIcon',
     };
-  }, [isView, onClose, currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [
+    isView,
+    onClose,
+    currentStep,
+    nextButtonText,
+    handleOnNext,
+    onSubmit,
+    steps?.length,
+  ]);
 
   return (
     <div className="flex h-full flex-col">

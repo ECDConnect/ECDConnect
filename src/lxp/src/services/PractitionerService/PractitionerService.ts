@@ -160,6 +160,9 @@ class PractitionerService {
             id
             userId
             user {
+              gender {
+                description
+              }
               firstName
               surname
               fullName
@@ -231,6 +234,9 @@ class PractitionerService {
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              gender {
+                description
+              }
             }
             siteAddress {
               id
@@ -302,6 +308,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              gender {
+                description
+              }
               emergencyContactFirstName
               emergencyContactSurname
               emergencyContactPhoneNumber

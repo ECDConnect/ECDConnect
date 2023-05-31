@@ -10,7 +10,7 @@ import {
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { generalSupportVisit, prePqaVisits } from './steps';
+import { generalSupportVisit, getFirstPqaSteps, prePqaVisits } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
@@ -25,6 +25,7 @@ import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { callAnswer, visitOrCallQuestion } from './general-support-visit';
+import { step11VisitSection } from './pqa-visits/first-pqa';
 
 interface FormProps {
   visitId?: string;
@@ -69,6 +70,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const wasLoading = usePrevious(isLoading);
   const wasLoadingSupportVisit = usePrevious(isLoadingSupportVisit);
+
+  const isStep11AnswerTrue =
+    sectionQuestions?.find((item) => item.visitSection === step11VisitSection)
+      ?.questions[0].answer === true;
 
   const handleOnClose = useCallback(() => {
     dialog({
@@ -240,12 +245,14 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     switch (activityName) {
+      case visitTypes.pqa.firstPQA:
+        return getFirstPqaSteps({ isStep11AnswerTrue });
       case visitTypes.supportVisit:
         return generalSupportVisit;
       default:
         return prePqaVisits;
     }
-  }, [activityName]);
+  }, [activityName, isStep11AnswerTrue]);
 
   useEffect(() => {
     if (wasLoading && !isLoading) {
@@ -284,6 +291,11 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         smartStarter={practitioner}
         isTipPage={isTip}
         currentStep={step}
+        nextButtonText={
+          step === 10 && isStep11AnswerTrue
+            ? 'Continue to SmartSpace checklist'
+            : 'Next'
+        }
         setIsTip={setIsTip}
         setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}

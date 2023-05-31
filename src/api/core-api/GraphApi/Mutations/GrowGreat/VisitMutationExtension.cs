@@ -116,7 +116,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return visit;
         }
 
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddFollowUpVisitForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -338,7 +337,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return true;
         }
 
-
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool AddDefaultVisitsForPractitioner(
             [Service] IHttpContextAccessor httpContextAccessor,
@@ -397,6 +395,42 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             }
 
             return true;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddSSChecklistForTrainee(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            SSChecklistVisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_trainee) && x.Name == Constants.SSSettings.visitType_smart_space_checklist).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+
+            // Add Visit
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.LinkedVisitId = null;
+            visitModel.TraineeId = trainee.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
+            Visit visit = visitManager.AddVisitForTrainee(visitModel);
+            // Add VisitData for visit
+            input.ChecklistData.VisitId = visit.Id.ToString();
+            input.ChecklistData.TraineeId = trainee.Id.ToString();
+            visitDataManager.AddTraineeVisitData(input.ChecklistData);
+
+            return visit;
         }
     }
 }
