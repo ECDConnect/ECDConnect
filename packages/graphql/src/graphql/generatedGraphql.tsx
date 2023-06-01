@@ -3519,6 +3519,10 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
+export type MutationAddAnnualReAccreditationVisitForPractitionerArgs = {
+  input?: InputMaybe<ReAccreditationVisitModelInput>;
+};
+
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -3526,6 +3530,10 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddDefaultVisitsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -3552,7 +3560,7 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
-export type MutationAddPqaRatingVisitForPractitionerArgs = {
+export type MutationAddPgaRatingVisitForPractitionerArgs = {
   ratingColor?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -3605,10 +3613,6 @@ export type MutationAddRoleArgs = {
 
 export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
-};
-
-export type MutationAddStartupSupportAgreementForTraineeArgs = {
-  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddSupportVisitForPractitionerArgs = {
@@ -4624,11 +4628,6 @@ export type MutationSaveIncomeStatementPdfArgs = {
   input?: InputMaybe<IncomeStatementPdfDocInput>;
 };
 
-export type MutationScheduleConsolidationMeetingDateArgs = {
-  scheduledDate?: InputMaybe<Scalars['DateTime']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationSendCoachInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4753,11 +4752,6 @@ export type MutationUpdateCommunitySectionSsArgs = {
   input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationUpdateCommunitySupportArgs = {
-  haveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateConsentArgs = {
