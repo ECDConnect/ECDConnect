@@ -67,7 +67,7 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
               />
             </div>
           </div>
-          <div className="mt-4 h-full w-full">
+          <div className="mt-4 mb-16 h-full w-full">
             <Button
               size="normal"
               className="mb-4 w-full"

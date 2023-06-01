@@ -102,13 +102,13 @@ export const OnboardingTraineeDashboard: React.FC<
       menuIcon: 'PencilAltIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: 'Sign franchisee agreement',
+      title: 'Get Community support',
       titleStyle: 'text-textDark semibold',
       subTitle: 'By 13 December 2021',
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep('startupSupportAgreement'),
+      onActionClick: () => setNotificationStep('GetCommunitySupport'),
     },
   ];
 
@@ -134,7 +134,7 @@ export const OnboardingTraineeDashboard: React.FC<
           text={'Onboarding'}
         />
       </div>
-      <div className="p-4">
+      <div className="h-screen p-4">
         <Typography
           className={'my-3'}
           color={'textDark'}

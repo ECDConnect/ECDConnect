@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { TraineeFranchisorAgreement } from './components/trainee-franchisor-agreement/trainee-franchisor-agreement';
 import { StartupSupportAgreement } from './components/startup-support-agreement/startup-support-agreement';
+import { GetCommunitySupport } from './components/get-community-support/get-community-support';
 
 export const TraineeOnboarding = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
@@ -24,6 +25,10 @@ export const TraineeOnboarding = () => {
       case 'startupSupportAgreement':
         return (
           <StartupSupportAgreement setNotificationStep={setNotificationStep} />
+        );
+      case 'GetCommunitySupport':
+        return (
+          <GetCommunitySupport setNotificationStep={setNotificationStep} />
         );
       default:
         return (

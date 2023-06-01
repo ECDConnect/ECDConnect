@@ -188,7 +188,7 @@ export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
           />
         </div>
       </div>
-      <div className="mt-4 -mb-4 h-full w-full self-end">
+      <div className="mt-4 -mb-4 flex w-full justify-center self-end">
         <Button
           size="normal"
           className="mb-4 w-11/12"

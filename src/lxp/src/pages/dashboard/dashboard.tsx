@@ -494,19 +494,6 @@ export const Dashboard: React.FC = () => {
     }
   };
 
-  const updatePractitionerProgress = async () => {
-    await appDispatch(
-      practitionerThunkActions.updatePractitionerProgress({
-        practitionerId: practitioner?.userId,
-        progress: 0.0,
-      })
-    );
-  };
-
-  useEffect(() => {
-    updatePractitionerProgress();
-  }, []);
-
   const onNavigation = (navItem: any) => {
     if (classroom && classroom.id && navItem.href.includes('classroom')) {
       history.push(navItem.href, navItem.params);
