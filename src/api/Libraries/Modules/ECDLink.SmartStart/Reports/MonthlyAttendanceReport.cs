@@ -57,20 +57,24 @@ namespace ECDLink.SmartStart.Reports
                     foreach (var programme in classroomGroup.ClassProgrammes)
                     {
                         var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
-
-                        var attendedClasses = attendanceForPeriod
+                        
+                        if(daysOfClass.Count() > 0)
+                        {
+                            var attendedClasses = attendanceForPeriod
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.AttendanceDate.Date >= programme.ProgrammeStartDate.Date
                                               && x.MonthOfYear == dt.Month);
 
-                        attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
+                            attendance.Add(Tuple.Create(daysOfClass.Count(), attendedClasses.Count()));
+                        }
                     }
                 }
-
-                monthlyAttendance.Add(dt, attendance);
+                if (attendance.Any())
+                {
+                    monthlyAttendance.Add(dt, attendance);
+                }
             }
-
             return CreateReport(monthlyAttendance);
         }
 
