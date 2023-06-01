@@ -77,48 +77,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         private static IQueryable<ApplicationUser> AddFiltering(PagedQueryInput pagingInput, in IQueryable<ApplicationUser> usersQueryIn)
         {
             var usersQuery = usersQueryIn.Where(t => true);
-            // TODO: These will need database indexes?
-            if (pagingInput.FilterBy?.Any() ?? false)
+            
+            if (pagingInput?.FilterBy?.Any() ?? false)
             {
                 foreach (var filter in pagingInput.FilterBy)
                 {
-                    switch (filter.FieldName?.ToLower())
-                    {
-                        case "firstname":
-                            usersQuery = usersQuery.Where(u => u.FirstName.Contains(filter.Value));
-                            break;
-                        case "surname":
-                            usersQuery = usersQuery.Where(u => u.Surname.Contains(filter.Value));
-                            break;
-                        case "fullname":
-                            usersQuery = usersQuery.Where(u => u.FullName.Contains(filter.Value));
-                            break;
-                        case "email":
-                            usersQuery = usersQuery.Where(u => u.Email.Contains(filter.Value));
-                            break;
-                        case "age":
-                            usersQuery = usersQuery.Where(u => u.Age == Convert.ToInt32(filter.Value));
-                            break;
-                        case "username":
-                            usersQuery = usersQuery.Where(u => u.UserName.Contains(filter.Value));
-                            break;
-                        case "emergencycontactfullname":
-                            usersQuery = usersQuery.Where(u => u.EmergencyContactFullName.Contains(filter.Value));
-                            break;
-                        case "idnumber":
-                            usersQuery = usersQuery.Where(u => u.IdNumber.Contains(filter.Value));
-                            break;
-                        case "phonenumber":
-                            usersQuery = usersQuery.Where(u => u.PhoneNumber.Contains(filter.Value));
-                            break;
-                        case "whatsappnumber":
-                            usersQuery = usersQuery.Where(u => u.WhatsAppNumber.Contains(filter.Value));
-                            break;
-                        case "province":
-                            // Provices handeled outside loop above ^ (see provinceFilters)
-                            break;
-                    }
-
+                    usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
                 }
             }
 
@@ -132,62 +96,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var sort in pagingInput.SortBy)
                 {
                     // TODO: Get this working with HotChocolate :(
-                    //var sortByFieldName = sort?.FieldName ?? "fullname";
-                    //if (sort.Descending)
-                    //    usersQuery = usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
-
-                    //if (!sort.Descending)
-                    //    usersQuery = usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
-
-                    switch (sort.FieldName?.ToLower())
-                    {
-                        case "firstname":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.FirstName)
-                                : usersQuery.OrderByDescending(u => u.FirstName);
-                            break;
-                        case "surname":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.Surname)
-                                : usersQuery.OrderByDescending(u => u.Surname);
-                            break;
-                        case "fullname":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.Surname)
-                                : usersQuery.OrderByDescending(u => u.Surname);
-                            break;
-                        case "email":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.Email)
-                                : usersQuery.OrderByDescending(u => u.Email);
-                            break;
-                        case "age":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.Age)
-                                : usersQuery.OrderByDescending(u => u.Age);
-                            break;
-                        case "username":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.UserName)
-                                : usersQuery.OrderByDescending(u => u.UserName);
-                            break;
-                        case "emergencycontactfullname":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.EmergencyContactFullName)
-                                : usersQuery.OrderByDescending(u => u.EmergencyContactFullName);
-                            break;
-                        case "idnumber":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.IdNumber)
-                                : usersQuery.OrderByDescending(u => u.IdNumber);
-                            break;
-                        default:
-                            //case "FullName":
-                            usersQuery = sort.Descending == false
-                                ? usersQuery.OrderBy(u => u.FullName)
-                                : usersQuery.OrderByDescending(u => u.FullName);
-                            break;
-                    }
+                    var sortByFieldName = sort?.FieldName ?? "FullName";
+                    
+                    if (sort.Descending)
+                        usersQuery = usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
+                    else 
+                        usersQuery = usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
                 }
             }
             else
