@@ -218,7 +218,10 @@ export const ChildProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const { setState, state: { run, stepIndex }, } = useAppContext();
+  const {
+    setState,
+    state: { run, stepIndex },
+  } = useAppContext();
 
   const childTutorialTaken = getStorageItem(
     LocalStorageKeys.childProfileTutorialComplete
@@ -644,10 +647,9 @@ export const ChildProfile: React.FC = () => {
     return <ChildPending child={child} childUser={childUser} />;
   }
 
-  const displayWalkthrough = ()=>{
+  const displayWalkthrough = () => {
     gotToStatementsWalkthrough();
-
-  }
+  };
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -658,9 +660,15 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
+        onBack={() => {
+          if (isPrincipal) {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+          } else {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+          }
+        }}
         displayOffline={!isOnline}
-        onHelp={()=>gotToStatementsWalkthrough()}
+        onHelp={() => gotToStatementsWalkthrough()}
         displayHelp={true}
       >
         <div className={styles.avatarWrapper}>

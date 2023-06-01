@@ -48,8 +48,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public DateTime? SignFranchiseeAgreementDeadlineDate { get; set; }
 
         public string SignStartUpSupportAgreementStatus { get; set; }
-        public string SignStartUpSupportColor { get; set; }
-        public DateTime? SignStartUpSupportDate { get; set; }
-        public DateTime? SignStartUpSupportDeadlineDate { get; set; }
+        public string SignStartUpSupportAgreementColor { get; set; }
+        public DateTime? SignStartUpSupportAgreementDate { get; set; }
+        public DateTime? SignStartUpSupportAgreementDeadlineDate { get; set; }
     }
 }

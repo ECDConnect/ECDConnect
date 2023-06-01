@@ -18,5 +18,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return personnelService.ScheduleConsolidationMeetingDate(userId, scheduledDate);
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Trainee UpdateCommunitySupport([Service] PersonnelService personnelService, string userId, bool? haveCommunitySupport)
+        {
+            return personnelService.UpdateCommunitySupport(userId, haveCommunitySupport);
+        }
+
     }
 }

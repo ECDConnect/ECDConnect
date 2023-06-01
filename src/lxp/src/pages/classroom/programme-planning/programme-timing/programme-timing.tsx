@@ -238,10 +238,8 @@ const ProgrammeTiming: React.FC = () => {
             setAlert(date);
           }}
           dateFormat="EEE, dd MMM yyyy"
-          minDate={
-            getThemedProgrammeEndDate(validStartdDate!) ||
-            addDays(new Date(), 20)
-          }
+          minDate={addDays(new Date(), 1)}
+          maxDate={getThemedProgrammeEndDate(validStartdDate!)}
         />
 
         {alertState && <Alert className="mt-4" {...alertState} />}

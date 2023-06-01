@@ -23,13 +23,15 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_1 = "pqa_visit_1";
             public const string visitType_pqa_visit_2 = "pqa_visit_2";
             public const string visitType_pqa_visit_3 = "pqa_visit_3";
-
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
-            public const string visitType_annual_re_accreditation = "annual_re_accreditation";
-            public const string visitType_re_accreditation = "re_accreditation";
+
+            public const string visitType_re_accreditation_1 = "re_accreditation_1";
+            public const string visitType_re_accreditation_2 = "re_accreditation_2";
+            public const string visitType_re_accreditation_3 = "re_accreditation_3";
             public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
+            public const string visitType_startup_support_agreement = "startup_support_agreement";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
@@ -361,8 +363,11 @@ namespace EcdLink.Api.CoreApi
             public const string checklist_done = "SmartSpace Checklist done";
             public const string children_registered = "3 or more children registered";
             public const string franchisee_signed = "Franchisee agreement signed";
+            public const string support_agreement_signed = "Start-up support agreement signed";
+            public const string community_support = "Community support gained";
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
+            public const string consent_type_support_agreement = "StartupSupportAgreement";
 
         }
 
