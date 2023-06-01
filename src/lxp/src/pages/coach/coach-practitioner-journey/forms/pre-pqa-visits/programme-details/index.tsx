@@ -218,7 +218,7 @@ export const ProgrammeDetails = ({
             isOnline
               ? practitionerClassroomDetails?.[0].programmeType?.description ||
                 ''
-              : 'Not available offline'
+              : 'You need to be online to view programme type'
           }
           color={isOnline ? 'textDark' : 'errorMain'}
           className="my-4 ml-1 font-bold"

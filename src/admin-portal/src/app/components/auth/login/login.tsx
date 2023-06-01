@@ -57,7 +57,6 @@ export default function Login() {
       });
 
       if (isAuthenticated) {
-        localStorage.setItem(LocalStorageKeys.existingUser, 'true');
         setIsLoading(false);
         history.push('/dashboard');
       } else {

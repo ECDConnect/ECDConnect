@@ -14,6 +14,7 @@ import {
 } from '@utils/child/child-profile-utils';
 import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
 import ROUTES from '@routes/routes';
+import { useAppContext } from '@/walkthrougContext';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;
@@ -43,6 +44,7 @@ export const ChildProgressReportAlert: React.FC<
   ChildProgressReportAlertProps
 > = ({ child }) => {
   const history = useHistory();
+  const {  state: { run }, } = useAppContext();
 
   const childInsertedDate = child.insertedDate
     ? new Date(child.insertedDate)

@@ -356,6 +356,14 @@ namespace EcdLink.Api.CoreApi
             public const string three_stars = "3 stars";
             public const string four_stars = "4 stars";
 
+            // timeline values
+            public const string consolidation_meeting = "Consolidation meeting attended";
+            public const string checklist_done = "SmartSpace Checklist done";
+            public const string children_registered = "3 or more children registered";
+            public const string franchisee_signed = "Franchisee agreement signed";
+
+            public const string consent_type_franchisee = "FranchiseeAgreement";
+
         }
 
     public static class GGSettings
