@@ -1973,6 +1973,7 @@ export type FollowUpVisitModelInput = {
   plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
   practitionerId?: InputMaybe<Scalars['UUID']>;
   risk?: InputMaybe<Scalars['String']>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -3124,17 +3125,15 @@ export type Mutation = {
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
-  addAnnualReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
-  addDefaultVisitsForPractitioner: Scalars['Boolean'];
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
-  addPGARatingVisitForPractitioner: Scalars['Boolean'];
+  addPQARatingVisitForPractitioner?: Maybe<Visit>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
@@ -3144,6 +3143,7 @@ export type Mutation = {
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
+  addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
   addUser?: Maybe<ApplicationUser>;
@@ -3498,6 +3498,7 @@ export type Mutation = {
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
   uploadChildProgressReport: Scalars['Boolean'];
+  validateDefaultVisitsForPractitioner: Scalars['Boolean'];
 };
 
 export type MutationAddAbsenteeForPractitionerArgs = {
@@ -3517,10 +3518,6 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
-export type MutationAddAnnualReAccreditationVisitForPractitionerArgs = {
-  input?: InputMaybe<ReAccreditationVisitModelInput>;
-};
-
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -3528,10 +3525,6 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationAddDefaultVisitsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -3558,7 +3551,7 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
-export type MutationAddPgaRatingVisitForPractitionerArgs = {
+export type MutationAddPqaRatingVisitForPractitionerArgs = {
   ratingColor?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -3591,6 +3584,7 @@ export type MutationAddReAccreditationFollowUpVisitForPractitionerArgs = {
 
 export type MutationAddReAccreditationVisitForPractitionerArgs = {
   input?: InputMaybe<ReAccreditationVisitModelInput>;
+  visitNumber?: InputMaybe<Scalars['Int']>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
@@ -3610,6 +3604,10 @@ export type MutationAddRoleArgs = {
 
 export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
+};
+
+export type MutationAddStartupSupportAgreementForTraineeArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddSupportVisitForPractitionerArgs = {
@@ -5300,6 +5298,10 @@ export type MutationUpdateWorkflowStatusTypeArgs = {
 
 export type MutationUploadChildProgressReportArgs = {
   report?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationValidateDefaultVisitsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Navigation = {
@@ -8299,6 +8301,7 @@ export type ReAccreditationVisitModelInput = {
   practitionerId?: InputMaybe<Scalars['UUID']>;
   reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
   risk?: InputMaybe<Scalars['String']>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -9173,6 +9176,7 @@ export type SupportVisitModelInput = {
   practitionerId?: InputMaybe<Scalars['UUID']>;
   risk?: InputMaybe<Scalars['String']>;
   supportData?: InputMaybe<CmsVisitDataInputModelInput>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -9481,10 +9485,10 @@ export type TraineeOnBoardTimeline = {
   signFranchiseeAgreementDate?: Maybe<Scalars['DateTime']>;
   signFranchiseeAgreementDeadlineDate?: Maybe<Scalars['DateTime']>;
   signFranchiseeAgreementStatus?: Maybe<Scalars['String']>;
+  signStartUpSupportAgreementColor?: Maybe<Scalars['String']>;
+  signStartUpSupportAgreementDate?: Maybe<Scalars['DateTime']>;
+  signStartUpSupportAgreementDeadlineDate?: Maybe<Scalars['DateTime']>;
   signStartUpSupportAgreementStatus?: Maybe<Scalars['String']>;
-  signStartUpSupportColor?: Maybe<Scalars['String']>;
-  signStartUpSupportDate?: Maybe<Scalars['DateTime']>;
-  signStartUpSupportDeadlineDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistColor?: Maybe<Scalars['String']>;
   smartSpaceChecklistDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistDeadlineDate?: Maybe<Scalars['DateTime']>;
