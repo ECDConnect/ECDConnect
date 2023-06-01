@@ -7,6 +7,11 @@ export const getAllNotifications = createSelector(
   (notifications: Notification[]) => notifications
 );
 
+export const getAllNotificationReferences = createSelector(
+  (state: RootState) => state.notifications.notificationReferences,
+  (notificationReferences: string[]) => notificationReferences
+);
+
 export const getMessageBoardNotifications = createSelector(
   (state: RootState) => state.notifications.notifications,
   (notifications: Notification[]) =>
