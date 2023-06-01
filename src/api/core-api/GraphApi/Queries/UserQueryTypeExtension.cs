@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.ObjectTypes.Input;
+using ECDLink.EGraphQL.ObjectTypes.Input.Enums;
 using ECDLink.Moodle.Managers;
 using ECDLink.Moodle.Models;
 using ECDLink.Security;
@@ -54,7 +55,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
         private static IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
-            var provinceFilters = pagingInput?.FilterBy?.Where(f => f.FieldName == "Province").Select(f => f.Value).ToList();
+            var provinceFilters = pagingInput?.FilterBy?
+                .Where(f => f.FieldName == "Province")
+                .Select(f => f.Value)
+                .ToList();
 
             if (provinceFilters?.Any() ?? false)
             {
@@ -63,12 +67,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     .Where(p => provinceFilters.Contains(p.Description))
                     .Select(p => p.Id);
 
+
+                using var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>();
+
                 //TODO: circumvent thread exception...
                 usersQuery = usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
-                    //|| provinceIds.Contains(u.principalObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
                     //|| provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    //|| provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty))
+                    //|| provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
+                    ////|| provinceIds.Contains(u.principalObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
             }
 
             return usersQuery;
@@ -77,12 +84,49 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         private static IQueryable<ApplicationUser> AddFiltering(PagedQueryInput pagingInput, in IQueryable<ApplicationUser> usersQueryIn)
         {
             var usersQuery = usersQueryIn.Where(t => true);
-            
+
             if (pagingInput?.FilterBy?.Any() ?? false)
             {
                 foreach (var filter in pagingInput.FilterBy)
                 {
-                    usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+
+                    switch (filter.FilterType)
+                    {
+                        case null:
+                        case InputFilterComparer.Equals:
+                            {
+                                if (filter.Value is null)
+                                    usersQuery = usersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
+                                else if (Guid.TryParse(filter.Value, out var guid))
+                                    usersQuery = usersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
+                                else if (int.TryParse(filter.Value, out var @int))
+                                    usersQuery = usersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
+                                else
+                                    usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
+                            }
+                            break;
+                        case InputFilterComparer.Contains:
+                            usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                            break;
+                        case InputFilterComparer.GreaterThan:
+                            {
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
+                                else if (int.TryParse(filter.Value, out int intGt))
+                                    usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
+                            }
+                            break;
+                        case InputFilterComparer.LessThan:
+                            {
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
+                                else if (int.TryParse(filter.Value, out int intGt))
+                                    usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
+                            }
+                            break;
+                    }
                 }
             }
 
@@ -97,10 +141,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 {
                     // TODO: Get this working with HotChocolate :(
                     var sortByFieldName = sort?.FieldName ?? "FullName";
-                    
+
                     if (sort.Descending)
                         usersQuery = usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
-                    else 
+                    else
                         usersQuery = usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
                 }
             }

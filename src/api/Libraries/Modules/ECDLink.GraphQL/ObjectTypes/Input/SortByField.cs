@@ -1,4 +1,5 @@
-﻿using HotChocolate.Data.Sorting;
+﻿
+using System;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
@@ -10,11 +11,18 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
 
         public SortByField(string fieldName, bool descending)
         {
-            FieldName = fieldName;
+            FieldName = FirstCharToUpper(fieldName);
             Descending = descending;
         }
 
         public string FieldName { get; } = null;
         public bool Descending { get; } = false;
+
+        private static string FirstCharToUpper(string str) 
+               => string.Create(str.Length, str, (output, input) =>
+               {
+                   input.CopyTo(output);
+                   output[0] = char.ToUpperInvariant(input[0]);
+               });
     }
 }

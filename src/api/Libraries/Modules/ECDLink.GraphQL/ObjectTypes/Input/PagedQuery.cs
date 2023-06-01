@@ -1,16 +1,12 @@
 ﻿using ECDLink.EGraphQL.ObjectTypes.Input;
 using HotChocolate;
 using HotChocolate.Types;
-using System.Globalization;
-
+using System;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
     public class PagedQueryInput
     {
-        //private int pageNumber;
-        //private int pageSize;
-
         public int PageNumber { get; set; }
         public int PageSize { get; set; }
 
@@ -22,31 +18,12 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         {
             PageNumber = (pageNumber - 1) >= 0 ? pageNumber - 1 : 0;
             PageSize = pageSize >= 0 ? pageSize : 10;
-            SortBy = sortBy ?? new SortByField[0];
-            FilterBy = filterBy ?? new FilterByField[0];
+            SortBy = sortBy ?? Array.Empty<SortByField>();
+            FilterBy = filterBy ?? Array.Empty<FilterByField>();
         }
 
-        ////public PagedQueryInput(int pageNumber, int pageSize, ISortByField[] sortBy, IFilterByField[] filterBy) : this()
-        ////{
-        ////    SortBy = sortBy;
-        ////    FilterBy = filterBy;
-        ////    PageNumber = pageNumber;
-        ////    PageSize = pageSize;
-        ////}
         public SortByField[] SortBy { get; } = new SortByField[] { };
         public FilterByField[] FilterBy { get; } = new FilterByField[] { };
-
-        //public int PageNumber
-        //{
-        //    get => pageNumber;
-        //    set => pageNumber = (pageNumber - 1) > 0 ? value : 0;
-        //}
-
-        //public int PageSize
-        //{
-        //    get => pageSize;
-        //    set => pageSize = pageSize > 0 ? value : 10;
-        //}
 
         [GraphQLIgnore]
         public int RowOffset

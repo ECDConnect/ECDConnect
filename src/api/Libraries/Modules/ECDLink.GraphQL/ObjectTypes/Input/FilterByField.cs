@@ -1,15 +1,11 @@
-﻿
+﻿using ECDLink.EGraphQL.ObjectTypes.Input.Enums;
+
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
     public class FilterByField
     {
-        public FilterByField(string fieldName, string value)
-        {
-            FieldName = fieldName;
-            Value = value;
-        }
-
-        public string FieldName { get; }
-        public string Value { get; }
+        public string FieldName { get; set;  }
+        public string Value { get; set;  }
+        public InputFilterComparer? FilterType { get; set; } = InputFilterComparer.Equals;
     }
 }
