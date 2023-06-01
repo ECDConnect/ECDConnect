@@ -36,6 +36,7 @@ using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using Newtonsoft.Json.Linq;
+using Microsoft.EntityFrameworkCore;
 
 namespace ECDLink.Core.Services
 {
@@ -2519,7 +2520,7 @@ namespace ECDLink.Core.Services
 
             List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
 
-            audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+            //audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
 
             var entityTypeList = audits.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
 
@@ -2593,7 +2594,7 @@ namespace ECDLink.Core.Services
                                                         jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                         break;
                                                     case "datetime":
-                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + DateTime.Parse(valueToSend) + ",");
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                         break;
                                                     default:
                                                         jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
@@ -2735,7 +2736,7 @@ namespace ECDLink.Core.Services
             int changesCheckTime = 1620;
             //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
 
-            List<IntegrationAudit> audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("2d572390-6135-4928-ae14-b01b1a8a346a") && x.ChangeType.Equals("Insert")).ToList();
+            List<IntegrationAudit> audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("2d572390-6135-4928-ae14-b01b1a8a346a") && x.ChangeType.Equals("Update")).ToList();
 
             var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
             if (deletes.Count > 0)
@@ -2759,31 +2760,31 @@ namespace ECDLink.Core.Services
             switch (entityToRemap)
             {
                 case "Race":
-                    var race = _staticRaceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticRaceRepo.GetById(Guid.Parse(valueToSend));
+                    var race = _staticRaceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (race != null ? race.Description : null);
                     break;
                 case "Gender":
-                    var gender = _staticGenderRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticGenderRepo.GetById(Guid.Parse(valueToSend));
+                    var gender = _staticGenderRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (gender != null ? gender.Description : null);
                     break;
                 case "Language":
-                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticLanguageRepo.GetById(Guid.Parse(valueToSend));
+                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (lang != null ? lang.Description : null);
                     break;
                 case "Relation":
-                    var rel = _staticRelationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticRelationRepo.GetById(Guid.Parse(valueToSend));
+                    var rel = _staticRelationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (rel != null ? rel.Description : null);
                     break;
                 case "Province":
-                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticProvinceRepo.GetById(Guid.Parse(valueToSend));
+                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (prov != null ? prov.Description : null);
                     break;
                 case "Education":
-                    var edu = _staticEducationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticEducationRepo.GetById(Guid.Parse(valueToSend));
+                    var edu = _staticEducationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (edu != null ? edu.Description : null);
                     break;
                 case "Grant":
-                    var grant = _staticGrantRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();//_staticGrantRepo.GetById(Guid.Parse(valueToSend));
+                    var grant = _staticGrantRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
                     valueToSend = (grant != null ? grant.Description : null);
                     break;
             }
@@ -2802,83 +2803,14 @@ namespace ECDLink.Core.Services
             Pluck thecaregiver out of the audits
             then write the child insert api call
              */
+            string cgRemoteId = "";
+            string childRemoteId = "";
             try
             {
-                /*
-
-
-{{RouteStart}}Caregiver/Multiple
-
-    [
-{
-    "FirstName": "Lucky",
-"Surname": "Mthembi",
-"IdNumber": "9007085867089",
-"ContactNumber": "0813003040",
-"EmergencyContactSurname": "Mthembi",
-"EmergencyContactPhoneNumber": "0813003040",
-"EmergencyContactFirstname": "Lucky",
-"HomeAddressLine1": "123 Unit 123",
-"HomeAddressLine2": "Soweto",
-"HomeAddressLine3": "Johannesburg",
-"HomeAddressPostalCode": "1685",
-"RelationshipType": "Father",
-"HighestEducationLevel": "Matric",
-//"Language": "English",
-"Franchisee": {
-        "Guid": "fbd16c49-19ef-ed11-8354-00155dee5a05"
-},
-"Province": "Gauteng"
-}
-]
-
-{{RouteStart}}Child/Multiple                  
-
-
-
-[
-{
-"FirstName": "Kamogelo",
-"Surname": "Tinyane",
-"IdNumber": "",
-"AllergyType": "peanuts",
-"DisabilityType": "b",
-"HealthConditions": "",
-"EmergencyContactNumber": "0758962389",
-"EmergencyContactFirstName": "Nhlanhla",
-"EmergencyContactSurname": "Tinyane",
-"AlternativePickupFirstName": "",
-"AlternativePickupSurname": "",
-"AlternativePickupContactNumber": "",
-"BirthDate": "2020-01-31T00:00:00.000Z",
-"StartDate": "2023-05-19T11:14:44.107Z",
-"HasAllergy": true,
-"HasDisability": true,
-"CaregiverPopiaConsent": true,
-"CaregiverPhotographyAndFilmingConsent": true,
-"IsSouthAfricanCitizen": true,
-"HasIdNumber": false,
-//"Gender": "Female",
-//"EthnicGroup": "Coloured",
-"HomeLanguage": "Sepedi",
-//"GrantType": "Child Grant",
-//"PlaygroupGroup": "Phoenix class",
-"Franchisee": {
-"Guid": "af130d6b-18ef-ed11-8354-00155dee5a05"
-},
-"Caregiver": {
-"Guid": "0c9b46d8-35f9-ed11-8354-00155dee5a05"
-}
-}
-]
-
-
- */
                 //insert caregiver and map
                 StringBuilder jsonCaregiverString = new StringBuilder();
                 string cgUrl = "";
-                string cgRemoteId = "";
-                Type tCG = typeof(Caregiver);
+                //Type tCG = typeof(Caregiver);
                 var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Caregiver") && c.IsActive == true).ToList();
 
                 
@@ -2888,6 +2820,8 @@ namespace ECDLink.Core.Services
                 {
                     foreach (var changeLine in caregiverColumns)
                     {
+                        try
+                        {
                         if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
                         {
                             if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
@@ -2929,8 +2863,8 @@ namespace ECDLink.Core.Services
                                         case "integer":
                                             jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                             break;
-                                        case "datetime":
-                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + DateTime.Parse(valueToSend) + ",");
+                                        case "datetime":                
+                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                             break;
                                         default:
                                             jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
@@ -2938,6 +2872,11 @@ namespace ECDLink.Core.Services
                                     }
                                 }
                             }
+                        }
+                        }
+                        catch (Exception e)
+                        {
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");                        
                         }
                         
                         ////remove entry from audits list as we have processed it here and sending
@@ -2970,7 +2909,7 @@ namespace ECDLink.Core.Services
                             cgMapping.UpdatedBy = _uId;
                             cgMapping.UpdatedDate = DateTime.Now;
                             cgMapping.IsComplete = true;
-                            cgMapping.BeforeJSON = JsonSerializer.Serialize(newChild.Caregiver);
+                            cgMapping.BeforeJSON = jsonCaregiverString.ToString();
                             _mapperRepo.Insert(cgMapping);
                         }
                         else //error empty response received
@@ -2983,15 +2922,14 @@ namespace ECDLink.Core.Services
                 catch (Exception e)
                 {
                     await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewChild > GetAPIHandlerResponse");
-                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                    //throw new HttpRequestException("SmartLink API Error: " + e.Message);
                 }
-
+                
 
                 //create child and map
                 StringBuilder jsonChildString = new StringBuilder();
                 string childUrl = "";
-                string childRemoteId = "";
-                Type tC = typeof(Child);
+                //Type tC = typeof(Child);
                 var childColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Child") && c.IsActive == true).ToList();
                 childUrl = SSIntegrationSettings.SLChild + SSIntegrationSettings.CreateMultiple;
                 jsonChildString.AppendLine("[{");
@@ -2999,73 +2937,134 @@ namespace ECDLink.Core.Services
                 {
                     foreach (var changeLine in childColumns)
                     {
-                        if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
-                        {
-                            //string valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
-                            string valueToSend = "";
-                            //Type changeObj = changeLine.LocalEntity.GetType();
-                            //var obj = Convert.ChangeType(changeLine.LocalEntity, changeObj);
-                            switch (changeLine.LocalEntity)
+                        try 
+                        { 
+
+                            if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
                             {
-                                case "ApplicationUser":
-                                    if (typeof(ApplicationUser).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                    {
-                                        valueToSend = typeof(ApplicationUser).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(ApplicationUser).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
-                                    }
-                                    break;
-                                case "Child":
-                                    if (newChild != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                    {
-                                        valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild).ToString() : null;
-                                    }
-                                    break;
-                                case "UserConsent":
-                                    if (newChild != null && typeof(UserConsent).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                    {
-                                        valueToSend = typeof(UserConsent).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild) != null ? typeof(UserConsent).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild).ToString() : null;
-                                    }
-                                    break;
-                                case "UserGrants":
-                                    if (newChild != null && typeof(UserGrant).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                    {
-                                        valueToSend = typeof(UserGrant).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild) != null ? typeof(UserGrant).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild).ToString() : null;
-                                    }
-                                    break;
-                            }
-                            //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
-                            if (changeLine.RemapToString)
-                            {
-                                if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                bool bAddConsents = false;
+                                bool bAddGrants = false;
+                                bool bAddClassroomGroup = false;
+                                //string valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
+                                string valueToSend = "";
+                                //Type changeObj = changeLine.LocalEntity.GetType();
+                                //var obj = Convert.ChangeType(changeLine.LocalEntity, changeObj);
+                                switch (changeLine.LocalEntity)
                                 {
-                                    valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                    case "ApplicationUser":
+                                        if (typeof(ApplicationUser).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(ApplicationUser).GetProperty(changeLine.LocalColumn).GetValue(newChild.User) != null ? typeof(ApplicationUser).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.User).ToString() : null;
+                                        }
+                                        break;
+                                    case "Child":
+                                        if (newChild != null && typeof(Child).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild).ToString() : null;
+                                        }
+                                        break;
+                                    case "Caregiver":
+                                        if (newChild.Caregiver != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver).ToString() : null;
+                                        }
+                                        break;
+                                    case "UserConsent":
+                                        bAddConsents = true;
+                                        break;
+                                    case "UserGrants":
+                                        bAddGrants |= true;
+                                        break;
+                                    case "ClassroomGroup":
+                                        bAddClassroomGroup = true;
+                                        break;
+                                    case "BoolMap":
+                                        switch (changeLine.LocalColumn)
+                                        {
+                                            case "HasIdNumber":
+                                                valueToSend = newChild.User.IdNumber != null ? "true" : "false";
+                                                break;
+                                            case "HasAllergy":
+                                                valueToSend = newChild.Allergies != null ? "true" : "false";
+                                                break;
+                                            case "HasDisability":
+                                                valueToSend = newChild.Disabilities != null ? "true" : "false";
+                                                break;
+                                        }
+                                        break;
                                 }
-                            }
-                            if (!string.IsNullOrEmpty(valueToSend))
-                            {
-                                switch (changeLine.EntityDataType)
+                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                if (changeLine.RemapToString)
                                 {
-                                    case "bool":
-                                        jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
-                                        break;
-                                    case "integer":
-                                        jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
-                                        break;
-                                    case "datetime":
-                                        jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + DateTime.Parse(valueToSend) + ",");
-                                        break;
-                                    default:
-                                        jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
-                                        break;
+                                    if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                    {
+                                        valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(valueToSend) && !bAddConsents && !bAddGrants && !bAddClassroomGroup)
+                                {
+                                    switch (changeLine.EntityDataType)
+                                    {
+                                        case "bool":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                            break;
+                                        case "integer":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                            break;
+                                        case "datetime":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                            break;
+                                        default:
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            break;
+                                    }
+                                } else if (bAddConsents)
+                                {                                    
+                                    var userConsents = _dbContext.UserConsents.Where(x => x.UserId == newChild.UserId).Select(x => x.ConsentType).ToList();
+                                    //PersonalInformationAgreement PhotoPermissions
+                                    foreach (var item in userConsents)
+                                    {
+                                        switch (item) 
+                                        {
+                                            case "PersonalInformationAgreement":
+                                                jsonChildString.AppendLine("\"CaregiverPopiaConsent\":\"true\",");
+                                                break;
+                                            case "PhotoPermissions":
+                                                jsonChildString.AppendLine("\"CaregiverPhotographyAndFilmingConsent\":\"true\",");
+                                                break;
+                                            //case "ConsentAgreement":
+                                            //case "IndemnityAgreement":
+                                            //case "CommitmentAgreement":
+                                            //    jsonChildString.AppendLine("\"Consent\":\"true\",");
+                                            //    break;
+                                        }
+                                    }
+                                } 
+                                else if (bAddGrants)
+                                {
+                                    var userGrants = _dbContext.UserGrants.Include(ug => ug.Grant).Where(x => x.UserId == newChild.UserId).Distinct().ToList();
+                                    foreach (var item in userGrants)
+                                    {
+                                        jsonChildString.AppendLine("\"GrantType\":\"" + valueToSend + "\",");
+                                    }
+                                }
+                                else if (bAddClassroomGroup)
+                                {
+                                    //not sending playgroupgroups at the moment
                                 }
                             }
                         }
-
+                        catch (Exception e)
+                        {
+                            await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");
+                        }
                         ////remove entry from audits list as we have processed it here and sending
                         //completedList.Add(changeLine);
                         //audits.Remove(changeLine);
+
                     }
                     jsonChildString.AppendLine("\"Caregiver\":{\"Guid\": \"" + cgRemoteId + "\"},");
-                    jsonChildString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"},");
+                    jsonChildString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
                 }
                 jsonChildString.AppendLine("}");
                 jsonChildString.AppendLine("]");
@@ -3073,15 +3072,13 @@ namespace ECDLink.Core.Services
                 try
                 {
                     //now send to API call <entity type>/Multiple
-                    var responseString = await GetAPIHandlerResponse(cgUrl, null, null, false, true, jsonChildString.ToString());
+                    var responseString = await GetAPIHandlerResponse(childUrl, null, null, false, true, jsonChildString.ToString());
                     if (!string.IsNullOrEmpty(responseString))
                     {
-                        if (responseString != "[]")
+                        var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                        if (returnObj != null)
                         {
-
-                            childRemoteId = JsonConvert.DeserializeObject<string>(responseString);
-                            //there was a reason why these entries did not update
-                            //await UpdateAuditSubmitted(completedList);
+                            childRemoteId = returnObj[0].ToString();
                             IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
                             childMapping.LocalEntity = SSIntegrationSettings.SSChild;
                             childMapping.RemoteEntity = SSIntegrationSettings.SLChild;
@@ -3091,7 +3088,7 @@ namespace ECDLink.Core.Services
                             childMapping.UpdatedBy = _uId;
                             childMapping.UpdatedDate = DateTime.Now;
                             childMapping.IsComplete = true;
-                            childMapping.BeforeJSON = JsonSerializer.Serialize(newChild);
+                            childMapping.BeforeJSON = jsonChildString.ToString();
                             _mapperRepo.Insert(childMapping);
                         }
                         else //error empty response received
@@ -3122,7 +3119,7 @@ namespace ECDLink.Core.Services
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
 
-            return "<new remote string>";
+            return childRemoteId;
         }
 
         private async Task<bool> PushAttendance(List<IntegrationAudit> audits)
