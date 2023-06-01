@@ -63,7 +63,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
           setIsLoading(false);
         }
       );
-      localStorage.setItem(LocalStorageKeys.existingUser, 'true');
+
       if (isAuthenticated) {
         setIsLoading(false);
         history.push('/dashboard');
