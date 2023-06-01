@@ -31,7 +31,6 @@ const App: React.FC = () => {
   const { setNotification } = useNotifications();
   const [client, setClient] = useState<ApolloClient<any>>();
   const history = useHistory();
-  const existingUser = localStorage.getItem(LocalStorageKeys.existingUser);
   const { userId } = useParams<RouteParams>();
 
   useEffect(() => {

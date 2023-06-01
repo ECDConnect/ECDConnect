@@ -54,7 +54,6 @@ const programmeSlice = createSlice({
     },
     updateProgrammeDay: (state, action: PayloadAction<UpdateProgrammeDay>) => {
       if (!state.programmes) return;
-
       const indexOfProgramme = state.programmes.findIndex(
         (programme) => programme.id === action.payload.programmeId
       );

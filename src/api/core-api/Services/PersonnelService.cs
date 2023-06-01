@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -37,6 +38,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Trainee, Guid> _traineeRepo;
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
+        private IGenericRepository<UserConsent, Guid> _userConsentRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -61,6 +63,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
+            _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -450,15 +453,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         if (visit.PlannedVisitDate.Date > today.Date)
                         {
-                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Success.ToString();
-                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate2Color = MetricsColorEnum.Success.ToString();
+                            timeLine.PrePQAVisitDate2 = visit.PlannedVisitDate;
                         }
                         else
                         {
-                            timeLine.PrePQAVisitDate1Status = Constants.SSSettings.second_site_visit;
-                            timeLine.PrePQAVisitDate1Color = MetricsColorEnum.Warning.ToString();
-                            timeLine.PrePQAVisitDate1 = visit.PlannedVisitDate;
+                            timeLine.PrePQAVisitDate2Status = Constants.SSSettings.second_site_visit;
+                            timeLine.PrePQAVisitDate2Color = MetricsColorEnum.Warning.ToString();
+                            timeLine.PrePQAVisitDate2 = visit.PlannedVisitDate;
                         }
                         pre_pqa_visits.Add(visit);
                     }
@@ -484,10 +487,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation || visit.VisitType.Name == Constants.SSSettings.visitType_annual_re_accreditation)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
                     {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation);
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
+                    {
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3)
+                    {
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                    {
                         reaccreditation_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
@@ -526,13 +545,34 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
         #region Trainees
 
+        public Trainee ScheduleConsolidationMeetingDate(string userId, DateTime? scheduledDate)
+        {
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+            trainee.ScheduledConsolidationMeetingDate = scheduledDate;
+
+            _traineeRepo.Update(trainee);
+
+            return trainee;
+        }
+
+        public Trainee UpdateCommunitySupport(string userId, bool? haveCommunitySupport)
+        {
+            Trainee trainee = _traineeRepo.GetByUserId(userId);
+            trainee.HaveCommunitySupport = haveCommunitySupport;
+            if (haveCommunitySupport == true)
+            {
+                trainee.CommunitySupportGained = DateTime.Now;
+            }
+
+            _traineeRepo.Update(trainee);
+
+            return trainee;
+        }
+
         public TraineeOnBoardTimeline GetOnBoardTraineeTimeline(string userId)
         {
             var timeline = new TraineeOnBoardTimeline();
             Trainee trainee = _traineeRepo.GetByUserId(userId);
-
-
-            // DayOneStartUpTraining
 
             // StarterLicense
             var starterDate = (
@@ -545,9 +585,56 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
                 timeline.StarterLicenseDate = starterDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
+
+                timeline.SignFranchiseeAgreementDeadlineDate = starterDate.Value.AddDays(7);
+                timeline.SignStartUpSupportAgreementDeadlineDate = starterDate.Value.AddDays(7);
+            }
+
+            // DayOneStartUpTraining
+            if (trainee.AttendedStartUpTraining == true)
+            {
+                timeline.DayOneStartUpTrainingStatus = "";
+                timeline.DayOneStartUpTrainingColor = MetricsColorEnum.Success.ToString();
+                timeline.DayOneStartUpTrainingDate = trainee.StartDate;
             }
 
             // ConsolidationMeeting -> smartLink
+            if (starterDate != null)
+            {
+                // Consolidation meeting = date of starter license + 7 days
+                timeline.ConsolidationDeadlineDate = starterDate.Value.AddDays(7);
+            }
+            if (trainee != null)
+            {
+                if (trainee.ConsolidationMeetingDate != null) {
+                    timeline.ConsolidationMeetingStatus = Constants.SSSettings.consolidation_meeting;
+                    timeline.ConsolidationMeetingColor = MetricsColorEnum.Success.ToString();
+                    timeline.ConsolidationMeetingDate = trainee.ConsolidationMeetingDate;
+                }
+                timeline.ConsolidationMeetingDateScheduled = trainee.ScheduledConsolidationMeetingDate;
+            }
+            List<DateTime> consolidationDates = new List<DateTime>();
+            if (timeline.ConsolidationDeadlineDate != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationDeadlineDate.Value);
+            }
+            if (timeline.ConsolidationMeetingDate != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationMeetingDate.Value);
+            }
+            if (timeline.ConsolidationMeetingDateScheduled != null)
+            {
+                consolidationDates.Add(timeline.ConsolidationMeetingDateScheduled.Value);
+            }
+
+            // Deadline dates
+            if (consolidationDates.Count > 0)
+            {
+                DateTime latestConsolidationDate = consolidationDates.OrderBy(x => x.Date).LastOrDefault();
+                timeline.SmartSpaceChecklistDeadlineDate = latestConsolidationDate.AddDays(14);
+                timeline.CommunitySupportDeadlineDate = latestConsolidationDate.AddDays(14);
+                timeline.ThreeChildrenRegisteredDeadlineDate = latestConsolidationDate.AddDays(14);
+            }
 
             // SmartSpaceChecklist
             Visit visit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_smart_space_checklist);
@@ -555,32 +642,66 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 if (visit.Attended == true)
                 {
+                    timeline.SmartSpaceChecklistStatus = Constants.SSSettings.checklist_done;
                     timeline.SmartSpaceChecklistColor = MetricsColorEnum.Success.ToString();
-                    timeline.SmartSpaceChecklistStatus = "SmartSpace Checklist done";
                     timeline.SmartSpaceChecklistDate = visit.UpdatedDate;
                 }
             }
 
             // CommunitySupport
+            // User completed the consolidation meeting step (ie they attended the consolidation meeting)
+            if (timeline.ConsolidationMeetingStatus != "")
+            {
+                if (trainee.HaveCommunitySupport == true) {
+                    timeline.CommunitySupportStatus = Constants.SSSettings.community_support;
+                    timeline.CommunitySupportColor = MetricsColorEnum.Success.ToString();
+                    timeline.CommunitySupportDate = trainee.CommunitySupportGained;
+                }
+            }
+            
 
             // ThreeChildrenRegistered
             var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
             if (allChildren.Count >= 3)
             {
+                timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
                 timeline.ThreeChildrenRegisteredColor = MetricsColorEnum.Success.ToString();
-                timeline.ThreeChildrenRegisteredStatus = "3 or more children registered";
                 timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
             }
 
             // SSCoachVisit
 
+
             // SignFranchiseeAgreement
+            UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
+            if (franchiseeAgreement != null)
+            {
+                timeline.SignFranchiseeAgreementStatus = Constants.SSSettings.franchisee_signed;
+                timeline.SignFranchiseeAgreementColor = MetricsColorEnum.Success.ToString();
+                timeline.SignFranchiseeAgreementDate = franchiseeAgreement.InsertedDate;
+            }
 
             // SignStartUpSupportAgreement
+            // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
+            if (franchiseeAgreement != null && trainee.IsOnStipend == true)
+            {
+                // Get support agreement signature
+                UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();
+                if (supportAgreement != null)
+                {
+                    // Get support agreement data captured
+                    Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
+                    if (supportVisit != null)
+                    {
+                        timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
+                        timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
+                        timeline.SignStartUpSupportAgreementDate = supportAgreement.InsertedDate;
+                    }
+                }
+            }
 
             return timeline;
         }
-
         #endregion
 
 
