@@ -24,7 +24,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
         public Guid PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
-
         public DateTime? StartDate { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }
         public DateTime? ScheduledConsolidationMeetingDate { get; set; }
@@ -46,6 +45,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsSmartSpaceVisitValidated { get; set; }
         public bool? IsAdminFileAndPlaykitValidated { get; set; }
         public string HighestEducationLevel { get; set; }
+        public string StipendType { get; set; }
     }
 
     public interface TraineeIdJoin<TKey>

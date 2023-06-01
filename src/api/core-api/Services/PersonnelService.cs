@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
@@ -37,6 +38,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<Trainee, Guid> _traineeRepo;
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
+        private IGenericRepository<UserConsent, Guid> _userConsentRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -61,6 +63,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _traineeRepo = _repoFactory.CreateRepository<Trainee>(userContext: _applicationUserId);
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
+            _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -630,8 +633,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // SSCoachVisit
 
             // SignFranchiseeAgreement
+            UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
+            if (franchiseeAgreement != null)
+            {
+                timeline.SignFranchiseeAgreementStatus = Constants.SSSettings.franchisee_signed;
+                timeline.SignFranchiseeAgreementColor = MetricsColorEnum.Success.ToString();
+                timeline.SignFranchiseeAgreementDate = franchiseeAgreement.InsertedDate;
+            }
 
             // SignStartUpSupportAgreement
+            // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
+            if (franchiseeAgreement != null && trainee.IsOnStipend == true)
+            {
+            }
 
             return timeline;
         }
