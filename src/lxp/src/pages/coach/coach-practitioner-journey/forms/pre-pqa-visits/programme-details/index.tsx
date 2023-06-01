@@ -216,14 +216,14 @@ export const ProgrammeDetails = ({
           type="h4"
           text={
             isOnline
-              ? practitionerClassroomDetails?.[0].classroom?.name || ''
-              : 'Not available offline'
+              ? practitionerClassroomDetails?.[0].programmeType?.description ||
+                ''
+              : 'You need to be online to view programme type'
           }
           color={isOnline ? 'textDark' : 'errorMain'}
           className="my-4 ml-1 font-bold"
         />
       </div>
-
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, name)}

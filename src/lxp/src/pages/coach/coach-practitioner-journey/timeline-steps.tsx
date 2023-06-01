@@ -166,12 +166,29 @@ export const timelineSteps = (
             )?.plannedVisitDate
           ).toLocaleDateString('en-ZA', dateOptions);
 
+    const isLateDate =
+      new Date(date) < new Date() &&
+      timeline.prePQASiteVisits.some((item) => !item?.attended);
+    const isAllCompleted = timeline.prePQASiteVisits?.every(
+      (item) => !!item?.attended
+    );
+    const getType = (): StepItem['type'] => {
+      if (isAllCompleted) {
+        return 'completed';
+      }
+
+      if (isLateDate) {
+        return 'inProgress';
+      }
+
+      return 'todo';
+    };
     steps.push({
       title: 'Pre-PQA site visits',
       subTitle: `By ${date}`,
-      type: timeline.prePQASiteVisits?.every((item) => !!item?.attended)
-        ? 'completed'
-        : 'todo',
+      type: getType(),
+      inProgressStepIcon: 'ExclamationCircleIcon',
+      subTitleColor: isLateDate ? 'alertDark' : 'textMid',
       showAccordion: true,
       extraData: {
         date: new Date(date),

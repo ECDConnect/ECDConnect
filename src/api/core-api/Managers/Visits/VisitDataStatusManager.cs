@@ -1695,7 +1695,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetClinicReferralForUser(string id, string type)
         {
             var status = "";
@@ -1729,7 +1728,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetHomeAffairsReferralForUser(string id, string type)
         {
             var status = "";
@@ -1763,7 +1761,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetSassaReferralForUser(string id, string type)
         {
             var status = "";
@@ -1797,8 +1794,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
-
 
     }
 }

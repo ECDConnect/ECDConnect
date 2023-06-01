@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string MotherId { get; set; }
         public string InfantId { get; set; }
         public string PractitionerId { get; set; }
+        public string TraineeId { get; set; }
         public virtual CMSVisitData VisitData { get; set; }
     }
 

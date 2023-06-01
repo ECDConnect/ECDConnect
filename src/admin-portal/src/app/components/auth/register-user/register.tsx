@@ -10,19 +10,23 @@ import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.svg';
-
+import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 
-export default function Register() {
+interface RouteParams {
+  userId: string;
+}
+
+export default function Register(props: RouteComponentProps<RouteParams>) {
   const { registerUser } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { userId } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(registerSchema),
@@ -42,24 +46,24 @@ export default function Register() {
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
-  console.log(isValid)
 
   const registerNewUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
-
       setIsLoading(true);
       const body: RegisterRequestModel = {
         email: formValues.email,
         password: formValues.password,
         acceptedTerms: formValues.acceptedTerms,
       };
-      const isAuthenticated = await registerUser(body, Config.authApi).catch(() => {
-        setDisplayError(true);
-        setIsLoading(false);
-      });
-      localStorage.setItem(LocalStorageKeys.existingUser, 'true');
+      const isAuthenticated = await registerUser(body, Config.authApi).catch(
+        () => {
+          setDisplayError(true);
+          setIsLoading(false);
+        }
+      );
+
       if (isAuthenticated) {
         setIsLoading(false);
         history.push('/dashboard');
@@ -84,7 +88,7 @@ export default function Register() {
 
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+      <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
@@ -100,7 +104,7 @@ export default function Register() {
                 <FormField
                   label={'Email address *'}
                   nameProp={'email'}
-                  type='email'
+                  type="email"
                   register={register}
                   error={errors.email?.message}
                   instructions={[
@@ -136,7 +140,7 @@ export default function Register() {
                             ? 'bg-red-400'
                             : passwordScore <= 2
                             ? 'bg-yellow-400'
-                            : passwordScore <= 4 
+                            : passwordScore <= 4
                             ? 'bg-green-500'
                             : 'bg-yellow-400'
                           : 'bg-gray-200'
@@ -154,14 +158,16 @@ export default function Register() {
                     nameProp={'terms'}
                     type="checkbox"
                     register={register}
-                    instructions={["I accept the terms and conditions"]}
+                    instructions={['I accept the terms and conditions']}
                   />
                 </div>
               </div>
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={'Oh no! There are 2 problems above. Please fix them:'}
+                  message={
+                    'Oh no! There are 2 problems above. Please fix them:'
+                  }
                   type={'error'}
                 />
               )}
@@ -177,7 +183,7 @@ export default function Register() {
                   <Typography
                     type="help"
                     color="white"
-                    text={'Log in'}
+                    text={'Register'}
                   ></Typography>
                 </Button>
               </div>

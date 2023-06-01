@@ -18,14 +18,13 @@ namespace EcdLink.Api.CoreApi
         {
             services.AddDbContextFactory<AuthenticationDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.DataAccessLayer", config);
-                //options.UseQueryTrackingBehavior(QueryTrackingBehavior.NoTracking);//TODO: CB Remove if tracking DBContext changes becomes an issue
+                options.UseNpgsqlTenancy(config);
                 options.UseLazyLoadingProxies();
             });
 
-            services.AddDbContext<ContentManagementDbContext>((serviceProvider, options) =>
+            services.AddDbContextFactory<ContentManagementDbContext>((serviceProvider, options) =>
             {
-                options.UseNpgsqlTenancy(serviceProvider, "ECDLink.ContentManagement", config);
+                options.UseNpgsqlTenancy(config);
             });
 
             services.AddScoped<AuthenticationDbContext>(p =>

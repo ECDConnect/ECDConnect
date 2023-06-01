@@ -38,7 +38,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var visit = GetVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
-
         private Visit GetVisitFromInputModel(VisitModel input)
         {
             if (input == null)
@@ -63,20 +62,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 UpdatedBy = _applicationUserId
             };
         }
-
         public Visit AddAdditionalVisit(VisitModel input)
         {
             var visit = GetAdditionalVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
-
-        public Visit AddSupportVisitForPractitioner(VisitModel input)
+        public Visit AddVisitForPractitioner(VisitModel input)
         {
-            var visit = GetSupportVisitFromInputModel(input);
+            var visit = GetPractitionerVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
-
-        private Visit GetSupportVisitFromInputModel(VisitModel input)
+        private Visit GetPractitionerVisitFromInputModel(VisitModel input)
         {
             if (input == null)
             {
@@ -103,13 +99,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
-        public Visit AddFollowUpVisitForPractitioner(VisitModel input)
+        public Visit AddVisitForTrainee(VisitModel input)
         {
-            var visit = GetFollowUpVisitFromInputModel(input);
+            var visit = GetTraineeVisitFromInputModel(input);
             return _visitRepo.Insert(visit);
         }
 
-        private Visit GetFollowUpVisitFromInputModel(VisitModel input)
+        private Visit GetTraineeVisitFromInputModel(VisitModel input)
         {
             if (input == null)
             {
@@ -124,18 +120,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 VisitTypeId = input.VisitType.Id,
-                MotherId = input.MotherId,
-                InfantId = input.InfantId,
-                PractitionerId = input.PractitionerId,
+                TraineeId = input.TraineeId,
                 Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
-                Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
                 PlannedVisitDate = input.PlannedVisitDate
             };
         }
-
         private Visit GetAdditionalVisitFromInputModel(VisitModel input)
         {
             if (input == null)
@@ -161,8 +153,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 ActualVisitDate = input.ActualVisitDate
             };
         }
-
-
         public string GetFirstMissedVisit(Guid Id, string type)
         {
             var message = "";
@@ -462,6 +452,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 ).FirstOrDefault();
             }
             return visitId;
+        }
+
+        public Visit GetVisitForUserForType(string id, string userType, string vType)
+        {
+            Visit vData = new Visit();
+            if (userType == Constants.SSSettings.client_trainee)
+            {
+                return (
+                    from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).FirstOrDefault();
+            }
+
+            return vData;
         }
 
     }
