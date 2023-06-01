@@ -1,5 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
+using EcdLink.Api.CoreApi.Managers.Users;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
@@ -18,19 +20,24 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private UserLicenseManager _userLicenseManager;
 
         private string _applicationUserId;
 
         public VisitManager(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            UserLicenseManager userLicenseManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
+            _userLicenseManager = userLicenseManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
+            _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
         }
 
         public Visit AddVisit(VisitModel input)
@@ -453,7 +460,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return visitId;
         }
-
         public Visit GetVisitForUserForType(string id, string userType, string vType)
         {
             Visit vData = new Visit();
@@ -467,6 +473,67 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return vData;
+        }
+
+        public bool ValidateDefaultVisitsForPractitioner(string userId)
+        {
+            var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+
+            if (smartSpaceLic != null)
+            {
+                Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+                List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
+
+                var input = new VisitModel();
+                foreach (VisitType visitType in visitTypes)
+                {
+                    input = new VisitModel();
+                    input.VisitType = visitType;
+                    input.Attended = false;
+                    input.MotherId = null;
+                    input.InfantId = null;
+                    input.LinkedVisitId = null;
+                    input.PractitionerId = practitioner.Id;
+
+                    // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
+                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(1);
+                        input.PlannedVisitDate = newDate;
+                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                        if (visit == null)
+                        {
+                            AddVisit(input);
+                        }
+                    }
+                    // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
+                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(2);
+                        input.PlannedVisitDate = newDate;
+                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                        if (visit == null)
+                        {
+                            AddVisit(input);
+                        }
+                    }
+                    // SmartSpace licence received date + 3 months
+                    if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
+                    {
+                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                        DateTime newDate = dt.AddMonths(3);
+                        input.PlannedVisitDate = newDate;
+                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                        if (visit == null)
+                        {
+                            AddVisit(input);
+                        }
+                    }
+                }
+            }
+            return true;
         }
 
     }

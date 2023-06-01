@@ -198,16 +198,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           todayDate
         );
 
-      let classCreatedTodayMissedAttendance = attendanceToDoList.filter(
-        (x) => getDay(x.missedDay) === getDay(todayDate)
-      );
-
-      //this is used when classes is created today and user has multiple classes
-      const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
-
-      if (missedClasses.length > 0) {
-        setMissedAttendanceGroups(missedClasses);
-      } else if (attendanceToDoList.length > 0) {
+      if (attendanceToDoList.length > 0) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }

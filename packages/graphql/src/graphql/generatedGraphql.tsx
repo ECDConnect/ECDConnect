@@ -1936,6 +1936,9 @@ export type FileModel = {
 export enum FileTypeEnum {
   CareGiver = 'CARE_GIVER',
   Child = 'CHILD',
+  ChildBirthCertificate = 'CHILD_BIRTH_CERTIFICATE',
+  ChildClinicCard = 'CHILD_CLINIC_CARD',
+  ChildRegistrationForm = 'CHILD_REGISTRATION_FORM',
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
   ContentImage = 'CONTENT_IMAGE',
@@ -1970,6 +1973,7 @@ export type FollowUpVisitModelInput = {
   plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
   practitionerId?: InputMaybe<Scalars['UUID']>;
   risk?: InputMaybe<Scalars['String']>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -2461,6 +2465,7 @@ export type IntegrationAuditInput = {
 export type IntegrationColumnMapping = {
   __typename?: 'IntegrationColumnMapping';
   columnValidationLimit: Scalars['Int'];
+  entityDataType?: Maybe<Scalars['String']>;
   entityGrouping?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -2480,6 +2485,7 @@ export type IntegrationColumnMapping = {
 export type IntegrationColumnMappingFilterInput = {
   and?: InputMaybe<Array<IntegrationColumnMappingFilterInput>>;
   columnValidationLimit?: InputMaybe<ComparableInt32OperationFilterInput>;
+  entityDataType?: InputMaybe<StringOperationFilterInput>;
   entityGrouping?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -2499,6 +2505,7 @@ export type IntegrationColumnMappingFilterInput = {
 
 export type IntegrationColumnMappingInput = {
   ColumnValidationLimit: Scalars['Int'];
+  EntityDataType?: InputMaybe<Scalars['String']>;
   EntityGrouping?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IntegrationSystem?: InputMaybe<Scalars['String']>;
@@ -3118,17 +3125,15 @@ export type Mutation = {
   addAbsenteeForPractitioner?: Maybe<Absentees>;
   addAdditionalVisitForInfant?: Maybe<Visit>;
   addAdditionalVisitForMother?: Maybe<Visit>;
-  addAnnualReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
-  addDefaultVisitsForPractitioner: Scalars['Boolean'];
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
   addHealthCareWorker?: Maybe<HealthCareWorker>;
   addInfant?: Maybe<Infant>;
   addMother?: Maybe<Mother>;
-  addPGARatingVisitForPractitioner: Scalars['Boolean'];
+  addPQARatingVisitForPractitioner?: Maybe<Visit>;
   addPermissionsToNavigation: Scalars['Boolean'];
   addPermissionsToRole: Scalars['Boolean'];
   addPractitionerToCoach?: Maybe<Practitioner>;
@@ -3138,6 +3143,7 @@ export type Mutation = {
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
+  addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
   addUser?: Maybe<ApplicationUser>;
@@ -3366,6 +3372,7 @@ export type Mutation = {
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
   saveIncomeStatementPDF: Scalars['Boolean'];
+  scheduleConsolidationMeetingDate?: Maybe<Trainee>;
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
   sendPractitionerInviteToApplication: Scalars['Boolean'];
@@ -3390,6 +3397,7 @@ export type Mutation = {
   updateCommunitySectionItemGG?: Maybe<CommunitySectionItemGg>;
   updateCommunitySectionItemSS?: Maybe<CommunitySectionItemSs>;
   updateCommunitySectionSS?: Maybe<CommunitySectionSs>;
+  updateCommunitySupport?: Maybe<Trainee>;
   updateConsent?: Maybe<Consent>;
   updateConsentGG?: Maybe<ConsentGg>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
@@ -3491,6 +3499,7 @@ export type Mutation = {
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
   updateWorkflowStatusType?: Maybe<WorkflowStatusType>;
   uploadChildProgressReport: Scalars['Boolean'];
+  validateDefaultVisitsForPractitioner: Scalars['Boolean'];
 };
 
 export type MutationAddAbsenteeForPractitionerArgs = {
@@ -3510,10 +3519,6 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
-export type MutationAddAnnualReAccreditationVisitForPractitionerArgs = {
-  input?: InputMaybe<ReAccreditationVisitModelInput>;
-};
-
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -3521,10 +3526,6 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
-};
-
-export type MutationAddDefaultVisitsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -3551,7 +3552,7 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
-export type MutationAddPgaRatingVisitForPractitionerArgs = {
+export type MutationAddPqaRatingVisitForPractitionerArgs = {
   ratingColor?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -3584,6 +3585,7 @@ export type MutationAddReAccreditationFollowUpVisitForPractitionerArgs = {
 
 export type MutationAddReAccreditationVisitForPractitionerArgs = {
   input?: InputMaybe<ReAccreditationVisitModelInput>;
+  visitNumber?: InputMaybe<Scalars['Int']>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
@@ -3605,6 +3607,10 @@ export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
 };
 
+export type MutationAddStartupSupportAgreementForTraineeArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
+};
+
 export type MutationAddSupportVisitForPractitionerArgs = {
   input?: InputMaybe<SupportVisitModelInput>;
 };
@@ -3614,6 +3620,7 @@ export type MutationAddTeamLeadArgs = {
 };
 
 export type MutationAddUserArgs = {
+  createAdmin?: Scalars['Boolean'];
   input?: InputMaybe<UserModelInput>;
 };
 
@@ -4617,6 +4624,11 @@ export type MutationSaveIncomeStatementPdfArgs = {
   input?: InputMaybe<IncomeStatementPdfDocInput>;
 };
 
+export type MutationScheduleConsolidationMeetingDateArgs = {
+  scheduledDate?: InputMaybe<Scalars['DateTime']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendCoachInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4741,6 +4753,11 @@ export type MutationUpdateCommunitySectionSsArgs = {
   input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateCommunitySupportArgs = {
+  haveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateConsentArgs = {
@@ -5287,6 +5304,10 @@ export type MutationUpdateWorkflowStatusTypeArgs = {
 
 export type MutationUploadChildProgressReportArgs = {
   report?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationValidateDefaultVisitsForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Navigation = {
@@ -8286,6 +8307,7 @@ export type ReAccreditationVisitModelInput = {
   practitionerId?: InputMaybe<Scalars['UUID']>;
   reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
   risk?: InputMaybe<Scalars['String']>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -9160,6 +9182,7 @@ export type SupportVisitModelInput = {
   practitionerId?: InputMaybe<Scalars['UUID']>;
   risk?: InputMaybe<Scalars['String']>;
   supportData?: InputMaybe<CmsVisitDataInputModelInput>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
   visitType?: InputMaybe<VisitTypeInput>;
   visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
@@ -9350,7 +9373,9 @@ export type Trainee = {
   attendedStartUpTraining?: Maybe<Scalars['Boolean']>;
   childProgressTraining?: Maybe<Scalars['Boolean']>;
   childrenAddedDate?: Maybe<Scalars['DateTime']>;
+  communitySupportGained?: Maybe<Scalars['DateTime']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
+  haveCommunitySupport?: Maybe<Scalars['Boolean']>;
   highestEducationLevel?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -9364,11 +9389,13 @@ export type Trainee = {
   practitionerId: Scalars['UUID'];
   programmeType?: Maybe<Scalars['String']>;
   progress: Scalars['Decimal'];
+  scheduledConsolidationMeetingDate?: Maybe<Scalars['DateTime']>;
   siteArea?: Maybe<Scalars['String']>;
   siteVisitsCompleted?: Maybe<Scalars['Boolean']>;
   smartSpaceVisitPassed?: Maybe<Scalars['Boolean']>;
   startDate?: Maybe<Scalars['DateTime']>;
   starterLicenceReceived?: Maybe<Scalars['Boolean']>;
+  stipendType?: Maybe<Scalars['String']>;
   traineeConvertedDate?: Maybe<Scalars['DateTime']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -9383,7 +9410,9 @@ export type TraineeFilterInput = {
   attendedStartUpTraining?: InputMaybe<BooleanOperationFilterInput>;
   childProgressTraining?: InputMaybe<BooleanOperationFilterInput>;
   childrenAddedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  communitySupportGained?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  haveCommunitySupport?: InputMaybe<BooleanOperationFilterInput>;
   highestEducationLevel?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -9398,11 +9427,13 @@ export type TraineeFilterInput = {
   practitionerId?: InputMaybe<ComparableGuidOperationFilterInput>;
   programmeType?: InputMaybe<StringOperationFilterInput>;
   progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
+  scheduledConsolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   siteArea?: InputMaybe<StringOperationFilterInput>;
   siteVisitsCompleted?: InputMaybe<BooleanOperationFilterInput>;
   smartSpaceVisitPassed?: InputMaybe<BooleanOperationFilterInput>;
   startDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   starterLicenceReceived?: InputMaybe<BooleanOperationFilterInput>;
+  stipendType?: InputMaybe<StringOperationFilterInput>;
   traineeConvertedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -9416,7 +9447,9 @@ export type TraineeInput = {
   AttendedStartUpTraining?: InputMaybe<Scalars['Boolean']>;
   ChildProgressTraining?: InputMaybe<Scalars['Boolean']>;
   ChildrenAddedDate?: InputMaybe<Scalars['DateTime']>;
+  CommunitySupportGained?: InputMaybe<Scalars['DateTime']>;
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
+  HaveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
   HighestEducationLevel?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -9429,11 +9462,13 @@ export type TraineeInput = {
   PractitionerId: Scalars['UUID'];
   ProgrammeType?: InputMaybe<Scalars['String']>;
   Progress: Scalars['Decimal'];
+  ScheduledConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
   SiteArea?: InputMaybe<Scalars['String']>;
   SiteVisitsCompleted?: InputMaybe<Scalars['Boolean']>;
   SmartSpaceVisitPassed?: InputMaybe<Scalars['Boolean']>;
   StartDate?: InputMaybe<Scalars['DateTime']>;
   StarterLicenceReceived?: InputMaybe<Scalars['Boolean']>;
+  StipendType?: InputMaybe<Scalars['String']>;
   TraineeConvertedDate?: InputMaybe<Scalars['DateTime']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
@@ -9444,30 +9479,38 @@ export type TraineeOnBoardTimeline = {
   __typename?: 'TraineeOnBoardTimeline';
   communitySupportColor?: Maybe<Scalars['String']>;
   communitySupportDate?: Maybe<Scalars['DateTime']>;
+  communitySupportDeadlineDate?: Maybe<Scalars['DateTime']>;
   communitySupportStatus?: Maybe<Scalars['String']>;
+  consolidationDeadlineDate?: Maybe<Scalars['DateTime']>;
   consolidationMeetingColor?: Maybe<Scalars['String']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
+  consolidationMeetingDateScheduled?: Maybe<Scalars['DateTime']>;
   consolidationMeetingStatus?: Maybe<Scalars['String']>;
   dayOneStartUpTrainingColor?: Maybe<Scalars['String']>;
   dayOneStartUpTrainingDate?: Maybe<Scalars['DateTime']>;
   dayOneStartUpTrainingStatus?: Maybe<Scalars['String']>;
   sSCoachVisitColor?: Maybe<Scalars['String']>;
   sSCoachVisitDate?: Maybe<Scalars['DateTime']>;
+  sSCoachVisitDeadlineDate?: Maybe<Scalars['DateTime']>;
   sSCoachVisitStatus?: Maybe<Scalars['String']>;
   signFranchiseeAgreementColor?: Maybe<Scalars['String']>;
   signFranchiseeAgreementDate?: Maybe<Scalars['DateTime']>;
+  signFranchiseeAgreementDeadlineDate?: Maybe<Scalars['DateTime']>;
   signFranchiseeAgreementStatus?: Maybe<Scalars['String']>;
+  signStartUpSupportAgreementColor?: Maybe<Scalars['String']>;
+  signStartUpSupportAgreementDate?: Maybe<Scalars['DateTime']>;
+  signStartUpSupportAgreementDeadlineDate?: Maybe<Scalars['DateTime']>;
   signStartUpSupportAgreementStatus?: Maybe<Scalars['String']>;
-  signStartUpSupportColor?: Maybe<Scalars['String']>;
-  signStartUpSupportDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistColor?: Maybe<Scalars['String']>;
   smartSpaceChecklistDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceChecklistDeadlineDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistStatus?: Maybe<Scalars['String']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
   threeChildrenRegisteredColor?: Maybe<Scalars['String']>;
   threeChildrenRegisteredDate?: Maybe<Scalars['DateTime']>;
+  threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
 };
 
