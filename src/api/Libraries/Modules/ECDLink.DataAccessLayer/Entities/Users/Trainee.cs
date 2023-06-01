@@ -46,6 +46,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsAdminFileAndPlaykitValidated { get; set; }
         public string HighestEducationLevel { get; set; }
         public string StipendType { get; set; }
+        public bool? HaveCommunitySupport { get; set; }
+        public DateTime? CommunitySupportGained { get; set; }
     }
 
     public interface TraineeIdJoin<TKey>
