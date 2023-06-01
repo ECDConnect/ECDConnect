@@ -252,7 +252,7 @@ export const MonthlyAttendanceReport = ({
                 text={report.childFullName}
                 onClick={() => {
                   history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
-                    childId: report?.childUserId,
+                    childUserId: report?.childUserId,
                     classroomGroupId: report?.classgroupId,
                   });
                 }}

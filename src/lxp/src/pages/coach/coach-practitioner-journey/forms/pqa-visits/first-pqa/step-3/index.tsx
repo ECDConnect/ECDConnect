@@ -10,6 +10,29 @@ import { useCallback, useEffect, useState } from 'react';
 import { noneOption, options } from './options';
 import { usePrevious } from '@ecdlink/core';
 
+export const step3VisitSection = 'Step 3';
+export const step3TotalScore = 2;
+
+export const step3GetScore = (answers: string[]) => {
+  const length = answers.length;
+  let result = 0;
+  let scoreColours: Colours = 'errorMain';
+
+  if (length > 3 && length < 8) {
+    scoreColours = 'alertMain';
+    result = 1;
+  }
+
+  if (length >= 8) {
+    scoreColours = 'successMain';
+    result = 2;
+  }
+
+  return {
+    score: result,
+    color: scoreColours,
+  };
+};
 export const Step3 = ({
   setSectionQuestions,
   setEnableButton,
@@ -28,29 +51,6 @@ export const Step3 = ({
   const answers = question.answer as string[];
   const previousAnswers = usePrevious(answers) as string[] | undefined;
 
-  const visitSection = 'Step 3';
-
-  const getScore = () => {
-    const length = answers.length;
-    let result = 0;
-    let scoreColours: Colours = 'errorMain';
-
-    if (length > 3 && length < 8) {
-      scoreColours = 'alertMain';
-      result = 1;
-    }
-
-    if (length >= 8) {
-      scoreColours = 'successMain';
-      result = 2;
-    }
-
-    return {
-      score: result,
-      color: scoreColours,
-    };
-  };
-
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
@@ -64,7 +64,7 @@ export const Step3 = ({
         setEnableButton?.(true);
         return setSectionQuestions?.([
           {
-            visitSection,
+            visitSection: step3VisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -76,7 +76,7 @@ export const Step3 = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection,
+          visitSection: step3VisitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -104,7 +104,7 @@ export const Step3 = ({
       setAnswers(updatedQuestion);
       setSectionQuestions?.([
         {
-          visitSection,
+          visitSection: step3VisitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -152,10 +152,10 @@ export const Step3 = ({
       <div className="mt-8 flex items-center gap-2">
         <span
           className={`p-2 text-sm font-semibold text-white bg-${
-            getScore().color
+            step3GetScore(answers).color
           } rounded-15`}
         >
-          {getScore().score}/2
+          {step3GetScore(answers).score}/{step3TotalScore}
         </span>
         <Typography type="h4" text="Score" />
       </div>

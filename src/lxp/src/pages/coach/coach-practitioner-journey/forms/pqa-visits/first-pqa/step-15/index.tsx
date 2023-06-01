@@ -8,7 +8,7 @@ import {
   step14VisitSection,
 } from '../step-14';
 
-export const step12VisitSection = 'Step 12';
+export const step15VisitSection = 'Step 15';
 
 export const Step15 = ({
   smartStarter,
@@ -48,7 +48,7 @@ export const Step15 = ({
         setAnswers(updatedQuestion);
         return setSectionQuestions?.([
           {
-            visitSection: step12VisitSection,
+            visitSection: step15VisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -58,7 +58,7 @@ export const Step15 = ({
 
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
-        { visitSection: step12VisitSection, questions: [updatedQuestion] },
+        { visitSection: step15VisitSection, questions: [updatedQuestion] },
       ]);
     },
     [answers, question, setSectionQuestions]
