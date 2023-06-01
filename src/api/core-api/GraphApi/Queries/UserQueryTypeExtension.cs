@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var usersQuery = userManager.Users
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
-            usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = await AddProvinceFilter(repoFactory, pagingInput, usersQuery);
 
             usersQuery = AddFiltering(pagingInput, usersQuery);
             usersQuery = AddSorting(pagingInput, usersQuery);
@@ -53,7 +53,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Take(pagingInput.PageSize);
         }
 
-        private static IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        private async Task<IQueryable<ApplicationUser>> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
             var provinceFilters = pagingInput?.FilterBy?
                 .Where(f => f.FieldName == "Province")
@@ -63,19 +63,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (provinceFilters?.Any() ?? false)
             {
                 using var provinceRepo = repoFactory.CreateGenericRepository<Province>();
-                var provinceIds = provinceRepo.GetAll()
+                var provinceIds = await provinceRepo.GetAll()
                     .Where(p => provinceFilters.Contains(p.Description))
-                    .Select(p => p.Id);
+                    .Select(p => p.Id).ToListAsync();
 
 
                 using var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>();
 
-                //TODO: circumvent thread exception...
                 usersQuery = usersQuery
-                    .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
-                    //|| provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    //|| provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
-                    ////|| provinceIds.Contains(u.principalObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
+                    .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
+                    || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
+                    || provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
             }
 
             return usersQuery;
@@ -89,7 +87,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 foreach (var filter in pagingInput.FilterBy)
                 {
-
+                    if (filter.FieldName.ToLower() != "province")
                     switch (filter.FilterType)
                     {
                         case null:
