@@ -487,10 +487,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         pqa_visits.Add(visit);
                     }
-                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation || visit.VisitType.Name == Constants.SSSettings.visitType_annual_re_accreditation)
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
                     {
-                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation);
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
+                    {
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3)
+                    {
+                        PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
+                        visit.OverallRatingColor = rating.OverallRatingColor;
+                        reaccreditation_visits.Add(visit);
+                    }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_follow_up)
+                    {
                         reaccreditation_visits.Add(visit);
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_support || visit.VisitType.Name == Constants.SSSettings.visitType_call)
@@ -557,7 +573,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
 
                 timeline.SignFranchiseeAgreementDeadlineDate = starterDate.Value.AddDays(7);
-                timeline.SignStartUpSupportDeadlineDate = starterDate.Value.AddDays(7);
+                timeline.SignStartUpSupportAgreementDeadlineDate = starterDate.Value.AddDays(7);
             }
 
             // DayOneStartUpTraining
@@ -645,11 +661,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
             if (franchiseeAgreement != null && trainee.IsOnStipend == true)
             {
+                // Get support agreement signature
+                UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();
+                if (supportAgreement != null)
+                {
+                    // Get support agreement data captured
+                    Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
+                    if (supportVisit != null)
+                    {
+                        timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
+                        timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
+                        timeline.SignStartUpSupportAgreementDate = supportAgreement.InsertedDate;
+                    }
+                }
             }
 
             return timeline;
         }
-
         #endregion
 
 
