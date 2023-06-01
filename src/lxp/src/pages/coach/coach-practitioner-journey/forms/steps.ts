@@ -17,10 +17,12 @@ import {
   Step9,
   Step10,
   Step11,
-  Step12FromYes,
+  Step12,
   Step13,
   Step14,
   Step15,
+  Step16,
+  Step17,
 } from './pqa-visits/first-pqa';
 
 export const prePqaVisits = [
@@ -48,6 +50,8 @@ export const getFirstPqaSteps = ({
   Step9,
   Step10,
   Step11,
-  ...(isStep11AnswerTrue ? [Step12FromYes, Step13, Step14] : []),
+  ...(isStep11AnswerTrue ? [Step12, Step13, Step14] : []),
   Step15,
+  Step16,
+  Step17,
 ];

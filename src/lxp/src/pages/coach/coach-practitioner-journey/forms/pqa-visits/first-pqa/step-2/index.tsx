@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
 
+export const step2VisitSection = 'Step 2';
+export const step2TotalScore = 12;
+
 export const Step2 = ({
   setSectionQuestions,
   setEnableButton,
@@ -34,7 +37,6 @@ export const Step2 = ({
       answer: '',
     },
   ]);
-  const visitSection = 'Step 2';
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -55,7 +57,7 @@ export const Step2 = ({
     setAnswers(updatedQuestions);
     setSectionQuestions?.([
       {
-        visitSection,
+        visitSection: step2VisitSection,
         questions: updatedQuestions,
       },
     ]);
@@ -97,7 +99,7 @@ export const Step2 = ({
         </>
       ))}
       {questions.some((item) => item.answer !== '') && (
-        <Score questions={questions} total={12} />
+        <Score questions={questions} total={step2TotalScore} />
       )}
     </div>
   );
