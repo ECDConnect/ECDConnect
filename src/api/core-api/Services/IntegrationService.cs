@@ -1508,9 +1508,9 @@ namespace ECDLink.Core.Services
 
                 #endregion
 
-                #region Local Updates
+        #region Local Updates
 
-                private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model)
+        private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model)
         {
             //TODO: convert to reflection to simplify
             bool updatedEntity = false;
