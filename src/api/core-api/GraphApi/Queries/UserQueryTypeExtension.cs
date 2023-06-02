@@ -25,7 +25,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     [ExtendObjectType(OperationTypeNames.Query)]
     public class UserQueryTypeExtension
     {
-
+        private const string USER = PermissionGroups.USER;
+        private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province), Roles.ADMINISTRATOR };
         public UserQueryTypeExtension()
         {
         }
@@ -43,7 +44,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             var usersQuery = userManager.Users
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
+
             usersQuery = await AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
 
             usersQuery = AddFiltering(pagingInput, usersQuery);
             usersQuery = AddSorting(pagingInput, usersQuery);
@@ -56,7 +59,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         private async Task<IQueryable<ApplicationUser>> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
             var provinceFilters = pagingInput?.FilterBy?
-                .Where(f => f.FieldName == "Province")
+                .Where(f => f.FieldName == nameof(SiteAddress.Province))
                 .Select(f => f.Value)
                 .ToList();
 
@@ -67,13 +70,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     .Where(p => provinceFilters.Contains(p.Description))
                     .Select(p => p.Id).ToListAsync();
 
-
-                using var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>();
-
                 usersQuery = usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
                     || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
                     || provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
+            }
+
+            return usersQuery;
+        }
+
+        private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(UserManager<ApplicationUser> userManager, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        {
+            // Just get the last "Administrator" filter element, more than one doesn't make sense.
+            var adminFilterValue = pagingInput?.FilterBy?
+                .Where(f => f.FieldName == Roles.ADMINISTRATOR)
+                .LastOrDefault()
+                .Value?.ToLowerInvariant();
+
+            var useAdminFilter = adminFilterValue == "true";
+
+            if (useAdminFilter)
+            {
+                var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
+                var adminUserIds = adminUsers
+                    .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
+                    .Select(r => r.Id).ToList();
+
+                usersQuery = usersQuery.Where(u => adminUserIds.Contains(u.Id));
             }
 
             return usersQuery;
@@ -87,44 +110,46 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             {
                 foreach (var filter in pagingInput.FilterBy)
                 {
-                    if (filter.FieldName.ToLower() != "province")
-                    switch (filter.FilterType)
-                    {
-                        case null:
-                        case InputFilterComparer.Equals:
-                            {
-                                if (filter.Value is null)
-                                    usersQuery = usersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
-                                else if (Guid.TryParse(filter.Value, out var guid))
-                                    usersQuery = usersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
-                                else if (int.TryParse(filter.Value, out var @int))
-                                    usersQuery = usersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
-                                else
-                                    usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
-                            }
-                            break;
-                        case InputFilterComparer.Contains:
-                            usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
-                            break;
-                        case InputFilterComparer.GreaterThan:
-                            {
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
-                                else if (int.TryParse(filter.Value, out int intGt))
-                                    usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
-                            }
-                            break;
-                        case InputFilterComparer.LessThan:
-                            {
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
-                                else if (int.TryParse(filter.Value, out int intGt))
-                                    usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
-                            }
-                            break;
-                    }
+                    // Ignore the filters added by the province and administrator filters
+                    // TODO: This should be parameter.
+                    if (!_customFilterTypes.Contains(filter.FieldName.ToLower()))
+                        switch (filter.FilterType)
+                        {
+                            case null:
+                            case InputFilterComparer.Equals:
+                                {
+                                    if (filter.Value is null)
+                                        usersQuery = usersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
+                                    if (DateTime.TryParse(filter.Value, out var date))
+                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
+                                    else if (Guid.TryParse(filter.Value, out var guid))
+                                        usersQuery = usersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
+                                    else if (int.TryParse(filter.Value, out var @int))
+                                        usersQuery = usersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
+                                    else
+                                        usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
+                                }
+                                break;
+                            case InputFilterComparer.Contains:
+                                usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                                break;
+                            case InputFilterComparer.GreaterThan:
+                                {
+                                    if (DateTime.TryParse(filter.Value, out var date))
+                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
+                                    else if (int.TryParse(filter.Value, out int intGt))
+                                        usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
+                                }
+                                break;
+                            case InputFilterComparer.LessThan:
+                                {
+                                    if (DateTime.TryParse(filter.Value, out var date))
+                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
+                                    else if (int.TryParse(filter.Value, out int intGt))
+                                        usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
+                                }
+                                break;
+                        }
                 }
             }
 
@@ -138,7 +163,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 foreach (var sort in pagingInput.SortBy)
                 {
                     // TODO: Get this working with HotChocolate :(
-                    var sortByFieldName = sort?.FieldName ?? "FullName";
+                    var sortByFieldName = sort?.FieldName ?? nameof(ApplicationUser.FullName);
 
                     if (sort.Descending)
                         usersQuery = usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
@@ -168,19 +193,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 //Franchisor
-                if (roles.Any(x => x.Name.Contains("Franchisor")))
+                if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
                 {
                     var franchisorRepo = repoFactory.CreateGenericRepository<Franchisor>(userContext: user.Id);
                     user.franchisorObjectData = franchisorRepo.GetByUserId(user.Id);
                 }
                 //Coach
-                if (roles.Any(x => x.Name.Contains("Coach")))
+                if (roles.Any(x => x.Name.Contains(Roles.COACH)))
                 {
                     var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: user.Id);
                     user.coachObjectData = coachRepo.GetByUserId(user.Id);
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
-                if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
+                if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
                 {
                     var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: user.Id);
                     var userData = practiRepo.GetByUserId(user.Id);
@@ -199,7 +224,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     }
                 }
                 //Child
-                if (roles.Any(x => x.Name.Contains("Child")))
+                if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
                 {
                     var childRepo = repoFactory.CreateGenericRepository<Child>(userContext: user.Id);
                     user.childObjectData = childRepo.GetByUserId(user.Id);
@@ -240,7 +265,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     tokenuser.FullName = user.FullName;
                     tokenuser.PhoneNumber = user.PhoneNumber;
                     tokenuser.UserId = user.Id;
-                    tokenuser.RoleName = (user.practitionerObjectData != null ? "Practitioner" : user.principalObjectData != null ? "Principal" : user.coachObjectData != null ? "Coach" : "User");
+                    tokenuser.RoleName = (user.practitionerObjectData != null
+                        ? Roles.PRACTITIONER
+                        : user.principalObjectData != null
+                            ? Roles.PRINCIPAL
+                            : user.coachObjectData != null
+                                ? Roles.COACH
+                                : USER);
 
                 }
             }

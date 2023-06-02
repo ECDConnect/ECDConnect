@@ -32,20 +32,3 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         }
     }
 }
-
-//public class PagedQueryInputType : InputObjectType<PagedQueryInput>
-//{
-//    public PagedQueryInputType()
-//    {
-//    }
-
-//    protected override void Configure(
-//        IInputObjectTypeDescriptor<PagedQueryInput> descriptor)
-//    {
-//        descriptor.BindFields(BindingBehavior.Explicit);
-//        descriptor.Field(t => t.PageNumber).Type<NonNullType<IntType>>();
-//        descriptor.Field(t => t.PageSize).Type<NonNullType<IntType>>();
-//        descriptor.Field(t => t.RowOffset).Ignore();
-
-//    }
-//}
