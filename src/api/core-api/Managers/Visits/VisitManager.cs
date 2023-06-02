@@ -429,7 +429,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_practitioner) on visit.VisitTypeId equals visitType.Id
                    select visit
                ).ToList();
+            } else if (type == Constants.SSSettings.client_trainee) {
+                allVisits = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_trainee) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).ToList();
             }
+
             foreach (var _visit in allVisits)
             {
                 _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);

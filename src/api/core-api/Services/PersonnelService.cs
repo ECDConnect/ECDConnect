@@ -573,6 +573,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var timeline = new TraineeOnBoardTimeline();
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+            timeline.TraineeVisits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_trainee);
 
             // StarterLicense
             var starterDate = (

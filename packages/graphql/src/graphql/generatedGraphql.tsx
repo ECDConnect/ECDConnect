@@ -3133,6 +3133,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
@@ -3532,6 +3533,10 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddCoachVisitInviteForTraineeArgs = {
+  input?: InputMaybe<VisitModelInput>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -9518,6 +9523,7 @@ export type TraineeOnBoardTimeline = {
   threeChildrenRegisteredDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
+  traineeVisits?: Maybe<Array<Maybe<Visit>>>;
 };
 
 export type UserByToken = {
@@ -10004,6 +10010,7 @@ export type VisitInput = {
 export type VisitModelInput = {
   actualVisitDate: Scalars['DateTime'];
   attended: Scalars['Boolean'];
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;

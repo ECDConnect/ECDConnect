@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using System;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
 {
@@ -51,5 +53,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SignStartUpSupportAgreementColor { get; set; }
         public DateTime? SignStartUpSupportAgreementDate { get; set; }
         public DateTime? SignStartUpSupportAgreementDeadlineDate { get; set; }
+        public virtual ICollection<Visit> TraineeVisits { get; set; }
     }
 }
