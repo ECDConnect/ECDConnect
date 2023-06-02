@@ -363,6 +363,7 @@ namespace EcdLink.Api.CoreApi
 
             // timeline values
             public const string consolidation_meeting = "Consolidation meeting attended";
+            public const string no_consolidation_meeting = "Did not attend consolidation meeting";
             public const string checklist_done = "SmartSpace Checklist done";
             public const string children_registered = "3 or more children registered";
             public const string franchisee_signed = "Franchisee agreement signed";
