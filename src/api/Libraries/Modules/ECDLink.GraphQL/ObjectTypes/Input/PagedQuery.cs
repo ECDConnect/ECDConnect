@@ -1,6 +1,4 @@
-﻿using ECDLink.EGraphQL.ObjectTypes.Input;
-using HotChocolate;
-using HotChocolate.Types;
+﻿using HotChocolate;
 using System;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input

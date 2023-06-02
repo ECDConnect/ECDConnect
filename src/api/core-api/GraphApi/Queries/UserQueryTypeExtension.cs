@@ -26,7 +26,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
     public class UserQueryTypeExtension
     {
         private const string USER = PermissionGroups.USER;
-        private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province), Roles.ADMINISTRATOR };
+        private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province).ToLowerInvariant(), Roles.ADMINISTRATOR.ToLowerInvariant() };
         public UserQueryTypeExtension()
         {
         }
@@ -47,18 +47,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             usersQuery = await AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
+            usersQuery = AddFiltering(pagingInput?.FilterBy, usersQuery);
+            usersQuery = AddSorting(pagingInput?.SortBy, usersQuery);
+            
+            if (pagingInput is not null)
+                usersQuery = usersQuery
+                    .Skip(pagingInput.RowOffset)
+                    .Take(pagingInput.PageSize);
 
-            usersQuery = AddFiltering(pagingInput, usersQuery);
-            usersQuery = AddSorting(pagingInput, usersQuery);
-
-            return usersQuery
-                .Skip(pagingInput.RowOffset)
-                .Take(pagingInput.PageSize);
+            return usersQuery;
         }
 
         private async Task<IQueryable<ApplicationUser>> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
-            var provinceFilters = pagingInput?.FilterBy?
+            if (pagingInput is null)
+                return usersQuery;
+
+            var provinceFilters = pagingInput.FilterBy?
                 .Where(f => f.FieldName == nameof(SiteAddress.Province))
                 .Select(f => f.Value)
                 .ToList();
@@ -70,7 +75,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     .Where(p => provinceFilters.Contains(p.Description))
                     .Select(p => p.Id).ToListAsync();
 
-                usersQuery = usersQuery
+                return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
                     || provinceIds.Contains(u.coachObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
                     || provinceIds.Contains(u.franchisorObjectData.SiteAddress.ProvinceId ?? Guid.Empty));
@@ -79,101 +84,106 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(UserManager<ApplicationUser> userManager, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
+        private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
+            UserManager<ApplicationUser> userManager,
+            PagedQueryInput pagingInput,
+            IQueryable<ApplicationUser> usersQuery)
         {
             // Just get the last "Administrator" filter element, more than one doesn't make sense.
-            var adminFilterValue = pagingInput?.FilterBy?
-                .Where(f => f.FieldName == Roles.ADMINISTRATOR)
-                .LastOrDefault()
-                .Value?.ToLowerInvariant();
+            var adminFilter = pagingInput?.FilterBy?
+                .Where(f => f.FieldName.ToLowerInvariant() == Roles.ADMINISTRATOR.ToLowerInvariant())
+                .LastOrDefault();
+            if (!bool.TryParse(adminFilter?.Value, out bool isAdminFilterValue))
+                isAdminFilterValue = false;
 
-            var useAdminFilter = adminFilterValue == "true";
-
-            if (useAdminFilter)
+            if (adminFilter is not null)
             {
                 var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
                 var adminUserIds = adminUsers
                     .Where(u => u.TenantId == TenantExecutionContext.Tenant.Id)
                     .Select(r => r.Id).ToList();
 
-                usersQuery = usersQuery.Where(u => adminUserIds.Contains(u.Id));
+                // Get where user.Id is in admin id list. Or not in adminId list if isAdminFilterValue == false
+                return usersQuery.Where(u => isAdminFilterValue ? adminUserIds.Contains(u.Id) : !adminUserIds.Contains(u.Id));
             }
 
             return usersQuery;
         }
 
-        private static IQueryable<ApplicationUser> AddFiltering(PagedQueryInput pagingInput, in IQueryable<ApplicationUser> usersQueryIn)
+        private static IQueryable<ApplicationUser> AddFiltering(FilterByField[] inputFilter, in IQueryable<ApplicationUser> usersQuery)
         {
-            var usersQuery = usersQueryIn.Where(t => true);
+            IQueryable<ApplicationUser> newUsersQuery = usersQuery.AsQueryable();
 
-            if (pagingInput?.FilterBy?.Any() ?? false)
+            if (inputFilter is null || !inputFilter.Any())
+                return newUsersQuery;
+
+            foreach (var filter in inputFilter)
             {
-                foreach (var filter in pagingInput.FilterBy)
-                {
-                    // Ignore the filters added by the province and administrator filters
-                    // TODO: This should be parameter.
-                    if (!_customFilterTypes.Contains(filter.FieldName.ToLower()))
-                        switch (filter.FilterType)
-                        {
-                            case null:
-                            case InputFilterComparer.Equals:
-                                {
-                                    if (filter.Value is null)
-                                        usersQuery = usersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
-                                    if (DateTime.TryParse(filter.Value, out var date))
-                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
-                                    else if (Guid.TryParse(filter.Value, out var guid))
-                                        usersQuery = usersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
-                                    else if (int.TryParse(filter.Value, out var @int))
-                                        usersQuery = usersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
-                                    else
-                                        usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
-                                }
-                                break;
-                            case InputFilterComparer.Contains:
-                                usersQuery = usersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
-                                break;
-                            case InputFilterComparer.GreaterThan:
-                                {
-                                    if (DateTime.TryParse(filter.Value, out var date))
-                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
-                                    else if (int.TryParse(filter.Value, out int intGt))
-                                        usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
-                                }
-                                break;
-                            case InputFilterComparer.LessThan:
-                                {
-                                    if (DateTime.TryParse(filter.Value, out var date))
-                                        usersQuery = usersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
-                                    else if (int.TryParse(filter.Value, out int intGt))
-                                        usersQuery = usersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
-                                }
-                                break;
-                        }
-                }
+                // Ignore the filters added by the province and administrator filters
+                // TODO: This should be parameter.
+                if (!_customFilterTypes.Contains(filter.FieldName.ToLower()))
+                    switch (filter.FilterType)
+                    {
+                        case null:
+                        case InputFilterComparer.Equals:
+                            {
+                                if (filter.Value is null)
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
+                                else if (Guid.TryParse(filter.Value, out var guid))
+                                    newUsersQuery = newUsersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
+                                else if (int.TryParse(filter.Value, out var @int))
+                                    newUsersQuery = newUsersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
+                                else
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
+                            }
+                            break;
+                        case InputFilterComparer.Contains:
+                            newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                            break;
+                        case InputFilterComparer.GreaterThan:
+                            {
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
+                                else if (int.TryParse(filter.Value, out int intGt))
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
+                            }
+                            break;
+                        case InputFilterComparer.LessThan:
+                            {
+                                if (DateTime.TryParse(filter.Value, out var date))
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
+                                else if (int.TryParse(filter.Value, out int intGt))
+                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
+                            }
+                            break;
+                    }
             }
 
-            return usersQuery;
+            return newUsersQuery;
         }
 
-        private static IQueryable<ApplicationUser> AddSorting(PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        private static IQueryable<ApplicationUser> AddSorting(SortByField[] sortBy, in IQueryable<ApplicationUser> usersQuery)
         {
-            if (pagingInput.SortBy?.Any() ?? false)
+            if (sortBy?.Any() ?? false)
             {
-                foreach (var sort in pagingInput.SortBy)
+                foreach (var sort in sortBy)
                 {
                     // TODO: Get this working with HotChocolate :(
                     var sortByFieldName = sort?.FieldName ?? nameof(ApplicationUser.FullName);
 
                     if (sort.Descending)
-                        usersQuery = usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
+                        return usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
                     else
-                        usersQuery = usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
+                        return usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
                 }
             }
             else
             {
-                usersQuery = usersQuery.OrderBy(u => u.Surname).ThenBy(u => u.FirstName);
+                // Add default sort.
+                return usersQuery.OrderBy(u => u.Surname).ThenBy(u => u.FirstName);
             }
 
             return usersQuery;
