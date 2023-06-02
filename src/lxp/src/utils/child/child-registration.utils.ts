@@ -136,6 +136,7 @@ export const mapDocumentDto = (
   fileName: string,
   statusId: string,
   typeId: string,
+  fileType: string,
   file?: string,
   user?: UserDto
 ): Document => {
@@ -148,7 +149,7 @@ export const mapDocumentDto = (
     name: fileName,
     fileName: fileName,
     file: file,
-    fileType: FileTypeEnum.Child,
+    fileType: fileType,
   };
 };
 

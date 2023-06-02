@@ -106,6 +106,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             };
         }
 
+        public Visit AddVisitForCoach(VisitModel input)
+        {
+            var visit = GetCoachVisitFromInputModel(input);
+            return _visitRepo.Insert(visit);
+        }
+        private Visit GetCoachVisitFromInputModel(VisitModel input)
+        {
+            if (input == null)
+            {
+                return null;
+            }
+
+            return new Visit()
+            {
+                Id = Guid.NewGuid(),
+                IsActive = true,
+                Attended = input.Attended,
+                InsertedDate = DateTime.Now,
+                UpdatedDate = DateTime.Now,
+                VisitTypeId = input.VisitType.Id,
+                TraineeId = input.TraineeId,
+                CoachId = input.CoachId,
+                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Comment = input.Comment,
+                UpdatedBy = _applicationUserId,
+                LinkedVisitId = input.LinkedVisitId,
+                ActualVisitDate = input.ActualVisitDate,
+                PlannedVisitDate = input.PlannedVisitDate
+            };
+        }
+
         public Visit AddVisitForTrainee(VisitModel input)
         {
             var visit = GetTraineeVisitFromInputModel(input);
@@ -160,6 +191,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 ActualVisitDate = input.ActualVisitDate
             };
         }
+
+        #region Reporting
         public string GetFirstMissedVisit(Guid Id, string type)
         {
             var message = "";
@@ -396,7 +429,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_practitioner) on visit.VisitTypeId equals visitType.Id
                    select visit
                ).ToList();
+            } else if (type == Constants.SSSettings.client_trainee) {
+                allVisits = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null).OrderBy(x => x.PlannedVisitDate)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_trainee) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).ToList();
             }
+
             foreach (var _visit in allVisits)
             {
                 _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
@@ -474,6 +514,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
+
+        #endregion
 
         public bool ValidateDefaultVisitsForPractitioner(string userId)
         {

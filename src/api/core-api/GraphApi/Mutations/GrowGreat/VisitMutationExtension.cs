@@ -400,5 +400,40 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         }
 
         #endregion
+
+        #region Coaches
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddCoachVisitInviteForTrainee(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            VisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: applicationUserId);
+            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+
+            if (input.LinkedVisitId == null || input.CoachId == null || input.TraineeId == null)
+            {
+                return new Visit();
+            }
+
+            input.VisitType = visitType;
+            input.Attended = false;
+            input.CoachId = coach.Id;
+            input.TraineeId = trainee.Id;
+            input.LinkedVisitId = input.LinkedVisitId;
+            input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+
+            return visitManager.AddVisitForCoach(input);
+        }
+
+        #endregion
     }
 }
