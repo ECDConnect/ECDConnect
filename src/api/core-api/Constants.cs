@@ -13,6 +13,7 @@ namespace EcdLink.Api.CoreApi
     {
             public const string client_practitioner = "practitioner";
             public const string client_trainee = "trainee";
+            public const string client_coach = "coach";
 
             // Visit types
             public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
@@ -32,6 +33,8 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
+
+            public const string visitType_trainee_visit = "trainee_visit";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";

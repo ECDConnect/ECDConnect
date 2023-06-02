@@ -573,6 +573,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             var timeline = new TraineeOnBoardTimeline();
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+            timeline.TraineeVisits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_trainee);
 
             // StarterLicense
             var starterDate = (
@@ -588,6 +589,30 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 timeline.SignFranchiseeAgreementDeadlineDate = starterDate.Value.AddDays(7);
                 timeline.SignStartUpSupportAgreementDeadlineDate = starterDate.Value.AddDays(7);
+            } else
+            {
+                timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
+                timeline.StarterLicenseColor = MetricsColorEnum.Warning.ToString();
+            }
+            
+
+            // SmartSpace license received
+            var smartSpaceDate = (
+                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_licence) on license.LicenseTypeId equals licenseType.Id
+                select license
+            ).Select(x => x.LicenseDate).FirstOrDefault();
+
+            if (smartSpaceDate != null)
+            {
+                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
+                timeline.SmartSpaceLicenseDate = smartSpaceDate;
+                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+            else
+            {
+                timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
+                timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
             }
 
             // DayOneStartUpTraining
