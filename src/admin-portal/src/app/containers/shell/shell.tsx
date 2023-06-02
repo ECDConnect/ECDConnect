@@ -36,8 +36,8 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
       to={item.route}
       className={classNames(
         routeMatch
-          ? 'bg-white text-textMid'
-          : 'hover:bg-white hover:text-textMid',
+          ? 'bg-tertiary text-white'
+          : 'hover:bg-white hover:textMid',
         'text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md'
       )}
     >
@@ -45,8 +45,8 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
         icon={item.icon}
         className={classNames(
           routeMatch
-            ? 'text-gray-500'
-            : 'text-gray-400 group-hover:text-gray-500',
+            ? 'text-white'
+            : 'text-white group-hover:text-gray-500',
           'mr-3 flex-shrink-0 h-6 w-6'
         )}
         color="transparent"
@@ -117,7 +117,7 @@ export default function Shell() {
     history.push('/');
   };
 
-  const userNavigation = [{ name: 'Sign out', onClick: signOutClick }];
+  const userNavigation = [{ name: 'Profile', onClick: ()=>{} }, { name: 'Sign out', onClick: signOutClick }];
 
   const displayInformationPanel = () => {
     panel({
@@ -203,7 +203,7 @@ export default function Shell() {
         </Dialog>
       </Transition.Root>
 
-      <div className="hidden bg-primary md:flex md:flex-shrink-0">
+      <div className="darkBackground hidden md:flex md:flex-shrink-0">
         <div className="flex flex-col w-64">
           <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
             <div className="flex items-center justify-center flex-shrink-0 px-4">
