@@ -126,7 +126,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 InsertedDate = DateTime.Now,
                 UpdatedDate = DateTime.Now,
                 VisitTypeId = input.VisitType.Id,
-                PractitionerId = input.PractitionerId,
+                TraineeId = input.TraineeId,
                 CoachId = input.CoachId,
                 Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
                 Comment = input.Comment,
