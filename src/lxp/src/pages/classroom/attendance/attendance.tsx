@@ -60,7 +60,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const classroomGroupsForPrincipal = allClassroomGroups.filter(
     (item) => item?.userId === userData?.id
   );
-
   const classroomGroups = isPrincipal
     ? classroomGroupsForPrincipal.filter(
         (x) => x.name !== NoPlaygroupClassroomType.name
@@ -174,7 +173,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         classProgrammesUpdated,
         attendance,
         holidays,
-        currentDate
+        currentDate,
+        learners
       );
 
     //weekend check
@@ -226,7 +226,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
         classProgrammesUpdated,
         attendance || [],
         holidays,
-        currentDate
+        currentDate,
+        learners
       );
 
     const removeTodaysAttendance = missedClassAttendance.filter(

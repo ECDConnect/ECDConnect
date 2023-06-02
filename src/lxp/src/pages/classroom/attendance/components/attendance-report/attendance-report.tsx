@@ -78,12 +78,16 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   >([]);
 
   useEffect(() => {
-    const trackAttendance = async () => {
-      return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
-    };
-    trackAttendance().then(() => {
-      setAttendanceTracked(true);
-    });
+    if (!attendanceTracked) {
+      const trackAttendance = async () => {
+        return await appDispatch(
+          attendanceThunkActions.trackAttendanceSync({})
+        );
+      };
+      trackAttendance().then(() => {
+        setAttendanceTracked(true);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

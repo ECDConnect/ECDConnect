@@ -288,13 +288,16 @@ export const ChildRegistration: React.FC = () => {
       const documentStatusId = await getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentPendingVerification
       );
-      const typeId = await getDocumentTypeIdByEnum(FileTypeEnum.Child);
+      const typeId = await getDocumentTypeIdByEnum(
+        FileTypeEnum.ChildRegistrationForm
+      );
 
       const documentInputModel = childRegisterUtils.mapDocumentDto(
         userId,
         fileName,
         documentStatusId ?? '',
         typeId ?? '',
+        FileTypeEnum.ChildRegistrationForm,
         formState.childRegistrationFormModel?.registrationForm,
         user
       );
@@ -404,13 +407,20 @@ export const ChildRegistration: React.FC = () => {
     const documentStatusId = await getWorkflowStatusIdByEnum(
       WorkflowStatusEnum.DocumentPendingVerification
     );
-    const typeId = await getDocumentTypeIdByEnum(FileTypeEnum.Child);
+
+    const fileType =
+      birthCertificateForm?.birthCertificateType === 'clinicCard'
+        ? FileTypeEnum.ChildClinicCard
+        : FileTypeEnum.ChildBirthCertificate;
+
+    const typeId = await getDocumentTypeIdByEnum(fileType);
 
     const documentInputModel = childRegisterUtils.mapDocumentDto(
       existingChildUser?.id || '',
       fileName,
       documentStatusId || '',
       typeId || '',
+      fileType,
       birthCertificateForm.birthCertificateImage,
       user
     );

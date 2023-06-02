@@ -116,10 +116,11 @@ export const nextAttendableDateAfterStartDate = (
 };
 
 export const getMissedClassAttendance = (
-  classRoomGroup: ClassroomGroupDto[],
+  classRoomGroups: ClassroomGroupDto[],
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
-  date: Date
+  date: Date,
+  classroomGroupLearners?: LearnerDto[]
 ) => {
   const dayOfWeek = getDay(date);
   const currentDayFilter = dayOfWeek === 0 ? 7 : dayOfWeek;
@@ -144,7 +145,16 @@ export const getMissedClassAttendance = (
 
   if (classProgrammesUpToCurrentDay)
     for (const programme of classProgrammesUpToCurrentDay) {
+      const classGroups = classRoomGroups.filter((x) => {
+        return x.id === programme.classroomGroupId;
+      });
+      const classLearners = classroomGroupLearners?.filter((x) => {
+        return classGroups.some((item) => item.id === x.classroomGroupId);
+      });
       if (
+        classLearners &&
+        classLearners.length &&
+        classLearners.length > 0 &&
         !attendance.some((att) => att.classroomProgrammeId === programme.id)
       ) {
         returnProgrammes.push(programme);
@@ -249,7 +259,8 @@ export const getMissedAttendanceSummaryGroups = (
   classProgrammes: ClassProgrammeDto[],
   attendance: AttendanceDto[],
   holidays: HolidayDto[],
-  currentDate: Date
+  currentDate: Date,
+  classroomGroupLearners: LearnerDto[]
 ) => {
   const meetingDays = getClassroomGroupSchoolDays(classProgrammes);
 
@@ -261,7 +272,8 @@ export const getMissedAttendanceSummaryGroups = (
         classroomGroups,
         classProgrammes,
         attendance,
-        currentDate
+        currentDate,
+        classroomGroupLearners
       );
 
       const startOfWeekDate = startOfWeek(currentDate, { weekStartsOn: 1 });

@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public bool Attended { get; set; }
         public Guid? PractitionerId { get; set; }
         public Guid? TraineeId { get; set; }
+        public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
     }
 

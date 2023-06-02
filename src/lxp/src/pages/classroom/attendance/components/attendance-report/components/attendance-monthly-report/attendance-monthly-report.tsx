@@ -8,10 +8,7 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { AttendanceService } from '@services/AttendanceService';
-import {
-  getMonthName,
-  getMonthRange,
-} from '@utils/classroom/attendance/track-attendance-utils';
+import { getMonthRange } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
@@ -86,9 +83,7 @@ export const AttendanceMonthlyReport: React.FC<
             <div
               onClick={() => {
                 setDisplayReport(true);
-                setViewReportDate(
-                  getMonthName(attendanceItem?.monthOfYear - 1)
-                );
+                setViewReportDate(attendanceItem?.month);
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
@@ -102,14 +97,12 @@ export const AttendanceMonthlyReport: React.FC<
                     type={'h3'}
                     weight={'bold'}
                     color={'black'}
-                    text={`${getMonthName(
-                      attendanceItem.monthOfYear - 1
-                    )} ${getYear(new Date())}`}
+                    text={`${attendanceItem.month} ${getYear(new Date())}`}
                     lineHeight={'none'}
                   ></Typography>
 
                   <Typography
-                    text={`submited registers`}
+                    text={`submitted registers`}
                     weight={'bold'}
                     color={'black'}
                     type={'h3'}

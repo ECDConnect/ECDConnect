@@ -95,6 +95,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const classroomGroups = allClassroomGroups.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
   const classroomGroupsForPrincipal = classroomGroups.filter(
     (item) => item?.userId === userData?.id
   );
@@ -195,7 +198,8 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           classProgrammesUpdated,
           attendance,
           holidays,
-          todayDate
+          todayDate,
+          classroomGroupLearners
         );
 
       if (attendanceToDoList.length > 0) {
@@ -212,6 +216,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     practitioner?.isPrincipal,
     classroomGroupsForPrincipal,
     classroomGroups,
+    classroomGroupLearners,
   ]);
 
   useEffect(() => {
