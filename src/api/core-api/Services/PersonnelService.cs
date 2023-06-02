@@ -419,7 +419,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // consolidation meetings 
-            if (trainee.ConsolidationMeetingDate != null)
+            if (trainee?.ConsolidationMeetingDate != null)
             {
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Success.ToString();
@@ -428,7 +428,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             {
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.no_consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Warning.ToString();
-                timeline.ConsolidationMeetingDate = trainee.ConsolidationMeetingDate;
+                timeline.ConsolidationMeetingDate = trainee?.ConsolidationMeetingDate;
             }
 
             // TODO: club meetings - waiting for integration to be completed
