@@ -18,6 +18,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string StarterLicenseColor { get; set; }
         public DateTime? StarterLicenseDate { get; set; }
 
+        public string SmartSpaceLicenseStatus { get; set; }
+        public string SmartSpaceLicenseColor { get; set; }
+        public DateTime? SmartSpaceLicenseDate { get; set; }
+
         public string ConsolidationMeetingStatus { get; set; }
         public string ConsolidationMeetingColor { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }

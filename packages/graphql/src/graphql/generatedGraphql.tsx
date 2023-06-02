@@ -9516,6 +9516,9 @@ export type TraineeOnBoardTimeline = {
   smartSpaceChecklistDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistDeadlineDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistStatus?: Maybe<Scalars['String']>;
+  smartSpaceLicenseColor?: Maybe<Scalars['String']>;
+  smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
