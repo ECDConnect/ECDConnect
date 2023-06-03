@@ -16,7 +16,7 @@ import {
   getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
 import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
 import {
@@ -42,7 +42,7 @@ export const Form = ({ onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+    getPreviousVisitInformationForMotherSelector
   );
   const referralsForMother = useSelector(getReferralsForMothertSelector);
 

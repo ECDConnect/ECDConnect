@@ -38,8 +38,8 @@ export const DangerSignsFollowUpStep = ({
       li?.textContent?.trim()
     ) || []) as string[];
 
-    return { message: `${name} ${message}`, list: sentences };
-  }, [name, previousVisit?.visitDataStatus]);
+    return { message: `${message}`, list: sentences };
+  }, [previousVisit?.visitDataStatus]);
 
   useLayoutEffect(() => {
     setEnableButton?.(true);

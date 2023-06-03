@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ECDLink.DataAccessLayer.Entities.Visits;
+using System;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
 {
@@ -15,6 +17,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string StarterLicenseStatus { get; set; }
         public string StarterLicenseColor { get; set; }
         public DateTime? StarterLicenseDate { get; set; }
+
+        public string SmartSpaceLicenseStatus { get; set; }
+        public string SmartSpaceLicenseColor { get; set; }
+        public DateTime? SmartSpaceLicenseDate { get; set; }
 
         public string ConsolidationMeetingStatus { get; set; }
         public string ConsolidationMeetingColor { get; set; }
@@ -51,5 +57,6 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SignStartUpSupportAgreementColor { get; set; }
         public DateTime? SignStartUpSupportAgreementDate { get; set; }
         public DateTime? SignStartUpSupportAgreementDeadlineDate { get; set; }
+        public virtual ICollection<Visit> TraineeVisits { get; set; }
     }
 }
