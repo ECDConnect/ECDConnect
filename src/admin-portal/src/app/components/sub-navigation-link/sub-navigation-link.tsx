@@ -12,9 +12,9 @@ const SubNavigationLink: React.FC<menuItemProps> = ({ item }) => {
       to={item.href}
       className={classNames(
         routeMatch
-          ? 'bg-uiMidDark text-white'
-          : 'text-textMid hover:bg-uiMidDark hover:text-white',
-        'group flex items-center px-4 text-sm font-medium h-14'
+          ? 'bg-infoBb text-secondary border-b-secondary border-b-2  bg-white '
+          : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
+        'flex h-14 items-center text-lg font-medium users-tabs'
       )}
     >
       {item.name}
