@@ -89,6 +89,7 @@ namespace ECDLink.Core.Services
         public Guid tenantId = TenantExecutionContext.Tenant.Id;
         public List<IntegrationEntityMapping> _mappedEntities;
         public List<IntegrationColumnMapping> _mappedColumns;
+        public List<IntegrationAudit> _audits;
 
         public IntegrationService(
             IGenericRepositoryFactory repositoryFactory,
@@ -293,11 +294,13 @@ namespace ECDLink.Core.Services
                 */
 
                 //Only allow data pulling when api mode has been set
-                
+
+
                 if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
                 {
                     _mappedEntities = await this.GetMappedEntities();
                     _mappedColumns = await this.GetMappedColumns();
+                    
 
                     //-------------------
                     //1. - check all changes on known entities marked as changed from SL API and update
@@ -331,7 +334,7 @@ namespace ECDLink.Core.Services
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {
                         //filter valid entities that havent failed importing before
-                        await PushData();                        
+                        //await PushData();                        
                     }
 
                     //-------------------
@@ -427,6 +430,10 @@ namespace ECDLink.Core.Services
                             }
                             returnOK = true;
                         }
+
+                        //Pull Trainees
+                        //List<MappedTrainee> remoteTrainees = await GetTraineesByCoach(coach.RemoteId);
+
                     }
                 }
 
@@ -561,6 +568,51 @@ namespace ECDLink.Core.Services
             catch (Exception e)
             {
                 await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetFranchiseesById > " + remoteId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+
+        private async Task<List<MappedTrainee>> GetTraineesByCoach(string remoteCoachId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                //List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Fra", AllColumns = "True", Columns = "", JoinType = "Outer" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SSTrainee + SSIntegrationSettings.QueryAll, optionConditions, null);
+                return JsonConvert.DeserializeObject<List<MappedTrainee>>(responseString);
+
+            }
+            catch (Exception e)
+            {
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+
+        private async Task<List<MappedTrainee>> GetTraineesById(string remoteId)
+        {
+            try
+            {
+                //List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                //relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "SiteAddress", AllColumns = "True", Columns = "", JoinType = "Outer" });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLTrainee + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", remoteId), null, null);
+
+                var trainee = JsonConvert.DeserializeObject<MappedTrainee>(responseString);
+
+
+
+                return new List<MappedTrainee> { trainee };
+
+            }
+            catch (Exception e)
+            {
+                await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesById > " + remoteId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }
@@ -823,7 +875,7 @@ namespace ECDLink.Core.Services
                             MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
                             ConsentForPhoto = entity.ConsentForPhoto,
                             StipendType = entity.StipendType,
-                            StartDate = entity.StartDate,
+                            StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
                         };
 
                         //check phone number is valid
@@ -862,7 +914,7 @@ namespace ECDLink.Core.Services
                             Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
                             IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
                             VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
-                            DateOfBirth = Convert.ToDateTime(entity.BirthDate),
+                            DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
                             FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
                             Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
                             FullName = entity.FirstName + " " + entity.Surname,
@@ -1128,7 +1180,7 @@ namespace ECDLink.Core.Services
 
                             if (entity.BirthDate != null)
                             {
-                                newUser.DateOfBirth = (DateTime)entity.BirthDate;
+                                newUser.DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date;
                             }
 
                             var newChild = new Child
@@ -2685,13 +2737,12 @@ namespace ECDLink.Core.Services
 
         private async Task<bool> PushInserts(List<IntegrationAudit> audits)
         {
+            bool isComplete = false;
 
-            //User entities
-            List<Child> newChildren = new List<Child>();
+            //Child user entities push
             var childrenInserted = audits.Where(a => a.Entity.Equals("Child"));
             foreach (var childAudit in childrenInserted)
-            {
-                
+            {                
                 var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
                 if (newChild != null)
                 {
@@ -2707,28 +2758,60 @@ namespace ECDLink.Core.Services
                             if (!string.IsNullOrEmpty(mappedPractitioner.RemoteId))
                             {
                                 string remoteChildEntityId = await PushNewChild(newChild, mappedPractitioner.RemoteId);
-                                var caregiverAudit = audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.Equals(newChild.CaregiverId)).FirstOrDefault();
                                 //write back that these have been processed
-                                childAudit.Submitted = DateTime.Now;
-                                caregiverAudit.Submitted = DateTime.Now;
-                                _auditRepo.Update(childAudit);
-                                _auditRepo.Update(caregiverAudit);
+                                var caregiverAudits = audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();                                
+                                if (caregiverAudits!=null)
+                                {
+                                    foreach (var cgAudits in caregiverAudits)
+                                    {
+                                        cgAudits.Submitted = DateTime.Now;
+                                        _auditRepo.Update(cgAudits);
+                                        //remove from overhanging audit lines
+                                        _audits.Remove(cgAudits);
+                                    }
+                                }
+                                var childAudits = audits.Where(a => (a.Entity.Equals("Child") && a.RelatedId.ToString() == newChild.Id.ToString()) || (a.Entity.Equals("ApplicationUser") && a.RelatedId.ToString() == newChild.UserId.ToString())).ToList();
+                                if (childAudits != null)
+                                {
+                                    foreach (var cAudits in childAudits)
+                                    {
+                                        cAudits.Submitted = DateTime.Now;
+                                        _auditRepo.Update(cAudits);
+                                        //remove from overhanging audit lines
+                                        _audits.Remove(cAudits);
+                                    }
+                                }
                             }
                         }
                     }
                 }
+                isComplete = true;
             }
-
-
-
             //Attendance
             //PushAttendance(); -- monthly push
             //Income Statements
             //PushStatements(); -- monthly push
             //Documents
-            PushDocuments(audits);
+            //PushDocuments(audits);
+            var docsInserted = audits.Where(a => a.Entity.Equals("Document"));
+            foreach (var docAudit in docsInserted)
+            {
 
-            return true;
+
+                //push child docs
+                //var docsAudits = audits.Where(a => a.Entity.Equals("Document") && a.RelatedId.ToString() == newChild.ToString()).ToList();
+                //if (childAudits != null)
+                //{
+                //    foreach (var cAudits in childAudits)
+                //    {
+                //        cAudits.Submitted = DateTime.Now;
+                //        _auditRepo.Update(cAudits);
+                //    }
+
+                //}
+            }
+
+            return isComplete;
         }
 
         private async Task<bool> PushData()
@@ -2736,19 +2819,19 @@ namespace ECDLink.Core.Services
             int changesCheckTime = 1620;
             //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
 
-            List<IntegrationAudit> audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("2d572390-6135-4928-ae14-b01b1a8a346a") && x.ChangeType.Equals("Update")).ToList();
+            _audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("50766593-9c6f-4d98-99f2-0272f5bf4c7f") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
 
-            var deletes = audits.Where(x => x.ChangeType.Equals("Delete")).ToList();
+            var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
             if (deletes.Count > 0)
                 await PushDeletes(deletes);
 
             //Inserts
-            var inserts = audits.Where(x => x.ChangeType.Equals("Insert")).ToList();
+            var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
             if (inserts.Count > 0)
                 await PushInserts(inserts);
 
             //Updates & Deactivates
-            var updates = audits.Where(x => x.ChangeType.Equals("Update")).ToList();
+            var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted==null).ToList();
             if (updates.Count > 0)
                 await PushUpdates(updates);
 
@@ -2822,66 +2905,60 @@ namespace ECDLink.Core.Services
                     {
                         try
                         {
-                        if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
-                        {
-                            if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                            if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
                             {
-                                string valueToSend = "";
-                                //Type changeObj = changeLine.LocalEntity.GetType();
-                                //var obj = Convert.ChangeType(changeLine.LocalEntity, changeObj);
-                                switch (changeLine.LocalEntity)
+                                if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
                                 {
-                                    case "SiteAddress":
-                                        if (newChild.Caregiver.SiteAddress != null && typeof(SiteAddress).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                        {
-                                            valueToSend = typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress) != null ? typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress).ToString() : null;
-                                        }
-                                        break;
-                                    case "Caregiver":
-                                        if (newChild.Caregiver != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
-                                        {
-                                            valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver).ToString() : null;
-                                        }
-                                        break;
-                                }
-                                //valueToSend = "";// typeof(changeObj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver) != null ? typeof(obj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver).ToString() : null;
-                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
-                                if (changeLine.RemapToString)
-                                {
-                                    if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                    string valueToSend = "";
+                                    switch (changeLine.LocalEntity)
                                     {
-                                        valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                        case "SiteAddress":
+                                            if (newChild.Caregiver.SiteAddress != null && typeof(SiteAddress).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                            {
+                                                valueToSend = typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress) != null ? typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress).ToString() : null;
+                                            }
+                                            break;
+                                        case "Caregiver":
+                                            if (newChild.Caregiver != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                            {
+                                                valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver).ToString() : null;
+                                            }
+                                            break;
                                     }
-                                }
-                                if (!string.IsNullOrEmpty(valueToSend))
-                                {
-                                    switch (changeLine.EntityDataType)
+                                    //valueToSend = "";// typeof(changeObj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver) != null ? typeof(obj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver).ToString() : null;
+                                    //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                    if (changeLine.RemapToString)
                                     {
-                                        case "bool":
-                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
-                                            break;
-                                        case "integer":
-                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
-                                            break;
-                                        case "datetime":                
-                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                                            break;
-                                        default:
-                                            jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
-                                            break;
+                                        if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                        {
+                                            valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                        }
+                                    }
+                                    if (!string.IsNullOrEmpty(valueToSend))
+                                    {
+                                        switch (changeLine.EntityDataType)
+                                        {
+                                            case "bool":
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                break;
+                                            case "integer":
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                break;
+                                            case "datetime":                
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                break;
+                                            default:
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                break;
+                                        }
                                     }
                                 }
                             }
-                        }
                         }
                         catch (Exception e)
                         {
                             await IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");                        
                         }
-                        
-                        ////remove entry from audits list as we have processed it here and sending
-                        //completedList.Add(changeLine);
-                        //audits.Remove(changeLine);
                     }
                     jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
                 }
@@ -2898,8 +2975,6 @@ namespace ECDLink.Core.Services
                         if (returnObj != null)
                         {
                             cgRemoteId = returnObj[0].ToString();
-                            //there was a reason why these entries did not update
-                            //await UpdateAuditSubmitted(completedList);
                             IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
                             cgMapping.LocalEntity = SSIntegrationSettings.SSCaregiver;
                             cgMapping.RemoteEntity = SSIntegrationSettings.SLCaregiver;
@@ -2947,8 +3022,6 @@ namespace ECDLink.Core.Services
                                 bool bAddClassroomGroup = false;
                                 //string valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
                                 string valueToSend = "";
-                                //Type changeObj = changeLine.LocalEntity.GetType();
-                                //var obj = Convert.ChangeType(changeLine.LocalEntity, changeObj);
                                 switch (changeLine.LocalEntity)
                                 {
                                     case "ApplicationUser":
@@ -3154,7 +3227,6 @@ namespace ECDLink.Core.Services
             {
                 try
                 {
-
                     StringBuilder jsonString = new StringBuilder();
                     var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
 
