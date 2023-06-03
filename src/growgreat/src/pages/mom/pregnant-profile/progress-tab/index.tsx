@@ -87,6 +87,7 @@ export const ProgressTab = () => {
     )
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
+          userId: mother?.id || '',
           visitId: currentVisit?.id,
         })
       );
@@ -95,6 +96,7 @@ export const ProgressTab = () => {
     currentVisit,
     currentVisit?.id,
     isWalkthroughSession,
+    mother?.id,
     previousCurrentVisit,
   ]);
 
