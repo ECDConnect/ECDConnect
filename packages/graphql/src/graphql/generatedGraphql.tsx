@@ -1934,6 +1934,7 @@ export type FileModel = {
 };
 
 export enum FileTypeEnum {
+  AttendancePdf = 'ATTENDANCE_PDF',
   CareGiver = 'CARE_GIVER',
   Child = 'CHILD',
   ChildBirthCertificate = 'CHILD_BIRTH_CERTIFICATE',
@@ -1942,15 +1943,20 @@ export enum FileTypeEnum {
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
   ContentImage = 'CONTENT_IMAGE',
+  IdentityDocument = 'IDENTITY_DOCUMENT',
   IncomeStatementPdf = 'INCOME_STATEMENT_PDF',
   MaternalCaseRecord = 'MATERNAL_CASE_RECORD',
   Practitioner = 'PRACTITIONER',
+  PractitionerAgreement = 'PRACTITIONER_AGREEMENT',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
   ProgressTrackingSubCategory = 'PROGRESS_TRACKING_SUB_CATEGORY',
+  ProofOfAccount = 'PROOF_OF_ACCOUNT',
+  ProofOfSiteAddress = 'PROOF_OF_SITE_ADDRESS',
   ReportTemplates = 'REPORT_TEMPLATES',
   RoadToHealthBook = 'ROAD_TO_HEALTH_BOOK',
+  StartupSupportAgreement = 'STARTUP_SUPPORT_AGREEMENT',
   Theme = 'THEME',
   Unknown = 'UNKNOWN',
 }
@@ -3127,6 +3133,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
@@ -3519,10 +3526,6 @@ export type MutationAddAdditionalVisitForMotherArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
 
-export type MutationAddAnnualReAccreditationVisitForPractitionerArgs = {
-  input?: InputMaybe<ReAccreditationVisitModelInput>;
-};
-
 export type MutationAddClinicArgs = {
   input?: InputMaybe<ClinicModelInput>;
 };
@@ -3532,8 +3535,8 @@ export type MutationAddCoachToFranchisorArgs = {
   franchisorId?: InputMaybe<Scalars['String']>;
 };
 
-export type MutationAddDefaultVisitsForPractitionerArgs = {
-  userId?: InputMaybe<Scalars['String']>;
+export type MutationAddCoachVisitInviteForTraineeArgs = {
+  input?: InputMaybe<VisitModelInput>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -3560,7 +3563,7 @@ export type MutationAddMotherArgs = {
   input?: InputMaybe<MotherModelInput>;
 };
 
-export type MutationAddPgaRatingVisitForPractitionerArgs = {
+export type MutationAddPqaRatingVisitForPractitionerArgs = {
   ratingColor?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -3613,6 +3616,10 @@ export type MutationAddRoleArgs = {
 
 export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
+};
+
+export type MutationAddStartupSupportAgreementForTraineeArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddSupportVisitForPractitionerArgs = {
@@ -4628,6 +4635,11 @@ export type MutationSaveIncomeStatementPdfArgs = {
   input?: InputMaybe<IncomeStatementPdfDocInput>;
 };
 
+export type MutationScheduleConsolidationMeetingDateArgs = {
+  scheduledDate?: InputMaybe<Scalars['DateTime']>;
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationSendCoachInviteToApplicationArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -4752,6 +4764,11 @@ export type MutationUpdateCommunitySectionSsArgs = {
   input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateCommunitySupportArgs = {
+  haveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateConsentArgs = {
@@ -9499,6 +9516,9 @@ export type TraineeOnBoardTimeline = {
   smartSpaceChecklistDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistDeadlineDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistStatus?: Maybe<Scalars['String']>;
+  smartSpaceLicenseColor?: Maybe<Scalars['String']>;
+  smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
@@ -9506,6 +9526,7 @@ export type TraineeOnBoardTimeline = {
   threeChildrenRegisteredDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
+  traineeVisits?: Maybe<Array<Maybe<Visit>>>;
 };
 
 export type UserByToken = {
@@ -9642,6 +9663,8 @@ export type Visit = {
   __typename?: 'Visit';
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   attended: Scalars['Boolean'];
+  coach?: Maybe<Coach>;
+  coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   infant?: Maybe<Infant>;
@@ -9843,6 +9866,8 @@ export type VisitFilterInput = {
   actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<VisitFilterInput>>;
   attended?: InputMaybe<BooleanOperationFilterInput>;
+  coach?: InputMaybe<CoachFilterInput>;
+  coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
@@ -9962,6 +9987,8 @@ export type VisitGrowthDataHeightInput = {
 export type VisitInput = {
   ActualVisitDate?: InputMaybe<Scalars['DateTime']>;
   Attended: Scalars['Boolean'];
+  Coach?: InputMaybe<CoachInput>;
+  CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
@@ -9986,6 +10013,7 @@ export type VisitInput = {
 export type VisitModelInput = {
   actualVisitDate: Scalars['DateTime'];
   attended: Scalars['Boolean'];
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;

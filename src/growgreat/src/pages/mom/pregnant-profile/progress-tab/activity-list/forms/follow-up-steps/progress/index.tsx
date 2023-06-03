@@ -42,10 +42,17 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     )
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
+          userId: mother?.id || '',
           visitId: currentVisit?.id,
         })
       );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+  }, [
+    appDispatch,
+    currentVisit,
+    currentVisit?.id,
+    mother?.id,
+    previousCurrentVisit,
+  ]);
 
   useEffect(() => {
     setEnableButton?.(true);

@@ -43,8 +43,7 @@ export const PastVisits: React.FC = () => {
   const filteredVisits = useMemo(
     () =>
       visits.filter(
-        (item) =>
-          new Date(item.visitType?.insertedDate || '') >= infantInsertedDate
+        (item) => new Date(item.orderDate || '') >= infantInsertedDate
       ),
     [infantInsertedDate, visits]
   );
