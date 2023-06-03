@@ -154,7 +154,7 @@ const visitSlice = createSlice({
     builder.addCase(getHealthPromotion.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const updatedDataIndex = state.healthPromotion?.findIndex(
-        (item) => item.id === action.payload.id
+        (item) => item?.id === action.payload.id
       );
 
       if (

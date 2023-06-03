@@ -38,7 +38,10 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { motherThunkActions } from '@/store/mother';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getIsMotherFirstVisitSelector,
+  getMotherById,
+} from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -106,6 +109,8 @@ export const MomActivityList: React.FC = () => {
 
   const user = useSelector(userSelectors.getUser);
 
+  const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
+
   const completedVisits = useSelector((state: RootState) =>
     getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
   )?.visits;
@@ -118,6 +123,17 @@ export const MomActivityList: React.FC = () => {
     previousMotherVisit?.visitDataStatus?.length! > 0
       ? activitiesList
       : activitiesList;
+
+  const { visibleActivities } = useMemo(() => {
+    const visibleActivities = activityListUpdated.filter((item) => {
+      if (item.id === activitiesTypes.dangerSigns && isFirstVisit)
+        return undefined;
+
+      return item;
+    });
+
+    return { visibleActivities };
+  }, [activityListUpdated, isFirstVisit]);
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
@@ -145,10 +161,10 @@ export const MomActivityList: React.FC = () => {
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
     useMemo(() => {
-      const completedActivities = activityListUpdated.filter((item) =>
+      const completedActivities = visibleActivities.filter((item) =>
         completedVisits?.includes(item.title)
       );
-      const uncompletedActivities = activityListUpdated.filter(
+      const uncompletedActivities = visibleActivities.filter(
         (item) => !completedVisits?.includes(item.title)
       );
 
@@ -208,7 +224,7 @@ export const MomActivityList: React.FC = () => {
       ];
 
       return { uncompletedForms, completedForms, followUpForm, stepperCount };
-    }, [activityListUpdated, completedVisits]);
+    }, [visibleActivities, completedVisits]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
   const isAllCompleted = completedVisits?.length === stepperCount;
