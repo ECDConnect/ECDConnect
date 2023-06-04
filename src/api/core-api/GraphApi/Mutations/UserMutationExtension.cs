@@ -170,7 +170,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
                 fields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = ((bool)user.VerifiedByHomeAffairs).ToString(), ValueAfter = ((bool)input.VerifiedByHomeAffairs).ToString() });
             user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
-            if (input.DateOfBirth.Date != null) //avoid time changes
+            if (input.DateOfBirth.Date != user.DateOfBirth.Date) //avoid time changes
             {
                 fields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Date.ToString() });
                 user.DateOfBirth = input.DateOfBirth.Date;
