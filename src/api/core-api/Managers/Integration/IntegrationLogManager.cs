@@ -1,14 +1,10 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+﻿using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
-using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
-using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Integration

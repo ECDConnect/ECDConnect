@@ -46,7 +46,6 @@ namespace ECDLink.Core.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
         private readonly ISystemSetting<IntegrationApiOptions> _options;
-        //private HttpClient _smartLinkClient;
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
         private UserManager<ApplicationUser> _userManager;
@@ -55,7 +54,7 @@ namespace ECDLink.Core.Services
         private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
         private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
-        private  AuthenticationDbContext _dbContext;
+        private AuthenticationDbContext _dbContext;
         private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
         private IGenericRepository<ClassroomGroup, Guid> _classroomGroupGenericRepo;
         private IGenericRepository<ProgrammeType, Guid> _programmeTypeGenericRepo;
@@ -80,6 +79,7 @@ namespace ECDLink.Core.Services
 
         private IntegrationLogManager _logManager;
         private IntegrationAPIManager _apiManager;
+        private ISchedulerService _schedulerService;
 
         private MappingMode _apiMode;
         private MappingMaskDataMode _maskMode;
@@ -94,6 +94,9 @@ namespace ECDLink.Core.Services
         public List<IntegrationColumnMapping> _mappedColumns;
         public List<IntegrationAudit> _audits;
 
+        public DateTime _startTime = DateTime.Now;
+        public static string scheduledTask = "SmartLinkIntegrationDataSync";
+
         public IntegrationService(
             IGenericRepositoryFactory repositoryFactory,
             ISystemSetting<IntegrationDelayOptions> integrationDelay,
@@ -106,7 +109,8 @@ namespace ECDLink.Core.Services
              AuthenticationDbContext dbContext,
              [Service] PersonnelService personnelService,
              IntegrationLogManager logManager, 
-             IntegrationAPIManager apiManager
+             IntegrationAPIManager apiManager,
+             [Service] ISchedulerService schedulerService
             )
         {
             _repositoryFactory = repositoryFactory;
@@ -149,6 +153,7 @@ namespace ECDLink.Core.Services
             _workflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
             _dbContext = dbContext;
             _personnelService = personnelService;
+            _schedulerService = schedulerService;
 
             _logManager = logManager;
             _apiManager = apiManager;
@@ -156,11 +161,18 @@ namespace ECDLink.Core.Services
 
         #region Utilities
 
-        private async Task<List<IntegrationAudit>> GetAudits(DateTime startTime, string entityType = null)
+        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null)
         {
             try
             {
-                var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= startTime.AddMinutes(-10)).ToList(); //overlaps with 10 minutes of changes
+                //int changesCheckTime = 1620;
+                //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+                //get last task run time
+                var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
+
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("6b60ef39-9f63-48a1-9dc3-24dfd15d0b7b") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
+                //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).ToList(); //overlaps with 10 minutes of changes
                 if (entityType != null)
                     return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
 
@@ -258,7 +270,6 @@ namespace ECDLink.Core.Services
                     _mappedEntities = await this.GetMappedEntities();
                     _mappedColumns = await this.GetMappedColumns();
                     
-
                     //-------------------
                     //1. - check all changes on known entities marked as changed from SL API and update
                     //-------------------
@@ -289,9 +300,12 @@ namespace ECDLink.Core.Services
                     //-------------------
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
-                    {
-                        //filter valid entities that havent failed importing before
-                        await PushData();                        
+                    {                        
+                        await PushDeletes();
+                        //Inserts
+                        await PushInserts();
+                        //Updates & Deactivates
+                        await PushUpdates();
                     }
 
                     //-------------------
@@ -1264,7 +1278,31 @@ namespace ECDLink.Core.Services
             return ssDocuments;
         }
 
-                #endregion
+        
+        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        {
+            if (!completedAudits.Any())
+                return false;
+            else
+            {
+                foreach (var audit in completedAudits)
+                {
+                    var auditRow = _auditRepo.GetById(audit.Id);
+                    if (auditRow != null)
+                    {
+                        auditRow.UpdatedDate = DateTime.Now;
+                        auditRow.UpdatedBy = _uId;
+                        auditRow.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditRow);
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        #endregion
 
         #region Local Updates
 
@@ -2266,7 +2304,7 @@ namespace ECDLink.Core.Services
         #endregion
 
         #region Post API Entity
-        private async Task<bool> PushUpdates(List<IntegrationAudit> audits)
+        private async Task<bool> PushUpdates()
         {
             //1) Get list of entities and their types
             //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
@@ -2274,12 +2312,14 @@ namespace ECDLink.Core.Services
             //4) Add remote guid
             //5) Send it to the /Multiple endpoint
             //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+            _audits = await GetAudits();
+            var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
 
             List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
 
             //audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
 
-            var entityTypeList = audits.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
+            var entityTypeList = updates.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
 
             Dictionary<string, string> entitypes = new Dictionary<string, string>();
             List<IntegrationAudit> completedList = new List<IntegrationAudit>();
@@ -2290,7 +2330,7 @@ namespace ECDLink.Core.Services
                 {
 
                     StringBuilder jsonString = new StringBuilder();
-                    var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+                    var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
 
                     if (entityIdList.Any() && entities.Any())
                     {
@@ -2307,11 +2347,11 @@ namespace ECDLink.Core.Services
                                 url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
                                 jsonString.AppendLine("{");
                                 //get all changes for this entity and group and build JSON
-                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                                 if (updatedEntityType.Equals("ApplicationUser"))
                                 {
                                     //add possible additional entity changes in too - If ApplicationUser, there may be additional Practitioner/Child/Coach/Franchisor changes associated, also check address, principal
-                                    var entityChanges = audits.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                    var entityChanges = updates.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                                     if (entityChanges.Any())
                                     {
                                         allChanges.AddRange(entityChanges);
@@ -2362,7 +2402,8 @@ namespace ECDLink.Core.Services
                                         }
                                         //remove entry from audits list as we have processed it here and sending
                                         completedList.Add(changeLine);
-                                        audits.Remove(changeLine);
+
+                                        updates.Remove(changeLine);
                                     }
                                 }
                                 jsonString.AppendLine("},");
@@ -2410,42 +2451,23 @@ namespace ECDLink.Core.Services
             return true;
         }
 
-        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        private async Task<bool> PushDeletes()
         {
-            if (!completedAudits.Any())
-                return false;
-            else
-            {
-                foreach (var audit in completedAudits)
-                {
-                    var auditRow = _auditRepo.GetById(audit.Id);
-                    if (auditRow != null)
-                    {
-                        auditRow.UpdatedDate = DateTime.Now;
-                        auditRow.UpdatedBy = _uId;
-                        auditRow.Submitted = DateTime.Now;
-
-                        _auditRepo.Update(auditRow);
-                    }
-                }
-
-                return true;
-            }
-        }
-
-        private async Task<bool> PushDeletes(List<IntegrationAudit> audits)
-        {
+            _audits = await GetAudits();
+            var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
 
 
             return true;
         }
 
-        private async Task<bool> PushInserts(List<IntegrationAudit> audits)
+        private async Task<bool> PushInserts()
         {
             bool isComplete = false;
+            _audits = await GetAudits();
+            var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
             List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
             //Child user entities push
-            var childrenInserted = audits.Where(a => a.Entity.Equals("Child"));
+            var childrenInserted = inserts.Where(a => a.Entity.Equals("Child"));
             foreach (var childAudit in childrenInserted)
             {                
                 var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
@@ -2495,7 +2517,7 @@ namespace ECDLink.Core.Services
             //PushStatements(); -- monthly push
             //Documents
             //PushDocuments(audits);
-            var docsInserted = audits.Where(a => a.Entity.Equals("Document"));
+            var docsInserted = _audits.Where(a => a.Entity.Equals("Document"));
             foreach (var docAudit in docsInserted)
             {
 
@@ -2517,30 +2539,6 @@ namespace ECDLink.Core.Services
             await UpdateAuditSubmitted(completedAudits);
             
             return isComplete;
-        }
-
-        private async Task<bool> PushData()
-        {
-            int changesCheckTime = 1620;
-            //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
-
-            _audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("6b60ef39-9f63-48a1-9dc3-24dfd15d0b7b") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
-
-            var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
-            if (deletes.Count > 0)
-                await PushDeletes(deletes);
-
-            //Inserts
-            var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
-            if (inserts.Count > 0)
-                await PushInserts(inserts);
-
-            //Updates & Deactivates
-            var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted==null).ToList();
-            if (updates.Count > 0)
-                await PushUpdates(updates);
-
-            return true;
         }
 
         public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
