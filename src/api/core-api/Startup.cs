@@ -2,6 +2,7 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
@@ -146,6 +147,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IIntegrationService, IntegrationService>();
+            services.AddTransient<IntegrationAPIManager>();
+            services.AddTransient<IntegrationLogManager>();
 
             ConfigureJobs(services);
             
