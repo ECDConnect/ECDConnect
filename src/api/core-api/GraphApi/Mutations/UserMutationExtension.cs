@@ -170,9 +170,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             if (input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
                 fields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = ((bool)user.VerifiedByHomeAffairs).ToString(), ValueAfter = ((bool)input.VerifiedByHomeAffairs).ToString() });
             user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
-            if (input.DateOfBirth != user.DateOfBirth)
-                fields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.ToString(), ValueAfter = input.DateOfBirth.ToString() });
-            user.DateOfBirth = input.DateOfBirth;
+            if (input.DateOfBirth.Date != user.DateOfBirth.Date) //avoid time changes
+            {
+                fields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Date.ToString() });
+                user.DateOfBirth = input.DateOfBirth.Date;
+            }
             if (input.GenderId != user.GenderId)
                 fields.Add(new AuditChanges() { FieldName = "GenderId", ValueBefore = (user.GenderId != null ? user.GenderId.ToString() : null), ValueAfter = (input.GenderId != null ? input.GenderId.ToString() : null) });
             user.GenderId = input.GenderId;
@@ -383,6 +385,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             IGenericRepositoryFactory repoFactory,
             List<AuditChanges> changes, string id, string changeType = "Update")
         {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
             var auditInsertRepo = repoFactory.CreateRepository<IntegrationAudit>(userContext: userId);
             //Populate Audit records
             switch (changeType)
@@ -397,6 +400,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         ValueBefore = "true",
                         UserId = userId,
                         RelatedId = id,
+                        TenantId = tenantId
                     });
                     break;
                 case "Insert":
@@ -406,6 +410,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         Entity = "ApplicationUser",
                         UserId = userId,
                         RelatedId = id,
+                        TenantId = tenantId
                     });
                     break;
                 default:
@@ -419,7 +424,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             ValueBefore = change.ValueBefore,
                             ValueAfter = change.ValueAfter,
                             UserId = userId,
-                            RelatedId = id
+                            RelatedId = id,
+                            TenantId = tenantId
                         });
 
                         auditInsertRepo.InsertMany(changesList);

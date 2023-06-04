@@ -658,7 +658,7 @@ namespace EcdLink.Api.CoreApi
             public const string SSCaregiver = "Caregiver";
             public const string SLCaregiver = "Caregiver";
             //Trainee Queries
-            public const string SSTrainee = "Practitioner";
+            public const string SSTrainee = "Trainee";
             public const string SLTrainee = "Trainee";
             //Address Queries
             public const string SSAddress = "SiteAddress";
