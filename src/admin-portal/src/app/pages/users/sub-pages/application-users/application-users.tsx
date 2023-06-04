@@ -35,6 +35,7 @@ export default function ApplicationUsers() {
     if (data && data.users) {
       const copyItems = data.users.map(mapUserTableItem);
       setTableData(copyItems);
+      console.log(">>", data)
     }
   }, [data]);
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function ApplicationUsers() {
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {
+    console.log("test")
     panel({
       noPadding: true,
       title: 'Create User',
@@ -62,7 +64,6 @@ export default function ApplicationUsers() {
           key={`userPanelCreate`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
-
             if (userCreated) {
               refetch();
             }
