@@ -83,6 +83,37 @@ export const getChildProgressObservationReportByReportingPeriod = (
       )
   );
 
+export const hasChildProgressObservationReportsForReportingPeriod = (
+  reportingDate: Date
+) =>
+  createSelector(
+    (state: RootState) => state.contentReportData.childProgressionReports || [],
+    (reports: ChildProgressObservationReport[]) =>
+      reports.some((report) =>
+        isMatchingReportingPeriods(
+          new Date(report.reportingDate),
+          reportingDate
+        )
+      )
+  );
+
+export const hasChildSummaryReportsForReportingPeriod = (
+  reportingDate: Date | undefined
+) =>
+  createSelector(
+    (state: RootState) =>
+      state.contentReportData.childProgressReportSummaries || [],
+    (reports: ChildProgressReportSummaryModel[]) =>
+      reportingDate === undefined
+        ? undefined
+        : reports.some((report) =>
+            isMatchingReportingPeriods(
+              new Date(report.reportDate),
+              reportingDate
+            )
+          )
+  );
+
 export const getChildLatestCompletedReports = (childId?: string) =>
   createSelector(
     (state: RootState) => state.contentReportData,
