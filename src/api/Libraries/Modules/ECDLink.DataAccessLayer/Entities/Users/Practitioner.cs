@@ -77,6 +77,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? AttendedBusinessSkills { get; set; }
         public string LeavingComment { get; set; }
         public string StipendType { get; set; }
+        public string UsePhotoInReport { get; set; }
 
         [NotMapped]
         public virtual PractitionerTimeline timeline  { get; set; }
