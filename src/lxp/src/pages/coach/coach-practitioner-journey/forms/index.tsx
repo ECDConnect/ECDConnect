@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { parseBool, useDialog, useSnackbar } from '@ecdlink/core';
+import { parseBool, useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -24,7 +24,6 @@ import {
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { usePrevious } from 'react-use';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
@@ -95,8 +94,6 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     PractitionerActions.DEACTIVATE_PRACTITIONER
   );
 
-  const wasLoading = usePrevious(isLoading);
-  const wasLoadingSupportVisit = usePrevious(isLoadingSupportVisit);
   const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
@@ -182,6 +179,87 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     setStep((preState) => preState + 1);
   }, []);
 
+  const displayChildrenDialog = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            customIcon={<IconRobot className="mb-4" />}
+            title={`Would you like to register any children for ${name}’s programme?`}
+            detailText={`You can register children on your phone now. Or, help ${name} to register children on her phone.
+            ${
+              !isOnline
+                ? `\n
+            Note: Data has been saved in offline mode
+            \nIn order for you to view the answers, it is necessary to synchronize your account.`
+                : ''
+            }`}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Yes, register children now',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'CheckCircleIcon',
+                onClick: () => {
+                  onBack?.();
+                  history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
+                    practitionerId,
+                  });
+                  onClose();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'No, skip',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'XIcon',
+                onClick: () => {
+                  setTimeout(() => onSuccess(), 100);
+                  onBack?.();
+                  onClose();
+                },
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog, history, isOnline, name, onBack, onSuccess, practitionerId]);
+
+  const displayOfflineWarning = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            customIcon={<IconRobot className="mb-4" />}
+            title={`Data has been saved in offline mode`}
+            detailText={`In order for you to view the answers, it is necessary to synchronize your account.`}
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Close',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'XIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog]);
+
   const onSubmit = useCallback(() => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
@@ -228,6 +306,11 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         appDispatch(
           pqaThunkActions.addSupportVisitFormData(supportVisitPayload)
         );
+        onBack?.();
+        onSuccess();
+        if (!isOnline) {
+          setTimeout(() => displayOfflineWarning(), 300);
+        }
         break;
 
       default:
@@ -238,9 +321,21 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           })
         );
         appDispatch(pqaThunkActions.addVisitFormData(payload));
+        displayChildrenDialog();
         break;
     }
-  }, [activityName, appDispatch, practitionerId, sectionQuestions, visitId]);
+  }, [
+    activityName,
+    appDispatch,
+    displayChildrenDialog,
+    displayOfflineWarning,
+    isOnline,
+    onBack,
+    onSuccess,
+    practitionerId,
+    sectionQuestions,
+    visitId,
+  ]);
 
   const onSubmitDelicensing = () => {
     const leavingComment = sectionQuestions
@@ -273,52 +368,6 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     setCurrentActivity(visitTypes.pqa.firstPQA);
   };
 
-  const displayChildrenDialog = useCallback(() => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => {
-        return (
-          <ActionModal
-            className="z-50"
-            customIcon={<IconRobot className="mb-4" />}
-            title={`Would you like to register any children for ${name}’s programme?`}
-            detailText={`You can register children on your phone now. Or, help ${name} to register children on her phone.`}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Yes, register children now',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onBack?.();
-                  history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
-                    practitionerId,
-                  });
-                  onClose();
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'No, skip',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  setTimeout(() => onSuccess(), 100);
-                  onBack?.();
-                  onClose();
-                },
-              },
-            ]}
-          />
-        );
-      },
-    });
-  }, [dialog, history, name, onBack, onSuccess, practitionerId]);
-
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
     switch (visitName) {
@@ -345,33 +394,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       onBack?.();
       onSuccess();
     }
-    if (
-      wasLoading &&
-      !isLoading &&
-      !isToRemoveSmartStarter &&
-      currentActivity !== visitTypes.delicensing
-    ) {
-      displayChildrenDialog();
-    }
-
-    if (wasLoadingSupportVisit && !isLoadingSupportVisit) {
-      onBack?.();
-      onSuccess();
-    }
   }, [
-    currentActivity,
-    displayChildrenDialog,
-    isLoading,
     isLoadingDeactivate,
-    isLoadingSupportVisit,
     isRejected,
-    isToRemoveSmartStarter,
     onBack,
     onSuccess,
     showMessage,
-    wasLoading,
     wasLoadingDeactivate,
-    wasLoadingSupportVisit,
   ]);
 
   return (

@@ -19,7 +19,7 @@ import {
   generalSupportVisitTypes,
   visitTypes,
 } from './coach-practitioner-journey.types';
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
@@ -37,7 +37,11 @@ import {
   sortVisit,
   timelineSteps,
 } from './timeline-steps';
-import { getAgeInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
+import {
+  getAgeInYearsMonthsAndDays,
+  parseBool,
+  usePrevious,
+} from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
@@ -48,6 +52,8 @@ export const CoachPractitionerJourney: React.FC = () => {
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { isOnline } = useOnlineStatus();
+  const wasOnline = usePrevious(isOnline);
+
   const history = useHistory();
   const appDispatch = useAppDispatch();
 
@@ -166,6 +172,10 @@ export const CoachPractitionerJourney: React.FC = () => {
     setShowForm(true);
   };
 
+  const getTimeline = useCallback(() => {
+    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [appDispatch, practitionerId]);
+
   useLayoutEffect(() => {
     if (selectedForm) {
       setShowForm(true);
@@ -173,8 +183,14 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [selectedForm]);
 
   useLayoutEffect(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId, showForm]);
+    getTimeline();
+  }, [getTimeline]);
+
+  useEffect(() => {
+    if (!wasOnline && isOnline) {
+      getTimeline();
+    }
+  }, [getTimeline, isOnline, wasOnline]);
 
   if (
     (showForm && isView) ||
@@ -266,14 +282,14 @@ export const CoachPractitionerJourney: React.FC = () => {
           />
           {!!timeline && (
             <Steps
-              items={timelineSteps(
+              items={timelineSteps({
                 timeline,
                 onView,
                 isLoading,
                 isOnline,
                 // @ts-ignore
-                uncompletedVisits
-              )}
+                visits: uncompletedVisits,
+              })}
               typeColor={{ completed: 'successMain' }}
             />
           )}
