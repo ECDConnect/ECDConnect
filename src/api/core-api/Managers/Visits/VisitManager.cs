@@ -513,14 +513,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             public Visit GetVisitForUserForType(string id, string userType, string vType)
             {
                 Visit vData = new Visit();
+
                 if (userType == Constants.SSSettings.client_trainee)
                 {
-                    return (
-                        from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).FirstOrDefault();
+                    if (vType == Constants.SSSettings.visitType_trainee_visit)
+                    {
+                        return (
+                            from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
+                            join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_coach) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                            select visit
+                        ).FirstOrDefault();
+                } else
+                    {
+                        return (
+                            from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
+                            join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                            select visit
+                        ).FirstOrDefault();
+                    }
                 }
+                
 
                 return vData;
             }

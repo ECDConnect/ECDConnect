@@ -707,7 +707,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
             }
 
-            // SSCoachVisit
+            // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
+            Visit coachVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
+            if (coachVisit != null)
+            {
+                timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
+                timeline.SSCoachVisitColor = MetricsColorEnum.Success.ToString();
+                timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+            }
 
 
             // SignFranchiseeAgreement
@@ -721,7 +728,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SignStartUpSupportAgreement
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
-            if (franchiseeAgreement != null && trainee.IsOnStipend == true)
+            if (franchiseeAgreement != null && trainee.Practitioner.IsOnStipend == true)
             {
                 // Get support agreement signature
                 UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();

@@ -369,6 +369,7 @@ namespace EcdLink.Api.CoreApi
             public const string franchisee_signed = "Franchisee agreement signed";
             public const string support_agreement_signed = "Start-up support agreement signed";
             public const string community_support = "Community support gained";
+            public const string coach_visit = "SmartSpace visit from coach";
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
