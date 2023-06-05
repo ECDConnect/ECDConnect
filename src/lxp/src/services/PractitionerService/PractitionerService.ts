@@ -1000,7 +1000,7 @@ class PractitionerService {
       errors?: {};
     }>(``, {
       query: `
-      mutation DeActivatePractitioner($userId: String, $leavingComment: String)           
+      mutation DeActivatePractitioner($userId: String, $leavingComment: String) {          
         deActivatePractitioner(userId: $userId, leavingComment: $leavingComment) {          
       }        
       }
