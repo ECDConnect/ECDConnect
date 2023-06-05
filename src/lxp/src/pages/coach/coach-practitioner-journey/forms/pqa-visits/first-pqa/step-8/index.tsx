@@ -75,7 +75,7 @@ export const Step8 = ({
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
         <>
-          <Typography type="h4" text={`4.${index + 1} ${question.question}`} />
+          <Typography type="h4" text={`6.${index + 1} ${question.question}`} />
           <fieldset className="flex flex-col gap-2">
             {options[`question${String(index + 1)}`]?.map((item) => (
               <Radio

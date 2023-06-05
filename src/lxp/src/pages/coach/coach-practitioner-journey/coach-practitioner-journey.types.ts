@@ -4,6 +4,7 @@ export interface PractitionerJourneyParams {
 
 export const visitTypes = {
   supportVisit: 'General support visit',
+  delicensing: 'Delicensing',
   pqa: {
     firstPQA: 'First PQA',
   },

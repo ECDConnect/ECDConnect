@@ -1024,6 +1024,34 @@ class PractitionerService {
 
     return response.data.data.sendPractitionerInviteToApplication;
   }
+
+  async deActivatePractitioner(
+    userId: string,
+    leavingComment?: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<{
+      data: { deActivatePractitioner: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation DeActivatePractitioner($userId: String, $leavingComment: String) {          
+        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment) {          
+      }        
+      }
+      `,
+      variables: {
+        userId,
+        leavingComment,
+      },
+    });
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.deActivatePractitioner;
+  }
 }
 
 export default PractitionerService;
