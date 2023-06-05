@@ -13,6 +13,7 @@ namespace EcdLink.Api.CoreApi
     {
             public const string client_practitioner = "practitioner";
             public const string client_trainee = "trainee";
+            public const string client_coach = "coach";
 
             // Visit types
             public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
@@ -32,6 +33,8 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
+
+            public const string visitType_trainee_visit = "trainee_visit";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
@@ -360,11 +363,15 @@ namespace EcdLink.Api.CoreApi
 
             // timeline values
             public const string consolidation_meeting = "Consolidation meeting attended";
+            public const string no_consolidation_meeting = "Did not attend consolidation meeting";
             public const string checklist_done = "SmartSpace Checklist done";
             public const string children_registered = "3 or more children registered";
             public const string franchisee_signed = "Franchisee agreement signed";
             public const string support_agreement_signed = "Start-up support agreement signed";
             public const string community_support = "Community support gained";
+            public const string coach_visit = "SmartSpace visit from coach";
+            public const string attended_first_aid = "Attended first aid course";
+            public const string not_attended_first_aid = "Did not attended first aid course";
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
@@ -654,7 +661,7 @@ namespace EcdLink.Api.CoreApi
             public const string SSCaregiver = "Caregiver";
             public const string SLCaregiver = "Caregiver";
             //Trainee Queries
-            public const string SSTrainee = "Practitioner";
+            public const string SSTrainee = "Trainee";
             public const string SLTrainee = "Trainee";
             //Address Queries
             public const string SSAddress = "SiteAddress";

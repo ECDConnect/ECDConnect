@@ -35,19 +35,15 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
     <Link
       to={item.route}
       className={classNames(
-        routeMatch
-          ? 'bg-white text-textMid'
-          : 'hover:bg-white hover:text-textMid',
-        'text-white group flex items-center px-2 py-2 text-sm font-medium rounded-md'
+        routeMatch ? 'bg-tertiary text-white' : 'hover:textMid hover:bg-white',
+        'group flex items-center rounded-md px-2 py-2 text-sm font-medium text-white'
       )}
     >
       <Icon
         icon={item.icon}
         className={classNames(
-          routeMatch
-            ? 'text-gray-500'
-            : 'text-gray-400 group-hover:text-gray-500',
-          'mr-3 flex-shrink-0 h-6 w-6'
+          routeMatch ? 'text-white' : 'text-white group-hover:text-gray-500',
+          'mr-3 h-6 w-6 flex-shrink-0'
         )}
         color="transparent"
       />
@@ -117,7 +113,10 @@ export default function Shell() {
     history.push('/');
   };
 
-  const userNavigation = [{ name: 'Sign out', onClick: signOutClick }];
+  const userNavigation = [
+    { name: 'Profile', onClick: () => {} },
+    { name: 'Sign out', onClick: signOutClick },
+  ];
 
   const displayInformationPanel = () => {
     panel({
@@ -130,12 +129,12 @@ export default function Shell() {
   };
 
   return (
-    <div className="h-full flex overflow-hidden bg-gray-100">
+    <div className="flex h-full overflow-hidden bg-gray-100">
       <Transition.Root show={sidebarOpen} as={Fragment}>
         <Dialog
           as="div"
           static
-          className="fixed inset-0 flex z-40 md:hidden"
+          className="fixed inset-0 z-40 flex md:hidden"
           open={sidebarOpen}
           onClose={setSidebarOpen}
         >
@@ -159,7 +158,7 @@ export default function Shell() {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="relative flex-1 flex flex-col max-w-xs w-full pt-5 pb-4 bg-primary">
+            <div className="bg-primary relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -172,7 +171,7 @@ export default function Shell() {
                 <div className="absolute top-0 right-0 -mr-12 pt-2">
                   <button
                     type="button"
-                    className="ml-1 flex items-center justify-center h-10 w-10 rounded-full focus:outline-none focus:ring-2 focus:ring-inset focus:ring-white"
+                    className="focus:outline-none ml-1 flex h-10 w-10 items-center justify-center rounded-full focus:ring-2 focus:ring-inset focus:ring-white"
                     onClick={() => setSidebarOpen(false)}
                   >
                     <span className="sr-only">Close sidebar</span>
@@ -180,15 +179,15 @@ export default function Shell() {
                   </button>
                 </div>
               </Transition.Child>
-              <div className="flex items-center justify-center flex-shrink-0 px-4">
+              <div className="flex flex-shrink-0 items-center justify-center px-4">
                 <img
                   className="h-20 w-auto"
                   src={getLogoUrl()}
                   alt="Workflow"
                 />
               </div>
-              <div className="mt-5 flex-1 h-0 overflow-y-auto">
-                <nav className="px-2 space-y-1">
+              <div className="mt-5 h-0 flex-1 overflow-y-auto">
+                <nav className="space-y-1 px-2">
                   {navigation?.map((item) => (
                     <MenuItem
                       key={`${item.name}-${new Date().getTime()}`}
@@ -199,18 +198,18 @@ export default function Shell() {
               </div>
             </div>
           </Transition.Child>
-          <div className="flex-shrink-0 w-14" aria-hidden="true"></div>
+          <div className="w-14 flex-shrink-0" aria-hidden="true"></div>
         </Dialog>
       </Transition.Root>
 
-      <div className="hidden bg-primary md:flex md:flex-shrink-0">
-        <div className="flex flex-col w-64">
-          <div className="flex flex-col flex-grow pt-5 pb-4 overflow-y-auto">
-            <div className="flex items-center justify-center flex-shrink-0 px-4">
+      <div className="darkBackground hidden md:flex md:flex-shrink-0">
+        <div className="flex w-64 flex-col">
+          <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
+            <div className="flex flex-shrink-0 items-center justify-center px-4">
               <img className="h-20 w-auto" src={getLogoUrl()} alt="Workflow" />
             </div>
-            <div className="mt-5 flex-1 flex flex-col">
-              <nav className="flex-1 px-2 space-y-1">
+            <div className="mt-5 flex flex-1 flex-col">
+              <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
                   <MenuItem
                     key={`${item.name}-${new Date().getTime()}`}
@@ -222,18 +221,18 @@ export default function Shell() {
           </div>
         </div>
       </div>
-      <div className="flex flex-col w-0 flex-1 overflow-hidden">
-        <div className="relative z-10 flex-shrink-0 flex h-16 bg-white shadow">
+      <div className="flex w-0 flex-1 flex-col overflow-hidden">
+        <div className="relative z-10 flex h-16 flex-shrink-0 bg-white shadow">
           <button
             type="button"
-            className="px-4 border-r border-gray-200 text-gray-500 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
+            className="focus:outline-none border-r border-gray-200 px-4 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-indigo-500 md:hidden"
             onClick={() => setSidebarOpen(true)}
           >
             <span className="sr-only">Open sidebar</span>
             <MenuAlt2Icon className="h-6 w-6" aria-hidden="true" />
           </button>
-          <div className="flex-1 px-4 flex justify-between items-center">
-            <div className="flex-1 pl-4 flex cursor-pointer">
+          <div className="flex flex-1 items-center justify-between px-4">
+            <div className="flex flex-1 cursor-pointer pl-4">
               {activeNavigation && (
                 <InformationCircleIcon
                   onClick={() => displayInformationPanel()}
@@ -243,16 +242,16 @@ export default function Shell() {
                 />
               )}
 
-              <span className="pl-2 text-black font-semibold">
+              <span className="pl-2 font-semibold text-black">
                 {activeNavigation?.name}
               </span>
             </div>
             <div className="ml-4 flex items-center md:ml-6">
-              <Menu as="div" className="ml-3 relative">
+              <Menu as="div" className="relative ml-3">
                 {({ open }) => (
                   <>
                     <div>
-                      <Menu.Button className="max-w-xs bg-white flex items-center text-sm rounded-full focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-indigo-500">
+                      <Menu.Button className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span className="sr-only">Open user menu</span>
 
                         {user ? (
@@ -277,7 +276,7 @@ export default function Shell() {
                     >
                       <Menu.Items
                         static
-                        className="origin-top-right absolute right-0 mt-2 w-48 rounded-md shadow-lg py-1 bg-white ring-1 ring-black ring-opacity-5 focus:outline-none"
+                        className="focus:outline-none absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
                       >
                         {userNavigation.map((item: any) => (
                           <Menu.Item key={item.name}>
@@ -286,7 +285,7 @@ export default function Shell() {
                                 onClick={item.onClick}
                                 className={classNames(
                                   active ? 'bg-gray-100' : '',
-                                  'block px-4 py-2 text-sm text-gray-700 cursor-pointer'
+                                  'block cursor-pointer px-4 py-2 text-sm text-gray-700'
                                 )}
                               >
                                 {item.name}
@@ -303,9 +302,9 @@ export default function Shell() {
           </div>
         </div>
 
-        <main className="flex-1 relative overflow-y-auto focus:outline-none">
-          <div className="py-6 h-full">
-            <div className="mx-auto px-4 sm:px-6 md:px-8 h-full">
+        <main className="focus:outline-none relative flex-1 overflow-y-auto">
+          <div className="h-full py-6">
+            <div className="mx-auto h-full px-4 sm:px-6 md:px-8">
               <AuthRoutes />
             </div>
           </div>

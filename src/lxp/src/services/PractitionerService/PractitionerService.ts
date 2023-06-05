@@ -203,6 +203,7 @@ class PractitionerService {
             isLeaving
             progress
             attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -270,6 +271,7 @@ class PractitionerService {
             isLeaving
             progress
             attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -333,6 +335,7 @@ class PractitionerService {
             isLeaving
             progress
             attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -371,6 +374,7 @@ class PractitionerService {
                 progress
                 isTrainee
                 attendedChildProgress
+                usePhotoInReport
               }
             }
             note
@@ -633,6 +637,38 @@ class PractitionerService {
     }
 
     return response.data.data.updatePractitionerProgress;
+  }
+
+  async UpdatePractitionerUsePhotoInReport(
+    practitionerId: string,
+    usePhotoInReport: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerUsePhotoInReport(
+          $practitionerId: String
+          $usePhotoInReport: String
+        ) {
+          updatePractitionerUsePhotoInReport(
+            practitionerId: $practitionerId
+            usePhotoInReport: $usePhotoInReport
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        usePhotoInReport,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'UpdatePractitionerProgress Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerUsePhotoInReport;
   }
 
   async AddPractitionerToPrincipal(

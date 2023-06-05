@@ -6,12 +6,15 @@ import {
   MutationUpdatePractitionerRegisteredArgs,
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
+  MutationUpdatePractitionerUsePhotoInReportArgs,
 } from '@ecdlink/graphql';
 
 export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
   UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
   DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
+  UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
+    'updatePractitionerUsePhotoInProgress',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -244,6 +247,29 @@ export const deActivatePractitioner = createAsyncThunk<
         return await new PractitionerService(
           userAuth.auth_token
         ).deActivatePractitioner(userId, leavingComment);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerUsePhotoInReport = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerUsePhotoInReportArgs,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_USEPHOTOINPROGRESS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+    try {
+      if (userAuth?.auth_token && id) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerUsePhotoInReport(id, input.usePhotoInReport || '');
       }
     } catch (err) {
       return rejectWithValue(err);

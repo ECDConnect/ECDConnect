@@ -1,16 +1,13 @@
-import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
+import { Alert } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
-import { Header, TipCard } from '@/pages/infant/infant-profile/components';
+import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
-import { MoreInformation } from '../../components/more-information';
 import { Video } from '../../components/video';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 
 export const AntenatalClinicVideoStep = ({
   mother,
-  isTipPage,
-  setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
@@ -20,22 +17,6 @@ export const AntenatalClinicVideoStep = ({
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
-  if (isTipPage) {
-    return (
-      <Dialog
-        fullScreen={true}
-        visible={isTipPage}
-        position={DialogPosition.Full}
-      >
-        <MoreInformation
-          section="Antenatal clinic video"
-          subTitle="Antenatal clinic video"
-          onClose={() => setIsTip?.(false)}
-        />
-      </Dialog>
-    );
-  }
-
   return (
     <>
       <Header
@@ -44,11 +25,6 @@ export const AntenatalClinicVideoStep = ({
         backgroundColor="tertiary"
       />
       <div className="flex flex-col gap-4 p-4">
-        <TipCard
-          buttonText="See more info"
-          buttonIcon="InformationCircleIcon"
-          onClick={() => setIsTip && setIsTip(true)}
-        />
         <Alert
           type="warning"
           title={`Watch the Antenatal Clinic video with ${name} and answer any questions she has.`}

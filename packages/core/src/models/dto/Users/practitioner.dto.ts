@@ -31,4 +31,5 @@ export interface PractitionerDto extends EntityBase {
   programmeType?: string;
   progress?: number;
   attendedChildProgress?: boolean;
+  usePhotoInReport?: string;
 }

@@ -5,7 +5,6 @@ using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security.Helpers;
 using ECDLink.Security.JwtSecurity.Enums;
-using ECDLink.Security.Providers;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -66,23 +65,23 @@ namespace ECDLink.Security.Api
             }
 
 
-            //// Check if logging into admin portal and deny non "administrators" or "Coaches" access.
-            //var isAdminPortal = checkHostUrlForAdminPortal(
-            //    TenantExecutionContext.Tenant.AdminSiteAddress,
-            //    TenantExecutionContext.Tenant.AdminTestSiteAddress,
-            //    _httpContextAccessor.HttpContext.Request.Host.Value);
+            // Check if logging into admin portal and deny non "administrators" or "Coaches" access.
+            var isAdminPortal = checkHostUrlForAdminPortal(
+                TenantExecutionContext.Tenant.AdminSiteAddress,
+                TenantExecutionContext.Tenant.AdminTestSiteAddress,
+                _httpContextAccessor.HttpContext?.Request?.GetTypedHeaders()?.Referer?.AbsoluteUri ?? (_httpContextAccessor.HttpContext?.Request.Host.Value ?? String.Empty));
 
-            //if (isAdminPortal)
-            //{
-            //    var userRoles = await _userManager.GetRolesAsync(user);
-            //    var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
-            //    if (!hasAccess)
-            //    {
-            //        var organisationName = TenantExecutionContext.Tenant.OrganisationName;
-            //        // TODO: Callcenter number should be in the tenant config?
-            //        return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
-            //    }
-            //}
+            if (isAdminPortal)
+            {
+                var userRoles = await _userManager.GetRolesAsync(user);
+                var hasAccess = userRoles.Contains(Roles.ADMINISTRATOR) || userRoles.Contains(Roles.COACH);
+                if (!hasAccess)
+                {
+                    var organisationName = TenantExecutionContext.Tenant.OrganisationName;
+                    // TODO: Callcenter number should be in the tenant config?
+                    return Unauthorized(new { Error = $"You do not have permission to access this portal. Please contact the {organisationName} call centre to find out more: 0800 014 817" });
+                }
+            }
 
             var jwt = await _securityManager.GenerateJwtForUserAsync(user, JwtEncoderEnum.Standard);
             var jwtObj = JsonConvert.DeserializeObject<JwtObject>(jwt);
@@ -93,7 +92,7 @@ namespace ECDLink.Security.Api
         private bool checkHostUrlForAdminPortal(string adminSiteAddress, string testAdminSiteAddress, string hostAddress)
         {
 #if DEBUG
-            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress) || hostAddress.Contains("localhost");
+            return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress) || hostAddress.Contains("localhost:5001");
 #endif
             return hostAddress.StartsWith(adminSiteAddress) || hostAddress.StartsWith(testAdminSiteAddress);
         }

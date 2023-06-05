@@ -376,7 +376,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           const isPrimaryList =
             selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
           return (
-            <div id="attendanceList">
+            <div id={`attendanceList${selectedGroup.id}`}>
               <ClassProgrammeAttendanceList
                 key={`class_attencance_list_${idx}`}
                 isPrimaryClass={isPrimaryList}
@@ -391,7 +391,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                     isPrimaryList
                   );
                 }}
-                id="attendance-list"
+                id={`attendance-list${selectedGroup.id}`}
               />
             </div>
           );

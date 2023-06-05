@@ -30,6 +30,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Practitioner Practitioner { get; set; }
         public Guid? TraineeId { get; set; }
         public virtual Trainee Trainee { get; set; }
+        public Guid? CoachId { get; set; }
+        public virtual Coach Coach { get; set; }
 
         [NotMapped]
         public DateTime? OrderDate { get; set; }
