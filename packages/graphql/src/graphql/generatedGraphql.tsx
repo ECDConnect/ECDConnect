@@ -3452,6 +3452,7 @@ export type Mutation = {
   updatePractitionerRegistered: Scalars['Boolean'];
   updatePractitionerShareInfo: Scalars['Boolean'];
   updatePractitionerToTeachClassroom?: Maybe<ClassroomGroup>;
+  updatePractitionerUsePhotoInReport?: Maybe<Scalars['String']>;
   updatePrincipal?: Maybe<Principal>;
   updatePrincipalInvitation?: Maybe<PrincipalInvitationStatus>;
   updateProgramme?: Maybe<Programme>;
@@ -5022,6 +5023,11 @@ export type MutationUpdatePractitionerToTeachClassroomArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationUpdatePractitionerUsePhotoInReportArgs = {
+  practitionerId?: InputMaybe<Scalars['String']>;
+  usePhotoInReport?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationUpdatePrincipalArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PrincipalInput>;
@@ -5592,6 +5598,7 @@ export type Practitioner = {
   timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  usePhotoInReport?: Maybe<Scalars['String']>;
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
 };
@@ -5695,6 +5702,7 @@ export type PractitionerFilterInput = {
   timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<StringOperationFilterInput>;
 };
@@ -5734,6 +5742,7 @@ export type PractitionerInput = {
   StartDate?: InputMaybe<Scalars['DateTime']>;
   StipendType?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
   timeline?: InputMaybe<PractitionerTimelineInput>;
@@ -5977,6 +5986,7 @@ export type Principal = {
   timeline?: Maybe<PractitionerTimeline>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  usePhotoInReport?: Maybe<Scalars['String']>;
   user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
 };
@@ -6037,6 +6047,7 @@ export type PrincipalFilterInput = {
   timeline?: InputMaybe<PractitionerTimelineFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  usePhotoInReport?: InputMaybe<StringOperationFilterInput>;
   user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<StringOperationFilterInput>;
 };
@@ -6076,6 +6087,7 @@ export type PrincipalInput = {
   StartDate?: InputMaybe<Scalars['DateTime']>;
   StipendType?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  UsePhotoInReport?: InputMaybe<Scalars['String']>;
   User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
   timeline?: InputMaybe<PractitionerTimelineInput>;
