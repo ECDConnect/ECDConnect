@@ -370,6 +370,8 @@ namespace EcdLink.Api.CoreApi
             public const string support_agreement_signed = "Start-up support agreement signed";
             public const string community_support = "Community support gained";
             public const string coach_visit = "SmartSpace visit from coach";
+            public const string attended_first_aid = "Attended first aid course";
+            public const string not_attended_first_aid = "Did not attended first aid course";
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
