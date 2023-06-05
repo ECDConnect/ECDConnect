@@ -16,7 +16,7 @@ import {
   getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
 import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
 import {
@@ -42,7 +42,7 @@ export const Form = ({ onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+    getPreviousVisitInformationForMotherSelector
   );
   const referralsForMother = useSelector(getReferralsForMothertSelector);
 
@@ -97,6 +97,11 @@ export const Form = ({ onBack }: FormProps) => {
 
   const isAlcoholUseStep =
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
+
+  const isMaternalDistress =
+    pregnancyDay < 98 ||
+    (pregnancyDay >= 169 && pregnancyDay <= 196) ||
+    pregnancyDay > 197;
 
   const isMaternalDistressFollowUp = isFollowUp(
     maternalDistressVisitSection,
@@ -180,7 +185,7 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.healthCare:
-        return getHealhcareteps(isDangerSignsFollowUpForMom);
+        return getHealhcareteps(isDangerSignsFollowUpForMom, isFirstVisit);
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pregnancyCare:
@@ -188,21 +193,24 @@ export const Form = ({ onBack }: FormProps) => {
           isEqualOrAfter98andEqualOrBefore168Days,
           isAlcoholUseStep,
           isIDDocumentStep,
-          isMaternalDistressFollowUp
+          isMaternalDistressFollowUp,
+          isMaternalDistress
         );
       case activitiesTypes.dangerSigns:
-        return dangerSignsSteps(isDangerSignsFollowUpStep);
+        return dangerSignsSteps(isDangerSignsFollowUpStep, isFirstVisit);
       default:
         return followUpSteps(!!referralsForMother?.length);
     }
   }, [
-    isMaternalDistressFollowUp,
-    isIDDocumentStep,
-    isAlcoholUseStep,
     activityName,
     isDangerSignsFollowUpForMom,
+    isFirstVisit,
     isDangerSignsFollowUpForBaby,
     isEqualOrAfter98andEqualOrBefore168Days,
+    isAlcoholUseStep,
+    isIDDocumentStep,
+    isMaternalDistressFollowUp,
+    isMaternalDistress,
     isDangerSignsFollowUpStep,
     referralsForMother?.length,
   ]);

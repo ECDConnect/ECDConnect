@@ -19,6 +19,10 @@ export function Users() {
     ) {
       return [
         {
+          name: 'All Users',
+          href: '/users/application',
+        },
+        {
           name: 'Application Users',
           href: '/users/application',
         },
@@ -45,6 +49,10 @@ export function Users() {
       ];
     } else {
       return [
+        {
+          name: 'All Users',
+          href: '/users/',
+        },
         {
           name: 'Application Users',
           href: '/users/application',
@@ -83,19 +91,24 @@ export function Users() {
   }, []);
 
   return (
-    <div className="min-w-0 flex-1 rounded bg-white bg-white shadow xl:flex">
-      <div className="xl:border-uiMidDark border-b border-gray-200 xl:w-64 xl:flex-shrink-0 xl:border-b-0 xl:border-r ">
+    <div className="">
+      <div className="flex justify-center bg-white ">
         {navigation.map((item) => (
-          <SubNavigationLink
-            key={`${item.name}-${new Date().getTime()}`}
-            item={item}
-          ></SubNavigationLink>
+          <div className="w-3/12 ">
+            <SubNavigationLink
+              key={`${item.name}-${new Date().getTime()}`}
+              item={item}
+            ></SubNavigationLink>
+          </div>
         ))}
       </div>
 
-      <div className="bg-uiMidDark lg:min-w-0 lg:flex-1">
+      <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-          <div className="relative h-full" style={{ minHeight: '36rem' }}>
+          <div
+            className="relative h-full rounded-xl bg-white p-12"
+            style={{ minHeight: '36rem' }}
+          >
             <UserRoutes />
           </div>
         </div>

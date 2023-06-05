@@ -35,6 +35,7 @@ export default function ApplicationUsers() {
     if (data && data.users) {
       const copyItems = data.users.map(mapUserTableItem);
       setTableData(copyItems);
+      console.log('>>', data);
     }
   }, [data]);
   useEffect(() => {
@@ -54,6 +55,7 @@ export default function ApplicationUsers() {
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {
+    console.log('test');
     panel({
       noPadding: true,
       title: 'Create User',
@@ -62,7 +64,6 @@ export default function ApplicationUsers() {
           key={`userPanelCreate`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
-
             if (userCreated) {
               refetch();
             }
@@ -169,7 +170,7 @@ export default function ApplicationUsers() {
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <span className="text-lg leading-6 font-medium text-gray-900 flex flex-row">
+            <span className="flex flex-row text-lg font-medium leading-6 text-gray-900">
               <Dropdown
                 className="mr-2"
                 fillType="clear"
@@ -187,7 +188,7 @@ export default function ApplicationUsers() {
                 <button
                   onClick={displayUserPanel}
                   type="button"
-                  className="inline-flex items-center px-4 py-2 border border-transparent rounded-md shadow-sm text-sm font-medium text-white bg-uiMid hover:bg-uiLight focus:outline-none focus:ring-2 focus:ring-offset-2"
+                  className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 >
                   Create User
                 </button>
@@ -196,8 +197,8 @@ export default function ApplicationUsers() {
           </div>
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
-            <div className="py-2 align-middle inline-block min-w-full sm:px-6 lg:px-8">
-              <div className="shadow overflow-hidden border-b border-gray-200 sm:rounded-lg">
+            <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
+              <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },
