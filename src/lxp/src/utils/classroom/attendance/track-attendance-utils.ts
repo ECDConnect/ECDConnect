@@ -138,9 +138,9 @@ export const getMissedClassAttendance = (
     const dateDay = getDayOfYear(date);
 
     return programStartDateDay === dateDay
-      ? (x.meetingDay || -1) === currentDayFilter
-      : (x.meetingDay || -1) <= currentDayFilter &&
-          isBefore(programStartDateDay, dateDay);
+      ? (x.meetingDay || -1) <= currentDayFilter &&
+          isBefore(programStartDateDay, dateDay)
+      : (x.meetingDay || -1) === currentDayFilter;
   });
 
   if (classProgrammesUpToCurrentDay)

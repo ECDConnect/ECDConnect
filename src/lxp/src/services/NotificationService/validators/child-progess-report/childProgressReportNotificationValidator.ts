@@ -261,7 +261,6 @@ export class ChildProgressReportNotificationValidator
     )
       return [];
 
-    const currentUser = userState.user;
     const principalPractitioner = practitionerState.practitioner;
     const isPrincipal = principalPractitioner.isPrincipal || false;
     if (!isPrincipal) return [];

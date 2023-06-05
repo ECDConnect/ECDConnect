@@ -1,5 +1,5 @@
-import { useCallback, useMemo, useState } from 'react';
-import { parseBool, useDialog, useSnackbar } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { parseBool, useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -10,7 +10,12 @@ import {
   visitTypes,
 } from '../coach-practitioner-journey.types';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { generalSupportVisit, getFirstPqaSteps, prePqaVisits } from './steps';
+import {
+  delicensingSteps,
+  generalSupportVisit,
+  getFirstPqaSteps,
+  prePqaVisits,
+} from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
@@ -24,7 +29,19 @@ import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
 import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { callAnswer, visitOrCallQuestion } from './general-support-visit';
-import { step11VisitSection } from './pqa-visits/first-pqa';
+import {
+  step11VisitSection,
+  step16Question1,
+  step16VisitSection,
+} from './pqa-visits/first-pqa';
+import {
+  PractitionerActions,
+  deActivatePractitioner,
+} from '@/store/practitioner/practitioner.actions';
+import {
+  delicensingQuestion2,
+  delicensingStep1VisitSection,
+} from './delicensing';
 
 interface FormProps {
   visitId?: string;
@@ -41,6 +58,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+  const [currentActivity, setCurrentActivity] = useState('');
 
   const { isOnline } = useOnlineStatus();
 
@@ -55,6 +73,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const name = practitioner?.user?.firstName;
+  const step16Question1Answer = sectionQuestions
+    ?.find((item) => item.visitSection === step16VisitSection)
+    ?.questions.find((item) => item.question === step16Question1)?.answer;
+  const isToRemoveSmartStarter = step16Question1Answer === true;
 
   const history = useHistory();
 
@@ -66,6 +88,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     'pqa',
     PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
   );
+
+  const { isLoading: isLoadingDeactivate, isRejected } = useThunkFetchCall(
+    'practitioner',
+    PractitionerActions.DEACTIVATE_PRACTITIONER
+  );
+
+  const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
     sectionQuestions?.find((item) => item.visitSection === step11VisitSection)
@@ -117,7 +146,24 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     showMessage({ message: `${activityName} complete!` });
   }, [activityName, showMessage]);
 
+  const setRatingStep = useCallback(() => {
+    const stepsLength = getFirstPqaSteps({
+      isStep11AnswerTrue,
+      isToRemoveSmartStarter,
+    }).length;
+
+    if (stepsLength <= 16) {
+      setStep(13);
+    } else {
+      setStep(16);
+    }
+  }, [isStep11AnswerTrue, isToRemoveSmartStarter]);
+
   const handleOnBack = useCallback(() => {
+    if (currentActivity === visitTypes.delicensing && step === 0) {
+      setRatingStep();
+      return setCurrentActivity(visitTypes.pqa.firstPQA);
+    }
     if (isTip) {
       return setIsTip(false);
     }
@@ -127,7 +173,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     }
 
     return setStep((prevState) => prevState - 1);
-  }, [isTip, onBack, step]);
+  }, [currentActivity, isTip, onBack, setRatingStep, step]);
 
   const handleOnNext = useCallback(() => {
     setStep((preState) => preState + 1);
@@ -291,16 +337,71 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     visitId,
   ]);
 
+  const onSubmitDelicensing = () => {
+    const leavingComment = sectionQuestions
+      ?.find((item) => item.visitSection === delicensingStep1VisitSection)
+      ?.questions?.find((item) => item.question === delicensingQuestion2)
+      ?.answer as string | undefined;
+
+    if (!!practitioner?.userId) {
+      appDispatch(
+        deActivatePractitioner({ userId: practitioner?.userId, leavingComment })
+      );
+    }
+  };
+
+  const handleOnSubmit = () => {
+    if (isToRemoveSmartStarter && step !== 1) {
+      setStep(0);
+      setCurrentActivity(visitTypes.delicensing);
+    }
+
+    if (currentActivity === visitTypes.delicensing) {
+      return onSubmitDelicensing();
+    }
+
+    return onSubmit();
+  };
+
+  const onCancelDelicensing = () => {
+    setRatingStep();
+    setCurrentActivity(visitTypes.pqa.firstPQA);
+  };
+
+  const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
-    switch (activityName) {
+    switch (visitName) {
       case visitTypes.pqa.firstPQA:
-        return getFirstPqaSteps({ isStep11AnswerTrue });
+        return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
       case visitTypes.supportVisit:
         return generalSupportVisit;
+      case visitTypes.delicensing:
+        return delicensingSteps;
       default:
         return prePqaVisits;
     }
-  }, [activityName, isStep11AnswerTrue]);
+  }, [isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+
+  useEffect(() => {
+    if (wasLoadingDeactivate && !isLoadingDeactivate) {
+      if (isRejected) {
+        return showMessage({
+          message: `Something went wrong, please try again`,
+          type: 'error',
+        });
+      }
+
+      onBack?.();
+      onSuccess();
+    }
+  }, [
+    isLoadingDeactivate,
+    isRejected,
+    onBack,
+    onSuccess,
+    showMessage,
+    wasLoadingDeactivate,
+  ]);
 
   return (
     <BannerWrapper
@@ -308,8 +409,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       renderBorder
       onBack={handleOnBack}
       onClose={handleOnClose}
-      title={activityName}
-      subTitle={`${step + 1} of ${currentSteps.length}`}
+      title={`${activityName} - ${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
+      subTitle={`step ${step + 1} of ${currentSteps.length}`}
       backgroundColour="white"
       displayOffline={!isOnline}
     >
@@ -330,8 +431,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
         onClose={onBack}
-        onSubmit={onSubmit}
-        isLoading={isLoading || isLoadingSupportVisit}
+        onSubmit={handleOnSubmit}
+        isLoading={isLoading || isLoadingSupportVisit || isLoadingDeactivate}
+        secondaryButton={
+          visitName === visitTypes.delicensing && step === 1
+            ? { icon: 'XIcon', text: 'Cancel', onClick: onCancelDelicensing }
+            : undefined
+        }
+        {...(visitName === visitTypes.delicensing && {
+          submitButton: {
+            text: 'Remove SmartStarter',
+            icon: 'TrashIcon',
+          },
+        })}
       />
     </BannerWrapper>
   );
