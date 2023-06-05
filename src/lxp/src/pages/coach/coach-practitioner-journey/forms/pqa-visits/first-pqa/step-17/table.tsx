@@ -80,9 +80,9 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
   ];
 
   const isRedFlagScoreLess5 = sectionList[2].score < 5;
-  const isRedFlagSmartSpaceLicence = Boolean(step14Question1Answer) === false;
-  const isOrangeFlagProgramme = Boolean(step16Question2Answer) === false;
-  const isOrangeFlagManyChildren = Boolean(step16Question3Answer) === true;
+  const isRedFlagSmartSpaceLicence = step14Question1Answer === false;
+  const isOrangeFlagProgramme = step16Question2Answer === false;
+  const isOrangeFlagManyChildren = step16Question3Answer === true;
 
   const body = [
     {
