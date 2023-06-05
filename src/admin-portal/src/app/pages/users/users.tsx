@@ -105,7 +105,10 @@ export function Users() {
 
       <div className=" lg:min-w-0 lg:flex-1">
         <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-          <div className="relative h-full bg-white p-12 rounded-xl" style={{ minHeight: '36rem' }}>
+          <div
+            className="relative h-full rounded-xl bg-white p-12"
+            style={{ minHeight: '36rem' }}
+          >
             <UserRoutes />
           </div>
         </div>
