@@ -9,7 +9,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         {
         }
 
-        public SortByField(string fieldName, bool descending)
+        public SortByField(string fieldName, bool descending = false)
         {
             FieldName = FirstCharToUpper(fieldName);
             Descending = descending;

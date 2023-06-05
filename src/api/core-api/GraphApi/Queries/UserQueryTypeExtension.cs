@@ -48,8 +48,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = await AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = AddFiltering(pagingInput?.FilterBy, usersQuery);
-            usersQuery = AddSorting(pagingInput?.SortBy, usersQuery);
-            
+            usersQuery = AddSorting(
+                pagingInput?.SortBy,
+                usersQuery,
+                new SortByField[]
+                {
+                    new SortByField(nameof(ApplicationUser.FullName).ToString())
+                });
+
             if (pagingInput is not null)
                 usersQuery = usersQuery
                     .Skip(pagingInput.RowOffset)
@@ -111,9 +117,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private static IQueryable<ApplicationUser> AddFiltering(FilterByField[] inputFilter, in IQueryable<ApplicationUser> usersQuery)
+        private static IQueryable<T> AddFiltering<T>(FilterByField[] inputFilter, in IQueryable<T> usersQuery)
         {
-            IQueryable<ApplicationUser> newUsersQuery = usersQuery.AsQueryable();
+            IQueryable<T> newUsersQuery = usersQuery.AsQueryable();
 
             if (inputFilter is null || !inputFilter.Any())
                 return newUsersQuery;
@@ -129,15 +135,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         case InputFilterComparer.Equals:
                             {
                                 if (filter.Value is null)
+                                {
                                     newUsersQuery = newUsersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
-                                if (DateTime.TryParse(filter.Value, out var date))
+                                }
+                                else if (DateTime.TryParse(filter.Value, out var date))
+                                {
                                     newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
+                                }
                                 else if (Guid.TryParse(filter.Value, out var guid))
+                                {
                                     newUsersQuery = newUsersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
+                                }
                                 else if (int.TryParse(filter.Value, out var @int))
+                                {
                                     newUsersQuery = newUsersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
+                                }
                                 else
+                                {
                                     newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
+                                }
                             }
                             break;
                         case InputFilterComparer.Contains:
@@ -165,28 +181,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return newUsersQuery;
         }
 
-        private static IQueryable<ApplicationUser> AddSorting(SortByField[] sortBy, in IQueryable<ApplicationUser> usersQuery)
+        private static IQueryable<T> AddSorting<T>(SortByField[] sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
         {
+            // Don't mutate the input:
+            var newQuery = usersQuery.AsQueryable();
+
             if (sortBy?.Any() ?? false)
             {
                 foreach (var sort in sortBy)
                 {
-                    // TODO: Get this working with HotChocolate :(
-                    var sortByFieldName = sort?.FieldName ?? nameof(ApplicationUser.FullName);
+                    var sortByFieldName = sort?.FieldName;
 
                     if (sort.Descending)
-                        return usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
+                        return newQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
                     else
-                        return usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
+                        return newQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
                 }
             }
             else
+            // Add default sort.
             {
-                // Add default sort.
-                return usersQuery.OrderBy(u => u.Surname).ThenBy(u => u.FirstName);
+                if (defaultSortFields?.Any() ?? false)
+                {
+                    foreach (var field in defaultSortFields.Select((value, i) => new { i, value }))
+                    {
+                        if (field.i == 0)
+                            newQuery = newQuery.OrderBy(u => EF.Property<object>(u, field.value.FieldName));
+
+                        else
+                        {
+                            newQuery = (newQuery as IOrderedQueryable<T>).ThenBy(u => EF.Property<object>(u, field.value.FieldName)).AsQueryable();
+
+                        }
+                    }
+
+                    return newQuery;
+                }
             }
 
-            return usersQuery;
+            return newQuery;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
