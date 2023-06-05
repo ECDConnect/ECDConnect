@@ -378,6 +378,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         public PractitionerTimeline GetPractitionerTimeline(string userId)
         {
             Trainee trainee = _traineeRepo.GetByUserId(userId);
+            Practitioner practitioner = _practiGenericRepo.GetByUserId(userId);
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
@@ -419,21 +420,33 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // consolidation meetings 
-            if (trainee.ConsolidationMeetingDate != null)
+            if (trainee?.ConsolidationMeetingDate != null)
             {
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Success.ToString();
-                timeline.ConsolidationMeetingDate = trainee.ConsolidationMeetingDate;
+                timeline.ConsolidationMeetingDate = trainee?.ConsolidationMeetingDate;
             } else
             {
                 timeline.ConsolidationMeetingStatus = Constants.SSSettings.no_consolidation_meeting;
                 timeline.ConsolidationMeetingColor = MetricsColorEnum.Warning.ToString();
-                timeline.ConsolidationMeetingDate = trainee.ConsolidationMeetingDate;
+                timeline.ConsolidationMeetingDate = trainee?.ConsolidationMeetingDate;
             }
 
             // TODO: club meetings - waiting for integration to be completed
 
-            // TODO: first aid -> waiting for integration to be completed
+            // First Aid
+            if (practitioner?.AttendedFirstAidCourse == true)
+            {
+                timeline.FirstAidCourseStatus = Constants.SSSettings.attended_first_aid;
+                timeline.FirstAidCourseColor = MetricsColorEnum.Success.ToString();
+                //timeline.FirstAidDate = "";
+            } else
+            {
+                timeline.FirstAidCourseStatus = Constants.SSSettings.not_attended_first_aid;
+                timeline.FirstAidCourseColor = MetricsColorEnum.Warning.ToString();
+                //timeline.FirstAidDate = "";
+            }
+
 
             // PQA visits
             List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
@@ -707,7 +720,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.ThreeChildrenRegisteredDate = allChildren.OrderBy(x => x.InsertedDate).GetItemByIndex(0).InsertedDate;
             }
 
-            // SSCoachVisit
+            // SSCoachVisit - normally this visit is linked to a coach id and a trainee id
+            Visit coachVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_trainee_visit);
+            if (coachVisit != null)
+            {
+                timeline.SSCoachVisitStatus = Constants.SSSettings.coach_visit;
+                timeline.SSCoachVisitColor = MetricsColorEnum.Success.ToString();
+                timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
+            }
 
 
             // SignFranchiseeAgreement
@@ -721,7 +741,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // SignStartUpSupportAgreement
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
-            if (franchiseeAgreement != null && trainee.IsOnStipend == true)
+            if (franchiseeAgreement != null && trainee.Practitioner.IsOnStipend == true)
             {
                 // Get support agreement signature
                 UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();

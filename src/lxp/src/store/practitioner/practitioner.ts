@@ -6,6 +6,7 @@ import {
   getPractitionerById,
   updatePractitionerRegistered,
   updatePractitionerProgress,
+  updatePractitionerUsePhotoInReport,
 } from './practitioner.actions';
 import {
   PractitionerState,
@@ -52,6 +53,15 @@ const practitionerSlice = createSlice({
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
+    builder.addCase(
+      updatePractitionerUsePhotoInReport.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          usePhotoInReport: action.payload,
+        };
+      }
+    );
   },
 });
 

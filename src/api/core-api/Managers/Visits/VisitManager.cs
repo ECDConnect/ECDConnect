@@ -284,7 +284,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
                         select visit
                     ).LastOrDefault();
-                } 
+                }
                 else if (type == Constants.SSSettings.client_practitioner)
                 {
                     nextVisit = (
@@ -345,239 +345,261 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             var visitCount = 0;
             DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime friday = StartOfWeek(today, DayOfWeek.Friday);
 
             if (type == Constants.GGSettings.client_mother)
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= today.Date).Count();
-            }
-
-            return visitCount;
-        }
-        public int GetVisitsDueForHCWCount(string HCWId, string type)
-        {
-            var visitCount = 0;
-            DateTime today = DateTime.Today;
-            DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
-            DateTime sunday = monday.AddDays(6);
-
-            if (type == Constants.GGSettings.client_mother)
-            {
-                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
             }
             else
             {
-                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date).Count();
+                visitCount = _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date <= today.Date).Count();
             }
 
-            return visitCount;
-        }
-        public DateTime? GetClientsNextVisitDate(Guid Id, string type)
-        {
-            Visit nextVisit = null;
-            DateTime today = DateTime.Today;
-
-            if (type == Constants.GGSettings.client_mother)
+                return visitCount;
+            }
+            public int GetVisitsDueForHCWCount(string HCWId, string type)
             {
-                nextVisit = (
-                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                var visitCount = 0;
+                DateTime today = DateTime.Today;
+                DateTime monday = StartOfWeek(today, DayOfWeek.Monday);
+                DateTime sunday = monday.AddDays(6);
+
+                if (type == Constants.GGSettings.client_mother)
+                {
+                    visitCount = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-            }
-            else if (type == Constants.GGSettings.client_child)
-            {
-                nextVisit = (
-                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                    select visit)
+                    .Count();
+                }
+                else
+                {
+                    visitCount = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId.Equals(HCWId) && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= sunday.Date)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-            } else if (type == Constants.SSSettings.client_practitioner)
-            {
-                nextVisit = (
-                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-            }
+                    select visit)
+                    .Count();
+                }
 
-            if (nextVisit != null)
-            {
-                return nextVisit.PlannedVisitDate.Date;
+                return visitCount;
             }
-            return null;
-        }
+            public DateTime? GetClientsNextVisitDate(Guid Id, string type)
+            {
+                Visit nextVisit = null;
+                DateTime today = DateTime.Today;
+
+                if (type == Constants.GGSettings.client_mother)
+                {
+                    nextVisit = (
+                        from visit in _visitRepo.GetAll().Where(x => x.MotherId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).FirstOrDefault();
+                }
+                else if (type == Constants.GGSettings.client_child)
+                {
+                    nextVisit = (
+                        from visit in _visitRepo.GetAll().Where(x => x.InfantId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).FirstOrDefault();
+            } else if (type == Constants.SSSettings.client_practitioner)
+                {
+                    nextVisit = (
+                        from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.Equals(Id) && !x.Attended && x.PlannedVisitDate.Date >= today.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).FirstOrDefault();
+                }
+
+                if (nextVisit != null)
+                {
+                    return nextVisit.PlannedVisitDate.Date;
+                }
+                return null;
+            }
         public List<Visit> GetVisitsForClient(string id, string type) {
 
-            List<Visit> allVisits = new List<Visit>();
+                List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother) {
-                allVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                    select visit 
-                ).ToList();
+                    allVisits = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).ToList();
             } else if (type == Constants.GGSettings.client_child) {
-               allVisits = (
-                   from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                   join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
-                   select visit
-               ).ToList();
+                    allVisits = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).ToList();
             } else if (type == Constants.SSSettings.client_practitioner) {
-                allVisits = (
-                   from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                   join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_practitioner) on visit.VisitTypeId equals visitType.Id
-                   select visit
-               ).ToList();
+                    allVisits = (
+                       from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                       join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_practitioner) on visit.VisitTypeId equals visitType.Id
+                       select visit
+                   ).ToList();
             } else if (type == Constants.SSSettings.client_trainee) {
                 allVisits = (
                     from visit in _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null).OrderBy(x => x.PlannedVisitDate)
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_trainee) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).ToList();
-            }
+                }
 
-            foreach (var _visit in allVisits)
-            {
-                _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
-            }
+                foreach (var _visit in allVisits)
+                {
+                    _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
+                }
 
-            return allVisits.OrderBy(x => x.OrderDate).ToList();
+                return allVisits.OrderBy(x => x.OrderDate).ToList();
 
-        }
-        public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
-        {
-            DateTime today = DateTime.Today;
-            var monday = StartOfWeek(today, DayOfWeek.Monday);
-            var next7Days = monday.AddDays(6);
-            var totalVisits = 0;
+            }
+            public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
+            {
+                DateTime today = DateTime.Today;
+                var monday = StartOfWeek(today, DayOfWeek.Monday);
+                var next7Days = monday.AddDays(6);
+                var totalVisits = 0;
 
-            if (!currentWeek)
-            {
-                int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
-                DateTime pastDate = DateTime.Now.AddDays(-days);
-                monday = StartOfWeek(pastDate, DayOfWeek.Monday);
-                next7Days = monday.AddDays(6);
-            } 
+                if (!currentWeek)
+                {
+                    int days = DateTime.Now.DayOfWeek - DayOfWeek.Sunday;
+                    DateTime pastDate = DateTime.Now.AddDays(-days);
+                    monday = StartOfWeek(pastDate, DayOfWeek.Monday);
+                    next7Days = monday.AddDays(6);
+                }
 
-            if (type == Constants.GGSettings.client_mother)
-            {
-                totalVisits = _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date).OrderBy(x => x.PlannedVisitDate).Count();
+                if (type == Constants.GGSettings.client_mother)
+                {
+                    totalVisits = _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date).OrderBy(x => x.PlannedVisitDate).Count();
+                }
+                else
+                {
+                    totalVisits = _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date).OrderBy(x => x.PlannedVisitDate).Count();
+                }
+                return totalVisits;
             }
-            else
+            public Guid GetLastCompletedVisitId(String id, string type)
             {
-                totalVisits = _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && !x.Attended && x.PlannedVisitDate.Date >= monday.Date && x.PlannedVisitDate.Date <= next7Days.Date).OrderBy(x => x.PlannedVisitDate).Count();
-            }
-            return totalVisits;
-        }
-        public Guid GetLastCompletedVisitId(String id, string type)
-        {
-            Guid visitId = Guid.Empty;
+                Guid visitId = Guid.Empty;
 
-            if (type == Constants.GGSettings.client_mother)
-            {
-                visitId = (
-                    from visit in _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
-                    select visit.Id
-                ).FirstOrDefault();
+                if (type == Constants.GGSettings.client_mother)
+                {
+                    visitId = (
+                        from visit in _visitRepo.GetAll().Where(x => x.MotherId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_mother)) on visit.VisitTypeId equals visitType.Id
+                        select visit.Id
+                    ).FirstOrDefault();
+                }
+                else if (type == Constants.GGSettings.client_child)
+                {
+                    visitId = (
+                        from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
+                        select visit.Id
+                    ).FirstOrDefault();
+                }
+                else if (type == Constants.SSSettings.client_practitioner)
+                {
+                    visitId = (
+                        from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
+                        select visit.Id
+                    ).FirstOrDefault();
+                }
+                return visitId;
             }
-            else if (type == Constants.GGSettings.client_child)
+            public Visit GetVisitForUserForType(string id, string userType, string vType)
             {
-                visitId = (
-                    from visit in _visitRepo.GetAll().Where(x => x.InfantId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.GGSettings.client_child)) on visit.VisitTypeId equals visitType.Id
-                    select visit.Id
-                ).FirstOrDefault();
-            }
-            else if (type == Constants.SSSettings.client_practitioner)
-            {
-                visitId = (
-                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner)) on visit.VisitTypeId equals visitType.Id
-                    select visit.Id
-                ).FirstOrDefault();
-            }
-            return visitId;
-        }
-        public Visit GetVisitForUserForType(string id, string userType, string vType)
-        {
-            Visit vData = new Visit();
-            if (userType == Constants.SSSettings.client_trainee)
-            {
-                return (
-                    from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-            }
+                Visit vData = new Visit();
 
-            return vData;
-        }
+                if (userType == Constants.SSSettings.client_trainee)
+                {
+                    if (vType == Constants.SSSettings.visitType_trainee_visit)
+                    {
+                        return (
+                            from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
+                            join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_coach) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                            select visit
+                        ).FirstOrDefault();
+                } else
+                    {
+                        return (
+                            from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
+                            join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                            select visit
+                        ).FirstOrDefault();
+                    }
+                }
+                
+
+                return vData;
+            }
 
         #endregion
 
-        public bool ValidateDefaultVisitsForPractitioner(string userId)
-        {
-            var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-
-            if (smartSpaceLic != null)
+            public bool ValidateDefaultVisitsForPractitioner(string userId)
             {
-                Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
-                List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
+                var smartSpaceLic = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
 
-                var input = new VisitModel();
-                foreach (VisitType visitType in visitTypes)
+                if (smartSpaceLic != null)
                 {
-                    input = new VisitModel();
-                    input.VisitType = visitType;
-                    input.Attended = false;
-                    input.MotherId = null;
-                    input.InfantId = null;
-                    input.LinkedVisitId = null;
-                    input.PractitionerId = practitioner.Id;
+                    Practitioner practitioner = _practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
+                    List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name != Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).ToList();
 
-                    // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
-                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
+                    var input = new VisitModel();
+                    foreach (VisitType visitType in visitTypes)
                     {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(1);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
+                        input = new VisitModel();
+                        input.VisitType = visitType;
+                        input.Attended = false;
+                        input.MotherId = null;
+                        input.InfantId = null;
+                        input.LinkedVisitId = null;
+                        input.PractitionerId = practitioner.Id;
+
+                        // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
+                        if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)
                         {
-                            AddVisit(input);
+                            DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                            DateTime newDate = dt.AddMonths(1);
+                            input.PlannedVisitDate = newDate;
+                            Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                            if (visit == null)
+                            {
+                                AddVisit(input);
+                            }
                         }
-                    }
-                    // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
-                    if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
-                    {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(2);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
+                        // --second visit; Deadline for second visit = { date SmartSpace licence was received + 2 months }
+                        if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_2)
                         {
-                            AddVisit(input);
+                            DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                            DateTime newDate = dt.AddMonths(2);
+                            input.PlannedVisitDate = newDate;
+                            Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                            if (visit == null)
+                            {
+                                AddVisit(input);
+                            }
                         }
-                    }
-                    // SmartSpace licence received date + 3 months
-                    if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
-                    {
-                        DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                        DateTime newDate = dt.AddMonths(3);
-                        input.PlannedVisitDate = newDate;
-                        Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
-                        if (visit == null)
+                        // SmartSpace licence received date + 3 months
+                        if (visitType.Name == Constants.SSSettings.visitType_pqa_visit_1)
                         {
-                            AddVisit(input);
+                            DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
+                            DateTime newDate = dt.AddMonths(3);
+                            input.PlannedVisitDate = newDate;
+                            Visit visit = _visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id && x.VisitTypeId == visitType.Id).FirstOrDefault();
+                            if (visit == null)
+                            {
+                                AddVisit(input);
+                            }
                         }
                     }
                 }
+                return true;
             }
-            return true;
+
         }
-
     }
-}
-
+    

@@ -21,11 +21,14 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
             _fileService = fileService;
         }
 
-        public async Task<string> GenerateReport(DataAccessLayer.Entities.Reports.ChildProgressReport reportEntity, Document document)
+        public async Task<string> GenerateReport(DataAccessLayer.Entities.Reports.ChildProgressReport reportEntity,
+            DataAccessLayer.Entities.Users.Practitioner practitioner, 
+            string currentProfileImageUrl,
+            Document document)
         {
             var reportContent = JsonConvert.DeserializeObject<ChildProgressReportDetailedModel>(reportEntity.ReportContent);
 
-            var fields = ChildProgressReportTemplate.GetFieldTemplate(reportContent);
+            var fields = ChildProgressReportTemplate.GetFieldTemplate(reportContent, practitioner, currentProfileImageUrl);
 
             if (document == default)
             {
