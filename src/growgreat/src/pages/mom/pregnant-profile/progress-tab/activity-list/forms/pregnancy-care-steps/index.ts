@@ -1,13 +1,14 @@
 import { AlertSeverityType } from '@ecdlink/ui';
 
 export { WeightAndLengthResultStep } from './weight-and-length/result';
-export { MidUpperArmCircumferenceResultStep } from './maternal-distress/result';
-export { MaternalDistressSteps } from './maternal-distress/form';
+export { MaternalDistressScreenStep } from './maternal-distress/result';
+export { MaternalDistressVideoStep } from './maternal-distress/form';
 export { DrugOrAlcoholUseStep } from './drug-or-alcohol-use';
 export { NutritionStep } from './nutrition';
 export { AlcoholUseStep } from './nutrition/complementary-feeding-flow/alcohol-use';
 export { HivCareAndMedicationStep } from './nutrition/complementary-feeding-flow/hiv-care';
 export { MaternalDistressFollowUpStep } from './maternal-distress/result/follow-up';
+export { BirthPreparationStep } from './birth-preparation';
 
 export interface GrowthMonitoring {
   [key: string]: any;

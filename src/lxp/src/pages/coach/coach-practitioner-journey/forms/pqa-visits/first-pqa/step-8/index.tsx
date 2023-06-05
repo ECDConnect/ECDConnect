@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
 
+export const step8VisitSection = 'Step 8';
+export const step8TotalScore = 8;
+
 export const Step8 = ({
   setSectionQuestions,
   setEnableButton,
@@ -26,7 +29,6 @@ export const Step8 = ({
       answer: '',
     },
   ]);
-  const visitSection = 'Step 8';
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -47,7 +49,7 @@ export const Step8 = ({
     setAnswers(updatedQuestions);
     setSectionQuestions?.([
       {
-        visitSection,
+        visitSection: step8VisitSection,
         questions: updatedQuestions,
       },
     ]);
@@ -88,7 +90,7 @@ export const Step8 = ({
           </fieldset>
         </>
       ))}
-      <Score questions={questions} total={8} />
+      <Score questions={questions} total={step8TotalScore} />
     </div>
   );
 };

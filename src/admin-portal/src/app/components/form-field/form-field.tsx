@@ -90,9 +90,9 @@ const FormField: React.FC<FormFieldProps> = ({
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
         />
-        {type === 'checkbox' && (
+        {type === 'checkbox' && nameProp === 'terms' && (
           <a className="text-md text-secondary mb-3 pl-2" href="/terms">
-            {instructions[0]}
+            {instructions[0] ?? ''}
           </a>
         )}
 

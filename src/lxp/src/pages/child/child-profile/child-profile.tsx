@@ -122,6 +122,12 @@ export const ChildProfile: React.FC = () => {
     (item) => item?.userId === child?.userId
   );
 
+  const practitioners = useSelector(
+    practitionerSelectors.getPractitioners
+  )?.filter((x) => {
+    return x.user?.id !== practitioner?.user?.id;
+  });
+
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -218,7 +224,10 @@ export const ChildProfile: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  const { setState, state: { run, stepIndex }, } = useAppContext();
+  const {
+    setState,
+    state: { run, stepIndex },
+  } = useAppContext();
 
   const childTutorialTaken = getStorageItem(
     LocalStorageKeys.childProfileTutorialComplete
@@ -230,11 +239,12 @@ export const ChildProfile: React.FC = () => {
 
   useEffect(() => {
     if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-      gotToStatementsWalkthrough();
+      goToChildProfileWalkhthrough();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const gotToStatementsWalkthrough = () => {
+  const goToChildProfileWalkhthrough = () => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
@@ -263,7 +273,13 @@ export const ChildProfile: React.FC = () => {
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => onCancel(),
+              onClick: () => {
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.childProfileTutorialComplete
+                );
+                onCancel();
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}
@@ -644,10 +660,9 @@ export const ChildProfile: React.FC = () => {
     return <ChildPending child={child} childUser={childUser} />;
   }
 
-  const displayWalkthrough = ()=>{
-    gotToStatementsWalkthrough();
-
-  }
+  const displayWalkthrough = () => {
+    goToChildProfileWalkhthrough();
+  };
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -658,9 +673,15 @@ export const ChildProfile: React.FC = () => {
         size="medium"
         renderBorder={true}
         renderOverflow={false}
-        onBack={() => history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 })}
+        onBack={() => {
+          if (isPrincipal && practitioners && practitioners.length > 0) {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+          } else {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+          }
+        }}
         displayOffline={!isOnline}
-        onHelp={()=>gotToStatementsWalkthrough()}
+        onHelp={() => goToChildProfileWalkhthrough()}
         displayHelp={true}
       >
         <div className={styles.avatarWrapper}>

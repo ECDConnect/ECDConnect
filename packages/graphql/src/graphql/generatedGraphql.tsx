@@ -1934,6 +1934,7 @@ export type FileModel = {
 };
 
 export enum FileTypeEnum {
+  AttendancePdf = 'ATTENDANCE_PDF',
   CareGiver = 'CARE_GIVER',
   Child = 'CHILD',
   ChildBirthCertificate = 'CHILD_BIRTH_CERTIFICATE',
@@ -1942,15 +1943,20 @@ export enum FileTypeEnum {
   ClassroomProfile = 'CLASSROOM_PROFILE',
   Coach = 'COACH',
   ContentImage = 'CONTENT_IMAGE',
+  IdentityDocument = 'IDENTITY_DOCUMENT',
   IncomeStatementPdf = 'INCOME_STATEMENT_PDF',
   MaternalCaseRecord = 'MATERNAL_CASE_RECORD',
   Practitioner = 'PRACTITIONER',
+  PractitionerAgreement = 'PRACTITIONER_AGREEMENT',
   ProfileImage = 'PROFILE_IMAGE',
   ProgressTrackingCategory = 'PROGRESS_TRACKING_CATEGORY',
   ProgressTrackingLevel = 'PROGRESS_TRACKING_LEVEL',
   ProgressTrackingSubCategory = 'PROGRESS_TRACKING_SUB_CATEGORY',
+  ProofOfAccount = 'PROOF_OF_ACCOUNT',
+  ProofOfSiteAddress = 'PROOF_OF_SITE_ADDRESS',
   ReportTemplates = 'REPORT_TEMPLATES',
   RoadToHealthBook = 'ROAD_TO_HEALTH_BOOK',
+  StartupSupportAgreement = 'STARTUP_SUPPORT_AGREEMENT',
   Theme = 'THEME',
   Unknown = 'UNKNOWN',
 }
@@ -3127,6 +3133,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
   addFollowUpVisitForPractitioner?: Maybe<Visit>;
@@ -3397,6 +3404,7 @@ export type Mutation = {
   updateCommunitySectionItemGG?: Maybe<CommunitySectionItemGg>;
   updateCommunitySectionItemSS?: Maybe<CommunitySectionItemSs>;
   updateCommunitySectionSS?: Maybe<CommunitySectionSs>;
+  updateCommunitySupport?: Maybe<Trainee>;
   updateConsent?: Maybe<Consent>;
   updateConsentGG?: Maybe<ConsentGg>;
   updateDailyProgramme?: Maybe<DailyProgramme>;
@@ -3525,6 +3533,10 @@ export type MutationAddClinicArgs = {
 export type MutationAddCoachToFranchisorArgs = {
   coachId?: InputMaybe<Scalars['String']>;
   franchisorId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationAddCoachVisitInviteForTraineeArgs = {
+  input?: InputMaybe<VisitModelInput>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -4752,6 +4764,11 @@ export type MutationUpdateCommunitySectionSsArgs = {
   input: CommunitySectionSsInput;
   locale?: InputMaybe<Scalars['String']>;
   localeId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationUpdateCommunitySupportArgs = {
+  haveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateConsentArgs = {
@@ -9367,7 +9384,9 @@ export type Trainee = {
   attendedStartUpTraining?: Maybe<Scalars['Boolean']>;
   childProgressTraining?: Maybe<Scalars['Boolean']>;
   childrenAddedDate?: Maybe<Scalars['DateTime']>;
+  communitySupportGained?: Maybe<Scalars['DateTime']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
+  haveCommunitySupport?: Maybe<Scalars['Boolean']>;
   highestEducationLevel?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
@@ -9402,7 +9421,9 @@ export type TraineeFilterInput = {
   attendedStartUpTraining?: InputMaybe<BooleanOperationFilterInput>;
   childProgressTraining?: InputMaybe<BooleanOperationFilterInput>;
   childrenAddedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  communitySupportGained?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  haveCommunitySupport?: InputMaybe<BooleanOperationFilterInput>;
   highestEducationLevel?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -9437,7 +9458,9 @@ export type TraineeInput = {
   AttendedStartUpTraining?: InputMaybe<Scalars['Boolean']>;
   ChildProgressTraining?: InputMaybe<Scalars['Boolean']>;
   ChildrenAddedDate?: InputMaybe<Scalars['DateTime']>;
+  CommunitySupportGained?: InputMaybe<Scalars['DateTime']>;
   ConsolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
+  HaveCommunitySupport?: InputMaybe<Scalars['Boolean']>;
   HighestEducationLevel?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -9493,6 +9516,9 @@ export type TraineeOnBoardTimeline = {
   smartSpaceChecklistDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistDeadlineDate?: Maybe<Scalars['DateTime']>;
   smartSpaceChecklistStatus?: Maybe<Scalars['String']>;
+  smartSpaceLicenseColor?: Maybe<Scalars['String']>;
+  smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
+  smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
@@ -9500,6 +9526,7 @@ export type TraineeOnBoardTimeline = {
   threeChildrenRegisteredDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
+  traineeVisits?: Maybe<Array<Maybe<Visit>>>;
 };
 
 export type UserByToken = {
@@ -9636,6 +9663,8 @@ export type Visit = {
   __typename?: 'Visit';
   actualVisitDate?: Maybe<Scalars['DateTime']>;
   attended: Scalars['Boolean'];
+  coach?: Maybe<Coach>;
+  coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   infant?: Maybe<Infant>;
@@ -9837,6 +9866,8 @@ export type VisitFilterInput = {
   actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<VisitFilterInput>>;
   attended?: InputMaybe<BooleanOperationFilterInput>;
+  coach?: InputMaybe<CoachFilterInput>;
+  coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
@@ -9956,6 +9987,8 @@ export type VisitGrowthDataHeightInput = {
 export type VisitInput = {
   ActualVisitDate?: InputMaybe<Scalars['DateTime']>;
   Attended: Scalars['Boolean'];
+  Coach?: InputMaybe<CoachInput>;
+  CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
@@ -9980,6 +10013,7 @@ export type VisitInput = {
 export type VisitModelInput = {
   actualVisitDate: Scalars['DateTime'];
   attended: Scalars['Boolean'];
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;

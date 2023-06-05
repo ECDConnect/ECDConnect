@@ -61,8 +61,8 @@ export const monthsList = [
   { label: 'June', value: '6' },
   { label: 'July', value: '7' },
   { label: 'August', value: '8' },
-  { label: 'Septembre', value: '9' },
-  { label: 'Octubre', value: '10' },
+  { label: 'September', value: '9' },
+  { label: 'October', value: '10' },
   { label: 'November', value: '11' },
   { label: 'December', value: '12' },
 ];

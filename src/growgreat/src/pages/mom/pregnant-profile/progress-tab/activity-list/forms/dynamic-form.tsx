@@ -222,6 +222,8 @@ export const DynamicForm = ({
 
     const CurrentStep = steps[Number(currentStep)];
 
+    if (!CurrentStep) return;
+
     return (
       <CurrentStep
         infant={infant}

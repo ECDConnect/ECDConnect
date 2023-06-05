@@ -350,11 +350,11 @@ export const getHealthCareWorkerHighlights = createAsyncThunk<
 
 export const getPreviousVisitInformationForMother = createAsyncThunk<
   Progress_VisitDataStatus,
-  { visitId: string },
+  { userId: string; visitId: string },
   ThunkApiType<RootState>
 >(
   VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER,
-  async ({ visitId }, { getState, rejectWithValue }) => {
+  async ({ userId, visitId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -365,7 +365,7 @@ export const getPreviousVisitInformationForMother = createAsyncThunk<
       if (userAuth?.auth_token) {
         content = await new Visit(
           userAuth?.auth_token ?? ''
-        ).getPreviousVisitInformationForMother(visitId);
+        ).getPreviousVisitInformationForMother(userId, visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
