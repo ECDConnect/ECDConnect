@@ -62,13 +62,19 @@ export const setStep = (
   return {};
 };
 
-export const timelineSteps = (
-  timeline: PractitionerTimeline,
-  onView: (visit: Visit) => void,
-  isLoading: boolean,
-  isOnline: boolean,
-  visits?: Maybe<Visit>[]
-): StepItem[] => {
+export const timelineSteps = ({
+  timeline,
+  onView,
+  isLoading,
+  isOnline,
+  visits,
+}: {
+  timeline: PractitionerTimeline;
+  onView: (visit: Visit) => void;
+  isLoading: boolean;
+  isOnline: boolean;
+  visits?: Maybe<Visit>[];
+}): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
   steps.push(
@@ -150,21 +156,20 @@ export const timelineSteps = (
   );
 
   if (!!timeline.prePQASiteVisits?.length) {
-    const date =
-      timeline.prePQAVisitDate1Color === 'Success' &&
-      !visits?.some((item) =>
-        item?.visitType?.name?.includes('pre_pqa_visit_1')
-      )
-        ? new Date(
-            timeline.prePQASiteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_2')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions)
-        : new Date(
-            timeline.prePQASiteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_1')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions);
+    const date = visits?.some(
+      (item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
+    )
+      ? new Date(
+          timeline.prePQASiteVisits?.find((item) =>
+            item?.visitType?.name?.includes('pre_pqa_visit_2')
+          )?.plannedVisitDate
+        ).toLocaleDateString('en-ZA', dateOptions)
+      : new Date(
+          timeline.prePQASiteVisits?.find((item) =>
+            item?.visitType?.name?.includes('pre_pqa_visit_1')
+          )?.plannedVisitDate
+        ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
       new Date(date) < new Date() &&
