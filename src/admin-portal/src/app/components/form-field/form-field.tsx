@@ -92,7 +92,7 @@ const FormField: React.FC<FormFieldProps> = ({
         />
         {type === 'checkbox' && (
           <a className="text-md text-secondary mb-3 pl-2" href="/terms">
-            {instructions[0]}
+            {instructions && instructions[0]}
           </a>
         )}
 
