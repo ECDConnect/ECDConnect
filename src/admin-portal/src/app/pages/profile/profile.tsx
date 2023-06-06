@@ -3,9 +3,9 @@ import FormField from '../../components/form-field/form-field';
 import {
   Config,
   initialEditProfileValues,
-  LocalStorageKeys,
   editProfileRequestModel,
   editProfileSchema,
+  LocalStorageKeys,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
@@ -22,8 +22,8 @@ export function Profile() {
   const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
-    resolver: yupResolver(profileSchema),
-    defaultValues: initialProfileValues,
+    resolver: yupResolver(editProfileSchema),
+    defaultValues: initialEditProfileValues,
     mode: 'onChange',
   });
 

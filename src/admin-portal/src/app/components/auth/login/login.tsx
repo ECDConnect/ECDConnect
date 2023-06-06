@@ -3,6 +3,9 @@ import {
   initialLoginValues,
   LocalStorageKeys,
   LoginRequestModel,
+  initialEditProfileValues,
+  editProfileRequestModel,
+  editProfileSchema,
   loginSchema,
   useTheme,
 } from '@ecdlink/core';
@@ -90,10 +93,10 @@ export default function Login() {
             <form className="space-y-6">
               <div>
                 <FormField
-                  label={'First Name'}
-                  nameProp={'name'}
+                  label={'Email address *'}
+                  nameProp={'email'}
                   register={register}
-                  // error={errors.email?.message}
+                  error={errors.email?.message}
                 />
               </div>
 
