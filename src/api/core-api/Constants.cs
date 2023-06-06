@@ -42,6 +42,7 @@ namespace EcdLink.Api.CoreApi
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";
             public const string ss_smart_space_licence = "ss_smart_space_licence";
+            public const string ss_practice_licence = "ss_practice_licence";
 
             // Timeline messages
             public const string starter_licence_received = "Starter Licence received";
@@ -49,6 +50,9 @@ namespace EcdLink.Api.CoreApi
 
             public const string smart_space_licence_received = "SmartSpace Licence received";
             public const string smart_space_licence_not_received = "SmartSpace Licence not received";
+
+            public const string practice_licence_received = "PQA: Practice Licence awarded";
+            public const string practice_licence_not_received = "PQA: Practice Licence not received";
 
             public const string first_site_visit = "First site visit before PQA";
             public const string second_site_visit = "Second site visit before PQA";
