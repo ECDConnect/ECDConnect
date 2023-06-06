@@ -4,6 +4,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -23,11 +24,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] UserManager<ApplicationUser> userManager,
           [Service] HierarchyEngine engine,
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] RoleManager<IdentityRole> roleManager,
           string userId,
           List<string> roleNames)
         {
             // No reason to look this up from DB, it's all hardcoded already...
-            var validRoleNames = typeof(Roles).GetFields().Select(f => f.GetValue(null));
+            var validRoleNames = roleManager.Roles.Select(r => r.Name).ToList();
             var distinctRoleNamesToBeAdded = roleNames?.Distinct().Where(r => validRoleNames.Contains(r));
             var user = await userManager.FindByIdAsync(userId);
 

@@ -75,6 +75,7 @@ export const ProgrammeDetails = ({
   const previousVisitAnswers = useSelector(
     getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
   );
+
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection
   );

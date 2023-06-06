@@ -10,6 +10,8 @@ import { useCallback, useState } from 'react';
 import { step5TotalScore, step5VisitSection } from '../step-5';
 
 export const step16VisitSection = 'Step 16';
+export const step16Question1 =
+  'Did you observe an adult hitting or smacking a child at this programme?';
 export const step16Question2 =
   'Is the SmartStart programme being implemented for long enough?';
 export const step16Question3 =
@@ -22,8 +24,7 @@ export const Step16 = ({
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question:
-        'Did you observe an adult hitting or smacking a child at this programme?',
+      question: step16Question1,
       answer: '',
     },
     {

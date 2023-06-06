@@ -19,14 +19,13 @@ namespace ECDLink.EGraphQL
 {
     public static class GraphStartup
     {
-        public static void ConfigureGraphQlServices(IServiceCollection services, bool isDevelop = false)
+        public static void ConfigureGraphQlServices(IServiceCollection services)
         {
             const int maxRequestSize = 128 * 1024 * 1024;
 
             var contentReloader = new DynamicContentReload();
 
             services.AddSingleton(contentReloader);
-
             services.AddHttpContextAccessor();
 
             var builder = services
