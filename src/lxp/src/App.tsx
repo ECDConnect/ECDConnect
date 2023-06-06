@@ -10,7 +10,7 @@ import '@ionic/react/css/core.css';
 import '@ionic/react/css/display.css';
 import '@ionic/react/css/flex-utils.css';
 import '@ionic/react/css/float-elements.css';
-import { default as React, useEffect } from 'react';
+import { default as React, useEffect, useState } from 'react';
 import ReactGA from 'react-ga';
 import TagManager from 'react-gtm-module';
 import { useSelector } from 'react-redux';
@@ -21,6 +21,7 @@ import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { settingSelectors } from './store/settings';
 import BackgroundSync from './components/background-sync/background-sync';
+import { getTime } from 'date-fns';
 
 const App: React.FC = () => {
   const dialog = useDialog();
@@ -29,6 +30,24 @@ const App: React.FC = () => {
   const applicationSettings = useSelector(
     settingSelectors.getApplicationSettings
   );
+  const userLocalxpiration = JSON.parse(
+    localStorage?.getItem('userLocalxpiration')!
+  );
+
+  const [expirationTime, setExpirationTime] = useState<number>();
+
+  useEffect(() => {
+    const intervalId = setInterval(updateTime, 3600000);
+
+    // Clean up the interval when the component unmounts
+    return () => {
+      clearInterval(intervalId);
+    };
+  }, []);
+
+  const updateTime = () => {
+    setExpirationTime(getTime(new Date()));
+  };
 
   useEffect(() => {
     if (applicationSettings && applicationSettings.Google) {
@@ -54,12 +73,37 @@ const App: React.FC = () => {
         position: DialogPosition.Middle,
         blocking: true,
         render: (onSubmit, onClose) => {
-          return <LoginModal loginSuccessful={onSubmit} />;
+          return (
+            <LoginModal loginSuccessful={onSubmit} updateTime={updateTime} />
+          );
         },
       });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userExpired]);
+
+  useEffect(() => {
+    if (
+      expirationTime &&
+      userLocalxpiration < expirationTime &&
+      user?.auth_token
+    ) {
+      dialog({
+        position: DialogPosition.Middle,
+        blocking: true,
+        render: (onSubmit, onClose) => {
+          return (
+            <LoginModal
+              loginSuccessful={onSubmit}
+              updateTime={updateTime}
+              isLocalExpiration={true}
+            />
+          );
+        },
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [expirationTime, userLocalxpiration, user?.auth_token]);
 
   const getRoutes = () => {
     if (user && user.isTempUser !== true) {
