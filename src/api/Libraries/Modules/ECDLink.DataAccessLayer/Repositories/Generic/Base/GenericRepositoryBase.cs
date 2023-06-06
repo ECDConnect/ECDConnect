@@ -248,8 +248,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                             if (beforeValue != afterValue)
                             {
                                 //determine datatype and whether to exclude certain criteria from the change
-                                if (prop.PropertyType == typeof(DateTime?))
-                                {
+                                if (prop.PropertyType == typeof(DateTime?) && (beforeValue != "" || afterValue != ""))
+                                {                                    
                                     if (DateTime.Parse(beforeValue).Date != DateTime.Parse(afterValue).Date)
                                     {
                                         isValidChange = true;

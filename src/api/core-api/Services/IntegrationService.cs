@@ -38,6 +38,7 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using Newtonsoft.Json.Linq;
 using Microsoft.EntityFrameworkCore;
 using EcdLink.Api.CoreApi.Managers.Integration;
+using ECDLink.Core.Extensions;
 
 namespace ECDLink.Core.Services
 {
@@ -159,67 +160,6 @@ namespace ECDLink.Core.Services
             _apiManager = apiManager;
         }
 
-        #region Utilities
-
-        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null)
-        {
-            try
-            {
-                //int changesCheckTime = 1620;
-                //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
-
-                //get last task run time
-                var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
-
-                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("6b60ef39-9f63-48a1-9dc3-24dfd15d0b7b") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
-                //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).ToList(); //overlaps with 10 minutes of changes
-                if (entityType != null)
-                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
-
-                return audits;
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
-                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
-            }
-        }
-
-        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
-        {
-            try
-            {
-
-                if (entityType != null)
-                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId!=null).ToList();
-                else
-                    return _mapperRepo.GetAll().ToList();
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
-                throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
-            }
-        }
-
-        private async Task<List<IntegrationColumnMapping>> GetMappedColumns(string entityType = null)
-        {
-            try
-            {
-                if (entityType != null)
-                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
-                else
-                    return _columnmapperRepo.GetAll().ToList();
-            }
-            catch (Exception e)
-            {
-                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
-                throw new HttpRequestException("GetMappedColumns Error retrieving mapped " + entityType + ": " + e.Message);
-            }
-        }
-
-        #endregion
-
         #region Integration Points      
 
         public async Task<bool> IntegrationByFranchisees()
@@ -301,7 +241,7 @@ namespace ECDLink.Core.Services
                     //Only allow data pushing when api mode has been set
                     if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
                     {                        
-                        await PushDeletes();
+                        //await PushDeletes();
                         //Inserts
                         await PushInserts();
                         //Updates & Deactivates
@@ -434,6 +374,67 @@ namespace ECDLink.Core.Services
             return returnOK;
         }
 
+        #endregion
+
+        #region Utilities
+
+        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null)
+        {
+            try
+            {
+                //int changesCheckTime = 1620;
+                //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
+
+                //get last task run time
+                var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
+
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("9b9856a3-7b55-4975-b241-accf9e49f0af") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
+                //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).ToList(); //overlaps with 10 minutes of changes
+                if (entityType != null)
+                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
+
+                return audits;
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
+        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
+        {
+            try
+            {
+
+                if (entityType != null)
+                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId != null).ToList();
+                else
+                    return _mapperRepo.GetAll().ToList();
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
+        private async Task<List<IntegrationColumnMapping>> GetMappedColumns(string entityType = null)
+        {
+            try
+            {
+                if (entityType != null)
+                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                else
+                    return _columnmapperRepo.GetAll().ToList();
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetMappedColumns Error retrieving mapped " + entityType + ": " + e.Message);
+            }
+        }
+
         private async Task<bool> MatchPrincipals()
         {
             bool returnOK = false;
@@ -552,6 +553,66 @@ namespace ECDLink.Core.Services
 
 
             return returnOK;
+        }
+
+        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (race != null ? race.Description : null);
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (gender != null ? gender.Description : null);
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (lang != null ? lang.Description : null);
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (rel != null ? rel.Description : null);
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (prov != null ? prov.Description : null);
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (edu != null ? edu.Description : null);
+                    break;
+                case "Grant":
+                    var grant = _staticGrantRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (grant != null ? grant.Description : null);
+                    break;
+            }
+
+            return valueToSend;
+        }
+
+        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        {
+            if (!completedAudits.Any())
+                return false;
+            else
+            {
+                foreach (var audit in completedAudits)
+                {
+                    var auditRow = _auditRepo.GetById(audit.Id);
+                    if (auditRow != null)
+                    {
+                        auditRow.UpdatedDate = DateTime.Now;
+                        auditRow.UpdatedBy = _uId;
+                        auditRow.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditRow);
+                    }
+                }
+
+                return true;
+            }
         }
 
         #endregion
@@ -1276,30 +1337,6 @@ namespace ECDLink.Core.Services
             }
 
             return ssDocuments;
-        }
-
-        
-        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
-        {
-            if (!completedAudits.Any())
-                return false;
-            else
-            {
-                foreach (var audit in completedAudits)
-                {
-                    var auditRow = _auditRepo.GetById(audit.Id);
-                    if (auditRow != null)
-                    {
-                        auditRow.UpdatedDate = DateTime.Now;
-                        auditRow.UpdatedBy = _uId;
-                        auditRow.Submitted = DateTime.Now;
-
-                        _auditRepo.Update(auditRow);
-                    }
-                }
-
-                return true;
-            }
         }
 
         #endregion
@@ -2304,6 +2341,7 @@ namespace ECDLink.Core.Services
         #endregion
 
         #region Post API Entity
+
         private async Task<bool> PushUpdates()
         {
             //1) Get list of entities and their types
@@ -2312,6 +2350,201 @@ namespace ECDLink.Core.Services
             //4) Add remote guid
             //5) Send it to the /Multiple endpoint
             //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+
+
+            /*
+            1) get all audits
+            2) get all entities in related to
+            3) map related to to existing entitymapped items - users
+            4) if it maps to an SL user with remote id then bundle it all together based on entity column grouping
+            4.1) if a user, get the grouping and use the entities in that group with the updates
+            4.2) if its a document or a class, use according related entity id and endpoint to push updates
+            5) update and update audits
+            6) move on
+            */
+
+            _audits = await GetAudits();
+            var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
+
+            //List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
+
+            //audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+
+            List<IntegrationAudit> completedList = new List<IntegrationAudit>();
+            List<IntegrationEntityMapping> completedEntityList = new List<IntegrationEntityMapping>();
+            try
+            {
+                
+                //var joinsData = (from a in _dbContext.IntegrationAudits join b in _dbContext.IntegrationEntityMappings on a.RelatedId equals b.LocalId where a.Submitted == null select new { a, b }).ToList();
+                //List<IntegrationEntityMapping> changedEntityList = _mappedEntities.Join(_audits, a => a.RemoteId, a) //_mappedEntities.Where(x => _audits.Select(b => b.RelatedId).Contains(x.LocalId)).ToList();
+                var changedEntityList = (from entity in _mappedEntities
+                                        join audit in _audits
+                                        on entity.LocalId equals audit.RelatedId
+                                        select new { entity, audit }).ToList();
+
+                //some changes may be user specific only, pick t hose up as well, but ApplicationUser and Entities relate to different ids in audits
+                var changedUsersList = (from entity in _mappedEntities
+                                         join audit in _audits
+                                         on entity.UserId equals audit.RelatedId
+                                         select new { entity, audit }).ToList();
+
+                if (changedUsersList.Any())
+                    changedEntityList.AddRange(changedUsersList);
+
+                //var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                if (changedEntityList.Any())
+                {
+                    foreach (var entityToUpdate in changedEntityList)
+                    {
+                        if (!completedList.Contains(entityToUpdate.audit) && !completedEntityList.Contains(entityToUpdate.entity))
+                        {
+                            string url = "";
+                            StringBuilder jsonString = new StringBuilder();
+                            jsonString.AppendLine("[");
+                            bool validUpdate = false;
+                            var mappedEntity = entityToUpdate.entity;
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                string localEntity = mappedEntity.LocalEntity;
+                                string remoteEntity = mappedEntity.RemoteEntity;
+
+                                url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                jsonString.AppendLine("{");
+
+                                //get all changes for this entity and group and build JSON
+                                var associatedChanges = (localEntity == SSIntegrationSettings.SSPractitioner || localEntity == SSIntegrationSettings.SSChild ||
+                                                        localEntity == SSIntegrationSettings.SSCoach || localEntity == SSIntegrationSettings.SSFranchisor ?
+                                                            changedEntityList.Where(x => (x.audit.Entity.Equals(localEntity) || x.audit.Entity.Equals("ApplicationUser"))).OrderByDescending(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList() :
+                                                            changedEntityList.Where(x => x.audit.Entity.Equals(localEntity)).OrderByDescending(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList());
+                                //var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+
+                                if (associatedChanges.Count() > 0)
+                                {
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    foreach (var changeLine in associatedChanges)
+                                    {
+                                        if (changeLine.audit.Property == "IsActive" && changeLine.audit.ValueAfter == "False")
+                                        {
+                                            //process deactivates first seperately
+                                            //call delete with the deactivates
+                                            await DeleteEntity(changeLine.entity);
+                                            //break out of this loop
+                                            //remove all antries for this entity from the run
+                                            break;
+                                        }
+
+                                        var mappedColumnLine = _mappedColumns.Where(x => x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.audit.Property) && x.IsActive == true).FirstOrDefault(); //x.LocalEntity.Equals(localEntity) && 
+                                        if (mappedColumnLine != null)
+                                        {
+                                            if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                if (changeLine.audit.Property == "IsActive") //special logic for deactivating
+                                                {
+                                                    //TODO: complete status change logic
+                                                }
+
+                                                string valueToSend = changeLine.audit.ValueAfter;
+
+                                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                if (mappedColumnLine.RemapToString)
+                                                {
+                                                    if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                if (!string.IsNullOrEmpty(valueToSend))
+                                                {
+                                                    switch (mappedColumnLine.EntityDataType)
+                                                    {
+                                                        case "bool":
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + bool.Parse(valueToSend) + "\",");
+                                                            break;
+                                                        case "integer":
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                            break;
+                                                        case "datetime":
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                            break;
+                                                        default:
+                                                            jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                            break;
+                                                    }
+                                                    validUpdate = true;
+                                                }
+                                                //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            }
+                                        }
+
+                                        //remove entry from audits list as we have processed it here and sending
+                                        completedList.Add(changeLine.audit);
+                                        updates.Remove(changeLine.audit);
+                                    }
+                                }
+                                jsonString.AppendLine("}");
+                                //associatedChanges.Remove(changeLine);
+                            }
+
+                            jsonString.AppendLine("]");
+                            try
+                            {
+                                if (validUpdate)
+                                {
+                                    //now send to API call <entity type>/Multiple
+                                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                                    if (!string.IsNullOrEmpty(responseString))
+                                    {
+                                        if (responseString == "1") //success
+                                        {
+                                            
+                                            await UpdateAuditSubmitted(completedList);
+                                            completedEntityList.Add(entityToUpdate.entity);
+                                            await _logManager.IntegrationLog("Data Push Success: ", jsonString.ToString(), null, LogRelatedType.Log, "PushUpdates > GetAPIHandlerResponse");
+                                        }
+                                        else if (responseString == "0")
+                                        {
+                                            await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        }
+                                        else //error
+                                        {
+                                            await _logManager.IntegrationLog("Data Push Fail: ", jsonString.ToString(), null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                        }
+                                    }
+                                }
+                                else
+                                {
+                                    //nothing valid to have updated, just remove the audit entries
+                                    await UpdateAuditSubmitted(completedList);
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                            }
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates");
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushUpdatesOld()
+        {
+            //1) Get list of entities and their types
+            //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
+            //3) Build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any other changes is irrelevant
+            //4) Add remote guid
+            //5) Send it to the /Multiple endpoint
+            //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach                     
+            
             _audits = await GetAudits();
             var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
 
@@ -2456,9 +2689,18 @@ namespace ECDLink.Core.Services
             _audits = await GetAudits();
             var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
 
+            //DeleteEntity(entity);
 
             return true;
         }
+
+        private async Task<bool> DeleteEntity(IntegrationEntityMapping entityToDelete)
+        {
+            //Delete entry json todo
+
+            return true;
+        }        
+
 
         private async Task<bool> PushInserts()
         {
@@ -2541,46 +2783,6 @@ namespace ECDLink.Core.Services
             return isComplete;
         }
 
-        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
-        {
-            switch (entityToRemap)
-            {
-                case "Race":
-                    var race = _staticRaceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (race != null ? race.Description : null);
-                    break;
-                case "Gender":
-                    var gender = _staticGenderRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (gender != null ? gender.Description : null);
-                    break;
-                case "Language":
-                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (lang != null ? lang.Description : null);
-                    break;
-                case "Relation":
-                    var rel = _staticRelationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (rel != null ? rel.Description : null);
-                    break;
-                case "Province":
-                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (prov != null ? prov.Description : null);
-                    break;
-                case "Education":
-                    var edu = _staticEducationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (edu != null ? edu.Description : null);
-                    break;
-                case "Grant":
-                    var grant = _staticGrantRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
-                    valueToSend = (grant != null ? grant.Description : null);
-                    break;
-            }
-
-            return valueToSend;
-        }
-
- 
-
-
         private async Task<string> PushNewChild(Child newChild, string franchiseeRemoteId)
         {
             /*
@@ -2642,13 +2844,13 @@ namespace ECDLink.Core.Services
                                         switch (changeLine.EntityDataType)
                                         {
                                             case "bool":
-                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
                                                 break;
                                             case "integer":
-                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
                                                 break;
-                                            case "datetime":                
-                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                            case "datetime":  
+                                                    jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
                                                 break;
                                             default:
                                                 jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
@@ -2671,7 +2873,7 @@ namespace ECDLink.Core.Services
                 try
                 {
                     //now send to API call <entity type>/Multiple
-                    var responseString = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, false, true, jsonCaregiverString.ToString());
+                    var responseString = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, false, false, jsonCaregiverString.ToString());
                     if (!string.IsNullOrEmpty(responseString))
                     {
                         var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
@@ -2848,7 +3050,7 @@ namespace ECDLink.Core.Services
                 try
                 {
                     //now send to API call <entity type>/Multiple
-                    var responseString = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, false, true, jsonChildString.ToString());
+                    var responseString = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, false, false, jsonChildString.ToString());
                     if (!string.IsNullOrEmpty(responseString))
                     {
                         var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
