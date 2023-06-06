@@ -61,9 +61,7 @@ const Snackbar: React.FC<SnackbarProps> = ({
           >
             {renderIcon(
               'XIcon',
-              `${
-                type === 'success' ? 'text-white' : 'text-successDark'
-              } h-6 w-6`
+              `${type === 'success' ? 'text-white' : 'text-gray-900'} h-6 w-6`
             )}
           </button>
         }
