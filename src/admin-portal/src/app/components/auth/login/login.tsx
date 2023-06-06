@@ -71,11 +71,8 @@ export default function Login() {
   };
 
   const getLogoUrl = () => {
-    if (theme && theme.images) {
-      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
-    } else {
-      return <div className="h-32 w-32">&nbsp;</div>;
-    }
+    return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
+
   };
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
@@ -93,10 +90,10 @@ export default function Login() {
             <form className="space-y-6">
               <div>
                 <FormField
-                  label={'Email address *'}
-                  nameProp={'email'}
+                  label={'First Name'}
+                  nameProp={'name'}
                   register={register}
-                  error={errors.email?.message}
+                  // error={errors.email?.message}
                 />
               </div>
 

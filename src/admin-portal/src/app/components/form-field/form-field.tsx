@@ -14,14 +14,8 @@ export interface FormFieldProps {
   placeholder?: string;
   togglePasswordVisibility?: () => void;
   showPassword?: boolean;
+  customStyle?: string;
 }
-
-const checkboxStyle =
-  'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
-const errorStyle =
-  'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
-const defaultInputStyle =
-  'focus:border-secondary block w-full sm:text-md border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -36,7 +30,17 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   togglePasswordVisibility,
   showPassword,
+  customStyle,
 }) => {
+  const checkboxStyle =
+    'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
+  const errorStyle =
+    'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
+  const defaultInputStyle =
+    !customStyle
+      ? 'focus:border-secondary block w-full sm:text-md border-gray-300 rounded-md p-10'
+      : customStyle;
+
   const getInputTypeStyles = () => {
     switch (type) {
       case 'checkbox':
@@ -87,7 +91,7 @@ const FormField: React.FC<FormFieldProps> = ({
             required: required,
             validate: validation,
           })}
-          className={error ? errorStyle : getInputTypeStyles()}
+          className={error ? errorStyle :  getInputTypeStyles()}
           placeholder={placeholder}
         />
         {type === 'checkbox' && nameProp === 'terms' && (

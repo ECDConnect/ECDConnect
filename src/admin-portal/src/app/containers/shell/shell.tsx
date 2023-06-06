@@ -113,8 +113,12 @@ export default function Shell() {
     history.push('/');
   };
 
+  const gotToProfile = () => {
+    history.push('/profile');
+  };
+
   const userNavigation = [
-    { name: 'Profile', onClick: () => {} },
+    { name: 'Profile', onClick: gotToProfile },
     { name: 'Sign out', onClick: signOutClick },
   ];
 

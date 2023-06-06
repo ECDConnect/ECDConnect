@@ -38,6 +38,7 @@ import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
 import ForgotPassword from './components/auth/forgot-password/forgot-password';
 import ResetPassword from './components/auth/reset-password/reset-password';
 
+
 const PublicRoutes: React.FC = () => {
   return (
     <Switch>
@@ -69,6 +70,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
+
     </Switch>
   );
 };
