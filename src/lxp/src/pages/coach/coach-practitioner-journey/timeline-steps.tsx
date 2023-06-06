@@ -77,55 +77,55 @@ export const timelineSteps = ({
 }): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate1Status,
-      timeline.clubMeetingDate1,
-      timeline?.clubMeetingDate1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate2Status,
-      timeline.clubMeetingDate2,
-      timeline?.clubMeetingDate2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate3Status,
-      timeline.clubMeetingDate3,
-      timeline?.clubMeetingDate3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle1Status,
-      timeline.coachingCircleDate1,
-      timeline?.coachingCircle1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle2Status,
-      timeline.coachingCircleDate2,
-      timeline?.coachingCircle2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle3Status,
-      timeline.coachingCircleDate3,
-      timeline?.coachingCircle3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle4Status,
-      timeline.coachingCircleDate4,
-      timeline?.coachingCircle4Color
-    )
-  );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate1Status,
+  //     timeline.clubMeetingDate1,
+  //     timeline?.clubMeetingDate1Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate2Status,
+  //     timeline.clubMeetingDate2,
+  //     timeline?.clubMeetingDate2Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate3Status,
+  //     timeline.clubMeetingDate3,
+  //     timeline?.clubMeetingDate3Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle1Status,
+  //     timeline.coachingCircleDate1,
+  //     timeline?.coachingCircle1Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle2Status,
+  //     timeline.coachingCircleDate2,
+  //     timeline?.coachingCircle2Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle3Status,
+  //     timeline.coachingCircleDate3,
+  //     timeline?.coachingCircle3Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle4Status,
+  //     timeline.coachingCircleDate4,
+  //     timeline?.coachingCircle4Color
+  //   )
+  // );
   steps.push(
     setStep(
       timeline.consolidationMeetingStatus,
