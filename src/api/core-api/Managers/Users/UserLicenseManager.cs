@@ -33,8 +33,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
         }
 
-        // TODO: Add end point to add licenses here
-
         public List<License> GetLicensesForUser(string userId)
         {
             return (

@@ -2912,6 +2912,13 @@ export type ListFilterInputTypeOfClassroomGroupFilterInput = {
   some?: InputMaybe<ClassroomGroupFilterInput>;
 };
 
+export type ListFilterInputTypeOfClubMeetingRegisterFilterInput = {
+  all?: InputMaybe<ClubMeetingRegisterFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<ClubMeetingRegisterFilterInput>;
+  some?: InputMaybe<ClubMeetingRegisterFilterInput>;
+};
+
 export type ListFilterInputTypeOfDailyProgrammeFilterInput = {
   all?: InputMaybe<DailyProgrammeFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -2959,13 +2966,6 @@ export type ListFilterInputTypeOfNoteFilterInput = {
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<NoteFilterInput>;
   some?: InputMaybe<NoteFilterInput>;
-};
-
-export type ListFilterInputTypeOfPractitionerClubMeetingFilterInput = {
-  all?: InputMaybe<PractitionerClubMeetingFilterInput>;
-  any?: InputMaybe<Scalars['Boolean']>;
-  none?: InputMaybe<PractitionerClubMeetingFilterInput>;
-  some?: InputMaybe<PractitionerClubMeetingFilterInput>;
 };
 
 export type ListFilterInputTypeOfPractitionerCoachCircleFilterInput = {
@@ -5744,24 +5744,6 @@ export type PractitionerClassroomName = {
   principalName?: Maybe<Scalars['String']>;
 };
 
-export type PractitionerClubMeeting = {
-  __typename?: 'PractitionerClubMeeting';
-  meetingDate?: Maybe<Scalars['DateTime']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type PractitionerClubMeetingFilterInput = {
-  and?: InputMaybe<Array<PractitionerClubMeetingFilterInput>>;
-  meetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  name?: InputMaybe<StringOperationFilterInput>;
-  or?: InputMaybe<Array<PractitionerClubMeetingFilterInput>>;
-};
-
-export type PractitionerClubMeetingInput = {
-  meetingDate?: InputMaybe<Scalars['DateTime']>;
-  name?: InputMaybe<Scalars['String']>;
-};
-
 export type PractitionerCoachCircle = {
   __typename?: 'PractitionerCoachCircle';
   meetingDate?: Maybe<Scalars['DateTime']>;
@@ -5912,29 +5894,8 @@ export type PractitionerTimeline = {
   childProgressTrainingColor?: Maybe<Scalars['String']>;
   childProgressTrainingDate?: Maybe<Scalars['DateTime']>;
   childProgressTrainingStatus?: Maybe<Scalars['String']>;
-  clubMeetingDate1?: Maybe<Scalars['DateTime']>;
-  clubMeetingDate1Color?: Maybe<Scalars['String']>;
-  clubMeetingDate1Status?: Maybe<Scalars['String']>;
-  clubMeetingDate2?: Maybe<Scalars['DateTime']>;
-  clubMeetingDate2Color?: Maybe<Scalars['String']>;
-  clubMeetingDate2Status?: Maybe<Scalars['String']>;
-  clubMeetingDate3?: Maybe<Scalars['DateTime']>;
-  clubMeetingDate3Color?: Maybe<Scalars['String']>;
-  clubMeetingDate3Status?: Maybe<Scalars['String']>;
-  clubMeetings?: Maybe<Array<Maybe<PractitionerClubMeeting>>>;
+  clubMeetings?: Maybe<Array<Maybe<ClubMeetingRegister>>>;
   coachCircles?: Maybe<Array<Maybe<PractitionerCoachCircle>>>;
-  coachingCircle1Color?: Maybe<Scalars['String']>;
-  coachingCircle1Status?: Maybe<Scalars['String']>;
-  coachingCircle2Color?: Maybe<Scalars['String']>;
-  coachingCircle2Status?: Maybe<Scalars['String']>;
-  coachingCircle3Color?: Maybe<Scalars['String']>;
-  coachingCircle3Status?: Maybe<Scalars['String']>;
-  coachingCircle4Color?: Maybe<Scalars['String']>;
-  coachingCircle4Status?: Maybe<Scalars['String']>;
-  coachingCircleDate1?: Maybe<Scalars['DateTime']>;
-  coachingCircleDate2?: Maybe<Scalars['DateTime']>;
-  coachingCircleDate3?: Maybe<Scalars['DateTime']>;
-  coachingCircleDate4?: Maybe<Scalars['DateTime']>;
   consolidationMeetingColor?: Maybe<Scalars['String']>;
   consolidationMeetingDate?: Maybe<Scalars['DateTime']>;
   consolidationMeetingStatus?: Maybe<Scalars['String']>;
@@ -5956,9 +5917,9 @@ export type PractitionerTimeline = {
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
-  smartStarterUnitConferenceColor?: Maybe<Scalars['String']>;
-  smartStarterUnitConferenceDate?: Maybe<Scalars['DateTime']>;
-  smartStarterUnitConferenceStatus?: Maybe<Scalars['String']>;
+  smartStarterUniteConferenceColor?: Maybe<Scalars['String']>;
+  smartStarterUniteConferenceDate?: Maybe<Scalars['DateTime']>;
+  smartStarterUniteConferenceStatus?: Maybe<Scalars['String']>;
   starterLicenseColor?: Maybe<Scalars['String']>;
   starterLicenseDate?: Maybe<Scalars['DateTime']>;
   starterLicenseStatus?: Maybe<Scalars['String']>;
@@ -5970,29 +5931,8 @@ export type PractitionerTimelineFilterInput = {
   childProgressTrainingColor?: InputMaybe<StringOperationFilterInput>;
   childProgressTrainingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   childProgressTrainingStatus?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate1?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  clubMeetingDate1Color?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate1Status?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate2?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  clubMeetingDate2Color?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate2Status?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate3?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  clubMeetingDate3Color?: InputMaybe<StringOperationFilterInput>;
-  clubMeetingDate3Status?: InputMaybe<StringOperationFilterInput>;
-  clubMeetings?: InputMaybe<ListFilterInputTypeOfPractitionerClubMeetingFilterInput>;
+  clubMeetings?: InputMaybe<ListFilterInputTypeOfClubMeetingRegisterFilterInput>;
   coachCircles?: InputMaybe<ListFilterInputTypeOfPractitionerCoachCircleFilterInput>;
-  coachingCircle1Color?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle1Status?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle2Color?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle2Status?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle3Color?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle3Status?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle4Color?: InputMaybe<StringOperationFilterInput>;
-  coachingCircle4Status?: InputMaybe<StringOperationFilterInput>;
-  coachingCircleDate1?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  coachingCircleDate2?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  coachingCircleDate3?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  coachingCircleDate4?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingColor?: InputMaybe<StringOperationFilterInput>;
   consolidationMeetingDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   consolidationMeetingStatus?: InputMaybe<StringOperationFilterInput>;
@@ -6015,9 +5955,9 @@ export type PractitionerTimelineFilterInput = {
   smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUnitConferenceColor?: InputMaybe<StringOperationFilterInput>;
-  smartStarterUnitConferenceDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
-  smartStarterUnitConferenceStatus?: InputMaybe<StringOperationFilterInput>;
+  smartStarterUniteConferenceColor?: InputMaybe<StringOperationFilterInput>;
+  smartStarterUniteConferenceDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  smartStarterUniteConferenceStatus?: InputMaybe<StringOperationFilterInput>;
   starterLicenseColor?: InputMaybe<StringOperationFilterInput>;
   starterLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   starterLicenseStatus?: InputMaybe<StringOperationFilterInput>;
@@ -6028,29 +5968,8 @@ export type PractitionerTimelineInput = {
   childProgressTrainingColor?: InputMaybe<Scalars['String']>;
   childProgressTrainingDate?: InputMaybe<Scalars['DateTime']>;
   childProgressTrainingStatus?: InputMaybe<Scalars['String']>;
-  clubMeetingDate1?: InputMaybe<Scalars['DateTime']>;
-  clubMeetingDate1Color?: InputMaybe<Scalars['String']>;
-  clubMeetingDate1Status?: InputMaybe<Scalars['String']>;
-  clubMeetingDate2?: InputMaybe<Scalars['DateTime']>;
-  clubMeetingDate2Color?: InputMaybe<Scalars['String']>;
-  clubMeetingDate2Status?: InputMaybe<Scalars['String']>;
-  clubMeetingDate3?: InputMaybe<Scalars['DateTime']>;
-  clubMeetingDate3Color?: InputMaybe<Scalars['String']>;
-  clubMeetingDate3Status?: InputMaybe<Scalars['String']>;
-  clubMeetings?: InputMaybe<Array<InputMaybe<PractitionerClubMeetingInput>>>;
+  clubMeetings?: InputMaybe<Array<InputMaybe<ClubMeetingRegisterInput>>>;
   coachCircles?: InputMaybe<Array<InputMaybe<PractitionerCoachCircleInput>>>;
-  coachingCircle1Color?: InputMaybe<Scalars['String']>;
-  coachingCircle1Status?: InputMaybe<Scalars['String']>;
-  coachingCircle2Color?: InputMaybe<Scalars['String']>;
-  coachingCircle2Status?: InputMaybe<Scalars['String']>;
-  coachingCircle3Color?: InputMaybe<Scalars['String']>;
-  coachingCircle3Status?: InputMaybe<Scalars['String']>;
-  coachingCircle4Color?: InputMaybe<Scalars['String']>;
-  coachingCircle4Status?: InputMaybe<Scalars['String']>;
-  coachingCircleDate1?: InputMaybe<Scalars['DateTime']>;
-  coachingCircleDate2?: InputMaybe<Scalars['DateTime']>;
-  coachingCircleDate3?: InputMaybe<Scalars['DateTime']>;
-  coachingCircleDate4?: InputMaybe<Scalars['DateTime']>;
   consolidationMeetingColor?: InputMaybe<Scalars['String']>;
   consolidationMeetingDate?: InputMaybe<Scalars['DateTime']>;
   consolidationMeetingStatus?: InputMaybe<Scalars['String']>;
@@ -6072,9 +5991,9 @@ export type PractitionerTimelineInput = {
   smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;
-  smartStarterUnitConferenceColor?: InputMaybe<Scalars['String']>;
-  smartStarterUnitConferenceDate?: InputMaybe<Scalars['DateTime']>;
-  smartStarterUnitConferenceStatus?: InputMaybe<Scalars['String']>;
+  smartStarterUniteConferenceColor?: InputMaybe<Scalars['String']>;
+  smartStarterUniteConferenceDate?: InputMaybe<Scalars['DateTime']>;
+  smartStarterUniteConferenceStatus?: InputMaybe<Scalars['String']>;
   starterLicenseColor?: InputMaybe<Scalars['String']>;
   starterLicenseDate?: InputMaybe<Scalars['DateTime']>;
   starterLicenseStatus?: InputMaybe<Scalars['String']>;
