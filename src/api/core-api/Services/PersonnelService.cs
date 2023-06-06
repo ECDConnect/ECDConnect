@@ -419,6 +419,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
             }
 
+            // Practice license received
+            var practiceDate = (
+                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
+                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_practice_licence) on license.LicenseTypeId equals licenseType.Id
+                select license
+            ).Select(x => x.LicenseDate).FirstOrDefault();
+
+            if (practiceDate != null)
+            {
+                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_received;
+                timeline.PracticeLicenseDate = smartSpaceDate;
+                timeline.PracticeLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+            else
+            {
+                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_not_received;
+                timeline.PracticeLicenseColor = MetricsColorEnum.Warning.ToString();
+            }
+
             // consolidation meetings 
             if (trainee?.ConsolidationMeetingDate != null)
             {
