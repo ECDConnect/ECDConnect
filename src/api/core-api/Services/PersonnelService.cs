@@ -4,6 +4,7 @@ using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -39,15 +40,18 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<LicenseType, Guid> _licenseTypeRepo;
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
+        private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
+        private UserLicenseManager _userLicenseManager;
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitDataManager visitDataManager,
-            VisitManager visitManager)
+            VisitManager visitManager,
+            UserLicenseManager userLicenseManager)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -64,9 +68,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseTypeRepo = _repoFactory.CreateGenericRepository<LicenseType>(userContext: _applicationUserId);
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
+            _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
+            _userLicenseManager = userLicenseManager;
         }
 
 
@@ -383,15 +389,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             DateTime today = DateTime.Today;
 
             // Starter license received
-            var starterDate = (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_licence) on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).Select(x => x.LicenseDate).FirstOrDefault();
-            if (starterDate != null)
+            License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
+            if (starterLicense?.LicenseDate != null)
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
-                timeline.StarterLicenseDate = starterDate;
+                timeline.StarterLicenseDate = starterLicense?.LicenseDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
             }
             else
@@ -401,22 +403,31 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // SmartSpace license received
-            var smartSpaceDate = (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_licence) on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).Select(x => x.LicenseDate).FirstOrDefault();
-
-            if (smartSpaceDate != null)
+            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (smartSpaceLicense?.LicenseDate != null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
-                timeline.SmartSpaceLicenseDate = smartSpaceDate;
+                timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
             }
             else
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_not_received;
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Warning.ToString();
+            }
+
+            // Practice license received
+            License practiceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_practice_licence);
+            if (practiceLicense?.LicenseDate != null)
+            {
+                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_received;
+                timeline.PracticeLicenseDate = practiceLicense?.LicenseDate;
+                timeline.PracticeLicenseColor = MetricsColorEnum.Success.ToString();
+            }
+            else
+            {
+                timeline.PracticeLicenseStatus = Constants.SSSettings.practice_licence_not_received;
+                timeline.PracticeLicenseColor = MetricsColorEnum.Warning.ToString();
             }
 
             // consolidation meetings 
@@ -432,8 +443,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.ConsolidationMeetingDate = trainee?.ConsolidationMeetingDate;
             }
 
-            // TODO: club meetings - waiting for integration to be completed
-
             // First Aid
             if (practitioner?.AttendedFirstAidCourse == true)
             {
@@ -447,9 +456,15 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 //timeline.FirstAidDate = "";
             }
 
+            // Child Progress
+            timeline.ChildProgressTrainingStatus = Constants.SSSettings.child_progress_training;
+            timeline.ChildProgressTrainingColor = practitioner.AttendedChildProgress == true ? MetricsColorEnum.Success.ToString() : MetricsColorEnum.Warning.ToString();
+
+            // Club meetings
+            timeline.ClubMeetings = _clubMeetingRegisterRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).ToList();
 
             // PQA visits
-            List<Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+            List <Visit> visits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
             List<Visit> pre_pqa_visits = new List<Visit>();
             List<Visit> pqa_visits = new List<Visit>();
             List<Visit> support_visits = new List<Visit>();
@@ -602,37 +617,27 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.TraineeVisits = _visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_trainee);
 
             // StarterLicense
-            var starterDate = (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_starter_licence) on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).Select(x => x.LicenseDate).FirstOrDefault();
-            if (starterDate != null)
+            License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
+            if (starterLicense?.LicenseDate != null)
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_received;
-                timeline.StarterLicenseDate = starterDate;
+                timeline.StarterLicenseDate = starterLicense?.LicenseDate;
                 timeline.StarterLicenseColor = MetricsColorEnum.Success.ToString();
 
-                timeline.SignFranchiseeAgreementDeadlineDate = starterDate.Value.AddDays(7);
-                timeline.SignStartUpSupportAgreementDeadlineDate = starterDate.Value.AddDays(7);
+                timeline.SignFranchiseeAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
+                timeline.SignStartUpSupportAgreementDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
             } else
             {
                 timeline.StarterLicenseStatus = Constants.SSSettings.starter_licence_not_received;
                 timeline.StarterLicenseColor = MetricsColorEnum.Warning.ToString();
             }
-            
 
             // SmartSpace license received
-            var smartSpaceDate = (
-                from license in _licenseRepo.GetAll().Where(x => x.UserId == userId && x.IsActive == true)
-                join licenseType in _licenseTypeRepo.GetAll().Where(y => y.Name == Constants.SSSettings.ss_smart_space_licence) on license.LicenseTypeId equals licenseType.Id
-                select license
-            ).Select(x => x.LicenseDate).FirstOrDefault();
-
-            if (smartSpaceDate != null)
+            License smartSpaceLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
+            if (smartSpaceLicense?.LicenseDate != null)
             {
                 timeline.SmartSpaceLicenseStatus = Constants.SSSettings.smart_space_licence_received;
-                timeline.SmartSpaceLicenseDate = smartSpaceDate;
+                timeline.SmartSpaceLicenseDate = smartSpaceLicense?.LicenseDate;
                 timeline.SmartSpaceLicenseColor = MetricsColorEnum.Success.ToString();
             }
             else
@@ -650,10 +655,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // ConsolidationMeeting -> smartLink
-            if (starterDate != null)
+            if (starterLicense?.LicenseDate != null)
             {
                 // Consolidation meeting = date of starter license + 7 days
-                timeline.ConsolidationDeadlineDate = starterDate.Value.AddDays(7);
+                timeline.ConsolidationDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
             }
             if (trainee != null)
             {

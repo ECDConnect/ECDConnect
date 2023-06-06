@@ -42,35 +42,19 @@ class PractitionerService {
             userId
             programmeType
             timeline {
-              clubMeetingDate1
-              clubMeetingDate1Color
-              clubMeetingDate1Status
-              clubMeetingDate2
-              clubMeetingDate2Color
-              clubMeetingDate2Status
-              clubMeetingDate3
-              clubMeetingDate3Color
-              clubMeetingDate3Status
               clubMeetings {
-                meetingDate
-                name
+                attended
+                clubMeeting {
+                  meetingDate
+                  club {
+                    name
+                  }
+                }
               }
               coachCircles {
                 meetingDate
                 name
-              }
-              coachingCircle1Color
-              coachingCircle1Status
-              coachingCircle2Color
-              coachingCircle2Status
-              coachingCircle3Color
-              coachingCircle3Status
-              coachingCircle4Color
-              coachingCircle4Status
-              coachingCircleDate1
-              coachingCircleDate2
-              coachingCircleDate3
-              coachingCircleDate4
+              }              
               consolidationMeetingColor
               consolidationMeetingDate
               consolidationMeetingStatus
@@ -1023,6 +1007,34 @@ class PractitionerService {
     }
 
     return response.data.data.sendPractitionerInviteToApplication;
+  }
+
+  async deActivatePractitioner(
+    userId: string,
+    leavingComment?: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<{
+      data: { deActivatePractitioner: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation DeActivatePractitioner($userId: String, $leavingComment: String) {          
+        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment) {          
+      }        
+      }
+      `,
+      variables: {
+        userId,
+        leavingComment,
+      },
+    });
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.deActivatePractitioner;
   }
 }
 

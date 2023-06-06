@@ -145,21 +145,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, [Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string userId, string visitId)
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, [Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string visitId)
         {
             Progress_VisitDataStatus visitResult = new Progress_VisitDataStatus();
 
             var _visitId = new Guid(visitId);
             visitResult = visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
-
-            if (userId != String.Empty && visitResult.VisitDataStatus.Count == 0)
-            {
-                var uId = contextAccessor.HttpContext.GetUser().Id;
-                var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
-                Mother mother = motherRepo.GetByUserId(userId);
-                var lastVisit = visitManager.GetLastCompletedVisitId(mother.Id.ToString(), Constants.GGSettings.client_mother);
-                visitResult = visitDataStatusManager.GetPreviousVisitInformationForClient(lastVisit);
-            }
             return visitResult;
         }
 

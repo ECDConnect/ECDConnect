@@ -41,6 +41,7 @@ import { motherThunkActions } from '@/store/mother';
 import {
   getIsMotherFirstVisitSelector,
   getMotherById,
+  getMotherLastVisitSelector,
 } from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
@@ -72,6 +73,8 @@ export const MomActivityList: React.FC = () => {
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
 
+  const currentVisit = useSelector(getMotherLastVisitSelector);
+
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
 
@@ -84,14 +87,27 @@ export const MomActivityList: React.FC = () => {
     ).unwrap();
   }, [appDispatch, infantId, motherId, visitId]);
 
+  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
   useLayoutEffect(() => {
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForMother({
-        userId: motherId,
-        visitId: visitId,
-      })
-    );
-  }, [motherId, appDispatch, visitId]);
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit?.id,
+        })
+      );
+  }, [
+    appDispatch,
+    visitId,
+    currentVisit?.id,
+    currentVisit,
+    previousCurrentVisit,
+  ]);
 
   useLayoutEffect(() => {
     appDispatch(
@@ -180,6 +196,12 @@ export const MomActivityList: React.FC = () => {
           backgroundColor: 'successBg' as Colours,
           rightIcon: 'BadgeCheckIcon',
           rightIconClassName: 'h-5 w-5 text-successMain',
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
         })
       );
 

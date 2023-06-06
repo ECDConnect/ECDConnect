@@ -373,7 +373,6 @@ class Visit {
   }
 
   async getPreviousVisitInformationForMother(
-    userId: string,
     visitId: string
   ): Promise<Progress_VisitDataStatus> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
@@ -382,8 +381,8 @@ class Visit {
       errors?: {};
     }>(``, {
       query: `
-      query GetPreviousVisitInformationForMother($userId: String, $visitId: String) {
-        previousVisitInformationForMother(userId: $userId, visitId: $visitId) {
+      query GetPreviousVisitInformationForMother($visitId: String) {
+        previousVisitInformationForMother(visitId: $visitId) {
           score
           scoreColor
           growComment
@@ -413,7 +412,6 @@ class Visit {
       
       `,
       variables: {
-        userId,
         visitId,
       },
     });
