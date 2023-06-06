@@ -655,10 +655,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             }
 
             // ConsolidationMeeting -> smartLink
-            if (starterLicense.LicenseDate != null)
+            if (starterLicense?.LicenseDate != null)
             {
                 // Consolidation meeting = date of starter license + 7 days
-                timeline.ConsolidationDeadlineDate = starterLicense.LicenseDate.Value.AddDays(7);
+                timeline.ConsolidationDeadlineDate = starterLicense?.LicenseDate.Value.AddDays(7);
             }
             if (trainee != null)
             {
