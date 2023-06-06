@@ -6,11 +6,15 @@ import {
   MutationUpdatePractitionerRegisteredArgs,
   PractitionerInput,
   MutationUpdatePractitionerProgressArgs,
+  MutationUpdatePractitionerUsePhotoInReportArgs,
 } from '@ecdlink/graphql';
 
-export const practitionerActions = {
+export const PractitionerActions = {
   UPDATE_PRACTITIONER_REGISTERED: 'updatePractitionerRegistered',
   UPDATE_PRACTITIONER_PROGRESS: 'updatePractitionerProgress',
+  DEACTIVATE_PRACTITIONER: 'deActivatePractitioner',
+  UPDATE_PRACTITIONER_USEPHOTOINPROGRESS:
+    'updatePractitionerUsePhotoInProgress',
 };
 
 export const getPractitionersForCoach = createAsyncThunk<
@@ -185,7 +189,7 @@ export const updatePractitionerRegistered = createAsyncThunk<
   MutationUpdatePractitionerRegisteredArgs,
   ThunkApiType<RootState>
 >(
-  practitionerActions.UPDATE_PRACTITIONER_REGISTERED,
+  PractitionerActions.UPDATE_PRACTITIONER_REGISTERED,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -209,7 +213,7 @@ export const updatePractitionerProgress = createAsyncThunk<
   MutationUpdatePractitionerProgressArgs,
   ThunkApiType<RootState>
 >(
-  practitionerActions.UPDATE_PRACTITIONER_PROGRESS,
+  PractitionerActions.UPDATE_PRACTITIONER_PROGRESS,
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
@@ -220,6 +224,52 @@ export const updatePractitionerProgress = createAsyncThunk<
         return await new PractitionerService(
           userAuth.auth_token
         ).UpdatePractitionerProgress(id, input.progress);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const deActivatePractitioner = createAsyncThunk<
+  boolean | undefined,
+  { userId: string; leavingComment?: string },
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.DEACTIVATE_PRACTITIONER,
+  async ({ userId, leavingComment }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).deActivatePractitioner(userId, leavingComment);
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updatePractitionerUsePhotoInReport = createAsyncThunk<
+  any,
+  MutationUpdatePractitionerUsePhotoInReportArgs,
+  ThunkApiType<RootState>
+>(
+  PractitionerActions.UPDATE_PRACTITIONER_USEPHOTOINPROGRESS,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+    const id = input.practitionerId;
+    try {
+      if (userAuth?.auth_token && id) {
+        return await new PractitionerService(
+          userAuth.auth_token
+        ).UpdatePractitionerUsePhotoInReport(id, input.usePhotoInReport || '');
       }
     } catch (err) {
       return rejectWithValue(err);

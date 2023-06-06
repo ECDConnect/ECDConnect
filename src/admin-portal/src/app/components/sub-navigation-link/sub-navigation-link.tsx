@@ -14,7 +14,7 @@ const SubNavigationLink: React.FC<menuItemProps> = ({ item }) => {
         routeMatch
           ? 'bg-infoBb text-secondary border-b-secondary border-b-2  bg-white '
           : 'text-textMid hover:text-secondary hover:border hover:border-b-indigo-500 hover:bg-white',
-        'flex h-14 items-center text-lg font-medium users-tabs'
+        'users-tabs flex h-14 items-center text-lg font-medium'
       )}
     >
       {item.name}

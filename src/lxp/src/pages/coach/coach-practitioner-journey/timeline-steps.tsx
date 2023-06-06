@@ -62,64 +62,70 @@ export const setStep = (
   return {};
 };
 
-export const timelineSteps = (
-  timeline: PractitionerTimeline,
-  onView: (visit: Visit) => void,
-  isLoading: boolean,
-  isOnline: boolean,
-  visits?: Maybe<Visit>[]
-): StepItem[] => {
+export const timelineSteps = ({
+  timeline,
+  onView,
+  isLoading,
+  isOnline,
+  visits,
+}: {
+  timeline: PractitionerTimeline;
+  onView: (visit: Visit) => void;
+  isLoading: boolean;
+  isOnline: boolean;
+  visits?: Maybe<Visit>[];
+}): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
 
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate1Status,
-      timeline.clubMeetingDate1,
-      timeline?.clubMeetingDate1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate2Status,
-      timeline.clubMeetingDate2,
-      timeline?.clubMeetingDate2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.clubMeetingDate3Status,
-      timeline.clubMeetingDate3,
-      timeline?.clubMeetingDate3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle1Status,
-      timeline.coachingCircleDate1,
-      timeline?.coachingCircle1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle2Status,
-      timeline.coachingCircleDate2,
-      timeline?.coachingCircle2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle3Status,
-      timeline.coachingCircleDate3,
-      timeline?.coachingCircle3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle4Status,
-      timeline.coachingCircleDate4,
-      timeline?.coachingCircle4Color
-    )
-  );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate1Status,
+  //     timeline.clubMeetingDate1,
+  //     timeline?.clubMeetingDate1Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate2Status,
+  //     timeline.clubMeetingDate2,
+  //     timeline?.clubMeetingDate2Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.clubMeetingDate3Status,
+  //     timeline.clubMeetingDate3,
+  //     timeline?.clubMeetingDate3Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle1Status,
+  //     timeline.coachingCircleDate1,
+  //     timeline?.coachingCircle1Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle2Status,
+  //     timeline.coachingCircleDate2,
+  //     timeline?.coachingCircle2Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle3Status,
+  //     timeline.coachingCircleDate3,
+  //     timeline?.coachingCircle3Color
+  //   )
+  // );
+  // steps.push(
+  //   setStep(
+  //     timeline.coachingCircle4Status,
+  //     timeline.coachingCircleDate4,
+  //     timeline?.coachingCircle4Color
+  //   )
+  // );
   steps.push(
     setStep(
       timeline.consolidationMeetingStatus,
@@ -150,21 +156,20 @@ export const timelineSteps = (
   );
 
   if (!!timeline.prePQASiteVisits?.length) {
-    const date =
-      timeline.prePQAVisitDate1Color === 'Success' &&
-      !visits?.some((item) =>
-        item?.visitType?.name?.includes('pre_pqa_visit_1')
-      )
-        ? new Date(
-            timeline.prePQASiteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_2')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions)
-        : new Date(
-            timeline.prePQASiteVisits?.find((item) =>
-              item?.visitType?.name?.includes('pre_pqa_visit_1')
-            )?.plannedVisitDate
-          ).toLocaleDateString('en-ZA', dateOptions);
+    const date = visits?.some(
+      (item) =>
+        item?.visitType?.name?.includes('pre_pqa_visit_1') && item?.attended
+    )
+      ? new Date(
+          timeline.prePQASiteVisits?.find((item) =>
+            item?.visitType?.name?.includes('pre_pqa_visit_2')
+          )?.plannedVisitDate
+        ).toLocaleDateString('en-ZA', dateOptions)
+      : new Date(
+          timeline.prePQASiteVisits?.find((item) =>
+            item?.visitType?.name?.includes('pre_pqa_visit_1')
+          )?.plannedVisitDate
+        ).toLocaleDateString('en-ZA', dateOptions);
 
     const isLateDate =
       new Date(date) < new Date() &&

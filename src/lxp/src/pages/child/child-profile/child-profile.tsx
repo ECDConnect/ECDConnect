@@ -122,6 +122,12 @@ export const ChildProfile: React.FC = () => {
     (item) => item?.userId === child?.userId
   );
 
+  const practitioners = useSelector(
+    practitionerSelectors.getPractitioners
+  )?.filter((x) => {
+    return x.user?.id !== practitioner?.user?.id;
+  });
+
   const classGroupId = useSelector(
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
@@ -233,11 +239,12 @@ export const ChildProfile: React.FC = () => {
 
   useEffect(() => {
     if (childTutorialTaken === undefined && !childTutorialTaken && !run) {
-      gotToStatementsWalkthrough();
+      goToChildProfileWalkhthrough();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const gotToStatementsWalkthrough = () => {
+  const goToChildProfileWalkhthrough = () => {
     dialog({
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
@@ -266,7 +273,13 @@ export const ChildProfile: React.FC = () => {
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => onCancel(),
+              onClick: () => {
+                setStorageItem(
+                  true,
+                  LocalStorageKeys.childProfileTutorialComplete
+                );
+                onCancel();
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}
@@ -648,7 +661,7 @@ export const ChildProfile: React.FC = () => {
   }
 
   const displayWalkthrough = () => {
-    gotToStatementsWalkthrough();
+    goToChildProfileWalkhthrough();
   };
   return (
     <div className={styles.contentWrapper}>
@@ -661,14 +674,14 @@ export const ChildProfile: React.FC = () => {
         renderBorder={true}
         renderOverflow={false}
         onBack={() => {
-          if (isPrincipal) {
+          if (isPrincipal && practitioners && practitioners.length > 0) {
             history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
           } else {
             history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
           }
         }}
         displayOffline={!isOnline}
-        onHelp={() => gotToStatementsWalkthrough()}
+        onHelp={() => goToChildProfileWalkhthrough()}
         displayHelp={true}
       >
         <div className={styles.avatarWrapper}>

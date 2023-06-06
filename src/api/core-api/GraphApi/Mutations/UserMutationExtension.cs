@@ -32,24 +32,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           bool createAdmin = false)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = null;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
             bool currentUserIsAdmin = false;
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             if (input is null || currentUserId is null)
             {
                 throw new Exception("Invalid input.");
             }
 
-            // Cross tenant, but allow admin user which has no tenant... 
-            Guid tenantId = TenantExecutionContext.Tenant.Id;
-            if (httpContextAccessor.HttpContext.GetUserTenant() != tenantId.ToString())
-            {
-                throw new Exception("Cross tenant access denied.");
-            }
-
             if (createAdmin)
             {
-                currentUser = await userManager.FindByIdAsync(currentUserId);
                 currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
                 if (currentUserIsAdmin)

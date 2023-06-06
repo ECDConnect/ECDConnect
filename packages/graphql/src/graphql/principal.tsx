@@ -44,6 +44,7 @@ export const GetAllPrincipal = gql`
       dateAccepted
       progress
       attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -90,6 +91,7 @@ export const allPrincipal = gql`
       dateAccepted
       progress
       attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -134,6 +136,7 @@ export const GetPrincipalById = gql`
       dateAccepted
       progress
       attendedChildProgress
+      usePhotoInReport
     }
   }
 `;

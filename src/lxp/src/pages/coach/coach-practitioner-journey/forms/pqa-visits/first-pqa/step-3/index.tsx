@@ -14,7 +14,7 @@ export const step3VisitSection = 'Step 3';
 export const step3TotalScore = 2;
 
 export const step3GetScore = (answers: string[]) => {
-  const length = answers.length;
+  const length = answers?.length;
   let result = 0;
   let scoreColours: Colours = 'errorMain';
 
