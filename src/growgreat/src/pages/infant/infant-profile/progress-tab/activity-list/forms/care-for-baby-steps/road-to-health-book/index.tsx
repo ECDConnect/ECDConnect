@@ -19,7 +19,7 @@ import {
   InfantRoadToHealthModel,
   infantRoadToHealthModelSchema,
 } from '@/schemas/infant/infant-road-to-health';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { MaternalRecordExample } from '@/pages/infant/components/infant-road-to-health/maternalRecordExampleDialog';
@@ -31,12 +31,16 @@ export const RoadToHeathBookStep = ({
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
-  const { watch, formState, setValue, register } =
-    useForm<InfantRoadToHealthModel>({
-      resolver: yupResolver(infantRoadToHealthModelSchema),
-      mode: 'onBlur',
-      reValidateMode: 'onChange',
-    });
+  const {
+    watch,
+    setValue,
+    register,
+    control: infantRoadToHealthControl,
+  } = useForm<InfantRoadToHealthModel>({
+    resolver: yupResolver(infantRoadToHealthModelSchema),
+    mode: 'onBlur',
+    reValidateMode: 'onChange',
+  });
 
   const {
     weightAtBirth,
@@ -44,7 +48,8 @@ export const RoadToHeathBookStep = ({
     roadToHealthBook,
     notRoadToHealthBook,
   } = watch();
-  const { isValid } = formState;
+
+  const { errors } = useFormState({ control: infantRoadToHealthControl });
 
   const visitSection = 'Road to Health Book';
 
@@ -66,7 +71,7 @@ export const RoadToHeathBookStep = ({
   useEffect(() => {
     if (setEnableButton) {
       if (
-        (hasMaternalCaseRecord && isValid && roadToHealthBook) ||
+        (hasMaternalCaseRecord && roadToHealthBook) ||
         (!hasMaternalCaseRecord && notRoadToHealthBook)
       ) {
         setSectionQuestions?.([
@@ -95,7 +100,6 @@ export const RoadToHeathBookStep = ({
     }
   }, [
     hasMaternalCaseRecord,
-    isValid,
     lengthAtBirth,
     notRoadToHealthBook,
     roadToHealthBook,
@@ -164,6 +168,9 @@ export const RoadToHeathBookStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 className="mt-4"
+                error={
+                  !!errors.weightAtBirth ? errors.weightAtBirth : undefined
+                }
               ></FormInput>
               <Typography
                 type="h4"
@@ -180,6 +187,9 @@ export const RoadToHeathBookStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 className="mt-4"
+                error={
+                  !!errors.lengthAtBirth ? errors.lengthAtBirth : undefined
+                }
               ></FormInput>
               <Typography
                 type="h4"

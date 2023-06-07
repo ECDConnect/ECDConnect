@@ -2,6 +2,8 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Reporting;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Reports;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -25,6 +27,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]
         public async Task<string> GenerateChildProgressReport(
             IGenericRepositoryFactory repoFactory,
+            [Service] HierarchyEngine hierarchyEngine,
             [Service] ChildProgressReportService report,
             [Service] IHttpContextAccessor httpContextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
@@ -48,6 +51,9 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                 return null;
             }
 
+            var practitionerRepo = repoFactory.CreateRepository<Practitioner>(userContext: httpContextAccessor.HttpContext.GetUser().Id);
+            var practitioner = practitionerRepo.GetAll().Where(x => x.Hierarchy == progressReportEntity.Hierarchy).OrderBy(x => x.Id).FirstOrDefault();
+
             using var dbScope = dbFactory.CreateDbContext();
 
             var document = dbScope.Documents
@@ -55,7 +61,7 @@ namespace ECDLink.SmartStart.GraphQL.Queries
                                   .OrderBy(x => x.Id)
                                   .FirstOrDefault();
 
-            return await report.GenerateReport(progressReportEntity, document);
+            return await report.GenerateReport(progressReportEntity, practitioner, practitioner != null ? practitioner.User.ProfileImageUrl : "", document);
         }
 
         [Permission(PermissionGroups.REPORTING, GraphActionEnum.View)]

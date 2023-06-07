@@ -49,13 +49,19 @@ export const ChildRegistrationBirthCertificate: React.FC = () => {
     const documentStatusId = await getWorkflowStatusIdByEnum(
       WorkflowStatusEnum.DocumentPendingVerification
     );
-    const typeId = await getDocumentTypeIdByEnum(FileTypeEnum.Child);
+    const fileType =
+      birthCertificateForm?.birthCertificateType === 'clinicCard'
+        ? FileTypeEnum.ChildClinicCard
+        : FileTypeEnum.ChildBirthCertificate;
+
+    const typeId = await getDocumentTypeIdByEnum(fileType);
 
     const documentInputModel = childRegisterUtils.mapDocumentDto(
       existingChildUser?.id || '',
       fileName,
       documentStatusId || '',
       typeId || '',
+      fileType,
       birthCertificateForm.birthCertificateImage,
       user
     );

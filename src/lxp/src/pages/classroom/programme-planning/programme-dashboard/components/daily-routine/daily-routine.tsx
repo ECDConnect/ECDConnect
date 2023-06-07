@@ -113,6 +113,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
+  const regex = /(<([^>]+)>)/gi;
+  const secondRegEx = /((&nbsp;))*/gim;
+
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {
     dialog({
       position: DialogPosition.Middle,
@@ -122,7 +125,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             className={'mx-4'}
             title={routineItem.name}
             importantText={`${routineItem.timeSpan}`}
-            detailText={routineItem.description}
+            detailText={routineItem.description
+              .replace(regex, '')
+              .replace(secondRegEx, '')}
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
@@ -142,7 +147,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
-  const openActivityItem = (routineItem: ProgrammeRoutineItemDto) => {
+  const openActivityItem = (
+    routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto
+  ) => {
     const activityId = getActivityIdForRoutineItem(
       routineItem.name,
       currentDailyProgramme
@@ -159,19 +167,45 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         return routineItem.name !== DailyRoutineItemType.storyBook ? (
           <ActivityDetails
             activityId={activityId}
-            isSelected={false}
-            disabled={true}
-            onActivitySelected={() => {}}
-            onActivityChanged={() => {}}
+            isSelected={true}
+            disabled={false}
+            onActivitySelected={() => {
+              onClose();
+              // onEditActivityItem(routineItem, day);
+            }}
+            onActivityChanged={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
             onBack={onClose}
           />
         ) : (
           <StoryActivityDetails
-            selected={false}
+            selected={true}
             activityId={activityId}
-            disabled={true}
+            disabled={false}
             viewType={'StoryActivity'}
             onBack={onClose}
+            onStoryBookSwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
+            onActivitySwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
           />
         );
       },
@@ -220,16 +254,35 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openInfoItem(routineItem);
       return;
     }
+    if (currentDailyProgramme) {
+      openActivityItem(routineItem, currentDailyProgramme);
+      return;
+    }
 
     openActivityItem(routineItem);
   };
 
   const onActivitySelected = async (
     routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto,
     activityId?: number
   ) => {
     if (!currentDailyProgramme) {
       await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
+    }
+
+    if (day) {
+      const currentDayCopy = { ...day };
+      switch (routineItem.name) {
+        case DailyRoutineItemType.largeGroup:
+          currentDayCopy.largeGroupActivityId = activityId;
+          break;
+        case DailyRoutineItemType.smallGroup:
+          currentDayCopy.smallGroupActivityId = activityId;
+          break;
+      }
+
+      saveCurrentDay(currentDayCopy);
     }
   };
 
@@ -267,7 +320,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     saveCurrentDay(currentDayCopy);
   };
 
-  const onEditActivityItem = (routineItem: ProgrammeRoutineItemDto) => {
+  const onEditActivityItem = (
+    routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto
+  ) => {
     dialog({
       position: DialogPosition.Full,
       render: (onSubmit, onClose) => {
@@ -289,7 +345,7 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             )}
             routineItem={routineItem}
             onSave={(activityId?: number) => {
-              onActivitySelected(routineItem, activityId);
+              onActivitySelected(routineItem, day, activityId);
               setRoutineItemSet(routineItem);
               setSelectedActivity(activityId!);
               setTriggerSaveActivity(true);

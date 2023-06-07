@@ -47,7 +47,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
     reValidateMode: 'onChange',
   });
 
-  const { isValid } = useFormState({
+  const { errors } = useFormState({
     control: roadToHealthControl,
   });
 
@@ -66,7 +66,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
     setRoadToHealthFormValue('roadToHealthBook', imageUrl);
     setRegistrationFormPhotoUrl(imageUrl);
     setPhotoActionBarVisible(false);
-    trigger();
+    trigger(['roadToHealthBook', 'notRoadToHealthBook']);
   };
 
   const handleConsentAccept = () => {
@@ -80,18 +80,6 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
       setHasMaternalCaseRecord(true);
     }
   }, [roadToHealthBook, setRoadToHealthFormValue]);
-
-  useEffect(() => {
-    if (weightAtBirth) {
-      setRoadToHealthFormValue('weightAtBirth', weightAtBirth);
-    }
-  }, [setRoadToHealthFormValue, weightAtBirth]);
-
-  useEffect(() => {
-    if (lengthAtBirth) {
-      setRoadToHealthFormValue('lengthAtBirth', lengthAtBirth);
-    }
-  }, [setRoadToHealthFormValue, lengthAtBirth]);
 
   useEffect(() => {
     watch();
@@ -207,6 +195,9 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   placeholder={'Tap to add'}
                   type={'text'}
                   className="mt-4"
+                  error={
+                    !!errors.weightAtBirth ? errors.weightAtBirth : undefined
+                  }
                 ></FormInput>
                 <Typography
                   type="h4"
@@ -223,6 +214,9 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                   placeholder={'Tap to add'}
                   type={'text'}
                   className="mt-4"
+                  error={
+                    !!errors.lengthAtBirth ? errors.lengthAtBirth : undefined
+                  }
                 ></FormInput>
                 <Typography
                   type="h4"
@@ -256,7 +250,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
             onSubmit(getRoadToHealthFormValues());
           }}
           disabled={
-            (hasMaternalCaseRecord && !isValid) ||
+            (hasMaternalCaseRecord && !!Object.keys(errors).length) ||
             (hasMaternalCaseRecord &&
               !getRoadToHealthFormValues('roadToHealthBook')) ||
             (!hasMaternalCaseRecord && !confirmHasNoRecord)

@@ -232,7 +232,7 @@ export const useGeneratePdfReport = () => {
       doc.rect(125, (doc as any).lastAutoTable.finalY + 25, 65, 10);
     }
     // send pdf to SmartStart
-    if (component === 'submit-statements' && tableData.length > 1) {
+    if (component === 'submit-statements') {
       // save the PDF document as binary data
       var pdfData = doc.output();
       // convert the binary data to a base64-encoded string

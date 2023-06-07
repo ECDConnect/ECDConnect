@@ -383,16 +383,30 @@ class Visit {
       query: `
       query GetPreviousVisitInformationForMother($visitId: String) {
         previousVisitInformationForMother(visitId: $visitId) {
-              score
-              scoreColor
-              visitDataStatus {
-                  id
-                  comment
-                  color
-                  type
-                  section
-                  isCompleted
-              }
+          score
+          scoreColor
+          growComment
+          growCommentColor
+          weight
+          weightColor
+          weightComment
+          length
+          lengthColor
+          lengthComment
+          muac
+          muacColor
+          muacComment
+          visitDataStatus {
+            insertedDate
+            id
+            comment
+            color
+            type
+            section
+            visitData {
+              visitName
+            }
+          }
         }
       }
       

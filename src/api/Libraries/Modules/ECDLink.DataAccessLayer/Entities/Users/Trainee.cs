@@ -1,11 +1,8 @@
 using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
-using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
@@ -27,16 +24,15 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string UserId { get; set; }
         public Guid PractitionerId { get; set; }
         public virtual Practitioner Practitioner { get; set; }
-
         public DateTime? StartDate { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }
+        public DateTime? ScheduledConsolidationMeetingDate { get; set; }
         public DateTime? ChildrenAddedDate { get; set; }
         public Guid? LinkedPrincipalHierarchy { get; set; }
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public string SiteArea { get; set; }
         public DateTime? TraineeConvertedDate { get; set; }
-        public bool? AttendedFirstAidCourse { get; set; }
         public bool? SiteVisitsCompleted { get; set; }
         public bool? ChildProgressTraining { get; set; }
         public bool? StarterLicenceReceived { get; set; }
@@ -44,11 +40,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? AdminFileReceived { get; set; }
         public bool? SmartSpaceVisitPassed { get; set; }
         public bool? AttendedStartUpTraining { get; set; }
-        public bool? IsOnStipend { get; set; }
         public bool? IsSmartSpaceVisitValidated { get; set; }
         public bool? IsAdminFileAndPlaykitValidated { get; set; }
         public string HighestEducationLevel { get; set; }
-
+        public bool? HaveCommunitySupport { get; set; }
+        public DateTime? CommunitySupportGained { get; set; }
     }
 
     public interface TraineeIdJoin<TKey>

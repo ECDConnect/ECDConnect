@@ -22,7 +22,9 @@ export const IntialNotificationSetupContext =
 
 const InitialNotificationSetup: React.FC = ({ children }) => {
   const dispatch = useAppDispatch();
-  const notifications = useSelector(notificationsSelectors.getAllNotifications);
+  const notificationReferences = useSelector(
+    notificationsSelectors.getAllNotificationReferences
+  );
   const notificationPollInterval = useSelector(
     settingSelectors.getNotificationPollInterval
   );
@@ -42,17 +44,13 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const onNotificationsRecieved = useCallback(
     (messages: Message[]) => {
       const newMessages = messages.filter(
-        (message) =>
-          !notifications.some(
-            (notification) =>
-              notification.message.reference === message.reference
-          )
+        (message) => !notificationReferences.includes(message.reference)
       );
       if (newMessages.length > 0) {
         dispatch(notificationActions.addNotifications(newMessages));
       }
     },
-    [dispatch, notifications]
+    [dispatch, notificationReferences]
   );
 
   const initializeServices = useCallback(() => {

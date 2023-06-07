@@ -1,31 +1,36 @@
 import {
   Config,
-  initialLoginValues,
+  initialRegisterValues,
   LocalStorageKeys,
-  LoginRequestModel,
-  loginSchema,
+  RegisterRequestModel,
+  registerSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
-import { useAuth } from '../../hooks/useAuth';
-import FormField from '../form-field/form-field';
-import logo from '../../../assets/Logo-ECDConnect.png';
+import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
+import { useAuth } from '../../../hooks/useAuth';
+import FormField from '../../form-field/form-field';
+import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 
-export default function Register() {
-  const { login } = useAuth();
+interface RouteParams {
+  userId: string;
+}
+
+export default function Register(props: RouteComponentProps<RouteParams>) {
+  const { registerUser } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { userId } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
-    resolver: yupResolver(loginSchema),
-    defaultValues: initialLoginValues,
+    resolver: yupResolver(registerSchema),
+    defaultValues: initialRegisterValues,
     mode: 'onChange',
   });
 
@@ -36,20 +41,29 @@ export default function Register() {
 
   const { errors, isValid } = formState;
 
-  const registerUser = async () => {
+  const [showPassword, setShowPassword] = useState(false);
+
+  const togglePasswordVisibility = () => {
+    setShowPassword(!showPassword);
+  };
+
+  const registerNewUser = async () => {
     const formValues = getValues();
 
     if (isValid) {
       setIsLoading(true);
-      const body: LoginRequestModel = {
-        username: formValues.username,
+      const body: RegisterRequestModel = {
+        email: formValues.email,
         password: formValues.password,
+        acceptedTerms: formValues.acceptedTerms,
       };
-      const isAuthenticated = await login(body, Config.authApi).catch(() => {
-        setDisplayError(true);
-        setIsLoading(false);
-      });
-      localStorage.setItem(LocalStorageKeys.existingUser, 'true');
+      const isAuthenticated = await registerUser(body, Config.authApi).catch(
+        () => {
+          setDisplayError(true);
+          setIsLoading(false);
+        }
+      );
+
       if (isAuthenticated) {
         setIsLoading(false);
         history.push('/dashboard');
@@ -74,13 +88,13 @@ export default function Register() {
 
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
-      <div className="rounded bg-white p-8 shadow sm:w-1/3">
+      <div className="m-8 rounded-xl bg-white p-8 shadow lg:w-1/3">
         <div className="flex flex-shrink-0 items-center justify-center">
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-3xl font-extrabold">
-            Register
+          <h2 className="font-h1 textLight mt-6 text-2xl">
+            Register for Funda App
           </h2>
         </div>
         <div className="mt-8">
@@ -89,9 +103,14 @@ export default function Register() {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'username'}
+                  nameProp={'email'}
+                  type="email"
                   register={register}
-                  error={errors.username?.message}
+                  error={errors.email?.message}
+                  instructions={[
+                    'Make sure to use the same address where you received the invitation email.',
+                  ]}
+                  placeholder="e.g. work@email.com"
                 />
               </div>
 
@@ -102,6 +121,13 @@ export default function Register() {
                   register={register}
                   type="password"
                   error={errors.password?.message}
+                  instructions={[
+                    'At least 8 characters',
+                    'At least 1 number',
+                    'At least 1 capital letter',
+                  ]}
+                  showPassword={showPassword}
+                  togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
               <div className="-mx-1 flex">
@@ -110,9 +136,9 @@ export default function Register() {
                     <div
                       className={`h-2 rounded-xl transition-colors ${
                         i < passwordScore
-                          ? passwordScore <= 2
+                          ? passwordScore <= 1
                             ? 'bg-red-400'
-                            : passwordScore <= 3
+                            : passwordScore <= 2
                             ? 'bg-yellow-400'
                             : passwordScore <= 4
                             ? 'bg-green-500'
@@ -123,21 +149,25 @@ export default function Register() {
                   </div>
                 ))}
               </div>
-              <div className="mb-2 flex justify-between">
-                <a
-                  rel="noopener noreferrer"
-                  href="/"
-                  className="text-l text-blue-400 hover:underline"
-                >
-                  Forgot password?
-                </a>
-              </div>
-              <Divider></Divider>
 
+              <Divider></Divider>
+              <div className="flex">
+                <div>
+                  <FormField
+                    label={'Terms and conditions *'}
+                    nameProp={'terms'}
+                    type="checkbox"
+                    register={register}
+                    instructions={['I accept the terms and conditions']}
+                  />
+                </div>
+              </div>
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={'Password or Username incorrect. Please try again'}
+                  message={
+                    'Oh no! There are 2 problems above. Please fix them:'
+                  }
                   type={'error'}
                 />
               )}
@@ -148,12 +178,12 @@ export default function Register() {
                   isLoading={isLoading}
                   color="secondary"
                   disabled={!isValid}
-                  onClick={registerUser}
+                  onClick={registerNewUser}
                 >
                   <Typography
                     type="help"
                     color="white"
-                    text={'Log in'}
+                    text={'Register'}
                   ></Typography>
                 </Button>
               </div>

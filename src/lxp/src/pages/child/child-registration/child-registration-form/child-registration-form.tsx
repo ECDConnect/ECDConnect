@@ -107,7 +107,7 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
 
   return (
     <>
-      <div className={'flex flex-1 bg-uiBg h-full overflow-scroll'}>
+      <div className={'bg-uiBg flex h-full flex-1 overflow-scroll'}>
         {variation === 'practitioner' && (
           <PractitionerForm
             registrationFormPhotoUrl={registrationFormPhotoUrl}
@@ -158,6 +158,7 @@ export const ChildRegistrationForm: React.FC<ChildRegistrationFormProps> = ({
                   setChildRegistrationFormValue('registrationForm', '');
                   setRegistrationFormPhotoUrl(undefined);
                   setPhotoActionBarVisible(false);
+                  trigger();
                   if (!childRegisterForm) return;
 
                   childRegisterForm.registrationForm = '';
@@ -183,7 +184,7 @@ const PractitionerForm: React.FC<any> = ({
   isValid,
 }) => {
   return (
-    <div className={'p-4 w-full'}>
+    <div className={'w-full p-4'}>
       <Alert
         type={'info'}
         message={
@@ -267,7 +268,7 @@ const PractitionerForm: React.FC<any> = ({
           'Caregivers must confirm these 4 agreements or we cannot provide SmartStart services.'
         }
       ></Alert>
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -297,7 +298,7 @@ const PractitionerForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -327,7 +328,7 @@ const PractitionerForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -357,7 +358,7 @@ const PractitionerForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center py-4'}>
+      <div className={'flex flex-row items-center justify-between py-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -416,7 +417,7 @@ const CaregiverForm: React.FC<any> = ({
   photoConsent,
 }) => {
   return (
-    <div className={'p-4 w-full'}>
+    <div className={'w-full p-4'}>
       <Typography
         type="h1"
         color="primary"
@@ -429,7 +430,7 @@ const CaregiverForm: React.FC<any> = ({
         text="Check the boxes below to confirm that you agree with the following:"
       />
 
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -459,7 +460,7 @@ const CaregiverForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -489,7 +490,7 @@ const CaregiverForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center pt-4'}>
+      <div className={'flex flex-row items-center justify-between pt-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}
@@ -519,7 +520,7 @@ const CaregiverForm: React.FC<any> = ({
           color={'primary'}
         />
       </div>
-      <div className={'flex flex-row justify-between items-center py-4'}>
+      <div className={'flex flex-row items-center justify-between py-4'}>
         <div className={styles.checkboxWrapper}>
           <Checkbox<ChildRegistrationFormModel>
             register={childRegistrationFormRegister}

@@ -18,6 +18,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string MotherId { get; set; }
         public string InfantId { get; set; }
         public string PractitionerId { get; set; }
+        public string TraineeId { get; set; }
         public virtual CMSVisitData VisitData { get; set; }
     }
 
@@ -42,10 +43,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string VisitName { get; set; }
         public int OverallScore { get; set; }
         public string OverallRating { get; set; }
+        public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
         public DateTime? PlannedDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }
-        
     }
 
     public class PQARatingChild
@@ -55,6 +56,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string SectionRating { get; set; }
         public string SectionRatingColor { get; set; }
     }
+
 
   }
 

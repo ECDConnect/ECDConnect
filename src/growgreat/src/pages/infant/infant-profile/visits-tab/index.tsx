@@ -109,8 +109,7 @@ export const VisitsTab: React.FC = () => {
   const filteredVisits = useMemo(
     () =>
       visits.filter(
-        (item) =>
-          new Date(item.visitType?.insertedDate || '') >= infantInsertedDate
+        (item) => new Date(item?.orderDate || '') >= infantInsertedDate
       ),
     [infantInsertedDate, visits]
   );
@@ -146,6 +145,12 @@ export const VisitsTab: React.FC = () => {
     const visitsNoAttend = visitsFromCurrentVisit.filter(
       (item) => !item.attended
     );
+
+    const visitsBeforeCurrentVisit = filterArrayBeforeId(
+      filteredVisits,
+      currentVisit?.id || ''
+    );
+
     const isPastVisits = !!filterArrayBeforeId(
       filteredVisits,
       currentVisit?.id || ''

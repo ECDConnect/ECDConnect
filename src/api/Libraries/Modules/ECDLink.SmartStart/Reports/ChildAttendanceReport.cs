@@ -73,7 +73,10 @@ namespace ECDLink.SmartStart.Reports
                             {
                                 if (learner.StartedAttendance.Date >= programme.ProgrammeStartDate.Date)
                                 {
-                                    var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate, endMonth);
+                                    var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
+                                                  && x.ClassroomProgrammeId == programme.Id
+                                                  && x.MonthOfYear == dt.Month
+                                                  && x.Year == dt.Year);
 
                                     var attendedClasses = attendanceForPeriod
                                                             .Where(x => string.Equals(x.UserId, userId)
@@ -84,7 +87,7 @@ namespace ECDLink.SmartStart.Reports
 
                                     attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 
-                                } else attendance.Add(Tuple.Create(0, 0));
+                                }// else attendance.Add(Tuple.Create(0, 0));
                             }
                             monthlyAttendance.Add(dt, attendance);
                             allAttendance.Add(attendance);

@@ -20,6 +20,9 @@ import { VisitActions } from '@/store/visit/visit.actions';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { useParams } from 'react-router';
+import { activitiesTypes } from '../activities-list';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export interface Question {
   question: string;
@@ -76,6 +79,7 @@ export const DynamicForm = ({
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
+  const history = useHistory();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -205,13 +209,18 @@ export const DynamicForm = ({
         referralThunkActions.updateVisitDataStatus({ input: referrals })
       );
     }
+
+    if (name === activitiesTypes.followUp) {
+      history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}`);
+    }
   }, [
+    sectionQuestions,
     visitId,
-    appDispatch,
     mother?.user?.id,
     name,
     referralsInput,
-    sectionQuestions,
+    appDispatch,
+    history,
   ]);
 
   // TODO: sync visit form
@@ -221,6 +230,8 @@ export const DynamicForm = ({
     if (!steps) return;
 
     const CurrentStep = steps[Number(currentStep)];
+
+    if (!CurrentStep) return;
 
     return (
       <CurrentStep
