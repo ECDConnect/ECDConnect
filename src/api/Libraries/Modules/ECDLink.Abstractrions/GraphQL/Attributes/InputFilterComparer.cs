@@ -1,4 +1,4 @@
-﻿namespace ECDLink.EGraphQL.ObjectTypes.Input.Enums
+﻿namespace ECDLink.Abstractrions.GraphQL.Attributes
 {
     public enum InputFilterComparer
     {
@@ -6,5 +6,7 @@
         Equals,
         LessThan,
         GreaterThan,
+        LessThanOrEqual,
+        GreaterThanOrEqual
     }
 }

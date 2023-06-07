@@ -1,5 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
@@ -24,12 +26,22 @@ namespace ECDLink.EGraphQL.Resolvers
 
         public IEnumerable<T> GetAll(
           IGenericRepositoryFactory repositoryFactory,
-          [Service] IHttpContextAccessor httpContextAccessor)
+          [Service] IHttpContextAccessor httpContextAccessor,
+          PagedQueryInput pagingInput = null)
         {
             var repository = repositoryFactory.CreateRepository<T>();
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
 
-            return repository.GetAll();
+
+            var getAllQuery = repository.GetAll();
+            if (pagingInput is not null)
+            {
+                getAllQuery = PaginationHelper.AddFiltering(pagingInput.FilterBy, getAllQuery);
+                getAllQuery = PaginationHelper.AddSorting(pagingInput.SortBy, getAllQuery);
+                getAllQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize, getAllQuery);
+            }
+            
+            return getAllQuery;
         }
     }
 }

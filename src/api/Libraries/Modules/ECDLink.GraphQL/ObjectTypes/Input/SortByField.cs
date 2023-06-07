@@ -1,9 +1,9 @@
 ﻿
-using System;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
-    public class SortByField
+    public class SortByField : ISortByField
     {
         public SortByField()
         {
@@ -18,7 +18,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         public string FieldName { get; } = null;
         public bool Descending { get; } = false;
 
-        private static string FirstCharToUpper(string str) 
+        private static string FirstCharToUpper(string str)
                => string.Create(str.Length, str, (output, input) =>
                {
                    input.CopyTo(output);

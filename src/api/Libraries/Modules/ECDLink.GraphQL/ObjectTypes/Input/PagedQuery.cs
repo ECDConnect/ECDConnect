@@ -1,12 +1,16 @@
-﻿using HotChocolate;
+﻿using ECDLink.Abstractrions.GraphQL.Attributes;
+using HotChocolate;
+using HotChocolate.Types;
 using System;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
-    public class PagedQueryInput
+    public class PagedQueryInput //: IPagedQueryInput
     {
-        public int PageNumber { get; set; }
-        public int PageSize { get; set; }
+        private int pageNumber;
+
+        public int PageNumber { get => pageNumber; set => pageNumber = value < 1 ? 0 : value - 1; }
+        public int PageSize { get; }
 
         public PagedQueryInput()
         {
@@ -20,13 +24,22 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
             FilterBy = filterBy ?? Array.Empty<FilterByField>();
         }
 
-        public SortByField[] SortBy { get; } = new SortByField[] { };
-        public FilterByField[] FilterBy { get; } = new FilterByField[] { };
+        public SortByField[] SortBy { get; set; } = new SortByField[] { };
+        public FilterByField[] FilterBy { get; set; } = new FilterByField[] { };
 
         [GraphQLIgnore]
         public int RowOffset
         {
             get => PageNumber * PageSize;
+        }
+    }
+
+    public class PagedQueryInputType : InputObjectType<PagedQueryInput>
+    {
+        protected override void Configure(
+            IInputObjectTypeDescriptor<PagedQueryInput> descriptor)
+        {
+            descriptor.BindFieldsImplicitly();    
         }
     }
 }
