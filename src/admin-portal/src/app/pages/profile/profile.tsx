@@ -39,7 +39,7 @@ export function Profile() {
 
   const { errors, isValid } = formState;
 
-  console.log(formValues)
+  console.log(errors)
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -85,6 +85,7 @@ export function Profile() {
                       nameProp={'email'}
                       placeholder="elishabere@gmail.com"
                       register={register}
+                      defaultValue={""}
                       disabled
                     />
                   </div>
