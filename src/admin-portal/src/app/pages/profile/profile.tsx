@@ -4,9 +4,7 @@ import {
   initialEditProfileValues,
   editProfileSchema,
 } from '../../schemas/edit-profile-request';
-import {
-  EditProfileRequestModel
-} from '../../models/EditProfile';
+import { EditProfileRequestModel } from '../../models/EditProfile';
 
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -39,7 +37,7 @@ export function Profile() {
 
   const { errors, isValid } = formState;
 
-  console.log(errors)
+  console.log(isValid);
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -56,8 +54,18 @@ export function Profile() {
                   <img
                     src="https://source.unsplash.com/75x75/?portrait"
                     alt=""
-                    className="h-24 w-24 flex-shrink-0 self-center rounded-full border dark:border-gray-700 dark:bg-gray-500 md:justify-self-start"
+                    className="h-40 w-40 mr-10 flex-shrink-0 self-center rounded-full md:justify-self-start"
                   />
+                  <div className="top-170 absolute left-20  flex h-8 w-8 items-center justify-center rounded-full bg-black">
+                    <svg
+                      className="h-4 w-4 fill-current text-white"
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 20 20"
+                    >
+                      <path d="M10 0c-5.522 0-10 4.478-10 10 0 5.521 4.478 10 10 10s10-4.479 10-10c0-5.522-4.478-10-10-10zm3 10h-2v3h-2v-3h-2v-2h2v-3h2v3h2v2z" />
+                    </svg>
+                    <div></div>
+                  </div>
                   <div className="flex w-full flex-col">
                     <div>
                       <FormField
@@ -85,7 +93,7 @@ export function Profile() {
                       nameProp={'email'}
                       placeholder="elishabere@gmail.com"
                       register={register}
-                      defaultValue={""}
+                      defaultValue={'elishabere@gmail.com'}
                       disabled
                     />
                   </div>

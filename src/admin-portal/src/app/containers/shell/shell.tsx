@@ -6,9 +6,10 @@ import {
   useTheme,
 } from '@ecdlink/core';
 import { GetAllNavigation } from '@ecdlink/graphql';
-import { UserAvatar } from '@ecdlink/ui';
+import { Button, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
+  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
@@ -119,7 +120,6 @@ export default function Shell() {
 
   const userNavigation = [
     { name: 'Profile', onClick: gotToProfile },
-    { name: 'Sign out', onClick: signOutClick },
   ];
 
   const displayInformationPanel = () => {
@@ -221,6 +221,42 @@ export default function Shell() {
                   ></MenuItem>
                 ))}
               </nav>
+              <div className="px-4">
+                <Button
+                  className={'w-full rounded-xl hover:bg-secondary hover:text-white'}
+                  type="filled"
+                  // isLoading={isLoading}
+                  color="uiMid"
+                  // disabled={!isValid}
+                  // onClick={signIn}
+                  icon='InformationCircleIcon'
+                >
+             
+                  <Typography
+                    type="body"
+                    color="white"
+                    text={'Help'}
+                    fontSize={'24'}
+
+                  ></Typography>
+                </Button>
+              </div>
+              <div className="p-4">
+                <Button
+                  className={'w-full justify-self-start rounded-xl hover:bg-secondary hover:text-white '}
+                  type="filled"
+                  color="uiMid"
+                  onClick={signOutClick}
+                  icon="ArrowLeftIcon"
+                >
+                  <Typography
+                    type="body"
+                    color="white"
+                    text={'Logout'}
+                    fontSize={'24'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -255,7 +291,7 @@ export default function Shell() {
                 {({ open }) => (
                   <>
                     <div>
-                      <Menu.Button className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button onClick={gotToProfile} className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
                         <span className="sr-only">Open user menu</span>
 
                         {user ? (
@@ -268,37 +304,7 @@ export default function Shell() {
                         ) : null}
                       </Menu.Button>
                     </div>
-                    <Transition
-                      show={open}
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Menu.Items
-                        static
-                        className="focus:outline-none absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                      >
-                        {userNavigation.map((item: any) => (
-                          <Menu.Item key={item.name}>
-                            {({ active }) => (
-                              <div
-                                onClick={item.onClick}
-                                className={classNames(
-                                  active ? 'bg-gray-100' : '',
-                                  'block cursor-pointer px-4 py-2 text-sm text-gray-700'
-                                )}
-                              >
-                                {item.name}
-                              </div>
-                            )}
-                          </Menu.Item>
-                        ))}
-                      </Menu.Items>
-                    </Transition>
+                 
                   </>
                 )}
               </Menu>
