@@ -6,8 +6,12 @@
 @tailwind utilities;
 @import url('https://fonts.googleapis.com/css?family=Quicksand:400,700&display=swap');
 
-.darkBackground.flex.min-h-screen.items-center.justify-center {
+div.darkBackground {
   background-color: #27385A;
+}
+
+a.users-tabs {
+  justify-content: center !important;
 }
 
 .h_iframe iframe {

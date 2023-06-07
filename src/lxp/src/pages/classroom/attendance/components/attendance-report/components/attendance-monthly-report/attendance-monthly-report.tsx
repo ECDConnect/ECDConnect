@@ -8,11 +8,11 @@ import {
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { AttendanceService } from '@services/AttendanceService';
-import { getMonthName } from '@utils/classroom/attendance/track-attendance-utils';
+import { getMonthRange } from '@utils/classroom/attendance/track-attendance-utils';
 import * as styles from './attendance-monthly-report.styles';
 import { MonthlyAttendanceReport } from './attendance-report';
 import { AttendanceSummary } from '@models/classroom/attendance/AttendanceSummary';
-import { getYear, startOfMonth, endOfMonth, parse, add } from 'date-fns';
+import { getYear, add } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { ChildAttendanceOverallReportModel } from '@ecdlink/core';
@@ -51,18 +51,6 @@ export const AttendanceMonthlyReport: React.FC<
     setDisplayReport(!displayReport);
   };
 
-  function getMonthRange(monthName: string) {
-    const year = new Date().getFullYear();
-    // Parse the month name and get the corresponding month number
-    const monthNumber = parse(monthName, 'MMMM', new Date()).getMonth() + 1;
-    // Get the start and end date of the month
-    const startDate = startOfMonth(new Date(year, monthNumber - 1, 1));
-
-    const endDate = endOfMonth(new Date(year, monthNumber - 1, 1));
-
-    return { startDate, endDate };
-  }
-
   useEffect(() => {
     if (viewReportDate) {
       const { startDate, endDate } = getMonthRange(viewReportDate);
@@ -95,9 +83,7 @@ export const AttendanceMonthlyReport: React.FC<
             <div
               onClick={() => {
                 setDisplayReport(true);
-                setViewReportDate(
-                  getMonthName(attendanceItem?.monthOfYear - 1)
-                );
+                setViewReportDate(attendanceItem?.month);
               }}
               key={`attendance-summary-item-${idx}`}
               className={classNames(
@@ -111,14 +97,12 @@ export const AttendanceMonthlyReport: React.FC<
                     type={'h3'}
                     weight={'bold'}
                     color={'black'}
-                    text={`${getMonthName(
-                      attendanceItem.monthOfYear - 1
-                    )} ${getYear(new Date())}`}
+                    text={`${attendanceItem.month} ${getYear(new Date())}`}
                     lineHeight={'none'}
                   ></Typography>
 
                   <Typography
-                    text={`submited registers`}
+                    text={`submitted registers`}
                     weight={'bold'}
                     color={'black'}
                     type={'h3'}

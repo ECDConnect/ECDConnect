@@ -13,5 +13,6 @@
         public int Confirmed { get { return 1; } }
         public int Mnethostid { get { return 1; } }
         public string Timezone { get { return "Africa/Johannesburg"; } }
+        public string Country { get { return "ZA"; } }
     }
 }

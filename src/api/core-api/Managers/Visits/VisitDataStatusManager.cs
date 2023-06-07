@@ -741,11 +741,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_no) {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + Constants.GGSettings.was_coping;
-                    AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
                     comment = Constants.GGSettings.coping_well;
-                    AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _G9, q3.VisitSection, true);
                 }
             }
             return true;
@@ -1209,6 +1209,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
             newVisit.LinkedVisitId = new Guid(_visitId);
+            newVisit.ActualVisitDate = DateTime.Now; 
             _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
@@ -1695,7 +1696,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetClinicReferralForUser(string id, string type)
         {
             var status = "";
@@ -1729,7 +1729,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetHomeAffairsReferralForUser(string id, string type)
         {
             var status = "";
@@ -1763,7 +1762,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
         public string GetSassaReferralForUser(string id, string type)
         {
             var status = "";
@@ -1797,8 +1795,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return status;
         }
-
-
 
     }
 }

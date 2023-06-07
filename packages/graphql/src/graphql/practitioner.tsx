@@ -47,6 +47,7 @@ export const GetAllPractitioner = gql`
       dateAccepted
       progress
       attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -93,6 +94,7 @@ export const GetPractitionerById = gql`
       dateAccepted
       progress
       attendedChildProgress
+      usePhotoInReport
     }
   }
 `;

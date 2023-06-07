@@ -193,6 +193,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return 0;
         }
 
+
+        public string UpdatePractitionerUsePhotoInReport([Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            string practitionerId, string usePhotoInReport)
+
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
+            {
+                if (practitioner != null)
+                {
+                    practitioner.UsePhotoInReport = usePhotoInReport;
+                    practitionerRepo.Update(practitioner);
+                    return practitioner.UsePhotoInReport;
+                }
+            }
+
+            return null;
+        }
+
         public bool UpdatePractitionerEmergencyContact([Service] IHttpContextAccessor contextAccessor,
     IGenericRepositoryFactory repoFactory,
     [Service] UserManager<ApplicationUser> userManager,
@@ -227,7 +248,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return false;
         }
 
-        // TODO: add licenses for practitioner end point here
 
         public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
         {

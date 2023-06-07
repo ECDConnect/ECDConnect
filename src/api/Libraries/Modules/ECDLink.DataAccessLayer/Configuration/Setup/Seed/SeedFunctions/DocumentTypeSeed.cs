@@ -37,7 +37,15 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
                Tuple.Create(ReportConstants.ChildProgressReport, "A PDF template with fillable fields that represents the child progress report." , FileTypeEnum.ReportTemplates),
                Tuple.Create(DocumentTypeConstants.MaternalCaseRecord, "A maternity case record document." , FileTypeEnum.MaternalCaseRecord),
                Tuple.Create(DocumentTypeConstants.RoadToHealthBook, "Road to health book." , FileTypeEnum.RoadToHealthBook),
-               Tuple.Create(DocumentTypeConstants.ContentImage, "An image uploaded into a Content document." , FileTypeEnum.ContentImage)
+               Tuple.Create(DocumentTypeConstants.ContentImage, "An image uploaded into a Content document." , FileTypeEnum.ContentImage),
+               Tuple.Create(DocumentTypeConstants.ChildRegistrationForm, "A child registration form uploaded." , FileTypeEnum.ChildRegistrationForm),
+               Tuple.Create(DocumentTypeConstants.ChildClinicCard, "A child clinic card uploaded." , FileTypeEnum.ChildClinicCard),
+               Tuple.Create(DocumentTypeConstants.ChildBirthCertificate, "A child birth certificate uploaded." , FileTypeEnum.ChildBirthCertificate),
+               Tuple.Create(DocumentTypeConstants.IdentityDocument, "IdentityDocument" , FileTypeEnum.IdentityDocument),
+               Tuple.Create(DocumentTypeConstants.StartupSupportAgreement, "Startup Support Agreement" , FileTypeEnum.StartupSupportAgreement),
+               Tuple.Create(DocumentTypeConstants.ProofOfAccount, "Proof Of Account" , FileTypeEnum.ProofOfAccount),
+               Tuple.Create(DocumentTypeConstants.ProofOfSiteAddress, "Proof Of Site Address" , FileTypeEnum.ProofOfSiteAddress),
+               Tuple.Create(DocumentTypeConstants.PractitionerAgreement, "Practitioner Agreement" , FileTypeEnum.PractitionerAgreement),
            };
 
             var allDocumentTypes = documentTypeRepo.GetAll();

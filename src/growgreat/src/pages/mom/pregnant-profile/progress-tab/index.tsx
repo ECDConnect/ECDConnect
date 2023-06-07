@@ -6,10 +6,12 @@ import { PregnantProfileParams } from '../index.types';
 import { IntroScreen } from './activity-list/intro-screen';
 import { RootState } from '@/store/types';
 import { PREGNANT_PROFILE_TABS } from '..';
-import { VisitDto, usePrevious } from '@ecdlink/core';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { visitThunkActions } from '@/store/visit';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import {
+  getMotherLastVisitSelector,
+  getMotherCurrentVisitSelector,
+} from '@/store/mother/mother.selectors';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
@@ -46,10 +48,8 @@ export const ProgressTab = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
 
   const walkthroughData: FollowUpWalkthroughData = {
     progressBar: {
@@ -79,23 +79,24 @@ export const ProgressTab = () => {
       return;
     }
 
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: currentVisit?.id,
-        })
-      );
+    // if (
+    //   (!previousCurrentVisit ||
+    //     (!!previousCurrentVisit &&
+    //       previousCurrentVisit?.id !== currentVisit?.id)) &&
+    //   !!currentVisit
+    // )
+    //   appDispatch(
+    //     visitThunkActions.getPreviousVisitInformationForMother({
+    //       visitId: currentVisit?.id,
+    //     })
+    //   );
   }, [
     appDispatch,
-    currentVisit,
-    currentVisit?.id,
+    //currentVisit,
+    //currentVisit?.id,
     isWalkthroughSession,
-    previousCurrentVisit,
+    //mother?.id,
+    //previousCurrentVisit,
   ]);
 
   useLayoutEffect(() => {

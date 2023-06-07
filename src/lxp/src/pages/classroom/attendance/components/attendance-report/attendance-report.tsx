@@ -78,12 +78,16 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   >([]);
 
   useEffect(() => {
-    const trackAttendance = async () => {
-      return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
-    };
-    trackAttendance().then(() => {
-      setAttendanceTracked(true);
-    });
+    if (!attendanceTracked) {
+      const trackAttendance = async () => {
+        return await appDispatch(
+          attendanceThunkActions.trackAttendanceSync({})
+        );
+      };
+      trackAttendance().then(() => {
+        setAttendanceTracked(true);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -184,10 +188,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          // todo: remove 'false' once needed.
-          false &&
-          (!hasClosedAttendanceSmartStartPointsMessage ??
-            displaySmartStartMessage)
+          !hasClosedAttendanceSmartStartPointsMessage ??
+          displaySmartStartMessage
         }
         icon={'GiftIcon'}
         className={'mt-4'}

@@ -95,6 +95,9 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
   const classroomGroups = allClassroomGroups.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
+  const classroomGroupLearners = useSelector(
+    classroomsSelectors.getClassroomGroupLearners
+  );
   const classroomGroupsForPrincipal = classroomGroups.filter(
     (item) => item?.userId === userData?.id
   );
@@ -195,19 +198,11 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
           classProgrammesUpdated,
           attendance,
           holidays,
-          todayDate
+          todayDate,
+          classroomGroupLearners
         );
 
-      let classCreatedTodayMissedAttendance = attendanceToDoList.filter(
-        (x) => getDay(x.missedDay) === getDay(todayDate)
-      );
-
-      //this is used when classes is created today and user has multiple classes
-      const missedClasses = removeDuplicates(classCreatedTodayMissedAttendance);
-
-      if (missedClasses.length > 0) {
-        setMissedAttendanceGroups(missedClasses);
-      } else if (attendanceToDoList.length > 0) {
+      if (attendanceToDoList.length > 0) {
         setMissedAttendanceGroups(attendanceToDoList);
       }
     }
@@ -221,6 +216,7 @@ export const AttendanceSummary: React.FC<AttendanceSummaryState> = ({
     practitioner?.isPrincipal,
     classroomGroupsForPrincipal,
     classroomGroups,
+    classroomGroupLearners,
   ]);
 
   useEffect(() => {

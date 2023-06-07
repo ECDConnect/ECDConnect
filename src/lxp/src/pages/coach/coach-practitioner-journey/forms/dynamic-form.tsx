@@ -27,6 +27,9 @@ export interface DynamicFormProps {
   steps?: any[];
   sectionQuestions?: SectionQuestions[];
   isLoading?: boolean;
+  nextButtonText?: string;
+  submitButton?: { text: string; icon: string };
+  secondaryButton?: { text: string; icon: string; onClick: () => void };
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -43,6 +46,9 @@ export const DynamicForm = ({
   steps,
   isTipPage,
   isLoading,
+  nextButtonText = 'Next',
+  submitButton = { text: 'Save', icon: 'SaveIcon' },
+  secondaryButton,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
@@ -143,23 +149,33 @@ export const DynamicForm = ({
     if (Number(currentStep) < Number(steps?.length) - 1) {
       return {
         action: handleOnNext,
-        text: 'Next',
+        text: nextButtonText,
         icon: 'ArrowCircleRightIcon',
       };
     }
 
     return {
       action: isView ? onClose : onSubmit,
-      text: isView ? 'Close' : 'Save',
-      icon: isView ? 'XIcon' : 'SaveIcon',
+      text: isView ? 'Close' : submitButton.text,
+      icon: isView ? 'XIcon' : submitButton.icon,
     };
-  }, [isView, onClose, currentStep, handleOnNext, onSubmit, steps?.length]);
+  }, [
+    steps?.length,
+    currentStep,
+    isView,
+    onClose,
+    onSubmit,
+    submitButton.text,
+    submitButton.icon,
+    handleOnNext,
+    nextButtonText,
+  ]);
 
   return (
     <div className="flex h-full flex-col">
       {renderContent}
       {!isTipPage && (
-        <div id="button" className="mx-4 mt-auto flex items-end">
+        <div id="button" className="mx-4 mt-auto flex flex-col items-end">
           <Button
             type="filled"
             color="primary"
@@ -171,6 +187,18 @@ export const DynamicForm = ({
             isLoading={isLoading}
             disabled={!isEnableButton || isLoading}
           />
+          {secondaryButton?.text && (
+            <Button
+              type="outlined"
+              color="primary"
+              icon={secondaryButton.icon}
+              className="mb-4 w-full"
+              text={secondaryButton.text}
+              onClick={secondaryButton.onClick}
+              isLoading={isLoading}
+              disabled={!isEnableButton || isLoading}
+            />
+          )}
         </div>
       )}
     </div>

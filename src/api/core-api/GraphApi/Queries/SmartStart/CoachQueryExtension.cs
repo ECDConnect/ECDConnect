@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -28,6 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         public List<Practitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] PersonnelService personnelService,
+            [Service] VisitManager visitManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -38,7 +40,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             foreach (Practitioner item in practitioners)
             {
-                item.timeline = personnelService.GetPractitionerTimeline(item.UserId);
+                // let's make sure that the default visits are added when the smartSpace license is available
+                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(item.UserId);
+                if (isAdded)
+                {
+                    item.timeline = personnelService.GetPractitionerTimeline(item.UserId);
+                }
             }
             return practitioners;
         }

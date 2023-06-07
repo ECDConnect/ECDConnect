@@ -55,14 +55,14 @@ export const getChildLearner = (child?: ChildDto) =>
 
 export const getChildLearnerByClassroom = (
   classroomGroupId: string,
-  child?: ChildDto
+  childUserId?: string
 ) =>
   createSelector(
     (state: RootState) => state.classroomData.classroomGroupLearners || [],
     (learners: LearnerDto[]) =>
       learners.find(
         (learner) =>
-          learner.userId === child?.userId &&
+          learner.userId === childUserId &&
           learner.classroomGroupId === classroomGroupId
       )
   );

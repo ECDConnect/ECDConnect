@@ -38,7 +38,11 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { motherThunkActions } from '@/store/mother';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getIsMotherFirstVisitSelector,
+  getMotherById,
+  getMotherLastVisitSelector,
+} from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -62,18 +66,66 @@ export const MomActivityList: React.FC = () => {
   const { visitId } = useParams<MotherProfileParams>();
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
+  const MOCKED_VISIT_ID = visitId;
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const location = useLocation();
+  const [, , , infantId] = location.pathname.split('/');
+  const [, , , motherId] = location.pathname.split('/');
+
+  const currentVisit = useSelector(getMotherLastVisitSelector);
+
+  useLayoutEffect(() => {
+    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
+
+    appDispatch(motherThunkActions?.getMotherVisits({ motherId }));
+    appDispatch(
+      visitThunkActions.getGrowthDataForInfant({ infantId })
+    ).unwrap();
+    appDispatch(
+      referralThunkActions.getReferralsForVisitId({ visitId })
+    ).unwrap();
+  }, [appDispatch, infantId, motherId, visitId]);
+
+  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  useLayoutEffect(() => {
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit?.id,
+        })
+      );
+  }, [
+    appDispatch,
+    visitId,
+    currentVisit?.id,
+    currentVisit,
+    previousCurrentVisit,
+  ]);
+
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getVisitAnswersForMother({
+        visitId: MOCKED_VISIT_ID,
+        visitName: activitiesTypes.nutrition,
+        visitSection: DevelopmentalScreeningVisitSection,
+      })
+    );
+  }, [MOCKED_VISIT_ID, appDispatch]);
 
   const { isOnline } = useOnlineStatus();
 
   const { width } = useWindowSize();
 
-  const history = useHistory();
-
-  const location = useLocation();
-
   const user = useSelector(userSelectors.getUser);
 
-  const MOCKED_VISIT_ID = visitId;
+  const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
 
   const completedVisits = useSelector((state: RootState) =>
     getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -83,19 +135,21 @@ export const MomActivityList: React.FC = () => {
     getPreviousVisitInformationForMotherSelector
   );
 
-  const activityListFiltered = activitiesList?.filter(
-    (item) => item?.title !== 'Danger signs'
-  );
-
   const activityListUpdated =
     previousMotherVisit?.visitDataStatus?.length! > 0
       ? activitiesList
       : activitiesList;
 
-  const [, , , infantId] = location.pathname.split('/');
-  const [, , , motherId] = location.pathname.split('/');
+  const { visibleActivities } = useMemo(() => {
+    const visibleActivities = activityListUpdated.filter((item) => {
+      if (item.id === activitiesTypes.dangerSigns && isFirstVisit)
+        return undefined;
 
-  const appDispatch = useAppDispatch();
+      return item;
+    });
+
+    return { visibleActivities };
+  }, [activityListUpdated, isFirstVisit]);
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
@@ -123,10 +177,10 @@ export const MomActivityList: React.FC = () => {
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
     useMemo(() => {
-      const completedActivities = activityListUpdated.filter((item) =>
+      const completedActivities = visibleActivities.filter((item) =>
         completedVisits?.includes(item.title)
       );
-      const uncompletedActivities = activityListUpdated.filter(
+      const uncompletedActivities = visibleActivities.filter(
         (item) => !completedVisits?.includes(item.title)
       );
 
@@ -142,6 +196,12 @@ export const MomActivityList: React.FC = () => {
           backgroundColor: 'successBg' as Colours,
           rightIcon: 'BadgeCheckIcon',
           rightIconClassName: 'h-5 w-5 text-successMain',
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
         })
       );
 
@@ -186,7 +246,7 @@ export const MomActivityList: React.FC = () => {
       ];
 
       return { uncompletedForms, completedForms, followUpForm, stepperCount };
-    }, [activityListUpdated, completedVisits]);
+    }, [visibleActivities, completedVisits]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
   const isAllCompleted = completedVisits?.length === stepperCount;
@@ -212,42 +272,6 @@ export const MomActivityList: React.FC = () => {
       setShowForm(true);
     }
   }, [selectedOption]);
-
-  useLayoutEffect(() => {
-    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-
-    appDispatch(motherThunkActions?.getMotherVisits({ motherId }));
-    appDispatch(
-      visitThunkActions.getGrowthDataForInfant({ infantId })
-    ).unwrap();
-    appDispatch(
-      referralThunkActions.getReferralsForVisitId({ visitId })
-    ).unwrap();
-  }, [appDispatch, infantId, motherId, visitId]);
-
-  useLayoutEffect(() => {
-    // TODO: add integration
-    appDispatch(
-      visitThunkActions.getMomCompletedVisitsForVisitId({
-        visitId: MOCKED_VISIT_ID,
-      })
-    );
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForMother({
-        visitId: MOCKED_VISIT_ID,
-      })
-    );
-  }, [MOCKED_VISIT_ID, appDispatch]);
-
-  useLayoutEffect(() => {
-    appDispatch(
-      visitThunkActions.getVisitAnswersForMother({
-        visitId: MOCKED_VISIT_ID,
-        visitName: activitiesTypes.nutrition,
-        visitSection: DevelopmentalScreeningVisitSection,
-      })
-    );
-  }, [MOCKED_VISIT_ID, appDispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {

@@ -51,7 +51,7 @@ export const HealthPromotion = ({
 
   const formattedHealthPromotion = useMemo(() => {
     const healthPromotion = healthPromotions?.find(
-      (item) => item.section === section
+      (item) => item?.section === section
     );
 
     const parser = new DOMParser();

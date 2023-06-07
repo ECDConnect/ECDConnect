@@ -8,7 +8,7 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useCallback } from 'react';
 import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { DynamicFormProps, Question } from '../../../dynamic-form';
 import { useForm } from 'react-hook-form';
@@ -55,10 +55,14 @@ export const WeightAndLengthFormStep = ({
     [ageInMonths, ageInYears]
   );
 
-  const isCheckedWeight =
-    Number(weightAtBirth) > 0 && Number(weightAtBirth) <= 50;
+  const isCheckedWeight = useCallback(() => {
+    return (
+      weightAtBirth && Number(weightAtBirth) > 0 && Number(weightAtBirth) <= 7
+    );
+  }, [weightAtBirth]);
+
   const isCheckedLength =
-    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 250;
+    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 70;
 
   const dialog = useDialog();
 
@@ -173,7 +177,7 @@ export const WeightAndLengthFormStep = ({
             className="mt-7"
           />
         </div>
-        {!!weightAtBirth && !isCheckedWeight && (
+        {!isCheckedWeight && (
           <Alert
             className="mb-4"
             type="error"

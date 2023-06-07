@@ -12,6 +12,8 @@ namespace EcdLink.Api.CoreApi
     public static class  SSSettings
     {
             public const string client_practitioner = "practitioner";
+            public const string client_trainee = "trainee";
+            public const string client_coach = "coach";
 
             // Visit types
             public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
@@ -22,13 +24,25 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_1 = "pqa_visit_1";
             public const string visitType_pqa_visit_2 = "pqa_visit_2";
             public const string visitType_pqa_visit_3 = "pqa_visit_3";
-
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
-            public const string visitType_re_accreditation = "re_accreditation";
+
+            public const string visitType_re_accreditation_1 = "re_accreditation_1";
+            public const string visitType_re_accreditation_2 = "re_accreditation_2";
+            public const string visitType_re_accreditation_3 = "re_accreditation_3";
+            public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
+
+            public const string visitType_smart_space_checklist = "smart_space_checklist";
+            public const string visitType_startup_support_agreement = "startup_support_agreement";
+
+            public const string visitType_trainee_visit = "trainee_visit";
+
+            public const string answer_yes = "true";
+            public const string answer_no = "false";
 
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";
             public const string ss_smart_space_licence = "ss_smart_space_licence";
+            public const string ss_practice_licence = "ss_practice_licence";
 
             // Timeline messages
             public const string starter_licence_received = "Starter Licence received";
@@ -36,6 +50,9 @@ namespace EcdLink.Api.CoreApi
 
             public const string smart_space_licence_received = "SmartSpace Licence received";
             public const string smart_space_licence_not_received = "SmartSpace Licence not received";
+
+            public const string practice_licence_received = "PQA: Practice Licence awarded";
+            public const string practice_licence_not_received = "PQA: Practice Licence not received";
 
             public const string first_site_visit = "First site visit before PQA";
             public const string second_site_visit = "Second site visit before PQA";
@@ -273,7 +290,12 @@ namespace EcdLink.Api.CoreApi
             public const string step16_q4 = "Are there too many children attending the SmartStart programme?";
             public const string step16_q5 = "Are there enough assistants for the programme?";
 
-            public const string step_8_re_accreditation = "The learning environment & use of the SmartStart routine";
+            public const string step_8_re_accreditation = "A. The learning environment & use of the SmartStart routine";
+            public const string step_10_re_accreditation = "B. Programme implementation";
+            public const string step_11_re_accreditation = "C. Records";
+            public const string step_12_re_accreditation = "D. Operational standards";
+
+          
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
             public const string step8_re_accreditation_a3 = "Using the toy kit: the play kit is unpacked and children can reach toys and story books.";
@@ -287,6 +309,7 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
             public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
 
+            
             public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
             public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
             public const string step_10_re_accreditation_q3 = "Adults use calm and appropriate methods to keep order, and do not use harsh words, a raised voice or physical methods.";
@@ -298,7 +321,7 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
 
-            public const string step_11_re_accreditation_q1 = "Records";
+            
             public const string step_11_re_accreditation_a1 = "Register: the attendance register is up to date.";
             public const string step_11_re_accreditation_a2 = "Planning: weekly reflection and planning notes are completed and filed.";
             public const string step_11_re_accreditation_a3 = "Activities: planning notes are filed and show a variety of small and large group activities are being used.";
@@ -306,7 +329,6 @@ namespace EcdLink.Api.CoreApi
             public const string step_11_re_accreditation_a5 = "Accidents: there is an accident register.";
             public const string step_11_re_accreditation_a6 = "Caregiver meetings: there are attendance registers for the last two monthly caregiver meetings.";
 
-            public const string step_12_re_accreditation_q1 = "Operational standards";
             public const string step_12_re_accreditation_a1 = "Caregiver meetings: the franchisee is organising monthly caregiver meetings (at least 6 in the last year).";
             public const string step_12_re_accreditation_a2 = "Club meetings: the franchisee is attending monthly club meetings (at least 9 in the last year).";
             public const string step_12_re_accreditation_a3 = "Age range: all or nearly all (more than 80%) of the children are aged three and four years old.";
@@ -314,9 +336,9 @@ namespace EcdLink.Api.CoreApi
             public const string step_12_re_accreditation_a5 = "Reports: the Franchisee is submitting child attendance regularly (weekly child attendance received for the last 12 months).";
             public const string step_12_re_accreditation_a6 = "Parent satisfaction: parent satisfaction surveys - 3 surveys with total score from parents of more than 3 (to be collected at the meeting).";
 
-
             public const string pqa_visit = "PQA Visit 1";
             public const string pqa_re_accreditation = "Re-accreditation visit";
+            public const string smart_space_checklist = "SmartSpace Checklist";
 
             public const string step12 = "Step 12";
             public const string step13 = "Step 13";
@@ -332,7 +354,32 @@ namespace EcdLink.Api.CoreApi
 
             public const int step2_re_accreditation_total = 17;
             public const int step3_re_accreditation_total = 5;
-            public const int step8_re_accreditation_total = 12;
+            public const int re_accreditation_A_total = 12;
+            public const int re_accreditation_B_total = 20;
+            public const int re_accreditation_C_total = 6;
+            public const int re_accreditation_D_total = 6;
+
+            public const string zero_stars = "0 stars";
+            public const string one_star = "1 star";
+            public const string two_stars = "2 stars";
+            public const string three_stars = "3 stars";
+            public const string four_stars = "4 stars";
+
+            // timeline values
+            public const string consolidation_meeting = "Consolidation meeting attended";
+            public const string no_consolidation_meeting = "Did not attend consolidation meeting";
+            public const string checklist_done = "SmartSpace Checklist done";
+            public const string children_registered = "3 or more children registered";
+            public const string franchisee_signed = "Franchisee agreement signed";
+            public const string support_agreement_signed = "Start-up support agreement signed";
+            public const string community_support = "Community support gained";
+            public const string coach_visit = "SmartSpace visit from coach";
+            public const string attended_first_aid = "Attended first aid course";
+            public const string not_attended_first_aid = "Did not attended first aid course";
+            public const string child_progress_training = "Child progress training";
+
+            public const string consent_type_franchisee = "FranchiseeAgreement";
+            public const string consent_type_support_agreement = "StartupSupportAgreement";
 
         }
 
@@ -619,7 +666,7 @@ namespace EcdLink.Api.CoreApi
             public const string SSCaregiver = "Caregiver";
             public const string SLCaregiver = "Caregiver";
             //Trainee Queries
-            public const string SSTrainee = "Practitioner";
+            public const string SSTrainee = "Trainee";
             public const string SLTrainee = "Trainee";
             //Address Queries
             public const string SSAddress = "SiteAddress";

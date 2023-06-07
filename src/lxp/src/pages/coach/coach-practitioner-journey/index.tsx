@@ -19,7 +19,7 @@ import {
   generalSupportVisitTypes,
   visitTypes,
 } from './coach-practitioner-journey.types';
-import { useLayoutEffect, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useAppDispatch } from '@/store';
 import {
@@ -28,6 +28,7 @@ import {
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
 import {
+  getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
@@ -36,8 +37,12 @@ import {
   filterVisit,
   sortVisit,
   timelineSteps,
-} from './timeline-steps';
-import { getAgeInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
+} from './timeline/timeline-steps';
+import {
+  getAgeInYearsMonthsAndDays,
+  parseBool,
+  usePrevious,
+} from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
@@ -48,6 +53,8 @@ export const CoachPractitionerJourney: React.FC = () => {
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { isOnline } = useOnlineStatus();
+  const wasOnline = usePrevious(isOnline);
+
   const history = useHistory();
   const appDispatch = useAppDispatch();
 
@@ -69,6 +76,7 @@ export const CoachPractitionerJourney: React.FC = () => {
   const prePqaFormData = useSelector(
     getPrePqaFormDataByIdSelector(practitionerId)
   );
+  const pqaFormData = useSelector(getPqaFormDataByIdSelector(practitionerId));
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -95,9 +103,24 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
-  const uncompletedVisits = timeline?.pQASiteVisits?.filter(
-    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
-  );
+  const onStart = (visitName?: string) => {
+    window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
+    setShowForm(true);
+  };
+  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
+  const uncompletedPrePqaVisits =
+    timeline?.prePQASiteVisits?.filter(
+      (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+  const uncompletedPqaVisits =
+    timeline?.pQASiteVisits?.filter(
+      (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+
+  const uncompletedVisits = [
+    ...uncompletedPrePqaVisits,
+    ...uncompletedPqaVisits,
+  ];
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
@@ -117,13 +140,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
-        onActionClick: () => {
-          window.sessionStorage.setItem(
-            currentActivityKey,
-            visit?.visitType?.description || 'Visit'
-          );
-          setShowForm(true);
-        },
+        onActionClick: () => onStart(String(visit?.visitType?.name)),
       })
     )
     .shift();
@@ -165,6 +182,10 @@ export const CoachPractitionerJourney: React.FC = () => {
     setShowForm(true);
   };
 
+  const getTimeline = useCallback(() => {
+    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
+  }, [appDispatch, practitionerId]);
+
   useLayoutEffect(() => {
     if (selectedForm) {
       setShowForm(true);
@@ -172,8 +193,14 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [selectedForm]);
 
   useLayoutEffect(() => {
-    appDispatch(getPractitionerTimeline({ userId: practitionerId }));
-  }, [appDispatch, practitionerId, showForm]);
+    getTimeline();
+  }, [getTimeline]);
+
+  useEffect(() => {
+    if (!wasOnline && isOnline) {
+      getTimeline();
+    }
+  }, [getTimeline, isOnline, wasOnline]);
 
   if (
     (showForm && isView) ||
@@ -265,13 +292,14 @@ export const CoachPractitionerJourney: React.FC = () => {
           />
           {!!timeline && (
             <Steps
-              items={timelineSteps(
+              items={timelineSteps({
                 timeline,
                 onView,
+                onStart,
                 isLoading,
                 isOnline,
-                uncompletedVisits
-              )}
+                visits: uncompletedVisits,
+              })}
               typeColor={{ completed: 'successMain' }}
             />
           )}

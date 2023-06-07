@@ -17,7 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MotherQueryExtension
     {
@@ -38,6 +39,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] MotherManager motherManager,
+            [Service] VisitManager visitManager,
             string id,
             string visitType = Constants.GGSettings.visitType_all) // visitType can be all / overdue / due
         {
@@ -57,7 +59,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
-                    if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
+                    var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, true);
+                     if (nextVisit != "")
                     {
                         mothers.Add(mother);
                     }
@@ -66,9 +69,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
-                    if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
+                    var missedVisit = visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
+                    if (missedVisit != "")
                     {
                         mothers.Add(mother);
                     }
@@ -109,7 +113,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == id &&
-                                                                  x.IsActive.Equals(true) && 
+                                                                  x.IsActive.Equals(true) &&
                                                                   x.InsertedDate.Month == today.Month &&
                                                                   x.InsertedDate.Year == today.Year).ToList();
 
@@ -122,7 +126,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_mother);
         }
 
-       [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
             return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
@@ -135,16 +139,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitAnswersForMother([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
-            return visitDataManager.GetVisitAnswersForClient( visitId, visitName, visitSection );
+        public List<VisitData> GetVisitAnswersForMother([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection)
+        {
+            return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, [Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string visitId)
+        {
+            Progress_VisitDataStatus visitResult = new Progress_VisitDataStatus();
+
             var _visitId = new Guid(visitId);
-            return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
+            visitResult = visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
+            return visitResult;
         }
-        
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Progress_VisitDataStatus GetVisitClientSummaryDataForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
@@ -206,7 +215,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, Boolean referralCompleted, Boolean backReferralCompleted) {
+        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, Boolean referralCompleted, Boolean backReferralCompleted)
+        {
             return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
         }
 

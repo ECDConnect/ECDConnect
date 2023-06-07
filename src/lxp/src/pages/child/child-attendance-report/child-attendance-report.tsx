@@ -32,21 +32,25 @@ import {
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { ChildAttendanceReportState } from './child-attendance-report.types';
 import { classroomsSelectors } from '@/store/classroom';
+import ROUTES from '@/routes/routes';
 
 export const ChildAttendanceReportPage: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const { state } = useLocation<ChildAttendanceReportState>();
-  const { childId, classroomGroupId } = state;
+  const { childId, classroomGroupId, childUserId } = state;
   const appDispatch = useAppDispatch();
 
   const child = useSelector(childrenSelectors.getChildById(childId));
   const childUser = useSelector(
-    childrenSelectors.getChildUserById(child?.userId)
+    childrenSelectors.getChildUserById(child?.userId || childUserId)
   );
   const attendanceData = useSelector(attendanceSelectors.getTrackedAttendance);
   const learner = useSelector(
-    classroomsSelectors.getChildLearnerByClassroom(classroomGroupId, child)
+    classroomsSelectors.getChildLearnerByClassroom(
+      classroomGroupId,
+      child?.userId || childUserId
+    )
   );
 
   useEffect(() => {
@@ -99,7 +103,7 @@ export const ChildAttendanceReportPage: React.FC = () => {
 
       new AttendanceService(authUser?.auth_token ?? '')
         .getChildAttendanceRecords(
-          child?.userId ?? '',
+          child?.userId ?? childUserId ?? '',
           classroomGroupId,
           startDate,
           endDate
@@ -129,7 +133,13 @@ export const ChildAttendanceReportPage: React.FC = () => {
   return (
     <BannerWrapper
       className="h-full overflow-y-auto"
-      onBack={history.goBack}
+      onBack={() => {
+        childId
+          ? history.push(ROUTES.CHILD_PROFILE, { childId })
+          : childUserId
+          ? history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 })
+          : history.goBack();
+      }}
       size={'small'}
       title={`${childUser?.firstName}'s attendance`}
       displayOffline={!isOnline}

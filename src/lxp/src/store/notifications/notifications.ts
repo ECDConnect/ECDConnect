@@ -5,6 +5,7 @@ import { NotificationsState, Notification } from './notifications.types';
 
 const initialState: NotificationsState = {
   notifications: [],
+  notificationReferences: [],
 };
 
 const notificationsState = createSlice({
@@ -13,6 +14,7 @@ const notificationsState = createSlice({
   reducers: {
     resetNotificationState: (state) => {
       state.notifications = [];
+      state.notificationReferences = [];
     },
     addNotifications: (
       state: NotificationsState,
@@ -23,6 +25,9 @@ const notificationsState = createSlice({
         message,
       }));
       state.notifications.push(...newNotifications);
+      state.notificationReferences.push(
+        ...newNotifications.map((n) => n.message.reference)
+      );
     },
     markAllNotificationsRead: (state) => {
       const notificationsCopy = [...state.notifications].map((x) => ({

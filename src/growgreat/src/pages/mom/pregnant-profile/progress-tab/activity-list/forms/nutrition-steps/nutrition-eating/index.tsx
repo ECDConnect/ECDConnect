@@ -1,8 +1,19 @@
 import { Header, Label } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
-import { CheckboxChange, Colours, Divider, Typography } from '@ecdlink/ui';
+import {
+  getAgeInYearsMonthsAndDays,
+  replaceBraces,
+  useDialog,
+} from '@ecdlink/core';
+import {
+  ActionModal,
+  CheckboxChange,
+  Colours,
+  Divider,
+  Typography,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { noneOption, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
@@ -40,6 +51,8 @@ export const NutritonEatingStep = ({
     [ageMonths, ageYears]
   );
 
+  const dialog = useDialog();
+
   const [optionList, setOptionList] = useState<
     {
       icon?: JSX.Element;
@@ -63,6 +76,39 @@ export const NutritonEatingStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
+        if (
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
+        ) {
+          return dialog({
+            blocking: false,
+            position: DialogPosition.Middle,
+            color: 'bg-white',
+            render: (onClose) => {
+              return (
+                <ActionModal
+                  className="z-50"
+                  icon="ExclamationCircleIcon"
+                  iconColor="alertMain"
+                  iconClassName="h-10 w-10"
+                  title="You can only select “None of the above” if there are no foods selected"
+                  detailText={`If ${name} is not eating any foods, first deselect all foods before selecting “None of the above”.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'primary',
+                      type: 'outlined',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              );
+            },
+          });
+        }
+
         const currentAnswers = answers
           ? [...answers, event.value]
           : [event.value];
