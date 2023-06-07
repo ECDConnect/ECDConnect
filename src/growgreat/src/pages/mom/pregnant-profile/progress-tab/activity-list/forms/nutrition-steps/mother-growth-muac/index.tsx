@@ -92,7 +92,7 @@ export const MotherGrowthMUACStep = ({
           <Alert
             className="mb-4"
             type="error"
-            title="Lethabo might be underweight. Refer her to the clinic."
+            title={`${mother?.user?.firstName} might be underweight. Refer her to the clinic.`}
             list={['Encourage her to eat 3 meals and 1 small snack every day.']}
           />
         )}

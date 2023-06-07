@@ -52,6 +52,7 @@ import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/dang
 import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
 import { clinicCheckupQuestion } from './forms/care-for-mom-steps/clinic-check-ups';
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
+import { FileTypeEnum } from '@ecdlink/graphql';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -146,7 +147,7 @@ export const ActivityList: React.FC = () => {
   const isRoadToHeathBookStep = useMemo(
     () =>
       !documents?.some(
-        (item) => item.documentType?.name === 'RoadToHealthBook'
+        (item) => item?.fileType === FileTypeEnum.RoadToHealthBook
       ),
     [documents]
   );
