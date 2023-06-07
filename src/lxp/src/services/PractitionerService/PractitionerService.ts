@@ -42,19 +42,6 @@ class PractitionerService {
             userId
             programmeType
             timeline {
-              clubMeetings {
-                attended
-                clubMeeting {
-                  meetingDate
-                  club {
-                    name
-                  }
-                }
-              }
-              coachCircles {
-                meetingDate
-                name
-              }              
               consolidationMeetingColor
               consolidationMeetingDate
               consolidationMeetingStatus
