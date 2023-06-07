@@ -1,12 +1,14 @@
-import { Button, Typography } from '@ecdlink/ui';
+import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 
 export const Translations = ({
   onClose,
   toTranslate,
+  section,
 }: {
   onClose: () => void;
   toTranslate: string;
+  section: string;
 }) => {
   const body = [
     {
@@ -51,7 +53,14 @@ export const Translations = ({
     },
   ];
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      onBack={onClose}
+      title={`Translations`}
+      subTitle={section}
+      renderOverflow
+      onClose={onClose}
+    >
       <Header
         backgroundColor="infoMain"
         icon="ChatIcon"
@@ -89,6 +98,6 @@ export const Translations = ({
           onClick={onClose}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };
