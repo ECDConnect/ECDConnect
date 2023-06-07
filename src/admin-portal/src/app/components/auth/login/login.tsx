@@ -3,9 +3,6 @@ import {
   initialLoginValues,
   LocalStorageKeys,
   LoginRequestModel,
-  initialEditProfileValues,
-  editProfileRequestModel,
-  editProfileSchema,
   loginSchema,
   useTheme,
 } from '@ecdlink/core';

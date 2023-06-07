@@ -1,13 +1,13 @@
-
 import FormField from '../../components/form-field/form-field';
+import { Config, LocalStorageKeys, useTheme } from '@ecdlink/core';
 import {
-  Config,
   initialEditProfileValues,
-  editProfileRequestModel,
   editProfileSchema,
-  LocalStorageKeys,
-  useTheme,
-} from '@ecdlink/core';
+} from '../../schemas/edit-profile-request';
+import {
+  EditProfileRequestModel
+} from '../../models/EditProfile';
+
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
@@ -39,6 +39,7 @@ export function Profile() {
 
   const { errors, isValid } = formState;
 
+  console.log(formValues)
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -61,9 +62,9 @@ export function Profile() {
                     <div>
                       <FormField
                         label={'First Name *'}
-                        nameProp={'name'}
+                        nameProp={'firstName'}
                         register={register}
-                        // error={errors.email?.message}
+                        error={errors.firstName?.message}
                       />
                     </div>
 
@@ -72,7 +73,7 @@ export function Profile() {
                         label={'Surname *'}
                         nameProp={'surname'}
                         register={register}
-                        // error={errors.email?.message}
+                        error={errors.surname?.message}
                       />
                     </div>
                   </div>
@@ -82,7 +83,7 @@ export function Profile() {
                     <FormField
                       label={'Email address *'}
                       nameProp={'email'}
-                      placeholder='elishabere@gmail.com'
+                      placeholder="elishabere@gmail.com"
                       register={register}
                       disabled
                     />
@@ -124,7 +125,7 @@ export function Profile() {
             {/* End main area */}
           </div>
         </div>
-        <div className='pl-4'>
+        <div className="pl-4">
           <Button
             className={'mt-3 w-4/12 rounded'}
             type="filled"
@@ -133,7 +134,11 @@ export function Profile() {
             disabled={!isValid}
             // onClick={signIn}
           >
-            <Typography type="help" color="white" text={'Update profile'}></Typography>
+            <Typography
+              type="help"
+              color="white"
+              text={'Update profile'}
+            ></Typography>
           </Button>
         </div>
       </form>

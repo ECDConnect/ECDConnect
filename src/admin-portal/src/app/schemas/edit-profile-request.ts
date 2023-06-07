@@ -1,5 +1,5 @@
 import * as Yup from 'yup';
-import { EditProfileRequestModel } from '../models/edit-profile';
+import { EditProfileRequestModel } from '../models/EditProfile';
 
 export const initialEditProfileValues: EditProfileRequestModel = {
   firstName: '',
