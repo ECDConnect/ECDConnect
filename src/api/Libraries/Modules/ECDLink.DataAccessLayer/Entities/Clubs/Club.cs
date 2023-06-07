@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
+        public int NumberOfMembers { get; set; }
     }
 
     public interface ClubJoin<TKey>
