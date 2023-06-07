@@ -234,4 +234,6 @@ INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","Update
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildRegistrationForm') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'F4-registrationform.png';
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildBirthCertificate') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'birthCertificate.png';
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildClinicCard') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'clinicCard.png';
+	 
+ALTER TABLE public."Club" ADD "NumberOfMembers" numeric NULL;	 
 	 */

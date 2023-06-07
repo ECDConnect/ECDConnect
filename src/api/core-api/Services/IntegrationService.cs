@@ -38,12 +38,6 @@ using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using Newtonsoft.Json.Linq;
 using Microsoft.EntityFrameworkCore;
 using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.DataAccessLayer.Entities.Notes;
-using System.IO;
-using Microsoft.IdentityModel.Tokens;
-using System.Security.Policy;
-using System.Net;
-using NPOI.HPSF;
 using HeyRed.Mime;
 
 namespace ECDLink.Core.Services
@@ -55,7 +49,6 @@ namespace ECDLink.Core.Services
         private readonly ISystemSetting<IntegrationApiOptions> _options;
         private IHttpContextAccessor _contextAccessor;
         private string _uId;
-        private HttpClient _smartLinkClient;
         private UserManager<ApplicationUser> _userManager;
         private PersonnelService _personnelService;
         private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
@@ -171,14 +164,13 @@ namespace ECDLink.Core.Services
 
         public async Task<bool> IntegrationClubsData()
         {
-            List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
-            if (ids.Count > 0)
-            {
-                foreach (var item in ids)
-                {
-                    //await IntegrationByMappedCoach(item.Id.ToString());
-                }
-            }
+            //TODO:
+
+            return true;
+        }
+        public async Task<bool> IntegrationPQAData()
+        {
+            //TODO:
 
             return true;
         }
