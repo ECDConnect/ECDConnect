@@ -298,7 +298,6 @@ export const CoachPractitionerJourney: React.FC = () => {
                 onStart,
                 isLoading,
                 isOnline,
-                // @ts-ignore
                 visits: uncompletedVisits,
               })}
               typeColor={{ completed: 'successMain' }}

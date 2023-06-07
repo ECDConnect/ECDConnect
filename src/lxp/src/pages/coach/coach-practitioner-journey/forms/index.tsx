@@ -380,9 +380,15 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       case visitTypes.delicensing:
         return delicensingSteps;
       default:
+        if (activityName === visitTypes.prePqa.first.name) {
+          setTitle(visitTypes.prePqa.first.description);
+        } else {
+          setTitle(visitTypes.prePqa.second.description);
+        }
+
         return prePqaVisits;
     }
-  }, [isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+  }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   useEffect(() => {
     if (wasLoadingDeactivate && !isLoadingDeactivate) {

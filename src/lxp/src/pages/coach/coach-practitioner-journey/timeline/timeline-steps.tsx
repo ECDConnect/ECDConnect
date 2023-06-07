@@ -178,7 +178,7 @@ export const timelineSteps = ({
       accordionContent: (
         <PrePqaVisits
           isLoading={isLoading}
-          isOnline={isLoading}
+          isOnline={isOnline}
           onView={onView}
           timeline={timeline}
           visits={visits}
