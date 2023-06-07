@@ -20,8 +20,8 @@ export const MotherGrowthMUACStep = ({
   const errorMessage =
     (Number(answer) === 0 && answer !== '') ||
     (Number(answer) >= 100 && answer !== '');
-  const underWeightError = Number(answer) <= 20 && Number(answer) > 0;
-  const notUnderWeightMessage = notUnderWeight > 20 && notUnderWeight < 100;
+  const underWeightError = Number(answer) < 22 && Number(answer) > 0;
+  const notUnderWeightMessage = notUnderWeight > 21 && notUnderWeight < 100;
 
   const muacQuestion = `What is {client} mid-upper arm circumference (MUAC) today?`;
 
