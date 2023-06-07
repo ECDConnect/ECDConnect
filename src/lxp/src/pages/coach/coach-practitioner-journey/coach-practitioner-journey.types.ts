@@ -6,7 +6,7 @@ export const visitTypes = {
   supportVisit: 'General support visit',
   delicensing: 'Delicensing',
   pqa: {
-    firstPQA: 'First PQA',
+    firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
   },
 };
 

@@ -59,6 +59,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
+  const [title, setTitle] = useState('');
 
   const { isOnline } = useOnlineStatus();
 
@@ -162,7 +163,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const handleOnBack = useCallback(() => {
     if (currentActivity === visitTypes.delicensing && step === 0) {
       setRatingStep();
-      return setCurrentActivity(visitTypes.pqa.firstPQA);
+      return setCurrentActivity(visitTypes.pqa.firstPQA.name);
     }
     if (isTip) {
       return setIsTip(false);
@@ -365,13 +366,14 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const onCancelDelicensing = () => {
     setRatingStep();
-    setCurrentActivity(visitTypes.pqa.firstPQA);
+    setCurrentActivity(visitTypes.pqa.firstPQA.name);
   };
 
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
     switch (visitName) {
-      case visitTypes.pqa.firstPQA:
+      case visitTypes.pqa.firstPQA.name:
+        setTitle(visitTypes.pqa.firstPQA.description);
         return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
       case visitTypes.supportVisit:
         return generalSupportVisit;
@@ -409,7 +411,9 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       renderBorder
       onBack={handleOnBack}
       onClose={handleOnClose}
-      title={`${activityName} - ${practitioner?.user?.firstName} ${practitioner?.user?.surname}`}
+      title={`${title || activityName} - ${practitioner?.user?.firstName} ${
+        practitioner?.user?.surname
+      }`}
       subTitle={`step ${step + 1} of ${currentSteps.length}`}
       backgroundColour="white"
       displayOffline={!isOnline}

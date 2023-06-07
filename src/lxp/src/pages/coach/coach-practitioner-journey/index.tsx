@@ -28,6 +28,7 @@ import {
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
 import {
+  getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
@@ -36,7 +37,7 @@ import {
   filterVisit,
   sortVisit,
   timelineSteps,
-} from './timeline-steps';
+} from './timeline/timeline-steps';
 import {
   getAgeInYearsMonthsAndDays,
   parseBool,
@@ -75,6 +76,7 @@ export const CoachPractitionerJourney: React.FC = () => {
   const prePqaFormData = useSelector(
     getPrePqaFormDataByIdSelector(practitionerId)
   );
+  const pqaFormData = useSelector(getPqaFormDataByIdSelector(practitionerId));
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -101,10 +103,24 @@ export const CoachPractitionerJourney: React.FC = () => {
     day: 'numeric',
   };
 
+  const onStart = (visitName?: string) => {
+    window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
+    setShowForm(true);
+  };
   // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
-  const uncompletedVisits = timeline?.prePQASiteVisits?.filter(
-    (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
-  );
+  const uncompletedPrePqaVisits =
+    timeline?.prePQASiteVisits?.filter(
+      (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+  const uncompletedPqaVisits =
+    timeline?.pQASiteVisits?.filter(
+      (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+
+  const uncompletedVisits = [
+    ...uncompletedPrePqaVisits,
+    ...uncompletedPqaVisits,
+  ];
 
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
@@ -124,13 +140,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
-        onActionClick: () => {
-          window.sessionStorage.setItem(
-            currentActivityKey,
-            visit?.visitType?.description || 'Visit'
-          );
-          setShowForm(true);
-        },
+        onActionClick: () => onStart(String(visit?.visitType?.name)),
       })
     )
     .shift();
@@ -285,6 +295,7 @@ export const CoachPractitionerJourney: React.FC = () => {
               items={timelineSteps({
                 timeline,
                 onView,
+                onStart,
                 isLoading,
                 isOnline,
                 // @ts-ignore
