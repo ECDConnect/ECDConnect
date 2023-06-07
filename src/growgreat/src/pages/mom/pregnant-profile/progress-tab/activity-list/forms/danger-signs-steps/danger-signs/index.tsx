@@ -7,6 +7,7 @@ import {
   Alert,
   CheckboxChange,
   Colours,
+  Dialog,
   DialogPosition,
   renderIcon,
   Typography,
@@ -159,10 +160,17 @@ export const DangerSignsStep = ({
 
   if (isTipPage && currentOption) {
     return (
-      <Translations
-        toTranslate={currentOption}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage ? isTipPage : false}
+        position={DialogPosition.Full}
+      >
+        <Translations
+          toTranslate={currentOption}
+          onClose={() => setIsTip && setIsTip(false)}
+          section={dangerSignsSectionName}
+        />
+      </Dialog>
     );
   }
   // TODO: add dialog (G5.6.3)

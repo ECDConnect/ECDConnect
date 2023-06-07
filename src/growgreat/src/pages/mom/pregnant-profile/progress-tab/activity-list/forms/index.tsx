@@ -71,6 +71,13 @@ export const Form = ({ onBack }: FormProps) => {
   const IDDocumentSecondPreviousAnswer = previousVisit?.visitDataStatus?.find(
     (item) => item?.visitData?.question === idDocumentSecondQuestion
   );
+
+  const antenatalVisitQuestionAnswer = previousVisit?.visitDataStatus?.find(
+    (item) => item?.comment === 'Clinic visits up to date'
+  )
+    ? true
+    : false;
+
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
       return !!previousVisit?.visitDataStatus?.some(
@@ -94,6 +101,8 @@ export const Form = ({ onBack }: FormProps) => {
       false &&
       Boolean(IDDocumentSecondPreviousAnswer?.visitData?.questionAnswer) ===
         true);
+
+  const isAntenatalClinicStep = isFirstVisit || antenatalVisitQuestionAnswer;
 
   const isAlcoholUseStep =
     isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
@@ -185,7 +194,11 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.healthCare:
-        return getHealhcareteps(isDangerSignsFollowUpForMom, isFirstVisit);
+        return getHealhcareteps(
+          isDangerSignsFollowUpForMom,
+          isFirstVisit,
+          isAntenatalClinicStep
+        );
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pregnancyCare:
@@ -205,6 +218,7 @@ export const Form = ({ onBack }: FormProps) => {
     activityName,
     isDangerSignsFollowUpForMom,
     isFirstVisit,
+    isAntenatalClinicStep,
     isDangerSignsFollowUpForBaby,
     isEqualOrAfter98andEqualOrBefore168Days,
     isAlcoholUseStep,
