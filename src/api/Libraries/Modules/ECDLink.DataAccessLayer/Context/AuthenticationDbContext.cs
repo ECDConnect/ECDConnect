@@ -3,6 +3,7 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
@@ -141,6 +142,8 @@ namespace ECDLink.DataAccessLayer.Context
 
         // Clubs
         public DbSet<Club> Clubs { get; set; }
+        public DbSet<ClubMeeting> ClubMeeting { get; set; }
+        public DbSet<ClubMeetingRegister> ClubMeetingRegister { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

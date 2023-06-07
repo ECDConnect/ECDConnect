@@ -17,6 +17,8 @@ import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 
+export const antenatalClinicQuestion = `Has {client} gone to the clinic for her first antenatal visit?`;
+
 export const ClinicVisitsStep = ({
   infant,
   mother,
@@ -39,10 +41,7 @@ export const ClinicVisitsStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(
-    () => `Has {client} gone to the clinic for her first antenatal visit?`,
-    []
-  );
+  const question = useMemo(() => antenatalClinicQuestion, []);
 
   const onOptionSelected = useCallback(
     (value) => {

@@ -3,6 +3,7 @@ import {
   Alert,
   Checkbox,
   CheckboxChange,
+  Dialog,
   DialogPosition,
   Divider,
   renderIcon,
@@ -129,10 +130,17 @@ export const DangerSignsStep = ({
 
   if (isTipPage && currentOption) {
     return (
-      <Translations
-        toTranslate={currentOption}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage ? isTipPage : false}
+        position={DialogPosition.Full}
+      >
+        <Translations
+          toTranslate={currentOption}
+          onClose={() => setIsTip && setIsTip(false)}
+          section={dangerSignsVisitSectionForBaby}
+        />
+      </Dialog>
     );
   }
 
