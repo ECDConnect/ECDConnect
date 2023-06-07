@@ -221,7 +221,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
               control={motherDetailsFormControl}
               render={({ field: { onChange, value } }) => (
                 <Dropdown
-                  placeholder={'Please choose the client:'}
+                  placeholder={'Select relationship:'}
                   fillType="clear"
                   disabled={isCaregiver}
                   selectedValue={isCaregiver ? motherType?.value : value}
