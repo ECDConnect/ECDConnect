@@ -38,9 +38,7 @@ const FormField: React.FC<FormFieldProps> = ({
     'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
   const errorStyle =
     'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
-  const defaultInputStyle = !customStyle
-    ? 'focus:border-secondary block w-full sm:text-md bg-Ui-Light rounded-md p-10'
-    : customStyle;
+  const defaultInputStyle = "bg-uiBg focus:outline-none sm:text-md block w-full rounded-lg py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white";
 
   const getInputTypeStyles = () => {
     switch (type) {

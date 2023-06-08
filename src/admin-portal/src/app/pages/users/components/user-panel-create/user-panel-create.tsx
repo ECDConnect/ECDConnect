@@ -23,7 +23,8 @@ import UserDetailsForm from '../user-details-form/user-details-form';
 import UserPanelSave from '../user-panel-save/user-panel-save';
 import UserRoles from '../user-roles/user-roles';
 import { UserPanelCreateProps } from '../users';
-import { PlusIcon } from '@heroicons/react/solid';
+import { PaperAirplaneIcon, PlusIcon } from '@heroicons/react/solid';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -71,18 +72,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
-
   const onSave = async () => {
     await saveUser();
     emitCloseDialog(true);
@@ -90,21 +79,11 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
-    const passwordForm = passwordGetValues();
-
     const userInputModel: UserModelInput = {
       id: newGuid(),
-      isSouthAfricanCitizen: userDetailForm.isSouthAfricanCitizen,
-      idNumber: userDetailForm.idNumber,
-      verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
-      dateOfBirth: userDetailForm.dateOfBirth,
-      genderId: userDetailForm.genderId && +userDetailForm.genderId,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
-      contactPreference: userDetailForm.contactPreference,
-      phoneNumber: userDetailForm.phoneNumber,
       email: userDetailForm.email,
-      password: passwordForm.password,
     };
 
     await createUser({
@@ -148,21 +127,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         console.log(error);
       });
   };
-
-  const getIsValid = () => {
-    let isValid = isUserDetailValid;
-    return isValid && isPasswordValid ? true : false;
-  };
+  const userDetailForm = userDetailGetValues();
+  console.log(userDetailForm);
 
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
-          </div>
+        <div className="rounded-lg px-4 py-0">
           <UserDetailsForm
             formKey={`createUserDetails-${new Date().getTime()}`}
             register={userDetailRegister}
@@ -171,30 +142,30 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             control={control}
           />
         </div>
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Password
-            </h3>
-          </div>
 
-          <PasswordForm
-            formKey={`createPassword-${new Date().getTime()}`}
-            isEdit={false}
-            register={passwordRegister}
-            errors={passwordFormErrors}
-          />
-        </div>
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="mt-0 rounded-lg  px-4 py-0">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
             </h3>
+            <p className="text-Light text-md font-medium leading-6">
+              Please select one administrator type. Once the user has been
+              added, you can add additional roles.
+            </p>
           </div>
           <UserRoles
             roleList={filteredRoles ? filteredRoles : []}
             roles={selectedUserRoles}
             onUserRoleChange={(values) => setUserRoles(values)}
+          />
+        </div>
+        <div className="mt-0 rounded-lg  px-4 py-0">
+          <Alert
+            className={'mt-5 mb-3'}
+            message={
+              'An invitation will be sent to the new user when you click add.'
+            }
+            type={'info'}
           />
         </div>
       </>
@@ -204,15 +175,25 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   return (
     <article>
       {/* <UserPanelSave disabled={!getIsValid()} onSave={onSave} /> */}
-      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
-      <button
-        onClick={onSave}
-        type="button"
-        className="bg-secondary my-6 hover:bg-uiLight focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-      >
-      
-        Create Administrator
-      </button>
+      <div className="mx-1  max-w-5xl">
+        {getComponent()}
+
+        <Button
+          className={'mt-6 w-full rounded-xl'}
+          type="filled"
+          // isLoading={isLoading}
+          color={'secondary'}
+          disabled={userDetailForm.email ? false : true}
+          onClick={onSave}
+        >
+          <PaperAirplaneIcon className="mx-4 h-5 w-5 text-white"></PaperAirplaneIcon>
+          <Typography
+            type="help"
+            color="white"
+            text={'Add & invite user'}
+          ></Typography>
+        </Button>
+      </div>
     </article>
   );
 }

@@ -35,9 +35,10 @@ export const SharedPanel: React.FC<SharedPanelProps> = ({
       <Dialog
         as="div"
         static
-        className="fixed inset-0 overflow-hidden z-40"
+        className="fixed z-10 inset-0 overflow-y-auto"
         open={open}
         onClose={onClose}
+
       >
         <div className="absolute inset-0 overflow-hidden">
           <Dialog.Overlay className="absolute inset-0" />

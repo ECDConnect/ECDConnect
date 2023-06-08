@@ -36,11 +36,17 @@ export default function ApplicationUsers() {
 
   useEffect(() => {
     if (data && data.users) {
-      const copyItems = data.users.map(mapUserTableItem);
-      setTableData(copyItems);
+      const copyItems = data.users
+        .map(mapUserTableItem)
+        .filter((user: { roles: any[] }) =>
+          user.roles.some((role) => role.name === 'Administrator')
+        );
       console.log('>>', data);
+      setTableData(copyItems);
     }
   }, [data]);
+
+
   useEffect(() => {
     if (!data?.users) return;
 
@@ -56,16 +62,16 @@ export default function ApplicationUsers() {
     setTableData(
       allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
     );
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {
-    console.log('test');
     panel({
       noPadding: true,
-      title: 'Create Administrator',
+      title: '',
       render: (onSubmit: any) => (
         <UserPanelCreate
-          key={`userPanelCreate`}
+          key={`inviteAdminUser`}
           closeDialog={(userCreated: boolean) => {
             onSubmit();
             if (userCreated) {
@@ -90,7 +96,7 @@ export default function ApplicationUsers() {
   const displayEditUserPanel = (user: any) => {
     panel({
       noPadding: true,
-      title: 'Edit Administrator',
+      title: 'Administrator details',
       render: (onSubmit) => (
         <UserPanelEdit
           key={`userPanelEdit`}
@@ -180,12 +186,12 @@ export default function ApplicationUsers() {
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-6/12 sm:flex  sm:justify-around">
               <div className="relative w-full">
-                <span className="absolute inset-y-1/2 left-3 flex -translate-y-1/2 transform items-center mr-4">
+                <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                   <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
                 </span>
                 <input
                   className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                  placeholder="        Search by email or name..."
+                  placeholder="      Search by email or name..."
                   onChange={search}
                 />
               </div>

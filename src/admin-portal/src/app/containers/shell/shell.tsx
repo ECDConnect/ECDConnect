@@ -36,7 +36,7 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
     <Link
       to={item.route}
       className={classNames(
-        routeMatch ? 'bg-tertiary text-white' : 'hover:textMid hover:bg-white',
+        routeMatch ? 'bg-tertiary text-white' : 'hover:text-black hover:bg-white',
         'group flex items-center rounded-md px-2 py-2 my-2 mx-1 text-sm font-medium text-white'
       )}
     >
