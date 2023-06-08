@@ -7,6 +7,7 @@ interface UiTableProps {
   urlRow?: any;
   sendRow?: any;
   deleteRow?: any;
+  searchInput?: any;
 }
 
 interface Iprop {

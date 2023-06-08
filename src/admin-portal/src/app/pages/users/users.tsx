@@ -19,12 +19,8 @@ export function Users() {
     ) {
       return [
         {
-          name: 'All Users',
-          href: '/users/application',
-        },
-        {
-          name: 'Application Users',
-          href: '/users/application',
+          name: 'All Roles',
+          href: '/users/roles',
         },
         {
           name: 'Clinics',
@@ -46,16 +42,16 @@ export function Users() {
           name: 'Children',
           href: '/users/infant',
         },
+        {
+          name: 'Administrators',
+          href: '/users/application',
+        },
       ];
     } else {
       return [
         {
-          name: 'All Users',
-          href: '/users/',
-        },
-        {
-          name: 'Application Users',
-          href: '/users/application',
+          name: 'All Roles',
+          href: '/users/roles',
         },
         {
           name: 'Franchisors',
@@ -72,6 +68,10 @@ export function Users() {
         {
           name: 'Children',
           href: '/users/children',
+        },
+        {
+          name: 'Administrators',
+          href: '/users/application',
         },
       ];
     }

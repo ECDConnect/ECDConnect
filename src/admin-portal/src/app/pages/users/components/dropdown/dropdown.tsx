@@ -1,12 +1,15 @@
 import { useState, Fragment, useEffect, useMemo, useCallback } from 'react';
 import * as styles from './dropdown.styles';
 import { Menu, Transition } from '@headlessui/react';
-import { Typography } from '../typography/typography';
 import { DropDownFillType, DropDownOption } from './models/DropDownOption';
-import { renderIcon } from '../../utils';
-import { Colours, ComponentBaseProps } from '../../models';
-import { classNames } from '../../utils/style-class.utils';
 import { CheckCircleIcon } from '@heroicons/react/solid';
+import {
+  renderIcon,
+  Colours,
+  ComponentBaseProps,
+  Typography,
+  classNames,
+} from '@ecdlink/ui';
 
 export interface DropdownProps<T> extends ComponentBaseProps {
   placeholder?: string;
@@ -87,28 +90,10 @@ export function Dropdown<T>({
           onBlur={onToggleMenu}
           disabled={disabled}
         />
-        {renderIcon(
-          !isOpenMenu ? 'ChevronDownIcon' : 'ChevronUpIcon',
-          classNames(
-            styles.getDropDownIcon(
-              fillType,
-              touched ? 'textDark' : 'textLight'
-            ),
-            'absolute top-3 right-0'
-          )
-        )}
+     
       </div>
     ),
-    [
-      search,
-      selectedItem?.label,
-      placeholder,
-      fillType,
-      fillColor,
-      disabled,
-      isOpenMenu,
-      touched,
-    ]
+    [search, selectedItem.label, placeholder, fillType, fillColor, disabled]
   );
 
   const renderMenuButton = useCallback(
@@ -188,7 +173,7 @@ export function Dropdown<T>({
                               }`}
                             >
                               <CheckCircleIcon
-                                className={`h-14 w-14 cursor-pointer text-${
+                                className={`h-22 w-22 cursor-pointer text-${
                                   item.value === selectedItem?.value
                                     ? 'blue-accent3'
                                     : 'primaryAccent2'

@@ -68,8 +68,8 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
-      <Route path={`/roles`} component={Roles}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
+      <Route path={`/roles`} component={Roles}></Route>
 
     </Switch>
   );
@@ -89,6 +89,7 @@ const SettingsRoutes: React.FC = () => {
 const UserRoutes: React.FC = () => {
   return (
     <Switch>
+      <Route path={`/users/roles`} component={Roles}></Route>
       <Route path={`/users/application`} component={ApplicationUsers}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
