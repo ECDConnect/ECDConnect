@@ -22,7 +22,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         private readonly UserManager<ApplicationUser> _userManager;
 
         public SecurityNotificationManager(
-            INotificationProviderFactory<ApplicationUser> notificationProviderFactory, 
+            INotificationProviderFactory<ApplicationUser> notificationProviderFactory,
             ISystemSetting<SecurityNotificationOptions> optionAccessor,
             UserManager<ApplicationUser> userManager)
         {
@@ -34,7 +34,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
         public async Task SendAuthenticationCodeAsync(ApplicationUser user, string otp)
         {
             var provider = _notificationProviderFactory.Create(user);
-            
+
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
 
             await provider.SetMessageTemplate(TemplateTypeEnum.AuthCode)
@@ -69,7 +69,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
 
             var encodedToken = TokenHelper.EncodeToken(token);
             var defaultVerificationUrl = new Uri(hostUrl, "/api/authentication/" + TemplateTypeConstants.VerifyEmailAddress.ToString()).ToString();
-            var verificationUrl = $"{_options?.Value?.VerifyEmailUrl ?? defaultVerificationUrl }";
+            var verificationUrl = $"{_options?.Value?.VerifyEmailUrl ?? defaultVerificationUrl}";
             var verifyEmailCallback = $"{verificationUrl}?username={user.UserName}&token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
@@ -101,6 +101,17 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
+
+            var userRoles = await _userManager.GetRolesAsync(user);
+            if (userRoles.Contains("admin"))
+            {
+                await notificationProvider
+                    .SetMessageTemplate(TemplateTypeEnum.AdminPasswordChangedByOtherAdmin)
+                    .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+                    .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+                    .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+                    .SendMessageAsync();
+            }
         }
 
         public async Task SendPasswordChangedByAdminMessageAsync(ApplicationUser user, string nameOfAdminUserWhoMadeChange)
@@ -116,6 +127,21 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.AdminUserFullName, nameOfAdminUserWhoMadeChange ?? "an Administrator")
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+        public async Task SendAdminPasswordChangedMessageAsync(ApplicationUser user)
+        {
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string affectedUserFullName = user.FullName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.AdminPasswordChanged)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.AffectedUserFullName, affectedUserFullName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
               .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
               .SendMessageAsync();
         }
