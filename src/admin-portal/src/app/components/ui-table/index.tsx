@@ -1,5 +1,6 @@
 import { classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
+import debounce from 'lodash.debounce';
 import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
@@ -13,7 +14,7 @@ export default function UiTable({
   editRow,
   deleteRow,
   viewRow,
-  searchInput
+  searchInput,
 }: UiTableProps) {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -37,11 +38,9 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
-    setSearchValue(searchInput)
+    setSearchValue(searchInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [searchInput]);
-
-
 
   const getSearchResults = () => {
     if (!searchValue) {
@@ -51,9 +50,11 @@ export default function UiTable({
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
+  const handleRowSelect = (row: any) => {
+    console.log(row);
+  };
   const makeColumns = (cols: any[] = []) => {
-    cols.push({ field: '_action', use: ' ' });
-    return [...columns, ...cols];
+    return [{ field: '_select', use: ' ' }, ...columns, ...cols];
   };
 
   const makeRows = () => {
@@ -63,58 +64,18 @@ export default function UiTable({
 
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
+      row._select = (
+        <div className="flex justify-start">
+          <input
+            type="checkbox"
+            className="form-checkbox text-primary h-5 w-5"
+            onChange={() => handleRowSelect(row)}
+          />
+        </div>
+      );
       row._action = (
         <div className="flex justify-center">
-          {viewRow && (
-            <Icon
-              key={`viewRow_${rowKey}`}
-              icon="SearchIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => viewRow(row)}
-            />
-          )}
-          {editRow && (
-            <Icon
-              key={`editRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => editRow(row)}
-            />
-          )}
-          {urlRow && (
-            <Icon
-              key={`urlRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => urlRow(row)}
-            />
-          )}
-          {sendRow && (
-            <Icon
-              key={`sendRow${rowKey}`}
-              icon="MailIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
-              onClick={() => sendRow(row)}
-            />
-          )}
-          {deleteRow && (
-            <Icon
-              key={`deleteRow${rowKey}`}
-              icon="TrashIcon"
-              className="ml-2 text-gray-400 cursor-pointer"
-              height="20px"
-              color="transparent"
-              onClick={() => deleteRow(row)}
-            />
-          )}
+          {/* Your other action icons here */}
         </div>
       );
       ++rowKey;
@@ -144,18 +105,18 @@ export default function UiTable({
 
     if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="flex ml-5">
+        <div className="ml-5 flex">
           {display_value ? (
             <Icon
               icon="CheckCircleIcon"
-              className="ml-1 text-successMain"
+              className="text-successMain ml-1"
               height="20px"
               color="transparent"
             />
           ) : (
             <Icon
               icon="XCircleIcon"
-              className="ml-1 text-errorMain"
+              className="text-errorMain ml-1"
               height="20px"
               color="transparent"
             />
@@ -168,12 +129,12 @@ export default function UiTable({
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-4 flex items-center flex-row flex-wrap">
+        <div className="ml-4 flex flex-row flex-wrap items-center">
           {display_value &&
             display_value.map((item) => (
               <div
                 key={item.id}
-                className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white"
+                className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white"
               >
                 {item[column.displayProperty]}
               </div>
@@ -184,7 +145,7 @@ export default function UiTable({
       rowValue = (
         <span
           className={classNames(
-            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white',
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white',
             display_value && display_value[0].statusColor
           )}
         >
@@ -203,8 +164,7 @@ export default function UiTable({
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-lg shadow-lg table-top">
-     
+    <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       <Table
         key={`table-${lastUpdate}`}
         row_render={renderFormat}
@@ -220,7 +180,7 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-gray-900 border-b-2 border-gray-100`,
+            table_row: 'text-red-900 bg-red-200 border-b-8 border-gray-100',
             table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
           },
           table_body: {

@@ -9743,7 +9743,7 @@ export type UserHierarchyEntityInput = {
 export type UserModelInput = {
   contactPreference?: InputMaybe<Scalars['String']>;
   dateOfBirth?: Scalars['DateTime'];
-  email: InputMaybe<Scalars['String']>;
+  email?: InputMaybe<Scalars['String']>;
   emergencyContactFirstName?: InputMaybe<Scalars['String']>;
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
@@ -9760,7 +9760,7 @@ export type UserModelInput = {
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
   raceId?: InputMaybe<Scalars['UUID']>;
-  surname: InputMaybe<Scalars['String']>;
+  surname?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs?: Scalars['Boolean'];
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };

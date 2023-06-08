@@ -46,7 +46,6 @@ export default function ApplicationUsers() {
     }
   }, [data]);
 
-
   useEffect(() => {
     if (!data?.users) return;
 
@@ -62,7 +61,7 @@ export default function ApplicationUsers() {
     setTableData(
       allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
     );
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoleFilter]);
 
   const displayUserPanel = () => {
@@ -187,7 +186,9 @@ export default function ApplicationUsers() {
             <div className="text-body w-6/12 sm:flex  sm:justify-around">
               <div className="relative w-full">
                 <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                  <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                  {searchValue === '' && (
+                    <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                  )}
                 </span>
                 <input
                   className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
@@ -232,15 +233,17 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'idNumber', use: 'id / Passport' },
+                    { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'name' },
-                    { field: 'isActive', use: 'Active' },
                     {
                       field: 'roles',
-                      use: 'roles',
+                      use: 'admin type',
                       type: 'array',
                       displayProperty: 'name',
                     },
+                    { field: 'date', use: 'Date Invited' },
+
+                    { field: 'isActive', use: 'Active' },
                   ]}
                   rows={tableData}
                   editRow={

@@ -4,9 +4,10 @@ import {
   LocalStorageKeys,
   ResetPasswordRequestModel,
   resetSchema,
+  SimpleUserModel,
   useTheme,
 } from '@ecdlink/core';
-import { Button, Typography } from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -20,26 +21,53 @@ export default function ForgotPassword() {
   const { theme } = useTheme();
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { forgotPassword } = useAuth();
+  const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
 
-  const { register, getValues, formState, watch } = useForm({
+  const { register, getValues, formState } = useForm({
     resolver: yupResolver(resetSchema),
     defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
 
-  //check password strength
-  const email = watch('email');
   const formValues = getValues();
 
   const { errors, isValid } = formState;
 
-  console.log(isValid);
+  const requestResetPasword = async () => {
+    if (isValid) {
+      console.log(Config.authApi);
+
+      setIsLoading(true);
+      const body: SimpleUserModel = {
+        username: formValues.email,
+      };
+      const isLinkSent = await forgotPassword(body, Config.authApi);
+
+      if (isLinkSent) {
+        setIsLoading(false);
+        history.push('/reset');
+      } else {
+        setIsLoading(false);
+        setDisplayError(true);
+      }
+
+      setTimeout(() => {
+        setDisplayError(false);
+      }, 5000);
+    }
+  };
+
   const resetPassword = async () => {
     if (isValid) {
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
+      requestResetPasword();
+    } else if (isValid && resetLinkSent) {
+      setIsLoading(!isLoading);
+      requestResetPasword();
     }
   };
 
@@ -78,7 +106,6 @@ export default function ForgotPassword() {
                 <Button
                   className={'mt-3 w-full rounded-xl'}
                   type="filled"
-                  isLoading={resetLinkSent}
                   color="secondary"
                   onClick={resetPassword}
                 >
@@ -105,6 +132,13 @@ export default function ForgotPassword() {
                   ></Typography>
                 </Button>
               </div>
+              {displayError && (
+                <Alert
+                  className={'mt-5 mb-3'}
+                  message={'Reset password link not sent!. Please try again'}
+                  type={'error'}
+                />
+              )}
             </div>
           </div>
         </div>

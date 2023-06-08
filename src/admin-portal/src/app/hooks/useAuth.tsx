@@ -14,8 +14,9 @@ import {
   LocalStorageKeys,
   LoginRequestModel,
   RegisterRequestModel,
+  SimpleUserModel,
 } from '@ecdlink/core';
-import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
+import { AuthenticateUser, RefreshJwtToken, UserForgotPassword } from '../services/auth.service';
 
 export interface AuthContextType {
   authenticatedUser?: AuthUser;
@@ -25,6 +26,12 @@ export interface AuthContextType {
     baseEndPoint: string
   ) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
+
+  forgotPassword: (
+    body: SimpleUserModel,
+    baseEndPoint: string
+  ) => Promise<boolean>;
+
   logout: () => void;
   getAccessTokenPromise: () => Promise<any>;
 }
@@ -69,12 +76,33 @@ export function AuthProvider({
     }
   };
 
+  const forgotPassword = async (
+    body: SimpleUserModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await UserForgotPassword(body, baseEndPoint);
+      console.log('>>>>>', response);
+
+      if (response) {
+        localStorage.setItem(
+          LocalStorageKeys.user,
+          JSON.stringify(response)
+        );
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
   const registerUser = async (
     body: LoginRequestModel,
     baseEndPoint: string
   ): Promise<boolean> => {
     try {
-      console.log('>>>>>');
+
       const response = await AuthenticateUser(baseEndPoint, body);
 
       if (response.data) {
@@ -152,6 +180,7 @@ export function AuthProvider({
     () => ({
       authenticatedUser,
       login,
+      forgotPassword,
       logout,
       getAccessTokenPromise,
     }),

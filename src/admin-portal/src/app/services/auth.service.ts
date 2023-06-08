@@ -24,9 +24,9 @@ export async function RefreshJwtToken(
   return await api(baseEndPoint).get(`${APIs.refreshJwtToken}/${currentToken}`);
 }
 
-export async function ForgotPasswordRequest(
+export async function UserForgotPassword(
+  body: SimpleUserModel,
   baseEndPoint: string,
-  body: SimpleUserModel
 ) {
   return await api(baseEndPoint).post(
     APIs.forgotPassword,

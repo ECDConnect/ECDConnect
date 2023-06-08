@@ -53,11 +53,13 @@ td.truncate {
 .page-numbers,
 .table-footer .w-7.h-7.flex.flex-grow {
   max-width: 32px !important;
-  width: 32px !important;
-  height: 32px;
+  width: 30px !important;
+  height: 30px;
   line-height: 20px !important;
-  padding: 8px 16px !important;
+  padding:18px !important;
   justify-content: space-around !important;
+  border-radius: 50%;
+  background-color: aqua !important;
 }
 
 .page-numbers.white.text-white {
@@ -137,4 +139,8 @@ td.truncate {
 [type='password'],
 select {
   border-color: transparent;
+}
+
+thead{
+  background-color: red !important;
 }
