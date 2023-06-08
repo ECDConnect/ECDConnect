@@ -9737,8 +9737,8 @@ export type UserHierarchyEntityInput = {
 
 export type UserModelInput = {
   contactPreference?: InputMaybe<Scalars['String']>;
-  dateOfBirth: Scalars['DateTime'];
-  email?: InputMaybe<Scalars['String']>;
+  dateOfBirth?: Scalars['DateTime'];
+  email: InputMaybe<Scalars['String']>;
   emergencyContactFirstName?: InputMaybe<Scalars['String']>;
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
   emergencyContactSurname?: InputMaybe<Scalars['String']>;
@@ -9746,7 +9746,7 @@ export type UserModelInput = {
   genderId?: InputMaybe<Scalars['UUID']>;
   id?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
-  isSouthAfricanCitizen: Scalars['Boolean'];
+  isSouthAfricanCitizen?: Scalars['Boolean'];
   languageId?: InputMaybe<Scalars['UUID']>;
   nextOfKinContactNumber?: InputMaybe<Scalars['String']>;
   nextOfKinFirstName?: InputMaybe<Scalars['String']>;
@@ -9755,8 +9755,8 @@ export type UserModelInput = {
   phoneNumber?: InputMaybe<Scalars['String']>;
   profileImageUrl?: InputMaybe<Scalars['String']>;
   raceId?: InputMaybe<Scalars['UUID']>;
-  surname?: InputMaybe<Scalars['String']>;
-  verifiedByHomeAffairs: Scalars['Boolean'];
+  surname: InputMaybe<Scalars['String']>;
+  verifiedByHomeAffairs?: Scalars['Boolean'];
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 
