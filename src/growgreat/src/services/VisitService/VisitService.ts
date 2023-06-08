@@ -229,6 +229,7 @@ class Visit {
           previousVisitInformationForInfant(visitId: $visitId) {
             score
             scoreColor
+            scoreComment
             growComment
             growCommentColor
             weight
@@ -385,6 +386,7 @@ class Visit {
         previousVisitInformationForMother(visitId: $visitId) {
           score
           scoreColor
+          scoreComment
           growComment
           growCommentColor
           weight

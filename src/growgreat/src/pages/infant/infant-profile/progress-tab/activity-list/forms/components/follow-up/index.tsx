@@ -55,6 +55,7 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
+import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -112,6 +113,31 @@ export const FollowUp = ({
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
 
+  const allVisits = useSelector(getInfantVisitsSelector);
+  const getCurrentVisit = () => {
+    // grab visit id from url and set current visit
+    if (visitId) {
+      for (var i = 0; i < allVisits.length; i++) {
+        if (allVisits[i].id === visitId) {
+          return allVisits[i];
+        }
+      }
+    } else {
+      // grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    }
+  };
+  const currentVisit = getCurrentVisit();
+
+  console.log('currentVisit', currentVisit);
+
   useEffect(() => {
     if (isPrint) {
       setShowPrintData(true);
@@ -140,13 +166,13 @@ export const FollowUp = ({
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
   // Get Printing data
   useLayoutEffect(() => {
-    if (!!visit)
+    if (!!currentVisit)
       appDispatch(
         visitThunkActions.GetInfantSummaryByPriority({
-          visitId: visit?.id || '',
+          visitId: currentVisit?.id || '',
         })
       );
-  }, [appDispatch, previousVisit, visit, visit?.id]);
+  }, [appDispatch, currentVisit]);
 
   const getColorAndIcon = useCallback(
     (
@@ -297,7 +323,11 @@ export const FollowUp = ({
     return groupedData;
   }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
 
-  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+  if (
+    !previousVisit?.visitDataStatus?.length &&
+    previousVisit?.scoreComment === 'No data available for visit' &&
+    !walkthroughData
+  ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />

@@ -36,8 +36,9 @@ import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
 import {
-  getMotherCurrentVisitSelector,
+  // getMotherCurrentVisitSelector,
   getMotherLastVisitSelector,
+  getMotherVisits,
 } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
@@ -46,6 +47,7 @@ import {
   activitiesSectionTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
+import { useLocation } from 'react-router';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -89,6 +91,7 @@ export const FollowUp = ({
   const appDispatch = useAppDispatch();
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (isPrint) {
@@ -105,13 +108,50 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
+  // this provides the status of previous visit
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
 
+  // getting all visits for a client
+  const allVisits = useSelector(getMotherVisits);
+  // this will be available when you are busy completing a questionnaire
+  const [, , , , , visitId] = location.pathname.split('/');
+
+  const getCurrentVisit = () => {
+    // grab visit id from url and set current visit
+    if (visitId) {
+      for (var i = 0; i < allVisits.length; i++) {
+        if (allVisits[i].id === visitId) {
+          return allVisits[i];
+        }
+      }
+    } else {
+      // grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    }
+  };
+
   const previousVisitToSort = Object.assign({}, previousVisit);
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const currentVisit = getCurrentVisit();
   const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  // if the previousVisit is null, lets fetch the latest
+  if (!previousVisit && currentVisit) {
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForMother({
+        visitId: currentVisit.id,
+      })
+    );
+  }
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -264,13 +304,16 @@ export const FollowUp = ({
       },
       {}
     );
-
     return groupedData;
   }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
     | Status
     | undefined;
 
-  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+  if (
+    !previousVisit?.visitDataStatus?.length &&
+    previousVisit?.scoreComment === 'No data available for visit' &&
+    !walkthroughData
+  ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
@@ -319,6 +362,7 @@ export const FollowUp = ({
           />
         </div>
       </div>
+
       <Divider dividerType="dashed" className="my-8" />
       <Typography
         className="mb-8"

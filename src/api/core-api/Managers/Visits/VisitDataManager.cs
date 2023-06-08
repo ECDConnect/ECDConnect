@@ -118,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed when all 5 questionnaires are completed
+            // update the visit record to show attended when follow up is done
             int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
             if (count != 0)
             {
