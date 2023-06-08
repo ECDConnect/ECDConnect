@@ -166,6 +166,49 @@ export const getReportingPeriod = (
   };
 };
 
+export const getReportingPeriodDateInReportDate = (date: Date) => {
+  const year = getYear(date);
+  if (
+    new Date(year, 5, 1).getTime() <= date.getTime() &&
+    date.getTime() <= new Date(year, 6, 31).getTime()
+  ) {
+    return {
+      monthName: 'June',
+      year,
+      reportingDate: new Date(year, 5, 1),
+    };
+  }
+  if (
+    new Date(year, 10, 1).getTime() <= date.getTime() &&
+    date.getTime() <= new Date(year, 11, 20).getTime()
+  ) {
+    return {
+      monthName: 'November',
+      year,
+      reportingDate: new Date(year, 10, 1),
+    };
+  }
+};
+
+export const getReportingPeriodForProfileUsePhotoInReport = (date: Date) => {
+  const year = getYear(date);
+  if (
+    new Date(year, 7, 1).getTime() <= date.getTime() &&
+    date.getTime() <= new Date(year, 11, 20).getTime()
+  ) {
+    return {
+      monthName: 'November',
+      year,
+      reportingDate: new Date(year, 5, 1),
+    };
+  }
+  return {
+    monthName: 'June',
+    year,
+    reportingDate: new Date(year, 10, 1),
+  };
+};
+
 export const isMatchingReportingPeriods = (dateLeft: Date, dateRight: Date) => {
   const periodLeft = getReportingPeriod(dateLeft);
   const periodRight = getReportingPeriod(dateRight);

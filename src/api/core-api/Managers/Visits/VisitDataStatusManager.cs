@@ -741,11 +741,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_no) {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + Constants.GGSettings.was_coping;
-                    AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
                     comment = Constants.GGSettings.coping_well;
-                    AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _G9, q3.VisitSection, true);
                 }
             }
             return true;
@@ -849,7 +849,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -1100,7 +1100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } 
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
-                comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
+                comment = Constants.GGSettings.mixed_feeding + " " + listFoods;
                 AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: amber - ""Try to make sure you give Themba only breast milk or only formula milk""
@@ -1209,6 +1209,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
             newVisit.LinkedVisitId = new Guid(_visitId);
+            newVisit.ActualVisitDate = DateTime.Now; 
             _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
@@ -1513,6 +1514,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var totalAmber = 0;
             var fScore = 0;
             var scoreColor = "";
+
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
@@ -1521,6 +1523,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
+
+            if (visitDataStatus.Count == 0)
+            {
+                VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).FirstOrDefault();
+                result.ScoreComment = record == null ? "No data available for visit" : "Data available, but no client progress flags available";
+            }
 
             VisitDataStatus growthStatus;
             growthStatus = (
@@ -1544,7 +1552,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else if (fScore >= 51 && fScore <= 80)
             {
                 scoreColor = _amber;
-            } else if (fScore < 51)
+            } else if (fScore > 0 && fScore < 51)
             {
                 scoreColor = _red;
             }
@@ -1558,13 +1566,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Weight = weightData?.VisitData.QuestionAnswer;
+            result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
             var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Length = lengthData?.VisitData.QuestionAnswer;
+            result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 

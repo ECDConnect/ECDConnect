@@ -10,5 +10,11 @@
         public const string ChildClinicCard = "ChildClinicCard";//child-clinic-card
         public const string ChildBirthCertificate = "ChildBirthCertificate";//child-birth-certificate
 
+        public const string IdentityDocument = "IdentityDocument";
+        public const string StartupSupportAgreement = "StartupSupportAgreement";
+        public const string ProofOfAccount = "ProofOfAccount";
+        public const string ProofOfSiteAddress = "ProofOfSiteAddress";
+        public const string PractitionerAgreement = "PractitionerAgreement";
+
     }
 }

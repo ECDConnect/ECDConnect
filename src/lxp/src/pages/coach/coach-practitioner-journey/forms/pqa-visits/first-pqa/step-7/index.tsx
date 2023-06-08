@@ -4,6 +4,9 @@ import { useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
 
+export const step7VisitSection = 'Step 7';
+export const step7TotalScore = 10;
+
 export const Step7 = ({
   setSectionQuestions,
   setEnableButton,
@@ -30,7 +33,6 @@ export const Step7 = ({
       answer: '',
     },
   ]);
-  const visitSection = 'Step 7';
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -51,7 +53,7 @@ export const Step7 = ({
     setAnswers(updatedQuestions);
     setSectionQuestions?.([
       {
-        visitSection,
+        visitSection: step7VisitSection,
         questions: updatedQuestions,
       },
     ]);
@@ -77,7 +79,7 @@ export const Step7 = ({
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
         <>
-          <Typography type="h4" text={`4.${index + 1} ${question.question}`} />
+          <Typography type="h4" text={`5.${index + 1} ${question.question}`} />
           <fieldset className="flex flex-col gap-2">
             {options[`question${String(index + 1)}`]?.map((item) => (
               <Radio
@@ -92,7 +94,7 @@ export const Step7 = ({
           </fieldset>
         </>
       ))}
-      <Score questions={questions} total={10} />
+      <Score questions={questions} total={step7TotalScore} />
     </div>
   );
 };

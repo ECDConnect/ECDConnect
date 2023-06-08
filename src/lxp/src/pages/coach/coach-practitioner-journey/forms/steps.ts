@@ -17,11 +17,16 @@ import {
   Step9,
   Step10,
   Step11,
-  Step12FromYes,
+  Step12,
   Step13,
   Step14,
   Step15,
+  Step16,
+  Step17,
+  Step18,
+  Step19,
 } from './pqa-visits/first-pqa';
+import { Step1Delicensing, Step2Delicensing } from './delicensing';
 
 export const prePqaVisits = [
   ProgrammeDetails,
@@ -34,8 +39,10 @@ export const generalSupportVisit = [CoachingAndVisitOrCallStep];
 
 export const getFirstPqaSteps = ({
   isStep11AnswerTrue,
+  isToRemoveSmartStarter,
 }: {
   isStep11AnswerTrue: boolean;
+  isToRemoveSmartStarter: boolean;
 }) => [
   Step1,
   Step2,
@@ -48,6 +55,11 @@ export const getFirstPqaSteps = ({
   Step9,
   Step10,
   Step11,
-  ...(isStep11AnswerTrue ? [Step12FromYes, Step13, Step14] : []),
+  ...(isStep11AnswerTrue ? [Step12, Step13, Step14] : []),
   Step15,
+  Step16,
+  Step17,
+  // ...(isToRemoveSmartStarter ? [] : [Step18, Step19]),
 ];
+
+export const delicensingSteps = [Step1Delicensing, Step2Delicensing];

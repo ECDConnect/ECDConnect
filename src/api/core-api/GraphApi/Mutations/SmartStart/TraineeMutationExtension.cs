@@ -1,13 +1,10 @@
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
-using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
-using Microsoft.AspNetCore.Http;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -20,7 +17,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             return personnelService.ScheduleConsolidationMeetingDate(userId, scheduledDate);
         }
-        
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Trainee UpdateCommunitySupport([Service] PersonnelService personnelService, string userId, bool? haveCommunitySupport)
+        {
+            return personnelService.UpdateCommunitySupport(userId, haveCommunitySupport);
+        }
 
     }
 }

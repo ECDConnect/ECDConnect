@@ -1,7 +1,8 @@
-import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import { LocalStorageKeys, UserDto, useDialog, useTheme } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
+  ActionModal,
   BannerWrapper,
   Dialog,
   DialogPosition,
@@ -9,7 +10,7 @@ import {
   StackedList,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
@@ -30,12 +31,18 @@ import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
 import { EditEmail } from './edit-email/edit-email';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { NextToKin } from './next-to-kin/next-to-kin';
 import { coachSelectors } from '@/store/coach';
+import { contentReportSelectors } from '@/store/content/report';
+import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
+  const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const {
@@ -68,13 +75,22 @@ export const PractitionerAbout: React.FC = () => {
   const coach = useSelector(coachSelectors?.getCoach);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
+  const reportingPeriod = useMemo(
+    () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
+    []
+  );
+  const hasCreatedReportForCurrentPeriod = useSelector(
+    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
+      reportingPeriod.reportingDate
+    )
+  );
 
   useEffect(() => {
     if (user) {
       setNewStackListItems(user);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, practitioner]);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -97,6 +113,159 @@ export const PractitionerAbout: React.FC = () => {
   });
 
   const { theme } = useTheme();
+
+  const handleUsingPhotoInReports = (using: boolean) => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          icon={'QuestionMarkIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={
+            using
+              ? `Your Funda App profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              : `Your Funda App profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+          }
+          detailText={
+            using
+              ? `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.
+
+            If you want to change your profile photo, tap the camera icon on your profile.`
+              : `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.`
+          }
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const updatePractitionerUsePhotoReportPermission = async (
+    usePhotoInReport: string
+  ) => {
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerUsePhotoInReport({
+        practitionerId: practitioner?.userId,
+        usePhotoInReport: usePhotoInReport,
+      })
+    );
+  };
+
+  const promptPhotoReportPermission = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          icon={'QuestionMarkCircleIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={`Would you like to include your profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+          actionButtons={[
+            {
+              text: 'Yes, include photo!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
+                );
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
+                );
+              },
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const getPhotoOnProgressReportItem = (): ActionListDataItem => {
+    var item: ActionListDataItem = {
+      title: `Photo on ${reportingPeriod.monthName} progress report`,
+      subTitle: '',
+      switchTextStyles: true,
+      actionName: '',
+      actionIcon: '',
+      buttonType: 'filled',
+      onActionClick: () => {},
+    };
+    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
+    const hasAnswered =
+      !!practitioner?.usePhotoInReport &&
+      practitioner?.usePhotoInReport.startsWith(prefix);
+    const answer = hasAnswered
+      ? practitioner?.usePhotoInReport?.endsWith('-yes')
+        ? 'yes'
+        : 'no'
+      : undefined;
+    if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
+        actionName: 'Add',
+        actionIcon: 'PlusIcon',
+        onActionClick: () => {
+          promptPhotoReportPermission();
+        },
+      };
+    }
+    if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle:
+          answer === 'yes'
+            ? `Photo added to ${reportingPeriod.monthName} report`
+            : `Photo not added to ${reportingPeriod.monthName} report`,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          promptPhotoReportPermission();
+        },
+      };
+    }
+    if (hasAnswered && hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle:
+          answer === 'yes'
+            ? `Photo added to ${reportingPeriod.monthName} report`
+            : `Photo not added to ${reportingPeriod.monthName} report`,
+        actionName: 'View',
+        actionIcon: 'EyeIcon',
+        onActionClick: () => {
+          handleUsingPhotoInReports(answer === 'yes');
+        },
+      };
+    }
+    return item;
+  };
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
@@ -160,6 +329,7 @@ export const PractitionerAbout: React.FC = () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
         },
       },
+      getPhotoOnProgressReportItem(),
     ];
 
     setListItems(list);

@@ -10,13 +10,16 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
 {
     public class ChildProgressReportTemplate
     {
-        public static Dictionary<string, PdfFieldDescriptor> GetFieldTemplate(ChildProgressReportDetailedModel model)
+        public static Dictionary<string, PdfFieldDescriptor> GetFieldTemplate(
+            ChildProgressReportDetailedModel model, 
+            DataAccessLayer.Entities.Users.Practitioner practitioner,
+            string currentProfileImageUrl)
         {
             var desc = new Dictionary<string, PdfFieldDescriptor>();
 
             AddCoverPage(desc, model);
             AddIntroPage(desc, model);
-            AddClosingPage(desc, model);
+            AddClosingPage(desc, model, practitioner, currentProfileImageUrl);
 
             AddHeadings(desc, model);
             AddSupplimentrySections(desc, model);
@@ -386,7 +389,11 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
             }
         }
 
-        private static void AddClosingPage(Dictionary<string, PdfFieldDescriptor> desc, ChildProgressReportDetailedModel model)
+        private static void AddClosingPage(Dictionary<string, PdfFieldDescriptor> desc, 
+            ChildProgressReportDetailedModel model, 
+            DataAccessLayer.Entities.Users.Practitioner practitioner,
+            string currentProfileImageUrl
+            )
         {
             desc.Add(ChildProgressReportTags.ClosingHeading, new PdfFieldDescriptor
             {
@@ -410,11 +417,12 @@ namespace ECDLink.SmartStart.Reports.ChildProgressReport
             });
 
 
+            var usePhotoInReport = practitioner != null && !string.IsNullOrEmpty(practitioner.UsePhotoInReport) && practitioner.UsePhotoInReport.EndsWith("-yes");
             desc.Add(ChildProgressReportTags.PractitionerPhoto, new PdfFieldDescriptor
             {
                 IsDuplicateKey = false,
                 Type = PdfFieldTypeEnum.Base64Image,
-                Value = model.PractitionerPhotoUrl
+                Value = usePhotoInReport ? (!string.IsNullOrEmpty(currentProfileImageUrl) ? currentProfileImageUrl : model.PractitionerPhotoUrl) : ""
             });
         }
 

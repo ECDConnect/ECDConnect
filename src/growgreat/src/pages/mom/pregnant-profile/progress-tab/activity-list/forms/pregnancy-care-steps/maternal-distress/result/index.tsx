@@ -13,7 +13,7 @@ import { DynamicFormProps } from '../../../dynamic-form';
 
 export const maternalDistressVisitSection = 'Maternal distress screening';
 
-export const MidUpperArmCircumferenceResultStep = ({
+export const MaternalDistressScreenStep = ({
   mother,
   sectionQuestions,
   setEnableButton,

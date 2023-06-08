@@ -89,7 +89,7 @@ export const ChildrenPerAgeGroup: React.FC<ChildrenPerAgeGroupProps> = ({
                 {ageGroup2}
               </div>
               <Typography
-                text={'18 mths - 3 years'}
+                text={'18 mths - 2 years'}
                 type="body"
                 className="mb-4"
               />

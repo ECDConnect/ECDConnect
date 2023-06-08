@@ -16,7 +16,7 @@ namespace ECDLink.Core.Extensions
 
         public static IEnumerable<DateTime> DaysBetween(this DateTime start, DateTime dateTo)
         {
-            return Enumerable.Range(0, dateTo.Subtract(start).Days)
+            return Enumerable.Range(0, dateTo.AddDays(1).Subtract(start).Days)
                            .Select(d => start.AddDays(d));
         }
 

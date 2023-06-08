@@ -21,6 +21,7 @@ export type Message = {
     | 'child-registration'
     | 'programme-planning'
     | 'progress-report';
+  expiryDate?: string;
 };
 
 export type MessageRouteConfig = {

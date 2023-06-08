@@ -118,7 +118,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
             }
 
-            // update the visit record to show attended/completed when all 5 questionnaires are completed
+            // update the visit record to show attended when follow up is done
             int count = _visitDataRepo.GetAll().Where(x => x.VisitId == Guid.Parse(input.VisitId) && x.VisitName == Constants.GGSettings.visit_follow_up).Select(y => y.VisitName).Distinct().Count();
             if (count != 0)
             {
@@ -362,21 +362,35 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return status;
         }
-        public PQARating GetPractitionerPQARating(string userId, string pqa_visit_type)
+        public PQARating GetPractitionerPQARating(string userId, string visit_type = "")
         {
             int totalSections = Constants.SSSettings.step2_total + Constants.SSSettings.step3_total + Constants.SSSettings.step4_total + Constants.SSSettings.step5_total +
                                 Constants.SSSettings.step6_total + Constants.SSSettings.step7_total + Constants.SSSettings.step8_total;
             var totalScores = 0;
-
             var rating = new PQARating();
+            Visit PQAVisit = new Visit();
 
-            Visit PQAVisit =
-            (
-                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == pqa_visit_type) on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).FirstOrDefault();
-
+            if (visit_type == "")
+            {
+                PQAVisit =
+                    (
+                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
+                                                                        (y.Name == Constants.SSSettings.visitType_pqa_visit_1 ||
+                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_2 ||
+                                                                         y.Name == Constants.SSSettings.visitType_pqa_visit_3)) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
+            } else
+            {
+                PQAVisit =
+                    (
+                        from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
+                                                                        (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
+                        select visit
+                    ).FirstOrDefault();
+            }
 
             List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == PQAVisit.Id).ToList();
 
@@ -539,7 +553,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return rating;
         }
-        public PQARating GetPractitionerReAccreditationRating(string userId, string pqa_visit_type) {
+        public PQARating GetPractitionerReAccreditationRating(string userId, string visit_type = "") {
 
             PQARating rating = new PQARating();
 
@@ -547,12 +561,31 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                 Constants.SSSettings.re_accreditation_C_total + Constants.SSSettings.re_accreditation_D_total;
             var totalScores = 0;
 
-            Visit RAVisit =
-            (
-                from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
-                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == pqa_visit_type) on visit.VisitTypeId equals visitType.Id
-                select visit
-            ).FirstOrDefault();
+            Visit RAVisit = new Visit();
+
+            if (visit_type == "")
+            {
+                RAVisit =
+                (
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && 
+                                                                    (y.Name == Constants.SSSettings.visitType_re_accreditation_1 ||
+                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_2 ||
+                                                                     y.Name == Constants.SSSettings.visitType_re_accreditation_3)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
+
+            } else
+            {
+                RAVisit =
+                (
+                    from visit in _visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId)
+                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) &&
+                                                                    (y.Name == visit_type)) on visit.VisitTypeId equals visitType.Id
+                    select visit
+                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
+            }
+
 
             List<VisitData> vData = _visitDataRepo.GetAll().Where(y => y.VisitId == RAVisit.Id).ToList();
 

@@ -4,7 +4,7 @@ using ECDLink.Security.Attributes;
 using System;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities
+namespace ECDLink.DataAccessLayer.Entities.Clubs
 {
     [Table(nameof(Club))]
     [EntityPermission(PermissionGroups.GENERAL)]
@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities
         where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
+        public int NumberOfMembers { get; set; }
     }
 
     public interface ClubJoin<TKey>

@@ -1,17 +1,14 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
 import { FollowUp } from '../../components/follow-up';
-import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useSelector } from 'react-redux';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 
 export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
@@ -27,25 +24,31 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     'visits',
     VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_MOTHER
   );
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+  //const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  // const previousCurrentVisit = usePrevious(currentVisit) as
+  //   | VisitDto
+  //   | undefined;
   const [isPrint, setIsPrint] = useState(false);
 
-  useLayoutEffect(() => {
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForMother({
-          visitId: currentVisit?.id,
-        })
-      );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+  // useLayoutEffect(() => {
+  //   if (
+  //     (!previousCurrentVisit ||
+  //       (!!previousCurrentVisit &&
+  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
+  //     !!currentVisit
+  //   )
+  //     appDispatch(
+  //       visitThunkActions.getPreviousVisitInformationForMother({
+  //         visitId: currentVisit?.id,
+  //       })
+  //     );
+  // }, [
+  //   appDispatch,
+  //   currentVisit,
+  //   currentVisit?.id,
+  //   mother?.id,
+  //   previousCurrentVisit,
+  // ]);
 
   useEffect(() => {
     setEnableButton?.(true);
@@ -107,7 +110,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
         icon="ChartBarIcon"
         iconHexBackgroundColor={activitiesColours.other.primaryColor}
         title="Progress"
-        subTitle={`${caregiverName} & ${name}`}
+        subTitle={`${name}`}
       />
       <div className="p-4">
         <TipCard
@@ -119,7 +122,7 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
           onClick={onShare}
         />
         <div>
-          <FollowUp mother={mother || {}} isPrint={isPrint} />
+          <FollowUp mother={mother || {}} isPrint={isPrint} isVisit={true} />
         </div>
       </div>
     </div>

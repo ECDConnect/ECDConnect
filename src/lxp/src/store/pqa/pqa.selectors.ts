@@ -26,6 +26,17 @@ export const getPrePqaFormDataByIdSelector = (userId: string) => {
   );
 };
 
+export const getPqaFormDataByIdSelector = (userId: string) => {
+  return createSelector(
+    (state: RootState) => state.pqa.pqaFormData,
+    (items: FormData[] | undefined) => {
+      return items
+        ?.filter((item) => item.practitionerId === userId)
+        .map((item) => item.formData);
+    }
+  );
+};
+
 export const getCurrentCoachPractitionerVisitByUserId = (
   currentVisitDescription: string,
   userId: string

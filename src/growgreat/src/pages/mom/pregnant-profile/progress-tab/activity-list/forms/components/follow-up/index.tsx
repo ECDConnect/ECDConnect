@@ -11,12 +11,10 @@ import {
 } from '@/store/visit/visit.selectors';
 import {
   MotherDto,
-  VisitDto,
   captureAndDownloadComponent,
   getStringFromClassNameOrId,
   getWeeksDiff,
   toCamelCase,
-  usePrevious,
 } from '@ecdlink/core';
 import {
   useCallback,
@@ -37,7 +35,11 @@ import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import {
+  // getMotherCurrentVisitSelector,
+  getMotherLastVisitSelector,
+  getMotherVisits,
+} from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -45,6 +47,7 @@ import {
   activitiesSectionTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
+import { useLocation } from 'react-router';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -66,6 +69,7 @@ interface FollowUpComponentProps {
   mother: MotherDto;
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: boolean;
+  isVisit: boolean;
 }
 
 interface Status {
@@ -81,11 +85,13 @@ export const FollowUp = ({
   mother,
   walkthroughData,
   isPrint,
+  isVisit,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (isPrint) {
@@ -102,13 +108,50 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
+  // this provides the status of previous visit
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+
+  // getting all visits for a client
+  const allVisits = useSelector(getMotherVisits);
+  // this will be available when you are busy completing a questionnaire
+  const [, , , , , visitId] = location.pathname.split('/');
+
+  const getCurrentVisit = () => {
+    // grab visit id from url and set current visit
+    if (visitId) {
+      for (var i = 0; i < allVisits.length; i++) {
+        if (allVisits[i].id === visitId) {
+          return allVisits[i];
+        }
+      }
+    } else {
+      // grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    }
+  };
+
+  const previousVisitToSort = Object.assign({}, previousVisit);
+  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const currentVisit = getCurrentVisit();
+  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  // if the previousVisit is null, lets fetch the latest
+  if (!previousVisit && currentVisit) {
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForMother({
+        visitId: currentVisit.id,
+      })
+    );
+  }
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -126,12 +169,38 @@ export const FollowUp = ({
           previousCurrentVisit?.id !== currentVisit?.id)) &&
       !!currentVisit
     )
-      appDispatch(
-        visitThunkActions.GetMotherSummaryByPriority({
-          visitId: currentVisit?.id,
-        })
-      );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+      if (isVisit) {
+        appDispatch(
+          visitThunkActions.GetMotherSummaryByPriority({
+            visitId: currentVisit.id,
+          })
+        );
+        appDispatch(
+          visitThunkActions.getPreviousVisitInformationForMother({
+            visitId: currentVisit.id,
+          })
+        );
+      } else {
+        if (previousCurrentVisit) {
+          appDispatch(
+            visitThunkActions.GetMotherSummaryByPriority({
+              visitId: previousCurrentVisit.id,
+            })
+          );
+          appDispatch(
+            visitThunkActions.getPreviousVisitInformationForMother({
+              visitId: previousCurrentVisit.id,
+            })
+          );
+        }
+      }
+  }, [
+    appDispatch,
+    currentVisit,
+    currentVisit?.id,
+    isVisit,
+    previousCurrentVisit,
+  ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -174,7 +243,7 @@ export const FollowUp = ({
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
-          message: `${name} need support`,
+          message: `${name} needs support`,
           value: 50,
         };
       case 'Success':
@@ -189,7 +258,7 @@ export const FollowUp = ({
         return {
           primaryColour: 'errorMain',
           secondaryColour: 'errorBg',
-          message: `${name} need urgent support`,
+          message: `${name} needs urgent support`,
           value: 25,
         };
     }
@@ -214,7 +283,16 @@ export const FollowUp = ({
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
 
-    const groupedData = previousVisit?.visitDataStatus?.reduce(
+    const sortedData = previousVisitToSort?.visitDataStatus
+      ?.slice()
+      .sort(function (a, b) {
+        var colorOrder = ['Success', 'Warning', 'Error'];
+        return (
+          colorOrder.indexOf(a?.color || '') -
+          colorOrder.indexOf(b?.color || '')
+        );
+      });
+    const groupedData = sortedData?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const color = toCamelCase(currentValue?.color || '');
         if (!color) return acc;
@@ -226,11 +304,16 @@ export const FollowUp = ({
       },
       {}
     );
-
     return groupedData;
-  }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
+  }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
+    | Status
+    | undefined;
 
-  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+  if (
+    !previousVisit?.visitDataStatus?.length &&
+    previousVisit?.scoreComment === 'No data available for visit' &&
+    !walkthroughData
+  ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
@@ -279,6 +362,7 @@ export const FollowUp = ({
           />
         </div>
       </div>
+
       <Divider dividerType="dashed" className="my-8" />
       <Typography
         className="mb-8"

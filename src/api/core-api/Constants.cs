@@ -13,6 +13,7 @@ namespace EcdLink.Api.CoreApi
     {
             public const string client_practitioner = "practitioner";
             public const string client_trainee = "trainee";
+            public const string client_coach = "coach";
 
             // Visit types
             public const string visitType_pre_pqa_visit_1 = "pre_pqa_visit_1";
@@ -23,13 +24,17 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_pqa_visit_1 = "pqa_visit_1";
             public const string visitType_pqa_visit_2 = "pqa_visit_2";
             public const string visitType_pqa_visit_3 = "pqa_visit_3";
-
             public const string visitType_pqa_visit_follow_up = "pqa_visit_follow_up";
-            public const string visitType_annual_re_accreditation = "annual_re_accreditation";
-            public const string visitType_re_accreditation = "re_accreditation";
+
+            public const string visitType_re_accreditation_1 = "re_accreditation_1";
+            public const string visitType_re_accreditation_2 = "re_accreditation_2";
+            public const string visitType_re_accreditation_3 = "re_accreditation_3";
             public const string visitType_re_accreditation_follow_up = "re_accreditation_follow_up";
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
+            public const string visitType_startup_support_agreement = "startup_support_agreement";
+
+            public const string visitType_trainee_visit = "trainee_visit";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
@@ -37,6 +42,7 @@ namespace EcdLink.Api.CoreApi
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";
             public const string ss_smart_space_licence = "ss_smart_space_licence";
+            public const string ss_practice_licence = "ss_practice_licence";
 
             // Timeline messages
             public const string starter_licence_received = "Starter Licence received";
@@ -44,6 +50,9 @@ namespace EcdLink.Api.CoreApi
 
             public const string smart_space_licence_received = "SmartSpace Licence received";
             public const string smart_space_licence_not_received = "SmartSpace Licence not received";
+
+            public const string practice_licence_received = "PQA: Practice Licence awarded";
+            public const string practice_licence_not_received = "PQA: Practice Licence not received";
 
             public const string first_site_visit = "First site visit before PQA";
             public const string second_site_visit = "Second site visit before PQA";
@@ -356,9 +365,21 @@ namespace EcdLink.Api.CoreApi
             public const string three_stars = "3 stars";
             public const string four_stars = "4 stars";
 
+            // timeline values
             public const string consolidation_meeting = "Consolidation meeting attended";
+            public const string no_consolidation_meeting = "Did not attend consolidation meeting";
             public const string checklist_done = "SmartSpace Checklist done";
             public const string children_registered = "3 or more children registered";
+            public const string franchisee_signed = "Franchisee agreement signed";
+            public const string support_agreement_signed = "Start-up support agreement signed";
+            public const string community_support = "Community support gained";
+            public const string coach_visit = "SmartSpace visit from coach";
+            public const string attended_first_aid = "Attended first aid course";
+            public const string not_attended_first_aid = "Did not attended first aid course";
+            public const string child_progress_training = "Child progress training";
+
+            public const string consent_type_franchisee = "FranchiseeAgreement";
+            public const string consent_type_support_agreement = "StartupSupportAgreement";
 
         }
 
@@ -645,7 +666,7 @@ namespace EcdLink.Api.CoreApi
             public const string SSCaregiver = "Caregiver";
             public const string SLCaregiver = "Caregiver";
             //Trainee Queries
-            public const string SSTrainee = "Practitioner";
+            public const string SSTrainee = "Trainee";
             public const string SLTrainee = "Trainee";
             //Address Queries
             public const string SSAddress = "SiteAddress";

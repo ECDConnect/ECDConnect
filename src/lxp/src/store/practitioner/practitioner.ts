@@ -6,11 +6,14 @@ import {
   getPractitionerById,
   updatePractitionerRegistered,
   updatePractitionerProgress,
+  deActivatePractitioner,
+  updatePractitionerUsePhotoInReport,
 } from './practitioner.actions';
 import {
   PractitionerState,
   PrincipalPractitioners,
 } from './practitioner.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: PractitionerState = {
   practitioner: undefined,
@@ -40,6 +43,7 @@ const practitionerSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, deActivatePractitioner);
     builder.addCase(getPractitionerById.fulfilled, (state, action) => {
       state.practitioner = action.payload;
     });
@@ -52,6 +56,18 @@ const practitionerSlice = createSlice({
     builder.addCase(updatePractitionerProgress.fulfilled, (state, action) => {
       state.practitioner = { ...state.practitioner, progress: action.payload };
     });
+    builder.addCase(deActivatePractitioner.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(
+      updatePractitionerUsePhotoInReport.fulfilled,
+      (state, action) => {
+        state.practitioner = {
+          ...state.practitioner,
+          usePhotoInReport: action.payload,
+        };
+      }
+    );
   },
 });
 
