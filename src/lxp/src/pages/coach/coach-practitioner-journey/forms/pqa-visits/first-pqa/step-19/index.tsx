@@ -10,7 +10,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
@@ -28,6 +28,7 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const Step19 = ({
   smartStarter,
+  sectionQuestions,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -54,7 +55,7 @@ export const Step19 = ({
 
   const visitSection = 'Step 19';
   const name = smartStarter?.user?.firstName || 'the SmartStarter';
-  const isToShowAttendance = !!presentChildrenCount || !!absentChildrenCount;
+  const hasChildren = !!presentChildrenCount || !!absentChildrenCount;
   const { isOnline } = useOnlineStatus();
 
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -212,8 +213,31 @@ export const Step19 = ({
     return classroomDetails;
   }, [smartStarter?.userId, userAuth?.auth_token]);
 
+  const renderTitle = useMemo(() => {
+    if (!hasChildren) {
+      return 'There are no children registered yet.';
+    }
+
+    if (!selectedClassroomGroups.length) {
+      return `${name} is not assigned to any classes ${
+        isOnline
+          ? `at ${
+              practitionerClassroomDetails?.[0].programmeType?.description || ''
+            } `
+          : ''
+      }`;
+    }
+
+    return 'Please take attendance for the children here today';
+  }, [
+    selectedClassroomGroups.length,
+    hasChildren,
+    isOnline,
+    name,
+    practitionerClassroomDetails,
+  ]);
+
   useEffect(() => {
-    setEnableButton?.(true);
     classroomsDetailsForPractitioner();
   }, [classroomsDetailsForPractitioner, setEnableButton]);
 
@@ -236,21 +260,10 @@ export const Step19 = ({
       <Typography
         className="px-4 pt-4"
         type="h4"
-        text={
-          isToShowAttendance
-            ? 'Please take attendance for the children here today'
-            : `${name} is not assigned to any classes ${
-                isOnline
-                  ? `at ${
-                      practitionerClassroomDetails?.[0].programmeType
-                        ?.description || ''
-                    } `
-                  : ''
-              }`
-        }
+        text={renderTitle}
         color="textDark"
       />
-      {isToShowAttendance && classroomGroupsForPrincipal.length > 1 && (
+      {hasChildren && classroomGroupsForPrincipal.length > 1 && (
         <div className="flex flex-row justify-between overflow-x-auto px-4 pt-4">
           <SearchDropDown<any>
             displayMenuOverlay
@@ -292,7 +305,7 @@ export const Step19 = ({
         </div>
       )}
       <Divider dividerType="dashed" className="m-4" />
-      {isToShowAttendance && (
+      {hasChildren && (
         <div className={`mb-4 flex  flex-row items-center gap-2 px-4`}>
           <Typography
             type="h1"
@@ -315,7 +328,7 @@ export const Step19 = ({
         return (
           <div
             id={`attendanceList${selectedGroup.id}`}
-            className={`overflow-y-auto ${isToShowAttendance && 'pb-6'}`}
+            className={`overflow-y-auto ${hasChildren && 'pb-6'}`}
           >
             <ClassProgrammeAttendanceList
               key={`class_attendance_list_${idx}`}
