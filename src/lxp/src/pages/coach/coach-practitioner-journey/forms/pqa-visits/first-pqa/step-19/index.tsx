@@ -26,9 +26,11 @@ import { ClassroomGroup } from '@ecdlink/graphql';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
+export const step19Question2Pqa =
+  'Does {client} need to register any children on Funda App?';
+
 export const Step19 = ({
   smartStarter,
-  sectionQuestions,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -48,7 +50,7 @@ export const Step19 = ({
       answer: '',
     },
     {
-      question: 'Does {client} need to register any children on Funda App?',
+      question: step19Question2Pqa,
       answer: '',
     },
   ]);
@@ -56,6 +58,7 @@ export const Step19 = ({
   const visitSection = 'Step 19';
   const name = smartStarter?.user?.firstName || 'the SmartStarter';
   const hasChildren = !!presentChildrenCount || !!absentChildrenCount;
+
   const { isOnline } = useOnlineStatus();
 
   const userAuth = useSelector(authSelectors.getAuthUser);
