@@ -451,11 +451,11 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     );
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
-        visitId,
-      })
-    );
+    // appDispatch(
+    //   visitThunkActions.getPreviousVisitInformationForInfant({
+    //     visitId,
+    //   })
+    // );
   }, [visitId, appDispatch]);
 
   useLayoutEffect(() => {
