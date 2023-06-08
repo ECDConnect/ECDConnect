@@ -2,11 +2,8 @@
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.VisualBasic.FileIO;
 using System;
 using System.Linq;
-using System.Reflection;
-using static DotLiquid.Variable;
 
 namespace ECDLink.DataAccessLayer.Helpers
 {
@@ -16,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Helpers
         private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province).ToLowerInvariant(), Roles.ADMINISTRATOR.ToLowerInvariant() };
 
 
-        public static IQueryable<T> AddFiltering<T>(IFilterByField[] inputFilter, in IQueryable<T> usersQuery)
+        public static IQueryable<T> AddFiltering<T>(FilterByField[] inputFilter, in IQueryable<T> usersQuery)
         {
             IQueryable<T> newUsersQuery = usersQuery.AsQueryable();
 
@@ -42,54 +39,22 @@ namespace ECDLink.DataAccessLayer.Helpers
                     case InputFilterComparer.Equals:
                         {
                             newUsersQuery = newUsersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == input);
-
-                            /// TODO: Do I still need this? Does above work as expected?
-                            //if (filter.Value is null)
-                            //{
-                            //    newUsersQuery = newUsersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
-                            //}
-                            //else if (fieldType.Equals(typeof(DateTime)))
-                            //{
-                            //    if (!DateTime.TryParse(filter.Value, out var date))
-                            //        throw new ArgumentException($"Filter value {filter.Value} is not a valid date time.");
-                            //    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
-                            //}
-                            //else if (fieldType.Equals(typeof(Guid)))
-                            //{
-                            //    if (!Guid.TryParse(filter.Value, out var guid))
-                            //        throw new ArgumentException($"Filter value {filter.Value} is not a valid Guid.");
-                            //    newUsersQuery = newUsersQuery.Where(u => guid == EF.Property<Guid>(u, filter.FieldName));
-                            //}
-                            //else if (fieldType.Equals(typeof(int)))
-                            //{
-                            //    int.TryParse(filter.Value, out var @int);
-                            //    newUsersQuery = newUsersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
-                            //}
-                            //else if (fieldType.Equals(typeof(decimal)))
-                            //{
-                            //    decimal.TryParse(filter.Value, out var @decimal);
-                            //    newUsersQuery = newUsersQuery.Where(u => @decimal == EF.Property<decimal?>(u, filter.FieldName));
-                            //}
-                            //else if (fieldType.Equals(typeof(bool)))
-                            //{
-                            //    bool.TryParse(filter.Value, out var @bool);
-                            //    newUsersQuery = newUsersQuery.Where(u => @bool == EF.Property<bool?>(u, filter.FieldName));
-                            //}
-                            //else // string
-                            //{
-                            //    //var a = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value).Select(a => a).ToList();
-                            //    newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
-                            //}
                         }
                         break;
                     case InputFilterComparer.Contains:
                         newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                        break;
+                    case InputFilterComparer.ContainedBy:
+                        newUsersQuery = newUsersQuery.Where(u => filter.Value.Contains(EF.Property<string>(u, filter.FieldName)));
                         break;
                     case InputFilterComparer.GreaterThan:
                         {
                             if (fieldType.Equals(typeof(DateTime))
                                 && DateTime.TryParse(filter.Value, out var date))
                                 newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
+                            else if (fieldType.Equals(typeof(decimal))
+                                && decimal.TryParse(filter.Value, out decimal decimalGt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<decimal?>(u, filter.FieldName) > decimalGt);
                             else if (fieldType.Equals(typeof(int))
                                 && int.TryParse(filter.Value, out int intGt))
                                 newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
@@ -100,9 +65,12 @@ namespace ECDLink.DataAccessLayer.Helpers
                             if (fieldType.Equals(typeof(DateTime))
                                 && DateTime.TryParse(filter.Value, out var date))
                                 newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
+                            else if (fieldType.Equals(typeof(decimal))
+                                && decimal.TryParse(filter.Value, out decimal decimalLt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<decimal?>(u, filter.FieldName) < decimalLt);
                             else if (fieldType.Equals(typeof(int))
-                                && int.TryParse(filter.Value, out int intGt))
-                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
+                                && int.TryParse(filter.Value, out int intLt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intLt);
                         }
                         break;
                     case InputFilterComparer.GreaterThanOrEqual:
@@ -110,9 +78,12 @@ namespace ECDLink.DataAccessLayer.Helpers
                             if (fieldType.Equals(typeof(DateTime))
                                 && DateTime.TryParse(filter.Value, out var dateGte))
                                 newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) >= dateGte);
+                            else if (fieldType.Equals(typeof(decimal))
+                               && decimal.TryParse(filter.Value, out decimal decimalGt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<decimal?>(u, filter.FieldName) >= decimalGt);
                             else if (fieldType.Equals(typeof(int))
-                                && int.TryParse(filter.Value, out int intGte))
-                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) >= intGte);
+                                && int.TryParse(filter.Value, out int intGt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) >= intGt);
                         }
                         break;
                     case InputFilterComparer.LessThanOrEqual:
@@ -120,9 +91,12 @@ namespace ECDLink.DataAccessLayer.Helpers
                             if (fieldType.Equals(typeof(DateTime))
                                 && DateTime.TryParse(filter.Value, out var dateLte))
                                 newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) <= dateLte);
+                            else if (fieldType.Equals(typeof(decimal))
+                                && decimal.TryParse(filter.Value, out decimal decimalLt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<decimal?>(u, filter.FieldName) <= decimalLt);
                             else if (fieldType.Equals(typeof(int))
-                                && int.TryParse(filter.Value, out int intLte))
-                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) <= intLte);
+                                && int.TryParse(filter.Value, out int intLt))
+                                newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) <= intLt);
                         }
                         break;
                 }
@@ -131,7 +105,7 @@ namespace ECDLink.DataAccessLayer.Helpers
             return newUsersQuery;
         }
 
-        public static object CastInputToFieldType(in object inputValue, in Type castToType)
+        private static object CastInputToFieldType(in object inputValue, in Type castToType)
         {
             if (inputValue is null)
             {
@@ -192,7 +166,7 @@ namespace ECDLink.DataAccessLayer.Helpers
             return inputValue?.ToString();
         }
 
-        public static IQueryable<T> AddSorting<T>(ISortByField[] sortBy, in IQueryable<T> usersQuery, ISortByField[] defaultSortFields = null)
+        public static IQueryable<T> AddSorting<T>(SortByField[] sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
         {
             // Don't mutate the input:
             var newQuery = usersQuery.AsQueryable();
@@ -242,7 +216,5 @@ namespace ECDLink.DataAccessLayer.Helpers
                 .Skip(skip)
                 .Take(take);
         }
-
-       
     }
 }

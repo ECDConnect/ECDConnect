@@ -1,9 +1,8 @@
 ﻿
-using ECDLink.Abstractrions.GraphQL.Attributes;
 
-namespace ECDLink.EGraphQL.ObjectTypes.Input
+namespace ECDLink.Abstractrions.GraphQL.Attributes
 {
-    public class FilterByField : IFilterByField
+    public class FilterByField
     {
         private string fieldName;
 

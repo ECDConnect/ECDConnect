@@ -1,9 +1,7 @@
 ﻿
-using ECDLink.Abstractrions.GraphQL.Attributes;
-
-namespace ECDLink.EGraphQL.ObjectTypes.Input
+namespace ECDLink.Abstractrions.GraphQL.Attributes
 {
-    public class SortByField : ISortByField
+    public class SortByField
     {
         public SortByField()
         {

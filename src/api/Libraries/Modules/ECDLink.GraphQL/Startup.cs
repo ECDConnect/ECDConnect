@@ -5,6 +5,7 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.Interceptors;
+using ECDLink.EGraphQL.ObjectTypes.Input;
 using ECDLink.EGraphQL.Registration;
 using ECDLink.EGraphQL.Registration.Modules;
 using ECDLink.PostgresTenancy.Context;
@@ -37,8 +38,8 @@ namespace ECDLink.EGraphQL
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
               .AddType<UploadType>()
-              .AddType<IFilterByField>()
-              .AddType<ISortByField>()
+              .AddType<FilterByField>()
+              .AddType<SortByField>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()

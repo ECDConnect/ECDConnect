@@ -46,8 +46,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
-            usersQuery = AddProvinceFilter(repoFactory, pagingInput as IPagedQueryInput, usersQuery);
-            usersQuery = await AddAdministratorFilter(userManager, pagingInput as IPagedQueryInput, usersQuery);
+            usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
             usersQuery = PaginationHelper.AddSorting(
                 pagingInput?.SortBy,
@@ -62,7 +62,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         }
 
         // Can this become generic?
-        private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, IPagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
             if (pagingInput is null)
                 return usersQuery;
@@ -91,7 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
         private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
             UserManager<ApplicationUser> userManager,
-            IPagedQueryInput pagingInput,
+            PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
             // Just get the last "Administrator" filter element, more than one doesn't make sense.
