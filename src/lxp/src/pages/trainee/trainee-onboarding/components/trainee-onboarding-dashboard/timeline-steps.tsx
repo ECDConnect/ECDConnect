@@ -1,5 +1,10 @@
 import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
-import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
+import {
+  Maybe,
+  PractitionerTimeline,
+  TraineeOnBoardTimeline,
+  Visit,
+} from '@ecdlink/graphql';
 import {
   CalendarIcon,
   PhoneIcon,
@@ -25,6 +30,7 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
 export const getStepType = (
   color?: Maybe<string>
 ): { type: StepItem['type']; color?: Colours } => {
+  console.log({});
   if (!color) return { type: 'todo' };
 
   switch (color.toLowerCase()) {
@@ -63,7 +69,7 @@ export const setStep = (
 };
 
 export const timelineSteps = (
-  timeline: PractitionerTimeline,
+  timeline: TraineeOnBoardTimeline,
   onView: (visit: Visit) => void,
   isLoading: boolean,
   isOnline: boolean,
@@ -94,34 +100,6 @@ export const timelineSteps = (
   );
   steps.push(
     setStep(
-      timeline.coachingCircle1Status,
-      timeline.coachingCircleDate1,
-      timeline?.coachingCircle1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle2Status,
-      timeline.coachingCircleDate2,
-      timeline?.coachingCircle2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle3Status,
-      timeline.coachingCircleDate3,
-      timeline?.coachingCircle3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle4Status,
-      timeline.coachingCircleDate4,
-      timeline?.coachingCircle4Color
-    )
-  );
-  steps.push(
-    setStep(
       timeline.consolidationMeetingStatus,
       timeline.consolidationMeetingDate,
       timeline?.consolidationMeetingColor
@@ -129,74 +107,46 @@ export const timelineSteps = (
   );
   steps.push(
     setStep(
-      timeline.firstAidCourseStatus,
-      timeline.firstAidDate,
-      timeline?.firstAidCourseColor
+      timeline.smartSpaceChecklistStatus,
+      timeline.smartSpaceChecklistDate,
+      timeline?.smartSpaceChecklistColor
     )
   );
   steps.push(
     setStep(
-      timeline.smartSpaceLicenseStatus,
-      timeline.smartSpaceLicenseDate,
-      timeline?.smartSpaceLicenseColor
+      timeline.communitySupportStatus,
+      timeline.communitySupportDate,
+      timeline?.communitySupportColor
     )
   );
   steps.push(
     setStep(
-      timeline.starterLicenseStatus,
-      timeline.starterLicenseDate,
-      timeline?.starterLicenseColor
+      timeline.threeChildrenRegisteredStatus,
+      timeline.threeChildrenRegisteredDate,
+      timeline?.threeChildrenRegisteredColor
     )
   );
-  // steps.push(
-  //   setStep(
-  //     timeline.smartSpaceChecklistStatus,
-  //     timeline.smartSpaceChecklistDate,
-  //     timeline?.smartSpaceChecklistColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.communitySupportStatus,
-  //     timeline.starterLicenseDate,
-  //     timeline?.starterLicenseColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.starterLicenseStatus,
-  //     timeline.communitySupportDate,
-  //     timeline?.communitySupportColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.threeChildrenRegisteredStatus,
-  //     timeline.threeChildrenRegisteredDate,
-  //     timeline?.threeChildrenRegisteredColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.sSCoachVisitStatus,
-  //     timeline.sSCoachVisitDate,
-  //     timeline?.sSCoachVisitColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.signFranchiseeAgreementStatus,
-  //     timeline.signFranchiseeAgreementDate,
-  //     timeline?.signFranchiseeAgreementColor
-  //   )
-  // );
-  // steps.push(
-  //   setStep(
-  //     timeline.signStartUpSupportAgreementStatus,
-  //     timeline.signStartUpSupportAgreementDate,
-  //     timeline?.signStartUpSupportAgreementColor
-  //   )
-  // );
+  steps.push(
+    setStep(
+      timeline.sSCoachVisitStatus,
+      timeline.sSCoachVisitDate,
+      timeline?.sSCoachVisitColor
+    )
+  );
+  steps.push(
+    setStep(
+      timeline.signFranchiseeAgreementStatus,
+      timeline.signFranchiseeAgreementDate,
+      timeline?.signFranchiseeAgreementColor
+    )
+  );
+  steps.push(
+    setStep(
+      timeline.signStartUpSupportAgreementStatus,
+      timeline.signStartUpSupportAgreementDate,
+      timeline?.signStartUpSupportAgreementColor
+    )
+  );
 
   // if (!!timeline.prePQASiteVisits?.length) {
   //   const date =
