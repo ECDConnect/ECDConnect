@@ -5,27 +5,21 @@ using System;
 
 namespace ECDLink.EGraphQL.ObjectTypes.Input
 {
-    public class PagedQueryInput //: IPagedQueryInput
+    public class PagedQueryInput : IPagedQueryInput
     {
+        private const int DEFAULT_PAGESIZE = 10;
         private int pageNumber;
+        private int pageSize;
 
-        public int PageNumber { get => pageNumber; set => pageNumber = value < 1 ? 0 : value - 1; }
-        public int PageSize { get; }
+        public int PageNumber { get => pageNumber; set => pageNumber = value - 1 > 0 ? value - 1 : 0; }
+        public int PageSize { get => pageSize; set => pageSize = value >= 0 ? value : DEFAULT_PAGESIZE; }
 
         public PagedQueryInput()
         {
         }
 
-        public PagedQueryInput(int pageNumber, int pageSize, SortByField[] sortBy, FilterByField[] filterBy)
-        {
-            PageNumber = (pageNumber - 1) >= 0 ? pageNumber - 1 : 0;
-            PageSize = pageSize >= 0 ? pageSize : 10;
-            SortBy = sortBy ?? Array.Empty<SortByField>();
-            FilterBy = filterBy ?? Array.Empty<FilterByField>();
-        }
-
-        public SortByField[] SortBy { get; set; } = new SortByField[] { };
-        public FilterByField[] FilterBy { get; set; } = new FilterByField[] { };
+        public ISortByField[] SortBy { get; set; } = Array.Empty<SortByField>();
+        public IFilterByField[] FilterBy { get; set; } = Array.Empty<FilterByField>();
 
         [GraphQLIgnore]
         public int RowOffset
@@ -39,7 +33,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         protected override void Configure(
             IInputObjectTypeDescriptor<PagedQueryInput> descriptor)
         {
-            descriptor.BindFieldsImplicitly();    
+            descriptor.BindFieldsImplicitly();
         }
     }
 }
