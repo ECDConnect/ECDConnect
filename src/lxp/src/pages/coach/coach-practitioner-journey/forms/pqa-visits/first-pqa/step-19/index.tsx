@@ -21,6 +21,10 @@ import { getAttendanceStatusCheck } from '@/utils/classroom/attendance/track-att
 import { getDay } from 'date-fns';
 import ClassProgrammeAttendanceList from '@/pages/classroom/attendance/components/class-programme-attendance-list/class-programme-attendance-list';
 import { AttendanceState } from '@/pages/classroom/attendance/components/attendance-list/attendance-list.types';
+import { PractitionerService } from '@/services/PractitionerService';
+import { ClassroomGroup } from '@ecdlink/graphql';
+import { authSelectors } from '@/store/auth';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const Step19 = ({
   smartStarter,
@@ -34,6 +38,9 @@ export const Step19 = ({
   const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
     ClassroomGroupDto[]
   >([]);
+  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
+    useState<ClassroomGroup[]>();
+
   const [questions, setAnswers] = useState([
     {
       question: 'Child attendance & registration',
@@ -47,7 +54,10 @@ export const Step19 = ({
 
   const visitSection = 'Step 19';
   const name = smartStarter?.user?.firstName || 'the SmartStarter';
+  const isToShowAttendance = !!presentChildrenCount || !!absentChildrenCount;
+  const { isOnline } = useOnlineStatus();
 
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -191,6 +201,22 @@ export const Step19 = ({
     primaryClassProgramme,
   ]);
 
+  const classroomsDetailsForPractitioner = useCallback(async () => {
+    const classroomDetails = (await new PractitionerService(
+      userAuth?.auth_token!
+    ).getClassroomGroupClassroomsForPractitioner(
+      smartStarter?.userId!
+    )) as unknown;
+
+    setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
+    return classroomDetails;
+  }, [smartStarter?.userId, userAuth?.auth_token]);
+
+  useEffect(() => {
+    setEnableButton?.(true);
+    classroomsDetailsForPractitioner();
+  }, [classroomsDetailsForPractitioner, setEnableButton]);
+
   useEffect(() => {
     onSetClassroomGroups();
   }, [onSetClassroomGroups]);
@@ -210,10 +236,21 @@ export const Step19 = ({
       <Typography
         className="px-4 pt-4"
         type="h4"
-        text="Please take attendance for the children here today"
-        color="textMid"
+        text={
+          isToShowAttendance
+            ? 'Please take attendance for the children here today'
+            : `${name} is not assigned to any classes ${
+                isOnline
+                  ? `at ${
+                      practitionerClassroomDetails?.[0].programmeType
+                        ?.description || ''
+                    } `
+                  : ''
+              }`
+        }
+        color="textDark"
       />
-      {classroomGroupsForPrincipal.length > 1 && (
+      {isToShowAttendance && classroomGroupsForPrincipal.length > 1 && (
         <div className="flex flex-row justify-between overflow-x-auto px-4 pt-4">
           <SearchDropDown<any>
             displayMenuOverlay
@@ -255,46 +292,49 @@ export const Step19 = ({
         </div>
       )}
       <Divider dividerType="dashed" className="m-4" />
-      <div className={`mb-4 flex  flex-row items-center gap-2 px-4`}>
-        <Typography
-          type="h1"
-          color={!!presentChildrenCount ? 'successMain' : 'textDark'}
-          text={String(presentChildrenCount)}
-        />
-        <Typography type="h4" text="present" />
-        <Typography
-          className="ml-10"
-          type="h1"
-          color={!!absentChildrenCount ? 'errorMain' : 'textDark'}
-          text={String(absentChildrenCount)}
-        />
-        <Typography type="h4" text="absent" />
-      </div>
-      <div className="overflow-y-auto pb-6">
-        {selectedClassroomGroups.map((selectedGroup, idx) => {
-          const isPrimaryList =
-            selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
-          return (
-            <div id={`attendanceList${selectedGroup.id}`}>
-              <ClassProgrammeAttendanceList
-                key={`class_attendance_list_${idx}`}
-                isPrimaryClass={isPrimaryList}
-                classroomGroup={selectedGroup}
-                attendanceDate={new Date()}
-                onAttendanceUpdated={(state) => {
-                  onAttendanceChange(state.listItems);
-                  validateAttendanceList(
-                    selectedGroup.id ?? '',
-                    state.listItems,
-                    isPrimaryList
-                  );
-                }}
-                id={`attendance-list${selectedGroup.id}`}
-              />
-            </div>
-          );
-        })}
-      </div>
+      {isToShowAttendance && (
+        <div className={`mb-4 flex  flex-row items-center gap-2 px-4`}>
+          <Typography
+            type="h1"
+            color={!!presentChildrenCount ? 'successMain' : 'textDark'}
+            text={String(presentChildrenCount)}
+          />
+          <Typography type="h4" text="present" />
+          <Typography
+            className="ml-10"
+            type="h1"
+            color={!!absentChildrenCount ? 'errorMain' : 'textDark'}
+            text={String(absentChildrenCount)}
+          />
+          <Typography type="h4" text="absent" />
+        </div>
+      )}
+      {selectedClassroomGroups.map((selectedGroup, idx) => {
+        const isPrimaryList =
+          selectedGroup.id === primaryClassProgramme[0]?.classroomGroupId;
+        return (
+          <div
+            id={`attendanceList${selectedGroup.id}`}
+            className={`overflow-y-auto ${isToShowAttendance && 'pb-6'}`}
+          >
+            <ClassProgrammeAttendanceList
+              key={`class_attendance_list_${idx}`}
+              isPrimaryClass={isPrimaryList}
+              classroomGroup={selectedGroup}
+              attendanceDate={new Date()}
+              onAttendanceUpdated={(state) => {
+                onAttendanceChange(state.listItems);
+                validateAttendanceList(
+                  selectedGroup.id ?? '',
+                  state.listItems,
+                  isPrimaryList
+                );
+              }}
+              id={`attendance-list${selectedGroup.id}`}
+            />
+          </div>
+        );
+      })}
       <div className="mx-4">
         <Typography
           type="h4"
