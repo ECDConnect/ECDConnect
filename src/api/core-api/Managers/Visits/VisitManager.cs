@@ -458,7 +458,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
 
                 return allVisits.OrderBy(x => x.OrderDate).ToList();
-
             }
             public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
             {

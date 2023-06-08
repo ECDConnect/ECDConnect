@@ -109,7 +109,6 @@ export const Visits: React.FC = () => {
       if (item.attended) {
         return 'completed';
       }
-
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
         isMissedVisit
