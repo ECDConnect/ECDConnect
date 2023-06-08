@@ -187,6 +187,7 @@ class PractitionerService {
             isPrincipal
             isTrainee
             isRegistered
+            isTrainee
             principalHierarchy
             coachHierarchy
             attendanceRegisterLink

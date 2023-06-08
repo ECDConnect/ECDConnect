@@ -50,6 +50,7 @@ import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
+import { traineeActions, traineeThunkActions } from './store/trainee';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -106,6 +107,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
 
   useEffect(() => {
     if (userData) {
+      (async () =>
+        await appDispatch(
+          traineeThunkActions.getTraineeById({ userId: userData?.id! })
+        ).unwrap())();
       if (isCoach) {
         (async () =>
           await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();

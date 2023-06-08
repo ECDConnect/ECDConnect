@@ -41,7 +41,7 @@ export const TraineeOnboarding = () => {
 
   return (
     <>
-      <div>{renderStep(notificationStep)}</div>
+      <div className="h-screen">{renderStep(notificationStep)}</div>
     </>
   );
 };

@@ -12,6 +12,11 @@ import { useTheme } from '@ecdlink/core';
 import WelcomeImage from '../../../assets/walktroughImage.png';
 import { WelcomePage } from '@/components/welcome-page';
 import ROUTES from '@/routes/routes';
+import { useEffect } from 'react';
+import { useAppDispatch } from '@/store';
+import { traineeThunkActions } from '@/store/trainee';
+import { userSelectors } from '@/store/user';
+import { useSelector } from 'react-redux';
 
 const MOCKED_INCOMPLETE_DATA = {
   visit: {
@@ -53,6 +58,19 @@ export const SetupTrainee = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
+  const appDispatch = useAppDispatch();
+  const user = useSelector(userSelectors.getUser);
+
+  useEffect(() => {
+    (async () =>
+      await appDispatch(
+        traineeThunkActions.getTraineeTimeline({
+          userId: user?.id ? user?.id : '',
+        })
+      ).unwrap())();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <>
       <BannerWrapper

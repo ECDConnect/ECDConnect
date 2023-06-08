@@ -15,6 +15,9 @@ import { format } from 'date-fns';
 import { useState } from 'react';
 import { useHistory } from 'react-router';
 import OnboardingInfoPage from '../onboarding-info-page/onboarding-info-page';
+import { timelineSteps } from './timeline-steps';
+import { useSelector } from 'react-redux';
+import { traineeSelectors } from '@/store/trainee';
 
 const MOCKED_DATA = {
   visit: {
@@ -96,6 +99,20 @@ export const OnboardingTraineeDashboard: React.FC<
     setShowInfo(true);
   };
 
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  console.log({ timeline });
+  console.log(
+    timelineSteps(
+      timeline!,
+      () => {},
+      false,
+      isOnline,
+      // @ts-ignore
+      undefined
+    )
+  );
+
   const notificationItem: MenuListDataItem[] = [
     {
       showIcon: true,
@@ -125,6 +142,7 @@ export const OnboardingTraineeDashboard: React.FC<
       onHelp={displayTutorial}
       displayOffline={!isOnline}
       renderOverflow={true}
+      className="h-screen"
     >
       <div className="bg-uiBg flex w-full items-center justify-center">
         <Typography
@@ -154,11 +172,20 @@ export const OnboardingTraineeDashboard: React.FC<
           text={'Complete all the steps to set up your programme'}
         />
         <Divider dividerType="dashed" className="my-2" />
-        <Steps
-          items={MOCKED_DATA.steps}
-          typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
-        />
-        <div className="mt-8 flex gap-1">
+        {timeline && (
+          <Steps
+            items={timelineSteps(
+              timeline,
+              () => {},
+              false,
+              isOnline,
+              // @ts-ignore
+              undefined
+            )}
+            typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
+          />
+        )}
+        <div className="my-4 flex h-20 gap-1">
           {Array.from({ length: stepperCount }, (_, i) => (
             <span
               key={i}
