@@ -388,6 +388,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             PractitionerTimeline timeline = new PractitionerTimeline();
             DateTime today = DateTime.Today;
 
+            // Ratings
+            timeline.PQARating = _visitDataManager.GetPractitionerPQARating(userId);
+            timeline.ReAccreditationRating = _visitDataManager.GetPractitionerReAccreditationRating(userId);
+
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
             if (starterLicense?.LicenseDate != null)
