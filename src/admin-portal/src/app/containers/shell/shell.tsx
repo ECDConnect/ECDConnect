@@ -37,7 +37,7 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
       to={item.route}
       className={classNames(
         routeMatch ? 'bg-tertiary text-white' : 'hover:textMid hover:bg-white',
-        'group flex items-center rounded-md px-2 py-2 text-sm font-medium text-white'
+        'group flex items-center rounded-md px-2 py-2 my-2 mx-1 text-sm font-medium text-white'
       )}
     >
       <Icon
@@ -117,10 +117,6 @@ export default function Shell() {
   const gotToProfile = () => {
     history.push('/profile');
   };
-
-  const userNavigation = [
-    { name: 'Profile', onClick: gotToProfile },
-  ];
 
   const displayInformationPanel = () => {
     panel({
@@ -215,38 +211,41 @@ export default function Shell() {
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <><MenuItem
-                    key={`${item.name}-${new Date().getTime()}`}
-                    item={item}
-                  ></MenuItem>
-                  
-                  <hr className=' border-b-uiLight border-dashed mx-2'/>
-                  </>
+                  <div >
+                    <MenuItem
+                      key={`${item.name}-${new Date().getTime()}`}
+                      item={item}
+                    ></MenuItem>
+
+                    <hr className=" border-b-uiLight mx-2 border-dashed" />
+                  </div>
                 ))}
               </nav>
               <div className="px-4">
                 <Button
-                  className={'w-full rounded-xl hover:bg-secondary hover:text-white'}
+                  className={
+                    'hover:bg-secondary w-full rounded-xl hover:text-white'
+                  }
                   type="filled"
                   // isLoading={isLoading}
                   color="uiMid"
                   // disabled={!isValid}
                   // onClick={signIn}
-                  icon='InformationCircleIcon'
+                  icon="InformationCircleIcon"
                 >
-             
                   <Typography
                     type="body"
                     color="white"
                     text={'Help'}
                     fontSize={'24'}
-
                   ></Typography>
                 </Button>
               </div>
               <div className="p-4">
                 <Button
-                  className={'w-full justify-self-start rounded-xl hover:bg-secondary hover:text-white '}
+                  className={
+                    'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
+                  }
                   type="filled"
                   color="uiMid"
                   onClick={signOutClick}
@@ -294,7 +293,10 @@ export default function Shell() {
                 {({ open }) => (
                   <>
                     <div>
-                      <Menu.Button onClick={gotToProfile} className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button
+                        onClick={gotToProfile}
+                        className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      >
                         <span className="sr-only">Open user menu</span>
 
                         {user ? (
@@ -307,7 +309,6 @@ export default function Shell() {
                         ) : null}
                       </Menu.Button>
                     </div>
-                 
                   </>
                 )}
               </Menu>

@@ -23,6 +23,7 @@ import UserDetailsForm from '../user-details-form/user-details-form';
 import UserPanelSave from '../user-panel-save/user-panel-save';
 import UserRoles from '../user-roles/user-roles';
 import { UserPanelCreateProps } from '../users';
+import { PlusIcon } from '@heroicons/react/solid';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -202,8 +203,16 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
+      {/* <UserPanelSave disabled={!getIsValid()} onSave={onSave} /> */}
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <button
+        onClick={onSave}
+        type="button"
+        className="bg-secondary my-6 hover:bg-uiLight focus:outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+      >
+      
+        Create Administrator
+      </button>
     </article>
   );
 }

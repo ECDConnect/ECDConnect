@@ -129,7 +129,7 @@ export default function Login() {
               </div>
 
               <Button
-                className={'mt-3 w-full rounded'}
+                className={' my-6 focus:outline-none inline-flex w-3/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
                 type="ghost"
                 isLoading={isLoading}
                 color="secondary"
