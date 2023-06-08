@@ -1514,6 +1514,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var totalAmber = 0;
             var fScore = 0;
             var scoreColor = "";
+
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
@@ -1522,6 +1523,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
+
+            if (visitDataStatus.Count == 0)
+            {
+                VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).FirstOrDefault();
+                result.ScoreComment = record == null ? "No data available for visit" : "Data available, but no client progress flags available";
+            }
 
             VisitDataStatus growthStatus;
             growthStatus = (
@@ -1545,7 +1552,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else if (fScore >= 51 && fScore <= 80)
             {
                 scoreColor = _amber;
-            } else if (fScore < 51)
+            } else if (fScore > 0 && fScore < 51)
             {
                 scoreColor = _red;
             }

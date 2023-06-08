@@ -1191,6 +1191,7 @@ export type Club = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
+  numberOfMembers: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -1201,6 +1202,7 @@ export type ClubFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
+  numberOfMembers?: InputMaybe<ComparableInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClubFilterInput>>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1210,6 +1212,7 @@ export type ClubInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
+  NumberOfMembers: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -3458,6 +3461,8 @@ export type Mutation = {
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
   integrationByFranchisees: Scalars['Boolean'];
   integrationByMappedCoach: Scalars['Boolean'];
+  integrationClubsData: Scalars['Boolean'];
+  integrationPQAData: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
   reassignAbsenteeFromHistory: Scalars['Boolean'];
@@ -6446,6 +6451,7 @@ export type Progress_VisitDataStatus = {
   muacComment?: Maybe<Scalars['String']>;
   score?: Maybe<Scalars['String']>;
   scoreColor?: Maybe<Scalars['String']>;
+  scoreComment?: Maybe<Scalars['String']>;
   visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
   weight?: Maybe<Scalars['String']>;
   weightColor?: Maybe<Scalars['String']>;
@@ -8284,7 +8290,6 @@ export type QueryPreviousVisitInformationForInfantArgs = {
 };
 
 export type QueryPreviousVisitInformationForMotherArgs = {
-  userId?: InputMaybe<Scalars['String']>;
   visitId?: InputMaybe<Scalars['String']>;
 };
 

@@ -157,7 +157,7 @@ export const DiscussionNotes = ({
         <>
           <Typography
             type="h3"
-            text={`Questions to ask client:`}
+            text={`Questions to ask ${name}:`}
             color="textDark"
             className="mb-4"
           />
@@ -166,8 +166,8 @@ export const DiscussionNotes = ({
               'How is the programme going? What are you enjoying? Is there anything you are finding difficult or anything I can help with?',
               'Do you host parent/caregiver meetings? if no, why not? If yes, when was the last one and how was it? Did you use your get set go flyers?',
               'Do you attend club meetings? If no, why not? If yes, when was the last one and how was it?',
-            ].map((item, index) => (
-              <li key={index}>{item}</li>
+            ].map((item) => (
+              <li key={item}>{item}</li>
             ))}
           </ul>
         </>

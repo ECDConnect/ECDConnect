@@ -107,19 +107,6 @@ class PQAService {
       query: `
         query GetPractitionerTimeline ($userId: String) {
           practitionerTimeline(userId: $userId) {
-            clubMeetings {
-              attended
-              clubMeeting {
-                meetingDate
-                club {
-                  name
-                }
-              }
-            }
-            coachCircles {
-              meetingDate
-              name
-            }
             consolidationMeetingColor
             consolidationMeetingDate
             consolidationMeetingStatus

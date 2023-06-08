@@ -1,8 +1,9 @@
-import { FormInput, Typography } from '@ecdlink/ui';
+import { Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { ChangeEvent, useEffect, useState } from 'react';
+import { useEffect, useState } from 'react';
 
 export const Step18 = ({
+  smartStarter,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {

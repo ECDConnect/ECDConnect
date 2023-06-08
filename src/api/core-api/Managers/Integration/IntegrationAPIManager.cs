@@ -61,8 +61,8 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
 
                         var payload = JsonSerializer.Serialize(apiEntity);
                         var content = showOptions ? new StringContent(payload, Encoding.UTF8, "application/json") : new StringContent(postString, Encoding.UTF8, "application/json");//.Replace("\u0022", "\"")
-                        //var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
-                        var response = await SmartLinkClient.PostAsync(endpointUrl, content);
+                        var response = !isPut ? await SmartLinkClient.PostAsync(endpointUrl, content) : await SmartLinkClient.PutAsync(endpointUrl, content);
+                        //var response = await SmartLinkClient.PostAsync(endpointUrl, content);
 
                         if (!response.IsSuccessStatusCode)
                         {
