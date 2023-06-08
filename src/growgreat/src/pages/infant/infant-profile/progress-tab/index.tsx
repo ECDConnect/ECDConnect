@@ -11,7 +11,6 @@ import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { VisitDto, usePrevious } from '@ecdlink/core';
@@ -49,9 +48,9 @@ export const ProgressTab = () => {
     getPreviousVisitInformationForInfantSelector
   );
   const currentVisit = useSelector(getInfantCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+  // const previousCurrentVisit = usePrevious(currentVisit) as
+  //   | VisitDto
+  //   | undefined;
 
   const infantName = useMemo(
     () => infant?.user?.firstName || '',
@@ -98,25 +97,7 @@ export const ProgressTab = () => {
       window.sessionStorage.clear();
       return;
     }
-
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForInfant({
-          visitId: currentVisit?.id,
-        })
-      );
-  }, [
-    appDispatch,
-    currentVisit,
-    currentVisit?.id,
-    isWalkthroughSession,
-    previousCurrentVisit,
-  ]);
+  }, [appDispatch, isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {

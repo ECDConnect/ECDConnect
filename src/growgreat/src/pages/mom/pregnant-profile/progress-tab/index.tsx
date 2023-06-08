@@ -7,11 +7,6 @@ import { IntroScreen } from './activity-list/intro-screen';
 import { RootState } from '@/store/types';
 import { PREGNANT_PROFILE_TABS } from '..';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
-import { visitThunkActions } from '@/store/visit';
-import {
-  getMotherLastVisitSelector,
-  getMotherCurrentVisitSelector,
-} from '@/store/mother/mother.selectors';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';

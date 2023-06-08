@@ -160,7 +160,7 @@ export const ActivityList: React.FC = () => {
   const isChildBefore49Days = useMemo(() => ageDays <= 49, [ageDays]);
 
   const isNewBornCare = useMemo(
-    () => !isFirstVisit && ageDays <= 28,
+    () => isFirstVisit && ageDays <= 28,
     [ageDays, isFirstVisit]
   );
 
@@ -451,11 +451,11 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     );
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForInfant({
-        visitId,
-      })
-    );
+    // appDispatch(
+    //   visitThunkActions.getPreviousVisitInformationForInfant({
+    //     visitId,
+    //   })
+    // );
   }, [visitId, appDispatch]);
 
   useLayoutEffect(() => {

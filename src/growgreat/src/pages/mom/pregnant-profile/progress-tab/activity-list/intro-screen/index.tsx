@@ -1,6 +1,6 @@
 import { Header } from '../../../components';
 import { MotherDto, getWeeksDiff } from '@ecdlink/core';
-import { useLayoutEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
@@ -13,10 +13,8 @@ import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visi
 import {
   getMotherCurrentVisitSelector,
   getMotherPreviousVisitSelector,
-  getMotherLastVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
-import { visitThunkActions } from '@/store/visit';
 import { useAppDispatch } from '@/store';
 
 interface IntroScreenProps {
