@@ -60,6 +60,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
         username: formValues.username,
         password: formValues.password,
         resetToken: resetToken,
+        isSouthAfricanCitizen: false
         // acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerUser(body, Config.authApi).catch(

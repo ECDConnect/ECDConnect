@@ -16,5 +16,6 @@ export interface RegisterRequestModel {
   password: string;
   resetToken: string;
   acceptedTerms?: boolean;
+  isSouthAfricanCitizen?: boolean
 }
 
