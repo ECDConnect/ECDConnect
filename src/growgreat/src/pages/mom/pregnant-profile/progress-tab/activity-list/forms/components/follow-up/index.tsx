@@ -35,11 +35,7 @@ import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import {
-  // getMotherCurrentVisitSelector,
-  getMotherLastVisitSelector,
-  getMotherVisits,
-} from '@/store/mother/mother.selectors';
+import { getMotherVisits } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -129,29 +125,47 @@ export const FollowUp = ({
     } else {
       // grab the latest completed visit from the list
       const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      return lastAttended.length
-        ? lastAttended.reduce((prev, curr) =>
-            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-              ? prev
-              : curr
-          )
-        : undefined;
+      if (lastAttended.length !== 0) {
+        return lastAttended.length
+          ? lastAttended.reduce((prev, curr) =>
+              (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+                ? prev
+                : curr
+            )
+          : undefined;
+      } else {
+        const noAttended =
+          allVisits?.filter(
+            (item) => !item.attended && new Date(item.orderDate) >= new Date()
+          ) || [];
+        return noAttended[0];
+      }
     }
   };
 
   const previousVisitToSort = Object.assign({}, previousVisit);
   // const currentVisit = useSelector(getMotherCurrentVisitSelector);
   const currentVisit = getCurrentVisit();
-  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+  // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
 
-  // if the previousVisit is null, lets fetch the latest
-  if (!previousVisit && currentVisit) {
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForMother({
-        visitId: currentVisit.id,
-      })
-    );
-  }
+  useLayoutEffect(() => {
+    if (
+      !!previousVisit &&
+      !!currentVisit &&
+      previousVisit?.visitId !== currentVisit?.id
+    ) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: currentVisit.id,
+        })
+      );
+    }
+  }, [appDispatch, currentVisit, previousVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -162,45 +176,45 @@ export const FollowUp = ({
   const printData = useSelector(GetMotherSummaryByPrioritySelector);
 
   // Get Printing data
-  useLayoutEffect(() => {
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      if (isVisit) {
-        appDispatch(
-          visitThunkActions.GetMotherSummaryByPriority({
-            visitId: currentVisit.id,
-          })
-        );
-        appDispatch(
-          visitThunkActions.getPreviousVisitInformationForMother({
-            visitId: currentVisit.id,
-          })
-        );
-      } else {
-        if (previousCurrentVisit) {
-          appDispatch(
-            visitThunkActions.GetMotherSummaryByPriority({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-          appDispatch(
-            visitThunkActions.getPreviousVisitInformationForMother({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-        }
-      }
-  }, [
-    appDispatch,
-    currentVisit,
-    currentVisit?.id,
-    isVisit,
-    previousCurrentVisit,
-  ]);
+  // useLayoutEffect(() => {
+  //   if (
+  //     (!previousCurrentVisit ||
+  //       (!!previousCurrentVisit &&
+  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
+  //     !!currentVisit
+  //   )
+  //     if (isVisit) {
+  //       appDispatch(
+  //         visitThunkActions.GetMotherSummaryByPriority({
+  //           visitId: currentVisit.id,
+  //         })
+  //       );
+  //       appDispatch(
+  //         visitThunkActions.getPreviousVisitInformationForMother({
+  //           visitId: currentVisit.id,
+  //         })
+  //       );
+  //     } else {
+  //       if (previousCurrentVisit) {
+  //         appDispatch(
+  //           visitThunkActions.GetMotherSummaryByPriority({
+  //             visitId: previousCurrentVisit.id,
+  //           })
+  //         );
+  //         appDispatch(
+  //           visitThunkActions.getPreviousVisitInformationForMother({
+  //             visitId: previousCurrentVisit.id,
+  //           })
+  //         );
+  //       }
+  //     }
+  // }, [
+  //   appDispatch,
+  //   currentVisit,
+  //   currentVisit?.id,
+  //   isVisit,
+  //   previousCurrentVisit,
+  // ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -309,11 +323,9 @@ export const FollowUp = ({
     | Status
     | undefined;
 
-  if (
-    !previousVisit?.visitDataStatus?.length &&
-    previousVisit?.scoreComment === 'No data available for visit' &&
-    !walkthroughData
-  ) {
+  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+    console.log('mom previousVisit', previousVisit);
+    console.log('mom currentVisit', currentVisit);
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
