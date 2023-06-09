@@ -41,5 +41,25 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
               .SendMessageAsync();
         }
 
+        public async Task SendAdminInvitationAsync(ApplicationUser user, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+
+            var invitationUrl = $"{_options.Value.Signup}?token={encodedToken}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.AdminPortalInvitation)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.InvitationLink, invitationUrl)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
     }
 }

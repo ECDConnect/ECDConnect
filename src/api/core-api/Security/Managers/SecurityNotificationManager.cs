@@ -106,7 +106,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             if (userRoles.Contains("admin"))
             {
                 await notificationProvider
-                    .SetMessageTemplate(TemplateTypeEnum.AdminPasswordChangedByOtherAdmin)
+                    .SetMessageTemplate(TemplateTypeEnum.SuperadminNotifyEmailChanged)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
