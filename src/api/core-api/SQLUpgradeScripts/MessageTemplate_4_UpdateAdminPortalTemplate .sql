@@ -1,5 +1,6 @@
 -- 1. Delete existing templates
 -- 3. Add new message templates for email and sms 
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
 -- 1. and 2.
 create or replace procedure delete_then_insert(text, text, text) AS $proc$
@@ -12,8 +13,8 @@ BEGIN
 	
 	insert into "MessageTemplate" ("Id", "IsActive", "InsertedDate", "UpdatedDate", "UpdatedBy", "Protocol", "TemplateType", "Message", "Subject", "TenantId")
 	values
-	(gen_random_uuid(), true, CURRENT_DATE, TIMESTAMP '0001-01-01 00:00:00.000', null, 'email', templateType, message, subject, null),
-	(gen_random_uuid(), true, CURRENT_DATE, TIMESTAMP '0001-01-01 00:00:00.000', null, 'sms', templateType, message, subject, null);
+	(uuid_generate_v4(), true, CURRENT_DATE, TIMESTAMP '0001-01-01 00:00:00.000', null, 'email', templateType, message, subject, null),
+	(uuid_generate_v4(), true, CURRENT_DATE, TIMESTAMP '0001-01-01 00:00:00.000', null, 'sms', templateType, message, subject, null);
 end $proc$ language plpgsql;
 
 
