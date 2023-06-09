@@ -11,7 +11,7 @@ import {
   Dialog,
   DialogPosition,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
@@ -34,6 +34,7 @@ export const Login: React.FC = () => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
+  const [displayWrongUserError, setDisplayWrongUserError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { isOnline } = useOnlineStatus();
@@ -61,13 +62,34 @@ export const Login: React.FC = () => {
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
-  const { password } = useWatch({ control });
+  const { idField, passportField, password, preferId } = useWatch({ control });
+  const checkIdOrPassport = preferId ? idField : passportField;
 
-  const userHash = CryptoJS.AES.encrypt(password, 'secret key 123').toString();
+  const userHash = CryptoJS.AES.encrypt(password, 'user pass').toString();
+  const userIdHash = CryptoJS.AES.encrypt(
+    checkIdOrPassport,
+    'user id'
+  ).toString();
   const userLocalxpiration = Date.now() + 3600000;
+  const [currentUserId, setCurrentUserId] = useState(
+    JSON.parse(localStorage?.getItem('userIdHash')!)
+  );
+
+  const userIdHashDecrypted = useMemo(
+    () => (currentUserId ? CryptoJS.AES.decrypt(currentUserId, 'user id') : ''),
+    [currentUserId]
+  );
+  const userIdHashDecryptedToString = useMemo(
+    () =>
+      userIdHashDecrypted
+        ? userIdHashDecrypted.toString(CryptoJS.enc.Utf8)
+        : '',
+    [userIdHashDecrypted]
+  );
 
   const submitForm = async () => {
     localStorage.setItem('userHash', JSON.stringify(userHash));
+    localStorage.setItem('userIdHash', JSON.stringify(userIdHash));
     localStorage.setItem(
       'userLocalxpiration',
       JSON.stringify(userLocalxpiration)
@@ -83,6 +105,14 @@ export const Login: React.FC = () => {
           password: loginFormGetValues().password,
         };
 
+        if (currentUserId) {
+          if (checkIdOrPassport !== userIdHashDecryptedToString) {
+            setDisplayWrongUserError(true);
+            setIsLoading(false);
+            return;
+          }
+        }
+        setDisplayWrongUserError(false);
         appDispatch(authThunkActions.login(body))
           .then((isAuthenticated: any) => {
             if (
@@ -218,6 +248,15 @@ export const Login: React.FC = () => {
               <Alert
                 className={'mt-5 mb-3'}
                 message={'Password or ID incorrect. Please try again'}
+                type={'error'}
+              />
+            )}
+            {displayWrongUserError && (
+              <Alert
+                className={'mt-5 mb-3'}
+                message={
+                  'Another user is already logged in on this device. Please try again'
+                }
                 type={'error'}
               />
             )}
