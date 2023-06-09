@@ -85,11 +85,7 @@ export const IntroScreen = ({
 
   useLayoutEffect(() => {
     // if the previousVisit is null, lets fetch the latest
-    if (
-      !!previousVisit &&
-      !!currentVisit &&
-      previousVisit?.visitId !== currentVisit?.id
-    ) {
+    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: currentVisit.id,
