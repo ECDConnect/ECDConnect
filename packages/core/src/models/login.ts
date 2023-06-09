@@ -12,12 +12,9 @@ export interface AuthUser {
 }
 
 export interface RegisterRequestModel {
-  email: string;
+  username: string;
   password: string;
-  acceptedTerms: boolean;
+  resetToken: string;
+  acceptedTerms?: boolean;
 }
 
-export interface ResetPasswordRequestModel {
-  email?: string;
-  password?: string;
-}

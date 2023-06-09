@@ -1,8 +1,7 @@
 import {
   Config,
-  initialResetPasswordValues,
+  initialForgotPasswordValues,
   LocalStorageKeys,
-  ResetPasswordRequestModel,
   resetSchema,
   SimpleUserModel,
   useTheme,
@@ -28,7 +27,7 @@ export default function ForgotPassword() {
 
   const { register, getValues, formState } = useForm({
     resolver: yupResolver(resetSchema),
-    defaultValues: initialResetPasswordValues,
+    defaultValues: initialForgotPasswordValues,
     mode: 'onChange',
   });
 
@@ -42,7 +41,7 @@ export default function ForgotPassword() {
 
       setIsLoading(true);
       const body: SimpleUserModel = {
-        username: formValues.email,
+        username: formValues.username,
       };
       const isLinkSent = await forgotPassword(body, Config.authApi);
 
@@ -135,7 +134,7 @@ export default function ForgotPassword() {
               {displayError && (
                 <Alert
                   className={'mt-5 mb-3'}
-                  message={'Reset password link not sent!. Please try again'}
+                  message={'Reset password link notsent!. Please try again'}
                   type={'error'}
                 />
               )}
@@ -165,9 +164,9 @@ export default function ForgotPassword() {
                 <div>
                   <FormField
                     label={'Email address *'}
-                    nameProp={'email'}
+                    nameProp={'username'}
                     register={register}
-                    error={errors.email?.message}
+                    error={errors.username?.message}
                   />
                 </div>
 

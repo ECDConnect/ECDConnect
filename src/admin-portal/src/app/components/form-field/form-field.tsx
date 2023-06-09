@@ -95,7 +95,7 @@ const FormField: React.FC<FormFieldProps> = ({
           placeholder={placeholder}
         />
         {type === 'checkbox' && nameProp === 'terms' && (
-          <a className="text-md text-secondary mb-3 pl-2" href="/terms">
+          <a className="text-md text-secondary mb-3 px-5" href="/terms">
             {instructions[0] ?? ''}
           </a>
         )}

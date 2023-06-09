@@ -17,7 +17,7 @@ import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
 
 interface RouteParams {
-  userId: string;
+  resetToken: string;
 }
 
 export default function Register(props: RouteComponentProps<RouteParams>) {
@@ -26,7 +26,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const { userId } = useParams<RouteParams>();
+  const { resetToken } = useParams<RouteParams>();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(registerSchema),
@@ -40,6 +40,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
+  const formValues = getValues();
 
   const [showPassword, setShowPassword] = useState(false);
 
@@ -47,15 +48,19 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
     setShowPassword(!showPassword);
   };
 
-  const registerNewUser = async () => {
-    const formValues = getValues();
+  const termsState = watch('acceptedTerms');
+  const acceptedTerms = termsState && isValid;
 
+  console.log(resetToken);
+
+  const registerNewUser = async () => {
     if (isValid) {
       setIsLoading(true);
       const body: RegisterRequestModel = {
-        email: formValues.email,
+        username: formValues.username,
         password: formValues.password,
-        acceptedTerms: formValues.acceptedTerms,
+        resetToken: resetToken,
+        // acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerUser(body, Config.authApi).catch(
         () => {
@@ -103,10 +108,10 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               <div>
                 <FormField
                   label={'Email address *'}
-                  nameProp={'email'}
+                  nameProp={'username'}
                   type="email"
                   register={register}
-                  error={errors.email?.message}
+                  error={errors.username?.message}
                   instructions={[
                     'Make sure to use the same address where you received the invitation email.',
                   ]}
@@ -155,10 +160,11 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                 <div>
                   <FormField
                     label={'Terms and conditions *'}
-                    nameProp={'terms'}
+                    nameProp={'acceptedTerms'}
                     type="checkbox"
                     register={register}
                     instructions={['I accept the terms and conditions']}
+                    error={errors.acceptedTerms?.message}
                   />
                 </div>
               </div>
@@ -177,7 +183,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   type="filled"
                   isLoading={isLoading}
                   color="secondary"
-                  disabled={!isValid}
+                  disabled={!acceptedTerms}
                   onClick={registerNewUser}
                 >
                   <Typography

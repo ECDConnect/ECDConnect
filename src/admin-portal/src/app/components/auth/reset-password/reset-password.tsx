@@ -1,8 +1,7 @@
 import {
   Config,
-  initialResetValues,
-  LocalStorageKeys,
-  ResetPasswordRequestModel,
+  initialResetPasswordValues,
+  PasswordResetModel,
   resetPasswordSchema,
   useTheme,
 } from '@ecdlink/core';
@@ -10,25 +9,34 @@ import { Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
+import zxcvbn from 'zxcvbn-typescript';
+
+interface RouteParams {
+  resetToken: string;
+  email: string;
+}
 
 export default function ResetPassword() {
   const { theme } = useTheme();
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { resetPassword } = useAuth();
+  const { resetToken, email } = useParams<RouteParams>();
+  const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(resetPasswordSchema),
-    defaultValues: initialResetValues,
+    defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
-
+  // ResetPasswordRequestModel
   const [showPassword, setShowPassword] = useState(false);
 
   const togglePasswordVisibility = () => {
@@ -39,10 +47,44 @@ export default function ResetPassword() {
   const password = watch('password');
   const formValues = getValues();
 
-  const { errors, isValid } = formState;
+    //check password strength
+    const passwordStrength = zxcvbn(password);
+    const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+  
 
-  const resetPassword = async () => {
+  const requestResetPasword = async () => {
     if (isValid) {
+      console.log(Config.authApi);
+
+      setIsLoading(true);
+      const body: PasswordResetModel = {
+        username: email,
+        password: formValues.password,
+        resetToken: resetToken,
+      };
+      const isLinkSent = await resetPassword(body, Config.authApi);
+
+      if (isLinkSent) {
+        setIsLoading(false);
+        history.push('/dashboard');
+      } else {
+        setIsLoading(false);
+        // setDisplayError(true);
+      }
+
+      setTimeout(() => {
+        // setDisplayError(false);
+      }, 5000);
+    }
+  };
+
+  const { errors, isValid } = formState;
+console.log(isValid)
+
+
+  const submitResetPassword = async () => {
+    if (isValid) {
+      requestResetPasword()
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
     }
@@ -142,7 +184,7 @@ export default function ResetPassword() {
                     isLoading={isLoading}
                     color="secondary"
                     disabled={!isValid}
-                    onClick={resetPassword}
+                    onClick={submitResetPassword}
                   >
                     <Typography
                       type="help"
