@@ -81,7 +81,8 @@ export const IntroScreen = ({
             }
           : {})}
         description={`Your last home visit: ${
-          !!previousVisit?.visitDataStatus?.length
+          !!previousVisit?.visitDataStatus?.length &&
+          previousVisit?.scoreComment !== 'No data available for visit'
             ? new Date(
                 String(previousPlannedVisit?.actualVisitDate)
               ).toLocaleDateString('en-ZA', {
