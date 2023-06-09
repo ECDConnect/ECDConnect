@@ -104,11 +104,6 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  // this provides the status of previous visit
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForMotherSelector
-  );
-
   // getting all visits for a client
   const allVisits = useSelector(getMotherVisits);
   // this will be available when you are busy completing a questionnaire
@@ -143,17 +138,17 @@ export const FollowUp = ({
     }
   };
 
+  // this provides the status of previous visit
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForMotherSelector
+  );
   const previousVisitToSort = Object.assign({}, previousVisit);
   // const currentVisit = useSelector(getMotherCurrentVisitSelector);
   const currentVisit = getCurrentVisit();
   // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
 
   useLayoutEffect(() => {
-    if (
-      !!previousVisit &&
-      !!currentVisit &&
-      previousVisit?.visitId !== currentVisit?.id
-    ) {
+    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
           visitId: currentVisit.id,
@@ -174,47 +169,6 @@ export const FollowUp = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const printData = useSelector(GetMotherSummaryByPrioritySelector);
-
-  // Get Printing data
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     if (isVisit) {
-  //       appDispatch(
-  //         visitThunkActions.GetMotherSummaryByPriority({
-  //           visitId: currentVisit.id,
-  //         })
-  //       );
-  //       appDispatch(
-  //         visitThunkActions.getPreviousVisitInformationForMother({
-  //           visitId: currentVisit.id,
-  //         })
-  //       );
-  //     } else {
-  //       if (previousCurrentVisit) {
-  //         appDispatch(
-  //           visitThunkActions.GetMotherSummaryByPriority({
-  //             visitId: previousCurrentVisit.id,
-  //           })
-  //         );
-  //         appDispatch(
-  //           visitThunkActions.getPreviousVisitInformationForMother({
-  //             visitId: previousCurrentVisit.id,
-  //           })
-  //         );
-  //       }
-  //     }
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   isVisit,
-  //   previousCurrentVisit,
-  // ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -324,8 +278,6 @@ export const FollowUp = ({
     | undefined;
 
   if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
-    console.log('mom previousVisit', previousVisit);
-    console.log('mom currentVisit', currentVisit);
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
