@@ -849,7 +849,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -1100,7 +1100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } 
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
-                comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
+                comment = Constants.GGSettings.mixed_feeding + " " + listFoods;
                 AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: amber - ""Try to make sure you give Themba only breast milk or only formula milk""
@@ -1516,6 +1516,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var scoreColor = "";
 
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
+            result.VisitId = visitId.ToString();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (
@@ -1566,13 +1567,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Weight = weightData?.VisitData.QuestionAnswer;
+            result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
             var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Length = lengthData?.VisitData.QuestionAnswer;
+            result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 

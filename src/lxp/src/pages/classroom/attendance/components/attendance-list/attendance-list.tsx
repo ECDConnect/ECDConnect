@@ -33,7 +33,7 @@ import { AttendanceListProps, AttendanceState } from './attendance-list.types';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 
-const filterInfo: FilterInfo = {
+export const filterInfo: FilterInfo = {
   filterName: 'Class',
   filterHint: 'You can select multiple classes',
 };

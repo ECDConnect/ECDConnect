@@ -160,7 +160,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId)
+        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
         {
             var _visitId = new Guid(visitId);
             return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);

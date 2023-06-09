@@ -227,6 +227,7 @@ class Visit {
       query: `
         query GetPreviousVisitInformationForInfant($visitId: String) {
           previousVisitInformationForInfant(visitId: $visitId) {
+            visitId
             score
             scoreColor
             scoreComment
@@ -265,7 +266,6 @@ class Visit {
         'Get Previous Visit Information For Infant Failed - Server connection error'
       );
     }
-
     return response.data.data.previousVisitInformationForInfant;
   }
 
@@ -384,6 +384,7 @@ class Visit {
       query: `
       query GetPreviousVisitInformationForMother($visitId: String) {
         previousVisitInformationForMother(visitId: $visitId) {
+          visitId
           score
           scoreColor
           scoreComment

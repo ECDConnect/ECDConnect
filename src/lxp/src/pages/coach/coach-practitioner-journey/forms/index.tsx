@@ -3,7 +3,7 @@ import { parseBool, useDialog, usePrevious, useSnackbar } from '@ecdlink/core';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import {
   PractitionerJourneyParams,
@@ -26,13 +26,13 @@ import {
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { ReactComponent as IconRobot } from '@/assets/iconRobot.svg';
-import ROUTES from '@/routes/routes';
 import { useAppDispatch } from '@/store';
 import { callAnswer, visitOrCallQuestion } from './general-support-visit';
 import {
   step11VisitSection,
   step16Question1,
   step16VisitSection,
+  step19Question2Pqa,
 } from './pqa-visits/first-pqa';
 import {
   PractitionerActions,
@@ -42,6 +42,12 @@ import {
   delicensingQuestion2,
   delicensingStep1VisitSection,
 } from './delicensing';
+import { ChildrenDialog } from './dialog';
+
+interface SubmitProps {
+  sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
+  payload: CmsVisitDataInputModelInput;
+}
 
 interface FormProps {
   visitId?: string;
@@ -73,13 +79,11 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
-  const name = practitioner?.user?.firstName;
+  const firstName = practitioner?.user?.firstName || 'the SmartStarter';
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
   const isToRemoveSmartStarter = step16Question1Answer === true;
-
-  const history = useHistory();
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -143,10 +147,6 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     });
   }, [dialog, onBack]);
 
-  const onSuccess = useCallback(() => {
-    showMessage({ message: `${activityName} complete!` });
-  }, [activityName, showMessage]);
-
   const setRatingStep = useCallback(() => {
     const stepsLength = getFirstPqaSteps({
       isStep11AnswerTrue,
@@ -180,58 +180,25 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     setStep((preState) => preState + 1);
   }, []);
 
-  const displayChildrenDialog = useCallback(() => {
-    dialog({
-      blocking: false,
-      position: DialogPosition.Middle,
-      color: 'bg-white',
-      render: (onClose) => {
-        return (
-          <ActionModal
-            className="z-50"
-            customIcon={<IconRobot className="mb-4" />}
-            title={`Would you like to register any children for ${name}’s programme?`}
-            detailText={`You can register children on your phone now. Or, help ${name} to register children on her phone.
-            ${
-              !isOnline
-                ? `\n
-            Note: Data has been saved in offline mode
-            \nIn order for you to view the answers, it is necessary to synchronize your account.`
-                : ''
-            }`}
-            actionButtons={[
-              {
-                colour: 'primary',
-                text: 'Yes, register children now',
-                textColour: 'white',
-                type: 'filled',
-                leadingIcon: 'CheckCircleIcon',
-                onClick: () => {
-                  onBack?.();
-                  history.push(ROUTES.CHILD_REGISTRATION_LANDING, {
-                    practitionerId,
-                  });
-                  onClose();
-                },
-              },
-              {
-                colour: 'primary',
-                text: 'No, skip',
-                textColour: 'primary',
-                type: 'outlined',
-                leadingIcon: 'XIcon',
-                onClick: () => {
-                  setTimeout(() => onSuccess(), 100);
-                  onBack?.();
-                  onClose();
-                },
-              },
-            ]}
+  const displayChildrenDialog = useCallback(
+    (name: string) => {
+      dialog({
+        blocking: false,
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render: (onClose) => (
+          <ChildrenDialog
+            name={firstName}
+            onClose={onClose}
+            onSuccess={() => showMessage({ message: `${name} complete!` })}
+            practitionerId={practitionerId}
+            onBack={onBack}
           />
-        );
-      },
-    });
-  }, [dialog, history, isOnline, name, onBack, onSuccess, practitionerId]);
+        ),
+      });
+    },
+    [dialog, firstName, practitionerId, onBack, showMessage]
+  );
 
   const displayOfflineWarning = useCallback(() => {
     dialog({
@@ -261,6 +228,84 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     });
   }, [dialog]);
 
+  const onSubmitSupportVisit = useCallback(
+    ({ payload, sections }: SubmitProps) => {
+      const visitOrCallSection = sections?.find((item) =>
+        item?.questions?.some(
+          (question) => question?.question === visitOrCallQuestion
+        )
+      )?.questions;
+      const visitOrCallAnswer = visitOrCallSection?.find(
+        (item) => item?.question === visitOrCallQuestion
+      )?.answer;
+
+      const supportVisitPayload: SupportVisitModelInput = {
+        practitionerId,
+        plannedVisitDate: new Date(),
+        isSupportCall: visitOrCallAnswer === callAnswer,
+        // TODO: add schedule option
+        attended: true,
+        supportData: payload,
+      };
+      appDispatch(
+        pqaActions.addVisitFormData(supportVisitPayload, {
+          userId: practitionerId,
+          formType: 'support-visit',
+        })
+      );
+      appDispatch(pqaThunkActions.addSupportVisitFormData(supportVisitPayload));
+      onBack?.();
+      showMessage({
+        message: `${
+          visitOrCallAnswer === callAnswer ? 'Support call' : 'Support visit'
+        } complete!`,
+      });
+      if (!isOnline) {
+        setTimeout(() => displayOfflineWarning(), 300);
+      }
+    },
+    [
+      appDispatch,
+      displayOfflineWarning,
+      isOnline,
+      onBack,
+      showMessage,
+      practitionerId,
+    ]
+  );
+
+  const onSubmitPrePqa = useCallback(
+    ({ payload }: SubmitProps) => {
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 'pre-pqa',
+        })
+      );
+      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      displayChildrenDialog('First site visit');
+    },
+    [appDispatch, displayChildrenDialog, practitionerId]
+  );
+
+  const onSubmitPqa = useCallback(
+    ({ payload, sections }: SubmitProps) => {
+      const step19Question2 = sections?.find((item) =>
+        item?.questions?.some(
+          (question) => question?.question === step19Question2Pqa
+        )
+      )?.questions;
+      const step19Question2Answer = step19Question2?.find(
+        (item) => item?.question === step19Question2Pqa
+      )?.answer;
+
+      if (step19Question2Answer === 'true') {
+        displayChildrenDialog('First PQA visit');
+      }
+    },
+    [displayChildrenDialog]
+  );
+
   const onSubmit = useCallback(() => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
@@ -281,58 +326,20 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
     switch (activityName) {
       case visitTypes.supportVisit:
-        const visitOrCallSection = sections?.find((item) =>
-          item?.questions?.some(
-            (question) => question?.question === visitOrCallQuestion
-          )
-        )?.questions;
-        const visitOrCallAnswer = visitOrCallSection?.find(
-          (item) => item?.question === visitOrCallQuestion
-        )?.answer;
-
-        const supportVisitPayload: SupportVisitModelInput = {
-          practitionerId,
-          plannedVisitDate: new Date(),
-          isSupportCall: visitOrCallAnswer === callAnswer,
-          // TODO: add schedule option
-          attended: true,
-          supportData: payload,
-        };
-        appDispatch(
-          pqaActions.addVisitFormData(supportVisitPayload, {
-            userId: practitionerId,
-            formType: 'support-visit',
-          })
-        );
-        appDispatch(
-          pqaThunkActions.addSupportVisitFormData(supportVisitPayload)
-        );
-        onBack?.();
-        onSuccess();
-        if (!isOnline) {
-          setTimeout(() => displayOfflineWarning(), 300);
-        }
+        onSubmitSupportVisit({ payload, sections });
         break;
-
+      case visitTypes.pqa.firstPQA.name:
+        onSubmitPqa({ payload, sections });
+        break;
       default:
-        appDispatch(
-          pqaActions.addVisitFormData(payload, {
-            userId: practitionerId,
-            formType: 'pre-pqa',
-          })
-        );
-        appDispatch(pqaThunkActions.addVisitFormData(payload));
-        displayChildrenDialog();
+        onSubmitPrePqa({ payload, sections });
         break;
     }
   }, [
     activityName,
-    appDispatch,
-    displayChildrenDialog,
-    displayOfflineWarning,
-    isOnline,
-    onBack,
-    onSuccess,
+    onSubmitPqa,
+    onSubmitPrePqa,
+    onSubmitSupportVisit,
     practitionerId,
     sectionQuestions,
     visitId,
@@ -400,13 +407,12 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       }
 
       onBack?.();
-      onSuccess();
+      showMessage({ message: 'SmartStarter removed' });
     }
   }, [
     isLoadingDeactivate,
     isRejected,
     onBack,
-    onSuccess,
     showMessage,
     wasLoadingDeactivate,
   ]);
