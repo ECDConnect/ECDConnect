@@ -60,8 +60,7 @@ export default function ResetPassword() {
       const body: PasswordResetModel = {
         username: email,
         password: formValues.password,
-        resetToken: resetToken,
-        isSouthAfricanCitizen: false
+        resetToken: resetToken
       };
       const isLinkSent = await resetPassword(body, Config.authApi);
 

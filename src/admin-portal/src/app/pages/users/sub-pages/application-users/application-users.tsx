@@ -241,7 +241,6 @@ export default function ApplicationUsers() {
                       type: 'array',
                       displayProperty: 'name',
                     },
-                    { field: 'date', use: 'Date Invited' },
 
                     { field: 'isActive', use: 'Active' },
                   ]}

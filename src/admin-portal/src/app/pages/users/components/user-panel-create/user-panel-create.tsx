@@ -77,6 +77,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     emitCloseDialog(true);
   };
 
+  console.log(">", selectedUserRoles)
+
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
     const userInputModel: UserModelInput = {
@@ -84,11 +86,19 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       email: userDetailForm.email,
+      isSouthAfricanCitizen: false,
+      idNumber: null,
+      verifiedByHomeAffairs: false,
+      dateOfBirth: new Date(),
+      genderId: null,
+      contactPreference: null,
+      phoneNumber: null
     };
 
     await createUser({
       variables: {
         input: { ...userInputModel },
+        createAdmin: true,
       },
     })
       .then(async (response) => {
