@@ -43,7 +43,7 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 // import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
@@ -56,6 +56,7 @@ import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
 import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
+import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -104,6 +105,7 @@ export const FollowUp = ({
 }: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const appDispatch = useAppDispatch();
+  const location = useLocation();
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
@@ -113,7 +115,9 @@ export const FollowUp = ({
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
 
+  // get all visits to filter current visit
   const allVisits = useSelector(getInfantVisitsSelector);
+
   const getCurrentVisit = () => {
     // grab visit id from url and set current visit
     if (visitId) {
@@ -125,18 +129,25 @@ export const FollowUp = ({
     } else {
       // grab the latest completed visit from the list
       const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      return lastAttended.length
-        ? lastAttended.reduce((prev, curr) =>
-            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-              ? prev
-              : curr
-          )
-        : undefined;
+      if (lastAttended.length !== 0) {
+        return lastAttended.length
+          ? lastAttended.reduce((prev, curr) =>
+              (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+                ? prev
+                : curr
+            )
+          : undefined;
+      } else {
+        const noAttended =
+          allVisits?.filter(
+            (item) => !item.attended && new Date(item.orderDate) >= new Date()
+          ) || [];
+        return noAttended[0];
+      }
     }
   };
-  const currentVisit = getCurrentVisit();
 
-  console.log('currentVisit', currentVisit);
+  const currentVisit = getCurrentVisit();
 
   useEffect(() => {
     if (isPrint) {
@@ -163,16 +174,27 @@ export const FollowUp = ({
     getPreviousVisitInformationForInfantSelector
   );
 
-  const printData = useSelector(GetInfantSummaryByPrioritySelector);
-  // Get Printing data
   useLayoutEffect(() => {
-    if (!!currentVisit)
+    // if the previousVisit is null, lets fetch the latest
+    if (
+      !!previousVisit &&
+      !!currentVisit &&
+      previousVisit?.visitId !== currentVisit?.id
+    ) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: currentVisit.id,
+        })
+      );
       appDispatch(
         visitThunkActions.GetInfantSummaryByPriority({
           visitId: currentVisit?.id || '',
         })
       );
-  }, [appDispatch, currentVisit]);
+    }
+  }, [appDispatch, currentVisit, previousVisit]);
+
+  const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
   const getColorAndIcon = useCallback(
     (
@@ -322,7 +344,6 @@ export const FollowUp = ({
 
     return groupedData;
   }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
-
   if (
     !previousVisit?.visitDataStatus?.length &&
     previousVisit?.scoreComment === 'No data available for visit' &&

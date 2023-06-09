@@ -1516,6 +1516,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var scoreColor = "";
 
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
+            result.VisitId = visitId.ToString();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (

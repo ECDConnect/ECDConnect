@@ -6504,6 +6504,7 @@ export type Progress_VisitDataStatus = {
   scoreColor?: Maybe<Scalars['String']>;
   scoreComment?: Maybe<Scalars['String']>;
   visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  visitId?: Maybe<Scalars['String']>;
   weight?: Maybe<Scalars['String']>;
   weightColor?: Maybe<Scalars['String']>;
   weightComment?: Maybe<Scalars['String']>;

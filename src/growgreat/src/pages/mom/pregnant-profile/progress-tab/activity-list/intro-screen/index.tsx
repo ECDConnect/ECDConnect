@@ -15,7 +15,6 @@ import {
   getMotherPreviousVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
-import { useAppDispatch } from '@/store';
 
 interface IntroScreenProps {
   mother?: MotherDto;
@@ -33,7 +32,6 @@ export const IntroScreen = ({
   isPrint,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const appDispatch = useAppDispatch();
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -42,8 +40,6 @@ export const IntroScreen = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  //const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
-
   const previousPlannedVisit = useSelector((state: RootState) =>
     getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
   );
