@@ -113,6 +113,8 @@ export function getFormattedDateInYearsMonthsAndDays(startedDate?: string) {
 
   const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
 
+  if (!years && !months && !days) return 'Not provided';
+
   if (years === 0 && months < 1) {
     return `${days} ${days > 1 ? 'days' : 'day'}`;
   }
