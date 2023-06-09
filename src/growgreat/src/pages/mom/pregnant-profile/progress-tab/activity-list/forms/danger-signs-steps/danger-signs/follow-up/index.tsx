@@ -13,10 +13,10 @@ export const DangerSignsFollowUpStep = ({
   mother,
   setEnableButton,
 }: DynamicFormProps) => {
-  const name = useMemo(
-    () => mother?.user?.firstName || '',
-    [mother?.user?.firstName]
-  );
+  // const name = useMemo(
+  //   () => mother?.user?.firstName || '',
+  //   [mother?.user?.firstName]
+  // );
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector

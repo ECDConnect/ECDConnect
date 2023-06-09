@@ -1374,30 +1374,52 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         
         /* ALL METHODS BELOW ARE RETURNING DATA FOR FE VIA INFANT AND MOTHER MANAGERS/QUERY EXTENSIONS*/
-        public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
+        public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType, string visitId) {
             // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
             DateTime today = DateTime.Today;
             var sixMonthsBack = today.AddMonths(-6);
 
             if (clientType == Constants.GGSettings.client_mother) {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
+                }
             } else {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
             return allReferrals;
         }
-        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType)
+        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType, string visitId)
         {
             // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
@@ -1406,21 +1428,44 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == Constants.GGSettings.client_mother)
             {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "")
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
             else
             {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "")
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
+                else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
 
             foreach (var item in allReferrals)

@@ -47,6 +47,7 @@ import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
+  getCurrentVisitSelector,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -55,7 +56,6 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
 import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
 
 export interface FollowUpWalkthroughData {
@@ -105,7 +105,6 @@ export const FollowUp = ({
 }: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const appDispatch = useAppDispatch();
-  const location = useLocation();
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
@@ -115,39 +114,9 @@ export const FollowUp = ({
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
 
-  // get all visits to filter current visit
-  const allVisits = useSelector(getInfantVisitsSelector);
-
-  const getCurrentVisit = () => {
-    // grab visit id from url and set current visit
-    if (visitId) {
-      for (var i = 0; i < allVisits.length; i++) {
-        if (allVisits[i].id === visitId) {
-          return allVisits[i];
-        }
-      }
-    } else {
-      // grab the latest completed visit from the list
-      const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      if (lastAttended.length !== 0) {
-        return lastAttended.length
-          ? lastAttended.reduce((prev, curr) =>
-              (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-                ? prev
-                : curr
-            )
-          : undefined;
-      } else {
-        const noAttended =
-          allVisits?.filter(
-            (item) => !item.attended && new Date(item.orderDate) >= new Date()
-          ) || [];
-        return noAttended[0];
-      }
-    }
-  };
-
-  const currentVisit = getCurrentVisit();
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, visitId)
+  );
 
   useEffect(() => {
     if (isPrint) {

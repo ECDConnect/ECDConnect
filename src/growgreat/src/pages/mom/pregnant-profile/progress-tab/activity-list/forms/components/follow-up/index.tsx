@@ -35,7 +35,7 @@ import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import { getMotherVisits } from '@/store/mother/mother.selectors';
+import { getCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -44,6 +44,7 @@ import {
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { useLocation } from 'react-router';
+import { RootState } from '@/store/types';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -104,48 +105,18 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  // getting all visits for a client
-  const allVisits = useSelector(getMotherVisits);
   // this will be available when you are busy completing a questionnaire
   const [, , , , , visitId] = location.pathname.split('/');
-
-  const getCurrentVisit = () => {
-    // grab visit id from url and set current visit
-    if (visitId) {
-      for (var i = 0; i < allVisits.length; i++) {
-        if (allVisits[i].id === visitId) {
-          return allVisits[i];
-        }
-      }
-    } else {
-      // grab the latest completed visit from the list
-      const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      if (lastAttended.length !== 0) {
-        return lastAttended.length
-          ? lastAttended.reduce((prev, curr) =>
-              (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-                ? prev
-                : curr
-            )
-          : undefined;
-      } else {
-        const noAttended =
-          allVisits?.filter(
-            (item) => !item.attended && new Date(item.orderDate) >= new Date()
-          ) || [];
-        return noAttended[0];
-      }
-    }
-  };
 
   // this provides the status of previous visit
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
   const previousVisitToSort = Object.assign({}, previousVisit);
-  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const currentVisit = getCurrentVisit();
-  // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, visitId)
+  );
 
   useLayoutEffect(() => {
     if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
