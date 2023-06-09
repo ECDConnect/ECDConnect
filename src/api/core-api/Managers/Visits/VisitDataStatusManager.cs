@@ -1428,7 +1428,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == Constants.GGSettings.client_mother)
             {
-                if (visitId == "")
+                if (visitId == "" && visitId == null)
                 {
                     allReferrals = (
                         from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
@@ -1448,7 +1448,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             else
             {
-                if (visitId == "")
+                if (visitId == "" && visitId == null)
                 {
                     allReferrals = (
                         from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
