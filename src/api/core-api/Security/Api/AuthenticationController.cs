@@ -110,7 +110,7 @@ namespace ECDLink.Security.Api
 
             var user = await _securityManager.GetUserByNameAsync(model.Username);
 
-            var result = await _securityManager.ResetPasswordAsync(user);
+            var result = await _securityManager.ForgotPasswordAsync(user);
 
             if (!result)
             {

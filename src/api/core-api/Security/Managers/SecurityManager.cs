@@ -12,6 +12,7 @@ using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -99,7 +100,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return await _userManager.FindByNameAsync(username);
         }
 
-        public async Task<bool> ResetPasswordAsync(ApplicationUser user)
+        public async Task<bool> ForgotPasswordAsync(ApplicationUser user)
         {
             var resetToken = await _passwordManager.RequestPasswordResetTokenAsync(user);
 
@@ -111,6 +112,19 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             await _notificationManager.SendForgotPasswordMessageAsync(user, resetToken);
 
             return true;
+        }
+
+        public async Task<bool> ChangePasswordAsync(ApplicationUser user, string newPassword)
+        {
+            var passwordToken = await _userManager.GeneratePasswordResetTokenAsync(user);
+            var updatedPassword = await _userManager.ResetPasswordAsync(user, passwordToken, newPassword);
+            
+            if (!updatedPassword.Succeeded)
+            {
+                throw new Exception("Unable to update password");
+            }
+
+            return updatedPassword.Succeeded;
         }
 
         public async Task<string> GenerateJwtForUserAsync(ApplicationUser user, JwtEncoderEnum jwtType)

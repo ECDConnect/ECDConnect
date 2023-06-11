@@ -40,33 +40,12 @@ namespace ECDLink.Notifications.Factories
 
         private IQueryable<MessageTemplate> AssignTemplate(IQueryable<MessageTemplate> query, TemplateTypeEnum templateType)
         {
-            switch (templateType)
-            {
-                case TemplateTypeEnum.ForgotPassword:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.ForgotPassword));
-                case TemplateTypeEnum.Invitation:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.Invitation));
-                case TemplateTypeEnum.AuthCode:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.AuthCode));
-                case TemplateTypeEnum.ThreeWeekNotLoggedOn:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.ThreeWeekNotLoggedOn));
-                case TemplateTypeEnum.FourWeekNotLoggedOn:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.FourWeekNotLoggedOn));
-                case TemplateTypeEnum.AttendanceWeekly:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.AttendanceWeekly));
-                case TemplateTypeEnum.PasswordChangedByAdmin:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.PasswordChangedByAdmin));
-                case TemplateTypeEnum.PasswordChangedBySelf:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.PasswordChangedBySelf));
-                case TemplateTypeEnum.EmailChangedByAdmin:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.EmailChangedByAdmin));
-                case TemplateTypeEnum.VerifyEmailAddress:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.VerifyEmailAddress));
-                case TemplateTypeEnum.AdminPasswordChangedByOtherAdmin:
-                    return query.Where(message => string.Equals(message.TemplateType, TemplateTypeConstants.SuperadminNotifyEmailChanged));
-                default:
-                    throw new NotImplementedException("Message template type not implement or defined in factory");
-            }
+            var stringConst = typeof(TemplateTypeConstants).GetField(templateType.ToString())?.GetValue(null)?.ToString();
+            
+            if (stringConst is null)
+                throw new ArgumentOutOfRangeException(nameof(templateType), "Message template type not implement or defined in factory");
+
+            return query.Where(message => string.Equals(message.TemplateType, stringConst));
         }
 
         private IQueryable<MessageTemplate> FilterTypes(IQueryable<MessageTemplate> query, MessageProtocolEnum messageProtocol)

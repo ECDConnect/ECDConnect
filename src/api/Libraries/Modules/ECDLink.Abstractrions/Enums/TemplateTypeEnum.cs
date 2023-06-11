@@ -12,6 +12,8 @@ namespace ECDLink.Abstractrions.Enums
         PasswordChangedBySelf = 7,
         EmailChangedByAdmin = 8,
         VerifyEmailAddress = 9,
-        AdminPasswordChangedByOtherAdmin = 10,
+        SuperadminNotifyEmailChanged = 10,
+        AdminPasswordChanged = 11,
+        AdminPortalInvitation = 12,
     }
 }

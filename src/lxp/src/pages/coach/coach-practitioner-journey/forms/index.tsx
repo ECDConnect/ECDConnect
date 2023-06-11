@@ -299,11 +299,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         (item) => item?.question === step19Question2Pqa
       )?.answer;
 
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 'pqa',
+        })
+      );
+      appDispatch(pqaThunkActions.addVisitFormData(payload));
+
       if (step19Question2Answer === 'true') {
         displayChildrenDialog('First PQA visit');
       }
     },
-    [displayChildrenDialog]
+    [appDispatch, displayChildrenDialog, practitionerId]
   );
 
   const onSubmit = useCallback(() => {
