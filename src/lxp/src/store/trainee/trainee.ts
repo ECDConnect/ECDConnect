@@ -22,7 +22,6 @@ const traineeSlice = createSlice({
       state.trainee = action.payload;
     });
     builder.addCase(getTraineeTimeline.fulfilled, (state, action) => {
-      console.log(action.payload);
       state.traineeOnboardTimeline = action.payload;
     });
   },

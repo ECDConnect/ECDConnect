@@ -1,4 +1,3 @@
-import Article from '@/components/article/article';
 import { practitionerSelectors } from '@/store/practitioner';
 import {
   Alert,
@@ -7,14 +6,23 @@ import {
   Checkbox,
   Typography,
 } from '@ecdlink/ui';
+
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { coachSelectors } from '@/store/coach';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { format } from 'date-fns';
-
+import { useForm, useWatch } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  CommunitySupportModel,
+  CommunitySupportSchema,
+  initialCommunitySupportValues,
+} from '@/schemas/trainee/community-support';
+import { TraineeService } from '@/services/TraineeService';
+import { authSelectors } from '@/store/auth';
+import ROUTES from '@/routes/routes';
 interface GetCommunitySupportProps {
   setNotificationStep: any;
 }
@@ -29,6 +37,27 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
   const date = format(new Date(), 'EEEE, d LLLL');
+  const userAuth = useSelector(authSelectors.getAuthUser);
+
+  const {
+    control,
+    setValue,
+    register: communitySupportRegister,
+    getValues: communitySupportGetValues,
+  } = useForm<CommunitySupportModel>({
+    resolver: yupResolver(CommunitySupportSchema),
+    mode: 'onChange',
+    defaultValues: initialCommunitySupportValues,
+  });
+
+  const sendCommunitySupportAnswer = async () => {
+    await new TraineeService(userAuth?.auth_token!).updateCommunitySupport(
+      practitioner?.userId!,
+      communitySupportGetValues().haveSupport
+    );
+
+    history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+  };
 
   return (
     <>
@@ -53,10 +82,10 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
             />
             <div className="'flex items-center' w-full flex-row justify-start">
               <div className="flex items-start gap-2">
-                <Checkbox
-                  // checked={}
-                  onCheckboxChange={(value) => {}}
-                />
+                <Checkbox<CommunitySupportModel>
+                  register={communitySupportRegister}
+                  nameProp={'haveSupport'}
+                ></Checkbox>
                 <Typography
                   text={
                     'I have the support of local authorities or groups and others in my community'
@@ -69,7 +98,9 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
             <Alert
               className={'mt-5 mb-3'}
               title="Getting the support of ECD centres and forums in your area is very important if you want to be successful!"
-              message="You may need to get support from: local tribal authorities; churches, mosques or synagogues; ward councillors; DBE offices; parents in the community; local clinic; other ECD service organisations; other ECD centres."
+              list={[
+                'You may need to get support from: local tribal authorities; churches, mosques or synagogues; ward councillors; DBE offices; parents in the community; local clinic; other ECD service organisations; other ECD centres.',
+              ]}
               type={'info'}
             />
             <div className="mt-4 mb-16 h-full w-full">
@@ -81,7 +112,8 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
                 text="Save"
                 textColor="white"
                 icon="ArrowCircleRightIcon"
-                onClick={() => {}}
+                disabled={!communitySupportGetValues().haveSupport}
+                onClick={sendCommunitySupportAnswer}
               />
             </div>
           </div>

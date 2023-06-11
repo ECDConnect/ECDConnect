@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, TraineeDto } from '@ecdlink/core';
-import { PractitionerTimeline } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  PractitionerTimeline,
+} from '@ecdlink/graphql';
 
 class TraineeService {
   _accessToken: string;
@@ -114,6 +117,94 @@ class TraineeService {
     }
 
     return response.data.data.onBoardTraineeTimeline;
+  }
+
+  async updateCommunitySupport(
+    userId: string,
+    haveCommunitySupport: boolean
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation UpdateCommunitySupport($userId: String, $haveCommunitySupport: Bool ) {
+        updateCommunitySupport(userId: $userId, haveCommunitySupport: $haveCommunitySupport) {
+            id 
+        }        
+    }
+      `,
+      variables: {
+        userId,
+        haveCommunitySupport,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async addVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddVisitData($input: CMSVisitDataInputModelInput) {
+        addVisitData(input: $input) {
+        }
+    }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async scheduleConsolidationMeetingDate(
+    userId: string,
+    scheduledDate: Date
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation ScheduleConsolidationMeetingDate($userId: String, $scheduledDate: DateTime ) {
+        scheduleConsolidationMeetingDate(userId: $userId, scheduledDate: $scheduledDate) {
+            id 
+        }        
+    }
+      `,
+      variables: {
+        userId,
+        scheduledDate,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
   }
 }
 

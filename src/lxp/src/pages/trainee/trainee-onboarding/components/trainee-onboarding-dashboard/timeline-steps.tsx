@@ -1,10 +1,5 @@
 import { Button, Colours, StepItem, Typography } from '@ecdlink/ui';
-import {
-  Maybe,
-  PractitionerTimeline,
-  TraineeOnBoardTimeline,
-  Visit,
-} from '@ecdlink/graphql';
+import { Maybe, TraineeOnBoardTimeline, Visit } from '@ecdlink/graphql';
 import {
   CalendarIcon,
   PhoneIcon,
@@ -30,12 +25,13 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
 export const getStepType = (
   color?: Maybe<string>
 ): { type: StepItem['type']; color?: Colours } => {
-  console.log({});
   if (!color) return { type: 'todo' };
 
   switch (color.toLowerCase()) {
     case 'success':
       return { type: 'completed' };
+    case 'consolidation meeting scheduled':
+      return { type: 'inProgress' };
     case 'warning':
       return { type: 'inProgress', color: 'alertDark' };
     case 'error':
@@ -58,14 +54,26 @@ export const setStep = (
       title: status,
       subTitle: getStepDate(date),
       inProgressStepIcon:
-        (color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon',
+        (status === 'Consolidation meeting scheduled' && 'CalendarIcon') ||
+        ((color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon'),
       subTitleColor: getStepType(color)?.color || '',
-      type: getStepType(color).type,
+      type:
+        status === 'Consolidation meeting scheduled'
+          ? 'inProgress'
+          : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
     } as StepItem;
   }
 
-  return {};
+  return {
+    title: status,
+    subTitle: getStepDate(date),
+    inProgressStepIcon:
+      (color === 'Warning' || color === 'Error') && 'ExclamationCircleIcon',
+    subTitleColor: getStepType(color)?.color || '',
+    type: getStepType(color).type,
+    extraData: { date: date ? new Date(date) : null },
+  } as StepItem;
 };
 
 export const timelineSteps = (
@@ -79,71 +87,69 @@ export const timelineSteps = (
 
   steps.push(
     setStep(
-      timeline.starterLicenseStatus,
-      timeline.starterLicenseDate,
+      timeline?.starterLicenseStatus || 'Starter Licence',
+      timeline?.starterLicenseDate,
       timeline?.starterLicenseColor
     )
   );
   steps.push(
     setStep(
-      timeline.smartSpaceLicenseStatus,
-      timeline.smartSpaceLicenseDate,
+      timeline?.smartSpaceLicenseStatus || 'SmartSpace Licence',
+      timeline?.smartSpaceLicenseDate,
       timeline?.smartSpaceLicenseColor
     )
   );
   steps.push(
     setStep(
-      timeline.consolidationMeetingStatus,
-      timeline.consolidationMeetingDate,
+      timeline?.consolidationMeetingStatus || 'Consolidation meeting scheduled',
+      timeline?.consolidationMeetingDate || timeline?.consolidationDeadlineDate,
       timeline?.consolidationMeetingColor
     )
   );
   steps.push(
     setStep(
-      timeline.consolidationMeetingStatus,
-      timeline.consolidationMeetingDate,
-      timeline?.consolidationMeetingColor
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.smartSpaceChecklistStatus,
-      timeline.smartSpaceChecklistDate,
+      timeline?.smartSpaceChecklistStatus || 'Fill in the SmartSpace checklist',
+      timeline?.smartSpaceChecklistDate ||
+        timeline?.smartSpaceChecklistDeadlineDate,
       timeline?.smartSpaceChecklistColor
     )
   );
   steps.push(
     setStep(
-      timeline.communitySupportStatus,
-      timeline.communitySupportDate,
+      timeline?.communitySupportStatus || 'Get community support',
+      timeline?.communitySupportDate || timeline?.communitySupportDeadlineDate,
       timeline?.communitySupportColor
     )
   );
   steps.push(
     setStep(
-      timeline.threeChildrenRegisteredStatus,
-      timeline.threeChildrenRegisteredDate,
+      timeline?.threeChildrenRegisteredStatus || 'Register 3 children',
+      timeline?.threeChildrenRegisteredDate ||
+        timeline?.threeChildrenRegisteredDeadlineDate,
       timeline?.threeChildrenRegisteredColor
     )
   );
   steps.push(
     setStep(
-      timeline.sSCoachVisitStatus,
-      timeline.sSCoachVisitDate,
+      timeline?.sSCoachVisitStatus || 'SmartSpace visit from coach',
+      timeline?.sSCoachVisitDate || timeline?.sSCoachVisitDeadlineDate,
       timeline?.sSCoachVisitColor
     )
   );
   steps.push(
     setStep(
-      timeline.signFranchiseeAgreementStatus,
-      timeline.signFranchiseeAgreementDate,
+      timeline?.signFranchiseeAgreementStatus || 'Sign franchisee agreement',
+      timeline?.signFranchiseeAgreementDate ||
+        timeline?.signFranchiseeAgreementDeadlineDate,
       timeline?.signFranchiseeAgreementColor
     )
   );
   steps.push(
     setStep(
-      timeline.signStartUpSupportAgreementStatus,
-      timeline.signStartUpSupportAgreementDate,
+      timeline?.signStartUpSupportAgreementStatus ||
+        'Sign start-up support agreement',
+      timeline?.signStartUpSupportAgreementDate ||
+        timeline?.signStartUpSupportAgreementDeadlineDate,
       timeline?.signStartUpSupportAgreementColor
     )
   );
@@ -360,18 +366,21 @@ export const timelineSteps = (
   // });
   // }
 
-  const formattedSteps = steps
-    .filter((object) => Object.keys(object).length !== 0)
-    .sort(
-      (
-        stepA,
-        stepB // TODO: fix type
-      ) =>
-        // @ts-ignore
-        (stepA.extraData?.date?.getTime() || 0) -
-        // @ts-ignore
-        (stepB.extraData?.date?.getTime() || 0)
-    ) as StepItem<{ date: Date }>[];
+  // const formattedSteps = steps
+  //   .filter((object) => Object.keys(object).length !== 0)
+  //   .sort(
+  //     (
+  //       stepA,
+  //       stepB // TODO: fix type
+  //     ) =>
+  //       // @ts-ignore
+  //       (stepA.extraData?.date?.getTime() || 0) -
+  //       // @ts-ignore
+  //       (stepB.extraData?.date?.getTime() || 0)
+  //   ) as StepItem<{ date: Date }>[];
 
-  return formattedSteps;
+  //   console.log({formattedSteps})
+  // return formattedSteps;
+
+  return steps as StepItem<{ date: Date }>[];
 };

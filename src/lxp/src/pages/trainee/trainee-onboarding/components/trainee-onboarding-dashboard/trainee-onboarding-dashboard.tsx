@@ -88,10 +88,7 @@ export const OnboardingTraineeDashboard: React.FC<
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const date = format(new Date(), 'EEEE, d LLLL');
-  const stepperCount = MOCKED_DATA?.steps?.length;
-  const completedSteps = MOCKED_DATA?.steps?.filter(
-    (item) => item?.type === 'completed'
-  );
+
   const { width } = useWindowSize();
   const [showInfo, setShowInfo] = useState(false);
 
@@ -101,17 +98,22 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
-  console.log({ timeline });
-  console.log(
-    timelineSteps(
-      timeline!,
-      () => {},
-      false,
-      isOnline,
-      // @ts-ignore
-      undefined
-    )
-  );
+  const completedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type === 'completed');
+  const stepperCount = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).length;
 
   const notificationItem: MenuListDataItem[] = [
     {
@@ -125,7 +127,7 @@ export const OnboardingTraineeDashboard: React.FC<
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep('GetCommunitySupport'),
+      onActionClick: () => setNotificationStep('SmartSpaceChecklist'),
     },
   ];
 
@@ -185,7 +187,7 @@ export const OnboardingTraineeDashboard: React.FC<
             typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
           />
         )}
-        <div className="my-4 flex h-20 gap-1">
+        <div className="my-4 flex h-20 justify-center gap-1">
           {Array.from({ length: stepperCount }, (_, i) => (
             <span
               key={i}
@@ -193,8 +195,14 @@ export const OnboardingTraineeDashboard: React.FC<
               style={{
                 minWidth: 37,
                 background:
-                  !!MOCKED_DATA?.steps?.length &&
-                  i + 1 <= completedSteps?.length
+                  timelineSteps(
+                    timeline!,
+                    () => {},
+                    false,
+                    isOnline,
+                    // @ts-ignore
+                    undefined
+                  ).length && i + 1 <= completedSteps?.length
                     ? '#26ACAF'
                     : '#D4EEEF',
                 width: width / stepperCount,
