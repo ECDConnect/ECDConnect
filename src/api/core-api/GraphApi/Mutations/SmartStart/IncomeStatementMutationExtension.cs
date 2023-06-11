@@ -82,6 +82,22 @@ StatementsSubmit input)
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
+        public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
+        {
+            //TODO: pull from system settings
+            int forceSubmitDay = 8;
+            var statements = incomeManager.GetUnsubmittedStatements(forceSubmitDay);
+            var dateToSubmit = DateTime.Now.AddMonths(-1); //run previous months unsubmitted
+            foreach (var userId in statements)
+            {
+                incomeManager.AutoSubmitStatement(userId, dateToSubmit.Year, dateToSubmit.Month);
+            }
+
+            return new ResultReturnObject() { ResultMessage = "OK" };
+        }
+
+
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
         public bool SaveIncomeStatementPDF(
             [Service] IHttpContextAccessor contextAccessor,

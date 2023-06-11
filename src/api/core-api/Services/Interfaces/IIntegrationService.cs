@@ -11,5 +11,7 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationByFranchisees();
         Task<bool> IntegrationClubsData();
         Task<bool> IntegrationPQAData();
+        Task<bool> IntegrationStatementsData();
+        Task<bool> IntegrationAttendanceData();
     }
 }

@@ -20,6 +20,8 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string RelatedBy { get; set; }
         public string AllColumns { get; set; }
         public string Columns { get; set; }
-        public string JoinType { get; set; } = "Inner";
+        public string JoinType { get; set; }
+        public string Operator { get; set; }
+        public string Value { get; set; }
     }
 }

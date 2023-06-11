@@ -66,18 +66,20 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
 
                         if (!response.IsSuccessStatusCode)
                         {
-                            throw new HttpRequestException("SmartLink API GetAPIHandlerResponse (" + endpointUrl + ") Error: " + response.StatusCode);
+                            await _logManager.IntegrationLog("SmartLink API GetAPIHandlerResponse (" + endpointUrl + ") Error: " + response.StatusCode + ". Response: " + response, postString, null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
                         }
                         using var responseStream = await response.Content.ReadAsStreamAsync();
+
                         return await response.Content.ReadAsStringAsync();
                     }
-                    else return null;
                 }
+                return null;
             }
             catch (Exception e)
             {
                 await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAPIHandlerResponse > " + endpointUrl + " > " + postString);
-                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                return null;
             }
         }
 
@@ -327,6 +329,70 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             catch (Exception e)
             {
                 await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetChildDocuments > " + remoteChildId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+
+        public async Task<List<MappedClub>> GetClubsByCoach(string remoteCoachId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Club", AllColumns = "True", Columns = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SSClub + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
+                return JsonConvert.DeserializeObject<List<MappedClub>>(responseString);
+
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+        public async Task<List<MappedClubMeeting>> GetClubMeetingByCoach(string remoteCoachId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Club", AllColumns = "True", Columns = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLClubMeeting + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
+                return JsonConvert.DeserializeObject<List<MappedClubMeeting>>(responseString);
+
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+        public async Task<List<MappedClubMeetingRegister>> GetClubMeetingRegisterByCoach(string remoteCoachId)
+        {
+            try
+            {
+                List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
+                optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
+                relatedConditions.Add(new IntegrationOptionRelatedEntity() { RelatedBy = "Club", AllColumns = "True", Columns = "Coach", Operator = "Equals", Value = remoteCoachId });
+
+                var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLClubMeetingRegister + SSIntegrationSettings.QueryAll, optionConditions, relatedConditions);
+                return JsonConvert.DeserializeObject<List<MappedClubMeetingRegister>>(responseString);
+
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetTraineesByCoach > " + remoteCoachId);
                 throw new HttpRequestException("SmartLink API Error: " + e.Message);
             }
         }

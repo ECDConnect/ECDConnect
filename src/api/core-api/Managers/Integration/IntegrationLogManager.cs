@@ -16,6 +16,7 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
         private IGenericRepositoryFactory _repositoryFactory;
         private string _uId;
         private IGenericRepository<IntegrationLog, Guid> _logRepo;
+        private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
         public Guid tenantId = TenantExecutionContext.Tenant.Id;
 
         public IntegrationLogManager(
@@ -25,13 +26,14 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _logRepo = _repositoryFactory.CreateGenericRepository<IntegrationLog>(userContext: _uId);
+            _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
         }
 
         #region Logging
 
         public async Task<bool> IntegrationLog(string log, string logNotes = null, string relatedId = null, LogRelatedType logRelatedType = LogRelatedType.Error, string relatedArea = "IntegrationService")
         {
-            logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea + " " + logNotes: "";
+            logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea + " " + logNotes: logNotes;
             _logRepo.Insert(new IntegrationLog()
             {
                 IsActive = true,
@@ -43,6 +45,13 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
                 LogNotes = logNotes,
                 LogResult = log
             });
+
+            return true;
+        }
+
+        public async Task<bool> IntegrationEntity(IntegrationEntityMapping entity)
+        {
+            _mapperRepo.Insert(entity);
 
             return true;
         }
