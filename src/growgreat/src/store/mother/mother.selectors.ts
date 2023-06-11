@@ -42,6 +42,40 @@ export const getMotherCurrentVisitSelector = (
     : undefined;
 };
 
+export const getCurrentVisitSelector = (
+  state: RootState,
+  visitId: string
+): VisitDto | undefined => {
+  const allVisits = state.mothers.visits || [];
+  // if a visit id is available, then return visit for id
+  if (visitId && visitId !== '') {
+    for (var i = 0; i < allVisits.length; i++) {
+      if (allVisits[i].id === visitId) {
+        return allVisits[i];
+      }
+    }
+  } else {
+    // grab the latest completed visit from the list
+    const lastAttended = allVisits?.filter((item) => item.attended) || [];
+    if (lastAttended.length !== 0) {
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    } else {
+      // grab the latest uncompleted visit from the list
+      const noAttended =
+        allVisits?.filter(
+          (item) => !item.attended && new Date(item.orderDate) >= new Date()
+        ) || [];
+      return noAttended[0];
+    }
+  }
+};
+
 export const getMotherLastVisitSelector = (
   state: RootState
 ): VisitDto | undefined => {

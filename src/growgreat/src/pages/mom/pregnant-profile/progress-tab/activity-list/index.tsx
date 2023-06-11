@@ -138,7 +138,7 @@ export const MomActivityList: React.FC = () => {
         })
       );
     }
-  }, [visitId]);
+  }, [visitId, appDispatch, completedVisits]);
 
   const previousMotherVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
