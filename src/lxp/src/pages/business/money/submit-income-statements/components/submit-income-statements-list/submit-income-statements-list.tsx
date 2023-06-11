@@ -66,9 +66,6 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   };
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
-  const reportData = useSelector(
-    statementsSelectors.getIncomeExpensesPDFreport
-  );
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -578,12 +575,12 @@ export const SubmitIncomeStatementsList: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 updateStatements().then(async () => {
-                  await appDispatch(
+                  const reportData = await appDispatch(
                     statementsThunkActions.getIncomeExpensesPDFreport({
                       month: statementMonth + 1,
                       year: statementYear,
                     })
-                  );
+                  ).unwrap();
                   submitPdfReport(reportData ?? []);
                 });
                 setConfimSubmitIncomeValues(false);
