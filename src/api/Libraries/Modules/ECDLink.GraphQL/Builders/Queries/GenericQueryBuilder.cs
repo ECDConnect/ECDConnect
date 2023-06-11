@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
@@ -30,7 +31,8 @@ namespace ECDLink.EGraphQL.Registration.AutoGenerateTypes.Queries
               .Type<ListType<ObjectType<T>>>()
               .Directive(metadata)
               .UseDbContext<AuthenticationDbContext>()
-              .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAll(default, default))
+              .Argument(ArgumentConstants.PagingInput, a => a.Type<PagedQueryInputType>())
+              .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAll(default, default, default))
               .UseFiltering();
 
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, typeof(T).Name))
