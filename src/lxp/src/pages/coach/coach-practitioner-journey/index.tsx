@@ -54,6 +54,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
   const wasOnline = usePrevious(isOnline);
+  const previousShowForm = usePrevious(showForm);
 
   const history = useHistory();
   const appDispatch = useAppDispatch();
@@ -181,10 +182,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [getTimeline]);
 
   useEffect(() => {
-    if (!wasOnline && isOnline) {
+    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
       getTimeline();
     }
-  }, [getTimeline, isOnline, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
   if (
     (showForm && isView) ||
