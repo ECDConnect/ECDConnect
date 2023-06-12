@@ -1557,7 +1557,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
-            var fScore = 0;
+            var fScore = 0.0;
             var scoreColor = "";
 
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
@@ -1587,9 +1587,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             totalRed = visitDataStatus.Where(x => x.Color == _red).Count();
             totalAmber = visitDataStatus.Where(x => x.Color == _amber).Count();
 
-            if ((totalGreen + totalRed + totalAmber) != 0)
+            var totalItems = totalGreen + totalRed + totalAmber;
+
+            if (totalItems != 0)
             {
-                fScore = (totalGreen / (totalGreen + totalRed + totalAmber)) * 100;
+                fScore = (double)totalGreen / (double)totalItems * 100;
             }
 
             if (fScore > 80)
