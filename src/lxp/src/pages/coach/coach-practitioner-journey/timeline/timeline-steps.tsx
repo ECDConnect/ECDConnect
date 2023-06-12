@@ -77,34 +77,6 @@ export const timelineSteps = ({
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
     setStep(
-      timeline.coachingCircle1Status,
-      timeline.coachingCircleDate1,
-      timeline?.coachingCircle1Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle2Status,
-      timeline.coachingCircleDate2,
-      timeline?.coachingCircle2Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle3Status,
-      timeline.coachingCircleDate3,
-      timeline?.coachingCircle3Color
-    )
-  );
-  steps.push(
-    setStep(
-      timeline.coachingCircle4Status,
-      timeline.coachingCircleDate4,
-      timeline?.coachingCircle4Color
-    )
-  );
-  steps.push(
-    setStep(
       timeline.consolidationMeetingStatus,
       timeline.consolidationMeetingDate,
       timeline?.consolidationMeetingColor

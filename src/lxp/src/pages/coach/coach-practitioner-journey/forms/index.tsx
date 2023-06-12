@@ -15,6 +15,7 @@ import {
   generalSupportVisit,
   getFirstPqaSteps,
   prePqaVisits,
+  reaccreditationSteps,
 } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
@@ -55,7 +56,7 @@ const sessionStorageKey = 'currentStepNumber';
 
 export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
-  const [step, setStep] = useState(0);
+  const [step, setStep] = useState(4);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
@@ -379,6 +380,9 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         return generalSupportVisit;
       case visitTypes.delicensing:
         return delicensingSteps;
+      case visitTypes.reaccreditation.name:
+        setTitle(visitTypes.reaccreditation.description);
+        return reaccreditationSteps;
       default:
         if (activityName === visitTypes.prePqa.first.name) {
           setTitle(visitTypes.prePqa.first.description);

@@ -108,10 +108,19 @@ export const CoachPractitionerJourney: React.FC = () => {
     setShowForm(true);
   };
   // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
-  const uncompletedPrePqaVisits =
-    timeline?.prePQASiteVisits?.filter(
-      (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
-    ) ?? [];
+  const uncompletedPrePqaVisits = [
+    {
+      id: '01',
+      visitType: {
+        description: visitTypes.reaccreditation.description,
+        name: visitTypes.reaccreditation.name,
+      },
+      plannedVisitDate: new Date(),
+    },
+  ];
+  // timeline?.prePQASiteVisits?.filter(
+  //   (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
+  // ) ?? [];
   const uncompletedPqaVisits =
     timeline?.pQASiteVisits?.filter(
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
@@ -123,8 +132,8 @@ export const CoachPractitionerJourney: React.FC = () => {
   ];
 
   const currentVisit = uncompletedVisits
-    ?.filter(filterVisit)
-    .sort(sortVisit)
+    // ?.filter(filterVisit)
+    // .sort(sortVisit)
     ?.map(
       (visit): MenuListDataItem<{ visitId?: string }> => ({
         showIcon: true,
@@ -298,6 +307,7 @@ export const CoachPractitionerJourney: React.FC = () => {
                 onStart,
                 isLoading,
                 isOnline,
+                // @ts-ignore
                 visits: uncompletedVisits,
               })}
               typeColor={{ completed: 'successMain' }}
