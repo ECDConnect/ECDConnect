@@ -7,10 +7,13 @@ import { TraineeFranchisorAgreement } from './components/trainee-franchisor-agre
 import { StartupSupportAgreement } from './components/startup-support-agreement/startup-support-agreement';
 import { GetCommunitySupport } from './components/get-community-support/get-community-support';
 import { SmartSpaceChecklist } from './components/smart-space-checklist/smart-space-checklist';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export const TraineeOnboarding = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const [notificationStep, setNotificationStep] = useState('');
+  const history = useHistory();
 
   const renderStep = (step: string) => {
     switch (step) {
@@ -35,6 +38,8 @@ export const TraineeOnboarding = () => {
         return (
           <GetCommunitySupport setNotificationStep={setNotificationStep} />
         );
+      case 'Register3Children':
+        return history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
       default:
         return (
           <OnboardingTraineeDashboard

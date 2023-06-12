@@ -32,12 +32,14 @@ import {
 } from '@/schemas/trainee/programme-details';
 import { CommunitySupportSchema } from '@/schemas/trainee/community-support';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
+import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
   setShowProgrammeDetails,
   setVisitSection,
   onSubmit,
+  setActiveStep,
 }) => {
   const {
     getValues: getProgrammeFormValues,
@@ -161,15 +163,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     setPhotoActionBarVisible(false);
   };
 
-  const enableDeletePhotoWarning = () => {
-    setDisplayPhotoDeleteWarning(true);
-    setPhotoActionBarVisible(false);
-  };
-
-  const closeDeletePhotoWarning = () => {
-    setDisplayPhotoDeleteWarning(false);
-  };
-
   const deleteBirthDocumentPhoto = () => {
     setProgrammeFormValue('r4bPhoto', '');
     setR4bPhotoUrl('');
@@ -185,7 +178,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         title={'Programme details'}
         subTitle={'Step 1 of 4'}
         color={'primary'}
-        onBack={() => setShowProgrammeDetails(false)}
+        onBack={() => setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL)}
         displayOffline={!isOnline}
         renderOverflow={true}
       >

@@ -3,6 +3,8 @@ import { Config, TraineeDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
   PractitionerTimeline,
+  SsChecklistVisitModelInput,
+  UserConsentInput,
 } from '@ecdlink/graphql';
 
 class TraineeService {
@@ -129,7 +131,7 @@ class TraineeService {
       errors?: {};
     }>(``, {
       query: `
-      mutation UpdateCommunitySupport($userId: String, $haveCommunitySupport: Bool ) {
+      mutation UpdateCommunitySupport($userId: String, $haveCommunitySupport: Boolean ) {
         updateCommunitySupport(userId: $userId, haveCommunitySupport: $haveCommunitySupport) {
             id 
         }        
@@ -144,6 +146,73 @@ class TraineeService {
     if (response.status !== 200 || response.data.errors) {
       throw new Error(
         'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async signSupportAgreement(
+    id: string,
+    input: UserConsentInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation updateUserConsent($id: UUID!,$input: UserConsentInput) {          
+        updateUserConsent(id: $id, input: $input) {            
+            id          
+        }        
+    }
+      `,
+      variables: {
+        id,
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update Franchisor agreement support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
+  async addSSChecklistForTrainee(
+    input: SsChecklistVisitModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddSSChecklistForTrainee($input: SSChecklistVisitModelInput) {
+        addSSChecklistForTrainee(input: $input) {
+           id
+           plannedVisitDate
+           actualVisitDate
+           attended
+           visitType {
+               name
+               description
+           } 
+        }
+    }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add SS checklist for trainee failed - Server connection error'
       );
     }
 

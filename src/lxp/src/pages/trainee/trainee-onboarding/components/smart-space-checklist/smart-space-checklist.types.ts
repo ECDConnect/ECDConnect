@@ -1,0 +1,7 @@
+export enum SmartSpaceChecklisstStepsSteps {
+  INITIAL = 0,
+  PROGRAMME_DETAILS = 1,
+  HEALTH_SANITATION_SAFETY = 2,
+  SAFETY_STRUCTURE_AREA = 3,
+  SPACE_EMERGENCY_PLANNING = 4,
+}

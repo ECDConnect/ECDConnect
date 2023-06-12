@@ -3,7 +3,7 @@ export const yesNoOptions = [
   { text: 'No', value: false },
 ];
 
-export interface ProgrammeDetailsProps {
+export interface HealthSanitationSafetysProps {
   setSectionQuestions: any;
   setShowProgrammeDetails?: any;
   setVisitSection?: any;

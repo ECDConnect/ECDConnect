@@ -127,7 +127,7 @@ export const OnboardingTraineeDashboard: React.FC<
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep('SmartSpaceChecklist'),
+      onActionClick: () => setNotificationStep('Register3Children'),
     },
   ];
 

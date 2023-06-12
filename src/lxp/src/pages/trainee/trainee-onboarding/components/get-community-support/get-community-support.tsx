@@ -50,6 +50,10 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
     defaultValues: initialCommunitySupportValues,
   });
 
+  const { haveSupport } = useWatch({ control });
+
+  console.log(communitySupportGetValues().haveSupport);
+
   const sendCommunitySupportAnswer = async () => {
     await new TraineeService(userAuth?.auth_token!).updateCommunitySupport(
       practitioner?.userId!,
@@ -58,6 +62,8 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
 
     history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
   };
+
+  console.log({ haveSupport });
 
   return (
     <>
@@ -81,10 +87,15 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
               text={'Community support'}
             />
             <div className="'flex items-center' w-full flex-row justify-start">
-              <div className="flex items-start gap-2">
+              <div
+                className="flex items-start gap-2"
+                onClick={() => setValue('haveSupport', !haveSupport)}
+              >
                 <Checkbox<CommunitySupportModel>
                   register={communitySupportRegister}
                   nameProp={'haveSupport'}
+                  checked={communitySupportGetValues().haveSupport}
+                  name="haveSupport"
                 ></Checkbox>
                 <Typography
                   text={

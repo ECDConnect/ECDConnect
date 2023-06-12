@@ -27,7 +27,7 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             text={'Read & accept the agreement'}
           />
           <Typography
-            className={'my-3 w-11/12'}
+            className={'my-3 w-full'}
             color={'textDark'}
             type={'h3'}
             text={
@@ -46,7 +46,7 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
                 color="textMid"
               />
             </div>
-            <div className="flex flex-wrap items-start">
+            <div className="mt-4 flex flex-wrap items-start">
               <Checkbox
                 // checked={}
                 onCheckboxChange={(value) => {}}
