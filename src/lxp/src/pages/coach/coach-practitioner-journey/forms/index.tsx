@@ -283,9 +283,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         })
       );
       appDispatch(pqaThunkActions.addVisitFormData(payload));
-      displayChildrenDialog('First site visit');
+      displayChildrenDialog(
+        activityName === visitTypes.prePqa.first.name
+          ? 'First site visit'
+          : 'Second site visit'
+      );
     },
-    [appDispatch, displayChildrenDialog, practitionerId]
+    [activityName, appDispatch, displayChildrenDialog, practitionerId]
   );
 
   const onSubmitPqa = useCallback(
