@@ -37,6 +37,8 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public DateTime? OrderDate { get; set; }
         [NotMapped]
         public string OverallRatingColor { get; set; }
+        [NotMapped]
+        public bool inProgress { get; set; }
     }
 
     public interface VisitJoin<TKey>

@@ -47,7 +47,8 @@ export const getCurrentVisitSelector = (
   visitId: string
 ): VisitDto | undefined => {
   const allVisits = state.mothers.visits || [];
-  // if a visit id is available, then return visit for id
+
+  // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
     for (var i = 0; i < allVisits.length; i++) {
       if (allVisits[i].id === visitId) {
@@ -55,7 +56,13 @@ export const getCurrentVisitSelector = (
       }
     }
   } else {
-    // grab the latest completed visit from the list
+    // Priority 2: if there is a visit in progress, we grab the first one
+    const inProgress = allVisits?.filter((item) => item.inProgress) || [];
+    if (inProgress.length !== 0) {
+      return inProgress[0];
+    }
+
+    // Priority 3: grab the latest completed visit from the list
     const lastAttended = allVisits?.filter((item) => item.attended) || [];
     if (lastAttended.length !== 0) {
       return lastAttended.length
@@ -66,7 +73,7 @@ export const getCurrentVisitSelector = (
           )
         : undefined;
     } else {
-      // grab the latest uncompleted visit from the list
+      // Priority 4: grab the latest uncompleted visit from the list
       const noAttended =
         allVisits?.filter(
           (item) => !item.attended && new Date(item.orderDate) >= new Date()

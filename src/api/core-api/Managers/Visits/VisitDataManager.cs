@@ -182,7 +182,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-
         public Boolean AddTraineeVisitData(CMSVisitDataInputModel input)
         {
 
@@ -225,7 +224,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
                 return true;
         }
-
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)
@@ -717,7 +715,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return rating;
         }
-
         private int getScoreForSection(List<VisitData> records)
         {
             int score = 0;
@@ -728,7 +725,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return score;
         }
-
         private int getCheckBoxScore(List<VisitData> records)
         {
             int score = 0;
@@ -747,7 +743,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return score;
         }
-
         public string GetSectionRatingColor(double finalScore)
         {
             string color = "";
@@ -767,7 +762,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return color;
         }
-
         private bool ValidateInsertRecord(VisitData visitData)
         {
             VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitData.VisitId && 

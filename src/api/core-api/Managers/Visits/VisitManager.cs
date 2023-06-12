@@ -20,6 +20,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+        private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private UserLicenseManager _userLicenseManager;
 
@@ -37,6 +38,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
+            _visitDataRepo = _repoFactory.CreateGenericRepository<VisitData>(userContext: _applicationUserId);
             _practitionerRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
         }
 
@@ -425,7 +427,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
         public List<Visit> GetVisitsForClient(string id, string type) {
 
-                List<Visit> allVisits = new List<Visit>();
+            List<Visit> allVisits = new List<Visit>();
             if (type == Constants.GGSettings.client_mother) {
                     allVisits = (
                         from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
@@ -450,15 +452,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_trainee) on visit.VisitTypeId equals visitType.Id
                     select visit
                 ).ToList();
-                }
-
-                foreach (var _visit in allVisits)
-                {
-                    _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
-                }
-
-                return allVisits.OrderBy(x => x.OrderDate).ToList();
             }
+
+            foreach (var _visit in allVisits)
+            {
+                _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
+                if (_visit.Attended == false)
+                {
+                    _visit.inProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
+                }
+            }
+
+            return allVisits.OrderBy(x => x.OrderDate).ToList();
+        }
             public int GetTotalVisitsForWeek(String id, string type, Boolean currentWeek)
             {
                 DateTime today = DateTime.Today;

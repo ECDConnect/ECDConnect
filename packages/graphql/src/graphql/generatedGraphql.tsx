@@ -2503,10 +2503,13 @@ export type InfographicsInput = {
 };
 
 export enum InputFilterComparer {
+  ContainedBy = 'CONTAINED_BY',
   Contains = 'CONTAINS',
   Equals = 'EQUALS',
   GreaterThan = 'GREATER_THAN',
+  GreaterThanOrEqual = 'GREATER_THAN_OR_EQUAL',
   LessThan = 'LESS_THAN',
+  LessThanOrEqual = 'LESS_THAN_OR_EQUAL',
 }
 
 export type IntegrationAudit = {
@@ -5688,10 +5691,10 @@ export type PqaRatingInput = {
 };
 
 export type PagedQueryInput = {
-  filterBy?: InputMaybe<Array<InputMaybe<FilterByFieldInput>>>;
+  filterBy?: InputMaybe<FilterByFieldInput>;
   pageNumber: Scalars['Int'];
   pageSize: Scalars['Int'];
-  sortBy?: InputMaybe<Array<InputMaybe<SortByFieldInput>>>;
+  sortBy?: InputMaybe<SortByFieldInput>;
 };
 
 export type Permission = {
@@ -6930,6 +6933,7 @@ export type QueryGetActivityByIdArgs = {
 };
 
 export type QueryGetAllAbsenteesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<AbsenteesFilterInput>;
 };
 
@@ -6939,54 +6943,67 @@ export type QueryGetAllActivityArgs = {
 };
 
 export type QueryGetAllAuditLogTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<AuditLogTypeFilterInput>;
 };
 
 export type QueryGetAllCaregiverArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CaregiverFilterInput>;
 };
 
 export type QueryGetAllChildArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ChildFilterInput>;
 };
 
 export type QueryGetAllChildProgressReportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ChildProgressReportFilterInput>;
 };
 
 export type QueryGetAllClassProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassProgrammeFilterInput>;
 };
 
 export type QueryGetAllClassReassignmentHistoryArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassReassignmentHistoryFilterInput>;
 };
 
 export type QueryGetAllClassroomArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassroomFilterInput>;
 };
 
 export type QueryGetAllClassroomGroupArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassroomGroupFilterInput>;
 };
 
 export type QueryGetAllClinicArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClinicFilterInput>;
 };
 
 export type QueryGetAllClubArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubFilterInput>;
 };
 
 export type QueryGetAllClubMeetingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubMeetingFilterInput>;
 };
 
 export type QueryGetAllClubMeetingRegisterArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubMeetingRegisterFilterInput>;
 };
 
 export type QueryGetAllCoachArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CoachFilterInput>;
 };
 
@@ -7021,42 +7038,52 @@ export type QueryGetAllConsentGgArgs = {
 };
 
 export type QueryGetAllDailyProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DailyProgrammeFilterInput>;
 };
 
 export type QueryGetAllDocumentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DocumentFilterInput>;
 };
 
 export type QueryGetAllDocumentTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DocumentTypeFilterInput>;
 };
 
 export type QueryGetAllEducationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EducationFilterInput>;
 };
 
 export type QueryGetAllEventRecordArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EventRecordFilterInput>;
 };
 
 export type QueryGetAllEventRecordTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EventRecordTypeFilterInput>;
 };
 
 export type QueryGetAllFranchisorArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<FranchisorFilterInput>;
 };
 
 export type QueryGetAllGenderArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<GenderFilterInput>;
 };
 
 export type QueryGetAllGrantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<GrantFilterInput>;
 };
 
 export type QueryGetAllHealthCareWorkerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<HealthCareWorkerFilterInput>;
 };
 
@@ -7066,6 +7093,7 @@ export type QueryGetAllHealthPromotionArgs = {
 };
 
 export type QueryGetAllHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<HierarchyEntityFilterInput>;
 };
 
@@ -7075,6 +7103,7 @@ export type QueryGetAllIncomeStatementsArgs = {
 };
 
 export type QueryGetAllInfantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<InfantFilterInput>;
 };
 
@@ -7084,38 +7113,47 @@ export type QueryGetAllInfographicsArgs = {
 };
 
 export type QueryGetAllIntegrationAuditArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationAuditFilterInput>;
 };
 
 export type QueryGetAllIntegrationColumnMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationColumnMappingFilterInput>;
 };
 
 export type QueryGetAllIntegrationEntityMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationEntityMappingFilterInput>;
 };
 
 export type QueryGetAllIntegrationLogArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationLogFilterInput>;
 };
 
 export type QueryGetAllLanguageArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LanguageFilterInput>;
 };
 
 export type QueryGetAllLearnerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LearnerFilterInput>;
 };
 
 export type QueryGetAllLicenseArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LicenseFilterInput>;
 };
 
 export type QueryGetAllLicenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LicenseTypeFilterInput>;
 };
 
 export type QueryGetAllMessageTemplateArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<MessageTemplateFilterInput>;
 };
 
@@ -7125,38 +7163,47 @@ export type QueryGetAllMoreInformationArgs = {
 };
 
 export type QueryGetAllMotherArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<MotherFilterInput>;
 };
 
 export type QueryGetAllNavigationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NavigationFilterInput>;
 };
 
 export type QueryGetAllNoteArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NoteFilterInput>;
 };
 
 export type QueryGetAllNoteTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NoteTypeFilterInput>;
 };
 
 export type QueryGetAllPermissionArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PermissionFilterInput>;
 };
 
 export type QueryGetAllPractitionerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PractitionerFilterInput>;
 };
 
 export type QueryGetAllPrincipalArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PrincipalFilterInput>;
 };
 
 export type QueryGetAllProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeFilterInput>;
 };
 
 export type QueryGetAllProgrammeAttendanceReasonArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeAttendanceReasonFilterInput>;
 };
 
@@ -7176,6 +7223,7 @@ export type QueryGetAllProgrammeRoutineSubItemArgs = {
 };
 
 export type QueryGetAllProgrammeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeTypeFilterInput>;
 };
 
@@ -7200,66 +7248,82 @@ export type QueryGetAllProgressTrackingSubCategoryArgs = {
 };
 
 export type QueryGetAllProvinceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProvinceFilterInput>;
 };
 
 export type QueryGetAllRaceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<RaceFilterInput>;
 };
 
 export type QueryGetAllReasonForLeavingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ReasonForLeavingFilterInput>;
 };
 
 export type QueryGetAllRelationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<RelationFilterInput>;
 };
 
 export type QueryGetAllServiceSchedulerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ServiceSchedulerFilterInput>;
 };
 
 export type QueryGetAllShortenUrlEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ShortenUrlEntityFilterInput>;
 };
 
 export type QueryGetAllSiteAddressArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<SiteAddressFilterInput>;
 };
 
 export type QueryGetAllStatementsContributionTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsContributionTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsExpenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsExpenseTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsExpensesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsExpensesFilterInput>;
 };
 
 export type QueryGetAllStatementsFeeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsFeeTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeStatementArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeStatementFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsPayTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsPayTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsStartupSupportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsStartupSupportFilterInput>;
 };
 
@@ -7279,10 +7343,12 @@ export type QueryGetAllStoryBookPartsArgs = {
 };
 
 export type QueryGetAllSystemSettingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<SystemSettingFilterInput>;
 };
 
 export type QueryGetAllTeamLeadArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<TeamLeadFilterInput>;
 };
 
@@ -7297,42 +7363,52 @@ export type QueryGetAllThemeDayArgs = {
 };
 
 export type QueryGetAllTraineeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<TraineeFilterInput>;
 };
 
 export type QueryGetAllUserConsentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<UserConsentFilterInput>;
 };
 
 export type QueryGetAllUserHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<UserHierarchyEntityFilterInput>;
 };
 
 export type QueryGetAllVisitArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitFilterInput>;
 };
 
 export type QueryGetAllVisitBackReferralArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitBackReferralFilterInput>;
 };
 
 export type QueryGetAllVisitDataArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitDataFilterInput>;
 };
 
 export type QueryGetAllVisitDataStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitDataStatusFilterInput>;
 };
 
 export type QueryGetAllVisitGrowthDataDayArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitGrowthDataDayFilterInput>;
 };
 
 export type QueryGetAllVisitGrowthDataHeightArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitGrowthDataHeightFilterInput>;
 };
 
 export type QueryGetAllVisitTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitTypeFilterInput>;
 };
 
@@ -7342,10 +7418,12 @@ export type QueryGetAllVisitVideosArgs = {
 };
 
 export type QueryGetAllWorkflowStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<WorkflowStatusFilterInput>;
 };
 
 export type QueryGetAllWorkflowStatusTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<WorkflowStatusTypeFilterInput>;
 };
 
@@ -8141,10 +8219,12 @@ export type QueryCoachNameByUserIdArgs = {
 
 export type QueryCompletedReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCompletedReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCompletedVisitsForVisitIdArgs = {
@@ -8351,10 +8431,12 @@ export type QueryPrincipalByUserIdArgs = {
 
 export type QueryReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForVisitIdArgs = {
@@ -9825,6 +9907,7 @@ export type Visit = {
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
+  inProgress: Scalars['Boolean'];
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
@@ -10028,6 +10111,7 @@ export type VisitFilterInput = {
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  inProgress?: InputMaybe<BooleanOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -10166,6 +10250,7 @@ export type VisitInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
+  inProgress: Scalars['Boolean'];
 };
 
 export type VisitModelInput = {
