@@ -32,7 +32,7 @@ export const PQAVisits = ({
             className="w-6/12 font-bold"
             text={item?.visitType?.description || ''}
           />
-          {item?.id === currentVisit?.id && (
+          {item?.id === currentVisit?.id /* && !item?.attended  */ && (
             <Button
               style={{
                 position: 'absolute',

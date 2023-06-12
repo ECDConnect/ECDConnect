@@ -17,6 +17,11 @@ export const visitTypes = {
   },
   pqa: {
     firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
+    followUp: {
+      name: 'pqa_visit_follow_up',
+      description: 'Follow-up visit',
+      timelineDescription: 'Start follow-up PQA visit ',
+    },
   },
 };
 

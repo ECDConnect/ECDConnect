@@ -190,7 +190,8 @@ export const CoachPractitionerJourney: React.FC = () => {
   if (
     (showForm && isView) ||
     (showForm && currentVisit?.extraData?.visitId) ||
-    (showForm && selectedForm === visitTypes.supportVisit)
+    (showForm && selectedForm === visitTypes.supportVisit) ||
+    (showForm && selectedForm === visitTypes.pqa.followUp.name)
   ) {
     return (
       <Form onBack={onFormBack} visitId={currentVisit?.extraData?.visitId} />

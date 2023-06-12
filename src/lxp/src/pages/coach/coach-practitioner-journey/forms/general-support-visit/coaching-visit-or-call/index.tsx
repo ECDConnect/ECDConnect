@@ -2,6 +2,7 @@ import {
   Alert,
   ButtonGroup,
   ButtonGroupTypes,
+  Divider,
   FormInput,
   Typography,
 } from '@ecdlink/ui';
@@ -11,9 +12,12 @@ import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
 import { useParams } from 'react-router';
-import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import {
+  PractitionerJourneyParams,
+  visitTypes,
+} from '../../../coach-practitioner-journey.types';
 import { Maybe } from 'graphql/jsutils/Maybe';
-import { visitIdKey } from '../..';
+import { currentActivityKey, visitIdKey } from '../..';
 
 export const visitOrCallQuestion =
   'Did you visit the practitioner’s site, or did you have a support phone call?';
@@ -52,14 +56,28 @@ export const CoachingAndVisitOrCallStep = ({
       question: 'What next steps did you agree on?',
       answer: '',
     },
+    {
+      question: 'Is {client} ready for a follow-up PQA observation visit?',
+      answer: '',
+    },
   ]);
 
-  const options = [
+  const visitTypeOptions = [
     { text: 'Visit', value: 'Visit', disabled: isView },
     { text: 'Call', value: callAnswer, disabled: isView },
   ];
 
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const options = [
+    { text: 'Yes', value: 'true', disabled: isView },
+    { text: 'No', value: 'false', disabled: isView },
+  ];
+
+  const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+
+  const followUpQuestionIndex = 5;
+  const isFollowUp = activityName === visitTypes.pqa.followUp.name;
+
+  const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Coaching visit or call';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
@@ -178,6 +196,7 @@ export const CoachingAndVisitOrCallStep = ({
     setPreviousAnswers();
   }, [setPreviousAnswers]);
 
+  const mockedData = '10 May 2020';
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
@@ -201,16 +220,28 @@ export const CoachingAndVisitOrCallStep = ({
           title="You are viewing this form and cannot edit responses."
         />
       )}
+      {isFollowUp && (
+        <>
+          <Divider dividerType="dashed" className="my-3" />
+          <Typography
+            type="h4"
+            text={`${firstName} ${
+              smartStarter?.user?.surname ?? ''
+            } received an orange rating on ${mockedData}`}
+          />
+          <Divider dividerType="dashed" className="my-3" />
+        </>
+      )}
       <Typography
         type="h4"
-        text={replaceBraces(questions[0].question, name)}
+        text={replaceBraces(questions[0].question, firstName)}
         color={isView ? 'textLight' : 'textDark'}
         className="my-4"
       />
       <ButtonGroup<string>
         color="secondary"
         type={ButtonGroupTypes.Button}
-        options={options}
+        options={visitTypeOptions}
         selectedOptions={
           questions[0].answer !== '' ? String(questions[0].answer) : undefined
         }
@@ -225,11 +256,12 @@ export const CoachingAndVisitOrCallStep = ({
         ];
         return (
           <FormInput
+            key={item.question}
             disabled={isView}
             textInputType="textarea"
             className="mt-4"
             placeholder={placeholders[index]}
-            label={replaceBraces(item.question, name)}
+            label={replaceBraces(item.question, firstName)}
             value={
               !!questions[index + 1].answer
                 ? String(questions[index + 1].answer)
@@ -241,6 +273,32 @@ export const CoachingAndVisitOrCallStep = ({
           />
         );
       })}
+      {isFollowUp && (
+        <>
+          <Typography
+            type="h4"
+            text={replaceBraces(
+              questions[followUpQuestionIndex].question,
+              firstName
+            )}
+            color={isView ? 'textLight' : 'textDark'}
+            className="my-4"
+          />
+          <ButtonGroup<string>
+            color="secondary"
+            type={ButtonGroupTypes.Button}
+            options={options}
+            selectedOptions={
+              questions[followUpQuestionIndex].answer !== ''
+                ? String(questions[followUpQuestionIndex].answer)
+                : undefined
+            }
+            onOptionSelected={(value) =>
+              onOptionSelected(value, followUpQuestionIndex)
+            }
+          />
+        </>
+      )}
     </div>
   );
 };

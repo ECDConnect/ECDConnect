@@ -394,6 +394,9 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         return generalSupportVisit;
       case visitTypes.delicensing:
         return delicensingSteps;
+      case visitTypes.pqa.followUp.name:
+        setTitle(visitTypes.pqa.followUp.description);
+        return generalSupportVisit;
       default:
         if (activityName === visitTypes.prePqa.first.name) {
           setTitle(visitTypes.prePqa.first.description);

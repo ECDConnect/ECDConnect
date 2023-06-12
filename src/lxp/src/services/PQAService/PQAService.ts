@@ -113,6 +113,20 @@ class PQAService {
             firstAidCourseColor
             firstAidCourseStatus
             firstAidDate
+            pQARating {
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+            }
             prePQAVisitDate1
             prePQAVisitDate1Color
             prePQAVisitDate1Status
