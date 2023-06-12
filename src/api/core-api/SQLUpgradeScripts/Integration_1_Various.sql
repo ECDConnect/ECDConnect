@@ -236,4 +236,9 @@ update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where 
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildClinicCard') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'clinicCard.png';
 	 
 ALTER TABLE public."Club" ADD "NumberOfMembers" numeric NULL;	 
+
+
+CREATE TABLE public."SL_Ingestion_User_Update" (
+	"Id" uuid NOT null 
+);
 	 */

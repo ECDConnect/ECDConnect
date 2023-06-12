@@ -12,4 +12,11 @@ namespace ECDLink.DataAccessLayer.Entities.DataIngestion
     {
         public Guid Id { get; set; }
     }
+
+    [Table(nameof(SL_Ingestion_User_Update))]
+    [EntityPermission(PermissionGroups.USER)]
+    public class SL_Ingestion_User_Update
+    {
+        public Guid Id { get; set; }
+    }
 }
