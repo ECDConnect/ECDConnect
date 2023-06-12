@@ -10233,6 +10233,7 @@ export type VisitInput = {
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
+  InProgress: Scalars['Boolean'];
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -10250,7 +10251,6 @@ export type VisitInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
-  inProgress: Scalars['Boolean'];
 };
 
 export type VisitModelInput = {

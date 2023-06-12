@@ -38,7 +38,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [NotMapped]
         public string OverallRatingColor { get; set; }
         [NotMapped]
-        public bool inProgress { get; set; }
+        public bool InProgress { get; set; }
     }
 
     public interface VisitJoin<TKey>

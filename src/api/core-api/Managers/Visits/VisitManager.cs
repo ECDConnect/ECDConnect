@@ -459,7 +459,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 _visit.OrderDate = (_visit.VisitType.Name == Constants.GGSettings.additional_visits ? _visit.InsertedDate : _visit.PlannedVisitDate);
                 if (_visit.Attended == false)
                 {
-                    _visit.inProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
+                    _visit.InProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
                 }
             }
 
