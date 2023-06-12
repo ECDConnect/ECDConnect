@@ -38,24 +38,24 @@ export const getPqaFormDataByIdSelector = (userId: string) => {
 };
 
 export const getCurrentCoachPractitionerVisitByUserId = (
-  currentVisitDescription: string,
+  currentVisitName: string,
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const currentVisit = timeline?.prePQASiteVisits?.find(
-      (visit) => visit?.visitType?.description === currentVisitDescription
+      (visit) => visit?.visitType?.name === currentVisitName
     );
 
     return currentVisit || undefined;
   });
 
 export const getPreviousCoachVisitByUserId = (
-  currentVisitDescription: string,
+  currentVisitName: string,
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const currentVisit = timeline?.prePQASiteVisits?.find(
-      (visit) => visit?.visitType?.description === currentVisitDescription
+      (visit) => visit?.visitType?.name === currentVisitName
     );
 
     if (currentVisit) {
