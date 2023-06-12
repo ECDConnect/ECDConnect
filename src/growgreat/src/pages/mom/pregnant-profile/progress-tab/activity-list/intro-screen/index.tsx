@@ -47,26 +47,6 @@ export const IntroScreen = ({
     getPreviousVisitInformationForMotherSelector
   );
 
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     appDispatch(
-  //       visitThunkActions.getPreviousVisitInformationForMother({
-  //         visitId: currentVisit?.id,
-  //       })
-  //     );
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   mother?.id,
-  //   previousCurrentVisit,
-  // ]);
-
   return (
     <>
       <Header

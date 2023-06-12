@@ -223,7 +223,6 @@ export const ReferralsTab: React.FC = () => {
 
         // saving the new state for data status record
         if (newState.length > 0) {
-          // appDispatch(infantActions.addInfantCompleteReferrals(newState));
           appDispatch(
             motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();

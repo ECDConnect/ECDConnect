@@ -1392,11 +1392,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } else
                 {
                     allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
                 }
             } else {
                 if (visitId == "" && visitId == null)

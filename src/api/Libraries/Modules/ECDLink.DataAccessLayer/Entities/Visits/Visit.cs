@@ -32,11 +32,12 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Trainee Trainee { get; set; }
         public Guid? CoachId { get; set; }
         public virtual Coach Coach { get; set; }
-
         [NotMapped]
         public DateTime? OrderDate { get; set; }
         [NotMapped]
         public string OverallRatingColor { get; set; }
+        [NotMapped]
+        public bool VisitInProgress { get; set; }
     }
 
     public interface VisitJoin<TKey>
