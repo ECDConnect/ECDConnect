@@ -249,9 +249,9 @@ class MotherService {
               plannedVisitDate
               orderDate
               attended
+              visitInProgress
               id
               risk
-              inProgress
               visitType{
                 id
                 order

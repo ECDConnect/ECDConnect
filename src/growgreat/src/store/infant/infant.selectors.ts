@@ -140,9 +140,10 @@ export const getCurrentVisitSelector = (
     }
   } else {
     // Priority 2: if there is a visit in progress, we grab the first one
-    const inProgress = allVisits?.filter((item) => item.inProgress) || [];
-    if (inProgress.length !== 0) {
-      return inProgress[0];
+    const inProgressList =
+      allVisits?.filter((item) => item.visitInProgress) || [];
+    if (inProgressList.length !== 0) {
+      return inProgressList[0];
     }
 
     // Priority 3: grab the latest completed visit from the list

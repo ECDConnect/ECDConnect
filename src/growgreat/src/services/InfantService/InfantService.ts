@@ -186,8 +186,8 @@ class InfantService {
             plannedVisitDate
             orderDate
             attended
+            visitInProgress
             risk
-            inProgress
             visitType{
               id
               order

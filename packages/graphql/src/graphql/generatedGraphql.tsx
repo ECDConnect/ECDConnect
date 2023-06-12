@@ -9907,7 +9907,6 @@ export type Visit = {
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
-  inProgress: Scalars['Boolean'];
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
   insertedDate: Scalars['DateTime'];
@@ -9925,6 +9924,7 @@ export type Visit = {
   traineeId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  visitInProgress: Scalars['Boolean'];
   visitType?: Maybe<VisitType>;
   visitTypeId: Scalars['UUID'];
 };
@@ -10111,7 +10111,6 @@ export type VisitFilterInput = {
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
-  inProgress?: InputMaybe<BooleanOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -10130,6 +10129,7 @@ export type VisitFilterInput = {
   traineeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitInProgress?: InputMaybe<BooleanOperationFilterInput>;
   visitType?: InputMaybe<VisitTypeFilterInput>;
   visitTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
 };
@@ -10233,7 +10233,6 @@ export type VisitInput = {
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
-  InProgress: Scalars['Boolean'];
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
@@ -10249,6 +10248,7 @@ export type VisitInput = {
   Trainee?: InputMaybe<TraineeInput>;
   TraineeId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitInProgress: Scalars['Boolean'];
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
 };
