@@ -1,7 +1,4 @@
-import {
-  getInfantById,
-  getInfantCurrentVisitSelector,
-} from '@/store/infant/infant.selectors';
+import { getInfantById } from '@/store/infant/infant.selectors';
 import { Button, LoadingSpinner } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
@@ -11,10 +8,8 @@ import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { VisitDto, usePrevious } from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
 import { activitiesTypes } from './activity-list/activities-list';
@@ -48,10 +43,10 @@ export const ProgressTab = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+  // const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  // const previousCurrentVisit = usePrevious(currentVisit) as
+  //   | VisitDto
+  //   | undefined;
 
   const infantName = useMemo(
     () => infant?.user?.firstName || '',
@@ -98,25 +93,7 @@ export const ProgressTab = () => {
       window.sessionStorage.clear();
       return;
     }
-
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForInfant({
-          visitId: currentVisit?.id,
-        })
-      );
-  }, [
-    appDispatch,
-    currentVisit,
-    currentVisit?.id,
-    isWalkthroughSession,
-    previousCurrentVisit,
-  ]);
+  }, [appDispatch, isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -172,7 +149,11 @@ export const ProgressTab = () => {
               textColor="primary"
               text="Manage referrals"
               icon="ClipboardListIcon"
-              onClick={() => window.alert('add redirect to referral tab')} // TODO
+              onClick={() =>
+                history.push(location.pathname, {
+                  activeTabIndex: INFANT_PROFILE_TABS.REFERRALS,
+                })
+              }
             />
           </>
         ) : (

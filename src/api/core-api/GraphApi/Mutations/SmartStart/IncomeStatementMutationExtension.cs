@@ -99,7 +99,7 @@ StatementsSubmit input)
 
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public bool SaveIncomeStatementPDF(
+        public async Task<bool> SaveIncomeStatementPDF(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IFileService fileService,
             IGenericRepositoryFactory repoFactory, 
@@ -128,7 +128,8 @@ StatementsSubmit input)
 
                 // using MemoryStream fileStream = new MemoryStream(bytes);
                 var fileName = input.UserId + "_" + input.FileName;
-                var fileUrl = Task.Run(() => fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF)).Result.Url;
+                var document = await fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF);
+                //var fileUrl = Task.Run(() => fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF)).Result.Url;
 
                 if (doc == null)
                 {
@@ -139,7 +140,7 @@ StatementsSubmit input)
                         Name = fileName,
                         UpdatedBy = _applicationUserId,
                         InsertedDate = DateTime.Now,
-                        Reference = fileUrl,
+                        Reference = document.Url.TrimEnd('/'),
                         UserId = input.UserId,
                         DocumentTypeId = docType.Id,
                         WorkflowStatusId = ws.Id,
@@ -149,11 +150,11 @@ StatementsSubmit input)
                 }
                 else {
                     // remove previous file on file server
-                    fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                    await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
                      doc.Name = fileName;
                      doc.UpdatedBy = _applicationUserId;
-                     doc.Reference = fileUrl;
+                     doc.Reference = document.Url.TrimEnd('/');
                      doc.UserId = input.UserId;
                      doc.UpdatedDate = DateTime.Now;
                      documentRepo.Update(doc);

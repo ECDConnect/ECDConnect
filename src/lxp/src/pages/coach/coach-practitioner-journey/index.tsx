@@ -39,7 +39,7 @@ import {
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
-  getAgeInYearsMonthsAndDays,
+  getFormattedDateInYearsMonthsAndDays,
   parseBool,
   usePrevious,
 } from '@ecdlink/core';
@@ -54,6 +54,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
   const wasOnline = usePrevious(isOnline);
+  const previousShowForm = usePrevious(showForm);
 
   const history = useHistory();
   const appDispatch = useAppDispatch();
@@ -80,23 +81,6 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
-  const getTime = (startedDate?: string) => {
-    if (!startedDate) return undefined;
-    const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
-
-    if (years === 0 && months < 1) {
-      return `${days} ${days > 1 ? 'days' : 'day'}`;
-    }
-
-    if (years === 0) {
-      return `${months} ${months > 1 ? 'months' : 'month'}`;
-    }
-
-    return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
-      months > 1 ? 'months' : 'month'
-    }`;
-  };
-
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
     month: 'long',
@@ -107,11 +91,12 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
+  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA.description, name: visitTypes.pqa.firstPQA.name}, plannedVisitDate: new Date()}]
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
+
   const uncompletedPqaVisits =
     timeline?.pQASiteVisits?.filter(
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
@@ -197,10 +182,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [getTimeline]);
 
   useEffect(() => {
-    if (!wasOnline && isOnline) {
+    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
       getTimeline();
     }
-  }, [getTimeline, isOnline, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
   if (
     (showForm && isView) ||
@@ -269,7 +254,9 @@ export const CoachPractitionerJourney: React.FC = () => {
           />
           <div className="mb-4 flex gap-2">
             <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
-              {getTime(timeline?.starterLicenseDate || new Date())}
+              {getFormattedDateInYearsMonthsAndDays(
+                timeline?.starterLicenseDate || new Date()
+              )}
             </p>
             {!!timeline?.starterLicenseDate && (
               <Typography

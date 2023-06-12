@@ -217,11 +217,16 @@ export const ProgrammeDetails = ({
           type="h4"
           text={
             isOnline
-              ? practitionerClassroomDetails?.[0].programmeType?.description ||
-                ''
+              ? practitionerClassroomDetails?.[0]?.programmeType?.description ||
+                'not provided'
               : 'You need to be online to view programme type'
           }
-          color={isOnline ? 'textDark' : 'errorMain'}
+          color={
+            isOnline &&
+            practitionerClassroomDetails?.[0]?.programmeType?.description
+              ? 'textDark'
+              : 'errorMain'
+          }
           className="my-4 ml-1 font-bold"
         />
       </div>

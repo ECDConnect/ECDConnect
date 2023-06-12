@@ -576,7 +576,9 @@ export const InfantRegisterForm: React.FC = () => {
                   className={'max-h-10 w-full'}
                   iconPosition={'start'}
                   onClick={() => {
-                    history.push(ROUTES.DASHBOARD);
+                    history.push(ROUTES.CLIENTS.ROOT, {
+                      activeTabIndex: CLIENT_TABS.CLIENT,
+                    });
                     onClose();
                   }}
                 />

@@ -25,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     public class Progress_VisitDataStatus {
         public string Score { get; set; }
         public string ScoreColor { get; set; }
+        public string ScoreComment { get; set; }
         public string GrowComment { get; set; }
         public string GrowCommentColor { get; set; }
         public string Weight { get; set; }
@@ -36,6 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Muac { get; set; }
         public string MuacColor { get; set; }
         public string MuacComment { get; set; }
+        public string VisitId { get; set; }
         public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
 

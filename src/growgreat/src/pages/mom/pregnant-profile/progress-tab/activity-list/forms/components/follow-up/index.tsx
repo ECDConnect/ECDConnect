@@ -35,10 +35,7 @@ import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import {
-  getMotherCurrentVisitSelector,
-  getMotherLastVisitSelector,
-} from '@/store/mother/mother.selectors';
+import { getCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -46,6 +43,8 @@ import {
   activitiesSectionTypes,
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
+import { useLocation } from 'react-router';
+import { RootState } from '@/store/types';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -89,6 +88,7 @@ export const FollowUp = ({
   const appDispatch = useAppDispatch();
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
+  const location = useLocation();
 
   useEffect(() => {
     if (isPrint) {
@@ -105,13 +105,33 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
+  // this will be available when you are busy completing a questionnaire
+  const [, , , , , visitId] = location.pathname.split('/');
+
+  // this provides the status of previous visit
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-
   const previousVisitToSort = Object.assign({}, previousVisit);
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, visitId)
+  );
+
+  useLayoutEffect(() => {
+    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: currentVisit.id,
+        })
+      );
+    }
+  }, [appDispatch, currentVisit, previousVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -120,47 +140,6 @@ export const FollowUp = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const printData = useSelector(GetMotherSummaryByPrioritySelector);
-
-  // Get Printing data
-  useLayoutEffect(() => {
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      if (isVisit) {
-        appDispatch(
-          visitThunkActions.GetMotherSummaryByPriority({
-            visitId: currentVisit.id,
-          })
-        );
-        appDispatch(
-          visitThunkActions.getPreviousVisitInformationForMother({
-            visitId: currentVisit.id,
-          })
-        );
-      } else {
-        if (previousCurrentVisit) {
-          appDispatch(
-            visitThunkActions.GetMotherSummaryByPriority({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-          appDispatch(
-            visitThunkActions.getPreviousVisitInformationForMother({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-        }
-      }
-  }, [
-    appDispatch,
-    currentVisit,
-    currentVisit?.id,
-    isVisit,
-    previousCurrentVisit,
-  ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -264,7 +243,6 @@ export const FollowUp = ({
       },
       {}
     );
-
     return groupedData;
   }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
     | Status
@@ -319,6 +297,7 @@ export const FollowUp = ({
           />
         </div>
       </div>
+
       <Divider dividerType="dashed" className="my-8" />
       <Typography
         className="mb-8"
