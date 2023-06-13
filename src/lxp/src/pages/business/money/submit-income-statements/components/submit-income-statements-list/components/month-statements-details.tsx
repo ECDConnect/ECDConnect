@@ -11,7 +11,10 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import {
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
@@ -31,6 +34,7 @@ import GeneratePdfReportButton from '../../../../../../../../src/components/down
 import { UserOptions } from 'jspdf-autotable';
 import { practitionerSelectors } from '@/store/practitioner';
 import { PractitionerService } from '@/services/PractitionerService';
+import { useAppDispatch } from '@/store';
 interface ReportDetailsForPractitionerData {
   classroomGroupName: string;
   name: string;
@@ -167,6 +171,7 @@ export const MonthStatementsDetails: React.FC = () => {
   const offLineTotalBalance = (
     offlineTotalIncome - offlineTotalExpenses
   )?.toFixed(2);
+  const appDispatch = useAppDispatch();
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -316,13 +321,12 @@ export const MonthStatementsDetails: React.FC = () => {
         userAuth?.auth_token!
       ).allStatementsExpenses(userAuth?.id!, statementMonth, statementYear);
 
-      const report = await new IncomeStatementsService(
-        userAuth?.auth_token!
-      ).getMonthsIncomeExpensesReport(
-        userAuth?.id!,
-        statementMonth,
-        statementYear
-      );
+      const report = await appDispatch(
+        statementsThunkActions.getIncomeExpensesPDFreport({
+          month: statementMonth,
+          year: statementYear,
+        })
+      ).unwrap();
 
       setPdfReportData(report);
       setIncome(incomeData);
@@ -330,7 +334,13 @@ export const MonthStatementsDetails: React.FC = () => {
     };
 
     monthlyDetailsdata();
-  }, [statementMonth, statementYear, userAuth?.auth_token, userAuth?.id]);
+  }, [
+    appDispatch,
+    statementMonth,
+    statementYear,
+    userAuth?.auth_token,
+    userAuth?.id,
+  ]);
 
   const incomeItems = [
     {
