@@ -43,6 +43,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SmartStarterUniteConferenceColor { get; set; }
         public DateTime? SmartStarterUniteConferenceDate { get; set; }
 
+        public string SelfAssessmentStatus { get; set; }
+        public string SelfAssessmentColor { get; set; }
+        public DateTime? SelfAssessmentDate { get; set; }
+
         public virtual ICollection<Visit> PrePQASiteVisits { get; set; }
         public virtual ICollection<Visit> PQASiteVisits { get; set; }
         public virtual ICollection<Visit> SupportVisits { get; set; }

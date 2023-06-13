@@ -323,6 +323,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return visitManager.ValidateDefaultVisitsForPractitioner(userId);
         }
 
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddSelfAssessmentForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            SupportVisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_sef_assessment).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+
+            // Add Visit
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.MotherId = null;
+            visitModel.InfantId = null;
+            visitModel.LinkedVisitId = null;
+            visitModel.PractitionerId = practitioner.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
+            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
+            // Add VisitData for visit
+            input.SupportData.VisitId = visit.Id.ToString();
+            input.SupportData.PractitionerId = practitioner.Id.ToString();
+            visitDataManager.AddPractitionerVisitData(input.SupportData, false);
+
+            return visit;
+        }
+
         #endregion
 
         #region Trainees

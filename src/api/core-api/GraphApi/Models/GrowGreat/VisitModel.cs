@@ -35,6 +35,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
         public Guid? TraineeId { get; set; }
+        public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public bool? isSupportCall { get; set; }
         public CMSVisitDataInputModel SupportData { get; set; }
@@ -53,6 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
         public Guid? TraineeId { get; set; }
+        public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel FollowUpData { get; set; }
     }
@@ -70,6 +72,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? MotherId { get; set; }
         public Guid? PractitionerId { get; set; }
         public Guid? TraineeId { get; set; }
+        public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ReAccreditationData { get; set; }
     }
