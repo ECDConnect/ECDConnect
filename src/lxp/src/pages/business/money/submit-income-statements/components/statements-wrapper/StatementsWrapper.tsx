@@ -24,7 +24,8 @@ export default function StatementsWrapper() {
         {
           target: '#startStatements',
           content: 'Tap here to get started!',
-          placement: 'auto',
+          placement: 'top',
+          offset: 10,
           disableBeacon: true,
           spotlightClicks: true,
         },

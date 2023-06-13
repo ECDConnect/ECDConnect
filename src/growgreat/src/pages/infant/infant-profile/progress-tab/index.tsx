@@ -153,7 +153,11 @@ export const ProgressTab = () => {
               textColor="primary"
               text="Manage referrals"
               icon="ClipboardListIcon"
-              onClick={() => window.alert('add redirect to referral tab')} // TODO
+              onClick={() =>
+                history.push(location.pathname, {
+                  activeTabIndex: INFANT_PROFILE_TABS.REFERRALS,
+                })
+              }
             />
           </>
         ) : (

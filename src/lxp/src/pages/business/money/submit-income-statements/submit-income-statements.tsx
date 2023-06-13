@@ -590,7 +590,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end pt-8">
+        <div className="h-full flex-1 bg-white px-4 pt-4">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
