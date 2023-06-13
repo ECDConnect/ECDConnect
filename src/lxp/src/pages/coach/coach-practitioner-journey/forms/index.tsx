@@ -56,7 +56,7 @@ const sessionStorageKey = 'currentStepNumber';
 
 export const Form = ({ visitId, onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
-  const [step, setStep] = useState(4);
+  const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');

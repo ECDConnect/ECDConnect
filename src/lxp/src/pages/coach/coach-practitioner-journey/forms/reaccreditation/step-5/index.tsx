@@ -48,7 +48,6 @@ export const Step5ReAccreditation = ({
     }
   };
 
-  console.log(answer);
   return (
     <div className="p-4">
       <Typography
