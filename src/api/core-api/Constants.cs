@@ -36,6 +36,7 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_sef_assessment = "sef_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
+            public const string visitType_practitioner_visit = "practitioner_visit";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";

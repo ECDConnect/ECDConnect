@@ -458,7 +458,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
             Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
 
-            if (input.LinkedVisitId == null || input.CoachId == null || input.TraineeId == null)
+            if (input.CoachId == null || input.TraineeId == null)
             {
                 return new Visit();
             }
@@ -467,6 +467,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.Attended = false;
             input.CoachId = coach.Id;
             input.TraineeId = trainee.Id;
+            input.LinkedVisitId = input.LinkedVisitId;
+            input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+
+            return visitManager.AddVisitForCoach(input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddCoachVisitInviteForPractitioner(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            VisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: applicationUserId);
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_visit).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
+            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
+
+            if (input.CoachId == null || input.PractitionerId == null)
+            {
+                return new Visit();
+            }
+
+            input.VisitType = visitType;
+            input.Attended = false;
+            input.CoachId = coach.Id;
+            input.PractitionerId = practitioner.Id;
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
 

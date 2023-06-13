@@ -776,6 +776,20 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             
             return false;
         }
+
+        public List<string> GetVisitStatusForSSChecklist(Guid traineeId)
+        {
+
+            List<string> vData = new List<string>();
+                vData = (
+                from visit in _visitRepo.GetAll().Where(x => x.TraineeId == traineeId).OrderBy(x => x.PlannedVisitDate)
+                join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && (y.Name == Constants.SSSettings.visitType_smart_space_checklist)) on visit.VisitTypeId equals visitType.Id
+                join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                select visitData
+            ).Select(y => y.VisitName).Distinct().ToList();
+
+            return vData;
+        }
     }
 }
 
