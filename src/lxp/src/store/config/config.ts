@@ -87,6 +87,9 @@ import {
   statementsPersistConfig,
   statementsReducer,
 } from '../statements/statements';
+import { communityReducer } from '../community';
+import { communityPersistConfig } from '../community/community';
+import { pqaPersistConfig, pqaReducer } from '../pqa/pqa';
 
 const persistedReducers = {
   activityData: persistReducer(activityPersistConfig, activityReducer),
@@ -113,6 +116,7 @@ const persistedReducers = {
   documents: persistReducer(documentPersistConfig, documentReducer),
   notesData: persistReducer(notesPersistConfig, notesReducer),
   notifications: persistReducer(notificationPersistConfig, notificationReducer),
+  pqa: persistReducer(pqaPersistConfig, pqaReducer),
   practitioner: persistReducer(practitionerPersistConfig, practitionerReducer),
   practitionerForCoach: persistReducer(
     practitionerForCoachPersistConfig,
@@ -134,6 +138,7 @@ const persistedReducers = {
   storyBookData: persistReducer(storyBookPersistConfig, storyBookReducer),
   sync: syncReducer,
   user: persistReducer(userPersistConfig, userReducer),
+  community: persistReducer(communityPersistConfig, communityReducer),
 };
 
 const rootReducer = combineReducers(persistedReducers);

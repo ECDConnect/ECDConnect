@@ -1,7 +1,4 @@
-import {
-  ExpensesStatementsDto,
-  IncomeStatementsDto,
-} from '@/../../../packages/core/lib';
+import { IncomeStatementsDto } from '@/../../../packages/core/lib';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
@@ -13,6 +10,7 @@ import {
   getAllStatementsContributionType,
   getAllStatementsFeeType,
   getAllStatementsBalanceSheet,
+  getIncomeExpensesPDFreport,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
 
@@ -25,6 +23,7 @@ const initialState: StatementsState = {
   contributionTypes: undefined,
   payTypes: undefined,
   balanceSheet: undefined,
+  pdfReportData: undefined,
 };
 
 const statementsSlice = createSlice({
@@ -39,6 +38,7 @@ const statementsSlice = createSlice({
       state.feeTypes = initialState.feeTypes;
       state.contributionTypes = initialState.contributionTypes;
       state.balanceSheet = initialState.balanceSheet;
+      state.pdfReportData = initialState.pdfReportData;
     },
     updateStatements: (state, action: PayloadAction<any>) => {
       if (state.income) {
@@ -81,6 +81,10 @@ const statementsSlice = createSlice({
     });
     builder.addCase(getAllStatementsBalanceSheet.fulfilled, (state, action) => {
       state.balanceSheet = action.payload;
+    });
+
+    builder.addCase(getIncomeExpensesPDFreport.fulfilled, (state, action) => {
+      state.pdfReportData = action.payload;
     });
   },
 });

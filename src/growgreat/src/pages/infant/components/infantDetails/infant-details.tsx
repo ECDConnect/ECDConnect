@@ -15,18 +15,20 @@ import {
   InfantDetailsModel,
   infantDetailsModelSchema,
 } from '@/schemas/infant/infant-details';
-import { intervalToDuration } from 'date-fns';
+import { intervalToDuration, addYears } from 'date-fns';
 import DatePicker from 'react-datepicker';
 import 'react-datepicker/dist/react-datepicker.css';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
-import { getPreviousAndNextMonths } from '@ecdlink/core';
+import { getPreviousAndNextMonths, getNextDateByDay } from '@ecdlink/core';
 
 export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   onSubmit,
   numberOfChildren,
   multipleChildrenCount,
   motherInfo,
+  name,
+  genderId,
 }) => {
   const {
     getValues: getInfantDetailsFormValues,
@@ -41,6 +43,12 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
   const genders = useSelector(staticDataSelectors.getGenders);
 
   const currentDate = useMemo(() => new Date(), []);
+  const tomorrow = useMemo(() => getNextDateByDay(1), []);
+
+  const { sixYearsAgo } = useMemo(() => {
+    const sixYearsAgo = addYears(tomorrow, -6);
+    return { sixYearsAgo };
+  }, [tomorrow]);
 
   const { expectedDateOfDelivery, twoMonthsAgo, twoMonthsLater } =
     useMemo(() => {
@@ -85,7 +93,7 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
 
   const minDate = new Date(myYear.getFullYear(), myMonth.getMonth(), 1);
   const maxDate = new Date(myYear.getFullYear(), myMonth.getMonth() + 1, 0);
-  const { years, months } = intervalToDuration({
+  const { years, months, days } = intervalToDuration({
     start: myDay > new Date() ? new Date() : myDay,
     end: currentDate,
   });
@@ -126,6 +134,12 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
         setMyDay(currentDate);
         setMyMonth(currentDate);
         return setMyYear(currentDate);
+      }
+    } else {
+      if (date.getFullYear() === sixYearsAgo.getFullYear()) {
+        setMyDay(sixYearsAgo);
+        setMyMonth(sixYearsAgo);
+        return setMyYear(sixYearsAgo);
       }
     }
     return setMyYear(date);
@@ -183,6 +197,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
               minDate: twoMonthsAgo,
               maxDate: twoMonthsLater,
             })}
+            {...(!expectedDateOfDelivery &&
+              myMonth.getFullYear() === sixYearsAgo.getFullYear() && {
+                minDate: sixYearsAgo,
+              })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -201,6 +219,10 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
               myYear.getFullYear() === currentDate.getFullYear() && {
                 maxDate: currentDate,
               })}
+            {...(!expectedDateOfDelivery &&
+              myYear.getFullYear() === sixYearsAgo.getFullYear() && {
+                minDate: sixYearsAgo,
+              })}
           />
           <DatePicker
             placeholderText={'Please select a date'}
@@ -215,17 +237,38 @@ export const InfantDetails: React.FC<EditInfantDetailsProps> = ({
                   maxDate: twoMonthsLater,
                 }
               : {
+                  minDate: sixYearsAgo,
                   maxDate: currentDate,
                 })}
           />
         </div>
-        <div className="mt-6 flex w-full justify-start">
-          <Alert
-            type={'info'}
-            message={`${years} years and ${months} months old`}
-            className="w-full"
-          />
-        </div>
+        {years! < 1 && months! < 1 && (
+          <div className="mt-6 flex w-full justify-start">
+            <Alert
+              type={'info'}
+              message={`${days} days old`}
+              className="w-full"
+            />
+          </div>
+        )}
+        {years! < 1 && months! > 0 && (
+          <div className="mt-6 flex w-full justify-start">
+            <Alert
+              type={'info'}
+              message={`${months} months and ${days} days old`}
+              className="w-full"
+            />
+          </div>
+        )}
+        {years! > 0 && (
+          <div className="mt-6 flex w-full justify-start">
+            <Alert
+              type={'info'}
+              message={`${years} years and ${months} months old`}
+              className="w-full"
+            />
+          </div>
+        )}
       </div>
       <Typography
         type="h3"

@@ -27,6 +27,7 @@ export const ProgrammePlanningDailyRoutine = () => {
   const routinePlan = useSelector(
     programmeRoutineSelectors.getProgrammeRoutineById(1)
   );
+
   const userAuth = useSelector(authSelectors.getAuthUser);
 
   const getDataByLanguage = async (language: LanguageDto) => {

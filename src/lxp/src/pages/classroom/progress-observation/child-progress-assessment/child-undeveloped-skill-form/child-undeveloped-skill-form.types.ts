@@ -2,7 +2,18 @@ import { ProgressTrackingSkillDto } from '@ecdlink/core';
 import { ComponentBaseProps } from '@ecdlink/ui';
 
 export interface ChildUndevelopedSkillFormProps extends ComponentBaseProps {
-  undevelopedSkills: ProgressTrackingSkillDto[];
+  skills: {
+    yes: ProgressTrackingSkillDto[];
+    tryingToDo: ProgressTrackingSkillDto[];
+    notYet: ProgressTrackingSkillDto[];
+    none: ProgressTrackingSkillDto[];
+  };
+  allSkillsYes: boolean;
+  supportSkillId?: number;
   childId?: string;
-  onSubmit: (skill: ProgressTrackingSkillDto) => void;
+  onSubmit: (
+    skill: ProgressTrackingSkillDto | undefined,
+    skipStepSix: boolean,
+    exit: boolean
+  ) => void;
 }

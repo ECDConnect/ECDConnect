@@ -1,6 +1,6 @@
 import { renderIcon } from '../../utils';
-import { AlertProps, AlertVariant } from './alert.types';
-export const wrapper = `rounded-10 p-4 `;
+import { AlertVariant } from './alert.types';
+export const wrapper = `rounded-10 p-4 relative`;
 export const innerWrapper = 'flex flex-row ';
 export const extendedContentWrapper = 'pl-3 mt-2 ';
 export const iconWrapper = 'flex-shrink-0';
@@ -20,8 +20,10 @@ export const alertColor = (type: string, style: AlertVariant) => {
       } bg-infoBb`;
     case 'success':
       return `text-successDark ${
-        style !== 'flat' && 'border-successDark'
-      } bg-successBg`;
+        style === 'flat'
+          ? 'border-successDark bg-successBg'
+          : 'border-successMain bg-successMain'
+      }`;
     case 'warning':
       return `text-alertDark ${
         style !== 'flat' && 'border-alertDark'
@@ -35,12 +37,12 @@ export const alertColor = (type: string, style: AlertVariant) => {
   }
 };
 
-export const alertTextColor = (type: string) => {
+export const alertTextColor = (type: string, variant?: AlertVariant) => {
   switch (type) {
     case 'info':
       return 'infoDark';
     case 'success':
-      return 'successDark';
+      return variant === 'outlined' ? 'white' : 'successDark';
     case 'warning':
       return 'alertDark';
     case 'error':
@@ -50,16 +52,20 @@ export const alertTextColor = (type: string) => {
   }
 };
 
-const getIcon = (iconName: string, colorType: string) => {
-  return renderIcon(iconName, icon + alertIconColor(colorType));
+const getIcon = (
+  iconName: string,
+  colorType: string,
+  variant?: AlertVariant
+) => {
+  return renderIcon(iconName, icon + alertIconColor(colorType, variant));
 };
 
-export const alertIconColor = (type: string) => {
+export const alertIconColor = (type: string, variant?: AlertVariant) => {
   switch (type) {
     case 'info':
       return ` text-infoMain`;
     case 'success':
-      return `text-successMain `;
+      return variant === 'outlined' ? 'text-white' : `text-successMain `;
     case 'warning':
       return `text-alertMain `;
     case 'error':
@@ -69,12 +75,15 @@ export const alertIconColor = (type: string) => {
   }
 };
 
-export const alertIcon = (type: string): JSX.Element => {
+export const alertIcon = (
+  type: string,
+  variant?: AlertVariant
+): JSX.Element => {
   switch (type) {
     case 'info':
       return getIcon('InformationCircleIcon', 'info');
     case 'success':
-      return getIcon('CheckCircleIcon', 'success');
+      return getIcon('CheckCircleIcon', 'success', variant);
     case 'warning':
       return getIcon('ExclamationIcon', 'warning');
     case 'error':

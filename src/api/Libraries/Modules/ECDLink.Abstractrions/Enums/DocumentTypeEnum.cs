@@ -33,6 +33,26 @@ namespace ECDLink.Abstractrions.Enums
         [Description("road-to-health-book")]
         RoadToHealthBook,
         [Description("content-image")]
-        ContentImage
+        ContentImage,
+        [Description("income-statement-pdf")]
+        IncomeStatementPDF,
+        [Description("attendance-pdf")]
+        AttendancePDF,
+        [Description("childregistrationform")]
+        ChildRegistrationForm, 
+        [Description("child-clinic-card")]
+        ChildClinicCard, 
+        [Description("child-birth-certificate")]
+        ChildBirthCertificate,
+        [Description("practitioner-agreement")]
+        PractitionerAgreement,
+        [Description("identity-document")]
+        IdentityDocument,
+        [Description("proof-of-site-address")]
+        ProofOfSiteAddress,
+        [Description("startup-support-agreement")]
+        StartupSupportAgreement,
+        [Description("proof-ofaccount")]
+        ProofOfAccount
     }
 }

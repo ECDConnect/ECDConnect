@@ -14,6 +14,7 @@ import {
 } from '@utils/child/child-profile-utils';
 import { isChildInitialRegistrationPeriod } from '@utils/child/child-progress-report.utils';
 import ROUTES from '@routes/routes';
+import { useAppContext } from '@/walkthrougContext';
 
 export interface ChildProgressReportAlertProps extends ComponentBaseProps {
   child: ChildDto;
@@ -25,6 +26,8 @@ const baseProgressReportListItem: ListItemProps = {
   withPaddingX: true,
   withPaddingY: true,
   title: '',
+  titleTypographyType: 'h4',
+  titleColor: 'textDark',
   subTitle: '',
   subTitleColor: 'textMid',
   iconName: 'PresentationChartLineIcon',
@@ -41,6 +44,9 @@ export const ChildProgressReportAlert: React.FC<
   ChildProgressReportAlertProps
 > = ({ child }) => {
   const history = useHistory();
+  const {
+    state: { run },
+  } = useAppContext();
 
   const childInsertedDate = child.insertedDate
     ? new Date(child.insertedDate)
@@ -61,11 +67,8 @@ export const ChildProgressReportAlert: React.FC<
       isMatchingReportingPeriods(new Date(summary.reportDate), currentDate)
   );
 
-  const isCurrentlyInReportingOverduePeriod =
-    isInFinalMonthOfReportingPeriod(currentDate);
-
   const reportingPeriod = !currentReportingPeriodReportSummary
-    ? getReportingPeriod(currentDate)
+    ? getReportingPeriod(currentDate, requiresInitialReport)
     : getFollowingReportingPeriod(
         new Date(
           latestCompletedSummary?.reportDate
@@ -74,13 +77,19 @@ export const ChildProgressReportAlert: React.FC<
         )
       );
 
-  const reportDate = new Date(
-    `${reportingPeriod.monthName}-01-${reportingPeriod.year}`
+  const isCurrentlyInReportingOverduePeriod = isInFinalMonthOfReportingPeriod(
+    reportingPeriod.monthName,
+    currentDate
   );
+
+  const reportDate = requiresInitialReport
+    ? new Date(2000, 0, 1)
+    : new Date(`${reportingPeriod.monthName}-01-${reportingPeriod.year}`);
 
   const navigateToChildProgressObservation = () => {
     history.push(ROUTES.CHILD_PROGRESS_OBSERVATION, {
       childId: child.id,
+      firstObservation: requiresInitialReport,
       reportingDate: reportDate,
     });
   };
@@ -90,12 +99,11 @@ export const ChildProgressReportAlert: React.FC<
     if (requiresInitialReport) {
       return {
         ...baseProgressReportListItem,
-        title: 'First Observations',
-        subTitle: `Track progress by ${addDays(
+        title: '<b>Start tracking progress</b>',
+        subTitle: `First observations by <b>${addDays(
           childInsertedDate,
           childRegistrationConstants.firstProgressReportPeriod
-        ).toLocaleString('en-za', DateFormats.standardDate)}`,
-        subTitleColor: 'black',
+        ).toLocaleString('en-za', DateFormats.dayWithShortMonthName)}</b>`,
         onButtonClick: navigateToChildProgressObservation,
       };
     }
@@ -107,19 +115,19 @@ export const ChildProgressReportAlert: React.FC<
     ) {
       return {
         ...baseProgressReportListItem,
-        title: 'Create Report',
-        subTitle: 'Progress observation report overdue',
-        subTitleColor: 'errorMain',
-        subTitleShape: 'square',
+        title: `<b>${reportingPeriod.monthName} progress report</b>`,
+        subTitle: '<b>Overdue</b>',
+        subTitleColor: 'alertMain',
+        iconName: 'ExclamationIcon',
+        iconBackgroundColor: 'alertMain',
         onButtonClick: navigateToChildProgressObservation,
       };
     }
 
     return {
       ...baseProgressReportListItem,
-      title: 'Progress observations',
-      subTitle: `Next report due 30 ${reportingPeriod.monthName} ${reportingPeriod.year}`,
-      subTitleColor: 'black',
+      title: `<b>${reportingPeriod.monthName} progress report</b>`,
+      subTitle: `Complete by <b>30 ${reportingPeriod.monthName}</b>`,
       onButtonClick: navigateToChildProgressObservation,
     };
   };

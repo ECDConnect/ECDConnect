@@ -46,6 +46,8 @@ export const GetAllPractitioner = gql`
       dateToBeRemoved
       dateAccepted
       progress
+      attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -91,6 +93,8 @@ export const GetPractitionerById = gql`
       dateToBeRemoved
       dateAccepted
       progress
+      attendedChildProgress
+      usePhotoInReport
     }
   }
 `;

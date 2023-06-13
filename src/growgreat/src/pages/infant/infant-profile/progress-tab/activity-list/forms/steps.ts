@@ -73,7 +73,9 @@ export const getCareForMomSteps = (
   isDangerSignsFollowUp: boolean,
   isShowClinicCheckUps: boolean,
   isSelfCareAndSupport: boolean,
-  isMaternalDistressFollowUp: boolean
+  isMaternalDistress: boolean,
+  isMaternalDistressFollowUp: boolean,
+  isMaternalDistressScreening: boolean
 ) => [
   CareForMomStep,
   ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
@@ -81,19 +83,20 @@ export const getCareForMomSteps = (
   ...(isChildBefore49Days ? [DangerSignsStep] : []),
   ...(isChildBefore49Days ? [SelfCareStep] : []),
   ...(isSelfCareAndSupport ? [SelfCareAndSupportStep] : []),
-  MaternalDistressStep,
+  ...(isMaternalDistress ? [MaternalDistressStep] : []),
   ...(isMaternalDistressFollowUp ? [MaternalDistressFollowUpStep] : []),
-  MaternalDistressScreeningStep,
+  ...(isMaternalDistressScreening ? [MaternalDistressScreeningStep] : []),
 ];
 
 export const careForBabySteps = (
+  isRoadToHeathBookStep: boolean,
   isDangerSignsFollowUp: boolean,
   isChildBefore49Days: boolean,
   isNewBornCare: boolean,
   isKangarooMotherCare: boolean
 ) => [
   CareForBabyStep,
-  RoadToHeathBookStep,
+  ...(isRoadToHeathBookStep ? [RoadToHeathBookStep] : []),
   ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
   ...(isChildBefore49Days ? [BabyDangerSignsStep] : []),
   ...(isNewBornCare ? [NewbornCareStep] : []),
@@ -179,7 +182,7 @@ export const getPillar1Steps = ({
 
   const complementaryFeedingFlow = isDietFormStep
     ? [DietFormStep, ResourcesStep]
-    : [ResourcesStep];
+    : [];
 
   if (!!nutritionAnswer) {
     switch (nutritionAnswer) {
@@ -209,21 +212,23 @@ export const getPillar1Steps = ({
 
 export const pillar2Steps = (
   isDevelopmentalScreeningWeeksFollowUp: boolean,
-  isDevelopmentalScreening: boolean
+  isDevelopmentalScreening: boolean,
+  isDevelopmentalScreeningWeeks: boolean
 ) => [
   ...(isDevelopmentalScreening ? [DevelopmentalScreeningStep] : []),
   ...(isDevelopmentalScreeningWeeksFollowUp
     ? [DevelopmentalScreeningWeeksFollowUpStep]
     : []),
-  DevelopmentalScreeningWeeksStep,
+  ...(isDevelopmentalScreeningWeeks ? [DevelopmentalScreeningWeeksStep] : []),
 ];
 
 export const pillar3Steps = (
   isImmunisationQuestion: boolean,
   isVitaminAQuestion: boolean,
-  isDewormingQuestion: boolean
+  isDewormingQuestion: boolean,
+  isImmunisationsStep: boolean
 ) => [
-  ImmunisationsStep,
+  ...(isImmunisationsStep ? [ImmunisationsStep] : []),
   ...(isImmunisationQuestion || isVitaminAQuestion || isDewormingQuestion
     ? [ImmunisationsSupplementsDewormingStep]
     : []),

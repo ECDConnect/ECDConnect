@@ -2,10 +2,25 @@ import { ActionModal, DialogPosition, Dialog } from '@ecdlink/ui';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useHistory } from 'react-router-dom';
 import ROUTES from '@/routes/routes';
+import { syncThunkActions } from '@/store/sync';
+import { useAppDispatch } from '@/store';
+import { useSelector } from 'react-redux';
+import { practitionerSelectors } from '@/store/practitioner';
+import { settingActions } from '@/store/settings';
 
 export const Logout: React.FC = () => {
   const { resetAuth, resetAppStore } = useStoreSetup();
   const history = useHistory();
+  const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const sync = async () => {
+    if (practitioner?.isPrincipal === true) {
+      await dispatch(syncThunkActions.syncOfflineData({}));
+    } else {
+      await dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
+    await dispatch(settingActions.setLastDataSync());
+  };
 
   return (
     <Dialog
@@ -26,8 +41,9 @@ export const Logout: React.FC = () => {
             text: 'Yes, log out',
             colour: 'primary',
             onClick: async () => {
-              await resetAuth();
+              await sync();
               await resetAppStore();
+              await resetAuth();
               history.push('/');
             },
             type: 'filled',

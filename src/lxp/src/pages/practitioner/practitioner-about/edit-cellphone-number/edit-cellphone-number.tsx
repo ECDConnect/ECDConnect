@@ -6,8 +6,8 @@ import {
   ButtonGroup,
   ButtonGroupTypes,
 } from '@ecdlink/ui';
-import { useState } from 'react';
-import { useForm, useWatch } from 'react-hook-form';
+import { useEffect, useState } from 'react';
+import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   EditCellPhoneNUmberProps,
@@ -16,12 +16,12 @@ import {
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import {
   EditCellphoneModel,
-  editCelphoneNumberSchema,
+  editCellphoneNumberSchema,
   initialEditPractitionerValues,
 } from '@/schemas/practitioner/edit-cellphone-number';
 import { useAppDispatch } from '@store';
-import { useHistory } from 'react-router-dom';
 import { userActions, userThunkActions } from '@store/user';
+import { cloneDeep } from 'lodash';
 
 export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
   setEditiCellPhoneNumber,
@@ -29,7 +29,6 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const history = useHistory();
   const [isWhatsappNumber, setIsWhatsappNumber] = useState(true);
 
   const getDefaultFormvalues = () => {
@@ -37,9 +36,9 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
       const tempPractitioner: EditCellphoneModel = {
         name: user.firstName || '',
         surname: user.surname || '',
-        cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
-        whatsapp: user?.whatsappNumber || '',
+        cellphone: user.phoneNumber || undefined,
+        email: user.email || undefined,
+        whatsapp: user.whatsappNumber || undefined,
       };
       return tempPractitioner;
     } else {
@@ -51,25 +50,29 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     getValues: getPractitionerInfoFormValues,
     register: practitionerInfoFormRegister,
     control: practitionerInfoFormControl,
-  } = useForm({
-    resolver: yupResolver(editCelphoneNumberSchema),
+    watch,
+    clearErrors,
+  } = useForm<EditCellphoneModel>({
+    resolver: yupResolver(editCellphoneNumberSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
-  const { whatsapp } = useWatch({
-    control: practitionerInfoFormControl,
-  });
+
+  const { errors } = useFormState({ control: practitionerInfoFormControl });
+  const { whatsapp, cellphone } = watch();
 
   const savePractitionerUserData = () => {
     const practitionerForm = getPractitionerInfoFormValues();
-    const copy = Object.assign({}, user);
+    const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
       copy.phoneNumber = practitionerForm.cellphone;
-      copy.email = practitionerForm.email;
-      if (whatsapp) {
+      copy.email = practitionerForm.email!;
+      if (isWhatsappNumber) {
+        copy.whatsappNumber = undefined;
+      } else {
         copy.whatsappNumber = practitionerForm?.whatsapp;
       }
 
@@ -78,6 +81,13 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
     }
   };
 
+  useEffect(() => {
+    if (user?.whatsappNumber) {
+      setIsWhatsappNumber(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   return (
     <div>
       <BannerWrapper
@@ -85,10 +95,10 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
         renderBorder={true}
         showBackground={false}
         color={'primary'}
-        title={'Edit practitioner'}
+        title={'Edit Cellphone Number'}
         backgroundColour={'uiBg'}
         displayOffline={!isOnline}
-        onBack={() => history.goBack()}
+        onBack={() => setEditiCellPhoneNumber(false)}
       ></BannerWrapper>
       <div className="w-12/12 wrapper-with-sticky-button px-4">
         <div className="flex w-full justify-center">
@@ -104,11 +114,12 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
             <div className="mt-2 flex w-full flex-col justify-center gap-4">
               <FormInput<EditCellphoneModel>
                 label={'Cellphone number'}
-                visible={true}
                 nameProp={'cellphone'}
-                placeholder="073 527 9059"
+                placeholder="+27735279059"
                 className="w-full"
                 register={practitionerInfoFormRegister}
+                type={'number'}
+                error={!!errors.cellphone ? errors.cellphone : undefined}
               />
               <div className="mt-4 w-11/12">
                 <Typography
@@ -122,12 +133,13 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 <ButtonGroup<boolean>
                   options={yesNoOptions}
                   onOptionSelected={(value: boolean | boolean[]) => {
+                    clearErrors();
                     setIsWhatsappNumber(value as boolean);
                   }}
                   color="secondary"
                   type={ButtonGroupTypes.Button}
                   className={'w-full'}
-                  // selectedOptions={multipleChildren}
+                  selectedOptions={isWhatsappNumber}
                 />
               </div>
               {!isWhatsappNumber && (
@@ -135,10 +147,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                   label={'What phone number do you use for WhatsApp?'}
                   hint={'Optional. Leave blank if you do not use WhatsApp.'}
                   placeholder="073 527 9059"
-                  visible={true}
+                  type={'number'}
                   nameProp={'whatsapp'}
                   className="w-full"
                   register={practitionerInfoFormRegister}
+                  error={!!errors.whatsapp ? errors.whatsapp : undefined}
                 />
               )}
             </div>
@@ -151,8 +164,11 @@ export const EditCellPhoneNumber: React.FC<EditCellPhoneNUmberProps> = ({
                 text="Save"
                 textColor="white"
                 icon="SaveIcon"
+                disabled={
+                  !!Object.keys(errors).length ||
+                  (!!isWhatsappNumber ? !cellphone : !whatsapp || !cellphone)
+                }
                 onClick={() => {
-                  // handleChangePractitionerInfo();
                   savePractitionerUserData();
                   setEditiCellPhoneNumber(false);
                 }}

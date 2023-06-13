@@ -79,7 +79,8 @@ namespace ECDLink.PostgresTenancy.Services
                 TenantType = tenant.TenantType,
                 TestSiteAddress = tenant.TestSiteAddress,
                 AdminTestSiteAddress = tenant.AdminTestSiteAddress,
-                MoodleUrlVar = tenant.MoodleUrlVar
+                MoodleUrlVar = tenant.MoodleUrlVar,
+                MoodleConfigVar = tenant.MoodleConfigVar
             });
 
             return Cast(entity);
@@ -100,7 +101,8 @@ namespace ECDLink.PostgresTenancy.Services
                 Var2 = tenantEntity.Var2,
                 TestSiteAddress = tenantEntity.TestSiteAddress,
                 AdminTestSiteAddress = tenantEntity.AdminTestSiteAddress,
-                MoodleUrlVar = tenantEntity.MoodleUrlVar
+                MoodleUrlVar = tenantEntity.MoodleUrlVar,
+                MoodleConfigVar = tenantEntity.MoodleConfigVar
 
             };
         }

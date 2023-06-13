@@ -15,6 +15,7 @@ const useBackgroundSync = () => {
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
 
   const { resetAppStore, initStoreSetup } = useStoreSetup();
+  const minutesBetweenSync = 30;
 
   const { sync, analytics, settings, notifications, ...rest } = useAppSelector(
     (state) => state
@@ -35,7 +36,7 @@ const useBackgroundSync = () => {
           isOnline &&
           dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
       }
-    }, 30 * 60 * 1000);
+    }, minutesBetweenSync * 60 * 1000);
 
     return () => clearInterval(interval);
   }, [isOnline, dispatch, rest, practitioner?.isPrincipal]);

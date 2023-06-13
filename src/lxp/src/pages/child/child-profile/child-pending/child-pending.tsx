@@ -33,6 +33,8 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const dialog = useDialog();
   const childExpiryTime = useSelector(settingSelectors.getChildExpiryTime);
   const childLearner = useSelector(classroomsSelectors.getChildLearner(child));
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const classroomGroupId = classroomGroups?.at(0)?.id;
   const dispatch = useAppDispatch();
 
   useEffect(() => {
@@ -80,7 +82,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const createLink = async () => {
     const response = await dispatch(
       childrenThunkActions.refreshCaregiverChildToken({
-        classgroupId: childLearner?.classroomGroupId,
+        classgroupId: childLearner?.classroomGroupId || classroomGroupId,
         childId: child.id,
       })
     );
@@ -89,7 +91,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
       search: `?token=${response.payload}`,
     });
 
-    copyToClip(caregiverChildregUrl);
+    const linkCopied = await copyToClip(caregiverChildregUrl);
 
     dialog({
       render: (onSubmit, onCancel) => {
@@ -102,6 +104,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
               surname: childUser?.surname || '',
             }}
             caregiverUrl={caregiverChildregUrl}
+            couldCopyToClipboard={linkCopied}
           />
         );
       },
@@ -119,7 +122,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
       subTitle={'Not Registered'}
       displayOffline={!isOnline}
     >
-      <div className="h-full w-full flex flex-col p-4">
+      <div className="flex h-full w-full flex-col p-4">
         <Alert
           title={`${childUser?.firstName}'s registration is not complete`}
           type={'error'}

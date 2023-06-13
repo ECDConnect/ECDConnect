@@ -7,6 +7,7 @@ import {
   Button,
   Typography,
   DialogPosition,
+  ActionModal,
 } from '@ecdlink/ui';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import {
@@ -48,6 +49,7 @@ import { PregnantProfileRouteState } from '../pregnant-profile/index.types';
 import { eventRecordThunkActions } from '@/store/eventRecord';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { CLIENT_TABS } from '../../client/client-dashboard/class-dashboard';
 
 const BANNER_HEIGHT = 64;
 
@@ -169,41 +171,37 @@ export const PregnantRegisterForm: React.FC = () => {
       motherThunkActions.addMother({ mother: motherInputModel })
     ).unwrap();
 
-    const fileName = 'maternalcaserecord.png';
-    const workflowStatusId = getWorkflowStatusIdByEnum(
-      WorkflowStatusEnum.DocumentPendingVerification
-    );
-    const documentTypeId = getDocumentTypeIdByEnum(
-      FileTypeEnum.MaternalCaseRecord
-    );
+    if (!pregnantMaternalCaseRecord?.notHaveAMaternalRecord) {
+      const fileName = 'maternalcaserecord.png';
+      const workflowStatusId = getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentPendingVerification
+      );
+      const documentTypeId = getDocumentTypeIdByEnum(
+        FileTypeEnum.MaternalCaseRecord
+      );
 
-    const documentInputModel: Document = {
-      id: newGuid(),
-      userId: motherUserId,
-      createdUserId: user?.id ?? '',
-      workflowStatusId: workflowStatusId ?? '',
-      documentTypeId: documentTypeId ?? '',
-      name: fileName,
-      fileName: fileName,
-      file: pregnantMaternalCaseRecord?.maternalCaseRecord,
-      fileType: FileTypeEnum.MaternalCaseRecord,
-    };
-    appDispatch(documentActions.createDocument(documentInputModel));
-    appDispatch(
-      documentThunkActions.createDocument(documentInputModel)
-    ).unwrap();
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: motherUserId,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: workflowStatusId ?? '',
+        documentTypeId: documentTypeId ?? '',
+        name: fileName,
+        fileName: fileName,
+        file: pregnantMaternalCaseRecord?.maternalCaseRecord,
+        fileType: FileTypeEnum.MaternalCaseRecord,
+      };
+      appDispatch(documentActions.createDocument(documentInputModel));
+      appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
+    }
   }, [
-    address?.address,
-    address?.addressLine1,
-    address?.id,
-    contactInformation?.cellphone,
-    contactInformation?.whatsapp,
-    details?.name,
-    details?.surname,
-    details?.age,
+    address,
+    contactInformation,
+    details,
     user?.id,
-    pregnantMaternalCaseRecord?.deliveryDate,
-    pregnantMaternalCaseRecord?.maternalCaseRecord,
+    pregnantMaternalCaseRecord,
     location?.state?.linkedInfantId,
     relations,
     appDispatch,
@@ -211,70 +209,144 @@ export const PregnantRegisterForm: React.FC = () => {
     getDocumentTypeIdByEnum,
   ]);
 
-  const steps = (step: PregnantRegisterSteps) => {
-    switch (step) {
+  const steps = useCallback(
+    (step: PregnantRegisterSteps) => {
+      switch (step) {
+        case PregnantRegisterSteps.pregnantDetails:
+          return (
+            <PregnantDetails
+              setContactInformation={setContactInformation}
+              setAddress={setAddress}
+              setIsAlreadyClient={setIsAlreadyClient}
+              isAlreadyClient={isAlreadyClient}
+              onSubmit={(value) => {
+                setLabel(`step 3 of 5`);
+                setDetails(value as EditPregnantDetailsProps);
+                handleExistingUser();
+              }}
+            />
+          );
+        case PregnantRegisterSteps.pregnantContactInformation:
+          return (
+            <ContactInformation
+              details={details as any}
+              onSubmit={(value) => {
+                setLabel(`step 4 of 5`);
+                setActiveStep(PregnantRegisterSteps.pregnantAddress);
+                setContactInformation(
+                  value as EditPregnantContactInformationProps
+                );
+              }}
+            />
+          );
+        case PregnantRegisterSteps.pregnantAddress:
+          return (
+            <PregnantAddress
+              details={details as any}
+              onSubmit={(value) => {
+                setLabel(`step 5 of 5`);
+                setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
+                setAddress(value as PregnantAddressProps);
+              }}
+            />
+          );
+        case PregnantRegisterSteps.pregnantMaternalRecord:
+          return (
+            <PregnantMaternalCaseRecord
+              details={details as any}
+              onSubmit={(value) => {
+                setLabel(`step 5 of 5`);
+                setPregnantMaternalCaseRecord(
+                  value as PregnantMaternalCaseRecordProps
+                );
+              }}
+            />
+          );
+        case PregnantRegisterSteps.consentAgreement:
+        default:
+          return (
+            <ConsentAgreement
+              onSubmit={(value) => {
+                setActiveStep(PregnantRegisterSteps.pregnantDetails);
+                setLabel(`step 2 of 5`);
+              }}
+            />
+          );
+      }
+    },
+    [details, handleExistingUser, isAlreadyClient]
+  );
+
+  const handleOnClose = useCallback(() => {
+    dialog({
+      blocking: false,
+      position: DialogPosition.Middle,
+      color: 'bg-white',
+      render: (onClose) => {
+        return (
+          <ActionModal
+            className="z-50"
+            icon="ExclamationCircleIcon"
+            iconColor="alertMain"
+            iconClassName="h-10 w-10"
+            title="Are you sure you want to exit?"
+            detailText="If you exit now you will lose your progress."
+            actionButtons={[
+              {
+                colour: 'primary',
+                text: 'Exit',
+                textColour: 'white',
+                type: 'filled',
+                leadingIcon: 'LoginIcon',
+                onClick: () => {
+                  history.push(ROUTES.CLIENTS.ROOT, {
+                    activeTabIndex: CLIENT_TABS.CLIENT,
+                  });
+                  onClose();
+                },
+              },
+              {
+                colour: 'primary',
+                text: 'Continue editing',
+                textColour: 'primary',
+                type: 'outlined',
+                leadingIcon: 'PencilIcon',
+                onClick: onClose,
+              },
+            ]}
+          />
+        );
+      },
+    });
+  }, [dialog, history]);
+
+  const handleOnBack = useCallback(() => {
+    switch (activeStep) {
       case PregnantRegisterSteps.pregnantDetails:
-        return (
-          <PregnantDetails
-            setContactInformation={setContactInformation}
-            setAddress={setAddress}
-            setIsAlreadyClient={setIsAlreadyClient}
-            isAlreadyClient={isAlreadyClient}
-            onSubmit={(value) => {
-              setLabel(`step 3 of 5`);
-              setDetails(value as EditPregnantDetailsProps);
-              handleExistingUser();
-            }}
-          />
-        );
+        setLabel(`step 1 of 6`);
+        setActiveStep(PregnantRegisterSteps.consentAgreement);
+        break;
       case PregnantRegisterSteps.pregnantContactInformation:
-        return (
-          <ContactInformation
-            details={details as any}
-            onSubmit={(value) => {
-              setLabel(`step 4 of 5`);
-              setActiveStep(PregnantRegisterSteps.pregnantAddress);
-              setContactInformation(
-                value as EditPregnantContactInformationProps
-              );
-            }}
-          />
-        );
+        setLabel(`step 2 of 6`);
+        setActiveStep(PregnantRegisterSteps.pregnantDetails);
+        break;
       case PregnantRegisterSteps.pregnantAddress:
-        return (
-          <PregnantAddress
-            details={details as any}
-            onSubmit={(value) => {
-              setLabel(`step 5 of 5`);
-              setActiveStep(PregnantRegisterSteps.pregnantMaternalRecord);
-              setAddress(value as PregnantAddressProps);
-            }}
-          />
-        );
+        setLabel(`step 3 of 6`);
+        setActiveStep(PregnantRegisterSteps.pregnantContactInformation);
+        break;
       case PregnantRegisterSteps.pregnantMaternalRecord:
-        return (
-          <PregnantMaternalCaseRecord
-            details={details as any}
-            onSubmit={(value) => {
-              setLabel(`step 5 of 5`);
-              setPregnantMaternalCaseRecord(
-                value as PregnantMaternalCaseRecordProps
-              );
-            }}
-          />
-        );
+        setLabel(`step 4 of 6`);
+        setActiveStep(PregnantRegisterSteps.pregnantAddress);
+        break;
       case PregnantRegisterSteps.consentAgreement:
+        handleOnClose();
+        break;
       default:
-        return (
-          <ConsentAgreement
-            onSubmit={(value) => {
-              setActiveStep(PregnantRegisterSteps.pregnantDetails);
-              setLabel(`step 2 of 5`);
-            }}
-          />
-        );
+        setActiveStep(PregnantRegisterSteps.consentAgreement);
+        break;
     }
-  };
+    return steps(activeStep);
+  }, [activeStep, handleOnClose, steps]);
 
   useEffect(() => {
     setLabel('step 1 of 5');
@@ -323,7 +395,9 @@ export const PregnantRegisterForm: React.FC = () => {
                   className={'max-h-10 w-full'}
                   iconPosition={'start'}
                   onClick={() => {
-                    history.push(ROUTES.DASHBOARD);
+                    history.push(ROUTES.CLIENTS.ROOT, {
+                      activeTabIndex: CLIENT_TABS.CLIENT,
+                    });
                     onClose();
                   }}
                 />
@@ -377,7 +451,8 @@ export const PregnantRegisterForm: React.FC = () => {
         subTitle={label}
         renderBorder={true}
         displayOffline={!isOnline}
-        onBack={() => history.goBack()}
+        onClose={handleOnClose}
+        onBack={handleOnBack}
         title={'Pregnant mom registration'}
       />
       <div

@@ -161,11 +161,7 @@ export const resetUserPassword = createAsyncThunk<
   }
 );
 
-export const updateUser = createAsyncThunk<
-  boolean[],
-  {},
-  ThunkApiType<RootState>
->(
+export const updateUser = createAsyncThunk<any, {}, ThunkApiType<RootState>>(
   'updateUser',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
@@ -232,12 +228,24 @@ const mapUser = (user: Partial<UserDto>): UserModelInput => ({
   idNumber: user.idNumber && user.idNumber.length > 0 ? user.idNumber : null,
   verifiedByHomeAffairs: user.verifiedByHomeAffairs || false,
   dateOfBirth: user.dateOfBirth,
-  genderId: user.genderId && user.genderId.length > 0 ? user.genderId : null,
-  raceId: user.raceId && user.raceId.length ? user.raceId : null,
+  genderId: user.genderId ? user.genderId : null,
+  raceId: user.raceId ? user.raceId : null,
   firstName: user.firstName,
   surname: user.surname,
   contactPreference: user.contactPreference,
   phoneNumber: user.phoneNumber,
   email: user.email,
   profileImageUrl: user.profileImageUrl,
+  emergencyContactFirstName: user.emergencyContactFirstName
+    ? user.emergencyContactFirstName
+    : null,
+  emergencyContactSurname: user.emergencyContactSurname
+    ? user.emergencyContactSurname
+    : null,
+  emergencyContactPhoneNumber: user.emergencyContactPhoneNumber
+    ? user.emergencyContactPhoneNumber
+    : null,
+  languageId:
+    user.languageId && user.languageId.length ? user.languageId : null,
+  whatsAppNumber: user.whatsappNumber ? user.whatsappNumber : null,
 });

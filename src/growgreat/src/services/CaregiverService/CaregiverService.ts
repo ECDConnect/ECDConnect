@@ -290,7 +290,7 @@ class CaregiverService {
       errors?: {};
     }>(``, {
       query: `
-        query GetAllCaregiversForHCW($userId: String, $recordsPerPage: int, $pageNumber: int) {        
+        query GetAllCaregiversForHCW($userId: String, $recordsPerPage: Int, $pageNumber: Int) {        
           allCaregiversForHCW(userId: $userId, recordsPerPage: $recordsPerPage, pageNumber: $pageNumber) {              
               id
               firstName
@@ -324,6 +324,8 @@ class CaregiverService {
       `,
       variables: {
         userId,
+        recordsPerPage,
+        pageNumber,
       },
     });
 

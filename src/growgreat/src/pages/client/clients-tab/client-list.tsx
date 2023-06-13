@@ -55,6 +55,8 @@ import { generatePath } from 'react-router-dom';
 import { MergedCaregiver } from '@/store/caregiver/caregiver.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getCaregiverClientsSelector } from '@/store/caregiver/caregiver.selectors';
+import { MotherActions } from '@/store/mother/mother.actions';
+import { InfantActions } from '@/store/infant/infant.actions';
 
 export const useClientProfileDialog = () => {
   const history = useHistory();
@@ -161,6 +163,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     'caregivers',
     CaregiverActions.GET_CAREGIVER_CLIENTS
   );
+  const { isLoading: isLoadingMothers } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_MOTHERS
+  );
+  const { isLoading: isLoadingInfants } = useThunkFetchCall(
+    'infants',
+    InfantActions.GET_INFANTS
+  );
 
   const { isOnline } = useOnlineStatus();
 
@@ -232,8 +242,14 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           alertSeverity:
             (infant.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
             'none',
-          alertSeverityNoneIcon: 'CalendarIcon',
-          alertSeverityNoneColor: 'black',
+          alertSeverityNoneIcon:
+            infant?.statusInfo?.subject === 'New client'
+              ? 'CheckCircleIcon'
+              : 'CalendarIcon',
+          alertSeverityNoneColor:
+            infant?.statusInfo?.subject === 'New client'
+              ? 'successDark'
+              : 'black',
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...infant,
@@ -256,7 +272,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
                 isOnline &&
                 typeof response !== 'string' &&
                 Number(response?.payload?.infants?.length) > 1) ||
-              caregiverClients?.find((item) => item.id === caregiverId)
+              caregiverClients?.find(
+                (item) =>
+                  item.id === caregiverId &&
+                  item.infants?.length &&
+                  item.infants.length > 1
+              )
             ) {
               return history.push(
                 generatePath(ROUTES.CLIENTS.INFANT_PROFILE.MULTIPLE_CHILDREN, {
@@ -280,14 +301,22 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
       (mother) => {
         return {
           icon: Pregnant,
-          title: mother?.firstName || mother?.user?.firstName!,
+          title:
+            mother?.user?.firstName! + ' ' + mother?.user?.surname! ||
+            mother?.firstName!,
           subTitle: mother.statusInfo?.subject,
           switchTextStyles: true,
           alertSeverity:
             (mother.statusInfo?.color?.toLocaleLowerCase() as AlertSeverityType) ||
             'none',
-          alertSeverityNoneIcon: 'CalendarIcon',
-          alertSeverityNoneColor: 'black',
+          alertSeverityNoneIcon:
+            mother?.statusInfo?.subject === 'New client'
+              ? 'CheckCircleIcon'
+              : 'CalendarIcon',
+          alertSeverityNoneColor:
+            mother?.statusInfo?.subject === 'New client'
+              ? 'successDark'
+              : 'black',
           avatarColor: getAvatarColor('growgreat') || '',
           extraData: {
             ...mother,
@@ -352,8 +381,12 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   }, []);
 
   useLayoutEffect(() => {
-    appDispatch(motherThunkActions.getMothers({})).unwrap();
-    appDispatch(infantThunkActions.getInfants({})).unwrap();
+    const promises = [
+      appDispatch(motherThunkActions.getMothers({})).unwrap(),
+      appDispatch(infantThunkActions.getInfants({})).unwrap(),
+    ];
+
+    Promise.all(promises);
   }, [appDispatch]);
 
   useEffect(() => {
@@ -362,7 +395,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
     }
   }, [location, isEmptyState]);
 
-  if (isLoading) {
+  if (isLoading || isLoadingMothers || isLoadingInfants) {
     return (
       <LoadingSpinner
         size="medium"

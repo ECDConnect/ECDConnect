@@ -285,6 +285,17 @@ export const DynamicForm = ({
   ]);
 
   const renderButton = useMemo(() => {
+    if (
+      Number(currentStep) === 0 &&
+      !(Number(currentStep) <= Number(steps?.length) - 1)
+    ) {
+      return {
+        action: handleOnNext,
+        text: 'Start',
+        icon: 'ClipboardListIcon',
+      };
+    }
+
     if (Number(steps?.length) === 1) {
       return {
         action: onSubmit,
@@ -392,7 +403,6 @@ export const DynamicForm = ({
         });
         goHome?.();
       } else {
-        successDialog();
         onClose?.();
       }
     }

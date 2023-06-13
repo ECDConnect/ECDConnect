@@ -102,6 +102,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   const classroomGroupLearners = useSelector(
     classroomsSelectors.getClassroomGroupLearners
   );
+
   const [addChildButtonExpanded, setAddChildButtonExpanded] =
     useState<boolean>(true);
   const [searchTextActive, setSearchTextActive] = useState(false);
@@ -116,15 +117,18 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     SearchDropDownOption<string>[]
   >([]);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitionerId = practitioner?.id;
   const isPrincipal = practitioner?.isPrincipal === true;
   const principalClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === practitioner?.userId
   );
+
   const principalLearners = classroomGroupLearners.filter((el) => {
     return principalClassroomGroups.some((f) => {
       return f.id === el.classroomGroupId; // filter only principal learners
     });
   });
+
   const principalChildren = children?.filter((el) => {
     return principalLearners.some((f) => {
       return f.userId === el.userId; // filter only principal learners
@@ -134,7 +138,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   useEffect(() => {
     if (classroomGroups && classroomGroupLearners) {
       const groupedItems: SearchDropDownOption<string>[] = isPrincipal
-        ? principalClassroomGroups.map((groupedItem, idx) =>
+        ? classroomGroups?.map((groupedItem, idx) =>
             groupedItem.name === NoPlaygroupClassroomType.name
               ? {
                   id: idx.toString(),
@@ -147,7 +151,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
                   value: groupedItem.id ?? '',
                 }
           )
-        : classroomGroups.map((groupedItem, idx) =>
+        : classroomGroups?.map((groupedItem, idx) =>
             groupedItem.name === NoPlaygroupClassroomType.name
               ? {
                   id: idx.toString(),
@@ -187,10 +191,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (isPrincipal) {
-      if (classroomGroupLearners && principalChildren && pendingStatusId) {
+      if (classroomGroupLearners && children && pendingStatusId) {
         const childListItem: UserAlertListDataItem[] = [];
 
-        for (const child of principalChildren) {
+        for (const child of children) {
           const learner = classroomGroupLearners.find(
             (x) => x.userId === child.userId && x.stoppedAttendance == null
           );
@@ -264,7 +268,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
           }
         } else {
           for (const child of principalChildren) {
-            const learner = principalLearners.find(
+            const learner = classroomGroupLearners.find(
               (x) => x.userId === child.userId && x.stoppedAttendance == null
             );
             if (learner) {
@@ -434,7 +438,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   const registerNewChild = () => {
     if (isOnline) {
-      history.push(ROUTES.CHILD_REGISTRATION_LANDING);
+      history.push(ROUTES.CHILD_REGISTRATION_LANDING, { practitionerId });
     } else {
       showOnlineOnly();
     }

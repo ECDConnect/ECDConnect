@@ -5,19 +5,27 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
+import { useSelector } from 'react-redux';
+import { motherSelectors } from '@/store/mother';
+import { format } from 'date-fns';
 
 export const NextVisitStep = ({
-  infant,
+  mother,
   setEnableButton,
 }: DynamicFormProps) => {
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
-  // TODO: add integration (G5.8.3)
-  const date = 'TODO: EC-141';
+  const currentVisit = useSelector(
+    motherSelectors.getMotherCurrentVisitSelector
+  );
+  const currentVisitId = currentVisit?.id;
+  const motherVisits = useSelector(motherSelectors.getMotherVisits);
+  const motherVisitsId = motherVisits?.map((item) => item?.id);
+
+  const currentVisitIndex = motherVisitsId?.indexOf(currentVisitId!);
+
+  const nextVisitIndex = currentVisitIndex + 1;
+  const date = motherVisits[nextVisitIndex]?.plannedVisitDate;
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -33,9 +41,12 @@ export const NextVisitStep = ({
       <div className="p-4">
         <Alert
           type="warning"
-          title={`${caregiverName} & ${name} need an extra support visit`}
+          title={`${name} needs an extra support visit`}
           titleColor="textDark"
-          message={`Book a visit before ${date}.`}
+          message={`Book a visit before ${format(
+            new Date(date),
+            'd MMM yyyy'
+          )}.`}
           messageColor="textMid"
           customIcon={
             <div className="bg-tertiary h-16 w-16 rounded-full">

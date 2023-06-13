@@ -1,25 +1,13 @@
-import { capitalizeWords, FormComponentProps } from '@ecdlink/core';
-import { yupResolver } from '@hookform/resolvers/yup';
 import {
   Alert,
-  BannerWrapper,
   Button,
-  ButtonGroup,
   Dialog,
-  Divider,
   Typography,
-  ButtonGroupOption,
-  ButtonGroupTypes,
   DialogPosition,
   renderIcon,
   classNames,
 } from '@ecdlink/ui';
-import { useFormState, useWatch, useForm } from 'react-hook-form';
-import {
-  ChildDevelopmentLevelFormModel,
-  childDevelopmentLevelFormSchema,
-} from '@schemas/classroom/child-progress-observations/child-development-level-form';
-import * as styles from './child-development-level-form.styles';
+import { ChildDevelopmentLevelFormModel } from '@schemas/classroom/child-progress-observations/child-development-level-form';
 import { useSelector } from 'react-redux';
 import { useChildProgressObservation } from '@hooks/useChildProgressObservations';
 import { childrenSelectors } from '@store/children';
@@ -27,21 +15,16 @@ import { progressTrackingSelectors } from '@store/progress-tracking';
 import ChildDevelopmentLevelsDisplay from '../../components/child-development-levels-display/child-development-levels-display';
 import { useState } from 'react';
 
-interface ChildDevelopmentLevelFormProps
-  extends FormComponentProps<ChildDevelopmentLevelFormModel> {
+interface ChildDevelopmentLevelFormProps {
   childDevelopmentLevelForm?: ChildDevelopmentLevelFormModel;
   childId: string;
   childAchievedLevelId: number;
+  onSubmit: (result: ChildDevelopmentLevelFormModel, exit: boolean) => void;
 }
 
 export const ChildDevelopmentLevelForm: React.FC<
   ChildDevelopmentLevelFormProps
-> = ({
-  childDevelopmentLevelForm,
-  childId,
-  childAchievedLevelId,
-  onSubmit,
-}) => {
+> = ({ childId, childAchievedLevelId, onSubmit }) => {
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const [developmentLevelsDisplayActive, setDevelopmentLevelsDisplayActive] =
     useState(false);
@@ -58,36 +41,15 @@ export const ChildDevelopmentLevelForm: React.FC<
     (level) => level.id === childAchievedLevelId
   );
 
-  const {
-    getValues: getChildDevelopmentLevelFormValues,
-    setValue: setChildDevelopmentLevelFormValue,
-    control: childDevelopmentLevelFormControl,
-    trigger: childDevelopmentLevelFormTrigger,
-  } = useForm<ChildDevelopmentLevelFormModel>({
-    resolver: yupResolver(childDevelopmentLevelFormSchema),
-    mode: 'onChange',
-    defaultValues: { ...childDevelopmentLevelForm },
-  });
-
-  const { isValid } = useFormState({
-    control: childDevelopmentLevelFormControl,
-  });
-
-  const { levelId: selectedLevelId, practitionerAgreeToLevel } = useWatch({
-    defaultValue: { levelId: childAchievedLevelId },
-    control: childDevelopmentLevelFormControl,
-  });
-  const currentLevelIndex = levels.findIndex(
-    (level) => level.id === currentChildLevel?.id
-  );
-  const practitionerAgreeToLevelOptions: ButtonGroupOption<boolean>[] = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
-  ];
-
-  const handleFormSubmit = () => {
-    if (isValid && onSubmit) {
-      onSubmit(getChildDevelopmentLevelFormValues());
+  const handleFormSubmit = (exit: boolean) => {
+    if (onSubmit) {
+      onSubmit(
+        {
+          practitionerAgreeToLevel: true,
+          levelId: currentChildLevel?.id || 0,
+        },
+        exit
+      );
     }
   };
 
@@ -97,18 +59,20 @@ export const ChildDevelopmentLevelForm: React.FC<
 
   return (
     <>
-      <div className={'bg-uiBg px-4 pt-2'}>
+      <div className={'bg-white px-4 pt-2'}>
         <Typography
           type={'h1'}
-          text={`${currentChildUser?.firstName}’s developmental level:`}
-          color={'primary'}
+          text={`${currentChildUser?.firstName}’s developmental stage:`}
+          color={'textDark'}
         />
         <div className={'flex flex-row items-center'}>
-          <img src={currentChildLevel?.imageUrl} alt="child level" />
+          {currentChildLevel?.imageUrl && (
+            <img src={currentChildLevel?.imageUrl} alt="child level" />
+          )}
           <Typography
-            className={'mr-2'}
+            className={'ml-2'}
             type={'body'}
-            text={currentChildLevel?.name || 'Level'}
+            text={currentChildLevel?.name || ''}
             color={'textMid'}
           />
         </div>
@@ -125,7 +89,7 @@ export const ChildDevelopmentLevelForm: React.FC<
                 onClick={() => openLevelDescriptions()}
                 className="w-full"
                 size="small"
-                color="textMid"
+                color="primary"
                 type="filled"
               >
                 {renderIcon(
@@ -141,72 +105,13 @@ export const ChildDevelopmentLevelForm: React.FC<
               </Button>
             }
           />
-          <label className={classNames(styles.label, 'mt-4')}>
-            {`Do you agree that ${
-              currentChildUser?.firstName
-            } is at ${capitalizeWords(
-              currentChildLevel?.name?.toLowerCase() ?? ''
-            )}?`}
-          </label>
-          <div className={'mt-2'}>
-            <ButtonGroup
-              options={practitionerAgreeToLevelOptions}
-              onOptionSelected={(value: boolean | boolean[]) => {
-                setChildDevelopmentLevelFormValue(
-                  'practitionerAgreeToLevel',
-                  value as boolean
-                );
-                childDevelopmentLevelFormTrigger();
-              }}
-              selectedOptions={practitionerAgreeToLevel}
-              color="secondary"
-              type={ButtonGroupTypes.Button}
-              className={'w-full'}
-              multiple={false}
-            />
-          </div>
-          {practitionerAgreeToLevel === false && (
-            <div className={'mt-2'}>
-              <label className={classNames(styles.label)}>
-                {`Choose a different level for ${currentChildUser?.firstName}`}
-              </label>
-              <div className={'mt-2'}>
-                <ButtonGroup
-                  options={
-                    levels.map((level, idx) => {
-                      return {
-                        text: capitalizeWords(level.name.toLowerCase()),
-                        value: level.id,
-                        disabled: Math.abs(idx - currentLevelIndex) > 1,
-                      };
-                    }) as ButtonGroupOption<number>[]
-                  }
-                  onOptionSelected={(value: number | number[]) => {
-                    setChildDevelopmentLevelFormValue(
-                      'levelId',
-                      value as number
-                    );
-                    childDevelopmentLevelFormTrigger();
-                  }}
-                  selectedOptions={[selectedLevelId || 0]}
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  className={'w-full'}
-                  multiple={false}
-                />
-              </div>
-            </div>
-          )}
-          <div className={'py-4'}>
-            <Divider></Divider>
-          </div>
           <Button
-            onClick={handleFormSubmit}
-            className="w-full"
+            onClick={() => handleFormSubmit(false)}
+            className="mt-4 w-full"
             size="small"
             color="primary"
             type="filled"
-            disabled={!isValid}
+            disabled={false}
           >
             {renderIcon(
               'ArrowCircleRightIcon',
@@ -214,21 +119,31 @@ export const ChildDevelopmentLevelForm: React.FC<
             )}
             <Typography type="h6" className="ml-2" text="Next" color="white" />
           </Button>
+          <Button
+            onClick={() => handleFormSubmit(true)}
+            className="mt-4 w-full"
+            size="small"
+            color="primary"
+            type="outlined"
+            disabled={false}
+          >
+            {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text="Save & exit"
+              color="primary"
+            />
+          </Button>
         </div>
       </div>
       <Dialog
-        fullScreen={false}
         visible={developmentLevelsDisplayActive}
-        position={DialogPosition.Full}
+        position={DialogPosition.Middle}
       >
-        <BannerWrapper
-          size="small"
-          onBack={openLevelDescriptions}
-          title="Tracking progress"
-          renderOverflow
-        >
+        <div className="p-4">
           <ChildDevelopmentLevelsDisplay onClose={openLevelDescriptions} />
-        </BannerWrapper>
+        </div>
       </Dialog>
     </>
   );

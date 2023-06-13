@@ -8,6 +8,7 @@ import { ProgressLevelBarProps } from './progress-level-bar.types';
 
 export const ProgressLevelBar: React.FC<ProgressLevelBarProps> = ({
   currentLevelId,
+  currentLevel,
 }) => {
   const levels = useSelector(
     progressTrackingSelectors.getProgressTrackingLevels
@@ -18,34 +19,50 @@ export const ProgressLevelBar: React.FC<ProgressLevelBarProps> = ({
 
   useEffect(() => {
     if (levels) {
-      const initialFilter = levels.filter((x) => x.name !== 'LEVEL P');
-      setFilteredLevels(initialFilter);
+      const filtered = levels.length > 3 ? levels.slice(1) : levels;
+      setFilteredLevels(filtered);
     }
   }, [levels]);
+
   if (filteredLevels) {
     return (
       <div className={styles.barWrapper}>
         {filteredLevels.map((level, index) => {
+          var imageUrl = '';
+          if (level.imageUrl) {
+            if (index + 1 < currentLevel)
+              imageUrl =
+                level.imageUrl.slice(0, level.imageUrl.length - 4) +
+                '-done' +
+                level.imageUrl.slice(level.imageUrl.length - 4);
+            if (index + 1 === currentLevel) imageUrl = level.imageUrl;
+            if (index + 1 > currentLevel)
+              imageUrl =
+                level.imageUrl.slice(0, level.imageUrl.length - 4) +
+                '-dim' +
+                level.imageUrl.slice(level.imageUrl.length - 4);
+          }
           return (
             <div
-              className={classNames(
-                styles.levelWrapper,
-                currentLevelId === level.id ? 'border-b-primary border-b-2' : ''
-              )}
+              className={classNames(styles.levelWrapper)}
               key={`progress-traking-level-` + index}
             >
-              <img
-                className={'mr-1'}
-                alt={`progress-level-${index}`}
-                src={level.imageUrl}
-              />
-              <Typography
-                type="small"
-                weight="bold"
-                color={'textMid'}
-                text={level.name}
-                className="font-medium"
-              />
+              <div>
+                <img
+                  className={'mr-1'}
+                  alt={`progress-level-${index}`}
+                  src={imageUrl}
+                />
+              </div>
+              <div>
+                <Typography
+                  type="buttonSmall"
+                  weight="bold"
+                  color={'textMid'}
+                  text={level.name}
+                  className="font-medium uppercase"
+                />
+              </div>
             </div>
           );
         })}

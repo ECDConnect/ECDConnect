@@ -26,11 +26,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Interceptors
                 throw new UnauthorizedAccessException("User no defined");
             }
 
-            if (applicationUser.LastSeen <= DateTime.UtcNow.AddMinutes(-10))
-            {
-                applicationUser.LastSeen = DateTime.UtcNow;
-                userManager.UpdateAsync(applicationUser);
-            }
+            // ApplicationUser comes from the user claim/cookie, so will never have updated LastSeen time.
+            // So async updating database just causing multiple context issues almost always
+            // Commented out for now.
+            //if (applicationUser.LastSeen <= DateTime.UtcNow.AddMinutes(-10))
+            //{
+            //    applicationUser.LastSeen = DateTime.UtcNow;
+            //    userManager.
+            //    //userManager.UpdateAsync(applicationUser);
+            //}
         }
     }
 }

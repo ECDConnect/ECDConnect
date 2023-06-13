@@ -1,9 +1,8 @@
 ﻿using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
@@ -14,6 +13,31 @@ using System.Net.Http;
 using System.Text;
 using System.Threading.Tasks;
 using JsonSerializer = System.Text.Json.JsonSerializer;
+using static EcdLink.Api.CoreApi.Constants;
+using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Caregiver;
+using ECDLink.DataAccessLayer.Entities;
+using Microsoft.AspNetCore.Identity;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.Abstractrions.Constants;
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Workflow;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
+using ECDLink.Security.Managers;
+using ECDLink.Security;
+using ECDLink.Tenancy.Context;
+using ECDLink.DataAccessLayer.Hierarchy;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Context;
+using ECDLink.Core.Helpers;
+using ECDLink.DataAccessLayer.Entities.DataIngestion;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using Newtonsoft.Json.Linq;
+using Microsoft.EntityFrameworkCore;
+using EcdLink.Api.CoreApi.Managers.Integration;
 
 namespace ECDLink.Core.Services
 {
@@ -22,173 +46,3032 @@ namespace ECDLink.Core.Services
         private readonly IGenericRepositoryFactory _repositoryFactory;
         private readonly ISystemSetting<IntegrationDelayOptions> _integrationDelay;
         private readonly ISystemSetting<IntegrationApiOptions> _options;
-        private HttpClient _smartLinkClient;
-        private readonly string _serviceUrl;
         private IHttpContextAccessor _contextAccessor;
+        private string _uId;
+        private UserManager<ApplicationUser> _userManager;
+        private PersonnelService _personnelService;
+        private IGenericRepository<IntegrationAudit, Guid> _auditRepo;        
+        private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
+        private IGenericRepository<IntegrationColumnMapping, Guid> _columnmapperRepo;
+        private IGenericRepository<SiteAddress, Guid> _siteAddressRepo;
+        private AuthenticationDbContext _dbContext;
+        private IGenericRepository<Classroom, Guid> _classroomGenericRepo;
+        private IGenericRepository<ClassroomGroup, Guid> _classroomGroupGenericRepo;
+        private IGenericRepository<ProgrammeType, Guid> _programmeTypeGenericRepo;
+        private IGenericRepository<Language, Guid> _staticLanguageRepo;
+        private IGenericRepository<Gender, Guid> _staticGenderRepo;
+        private IGenericRepository<Race, Guid> _staticRaceRepo;
+        private IGenericRepository<Province, Guid> _staticProvinceRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<Practitioner, Guid> _practitionerGenericRepo;
+        private IGenericRepository<Child, Guid> _childRepo;
+        private IGenericRepository<Child, Guid> _childGenericRepo;
+        private IGenericRepository<Coach, Guid> _coachGenericRepo;
+        private IGenericRepository<Franchisor, Guid> _franchisorGenericRepo;
+        private IGenericRepository<Caregiver, Guid> _caregiverRepo;
+        private IGenericRepository<Relation, Guid> _staticRelationRepo;
+        private IGenericRepository<Education, Guid> _staticEducationRepo;
+        private IGenericRepository<Grant, Guid> _staticGrantRepo;
+        private IGenericRepository<WorkflowStatus, Guid> _staticWorkflowRepo;
+        private IGenericRepository<Document, Guid> _docRepo;
+        private IGenericRepository<DocumentType, Guid> _docTypeRepo;
+        private IGenericRepository<WorkflowStatus, Guid> _workflowRepo;
+
+        private IntegrationLogManager _logManager;
+        private IntegrationAPIManager _apiManager;
+        private ISchedulerService _schedulerService;
+
+        private MappingMode _apiMode;
+        private MappingMaskDataMode _maskMode;
+        private readonly HierarchyEngine _hierarchyEngine;
+        List<string> _errorsList = new List<string>();
+
+        public static string password = "AQAAAAIAAYagAAAAEMsJuBqbYVml/ZCL4iKjPx8E7MgdBej7VYDmyM0JmGgUODifvGKiB4MhfiNO72w9Nw==";//ECDConnect123!
+        public static string securityStamp = "7MLVEAR2UK2APFPOBGP4BPN7XJ4IJGQ6";
+        public static string concurrencystamp = "a7ce158a-30c5-4cfb-aee2-027c000b8df6";
+        public Guid tenantId = TenantExecutionContext.Tenant.Id;
+        public List<IntegrationEntityMapping> _mappedEntities;
+        public List<IntegrationColumnMapping> _mappedColumns;
+        public List<IntegrationAudit> _audits;
+
+        public DateTime _startTime = DateTime.Now;
+        public static string scheduledTask = "SmartLinkIntegrationDataSync";
 
         public IntegrationService(
             IGenericRepositoryFactory repositoryFactory,
             ISystemSetting<IntegrationDelayOptions> integrationDelay,
             ISystemSetting<IntegrationApiOptions> options,
-            [Service] IHttpContextAccessor contextAccessor)
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] UserManager<ApplicationUser> userManager,
+            HierarchyEngine hierarchyEngine,
+            [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+            [Service] InvitationNotificationManager notificationManager,
+             AuthenticationDbContext dbContext,
+             [Service] PersonnelService personnelService,
+             IntegrationLogManager logManager, 
+             IntegrationAPIManager apiManager,
+             [Service] ISchedulerService schedulerService
+            )
         {
             _repositoryFactory = repositoryFactory;
             _integrationDelay = integrationDelay;
             _options = options;
             _contextAccessor = contextAccessor;
+            _userManager = userManager;
+            _hierarchyEngine = hierarchyEngine;
+            _uId = _hierarchyEngine.GetAdminUserId();//_contextAccessor.HttpContext.GetUser().Id; //must map this as administrator
+            Enum.TryParse(_options.Value.Mode, out _apiMode);
+            Enum.TryParse(_options.Value.MaskDataMode, out _maskMode);
+
+            //Generic static repos
+            _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _columnmapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationColumnMapping>(userContext: _uId);
+            _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
+            _siteAddressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+
+            _classroomGenericRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
+            _classroomGroupGenericRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+            _programmeTypeGenericRepo = _repositoryFactory.CreateGenericRepository<ProgrammeType>(userContext: _uId);
+            _staticLanguageRepo = _repositoryFactory.CreateGenericRepository<Language>(userContext: _uId);
+            _staticGenderRepo = _repositoryFactory.CreateGenericRepository<Gender>(userContext: _uId);
+            _staticRaceRepo = _repositoryFactory.CreateGenericRepository<Race>(userContext: _uId);
+            _staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+            _practitionerRepo = _repositoryFactory.CreateRepository<Practitioner>(userContext: _uId);
+            _practitionerGenericRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _coachGenericRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
+            _franchisorGenericRepo = _repositoryFactory.CreateGenericRepository<Franchisor>(userContext: _uId);
+
+            _childRepo = _repositoryFactory.CreateRepository<Child>(userContext: _uId);
+            _childGenericRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _caregiverRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+            _staticRelationRepo = _repositoryFactory.CreateGenericRepository<Relation>(userContext: _uId);
+            _staticEducationRepo = _repositoryFactory.CreateGenericRepository<Education>(userContext: _uId);;
+            _staticGrantRepo = _repositoryFactory.CreateGenericRepository<Grant>(userContext: _uId);
+            _staticWorkflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _docRepo = _repositoryFactory.CreateGenericRepository<Document>(userContext: _uId);
+            _docTypeRepo = _repositoryFactory.CreateGenericRepository<DocumentType>(userContext: _uId);
+            _workflowRepo = _repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
+            _dbContext = dbContext;
+            _personnelService = personnelService;
+            _schedulerService = schedulerService;
+
+            _logManager = logManager;
+            _apiManager = apiManager;
         }
 
-        private HttpClient SmartLinkClient
+        #region Utilities
+
+        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null)
         {
-            get
-            {
-                if (_smartLinkClient == null)
-                {
-                    _smartLinkClient = new HttpClient();
-                    var apiurl = _options.Value.Url;
-                    var url = "";
-                    _smartLinkClient.BaseAddress = new Uri("https://devwebservice.smartstart.org.za/api/v3/query/");
-                    _smartLinkClient.DefaultRequestHeaders.Add("API-Key", _options.Value.Key);
-                }
-
-                return _smartLinkClient;
-            }
-        }
-
-        public async Task<List<MappedCoach>> GetCoaches(string localFranchisorId)
-        {
-            var request = new HttpRequestMessage();
-
             try
             {
-                var uId = _contextAccessor.HttpContext.GetUser().Id;
-                IntegrationMapping franchisor = new IntegrationMapping();
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
+                //int changesCheckTime = 1620;
+                //List<IntegrationAudit> audits = await GetAudits(DateTime.Now.AddMinutes((changesCheckTime * -1))); //get date from last service scheduler run or take last 24 hours
 
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == localFranchisorId).Where(y => y.RemoteEntity == "").OrderBy(x => x.Id).FirstOrDefault();
+                //get last task run time
+                var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
 
-                if (FranchisorMapped != null)
-                {
-                    using (SmartLinkClient)
-                    {
-                        List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Franchisor", Operator = "Equals", Value = FranchisorMapped.RemoteId });
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals("6b60ef39-9f63-48a1-9dc3-24dfd15d0b7b") && x.Submitted == null).ToList(); // && x.ChangeType.Equals("Insert")
+                //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).ToList(); //overlaps with 10 minutes of changes
+                if (entityType != null)
+                    return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
 
-                        var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions };
-
-                        var payload = JsonSerializer.Serialize(apiEntity);
-                        //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");
-
-                        var response = await SmartLinkClient.PostAsync("Coach", content);
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            throw new HttpRequestException("SmartLink API Error: " + response.StatusCode);
-                        }
-                        using var responseStream = await response.Content.ReadAsStreamAsync();
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        return JsonConvert.DeserializeObject<List<MappedCoach>>(responseString);
-                    }
-                }
-                else return new List<MappedCoach>();
+                return audits;
             }
             catch (Exception e)
             {
-                // TODO: Log error                
-                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetAudits Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
 
-        public async Task<List<MappedFranchisee>> GetFranchisees(string remoteCoachId)
+        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
         {
-            var request = new HttpRequestMessage();
-
             try
             {
-                var uId = _contextAccessor.HttpContext.GetUser().Id;
-                IntegrationMapping franchisor = new IntegrationMapping();
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
 
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.LocalId == remoteCoachId).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (FranchisorMapped != null)
-                {
-                    using (SmartLinkClient)
-                    {
-                        List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = FranchisorMapped.RemoteId });
-
-                        var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions };
-
-                        var payload = JsonSerializer.Serialize(apiEntity);
-                        //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                        var response = await SmartLinkClient.PostAsync("Franchisee", content);
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            throw new HttpRequestException("SmartLink API Error: " + response.StatusCode);
-                        }
-                        using var responseStream = await response.Content.ReadAsStreamAsync();
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        return JsonConvert.DeserializeObject<List<MappedFranchisee>>(responseString);
-                    }
-                }
-                else return new List<MappedFranchisee>();
+                if (entityType != null)
+                    return _mapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "" && x.LocalId!=null).ToList();
+                else
+                    return _mapperRepo.GetAll().ToList();
             }
             catch (Exception e)
             {
-                // TODO: Log error                
-                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetMappedEntities Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
-        public async Task<List<MappedChildCaregiver>> GetChildren(string remoteFranchiseeId)
-        {
-            var request = new HttpRequestMessage();
 
+        private async Task<List<IntegrationColumnMapping>> GetMappedColumns(string entityType = null)
+        {
             try
             {
-                var uId = _contextAccessor.HttpContext.GetUser().Id;
-                IntegrationMapping franchisor = new IntegrationMapping();
-                var mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationMapping>(userContext: uId);
-
-                var FranchisorMapped = mapperRepo.GetAll().Where(x => x.RemoteId == remoteFranchiseeId).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (FranchisorMapped != null)
-                {
-                    using (SmartLinkClient)
-                    {
-                        List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
-                        optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = FranchisorMapped.RemoteId });
-
-                        var apiEntity = new IntegrationOptionEntity() { AllColumns = true, Conditions = optionConditions };
-
-                        var payload = JsonSerializer.Serialize(apiEntity);
-                        //{ "AllColumns":true,"Columns":null,"Related":null,"Conditions":[{ "Column":"Status","Operator":"Equals","Value":"Active"},{ "Column":"Franchisor","Operator":"Equals","Value":"7911a744-4584-e811-817d-0800274bb0e4"}]}
-                        var content = new StringContent(payload, Encoding.UTF8, "application/json");
-                        var response = await SmartLinkClient.PostAsync("Franchisee", content);
-
-                        if (!response.IsSuccessStatusCode)
-                        {
-                            throw new HttpRequestException("SmartLink API Error: " + response.StatusCode);
-                        }
-                        using var responseStream = await response.Content.ReadAsStreamAsync();
-                        var responseString = await response.Content.ReadAsStringAsync();
-                        //TODO: fix this to be properly Child and Cregiver objects
-                        return JsonConvert.DeserializeObject<List<MappedChildCaregiver>>(responseString);
-                    }
-                }
-                else return new List<MappedChildCaregiver>();
+                if (entityType != null)
+                    return _columnmapperRepo.GetAll().Where(x => x.LocalEntity.Equals(entityType) && x.RemoteEntity != "").ToList();
+                else
+                    return _columnmapperRepo.GetAll().ToList();
             }
             catch (Exception e)
             {
-                // TODO: Log error                
-                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetAudits > " + entityType);
+                throw new HttpRequestException("GetMappedColumns Error retrieving mapped " + entityType + ": " + e.Message);
             }
         }
+
+        #endregion
+
+        #region Integration Points      
+
+        public async Task<bool> IntegrationByFranchisees()
+        {            
+            List<SL_Ingestion_User> ids = _dbContext.SL_Ingestion_Users.ToList();
+            if (ids.Count > 0)
+            {
+                foreach (var item in ids)
+                {
+                    await IntegrationByMappedCoach(item.Id.ToString());
+                }
+            }
+
+
+            return true;
+        }
+            
+        public async Task<bool> IntegrationByMappedCoach(string franchiseeId = null)
+        {        
+            bool returnOK = false;
+            DateTime startTime = DateTime.Now;
+            int totalAddedToSS = 0;
+            int totalFranchiseesAddedToSS = 0;
+            int totalChildrenAddedToSS = 0;
+            int totalFranchiseesAddedToSL = 0;
+            int totalChildrenAddedToSL = 0;
+            int totalUpdatedFromSL = 0;
+            int totalUpdatedFromSS = 0;
+            int errors = 0;
+            
+            try
+            {
+                //List<string> errorsList = new List<string>();
+                /*
+                 * 1) get all mapped coaches done
+                * 2) iterate through franchisees of each remote against what we have and create what we dont have and do same for all child caregiver address document etc IN PROGRESS
+                * 3) interate through franchisees we have and check any column/entity changes from SL and update what we have done
+                * 4) check all changes we had since last r an and push any changes for the entities we had updates to - inserts/updates done
+                * 5) start with updates
+                * 6) start with income statements and attendance and push only to SL
+                */
+
+                //Only allow data pulling when api mode has been set
+
+
+                if (_apiMode == MappingMode.Pull || _apiMode == MappingMode.PushPull)
+                {
+                    _mappedEntities = await this.GetMappedEntities();
+                    _mappedColumns = await this.GetMappedColumns();
+                    
+                    //-------------------
+                    //1. - check all changes on known entities marked as changed from SL API and update
+                    //-------------------
+                    List<ColumnChange> changedColumns = await _apiManager.GetColumnChangesBetweenDates(DateTime.Now.AddDays(-10), DateTime.Now);                    
+                    /*       
+                    if (changedColumns != null) {
+                        foreach (var change in changedColumns)
+                        {
+                            //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
+                            if (mappedEntities.Where(x => x.RemoteId.Equals(change.RecordChange.RecordGuid) && x.RemoteEntity.Equals(change.Entity)) == null)
+                            {
+                                var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
+                                //kick off change sequence depending on type
+                                foreach (var item in remoteColumnChanges)
+                                {
+                                    UpdateLocalEntity updateEntity = new UpdateLocalEntity() { Guid = change.RecordChange.RecordGuid, 
+                                                                                                EntityColumn = mappedColumns.Where(c => c.RemoteEntity.Equals(item.Entity) && c.RemoteColumn.Equals(item.Column)).Select(cc => cc.LocalColumn).FirstOrDefault().ToString(), 
+                                                                                                EntityType = item.Entity, 
+                                                                                                LastUpdatedDateTime = item.DateTimeStamp, NewData = change.NewValue };
+                                    await this.UpdateEntityColumn(updateEntity);
+                                }                    
+                            }
+                        }
+                    }
+                    /*/
+                    //-------------------
+                    //2. - check all changes on known entities marked as changed from SS Audit table and Update SL API
+                    //-------------------
+                    //Only allow data pushing when api mode has been set
+                    if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+                    {                        
+                        await PushDeletes();
+                        //Inserts
+                        await PushInserts();
+                        //Updates & Deactivates
+                        await PushUpdates();
+                    }
+
+                    //-------------------
+                    //3. Iterate through all known coaches to get information below hierarchy
+                    //-------------------
+
+                    foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
+                    {
+                        //-------------------
+                        //4. - check all changes on known entities that is not marked complete
+                        //-------------------
+                        //UpdateIncompletes(mappedEntities, mappedColumns, coach);
+                    
+                        //-------------------
+                        //5. - get all data from API and discard whats complete and known to SS
+                        //-------------------
+                        //5.1) get all frannchisees and map them                
+                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await _apiManager.GetFranchiseesById(franchiseeId) : await _apiManager.GetFranchiseesByCoach(coach.RemoteId));
+                        //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        if (remoteFranchisees != null)
+                        {
+                            //order all to load principals first
+                            remoteFranchisees = remoteFranchisees.OrderBy(x => x.IsPrincipal).ToList();
+                            try
+                            {
+                                foreach (var franchisee in remoteFranchisees)
+                                {
+                                    if (franchisee != null)
+                                    {
+                                        Practitioner newPractitioner = null;
+                                        if (_mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).Count() == 0)
+                                        {
+                                            //Create franchisee and map in SS system
+                                            franchisee.localParentEntityId = coach.LocalId;
+                                            newPractitioner = await MapFranchisee(franchisee);
+                                        }
+                                        else
+                                        {
+                                            var localPractitioner = _mappedEntities.Where(x => x.RemoteId.Equals(franchisee.Guid) && x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).FirstOrDefault();
+                                            newPractitioner = _practitionerGenericRepo.GetByUserId(localPractitioner.UserId);
+                                        }
+
+                                        if (newPractitioner != null)
+                                        {
+                                            totalFranchiseesAddedToSS++;
+                                            //get all elements underneath and map those too
+
+                                            //1. Children
+                                            List<MappedChild> remoteChildren = await _apiManager.GetChildren(franchisee.Guid);
+                                            if (remoteChildren != null)
+                                            {
+                                                //List of allocated children to new practitioner
+                                                List<Child> newChildren = new List<Child>();
+
+                                                foreach (var remoteChild in remoteChildren)
+                                                {
+                                                    if (remoteChild != null)
+                                                    {
+                                                        var newChild = await MapChildCaregiverOfFranchisee(remoteChild, newPractitioner);
+                                                        if (newChild != null)
+                                                        {
+                                                            newChildren.Add(newChild);
+                                                            totalChildrenAddedToSS++;
+
+                                                            remoteChild.localId = newChild.Id.ToString();
+                                                            remoteChild.localUserId = newChild.UserId;
+                                                            remoteChild.localParentEntityId = newPractitioner.Id.ToString();
+                                                            remoteChild.localParentEntityUserId = newPractitioner.UserId;                                                                
+                                                        }
+                                                    }
+                                                }
+
+                                                //realign hirarchy and learners to Unsure classgroups
+                                                await AlignChildHierarchy(newPractitioner, newChildren);
+                                                await AlignChildClassgroupToUnsure(newPractitioner, newChildren);
+                                            }
+                                            //2. Franchisee Documents
+                                            List<MappedDocument> newDocuments = await _apiManager.GetFranchiseeDocuments(franchisee.Guid);
+                                            if (newDocuments.Any())
+                                            {
+                                                List<Document> docsLoaded = await MapFranchiseeChildDocuments(newDocuments, remoteChildren, newPractitioner);
+                                            }                                            
+                                        }
+                                    }
+                                }
+                                //Map up principals that could not be mapped (when the principal mapped to hasnt been imported yet
+                                await MatchPrincipals();
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + Newtonsoft.Json.JsonConvert.SerializeObject(remoteFranchisees));
+                            }
+                            returnOK = true;
+                        }
+
+                        //Pull Trainees
+                        //List<MappedTrainee> remoteTrainees = await GetTraineesByCoach(coach.RemoteId);
+
+                    }
+                }
+
+                //-------------------
+                //6.Update service scheduler and mapping tables with reports of what got done
+                //-------------------
+                //update iterations of run into ServiceScheduler as conclusion to run
+                //save how many records updated to SL and from SL, created between SL and to SL and how it completed and when it stopped
+                //This will be looked at again and picked up with time overlap to start checking for changes again on next iteration
+                var schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
+                ServiceScheduler scheduledRun = schedulerRepo.GetAll().Where(x => x.Name.Equals("SmartLinkIntegrationDataSync")).FirstOrDefault();
+                string runResults = "Franchisees Added: " + totalFranchiseesAddedToSS.ToString() + " Children Added: " + totalChildrenAddedToSS.ToString() + " Errors: " + String.Join("|", _errorsList.ToArray());
+                scheduledRun.Results = runResults;
+                scheduledRun.EndTime = DateTime.Now;
+                scheduledRun.StartTime = startTime;
+                scheduledRun.UpdatedDate = DateTime.Now;
+                scheduledRun.UpdatedBy = _uId;
+                schedulerRepo.Update(scheduledRun);
+
+                await _logManager.IntegrationLog(runResults, null, null, LogRelatedType.TaskRun, "IntegrationByMappedCoach");
+
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationByMappedCoach > " + franchiseeId);
+            }
+            return returnOK;
+        }
+
+        private async Task<bool> MatchPrincipals()
+        {
+            bool returnOK = false;
+            List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
+            var practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            //find all entries that has problematic principals that could not be matched at the time      
+            try
+            {
+                foreach (var item in mappedEntities.Where(x => x.Notes != null && x.Notes.StartsWith("REMAP_PRINCIPAL_REMOTE_ID_")).ToList())
+                {
+                    string principalRemoteId = item.Notes.Replace("REMAP_PRINCIPAL_REMOTE_ID_", "");
+                    if (mappedEntities.Where(x => x.RemoteId == principalRemoteId && x.LocalId != null).Any())
+                    {
+                        Practitioner pracToUpdate = practitionerRepo.GetById(Guid.Parse(item.LocalId));
+                        if (pracToUpdate != null)
+                        {
+                            pracToUpdate.PrincipalHierarchy = Guid.Parse(mappedEntities.Where(x => x.RemoteId == principalRemoteId).Select(x => x.UserId).FirstOrDefault().ToString());
+                            //pracToUpdate.DateLinked = DateTime.Now;
+                            practitionerRepo.Update(pracToUpdate);
+
+                            //clear the notes
+                            item.Notes = null;
+                            _mapperRepo.Update(item);
+                            returnOK = true;
+                        }
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MatchPrincipals");
+            }
+
+            return returnOK;
+        }
+
+        private async Task<bool> AlignChildHierarchy(Practitioner newPractitioner, List<Child> childrenToAlign)
+        {
+            bool returnOK = false;
+            if (newPractitioner != null && childrenToAlign.Count > 0)
+            {
+                var staticHierarchyRepo = _repositoryFactory.CreateGenericRepository<UserHierarchyEntity>(userContext: _uId);
+                var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+                try
+                {
+                    foreach (var child in childrenToAlign)
+                    {
+
+
+                        string childNewHierarchy = "";
+                        UserHierarchyEntity childHierarchy = staticHierarchyRepo.GetAll().Where(x => x.UserId.Equals(child.UserId)).FirstOrDefault();
+
+                        if (childHierarchy != null)
+                        {
+                            //update NamedTypePath to not be System.Child. but System.Administrator.Practitioner.Child.
+                            childHierarchy.NamedTypePath = childHierarchy.NamedTypePath.Replace("System.Child.", "System.Administrator.Practitioner.Child.");
+                            //update hierarchy not be 0.466. but 0.1.455.459.
+                            childNewHierarchy = childHierarchy.Hierarchy.Replace("0.", newPractitioner.Hierarchy);
+                            childHierarchy.Hierarchy = childNewHierarchy;
+                            childHierarchy.ParentId = newPractitioner.UserId;
+                            staticHierarchyRepo.Update(childHierarchy);
+                            //uppdate child record Hierarchy
+                            Child updatedChild = childRepo.GetByUserId(child.UserId);
+                            updatedChild.Hierarchy = child.Hierarchy.Replace("0.1.", newPractitioner.Hierarchy);
+                            childRepo.Update(updatedChild);
+                        }
+
+                        returnOK = true;
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "AlignChildHierarchy");
+                }
+            }
+
+            return returnOK;
+        }
+
+        private async Task<bool> AlignChildClassgroupToUnsure(Practitioner newPractitioner, List<Child> childrenToAlign)
+        {
+            bool returnOK = false;
+            if (newPractitioner != null && childrenToAlign.Count > 0)
+            {
+                if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin) //only FAA or principals will have classroomgroups
+                {
+                    var classroomgroupRepo = _repositoryFactory.CreateGenericRepository<ClassroomGroup>(userContext: _uId);
+                    var learnerRepo = _repositoryFactory.CreateGenericRepository<Learner>(userContext: _uId);
+                    try
+                    {
+                        foreach (var child in childrenToAlign)
+                        {
+                            var group = classroomgroupRepo.GetAll().Where(x => x.UserId == Guid.Parse(newPractitioner.UserId) && x.Name == "Unsure").OrderBy(x => x.Id).FirstOrDefault();
+                            Learner newLearner = new Learner()
+                            {
+                                UserId = child.UserId,
+                                StartedAttendance = DateTime.Now,
+                                Hierarchy = newPractitioner.Hierarchy
+                            };
+
+                            if (group != null)
+                            {
+                                newLearner.ClassroomGroupId = group.Id;
+                                learnerRepo.Insert(newLearner);
+
+                                returnOK = true;
+                            }
+                        }
+                    }
+                    catch (Exception e)
+                    {
+                        await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "AlignChildClassgroupToUnsure");
+                    }
+                }
+            }
+
+
+            return returnOK;
+        }
+
+        #endregion
+
+        #region Local Creates
+
+
+        private async Task<Practitioner> MapFranchisee(MappedFranchisee entity)
+        {
+            try
+            {
+                IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
+                if (entity != null)
+                {
+                    entity.IsPrincipal = entity.IsPrincipal.HasValue ? entity.IsPrincipal.Value : false;
+                    //basic checks to allow child to be imported
+                    if (entity.IdNumber != null && entity.FirstName != null && entity.Surname != null && entity.PersonalNumber != null)
+                    {
+                        string userId = Guid.NewGuid().ToString();
+                        Guid siteAddressId = Guid.NewGuid();
+                        //start creating the practitioner mapped
+
+                        //a) create franchisee, b) create children, c) create caregivers, d) create integration mapping, e) create documents, f) notes
+
+                        var programmeTypeDesc = entity.ProgrammeType == "ECD Centre" ? "Preschool" : entity.ProgrammeType == "Full Week (Daymothers)" ? "Day Mother" : entity.ProgrammeType == "SmartStart ECD" ? "Preschool" : entity.ProgrammeType == "PlayGroup" ? "Preschool" : "Preschool";
+                        var programmeType = _programmeTypeGenericRepo.GetAll().Where(x => x.Description.Equals(programmeTypeDesc)).OrderBy(x => x.Id).FirstOrDefault();
+                        string siteName = "N/A";
+                        bool pracCreated = false;
+
+                        var newPractitioner = new Practitioner
+                        {
+                            Id = Guid.NewGuid(),
+                            UserId = userId,
+                            CoachHierarchy = Guid.Parse(entity.localParentEntityId),
+                            IsActive = true,
+                            ProgrammeType = programmeTypeDesc,
+                            IsClubOwner = entity.IsClubLeader,
+                            AttendedBusinessSkills = entity.AttendedBusinessSkills,
+                            AttendedChildProgress = entity.AttendedChildProgress,
+                            MonthSinceFranchisee = int.Parse(entity.MonthsSinceFranchisee),
+                            ConsentForPhoto = entity.ConsentForPhoto,
+                            StipendType = entity.StipendType,
+                            StartDate = (entity.StartDate != null ? Convert.ToDateTime(entity.StartDate).Date : null),
+                        };
+
+                        //check phone number is valid
+                        string numberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.PersonalNumber);
+                            if (!string.Equals(normalizePhoneNumber, entity.PersonalNumber))
+                            {
+                                numberToImport = normalizePhoneNumber;
+                            }
+                        } catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
+                        string whatsappNumberToImport = null;
+                        try
+                        {
+                            var normalizePhoneNumber = UserHelper.NormalizePhoneNumber(entity.WhatsAppNumber);
+                            if (!string.Equals(normalizePhoneNumber, entity.WhatsAppNumber))
+                            {
+                                whatsappNumberToImport = normalizePhoneNumber;
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            //if phone number cant be used, ignore it
+                        }
+
+                        var newUser = new ApplicationUser
+                        {
+                            Id = userId.ToString(),
+                            PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : numberToImport),
+                            UserName = entity.IdNumber,
+                            IdNumber = entity.IdNumber,
+                            Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
+                            IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
+                            VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
+                            DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
+                            FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                            Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                            FullName = entity.FirstName + " " + entity.Surname,
+                            ContactPreference = MessageTypeConstants.SMS,
+                            IsActive = true,
+                            PasswordHash = password,
+                            NextOfKinFirstName = entity.NextOfKinFirstName,
+                            NextOfKinSurname = entity.NextOfKinSurname,
+                            NextOfKinContactNumber = entity.NextOfKinContactNumber,
+                            EmergencyContactFirstName = entity.NextOfKinFirstName,
+                            EmergencyContactSurname = entity.NextOfKinSurname,
+                            EmergencyContactFullName =  entity.NextOfKinFirstName + " " + entity.NextOfKinSurname,
+                            EmergencyContactPhoneNumber = entity.NextOfKinContactNumber,
+                            TenantId = tenantId,
+                            IsImported = true,
+                            //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
+                            WhatsAppNumber = whatsappNumberToImport,
+                            ReasonForLeaving = entity.ReasonForLeaving,
+                            ReasonForLeavingComments = entity.InactivityComments
+                        };
+
+                        //check language
+                        if (entity.PreferredCommunicationLanguage != null)
+                        {
+                            var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.PreferredCommunicationLanguage).OrderBy(x => x.Id).FirstOrDefault();
+                            if (language != null)
+                            {
+                                newUser.PreferredCommunicationLanguage = language.Id.ToString();
+                                newUser.LanguageId = language.Id;
+                                newPractitioner.LanguageUsedInGroups = language.Id.ToString();
+                            }
+                        }
+                        //check gender
+                        if (entity.Gender != null)
+                        {
+                            var gender = _staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
+                            if (gender != null)
+                            {
+                                newUser.GenderId = gender.Id;
+                            }
+                        }
+                        //check race
+                        if (entity.EthnicGroup != null)
+                        {
+                            var race = _staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
+                            if (race != null)
+                            {
+                                newUser.RaceId = race.Id;
+                            }
+                        }
+
+                        await _userManager.CreateAsync(newUser);
+
+                        //Create siteaddress
+                        bool insertedAddress = false;
+                        if (entity.SiteAddress != null)
+                        {
+                            SiteAddress newEntityAddress = new SiteAddress();
+
+                            newEntityAddress.Ward = entity.SiteAddress.Ward;
+                            newEntityAddress.Name = entity.SiteAddress.Name;
+                            siteName = entity.SiteAddress.Name;
+                            newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
+                            newEntityAddress.Municipality = entity.SiteAddress.Municipality;
+                            newEntityAddress.Area = entity.SiteAddress.Area;
+                            newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
+                            newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
+                            newEntityAddress.AddressLine3 = entity.SiteAddress.Area;
+                            newEntityAddress.Longitude = entity.SiteAddress.Longitude;
+                            newEntityAddress.Latitude = entity.SiteAddress.Latitude;
+
+                            //check province
+                            if (entity.SiteAddress.Province != null)
+                            {
+                                var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                                var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
+                                if (prov != null)
+                                {
+                                    newEntityAddress.ProvinceId = prov.Id;
+                                }
+                            }
+                            newEntityAddress.Id = siteAddressId;
+                            newEntityAddress.UpdatedBy = _uId;
+                            newEntityAddress.UpdatedDate = DateTime.Now;
+                            _siteAddressRepo.Insert(newEntityAddress);
+
+                            newPractitioner.SiteAddressId = siteAddressId;
+                            insertedAddress = true;
+                        }
+                        
+                        //Mark Principal/FAA/Linked Practitioner
+                        if (!(bool)entity.IsPrincipal && entity.Principal == null)
+                        {
+                            newPractitioner.IsFundaAppAdmin = true;
+                            newPractitioner.IsPrincipal = false;
+
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                        }
+                        else if(!(bool)entity.IsPrincipal && entity.Principal != null)
+                        {
+                            string principalRemoteId = entity.Principal.Guid.ToString();
+                            //find the principal if they have been mapped already, else flag to add principals at the end
+                            List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
+                            if (mappedEntities.Count > 0)
+                            {
+                                var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
+                                if (principalExistsCheck != null)
+                                {
+                                    newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
+                                    newPractitioner.DateLinked = DateTime.Now;
+                                }
+                                else
+                                {
+                                    //add note in mappingline to return and resolve
+                                    mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
+                                }
+                            }
+                            newPractitioner.IsFundaAppAdmin = false;
+                            newPractitioner.IsPrincipal = false;
+                            //newPractitioner.DateLinked = DateTime.Now;
+                            //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
+
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                        }
+                        else if ((bool)entity.IsPrincipal)
+                        {
+                            newPractitioner.IsPrincipal = true;
+                            newPractitioner.IsFundaAppAdmin = false;
+
+                            await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
+                        }
+
+
+                        //insert the new Practitioner
+                        try
+                        {
+                            _practitionerRepo.Insert(newPractitioner);
+                            pracCreated = true;
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapFranchisee > insert newPractitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
+                            await RemoveImportedAndFlag(userId, true, false);
+                        }
+
+                        if (pracCreated)
+                        {
+                            //create classrooms and classroomgroups - only map for principals or FAAs
+                            if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
+                            {
+                                Classroom pracClass = new Classroom()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = userId,
+                                    IsActive = true,
+                                    Name = siteName,
+                                    IsPrinciple = true,
+                                    NumberPractitioners = 1,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    TenantId = tenantId,
+                                    SiteAddressId = insertedAddress ? siteAddressId : null
+                                };
+                                _classroomGenericRepo.Insert(pracClass);
+
+                                //create UNSURE classroomgroup to assign children to
+                                ClassroomGroup pracUnsureClass = new ClassroomGroup()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = Guid.Parse(userId),
+                                    IsActive = true,
+                                    Name = "Unsure",
+                                    TenantId = tenantId,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    ProgrammeTypeId = programmeType.Id,
+                                    ClassroomId = pracClass.Id
+                                };
+                                _classroomGroupGenericRepo.Insert(pracUnsureClass);
+                            }
+
+                            mapperLine.LocalEntity = SSIntegrationSettings.SSPractitioner;
+                            mapperLine.RemoteEntity = SSIntegrationSettings.SLPractitioner;
+                            mapperLine.LocalId = newPractitioner.Id.ToString();
+                            mapperLine.RemoteId = entity.Guid;
+                            mapperLine.UserId = userId;
+                            mapperLine.UpdatedBy = _uId;
+                            mapperLine.UpdatedDate = DateTime.Now;
+                            mapperLine.IsComplete = true;
+                            mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                            mapperLine.IsComplete = true;
+                            //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                            _mapperRepo.Insert(mapperLine);
+
+                            return newPractitioner;
+                        }
+                    }
+                    else
+                    {
+                        //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
+
+                        mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
+                        mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                        mapperLine.LocalId = null;
+                        mapperLine.RemoteId = entity.Guid;
+                        mapperLine.UserId = null;
+                        mapperLine.UpdatedBy = _uId;
+                        mapperLine.UpdatedDate = DateTime.Now;
+                        mapperLine.IsComplete = true;
+                        mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                        mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+                        mapperLine.IsComplete = false;
+
+                        //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                        _mapperRepo.Insert(mapperLine);
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+            }
+
+            return null;
+        }
+
+        private async Task<Child> MapChildCaregiverOfFranchisee(MappedChild entity, Practitioner ownerPractitioner)
+        {
+            try
+            {
+                if (entity != null)
+                {
+                    IntegrationEntityMapping mapperLine = new IntegrationEntityMapping();
+
+                    //Check on childs IdNumber as well as Surname
+                    var existingUser = _userManager.Users.Where(x => x.IdNumber == entity.IdNumber && x.Surname == entity.Surname).OrderBy(x => x.Id).FirstOrDefault();
+
+                    if (existingUser == null)
+                    {
+                        //basic checks to allow child to be imported
+                        //
+                        if (entity.CaregiverPopiaConsent == true && entity.Caregiver != null && entity.Gender != null && entity.Surname != null && entity.FirstName != null && entity.Caregiver.ContactNumber != null && (entity.BirthDate != null || entity.IdNumber != null))
+                        {
+
+                            bool childCreated = false;
+                            var workflow = _staticWorkflowRepo.GetAll().Where(x => x.Description == "Active").OrderBy(x => x.Id).FirstOrDefault();
+                            //create child user
+                            string userId = Guid.NewGuid().ToString();
+
+                            var newUser = new ApplicationUser
+                            {
+                                Id = userId.ToString(),
+                                UserName = userId,//entity?.IdNumber,
+                                IdNumber = entity.IdNumber,
+                                IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
+                                VerifiedByHomeAffairs = (bool)entity.IsSouthAfricanCitizen,
+                                FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                                Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                                FullName = entity.FirstName + " " + entity.Surname,
+                                ContactPreference = MessageTypeConstants.SMS,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                IsImported = true,
+                            };
+
+                            if (entity.BirthDate != null)
+                            {
+                                newUser.DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date;
+                            }
+
+                            var newChild = new Child
+                            {
+                                Id = Guid.NewGuid(),
+                                UserId = userId,
+                                IsActive = true,
+                                TenantId = tenantId,
+                                Allergies = entity.AllergyType,
+                                Disabilities = entity.DisabilityType,
+                                WorkflowStatusId = workflow.Id
+                            };
+
+                            //check language
+                            Guid? languageId = null;
+                            if (entity.HomeLanguage != null)
+                            {
+                                var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.HomeLanguage).OrderBy(x => x.Id).FirstOrDefault();
+                                if (language != null)
+                                {
+                                    newUser.PreferredCommunicationLanguage = language.Id.ToString();
+                                    newUser.LanguageId = language.Id;
+                                    newChild.LanguageId = language.Id;
+                                    languageId = language.Id;
+                                }
+                            }
+
+                            //Check Gender
+                            if (entity.Gender != null)
+                            {
+                                var sgender = _staticGenderRepo.GetAll().Where(x => x.Description.Contains(entity.Gender)).OrderBy(x => x.Id).FirstOrDefault();
+                                if (sgender != null)
+                                    newUser.GenderId = sgender.Id;
+                            }
+                            //Check Race
+                            if (entity.EthnicGroup != null)
+                            {
+                                var srace = _staticRaceRepo.GetAll().Where(x => x.Description.Contains(entity.EthnicGroup)).OrderBy(x => x.Id).FirstOrDefault();
+                                if (srace != null)
+                                    newUser.RaceId = srace.Id;
+                            }
+                            else
+                            {
+                                var srace = _staticRaceRepo.GetAll().Where(x => x.Description.Contains("Other")).OrderBy(x => x.Id).FirstOrDefault();
+                                if (srace != null)
+                                    newUser.RaceId = srace.Id;
+                            }
+
+                            //create child record with caregiver details set
+                            try
+                            {
+                                await _userManager.CreateAsync(newUser);
+                                await _userManager.AddToRoleAsync(newUser, Roles.CHILD);
+                                if (_childRepo.Insert(newChild) != null)
+                                {
+                                    if (entity.Caregiver != null)
+                                    {
+                                        //check language
+                                        Guid? caregiverLanguage = null;
+                                        if (entity.Caregiver.Language != null)
+                                        {
+                                            var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.Caregiver.Language).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (language != null)
+                                            {
+                                                caregiverLanguage = language.Id;
+                                            }
+                                        }
+                                        //Check relation
+                                        Guid? relation = null;
+                                        if (entity.Caregiver.RelationshipType != null)
+                                        {
+                                            var sRelation = _staticRelationRepo.GetAll().Where(x => x.Description.Contains(entity.Caregiver.RelationshipType)).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sRelation != null)
+                                                relation = sRelation.Id;
+                                        }
+                                        else
+                                        {
+                                            var sRelation = _staticRelationRepo.GetAll().Where(x => x.Description.Contains("Guardian")).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sRelation != null)
+                                                relation = sRelation.Id;
+                                        }
+                                        //Check education
+                                        Guid? education = null;
+                                        if (entity.Caregiver.HighestEducationLevel != null)
+                                        {
+                                            var sEducation = _staticEducationRepo.GetAll().Where(x => x.Description == entity.Caregiver.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
+                                            if (sEducation != null)
+                                                education = sEducation.Id;
+                                        }
+                                        //save caregiver and update child with caregiver detail
+                                        if (entity.Caregiver.FirstName != null)
+                                        {
+                                            //create caregiver record
+                                            var newCaregiver = new Caregiver
+                                            {
+                                                Id = Guid.NewGuid(),
+                                                IsActive = true,
+                                                TenantId = tenantId,
+                                                IdNumber = entity.Caregiver.IdNumber,
+                                                FirstName = entity.Caregiver.FirstName,
+                                                Surname = entity.Caregiver.Surname,
+                                                FullName = entity.Caregiver.FirstName + " " + entity.Caregiver.Surname,
+                                                PhoneNumber = entity.Caregiver.ContactNumber,
+                                                EmergencyContactFirstName = entity.Caregiver.EmergencyContactFirstName,
+                                                EmergencyContactSurname = entity.Caregiver.EmergencyContactSurname,
+                                                EmergencyContactPhoneNumber = entity.Caregiver.EmergencyContactPhoneNumber,
+                                                AdditionalFirstName = entity.AlternativePickupFirstName,
+                                                AdditionalSurname = entity.AlternativePickupSurname,
+                                                AdditionalPhoneNumber = entity.AlternativePickupContactNumber,
+                                                RelationId = relation,
+                                                EducationId = education,
+                                                LanguageId = caregiverLanguage
+                                            };
+
+                                            //Create caregiver siteaddress
+                                            if (entity.Caregiver.HomeAddressLine1 != null)
+                                            {
+                                                SiteAddress newEntityAddress = new SiteAddress();
+
+                                                newEntityAddress.AddressLine1 = entity.Caregiver.HomeAddressLine1 ?? string.Empty;
+                                                newEntityAddress.AddressLine2 = entity.Caregiver.HomeAddressLine2 ?? string.Empty;
+                                                newEntityAddress.AddressLine3 = entity.Caregiver?.HomeAddressLine3 ?? string.Empty;
+                                                newEntityAddress.PostalCode = entity.Caregiver.HomeAddressPostalCode ?? string.Empty;
+
+                                                var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                                                //check province
+                                                if (entity.Caregiver.Province != null)
+                                                {
+                                                    var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.Caregiver.Province).FirstOrDefault();
+                                                    if (prov != null)
+                                                    {
+                                                        newEntityAddress.ProvinceId = prov.Id;
+                                                    }
+                                                }
+                                                newEntityAddress.Id = Guid.NewGuid();
+                                                newEntityAddress.UpdatedBy = _uId;
+                                                newEntityAddress.UpdatedDate = DateTime.Now;
+                                                _siteAddressRepo.Insert(newEntityAddress);
+
+                                                newCaregiver.SiteAddressId = newEntityAddress.Id;
+                                            }
+
+                                            _caregiverRepo.Insert(newCaregiver);
+                                            newChild.CaregiverId = newCaregiver.Id;
+                                        }
+                                    }
+                                    _childRepo.Update(newChild);
+                                    childCreated = true;
+                                }
+
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+                            }
+
+                            if (childCreated)
+                            {
+
+                                //1) Grants
+                                if (entity.GrantType != null)
+                                {
+                                    var sGrant = _staticGrantRepo.GetAll().Where(x => x.Description.Contains(entity.GrantType)).OrderBy(x => x.Id).FirstOrDefault();
+                                    if (sGrant != null)
+                                    {
+                                        //insert new grant
+                                        List<UserGrant> grants = new List<UserGrant>() { new UserGrant() { GrantId = sGrant.Id, TenantId = tenantId, UserId = userId } };
+                                        foreach (var grant in grants)
+                                        {
+                                            // Added safety from removing items from the list should the insertion of new items fail
+                                            try
+                                            {
+                                                _dbContext.UserGrants.AddRange(grant);
+                                                _dbContext.SaveChanges();
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                //TODO: LOG ERROR AND HANDLE
+                                                return null;
+                                            }
+                                        }
+                                    }
+                                }
+                                //2) Consent
+                                if ((bool)entity.CaregiverPopiaConsent)
+                                {
+                                    try
+                                    {
+                                        UserConsent consentPopia = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 171, ConsentType = "PersonalInformationAgreement", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                        _dbContext.UserConsents.Add(consentPopia);
+                                        _dbContext.SaveChanges();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //TODO: LOG ERROR AND HANDLE
+                                        return null;
+                                    }
+                                }
+                                if ((bool)entity.CaregiverPhotographyAndFilmingConsent)
+                                {
+
+                                    try
+                                    {
+                                        UserConsent consentPhoto = new UserConsent() { Id = Guid.NewGuid(), ConsentId = 175, ConsentType = "PhotoPermissions", UserId = userId, CreatedUserId = _uId, TenantId = tenantId, IsActive = true, InsertedDate = DateTime.Now };
+                                        _dbContext.UserConsents.Add(consentPhoto);
+                                        _dbContext.SaveChanges();
+                                    }
+                                    catch (Exception e)
+                                    {
+                                        //TODO: LOG ERROR AND HANDLE
+                                        return null;
+                                    }
+                                }
+                                //ManageChildClassrooms();
+
+                                mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
+                                mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                                mapperLine.LocalId = newChild.Id.ToString();
+                                mapperLine.RemoteId = entity.Guid;
+                                mapperLine.UserId = userId;
+                                mapperLine.UpdatedBy = _uId;
+                                mapperLine.UpdatedDate = DateTime.Now;
+                                mapperLine.IsComplete = true;
+                                mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                                mapperLine.IsComplete = true;
+                                //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                                _mapperRepo.Insert(mapperLine);
+
+                                return newChild;
+                            }
+                        }
+                        else
+                        {
+                            //TODO: CANNOT INSERT< LIST THE REMOTE FEATURES AND GUIDS AND MARK ERRORS AS CANNOT IMPORT FOR SENDING LIST TO SS
+
+                            mapperLine.LocalEntity = SSIntegrationSettings.SSChild;
+                            mapperLine.RemoteEntity = SSIntegrationSettings.SLChild;
+                            mapperLine.LocalId = null;
+                            mapperLine.RemoteId = entity.Guid;
+                            mapperLine.UserId = null;
+                            mapperLine.UpdatedBy = _uId;
+                            mapperLine.UpdatedDate = DateTime.Now;
+                            mapperLine.IsComplete = true;
+                            mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                            mapperLine.Notes = "FAILED INSERT - DATA MISSING";
+                            mapperLine.IsComplete = false;
+
+                            //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                            _mapperRepo.Insert(mapperLine);
+                        }
+                    }
+                    else { return _childRepo.GetByUserId(existingUser.Id.ToString()); }
+                }
+                else return null;
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapChildCaregiverOfFranchisee > " + Newtonsoft.Json.JsonConvert.SerializeObject(entity));
+                return null;
+            }
+
+            return null;
+        }
+
+        private async Task<List<Document>> MapFranchiseeChildDocuments(List<MappedDocument> docs, List<MappedChild> children, Practitioner ownerPractitioner)
+        {
+            List<Document> ssDocuments = new List<Document>();
+            try
+            {
+                /*
+                     {
+                        "Guid": "f8a2f444-d8fa-ed11-8354-00155dee5a05",
+                        "Name": "Child Registration Form-2023/05/26-angie surn",
+                        "FinalRejectReasonOther": null,
+                        "DocumentDate": "2023-05-26T00:00:00",
+                        "ValidationStatus": "Pending Check",
+                        "FinalValidity": "Pending",
+                        "FinalRejectReason": null,
+                        "Franchisee": {
+                            "Guid": "f583d4a1-17ef-ed11-8354-00155dee5a05"
+                        },
+                        "DocumentType": {
+                            "Name": "Child Registration Form",
+                            "Guid": "78ec9b65-20dd-ed11-8354-00155dee5a05"
+                        },
+                        "Child": {
+                            "Guid": "459ec83b-24ef-ed11-8354-00155dee5a05"
+                        },
+                        "Status": "Active"
+                    },
+                 */
+                var docTypes = _mappedEntities.Where(x => x.EntityGrouping == "DocumentType").ToList(); //Get SL mapped document types
+                foreach (var doc in docs)
+                {
+
+                    Document newDoc = new Document()
+                    {
+                        Name = doc.Name,
+                        InsertedDate = doc.DocumentDate,
+                        UpdatedDate = doc.DocumentDate,
+                        CreatedUserId = ownerPractitioner.UserId,
+                        Hierarchy = ownerPractitioner.Hierarchy
+                    };
+
+                    if (doc.Child != null)
+                    {
+                        MappedChild docForChild = children.Where(x => x.Guid.Equals(doc.Child.Guid)).FirstOrDefault();
+                        if (docForChild != null) {
+                            newDoc.UserId = docForChild.localUserId;
+                        } else
+                        {
+                            newDoc.UserId = ownerPractitioner.UserId;
+                        }
+                    } else {
+                        newDoc.UserId = ownerPractitioner.UserId;
+                    }
+
+                    //status - validity -- check if valid/Invalid and set status according
+                    /* FinalValidity - Invalid, Valid, Pending */
+                    newDoc.IsActive = true;
+
+                    //doc type
+                    /* SL API - Proof of Account, Attendance Register, Income Statement, Franchisee Agreement,Child Registration Form,Monthly Attendance Register, Child Birth Certificate   {{RouteStart}}DocumentType/Query */
+                    if (doc.DocumentType != null)
+                    {
+                        var docType = docTypes.Where(d => d.RemoteEntity.Equals(doc.DocumentType.Name)).FirstOrDefault();
+                        if (docType != null)
+                        {
+                            newDoc.DocumentTypeId = Guid.Parse(docType.LocalId);
+                        }
+                    }
+
+                    //workflowstatus
+                    /* ValidationStatus - Pending Check,Waiting for Document,Pending Moderation, Complete (Moderated) */
+                    var wfPending = _workflowRepo.GetAll().Where(w => w.Description.Equals("Pending Verification")).FirstOrDefault();
+                    if (doc.ValidationStatus != null) { 
+                        string workflow = "";
+                        switch (doc.ValidationStatus)
+                        {
+                            case "Waiting for Document":
+                                workflow = "Pending Upload";
+                                break;
+                            case "Pending Moderation":
+                                workflow = "Pending";
+                                break;
+                            case "Complete (Moderated)":
+                                workflow = "Active";
+                                break;
+                            default:
+                                workflow = "Pending Verification";
+                                break;
+                        }
+
+                        var wf = _workflowRepo.GetAll().Where(w => w.Description.Equals(workflow)).FirstOrDefault();
+                        if (wf != null)
+                        {
+                            newDoc.WorkflowStatusId = wf.Id;
+                        } else
+                        {
+                            newDoc.WorkflowStatusId = wfPending.Id;
+                        }
+                    } else {
+                        newDoc.WorkflowStatusId = wfPending.Id;
+                    }
+
+                    Document childDoc = _docRepo.Insert(newDoc);
+                    ssDocuments.Add(childDoc);
+
+                }
+            }
+            catch (Exception e)
+            {
+
+            }
+
+            return ssDocuments;
+        }
+
+        
+        private async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        {
+            if (!completedAudits.Any())
+                return false;
+            else
+            {
+                foreach (var audit in completedAudits)
+                {
+                    var auditRow = _auditRepo.GetById(audit.Id);
+                    if (auditRow != null)
+                    {
+                        auditRow.UpdatedDate = DateTime.Now;
+                        auditRow.UpdatedBy = _uId;
+                        auditRow.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditRow);
+                    }
+                }
+
+                return true;
+            }
+        }
+
+        #endregion
+
+        #region Local Updates
+
+        private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model)
+        {
+            //TODO: convert to reflection to simplify
+            bool updatedEntity = false;
+            try
+            {
+
+                switch (model.EntityType)
+                {
+                    case SSIntegrationSettings.SSCoach:
+                        var coachRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
+                        var coach = coachRepo.GetByUserId(model.Guid);
+                        Type coachT = typeof(Coach);
+                        foreach (var prop in coachT.GetProperties())
+                        {
+                            if (prop.Name == model.EntityColumn)
+                            {
+                                prop.SetValue(coach, model.EntityColumn);
+                                updatedEntity = true;
+                            }
+                        }
+                        if (updatedEntity)
+                        {
+                            coach.UpdatedBy = _uId;
+                            coach.UpdatedDate = DateTime.Now;
+                            coachRepo.Update(coach);
+                        }
+                        break;
+                    case SSIntegrationSettings.SSPractitioner:
+                        var practRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+                        var prac = practRepo.GetByUserId(model.Guid);
+                        Type practT = typeof(Practitioner);
+                        foreach (var prop in practT.GetProperties())
+                        {
+                            if (prop.Name == model.EntityColumn)
+                            {
+                                prop.SetValue(prac, model.EntityColumn);
+                                updatedEntity = true;
+                            }
+                        }
+                        if (updatedEntity)
+                        {
+                            prac.UpdatedBy = _uId;
+                            prac.UpdatedDate = DateTime.Now;
+                            practRepo.Update(prac);
+                        }
+                        break;
+                    case SSIntegrationSettings.SSChild:
+                        var childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+                        var child = childRepo.GetByUserId(model.Guid);
+                        Type childT = typeof(Child);
+                        foreach (var prop in childT.GetProperties())
+                        {
+                            if (prop.Name == model.EntityColumn)
+                            {
+                                prop.SetValue(child, model.EntityColumn);
+                                updatedEntity = true;
+                            }
+                        }
+                        if (updatedEntity)
+                        {
+                            child.UpdatedBy = _uId;
+                            child.UpdatedDate = DateTime.Now;
+                            childRepo.Update(child);
+                        }
+                        break;
+                    case SSIntegrationSettings.SSCaregiver:
+                        var careRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+                        var caregiver = careRepo.GetById(Guid.Parse(model.Guid));
+                        Type careT = typeof(Caregiver);
+                        foreach (var prop in careT.GetProperties())
+                        {
+                            if (prop.Name == model.EntityColumn)
+                            {
+                                prop.SetValue(caregiver, model.EntityColumn);
+                                updatedEntity = true;
+                            }
+                        }
+                        if (updatedEntity)
+                        {
+                            caregiver.UpdatedBy = _uId;
+                            caregiver.UpdatedDate = DateTime.Now;
+                            careRepo.Update(caregiver);
+                        }
+                        break;
+                    case SSIntegrationSettings.SSAddress:
+                        var addressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+                        var entity = addressRepo.GetById(Guid.Parse(model.Guid));
+                        Type t = typeof(SiteAddress);
+                        foreach (var prop in t.GetProperties())
+                        {
+                            if (prop.Name == model.EntityColumn)
+                            {
+                                prop.SetValue(entity, model.EntityColumn);
+                                updatedEntity = true;
+                            }
+                        }
+                        if (updatedEntity)
+                        {
+                            entity.UpdatedBy = _uId;
+                            entity.UpdatedDate = DateTime.Now;
+                            addressRepo.Update(entity);
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return updatedEntity;
+        }
+
+        private async Task<bool> UpdateCoachEntity(MappedCoach model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            try
+            {
+                bool updatedEntity = false;
+                bool updatedUser = false;
+                var entityRepo = _repositoryFactory.CreateGenericRepository<Coach>(userContext: _uId);
+                Coach localEntity = entityRepo.GetByUserId(model.localId);
+                if (localEntity != null)
+                {
+
+                    //update entity properties
+                    Type tC = typeof(Coach);
+                    Type tMC = typeof(MappedCoach);
+
+                    if (tC != null && tMC != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tC.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMC.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        entityRepo.Update(localEntity);
+
+                    }
+                    //Update user properties
+                    var entityUser = await _userManager.FindByIdAsync(model.localId);
+                    if (entityUser != null)
+                    {
+                        Type tU = typeof(ApplicationUser);
+                        if (tU != null && tMC != null)
+                        {
+                            foreach (var updateProp in mappedProperties)
+                            {
+                                foreach (var prop in tU.GetProperties())
+                                {
+                                    if (prop.Name == updateProp.LocalColumn.Trim())
+                                    {
+                                        foreach (var mappedProp in tMC.GetProperties())
+                                        {
+                                            if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                            {
+                                                if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(entityUser, null))
+                                                {
+                                                    if (updateProp.LocalColumn == "IsActive")
+                                                    {
+                                                        //TODO: Kickoff Deactivation procedure
+                                                    }
+                                                    else
+                                                    {
+                                                        prop.SetValue(entityUser, mappedProp.GetValue(model, null));
+                                                        updatedUser = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (updatedUser)
+                        {
+                            await _userManager.UpdateAsync(entityUser);
+                        }
+                    }
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdatePractitionerEntity(MappedFranchisee model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            bool updatedEntity = false;
+            bool updatedUser = false;
+            bool updateAddress = false;
+            try
+            {
+                var entityRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+                Practitioner localEntity = entityRepo.GetByUserId(model.localId);
+                if (localEntity != null)
+                {
+                    if (model.SiteAddress != null)
+                    {
+                        Type tA = typeof(SiteAddress);
+                        Type tMA = typeof(MappedAddress);
+                        //update address properties
+                        var addressRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+                        if (localEntity.SiteAddress != null)
+                        {
+
+                            SiteAddress localEntityAddress = addressRepo.GetById((Guid)localEntity.SiteAddressId);
+                            if (localEntityAddress != null)
+                            {
+                                //update entity address properties
+                                if (tA != null && tMA != null)
+                                {
+                                    foreach (var updateProp in mappedProperties)
+                                    {
+                                        foreach (var prop in tA.GetProperties())
+                                        {
+                                            if (prop.Name == updateProp.LocalColumn.Trim())
+                                            {
+                                                foreach (var mappedProp in tMA.GetProperties())
+                                                {
+                                                    if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                                    {
+                                                        if (mappedProp.GetValue(model.SiteAddress, null) != null && mappedProp.GetValue(model.SiteAddress, null) != prop.GetValue(localEntityAddress, null))
+                                                        {
+                                                            if (updateProp.LocalColumn == "IsActive")
+                                                            {
+                                                                //TODO: Kickoff Deactivation procedure
+                                                            }
+                                                            else
+                                                            {
+                                                                prop.SetValue(localEntityAddress, mappedProp.GetValue(model.SiteAddress, null));
+                                                                updateAddress = true;
+                                                            }
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+
+                                //update entity properties
+                                //foreach (var updateProp in mappedProperties)
+                                //{
+                                //    PropertyInfo propLocal = typeof(SiteAddress).GetProperty(updateProp.LocalColumn);
+                                //    PropertyInfo propRemote = typeof(MappedAddress).GetProperty(updateProp.RemoteColumn);
+                                //    if (propLocal != null && propRemote != null)
+                                //    {
+                                //        if (propLocal.GetValue(localEntityAddress, null) != propRemote.GetValue(model.SiteAddress, null))
+                                //        {
+                                //            propLocal.SetValue(localEntityAddress, propRemote.GetValue(model.SiteAddress, null));
+                                //        }
+                                //    }
+                                //}
+                                if (updateAddress)
+                                {
+                                    localEntityAddress.UpdatedBy = _uId;
+                                    localEntityAddress.UpdatedDate = DateTime.Now;
+                                    addressRepo.Update(localEntityAddress);
+                                }
+                            }
+                        }
+                        else //create address
+                        {
+                            SiteAddress newEntityAddress = new SiteAddress();
+                            if (tA != null && tMA != null)
+                            {
+                                foreach (var updateProp in mappedProperties)
+                                {
+                                    foreach (var prop in tA.GetProperties())
+                                    {
+                                        if (prop.Name == updateProp.LocalColumn.Trim())
+                                        {
+                                            foreach (var mappedProp in tMA.GetProperties())
+                                            {
+                                                if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                                {
+                                                    if (mappedProp.GetValue(model.SiteAddress, null) != null)
+                                                    {
+                                                        prop.SetValue(newEntityAddress, mappedProp.GetValue(model.SiteAddress, null));
+                                                        updateAddress = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                            if (updateAddress)
+                            {
+                                newEntityAddress.UpdatedBy = _uId;
+                                newEntityAddress.UpdatedDate = DateTime.Now;
+                                var addressId = addressRepo.Insert(newEntityAddress);
+
+                                localEntity.SiteAddress = addressId;
+                            }
+                        }
+                    }
+
+                    //update entity properties
+                    //update entity properties
+                    Type tC = typeof(Practitioner);
+                    Type tMF = typeof(MappedFranchisee);
+
+                    if (tC != null && tMF != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tC.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMF.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                    /*
+                                                     User, Hierarchy, shifting children and classes, If pricnipal demotion etc
+                                                     */
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        entityRepo.Update(localEntity);
+
+                    }
+                    //foreach (var updateProp in mappedProperties)
+                    //{
+                    //    PropertyInfo propLocal = typeof(Practitioner).GetProperty(updateProp.LocalColumn);
+                    //    PropertyInfo propRemote = typeof(MappedFranchisee).GetProperty(updateProp.RemoteColumn);
+                    //    if (propLocal != null && propRemote != null)
+                    //    {
+                    //        if (propLocal.GetValue(localEntity, null) != propRemote.GetValue(model, null))
+                    //        {
+                    //            if (updateProp.LocalColumn == "IsActive")
+                    //            {
+                    //                //TODO: Kickoff Deactivation procedure
+                    //                /*
+                    //                 User, Hierarchy, shifting children and classes, If pricnipal demotion etc
+                    //                 */
+                    //            }
+                    //            else
+                    //            {
+                    //                propLocal.SetValue(localEntity, propRemote.GetValue(model, null));
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //localEntity.UpdatedBy = _uId;
+                    //localEntity.UpdatedDate = DateTime.Now;
+                    //entityRepo.Update(localEntity);
+
+                    //Update user properties
+                    var entityUser = await _userManager.FindByIdAsync(model.localId);
+                    if (entityUser != null)
+                    {
+                        Type tU = typeof(ApplicationUser);
+                        if (tU != null && tMF != null)
+                        {
+                            foreach (var updateProp in mappedProperties)
+                            {
+                                foreach (var prop in tU.GetProperties())
+                                {
+                                    if (prop.Name == updateProp.LocalColumn.Trim())
+                                    {
+                                        foreach (var mappedProp in tMF.GetProperties())
+                                        {
+                                            if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                            {
+                                                if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(entityUser, null))
+                                                {
+                                                    if (updateProp.LocalColumn == "IsActive")
+                                                    {
+                                                        //TODO: Kickoff Deactivation procedure
+                                                    }
+                                                    else
+                                                    {
+                                                        prop.SetValue(entityUser, mappedProp.GetValue(model, null));
+                                                        updatedUser = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (updatedUser)
+                        {
+                            await _userManager.UpdateAsync(entityUser);
+                        }
+                    }
+
+
+                    //TODO: classes management
+
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdateChildEntity(MappedChild model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            bool updatedEntity = false;
+            bool updatedUser = false;
+            try
+            {
+                var entityRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+                Child localEntity = entityRepo.GetByUserId(model.localId);
+                if (localEntity != null)
+                {
+                    //update entity properties
+                    Type tC = typeof(Child);
+                    Type tMC = typeof(MappedChild);
+
+                    if (tC != null && tMC != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tC.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMC.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        entityRepo.Update(localEntity);
+
+                    }
+
+                    ////update entity properties
+                    //foreach (var updateProp in mappedProperties)
+                    //{
+                    //    PropertyInfo propLocal = typeof(Child).GetProperty(updateProp.LocalColumn);
+                    //    PropertyInfo propRemote = typeof(MappedChild).GetProperty(updateProp.RemoteColumn);
+                    //    if (propLocal != null && propRemote != null)
+                    //    {
+                    //        if (propLocal.GetValue(localEntity, null) != propRemote.GetValue(model, null))
+                    //        {
+                    //            if (updateProp.LocalColumn == "IsActive")
+                    //            {
+                    //                //TODO: Kickoff Deactivation procedure
+                    //                /*
+                    //                 Learner records, Hierarchy, User, Classrooms, Attendance
+                    //                 */
+                    //            }
+                    //            else
+                    //            {
+                    //                propLocal.SetValue(localEntity, propRemote.GetValue(model, null));
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //localEntity.UpdatedBy = _uId;
+                    //localEntity.UpdatedDate = DateTime.Now;
+                    //entityRepo.Update(localEntity);
+
+                    //Update user properties
+                    var entityUser = await _userManager.FindByIdAsync(model.localId);
+                    if (entityUser != null)
+                    {
+                        Type tU = typeof(ApplicationUser);
+                        if (tU != null && tMC != null)
+                        {
+                            foreach (var updateProp in mappedProperties)
+                            {
+                                foreach (var prop in tU.GetProperties())
+                                {
+                                    if (prop.Name == updateProp.LocalColumn.Trim())
+                                    {
+                                        foreach (var mappedProp in tMC.GetProperties())
+                                        {
+                                            if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                            {
+                                                if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(entityUser, null))
+                                                {
+                                                    if (updateProp.LocalColumn == "IsActive")
+                                                    {
+                                                        //TODO: Kickoff Deactivation procedure
+                                                        /*
+                                                         Learner records, Hierarchy, User, Classrooms, Attendance
+                                                         */
+                                                    }
+                                                    else
+                                                    {
+                                                        prop.SetValue(entityUser, mappedProp.GetValue(model, null));
+                                                        updatedUser = true;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        if (updatedUser)
+                        {
+                            await _userManager.UpdateAsync(entityUser);
+                        }
+                        //foreach (var updateProp in mappedProperties)
+                        //{
+                        //    PropertyInfo propLocal = typeof(ApplicationUser).GetProperty(updateProp.LocalColumn);
+                        //    PropertyInfo propRemote = typeof(MappedChild).GetProperty(updateProp.RemoteColumn);
+                        //    if (propLocal != null && propRemote != null)
+                        //    {
+                        //        if (propLocal.GetValue(localEntity, null) != propRemote.GetValue(model, null))
+                        //        {
+                        //            if (updateProp.LocalColumn == "IsActive")
+                        //            {
+                        //                //TODO: Kickoff Deactivation procedure
+                        //                /*
+                        //                 Learner records, Hierarchy, User, Classrooms, Attendance
+                        //                 */
+                        //            }
+                        //            else
+                        //            {
+                        //                propLocal.SetValue(localEntity, propRemote.GetValue(model, null));
+                        //            }
+                        //        }
+                        //    }
+                        //}
+                        //await _userManager.UpdateAsync(entityUser);
+                    }
+
+                    //Update caregiver - caregiver is handled seperately - UpdateCaregiverEntity and data split off into 2 to handle both
+
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdateCaregiverEntity(MappedCaregiver model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            bool updatedEntity = false;
+            try
+            {
+                var entityRepo = _repositoryFactory.CreateGenericRepository<Caregiver>(userContext: _uId);
+                Caregiver localEntity = entityRepo.GetById(Guid.Parse(model.localId));
+                if (localEntity != null)
+                {
+                    //update entity properties
+                    Type tC = typeof(Caregiver);
+                    Type tMC = typeof(MappedCaregiver);
+
+                    if (tC != null && tMC != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tC.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMC.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        entityRepo.Update(localEntity);
+
+                    }
+                    ////update entity properties
+                    //foreach (var updateProp in mappedProperties)
+                    //{
+                    //    PropertyInfo propLocal = typeof(Caregiver).GetProperty(updateProp.LocalColumn);
+                    //    PropertyInfo propRemote = typeof(MappedCaregiver).GetProperty(updateProp.RemoteColumn);
+                    //    if (propLocal != null && propRemote != null)
+                    //    {
+                    //        if (propLocal.GetValue(localEntity, null) != propRemote.GetValue(model, null))
+                    //        {
+                    //            if (updateProp.LocalColumn == "IsActive")
+                    //            {
+                    //                //TODO: Kickoff Deactivation procedure
+                    //            }
+                    //            else
+                    //            {
+                    //                propLocal.SetValue(localEntity, propRemote.GetValue(model, null));
+                    //            }
+                    //        }
+                    //    }
+                    //}
+                    //localEntity.UpdatedBy = _uId;
+                    //localEntity.UpdatedDate = DateTime.Now;
+                    //entityRepo.Update(localEntity);
+
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdateSiteAddressEntity(MappedAddress model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            bool updatedEntity = false;
+            try
+            {
+                var entityRepo = _repositoryFactory.CreateGenericRepository<SiteAddress>(userContext: _uId);
+                SiteAddress localEntity = entityRepo.GetById(Guid.Parse(model.localId));
+                if (localEntity != null)
+                {
+                    //update entity properties
+                    Type tA = typeof(SiteAddress);
+                    Type tMA = typeof(MappedAddress);
+
+                    if (tA != null && tMA != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tA.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMA.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        entityRepo.Update(localEntity);
+
+                    }
+
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+
+            }
+            catch (Exception)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdateDocumentEntity(MappedDocument model, IntegrationEntityMapping entityLine, List<IntegrationColumnMapping> mappedProperties)
+        {
+            bool retVal = false;
+            bool updatedEntity = false;
+            try
+            {                
+                Document localEntity = _docRepo.GetById(Guid.Parse(model.localId));
+                if (localEntity != null)
+                {
+                    //update entity properties
+                    Type tA = typeof(Document);
+                    Type tMA = typeof(MappedDocument);
+
+                    if (tA != null && tMA != null)
+                    {
+                        foreach (var updateProp in mappedProperties)
+                        {
+                            foreach (var prop in tA.GetProperties())
+                            {
+                                if (prop.Name == updateProp.LocalColumn.Trim())
+                                {
+                                    foreach (var mappedProp in tMA.GetProperties())
+                                    {
+                                        if (mappedProp.Name == updateProp.RemoteColumn.Trim())
+                                        {
+                                            if (mappedProp.GetValue(model, null) != null && mappedProp.GetValue(model, null) != prop.GetValue(localEntity, null))
+                                            {
+                                                if (updateProp.LocalColumn == "IsActive")
+                                                {
+                                                    //TODO: Kickoff Deactivation procedure
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(localEntity, mappedProp.GetValue(model, null));
+                                                    updatedEntity = true;
+                                                }
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    if (updatedEntity)
+                    {
+                        localEntity.UpdatedBy = _uId;
+                        localEntity.UpdatedDate = DateTime.Now;
+                        _docRepo.Update(localEntity);
+
+                    }
+                    retVal = true;
+
+                    //mark mapped entity as complete and save the serialised object to IntegrationEntityMapping
+                    IntegrationEntityMapping mapperLine = _mapperRepo.GetById(entityLine.Id);
+                    mapperLine.UpdatedBy = _uId;
+                    mapperLine.UpdatedDate = DateTime.Now;
+                    mapperLine.IsComplete = true;
+                    mapperLine.BeforeJSON = JsonSerializer.Serialize(model);
+                    _mapperRepo.Update(mapperLine);
+                }
+
+            }
+            catch (Exception e)
+            {
+                //TODO: LOG ERROR AND HANDLE
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "UpdateDocumentEntity");
+                throw;
+            }
+
+            return retVal;
+        }
+
+        private async Task<bool> UpdateIncompletes(List<IntegrationEntityMapping> mappedEntities, List<IntegrationColumnMapping> mappedColumns, IntegrationEntityMapping coach)
+        {
+            //-------------------
+            //3. - check all changes on known entities that is not marked complete
+            //-------------------
+            if (coach.IsComplete != true)
+            {
+                //entity may have been manually mapped for inclusion, pull all details and update
+                string url = SSIntegrationSettings.SLCoach + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", coach.RemoteId);
+                var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                MappedCoach entity = JsonConvert.DeserializeObject<MappedCoach>(responseString);
+                if (entity != null)
+                {
+                    entity.localId = coach.LocalId;
+                    //update coach against mappedcoachproperties
+                    await UpdateCoachEntity(entity, coach, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList());
+                }
+            }
+
+            //run through all mapped practitioners that is not complete
+            foreach (var practitioner in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList())
+            {
+                if (practitioner.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLPractitioner + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", practitioner.RemoteId);
+                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                    MappedFranchisee entity = JsonConvert.DeserializeObject<MappedFranchisee>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = practitioner.LocalId;
+                        await UpdatePractitionerEntity(entity, practitioner, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSPractitioner)).ToList());
+                    }
+                }
+            }
+            //run through all mapped children that is not complete
+            foreach (var child in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList())
+            {
+                if (child.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLChild + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", child.RemoteId);
+                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                    MappedChild entity = JsonConvert.DeserializeObject<MappedChild>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = child.LocalId;
+                        await UpdateChildEntity(entity, child, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSChild)).ToList());
+                    }
+                }
+            }
+            //run through all mapped caregivers
+            foreach (var caregiver in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList())
+            {
+                if (caregiver.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", caregiver.RemoteId);
+                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                    MappedCaregiver entity = JsonConvert.DeserializeObject<MappedCaregiver>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = caregiver.LocalId;
+                        await UpdateCaregiverEntity(entity, caregiver, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCaregiver)).ToList());
+                    }
+                }
+            }
+            //run through all mapped addresses that is not complete
+            foreach (var address in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList())
+            {
+                if (address.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLAddress + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", address.RemoteId);
+                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                    MappedAddress entity = JsonConvert.DeserializeObject<MappedAddress>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = address.LocalId;
+                        await UpdateSiteAddressEntity(entity, address, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSAddress)).ToList());
+                    }
+                }
+            }
+            //run through all mapped documents that is not complete
+            foreach (var docs in mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList())
+            {
+                if (docs.IsComplete != true)
+                {
+                    //entity may have been manually mapped for inclusion, pull all details and update
+                    string url = SSIntegrationSettings.SLDocument + SSIntegrationSettings.QueryByGuid.Replace("{{Guid}}", docs.RemoteId);
+                    var responseString = await _apiManager.GetAPIHandlerResponse(url, null);
+                    MappedDocument entity = JsonConvert.DeserializeObject<MappedDocument>(responseString);
+                    if (entity != null)
+                    {
+                        entity.localId = docs.LocalId;
+                        await UpdateDocumentEntity(entity, docs, mappedColumns.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSDocument)).ToList());
+                    }
+                }
+            }
+            /**/
+            return true;
+        }
+
+        #endregion
+
+        #region Post API Entity
+        private async Task<bool> PushUpdates()
+        {
+            //1) Get list of entities and their types
+            //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
+            //3) Build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any other changes is irrelevant
+            //4) Add remote guid
+            //5) Send it to the /Multiple endpoint
+            //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+            _audits = await GetAudits();
+            var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
+
+            List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
+
+            //audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+
+            var entityTypeList = updates.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
+
+            Dictionary<string, string> entitypes = new Dictionary<string, string>();
+            List<IntegrationAudit> completedList = new List<IntegrationAudit>();
+            
+            foreach (var updatedEntityType in entityTypeList)
+            {
+                try
+                {
+
+                    StringBuilder jsonString = new StringBuilder();
+                    var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                    if (entityIdList.Any() && entities.Any())
+                    {
+                        string url = "";
+                        jsonString.AppendLine("[");
+                        foreach (var entityToUpdate in entityIdList)
+                        {
+                            var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                string localEntity = mappedEntity.LocalEntity;
+                                string remoteEntity = mappedEntity.RemoteEntity;
+
+                                url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                if (updatedEntityType.Equals("ApplicationUser"))
+                                {
+                                    //add possible additional entity changes in too - If ApplicationUser, there may be additional Practitioner/Child/Coach/Franchisor changes associated, also check address, principal
+                                    var entityChanges = updates.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                    if (entityChanges.Any())
+                                    {
+                                        allChanges.AddRange(entityChanges);
+                                    }
+                                }
+                                if (allChanges.Count() > 0)
+                                {
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    foreach (var changeLine in allChanges)
+                                    {
+                                        var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property) && x.IsActive == true).FirstOrDefault();
+                                        if (mappedColumnLine != null)
+                                        {
+                                            if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                if (changeLine.Property == "IsActive") //special logic for deactivating
+                                                {
+                                                    //TODO: complete status change logic
+                                                }
+
+                                                string valueToSend = changeLine.ValueAfter;
+
+                                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                if (mappedColumnLine.RemapToString)
+                                                {
+                                                    if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                switch (mappedColumnLine.EntityDataType)
+                                                {
+                                                    case "bool":
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                        break;
+                                                    case "integer":
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                        break;
+                                                    case "datetime":
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                        break;
+                                                    default:
+                                                        jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                        break;
+                                                }
+                                                //jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            }
+                                        }
+                                        //remove entry from audits list as we have processed it here and sending
+                                        completedList.Add(changeLine);
+
+                                        updates.Remove(changeLine);
+                                    }
+                                }
+                                jsonString.AppendLine("},");
+                            }
+                        }
+                        jsonString.AppendLine("]");
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                if (responseString == "1") //success
+                                {
+                                    //mark entries as submitted
+                                    await UpdateAuditSubmitted(completedList);
+                                }
+                                else if (responseString == "0")
+                                {
+                                    //there was a reason why these entries did not update
+
+                                }
+                                else //error
+                                {
+                                    //updated failed, log and try again later
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {           
+                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates");
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+            }
+
+            return true;
+        }
+
+        private async Task<bool> PushDeletes()
+        {
+            _audits = await GetAudits();
+            var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
+
+
+            return true;
+        }
+
+        private async Task<bool> PushInserts()
+        {
+            bool isComplete = false;
+            _audits = await GetAudits();
+            var inserts = _audits.Where(x => x.ChangeType.Equals("Insert") && x.Submitted == null).ToList();
+            List<IntegrationAudit> completedAudits = new List<IntegrationAudit>();
+            //Child user entities push
+            var childrenInserted = inserts.Where(a => a.Entity.Equals("Child"));
+            foreach (var childAudit in childrenInserted)
+            {                
+                var newChild = _childGenericRepo.GetById(Guid.Parse(childAudit.RelatedId));
+                if (newChild != null)
+                {
+                    //find the franchisee owning this child and retrieve its remote id and pass in for SL update
+                    var practitioner = _personnelService.GetPractitionerForChild(_hierarchyEngine, newChild.UserId);
+                    if (practitioner != null)
+                    {
+                        //get remoteId
+                        var mappedPractitioner = _mappedEntities.Where(x => x.UserId == practitioner.UserId).FirstOrDefault();
+
+                        if (mappedPractitioner != null)
+                        {
+                            if (!string.IsNullOrEmpty(mappedPractitioner.RemoteId))
+                            {
+                                string remoteChildEntityId = await PushNewChild(newChild, mappedPractitioner.RemoteId);
+                                //write back that these have been processed
+                                List<IntegrationAudit> caregiverAudits = _audits.Where(a => a.Entity.Equals("Caregiver") && a.RelatedId.ToString() == newChild.CaregiverId.ToString()).ToList();                                
+                                if (caregiverAudits!=null)
+                                {
+                                    completedAudits.AddRange(caregiverAudits);
+                                    foreach (var cgAudits in caregiverAudits)
+                                    {
+                                        //remove from overhanging audit lines
+                                        _audits.Remove(cgAudits);
+                                    }                                    
+                                }
+                                var childAudits = _audits.Where(a => (a.Entity.Equals("Child") && a.RelatedId.ToString() == newChild.Id.ToString()) || (a.Entity.Equals("ApplicationUser") && a.RelatedId.ToString() == newChild.UserId.ToString())).ToList();
+                                if (childAudits != null)
+                                {
+                                    completedAudits.AddRange(childAudits);
+                                    foreach (var cAudits in childAudits)
+                                    {                                        
+                                        //remove from overhanging audit lines
+                                        _audits.Remove(cAudits);
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+            //Attendance
+            //PushAttendance(); -- monthly push
+            //Income Statements
+            //PushStatements(); -- monthly push
+            //Documents
+            //PushDocuments(audits);
+            var docsInserted = _audits.Where(a => a.Entity.Equals("Document"));
+            foreach (var docAudit in docsInserted)
+            {
+
+
+                //push child docs
+                //var docsAudits = audits.Where(a => a.Entity.Equals("Document") && a.RelatedId.ToString() == newChild.ToString()).ToList();
+                //if (childAudits != null)
+                //{
+                //    foreach (var cAudits in childAudits)
+                //    {
+                //        cAudits.Submitted = DateTime.Now;
+                //        _auditRepo.Update(cAudits);
+                //    }
+
+                //}
+            }
+
+            //mark all audit entries as done before next step
+            await UpdateAuditSubmitted(completedAudits);
+            
+            return isComplete;
+        }
+
+        public async Task<string> RemapStaticToString(string entityToRemap, string valueToSend)
+        {
+            switch (entityToRemap)
+            {
+                case "Race":
+                    var race = _staticRaceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (race != null ? race.Description : null);
+                    break;
+                case "Gender":
+                    var gender = _staticGenderRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (gender != null ? gender.Description : null);
+                    break;
+                case "Language":
+                    var lang = _staticLanguageRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (lang != null ? lang.Description : null);
+                    break;
+                case "Relation":
+                    var rel = _staticRelationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (rel != null ? rel.Description : null);
+                    break;
+                case "Province":
+                    var prov = _staticProvinceRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (prov != null ? prov.Description : null);
+                    break;
+                case "Education":
+                    var edu = _staticEducationRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (edu != null ? edu.Description : null);
+                    break;
+                case "Grant":
+                    var grant = _staticGrantRepo.GetAll().Where(x => x.Id == Guid.Parse(valueToSend)).OrderBy(x => x.Id).FirstOrDefault();
+                    valueToSend = (grant != null ? grant.Description : null);
+                    break;
+            }
+
+            return valueToSend;
+        }
+
+ 
+
+
+        private async Task<string> PushNewChild(Child newChild, string franchiseeRemoteId)
+        {
+            /*
+             //1) use all insert lines - retrieve column mappings and create
+            Find all children to insert, then get their caregivers and write the api call for caregivers
+            Pluck thecaregiver out of the audits
+            then write the child insert api call
+             */
+            string cgRemoteId = "";
+            string childRemoteId = "";
+            try
+            {
+                //insert caregiver and map
+                StringBuilder jsonCaregiverString = new StringBuilder();
+                string cgUrl = "";
+                //Type tCG = typeof(Caregiver);
+                var caregiverColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Caregiver") && c.IsActive == true).ToList();
+
+                
+                cgUrl = SSIntegrationSettings.SLCaregiver + SSIntegrationSettings.CreateMultiple;
+                jsonCaregiverString.AppendLine("[{");
+                if (caregiverColumns.Count() > 0)
+                {
+                    foreach (var changeLine in caregiverColumns)
+                    {
+                        try
+                        {
+                            if (!string.IsNullOrWhiteSpace(changeLine.LocalColumn))
+                            {
+                                if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                {
+                                    string valueToSend = "";
+                                    switch (changeLine.LocalEntity)
+                                    {
+                                        case "SiteAddress":
+                                            if (newChild.Caregiver.SiteAddress != null && typeof(SiteAddress).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                            {
+                                                valueToSend = typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress) != null ? typeof(SiteAddress).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver.SiteAddress).ToString() : null;
+                                            }
+                                            break;
+                                        case "Caregiver":
+                                            if (newChild.Caregiver != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                            {
+                                                valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver).ToString() : null;
+                                            }
+                                            break;
+                                    }
+                                    //valueToSend = "";// typeof(changeObj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver) != null ? typeof(obj).GetProperty(changeLine.LocalColumn).GetValue(newChild.Caregiver).ToString() : null;
+                                    //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                    if (changeLine.RemapToString)
+                                    {
+                                        if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                        {
+                                            valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                        }
+                                    }
+                                    if (!string.IsNullOrEmpty(valueToSend))
+                                    {
+                                        switch (changeLine.EntityDataType)
+                                        {
+                                            case "bool":
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                                break;
+                                            case "integer":
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                                break;
+                                            case "datetime":                
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                                break;
+                                            default:
+                                                jsonCaregiverString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                                break;
+                                        }
+                                    }
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");                        
+                        }
+                    }
+                    jsonCaregiverString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
+                }
+                jsonCaregiverString.AppendLine("}");
+                jsonCaregiverString.AppendLine("]");
+                //create caregiver
+                try
+                {
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, false, true, jsonCaregiverString.ToString());
+                    if (!string.IsNullOrEmpty(responseString))
+                    {
+                        var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                        if (returnObj != null)
+                        {
+                            cgRemoteId = returnObj[0].ToString();
+                            IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
+                            cgMapping.LocalEntity = SSIntegrationSettings.SSCaregiver;
+                            cgMapping.RemoteEntity = SSIntegrationSettings.SLCaregiver;
+                            cgMapping.LocalId = newChild.CaregiverId.ToString();
+                            cgMapping.RemoteId = cgRemoteId;
+                            cgMapping.UserId = newChild.UserId;
+                            cgMapping.UpdatedBy = _uId;
+                            cgMapping.UpdatedDate = DateTime.Now;
+                            cgMapping.IsComplete = true;
+                            cgMapping.BeforeJSON = jsonCaregiverString.ToString();
+                            _mapperRepo.Insert(cgMapping);
+                        }
+                        else //error empty response received
+                        {
+                            //await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            //updated failed, log and try again later
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushNewChild > GetAPIHandlerResponse");
+                    //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+                
+
+                //create child and map
+                StringBuilder jsonChildString = new StringBuilder();
+                string childUrl = "";
+                //Type tC = typeof(Child);
+                var childColumns = _mappedColumns.Where(c => c.EntityGrouping.Equals("Child") && c.IsActive == true).ToList();
+                childUrl = SSIntegrationSettings.SLChild + SSIntegrationSettings.CreateMultiple;
+                jsonChildString.AppendLine("[{");
+                if (childColumns.Count() > 0)
+                {
+                    foreach (var changeLine in childColumns)
+                    {
+                        try 
+                        { 
+
+                            if (changeLine.UpdateDirection == UpdateDirection.Both.ToString() || changeLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                            {
+                                bool bAddConsents = false;
+                                bool bAddGrants = false;
+                                bool bAddClassroomGroup = false;
+                                //string valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn).GetValue(newChild).ToString() : null;
+                                string valueToSend = "";
+                                switch (changeLine.LocalEntity)
+                                {
+                                    case "ApplicationUser":
+                                        if (typeof(ApplicationUser).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(ApplicationUser).GetProperty(changeLine.LocalColumn).GetValue(newChild.User) != null ? typeof(ApplicationUser).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.User).ToString() : null;
+                                        }
+                                        break;
+                                    case "Child":
+                                        if (newChild != null && typeof(Child).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild) != null ? typeof(Child).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild).ToString() : null;
+                                        }
+                                        break;
+                                    case "Caregiver":
+                                        if (newChild.Caregiver != null && typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()) != null)
+                                        {
+                                            valueToSend = typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver) != null ? typeof(Caregiver).GetProperty(changeLine.LocalColumn.Trim()).GetValue(newChild.Caregiver).ToString() : null;
+                                        }
+                                        break;
+                                    case "UserConsent":
+                                        bAddConsents = true;
+                                        break;
+                                    case "UserGrants":
+                                        bAddGrants |= true;
+                                        break;
+                                    case "ClassroomGroup":
+                                        bAddClassroomGroup = true;
+                                        break;
+                                    case "BoolMap":
+                                        switch (changeLine.LocalColumn)
+                                        {
+                                            case "HasIdNumber":
+                                                valueToSend = newChild.User.IdNumber != null ? "true" : "false";
+                                                break;
+                                            case "HasAllergy":
+                                                valueToSend = newChild.Allergies != null ? "true" : "false";
+                                                break;
+                                            case "HasDisability":
+                                                valueToSend = newChild.Disabilities != null ? "true" : "false";
+                                                break;
+                                        }
+                                        break;
+                                }
+                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                if (changeLine.RemapToString)
+                                {
+                                    if (changeLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                    {
+                                        valueToSend = await RemapStaticToString(changeLine.RemapEntity, valueToSend);
+                                    }
+                                }
+                                if (!string.IsNullOrEmpty(valueToSend) && !bAddConsents && !bAddGrants && !bAddClassroomGroup)
+                                {
+                                    switch (changeLine.EntityDataType)
+                                    {
+                                        case "bool":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + bool.Parse(valueToSend) + ",");
+                                            break;
+                                        case "integer":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":" + int.Parse(valueToSend) + ",");
+                                            break;
+                                        case "datetime":
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + DateTime.Parse(valueToSend).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                            break;
+                                        default:
+                                            jsonChildString.AppendLine("\"" + changeLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            break;
+                                    }
+                                } else if (bAddConsents)
+                                {                                    
+                                    var userConsents = _dbContext.UserConsents.Where(x => x.UserId == newChild.UserId).Select(x => x.ConsentType).ToList();
+                                    //PersonalInformationAgreement PhotoPermissions
+                                    foreach (var item in userConsents)
+                                    {
+                                        switch (item) 
+                                        {
+                                            case "PersonalInformationAgreement":
+                                                jsonChildString.AppendLine("\"CaregiverPopiaConsent\":\"true\",");
+                                                break;
+                                            case "PhotoPermissions":
+                                                jsonChildString.AppendLine("\"CaregiverPhotographyAndFilmingConsent\":\"true\",");
+                                                break;
+                                            //case "ConsentAgreement":
+                                            //case "IndemnityAgreement":
+                                            //case "CommitmentAgreement":
+                                            //    jsonChildString.AppendLine("\"Consent\":\"true\",");
+                                            //    break;
+                                        }
+                                    }
+                                } 
+                                else if (bAddGrants)
+                                {
+                                    var userGrants = _dbContext.UserGrants.Include(ug => ug.Grant).Where(x => x.UserId == newChild.UserId).Distinct().ToList();
+                                    foreach (var item in userGrants)
+                                    {
+                                        jsonChildString.AppendLine("\"GrantType\":\"" + valueToSend + "\",");
+                                    }
+                                }
+                                else if (bAddClassroomGroup)
+                                {
+                                    //not sending playgroupgroups at the moment
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > CreateCaregiver");
+                        }
+                        ////remove entry from audits list as we have processed it here and sending
+                        //completedList.Add(changeLine);
+                        //audits.Remove(changeLine);
+
+                    }
+                    jsonChildString.AppendLine("\"Caregiver\":{\"Guid\": \"" + cgRemoteId + "\"},");
+                    jsonChildString.AppendLine("\"Franchisee\":{\"Guid\": \"" + franchiseeRemoteId + "\"}");
+                }
+                jsonChildString.AppendLine("}");
+                jsonChildString.AppendLine("]");
+                //create caregiver
+                try
+                {
+                    //now send to API call <entity type>/Multiple
+                    var responseString = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, false, true, jsonChildString.ToString());
+                    if (!string.IsNullOrEmpty(responseString))
+                    {
+                        var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                        if (returnObj != null)
+                        {
+                            childRemoteId = returnObj[0].ToString();
+                            IntegrationEntityMapping childMapping = new IntegrationEntityMapping();
+                            childMapping.LocalEntity = SSIntegrationSettings.SSChild;
+                            childMapping.RemoteEntity = SSIntegrationSettings.SLChild;
+                            childMapping.LocalId = newChild.Id.ToString();
+                            childMapping.RemoteId = childRemoteId;
+                            childMapping.UserId = newChild.UserId;
+                            childMapping.UpdatedBy = _uId;
+                            childMapping.UpdatedDate = DateTime.Now;
+                            childMapping.IsComplete = true;
+                            childMapping.BeforeJSON = jsonChildString.ToString();
+                            _mapperRepo.Insert(childMapping);
+                        }
+                        else //error empty response received
+                        {
+                            //await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                            //updated failed, log and try again later
+                        }
+                    }
+                }
+                catch (Exception e)
+                {
+                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+
+
+                //child documents
+
+
+
+
+
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushUpdates > GetAPIHandlerResponse");
+                throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+
+            return childRemoteId;
+        }
+
+        private async Task<bool> PushAttendance(List<IntegrationAudit> audits)
+        {
+            return true;
+        }
+
+        private async Task<bool> PushDocuments(List<IntegrationAudit> audits)
+        {
+            return true;
+        }
+
+        private async Task<bool> PushStatements(List<IntegrationAudit> audits)
+        {
+            //1) Get list of entities and their types
+            //2) Iterate through these and group updates for same entity (Practitioner + associated ApplicationUser pairs)
+            //3) Build up JSON for the endpoint with blocks for each individual entity based on mapped columns only, any other changes is irrelevant
+            //4) Add remote guid
+            //5) Send it to the /Multiple endpoint
+            //6) Move to next entity type thats mapped and has properties - Child, Franchisor, Coach
+
+            List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
+
+            audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
+
+            var entityTypeList = audits.Where(x => x.Submitted == null).Select(x => x.Entity).ToList(); //retrieve audit line sthat havent already been submitted
+
+            Dictionary<string, string> entitypes = new Dictionary<string, string>();
+            List<IntegrationAudit> completedList = new List<IntegrationAudit>();
+
+            foreach (var updatedEntityType in entityTypeList)
+            {
+                try
+                {
+                    StringBuilder jsonString = new StringBuilder();
+                    var entityIdList = audits.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
+
+                    if (entityIdList.Any() && entities.Any())
+                    {
+                        string url = "";
+                        jsonString.AppendLine("[");
+                        foreach (var entityToUpdate in entityIdList)
+                        {
+                            var mappedEntity = entities.Where(x => x.UserId == entityToUpdate).FirstOrDefault();// && x.LocalEntity.Equals(updatedEntityType)
+                            if (mappedEntity != null) //if we have this entity mapped to remote?
+                            {
+                                string localEntity = mappedEntity.LocalEntity;
+                                string remoteEntity = mappedEntity.RemoteEntity;
+
+                                url = remoteEntity + SSIntegrationSettings.UpdateMultiple;
+                                jsonString.AppendLine("{");
+                                //get all changes for this entity and group and build JSON
+                                var allChanges = audits.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                if (updatedEntityType.Equals("ApplicationUser"))
+                                {
+                                    //add possible additional entity changes in too - If ApplicationUser, there may be additional Practitioner/Child/Coach/Franchisor changes associated, also check address, principal
+                                    var entityChanges = audits.Where(x => x.Entity.Equals(mappedEntity.LocalEntity) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
+                                    if (entityChanges.Any())
+                                    {
+                                        allChanges.AddRange(entityChanges);
+                                    }
+                                }
+                                if (allChanges.Count() > 0)
+                                {
+                                    jsonString.AppendLine("\"Guid\":\"" + mappedEntity.RemoteId + "\","); //add entity GUID first and changes to follow
+                                    foreach (var changeLine in allChanges)
+                                    {
+                                        var mappedColumnLine = _mappedColumns.Where(x => x.LocalEntity.Equals(updatedEntityType) && x.EntityGrouping.Equals(localEntity) && x.LocalColumn.Equals(changeLine.Property)).FirstOrDefault();
+                                        if (mappedColumnLine != null)
+                                        {
+                                            if (mappedColumnLine.UpdateDirection == UpdateDirection.Both.ToString() || mappedColumnLine.UpdateDirection == UpdateDirection.SSToSL.ToString()) //only update mapped columns configured to update
+                                            {
+                                                if (changeLine.Property == "IsActive") //special logic for deactivating
+                                                {
+                                                    //TODO: complete status change logic
+                                                }
+
+                                                string valueToSend = changeLine.ValueAfter;
+
+                                                //When columns need remapping between systems - get mappedcolumn from columnmapping and remap values that SL expects - like language, SS use Guids, SL requires string
+                                                if (mappedColumnLine.RemapToString)
+                                                {
+                                                    if (mappedColumnLine.RemapEntity != null && !string.IsNullOrEmpty(valueToSend))
+                                                    {
+                                                        valueToSend = await RemapStaticToString(mappedColumnLine.RemapEntity, valueToSend);
+                                                    }
+                                                }
+                                                jsonString.AppendLine("\"" + mappedColumnLine.RemoteColumn + "\":\"" + valueToSend + "\",");
+                                            }
+                                        }
+                                        //remove entry from audits list as we have processed it here and sending
+                                        completedList.Add(changeLine);
+                                        audits.Remove(changeLine);
+                                    }
+                                }
+                                jsonString.AppendLine("},");
+                            }
+                        }
+                        jsonString.AppendLine("]");
+                        try
+                        {
+                            //now send to API call <entity type>/Multiple
+                            var responseString = await _apiManager.GetAPIHandlerResponse(url, null, null, false, true, jsonString.ToString());
+                            if (!string.IsNullOrEmpty(responseString))
+                            {
+                                if (responseString == "1") //success
+                                {
+                                    //mark entries as submitted
+                                    await UpdateAuditSubmitted(completedList);
+                                }
+                                else if (responseString == "0")
+                                {
+                                    //there was a reason why these entries did not update
+
+                                }
+                                else //error
+                                {
+                                    //updated failed, log and try again later
+                                }
+                            }
+                        }
+                        catch (Exception e)
+                        {
+                            //TODO: LOG ERROR AND HANDLE              
+                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushStatements > GetAPIHandlerResponse");
+                            throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                        }
+                    }
+
+                }
+                catch (Exception e)
+                {
+                    //TODO: LOG ERROR AND HANDLE
+                    await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "PushStatements");
+                    throw new HttpRequestException("SmartLink API Error: " + e.Message);
+                }
+
+            }
+
+            return true;
+        }
+
+        #endregion
+
+        #region Transactional
+
+        private async Task<bool> RemoveImportedAndFlag(string userId, bool isPrac = false, bool isChild = false)
+        {
+
+            return true;
+        }
+
+
+        #endregion
+
+        //#region Logging
+
+        //private async Task<bool> IntegrationLog(string log, string logNotes = null, string relatedId = null, LogRelatedType logRelatedType = LogRelatedType.Error, string relatedArea = "IntegrationService")
+        //{
+        //    logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea : "";
+        //    _logRepo.Insert(new IntegrationLog()
+        //    {
+        //        IsActive = true,
+        //        InsertedDate = DateTime.Now,
+        //        UserId = _uId,
+        //        TenantId = tenantId,
+        //        RelatedId = relatedId,
+        //        RelatedType = logRelatedType,
+        //        LogNotes = logNotes,
+        //        LogResult = log
+        //    });
+
+        //    return true;
+        //}
+
+        //#endregion
+
     }
 }

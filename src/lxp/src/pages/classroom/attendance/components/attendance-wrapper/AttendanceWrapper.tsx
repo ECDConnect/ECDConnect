@@ -11,14 +11,16 @@ import {
 import { useSetState } from 'react-use';
 import WalktroughImage from '../../../../../assets/walktroughImage.png';
 import ROUTES from '../../../../../routes/routes';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useSelector } from 'react-redux';
-import { authSelectors } from '@/store/auth';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { useAppDispatch } from '@/store';
 
 export default function MultiRouteWrapper() {
   const history = useHistory();
-  const userAuth = useSelector(authSelectors.getAuthUser);
+  const appDispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const {
     setState,
@@ -119,9 +121,12 @@ export default function MultiRouteWrapper() {
   }
 
   const updatePractitionerProgress = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: practitioner?.userId,
+        progress: 3.0,
+      })
+    );
   };
 
   const handleCallback = async (data: CallBackProps) => {

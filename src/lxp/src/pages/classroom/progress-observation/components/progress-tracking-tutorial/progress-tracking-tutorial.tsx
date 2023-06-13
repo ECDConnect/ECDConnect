@@ -42,7 +42,7 @@ export const ProgressTrackingTutorial = ({
                 color={'textDark'}
                 type={'body'}
                 text={
-                  'Start tracking progress within a month of the child joining in each of the four development areas (Feeling Happy & Secure; Speaking, Listening & Communicating; Discovery & Problem-Solving; Developing Our Bodies)'
+                  'Start tracking progress within a month of the child joining in each of the four development areas (Social & emotional, Language & pre-literacy, Cognitive, and Physical)'
                 }
               />
             </li>
@@ -61,7 +61,7 @@ export const ProgressTrackingTutorial = ({
                 color={'textDark'}
                 type={'body'}
                 text={
-                  'Each child is unique and may learn things in different orders and at different speeds.'
+                  'Each child is unique and may learn things in different orders and at different speeds'
                 }
               />
             </li>
@@ -77,13 +77,12 @@ export const ProgressTrackingTutorial = ({
             color={'textDark'}
             className={styles.spaceTop}
             type={'body'}
-            hasMarkup={true}
             text={
-              'Create reports and send them to caregivers every <b>June</b> and <b>November</b>'
+              'Create reports and send them to caregivers every June and November'
             }
           />
         </div>
-        <div className={'bg-infoMain flex flex-row items-center py-4 px-4'}>
+        {/* <div className={'bg-infoMain flex flex-row items-center py-4 px-4'}>
           <div className={'mr-4 flex items-center'}>
             <div className={classNames('rounded-full p-2', `bg-infoDark`)}>
               {renderIcon('GiftIcon', `w-5 h-5 text-white`)}
@@ -104,8 +103,8 @@ export const ProgressTrackingTutorial = ({
               text={'Get R5 airtime for every 500 points you earn!'}
             />
           </div>
-        </div>
-        <div className={'p-4'}>
+        </div> */}
+        <div className={'bg-uiBg p-4'}>
           <Typography
             color={'textDark'}
             type={'body'}
@@ -113,41 +112,41 @@ export const ProgressTrackingTutorial = ({
             text={'What should you do?'}
           />
           <IconTitleDescriptionTile
-            title={'01: WATCH & LISTEN'}
+            title={'1. Watch & listen'}
             subTitle={'Watch children often as they play and interact.'}
             icon={'EyeIcon'}
+            iconBorderColour="primary"
           />
           <IconTitleDescriptionTile
-            title={'02: TAKE NOTES'}
+            title={'2. Take notes'}
             subTitle={'Notice what they do easily and where they struggle.'}
             icon={'PencilIcon'}
+            iconBorderColour="primary"
           />
           <IconTitleDescriptionTile
-            title={'03: THINK'}
+            title={'3. Complete progress form'}
             subTitle={
               'Think about activties that will stretch and extend learning.'
             }
             icon={'LightBulbIcon'}
+            iconBorderColour="primary"
           />
           <IconTitleDescriptionTile
-            title={'04: DO'}
+            title={'4. Think & do'}
             subTitle={
-              'Prepare a Child Progress Report and talk through the report with caregivers. Together, think about activities that will help to develop the child.'
+              'Think about activties that will stretch and extend learning. Prepare a Child Progress Report and talk through the report with caregivers. Together, think about activities that will help to develop the child.'
             }
             icon={'PresentationChartLineIcon'}
+            iconBorderColour="primary"
           />
+        </div>
+        <div className="p-4">
           <Typography
             color={'textDark'}
             className={styles.spaceTop}
             type={'body'}
             weight={'bold'}
-            text={'What do the levels mean?'}
-          />
-          <Typography
-            color={'textDark'}
-            className={styles.spaceTop}
-            type={'body'}
-            text={'Levels show the child’s stage of learning and development.'}
+            text={'What do the stages mean?'}
           />
           <ChildDevelopmentLevelsList />
           <Alert
@@ -168,6 +167,10 @@ export const ProgressTrackingTutorial = ({
             onClick={onComplete}
             className={styles.closeButton}
           >
+            {renderIcon(
+              'ArrowCircleRightIcon',
+              classNames('h-5 w-5 mr-2 text-white')
+            )}
             <Typography
               color={'white'}
               type={'help'}

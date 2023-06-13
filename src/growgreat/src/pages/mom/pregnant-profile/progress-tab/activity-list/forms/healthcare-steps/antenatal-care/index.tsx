@@ -1,12 +1,6 @@
-import { Alert, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Typography, DialogPosition, Dialog } from '@ecdlink/ui';
 import AntenatalCareImage from '../../assets/antenatalCareImg.png';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
-import {
-  Label,
-  Header,
-  TipCard,
-} from '@/pages/infant/infant-profile/components';
+import { Header } from '@/pages/infant/infant-profile/components';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect } from 'react';
@@ -26,11 +20,17 @@ export const AntenatalCare = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        section="Care for mom"
-        subTitle="Care for mom"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Care for mom"
+          subTitle="Care for mom"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

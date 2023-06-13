@@ -1,6 +1,7 @@
 import { api } from '../axios.helper';
 import { Config, VisitStatusDto } from '@ecdlink/core';
 import {
+  ClientSummaryByPriority,
   CmsVisitDataInputModelInput,
   HcwHighlights,
   MoreInformation,
@@ -95,6 +96,7 @@ class Visit {
           headerA
           headerB
           headerC
+          headerD
           id
           infoBoxDescription
           infoBoxIcon
@@ -102,6 +104,7 @@ class Visit {
           section
           showDividerA
           showDividerB
+          showDividerC
           type
           visit
         }
@@ -226,6 +229,7 @@ class Visit {
           previousVisitInformationForInfant(visitId: $visitId) {
             score
             scoreColor
+            scoreComment
             growComment
             growCommentColor
             weight
@@ -279,6 +283,8 @@ class Visit {
             question
             questionAnswer
             visit {
+              id
+              orderDate
               plannedVisitDate
             }
           }
@@ -378,15 +384,31 @@ class Visit {
       query: `
       query GetPreviousVisitInformationForMother($visitId: String) {
         previousVisitInformationForMother(visitId: $visitId) {
-              score
-              visitDataStatus {
-                  id
-                  comment
-                  color
-                  type
-                  section
-                  isCompleted
-              }
+          score
+          scoreColor
+          scoreComment
+          growComment
+          growCommentColor
+          weight
+          weightColor
+          weightComment
+          length
+          lengthColor
+          lengthComment
+          muac
+          muacColor
+          muacComment
+          visitDataStatus {
+            insertedDate
+            id
+            comment
+            color
+            type
+            section
+            visitData {
+              visitName
+            }
+          }
         }
       }
       
@@ -403,6 +425,89 @@ class Visit {
     }
 
     return response.data.data.previousVisitInformationForMother;
+  }
+
+  async GetMotherSummaryByPriority(
+    visitId: string
+  ): Promise<ClientSummaryByPriority[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { motherSummaryByPriority: ClientSummaryByPriority[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetMotherSummaryByPriority($visitId: String) {
+        motherSummaryByPriority(visitId: $visitId) {
+          areaName
+          order
+          color
+          summaryData {
+            comment
+            color
+            type
+          }
+          documentData {
+            comment
+            color
+            type
+          }
+        }
+      }
+      
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get client summary by priority For Mother Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.motherSummaryByPriority;
+  }
+
+  async GetInfantSummaryByPriority(
+    visitId: string
+  ): Promise<ClientSummaryByPriority[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { infantSummaryByPriority: ClientSummaryByPriority[] };
+      errors?: {};
+    }>(``, {
+      query: `
+      query GetInfantSummaryByPriority($visitId: String) {
+        infantSummaryByPriority(visitId: $visitId) {
+          areaName
+          order
+          color
+          summaryData {
+            comment
+            color
+            type
+          }
+          documentData {
+            comment
+            color
+            type
+          }
+        }
+      }
+      
+      `,
+      variables: {
+        visitId,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Get client summary by priority For infant Failed - Server connection error'
+      );
+    }
+    return response.data.data.infantSummaryByPriority;
   }
 
   async getVisitAnswersForMother(

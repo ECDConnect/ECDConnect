@@ -28,11 +28,14 @@ import {
 import { getDate, lastDayOfMonth, startOfMonth } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
+  const history = useHistory();
 
   const incomeTypes = useSelector(statementsSelectors.getIncomeTypes);
   const viewTitle = 'DBE Subsidy';
@@ -99,12 +102,15 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
     await new IncomeStatementsService(
       userAuth?.auth_token!
     ).UpdateStatementsIncome(incomeId, incomeInput);
+
+    await history.push(ROUTES.BUSINESS);
   };
 
   const handleSaveStartupSupportValues = () => {
     sendIncomeUpdate();
-    setType('');
   };
+
+  const numberInputInvalidChars = ['-', '+', 'e'];
 
   return (
     <BannerWrapper
@@ -149,6 +155,11 @@ export const DsdSubsidy: React.FC<AddIncomeState> = ({ setType }) => {
           placeholder={'e.g. 20'}
           className="mt-2"
           type={'number'}
+          onKeyDown={(e: any) => {
+            if (numberInputInvalidChars.includes(e.key)) {
+              e.preventDefault();
+            }
+          }}
         />
         <FormInput<DsdSubsidyModel>
           label={'How much did you receive from the DBE subsidy?'}

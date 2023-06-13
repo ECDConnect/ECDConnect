@@ -305,7 +305,7 @@ export const CoachChildProfile: React.FC = () => {
       key: 'message-caregiver',
       showIcon: true,
       showSubTitleShape: true,
-      showChevronIcon: true,
+      showChevronIcon: false,
       backgroundColor: 'uiBg',
       withPaddingX: true,
       withPaddingY: true,
@@ -323,11 +323,11 @@ export const CoachChildProfile: React.FC = () => {
       return {
         ...baseNotificationListItem,
         subTitle: `Attended ${childAttendancePercentage?.daysAttended}/${childAttendancePercentage?.daysExpected} days last week`,
-        onButtonClick: () =>
-          contactAttendanceCaregiver(
-            childAttendancePercentage.daysAttended,
-            childAttendancePercentage.daysExpected
-          ),
+        //onButtonClick: () =>
+        //contactAttendanceCaregiver(
+        //  childAttendancePercentage.daysAttended,
+        //  childAttendancePercentage.daysExpected
+        //),
       };
   };
 
@@ -341,17 +341,6 @@ export const CoachChildProfile: React.FC = () => {
     history.push(ROUTES.REMOVE_CHILD, {
       childId: child?.id,
       practitionerId: practitionerId,
-    });
-  };
-
-  const contactAttendanceCaregiver = (
-    actualDaysAttended: number,
-    expectedDaysAttended: number
-  ) => {
-    history.push(ROUTES.CHILD_ATTENDANCE_CAREGIVER, {
-      actualDaysAttended,
-      expectedDaysAttended,
-      childId: child?.id,
     });
   };
 
@@ -470,8 +459,8 @@ export const CoachChildProfile: React.FC = () => {
             className={'mr-2'}
           />
           <StatusChip
-            backgroundColour="textMid"
-            borderColour="textMid"
+            backgroundColour="primary"
+            borderColour="primary"
             text={`${childAge?.years || '0'} years ${
               childAge?.months || '0'
             } months`}

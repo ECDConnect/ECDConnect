@@ -1,5 +1,5 @@
-import { Document } from '@ecdlink/core';
+import { DocumentDto } from '@ecdlink/core';
 
 export type DocumentState = {
-  documents: Document[] | undefined;
+  documentsForHCW?: DocumentDto[];
 };

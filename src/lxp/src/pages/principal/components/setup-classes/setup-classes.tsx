@@ -26,6 +26,7 @@ export const SetupClasses = ({
   const classroomGroupsFromStore = useSelector(
     classroomsSelectors.getClassroomGroups
   );
+
   const classroomGroupProgrammes = useSelector(
     classroomsSelectors.getClassProgrammes
   );

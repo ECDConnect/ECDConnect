@@ -2,8 +2,19 @@ import { Header, Label } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
-import { CheckboxChange, Colours, Divider, Typography } from '@ecdlink/ui';
+import {
+  getAgeInYearsMonthsAndDays,
+  replaceBraces,
+  useDialog,
+} from '@ecdlink/core';
+import {
+  ActionModal,
+  CheckboxChange,
+  Colours,
+  Divider,
+  Typography,
+  DialogPosition,
+} from '@ecdlink/ui';
 import { noneOption, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 
@@ -40,6 +51,8 @@ export const DietFormStep = ({
     [ageMonths, ageYears]
   );
 
+  const dialog = useDialog();
+
   const [optionList, setOptionList] = useState<
     {
       icon?: JSX.Element;
@@ -48,6 +61,10 @@ export const DietFormStep = ({
       disabled?: boolean;
     }[]
   >(options(isChild6Months));
+
+  useEffect(() => {
+    setOptionList(options(isChild6Months));
+  }, [isChild6Months]);
 
   const [question, setAnswers] = useState({
     question: dietFormQuestion,
@@ -67,6 +84,38 @@ export const DietFormStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
+        if (
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
+        ) {
+          return dialog({
+            blocking: false,
+            position: DialogPosition.Middle,
+            color: 'bg-white',
+            render: (onClose) => {
+              return (
+                <ActionModal
+                  className="z-50"
+                  icon="ExclamationCircleIcon"
+                  iconColor="alertMain"
+                  iconClassName="h-10 w-10"
+                  title="You can only select “None of the above” if there are no foods selected"
+                  detailText={`If ${name} is not eating any foods, first deselect all foods before selecting “None of the above”.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'primary',
+                      type: 'outlined',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              );
+            },
+          });
+        }
         const currentAnswers = answers
           ? [...answers, event.value]
           : [event.value];
@@ -150,6 +199,7 @@ export const DietFormStep = ({
         />
         {optionList.map((item) => (
           <CheckboxGroup
+            checkboxColor="primary"
             id={item.title}
             key={item.title}
             icon={item.icon}
@@ -158,7 +208,7 @@ export const DietFormStep = ({
             checked={answers?.some((option) => option === item.title)}
             value={item.title}
             onChange={onCheckboxChange}
-            disabled={item?.disabled}
+            disabled={answers?.includes(noneOption) ? item?.disabled : false}
           />
         ))}
         {!!answers.length && (

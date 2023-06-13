@@ -1,5 +1,4 @@
-﻿using DotLiquid.Tags;
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -14,11 +13,13 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.Managers.Visits {
+namespace EcdLink.Api.CoreApi.Managers.Visits
+{
     public class VisitDataStatusManager: BaseManager {
         private IHttpContextAccessor _contextAccessor;
         private IGenericRepositoryFactory _repoFactory;
         private VisitManager _visitManager;
+        private VisitBackReferralManager _visitBackReferralManager;
 
         private VisitType _additionalVisitType;
         private string _applicationUserId;
@@ -33,6 +34,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private IGenericRepository<VisitGrowthDataDay, Guid> _visitGrowthDataDay;
         private IGenericRepository<VisitGrowthDataHeight, Guid> _visitGrowthDataHeight;
 
+
         private string _green;
         private string _amber;
         private string _red;
@@ -43,13 +45,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         private string _G4;
         private string _G9;
 
+        private string _visitId;
+
         public VisitDataStatusManager(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            VisitManager visitManager) {
+            VisitManager visitManager,
+            VisitBackReferralManager visitBackReferralManager) {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitManager = visitManager;
+            _visitBackReferralManager = visitBackReferralManager;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
 
@@ -74,6 +80,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
 
         public Boolean ManageVisitDataStatus(string id, string clientType, string visitId) {
+
+            _visitId = visitId;
+
             List<VisitData> allVisitData = _visitDataRepo.GetAll().Where(x => x.VisitId.ToString() == visitId).ToList();
 
             var maternalDistressScreening = new List<CMSQuestion>();
@@ -407,7 +416,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 else if (vData.VisitName == Constants.GGSettings.p4_name && vData.Question == Constants.GGSettings.q_danger_signs) {
 
                     var answers = 0;
-                    var names = "<ul>";
+                    var names = "";
                     if (vData.QuestionAnswer.IndexOf(Constants.GGSettings.p4_ds_1) != -1) {
                         answers++;
                         names = names + "<li>" + Constants.GGSettings.p4_ds_1 + "</li>";
@@ -440,7 +449,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         answers++;
                         names = names + "<li>" + Constants.GGSettings.p4_ds_8 + "</li>";
                     }
-                    names = names + "</ul>";
 
                     if (answers > 1) {
                         // If any danger signs selected, add referral item: ""Themba was experiencing: * X *Y"" 
@@ -534,6 +542,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             foreach (VisitData visitData in allVisitData) {
                 if (visitData.Question == Constants.GGSettings.q_first_antenatal_visit) {
                     if (visitData.QuestionAnswer == Constants.GGSettings.answer_no) {
+
                         // this should add a referral to the list(""Pregnancy not booked"")
                         comment = Constants.GGSettings.pregnancy_not_booked;
                         AddVisitDataStatus(visitData, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
@@ -549,9 +558,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // add amber item to G9 client download summary: ""You missed a clinic visit - make sure you go as soon as possible!""
                         comment = Constants.GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
-
                     }
-                    else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+                    
+                    if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
                         comment = Constants.GGSettings.pregnancy_booked;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -579,7 +588,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         comment = Constants.GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
                     }
-                    else if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
+                    if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // ""green"" item is added to the progress: "Clinic visits up to date"
                         comment = Constants.GGSettings.clinic_visits_up_to_date;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -613,7 +622,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                         // add additional visit item with ""Underweight"" secondary text -please see G3.7 Other / Additional visits
                         AddAdditionalVisit(motherId, Constants.GGSettings.client_mother, Constants.GGSettings.underweight3);
                     }
-                    else if (questionAnswer >= 22) {
+                    if (questionAnswer >= 22) {
                         // add to green items in progress screen(use case 2) (""MUAC over 22cm"")TenancyMiddleware.cs
                         comment = Constants.GGSettings.muac_over_22;
                         AddVisitDataStatus(visitData, comment, _green, _progress, visitData.VisitSection, true);
@@ -732,11 +741,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && q1.QuestionAnswer == Constants.GGSettings.answer_no && q2.QuestionAnswer == Constants.GGSettings.answer_no) {
                     // add to green items in progress screen (use case 2) (""Lethabo was coping well"")
                     comment = firstName + Constants.GGSettings.was_coping;
-                    AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _progress, q3.VisitSection, true);
 
                     //add green item to G9 client summary: You are coping well!
                     comment = Constants.GGSettings.coping_well;
-                    AddVisitDataStatus(q3, comment, _amber, _G9, q3.VisitSection, true);
+                    AddVisitDataStatus(q3, comment, _green, _G9, q3.VisitSection, true);
                 }
             }
             return true;
@@ -839,8 +848,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -934,8 +943,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (q2 != null && q2.Question == Constants.GGSettings.q_length) {
 
-                var _weight = q1.QuestionAnswer != "undefined" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
                 lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
 
@@ -1027,7 +1036,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             // REFERRALS && G9 FOR ALL
             if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
                 // Referrals
-                comment = firstName + Constants.GGSettings.growth_referral + "<ul><li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li></ul>";
+                comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
                 AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
             }
 
@@ -1091,7 +1100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 } 
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
-                comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
+                comment = Constants.GGSettings.mixed_feeding + " " + listFoods;
                 AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: amber - ""Try to make sure you give Themba only breast milk or only formula milk""
@@ -1103,7 +1112,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             return true;
         }
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
-            var names = "<ul>";
+            var names = "";
             var comment = "";
 
             foreach (var item in developmentScreening)
@@ -1120,9 +1129,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 if (item.Question == Constants.GGSettings.q_moving) {
                     names = names + "<li>Moving</li>";
                 }
-
             }
-            names = names + "</ul>";
 
             var q1 = developmentScreening.FirstOrDefault();
 
@@ -1201,6 +1208,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
             newVisit.Risk = Constants.GGSettings.normal_risk;
             newVisit.Comment = comment;
+            newVisit.LinkedVisitId = new Guid(_visitId);
+            newVisit.ActualVisitDate = DateTime.Now; 
             _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
@@ -1229,7 +1238,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Comment == input.Comment && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && x.Type == input.Type && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
@@ -1259,7 +1268,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             };
         }
         private string FormatNutritionList(String options) {
-            var result = "<ul>";
+            var result = "";
 
             if (options.IndexOf(Constants.GGSettings.p1_1) != -1) {
                 result = result + "<li>" + Constants.GGSettings.p1_1 + "</li>";
@@ -1286,11 +1295,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 result = result + "<li>" + Constants.GGSettings.p1_8 + "</li>";
             }
 
-            result = result + "<ul>";
-
             return result;
         }
-        private string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
+        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
             var indicator = "Normal";
 
             if (isWeightCalc)
@@ -1375,18 +1382,50 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             if (clientType == Constants.GGSettings.client_mother) {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
             } else {
                 allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate >= sixMonthsBack).OrderBy(x => x.PlannedVisitDate)
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
+            }
+            return allReferrals;
+        }
+        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType)
+        {
+            // This data is for the past 6 months
+            List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
+            DateTime today = DateTime.Today;
+            var sixMonthsBack = today.AddMonths(-6);
+
+            if (clientType == Constants.GGSettings.client_mother)
+            {
+                allReferrals = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+            }
+            else
+            {
+                allReferrals = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                    select visitStatusData
+                ).ToList();
+            }
+
+            foreach (var item in allReferrals)
+            {
+                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id); 
             }
 
             return allReferrals;
@@ -1475,6 +1514,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             var totalAmber = 0;
             var fScore = 0;
             var scoreColor = "";
+
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
@@ -1483,6 +1523,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
+
+            if (visitDataStatus.Count == 0)
+            {
+                VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).FirstOrDefault();
+                result.ScoreComment = record == null ? "No data available for visit" : "Data available, but no client progress flags available";
+            }
 
             VisitDataStatus growthStatus;
             growthStatus = (
@@ -1506,7 +1552,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             } else if (fScore >= 51 && fScore <= 80)
             {
                 scoreColor = _amber;
-            } else if (fScore < 51)
+            } else if (fScore > 0 && fScore < 51)
             {
                 scoreColor = _red;
             }
@@ -1520,13 +1566,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Weight = weightData?.VisitData.QuestionAnswer;
+            result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
             var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Length = lengthData?.VisitData.QuestionAnswer;
+            result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
@@ -1554,23 +1600,22 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).OrderBy(x => x.InsertedDate)
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
-                ).OrderByDescending(y => y.InsertedDate).ToList();
+                ).OrderByDescending(y => y.InsertedDate).Distinct().ToList();
 
-            allData = (List<VisitDataStatus>)allData.Take(3);
+            //allData = allData.Take(3);
 
             return allData;
         }
-        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId)
+        public List<VisitDataStatus> GetIDDocSummaryDataForVisit(Guid visitId, string color)
         {
             List<VisitDataStatus> allData = (
                     from visitData in _visitDataRepo.GetAll().Where(x => x.VisitId == visitId && x.Question == Constants.GGSettings.q_ID_doc).OrderBy(x => x.InsertedDate)
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
+                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9 && x.Color == color) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
 
             return allData;
         }
-
         public string GetGrowthStatusForInfant(string id, string firstName, string color)
         {
             var status = "";
@@ -1608,7 +1653,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
             }
             return status;
         }
-
         public string GetRedAlertsForUser(string id, string type)
         {
             var status = "";
@@ -1641,7 +1685,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return status;
         }
-
         public string GetAlertsForMother(string id)
         {
             var status = "";
@@ -1660,10 +1703,105 @@ namespace EcdLink.Api.CoreApi.Managers.Visits {
 
             return status;
         }
+        public string GetClinicReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
 
-        
+            if (type == Constants.GGSettings.client_mother)
+            {
 
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.clinic_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
 
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.clinic_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.clinic_referrals;
+            }
+
+            return status;
+        }
+        public string GetHomeAffairsReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.home_affairs_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.home_affairs_referrals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.home_affairs_referrals;
+            }
+
+            return status;
+        }
+        public string GetSassaReferralForUser(string id, string type)
+        {
+            var status = "";
+            VisitDataStatus vData = new VisitDataStatus();
+
+            if (type == Constants.GGSettings.client_mother)
+            {
+
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.sassa_refferals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+
+            }
+            else
+            {
+                vData = (
+                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
+                    join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Section == Constants.GGSettings.sassa_refferals && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
+                    select visitDataStatus
+                ).FirstOrDefault();
+            }
+
+            if (vData != null)
+            {
+                status = Constants.GGSettings.sassa_refferals;
+            }
+
+            return status;
+        }
 
     }
 }

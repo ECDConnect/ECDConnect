@@ -1,4 +1,4 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
@@ -25,12 +25,18 @@ export const SelfCareStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        section={sectionName}
-        subTitle={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          section={sectionName}
+          subTitle={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

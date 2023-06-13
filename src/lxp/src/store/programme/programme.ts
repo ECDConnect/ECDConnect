@@ -1,14 +1,22 @@
 import { ProgrammeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getProgrammes } from './programme.actions';
+import {
+  getProgrammes,
+  getUserProgrammes,
+  upsertProgrammes,
+  updateProgrammes,
+} from './programme.actions';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 import {
   ProgrammeState,
   UpdateProgramme,
   UpdateProgrammeDay,
 } from './programme.types';
 
-const initialState: ProgrammeState = {};
+const initialState: ProgrammeState = {
+  programmes: undefined,
+};
 
 const programmeSlice = createSlice({
   name: 'programme',
@@ -22,20 +30,30 @@ const programmeSlice = createSlice({
 
       state.programmes?.push(action.payload);
     },
-    updateProgramme: (state, action: PayloadAction<UpdateProgramme>) => {
-      if (!state.programmes) return;
-
-      const indexOfProgramme = state.programmes.findIndex(
-        (programme) => programme.id === action.payload.programme.id
-      );
-
-      if (indexOfProgramme < 0) return;
-
-      state.programmes[indexOfProgramme] = action.payload.programme;
+    upsertProgrammes: (state, action: PayloadAction<UpdateProgramme>) => {
+      if (state.programmes) {
+        for (let i = 0; i < state.programmes.length; i++) {
+          if (state.programmes[i].id === action.payload.programme.id)
+            state.programmes[i] = action.payload.programme;
+        }
+      } else {
+        state.programmes = [];
+        state.programmes?.push(action.payload.programme);
+      }
+    },
+    updateProgrammes: (state, action: PayloadAction<UpdateProgramme>) => {
+      if (state.programmes) {
+        for (let i = 0; i < state.programmes.length; i++) {
+          if (state.programmes[i].id === action.payload.programme.id)
+            state.programmes[i] = action.payload.programme;
+        }
+      } else {
+        state.programmes = [];
+        state.programmes?.push(action.payload.programme);
+      }
     },
     updateProgrammeDay: (state, action: PayloadAction<UpdateProgrammeDay>) => {
       if (!state.programmes) return;
-
       const indexOfProgramme = state.programmes.findIndex(
         (programme) => programme.id === action.payload.programmeId
       );
@@ -55,8 +73,23 @@ const programmeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getProgrammes);
+    setThunkActionStatus(builder, getUserProgrammes);
+    setThunkActionStatus(builder, upsertProgrammes);
+    setThunkActionStatus(builder, updateProgrammes);
     builder.addCase(getProgrammes.fulfilled, (state, action) => {
       state.programmes = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(getUserProgrammes.fulfilled, (state, action) => {
+      state.programmes = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(upsertProgrammes.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(updateProgrammes.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

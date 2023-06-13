@@ -23,8 +23,20 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         public virtual Mother Mother { get; set; }
         public Guid? InfantId { get; set; }
         public virtual Infant Infant { get; set; }
-        public string Risk { get; set; }
+        public string? Risk { get; set; }
         public string Comment { get; set; }
+        public Guid? LinkedVisitId { get; set; }
+        public Guid? PractitionerId { get; set; }
+        public virtual Practitioner Practitioner { get; set; }
+        public Guid? TraineeId { get; set; }
+        public virtual Trainee Trainee { get; set; }
+        public Guid? CoachId { get; set; }
+        public virtual Coach Coach { get; set; }
+
+        [NotMapped]
+        public DateTime? OrderDate { get; set; }
+        [NotMapped]
+        public string OverallRatingColor { get; set; }
     }
 
     public interface VisitJoin<TKey>

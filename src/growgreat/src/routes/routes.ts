@@ -21,6 +21,7 @@ const ROUTES = {
     }),
   }),
   TRAINING: '/training',
+  COMMUNITY: '/community',
   DASHBOARD: '/dashboard',
   CLIENTS: addPrefix('/clients', {
     ROOT: '/',
@@ -36,6 +37,9 @@ const ROUTES = {
       CONTACT_TAB: {
         UPDATE_NUMBERS: '/:id/edit-numbers',
         UPDATE_ADDRESS: '/:id/edit-address',
+      },
+      REFERRAL_TAB: {
+        UPDATE_BACK_REFERRAL: '/:id/update-back-referral/:visitBackReferralId',
       },
       PROGRESS: {
         ACTIVITIES_FORM: '/:id/activities-form/:visitId',
@@ -56,6 +60,9 @@ const ROUTES = {
       CONTACT_TAB: {
         UPDATE_NUMBERS: '/:id/edit-numbers',
         UPDATE_ADDRESS: '/:id/edit-address',
+      },
+      REFERRAL_TAB: {
+        UPDATE_BACK_REFERRAL: '/:id/update-back-referral/:visitBackReferralId',
       },
     }),
     VISIT_TAB: {

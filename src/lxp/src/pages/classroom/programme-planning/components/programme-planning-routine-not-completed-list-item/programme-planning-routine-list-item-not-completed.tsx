@@ -69,18 +69,15 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
     return 'small';
   };
 
-  const getRoutineItemActionIcon = () => {
-    if (canLinkActionToType) {
-      if (!activity) return 'ChevronRightIcon';
-
-      return 'CheckCircleIcon';
-    }
-
-    if (routineItem.name === 'Greeting' || routineItem.name === 'Free play')
-      return 'QuestionMarkCircleIcon';
-
-    return 'ChevronRightIcon';
-  };
+  // const getRoutineItemActionIcon = () => {
+  //   if (canLinkActionToType) {
+  //     if (!activity) return 'ChevronRightIcon';
+  //     return 'CheckCircleIcon';
+  //   }
+  //   if (routineItem.name === 'Greeting' || routineItem.name === 'Free play')
+  //     return 'QuestionMarkCircleIcon';
+  //   return 'ChevronRightIcon';
+  // };
 
   const getRoutineItemPostSlotRender = () => {
     if (!activity) {
@@ -100,7 +97,6 @@ export const ProgrammePlanningRoutineListItemNotCompleted: React.FC<
       );
     }
     if (
-      routineItem.name === DailyRoutineItemType.messageBoard ||
       routineItem.name === DailyRoutineItemType.greeting ||
       routineItem.name === DailyRoutineItemType.freePlay
     ) {

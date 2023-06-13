@@ -2,20 +2,27 @@ import { ProgressTrackingSkillDto } from '@ecdlink/core';
 import {
   Button,
   CoreRadioGroup,
-  Divider,
   Typography,
   RadioGroupOption,
   classNames,
   renderIcon,
+  Alert,
 } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { childrenSelectors } from '@store/children';
 import { ChildUndevelopedSkillFormProps } from './child-undeveloped-skill-form.types';
+import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 
 export const ChildUndevelopedSkillForm: React.FC<
   ChildUndevelopedSkillFormProps
-> = ({ undevelopedSkills, childId, onSubmit }) => {
+> = ({ skills, allSkillsYes, supportSkillId, childId, onSubmit }) => {
+  const noTryingToDoAndAtLeastOneNotYet =
+    !allSkillsYes &&
+    skills.tryingToDo &&
+    skills.tryingToDo.length === 0 &&
+    skills.notYet &&
+    skills.notYet.length > 0;
   const child = useSelector(childrenSelectors.getChildById(childId));
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
@@ -28,55 +35,114 @@ export const ChildUndevelopedSkillForm: React.FC<
     useState<ProgressTrackingSkillDto>();
 
   useEffect(() => {
-    if (undevelopedSkills && undevelopedSkills.length > 0) {
-      const skillsRadioList: RadioGroupOption[] = undevelopedSkills.map(
-        (skill) => ({
+    var skillsRadioList: RadioGroupOption[] = [];
+    if (noTryingToDoAndAtLeastOneNotYet) {
+      if (skills.notYet && skills.notYet.length > 0) {
+        skillsRadioList = skills.notYet.map((skill) => ({
           id: skill.id || 0,
           label: skill?.name,
           value: skill.id || 0,
-        })
-      );
-      setSkillsRadioGroupOptions(skillsRadioList);
+        }));
+        setSkillsRadioGroupOptions(skillsRadioList);
+      }
+    } else {
+      if (skills.tryingToDo && skills.tryingToDo.length > 0) {
+        skillsRadioList = skills.tryingToDo.map((skill) => ({
+          id: skill.id || 0,
+          label: skill?.name,
+          value: skill.id || 0,
+        }));
+        setSkillsRadioGroupOptions(skillsRadioList);
+      }
+    }
+    if (supportSkillId !== undefined && skillsRadioList.length > 0) {
+      onSkillSelected(supportSkillId);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const submitAssessment = () => {
-    if (!selectedUndevelopedSkill) return;
-    onSubmit(selectedUndevelopedSkill);
+  const submitAssessment = (exit: boolean) => {
+    if (allSkillsYes) {
+      onSubmit(undefined, true, exit);
+    } else {
+      if (!exit && !selectedUndevelopedSkill) return;
+      onSubmit(selectedUndevelopedSkill, false, exit);
+    }
   };
 
   const onSkillSelected = (skillId: number) => {
-    const skill = undevelopedSkills.find((skill) => skill.id === skillId);
+    const skill = noTryingToDoAndAtLeastOneNotYet
+      ? skills.notYet.find((skill) => skill.id === skillId)
+      : skills.tryingToDo.find((skill) => skill.id === skillId);
     setSelectedUndevelopedSkill(skill);
   };
 
   return (
-    <div className={'bg-uiBg px-4 pt-2'}>
+    <div className={'bg-white px-4 pt-2'}>
       <Typography
-        type={'h1'}
-        color={'primary'}
-        fontSize={'24'}
-        text={`<b>Choose one thing that ${childUser?.firstName} finds <u>difficult</u></b>`}
-        hasMarkup={true}
+        type={'h2'}
+        color={'textDark'}
+        text={
+          allSkillsYes
+            ? `${childUser?.firstName} can do all of the things in this area`
+            : `Choose one skill to work on with ${childUser?.firstName}`
+        }
       />
       <div className={'mt-4'}>
-        <CoreRadioGroup
-          options={skillsRadioGroupOptions}
-          colour="infoMain"
-          selectedOptionBackgroundColor={'infoBb'}
-          onChange={onSkillSelected}
-          currentValue={selectedUndevelopedSkill}
-        />
+        {allSkillsYes && (
+          <div className="grid grid-cols-1 justify-center gap-4">
+            <div className="flex justify-center">
+              <img src={PositiveBonusEmoticon} alt="developing well" />
+            </div>
+            <div className="flex justify-center">
+              <Typography
+                type="body"
+                color={'textDark'}
+                text={`${childUser?.firstName} is developing well.`}
+                fontSize="18"
+                className="pt-2"
+              />
+            </div>
+            <div className="flex justify-center">
+              <Typography
+                type="body"
+                color={'textMid'}
+                text={`Keep observing ${childUser?.firstName}.`}
+                fontSize="14"
+              />
+            </div>
+          </div>
+        )}
+        {!allSkillsYes && (
+          <div>
+            {noTryingToDoAndAtLeastOneNotYet && (
+              <div className={'mt-4 mb-4 px-4'}>
+                <Alert
+                  type={'info'}
+                  title='You did not choose "trying to do" for any of the skills.'
+                  messageColor="textDark"
+                  message={`Choose a skill that ${childUser?.firstName} is not doing yet.`}
+                />
+              </div>
+            )}
+            <CoreRadioGroup
+              options={skillsRadioGroupOptions}
+              colour="uiBg"
+              selectedOptionBackgroundColor={'infoBb'}
+              onChange={onSkillSelected}
+              currentValue={
+                selectedUndevelopedSkill?.id || supportSkillId || -1
+              }
+            />
+          </div>
+        )}
       </div>
-      <div className={'mt-4'}>
-        <Divider />
-      </div>
+      <div className={'mt-4'}></div>
       <Button
         color={'primary'}
         type={'filled'}
-        disabled={!selectedUndevelopedSkill}
-        onClick={() => submitAssessment()}
+        disabled={!allSkillsYes && !selectedUndevelopedSkill}
+        onClick={() => submitAssessment(false)}
         className={'mt-4 mb-4 w-full'}
       >
         {renderIcon(
@@ -88,6 +154,21 @@ export const ChildUndevelopedSkillForm: React.FC<
           type={'help'}
           weight={'normal'}
           text={'Next'}
+        />
+      </Button>
+      <Button
+        onClick={() => submitAssessment(true)}
+        className="w-full"
+        color="primary"
+        type="outlined"
+        disabled={false}
+      >
+        {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+        <Typography
+          type="help"
+          className="ml-2"
+          text="Save & exit"
+          color="primary"
         />
       </Button>
     </div>

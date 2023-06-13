@@ -38,9 +38,12 @@ import { BookVisit as InfantBookVisit } from '@/pages/infant/infant-profile/visi
 import { PastVisits as InfantPastVisits } from '@/pages/infant/infant-profile/visits-tab/past-visits';
 import { MotherContactAddress } from '@/pages/mom/pregnant-profile/contact/edit-address';
 import { MotherContactNumber } from '@/pages/mom/pregnant-profile/contact/edit-number';
-import { ChildContactNumber } from '@/pages/infant/infant-profile/contact/edit-number';
-import { ChildContactAddress } from '@/pages/infant/infant-profile/contact/edit-address';
+import { ChildContactNumber } from '@/pages/infant/infant-profile/contact-tab/edit-number';
+import { ChildContactAddress } from '@/pages/infant/infant-profile/contact-tab/edit-address';
 import { MultipleChildren } from '@/pages/infant/multiple-children';
+import { InfantBackReferralUpdate } from '@/pages/infant/infant-profile/referrals-tab/update-back-referral';
+import { MotherBackReferralUpdate } from '@/pages/mom/pregnant-profile/referrals-tab/update-back-referral';
+import { Community } from '@/pages/community/community';
 
 function PublicRoutes() {
   return (
@@ -228,6 +231,18 @@ function AuthRoutes() {
         component={MultipleChildren}
       />
 
+      <Route
+        exact
+        path={ROUTES.CLIENTS.INFANT_PROFILE.REFERRAL_TAB.UPDATE_BACK_REFERRAL}
+        component={InfantBackReferralUpdate}
+      />
+
+      <Route
+        exact
+        path={ROUTES.CLIENTS.MOM_PROFILE.REFERRAL_TAB.UPDATE_BACK_REFERRAL}
+        component={MotherBackReferralUpdate}
+      />
+
       <Route path={ROUTES.MESSAGES} component={Messages} />
 
       <Route path={ROUTES.MOM_REGISTER} component={PregnantRegister} />
@@ -242,6 +257,7 @@ function AuthRoutes() {
         component={EditPractitionerProfile}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
     </Switch>
   );
 }

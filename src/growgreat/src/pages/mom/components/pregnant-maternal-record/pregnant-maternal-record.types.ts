@@ -8,6 +8,7 @@ export interface PregnantMaternalCaseRecordProps
   maternalCaseRecord?: string;
   notHaveAMaternalRecord?: false;
   details?: PregnantDetailsModel;
+  isFromClientProfile?: boolean;
 }
 
 export const yesNoOptions = [

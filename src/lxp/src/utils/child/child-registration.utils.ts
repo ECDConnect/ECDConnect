@@ -34,7 +34,6 @@ export const mapChildUserDto = (
     childInformationForm.dobMonth ?? 0,
     childInformationForm.dobDay ?? 0
   );
-
   if (user) {
     return {
       ...user,
@@ -42,6 +41,8 @@ export const mapChildUserDto = (
       firstName: childInformationForm.firstname,
       surname: childInformationForm.surname,
       dateOfBirth: dateOfBirth.toISOString() || '',
+      genderId: childExtraInformationForm?.genderId,
+      raceId: childExtraInformationForm?.race,
     };
   }
 
@@ -135,6 +136,7 @@ export const mapDocumentDto = (
   fileName: string,
   statusId: string,
   typeId: string,
+  fileType: string,
   file?: string,
   user?: UserDto
 ): Document => {
@@ -147,7 +149,7 @@ export const mapDocumentDto = (
     name: fileName,
     fileName: fileName,
     file: file,
-    fileType: FileTypeEnum.Child,
+    fileType: fileType,
   };
 };
 

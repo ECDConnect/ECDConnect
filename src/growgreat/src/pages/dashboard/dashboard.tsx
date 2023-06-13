@@ -42,6 +42,7 @@ export enum NavigationTypes {
   Profile = 'Profile',
   Messages = 'Messages',
   Training = 'Training',
+  Community = 'Community',
   Logout = 'Log out',
 }
 
@@ -276,6 +277,13 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
     {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
@@ -379,14 +387,8 @@ export const Dashboard: React.FC = () => {
               title: 'Training',
               titleIcon: 'BriefcaseIcon',
               titleIconClassName: styles.businessIcon,
-              onActionClick: () => ({}),
-              chipConfig: {
-                colorPalette: {
-                  backgroundColour: 'successMain',
-                  borderColour: 'successMain',
-                  textColour: 'white',
-                },
-                text: 'Coming soon',
+              onActionClick: () => {
+                history.push(ROUTES.TRAINING);
               },
               classNames: 'bg-uiBg',
             },

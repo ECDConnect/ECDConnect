@@ -17,6 +17,9 @@ import { muacFormSection, muacQuestion } from '../form';
 import { useSelector } from 'react-redux';
 import { getGrowthDataForInfantSelector } from '@/store/visit/visit.selectors';
 import { GrowthMonitoring } from '../..';
+import { usePrevious } from '@ecdlink/core';
+import { VisitData } from '@ecdlink/graphql';
+import { getReferralsForInfantSelector } from '@/store/infant/infant.selectors';
 
 interface MUACData {
   date: string;
@@ -31,6 +34,11 @@ export const MidUpperArmCircumferenceResultStep = ({
   setEnableButton,
   setGrowthMonitoring,
 }: DynamicFormProps) => {
+  const referrals = useSelector(getReferralsForInfantSelector);
+  const MUACsReferrals = referrals?.filter((item) =>
+    item.comment?.toLocaleLowerCase().includes('muac')
+  );
+
   const muac = useMemo(
     () =>
       sectionQuestions?.find(
@@ -53,7 +61,7 @@ export const MidUpperArmCircumferenceResultStep = ({
 
   const [MUACs, setMUACs] = useState<MUACData[]>([
     {
-      actionTaken: Number(muac) < 12.5 ? 'Referred' : 'None',
+      actionTaken: 'None',
       date: new Date().toLocaleDateString('en-ZA', {
         day: 'numeric',
         month: 'short',
@@ -85,6 +93,9 @@ export const MidUpperArmCircumferenceResultStep = ({
   const previousMuacs = uniqueGrowthData?.filter(
     (item) => item.question === muacQuestion
   );
+  const previousOfPreviousMuacs = usePrevious(previousMuacs) as
+    | VisitData[]
+    | undefined;
 
   const muacMonitoring = useMemo((): GrowthMonitoring['muac'] => {
     if (Number(muac) < 11.5) {
@@ -108,10 +119,17 @@ export const MidUpperArmCircumferenceResultStep = ({
   }, [muacMonitoring, setGrowthMonitoring]);
 
   useEffect(() => {
-    if (!!previousMuacs?.length) {
-      const formattedMuacs = previousMuacs.map(
-        (item): MUACData => ({
-          actionTaken: Number(item.questionAnswer) < 12.5 ? 'Referred' : 'None',
+    if (
+      !!previousMuacs?.length &&
+      previousMuacs?.length !== previousOfPreviousMuacs?.length
+    ) {
+      const formattedMuacs = previousMuacs.map((item): MUACData => {
+        const muacReferral = MUACsReferrals?.find(
+          (muac) => muac.visitData?.id === item.visit?.id
+        );
+
+        return {
+          actionTaken: Boolean(muacReferral?.isCompleted) ? 'Referred' : 'None',
           date: new Date(item.visit?.plannedVisitDate).toLocaleDateString(
             'en-ZA',
             {
@@ -122,12 +140,12 @@ export const MidUpperArmCircumferenceResultStep = ({
           ),
           muac: String(item?.questionAnswer),
           type: getMuacType(Number(item?.questionAnswer)),
-        })
-      );
+        };
+      });
 
       setMUACs((prevState) => [...prevState, ...formattedMuacs]);
     }
-  }, [previousMuacs]);
+  }, [MUACsReferrals, previousMuacs, previousOfPreviousMuacs?.length]);
 
   useEffect(() => {
     setEnableButton?.(true);

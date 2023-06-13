@@ -5,6 +5,8 @@ import {
   Divider,
   FormInput,
   Typography,
+  DialogPosition,
+  Dialog,
 } from '@ecdlink/ui';
 import {
   Label,
@@ -13,15 +15,15 @@ import {
 } from '@/pages/infant/infant-profile/components';
 import P2 from '@/assets/pillar/p2.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useLayoutEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as BrainIcon } from '@/assets/pillar/pillar2/brain.svg';
 import { ReactComponent as EarIcon } from '@/assets/pillar/pillar2/ear.svg';
 import { ReactComponent as EyeIcon } from '@/assets/pillar/pillar2/eye.svg';
 import { ReactComponent as ArmIcon } from '@/assets/pillar/pillar2/arm.svg';
 import { MoreInformation } from '../../components/more-information';
-import { replaceBraces } from '@ecdlink/core';
-import { differenceInWeeks } from 'date-fns';
+import { replaceBraces, usePrevious } from '@ecdlink/core';
+import { differenceInMonths, differenceInWeeks } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
 import { useParams } from 'react-router';
@@ -31,6 +33,7 @@ import {
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
+import { questionsTimes } from './questionsTimes';
 
 export const DevelopmentalScreeningVisitSection = 'Developmental screening';
 export const noteQuestion =
@@ -44,38 +47,22 @@ export const DevelopmentalScreeningWeeksStep = ({
   setIsTip,
 }: DynamicFormProps) => {
   const [isPreviousNotes, setIsPreviousNotes] = useState(false);
-  const [questions, setAnswers] = useState([
+  const [sectionName, setSectionName] = useState('');
+  const [questions, setAnswers] = useState<
     {
-      icon: <EarIcon />,
-      title: 'Hearing',
-      question: 'Gets a fright when they hear a loud sound',
-      answer: '',
-    },
-    {
-      icon: <EyeIcon />,
-      title: 'Seeing',
-      question: 'Follows faces or close objects with their eyes',
-      answer: '',
-    },
-    {
-      icon: <BrainIcon className="h-6 w-6" />,
-      title: 'Brain',
-      question: 'Smiles at people',
-      answer: '',
-    },
-    {
-      icon: <ArmIcon className="h-5 w-6" />,
-      title: 'Moving',
-      question: 'Holds their head upright when held against shoulder',
-      answer: '',
-    },
+      icon?: JSX.Element;
+      title?: string;
+      question: string;
+      answer: string;
+    }[]
+  >([
     {
       question: noteQuestion,
       answer: '',
     },
   ]);
 
-  const noteQuestionIndex = 4;
+  const noteQuestionIndex = 0;
 
   const options = [
     { text: 'Yes', value: true },
@@ -89,6 +76,15 @@ export const DevelopmentalScreeningWeeksStep = ({
       differenceInWeeks(new Date(), new Date(infant?.user?.dateOfBirth)),
     [infant?.user?.dateOfBirth]
   );
+
+  const ageInMonths = useMemo(
+    () =>
+      infant?.user?.dateOfBirth &&
+      differenceInMonths(new Date(), new Date(infant?.user?.dateOfBirth)),
+    [infant?.user?.dateOfBirth]
+  );
+
+  const previousAgeInMonths = usePrevious(ageInMonths);
 
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
@@ -115,6 +111,76 @@ export const DevelopmentalScreeningWeeksStep = ({
 
     return { date, note };
   }, [previousNotes, previousPlannedVisit?.plannedVisitDate]);
+
+  const getQuestions = useCallback(
+    (
+      timing:
+        | 'fourteenWeeks'
+        | 'sixMonths'
+        | 'nineMonths'
+        | 'twelveMonths'
+        | 'eighteenMonths'
+    ) => {
+      const hearing = questionsTimes[timing].hearing.map((item, index) => ({
+        ...(index === 0 ? { icon: <EarIcon /> } : {}),
+        ...(index === 0 ? { title: 'Hearing' } : {}),
+        question: item,
+        answer: '',
+      }));
+
+      const seeing = questionsTimes[timing].seeing.map((item, index) => ({
+        ...(index === 0 ? { icon: <EyeIcon /> } : {}),
+        ...(index === 0 ? { title: 'Seeing' } : {}),
+        question: item,
+        answer: '',
+      }));
+
+      const brain = questionsTimes[timing].brain.map((item, index) => ({
+        ...(index === 0 ? { icon: <BrainIcon className="h-6 w-6" /> } : {}),
+        ...(index === 0 ? { title: 'Brain' } : {}),
+        question: item,
+        answer: '',
+      }));
+
+      const moving = questionsTimes[timing].moving.map((item, index) => ({
+        ...(index === 0 ? { icon: <ArmIcon className="h-5 w-6" /> } : {}),
+        ...(index === 0 ? { title: 'Moving' } : {}),
+        question: item,
+        answer: '',
+      }));
+
+      return [...questions, ...hearing, ...seeing, ...brain, ...moving];
+    },
+    [questions]
+  );
+
+  const handleQuestionsTimes = useCallback(() => {
+    if (previousAgeInMonths === ageInMonths) return;
+    const numberOfAgeInMonths = Number(ageInMonths);
+
+    if (numberOfAgeInMonths >= 18) {
+      setSectionName('DevelopmentalScreenEighteenMonths');
+      return setAnswers(getQuestions('eighteenMonths'));
+    }
+
+    if (numberOfAgeInMonths >= 12) {
+      setSectionName('DevelopmentalScreenTwelveMonths');
+      return setAnswers(getQuestions('twelveMonths'));
+    }
+
+    if (numberOfAgeInMonths >= 9) {
+      setSectionName('DevelopmentalScreenNineMonths');
+      return setAnswers(getQuestions('nineMonths'));
+    }
+
+    if (numberOfAgeInMonths >= 6) {
+      setSectionName('DevelopmentalScreenSixMonths');
+      return setAnswers(getQuestions('sixMonths'));
+    }
+
+    setSectionName('DevelopmentalScreenFourteenWeeks');
+    return setAnswers(getQuestions('fourteenWeeks'));
+  }, [ageInMonths, getQuestions, previousAgeInMonths]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -144,7 +210,9 @@ export const DevelopmentalScreeningWeeksStep = ({
         },
       ]);
 
-      const isCompleted = updatedQuestions.every((item) => item.answer !== '');
+      const isCompleted = formattedQuestions
+        .filter((item, index) => index !== noteQuestionIndex)
+        .every((item) => item.answer !== '');
 
       if (isCompleted && setEnableButton) {
         setEnableButton(true);
@@ -169,14 +237,24 @@ export const DevelopmentalScreeningWeeksStep = ({
     );
   }, []);
 
+  useLayoutEffect(() => {
+    handleQuestionsTimes();
+  }, [handleQuestionsTimes]);
+
   if (isTipPage) {
     return (
-      <MoreInformation
-        client={name}
-        section="Developmental screening 2"
-        subTitle="Developmental screening"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          client={name}
+          section={sectionName}
+          subTitle="Developmental screening"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 
@@ -216,9 +294,11 @@ export const DevelopmentalScreeningWeeksStep = ({
           return (
             <div key={item.question}>
               <div className="mb-2 flex items-center gap-2">
-                <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
-                  {item.icon}
-                </div>
+                {item.icon && (
+                  <div className="bg-tertiary flex h-9 w-9 items-center justify-center rounded-full">
+                    {item.icon}
+                  </div>
+                )}
                 <Typography type="h4" text={item.title} color="textDark" />
               </div>
               <Typography type="body" text={item.question} color="textDark" />
@@ -233,7 +313,7 @@ export const DevelopmentalScreeningWeeksStep = ({
         })}
         <Divider dividerType="dashed" />
         <Label
-          text={replaceBraces(questions[noteQuestionIndex].question, name)}
+          text={replaceBraces(questions[noteQuestionIndex]?.question, name)}
         />
         <Divider dividerType="dashed" />
         <FormInput

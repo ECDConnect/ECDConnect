@@ -1,4 +1,4 @@
 export interface ReportingPeriod {
-  monthName: 'June' | 'November';
+  monthName: 'First' | 'June' | 'November';
   year: number;
 }

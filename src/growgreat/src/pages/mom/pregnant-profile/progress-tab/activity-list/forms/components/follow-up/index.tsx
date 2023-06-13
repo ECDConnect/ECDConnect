@@ -1,22 +1,75 @@
-import { Colours, Divider, ProgressBar, Typography } from '@ecdlink/ui';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
-import { MotherDto, toCamelCase } from '@ecdlink/core';
-import { VisitDataStatus } from '@ecdlink/graphql';
-import { useCallback, useMemo } from 'react';
+import {
+  Colours,
+  Divider,
+  ProgressBar,
+  Typography,
+  renderIcon,
+} from '@ecdlink/ui';
+import {
+  GetMotherSummaryByPrioritySelector,
+  getPreviousVisitInformationForMotherSelector,
+} from '@/store/visit/visit.selectors';
+import {
+  MotherDto,
+  captureAndDownloadComponent,
+  getStringFromClassNameOrId,
+  getWeeksDiff,
+  toCamelCase,
+} from '@ecdlink/core';
+import {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 import { useSelector } from 'react-redux';
-import Pregnant from '@/assets/pregnant.svg';
-import Infant from '@/assets/infant.svg';
+import { ReactComponent as Home } from '@/assets/home.svg';
+import PollyHappy from '@/assets/pollyHappy.svg';
+import PollyInformational from '@/assets/pollyInformational.svg';
+import PollyShock from '@/assets/pollyShock.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
 import P1 from '@/assets/pillar/p1.svg';
-import P2 from '@/assets/pillar/p2.svg';
-import P3 from '@/assets/pillar/p3.svg';
-import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
-
-import { activitiesColours, activitiesTypes } from '../../../activities-list';
+import PrintBanner from '@/assets/printBanner.png';
+import { progressSteps } from '../../../../walkthrough/steps';
+import { useAppDispatch } from '@/store';
+import {
+  // getMotherCurrentVisitSelector,
+  getMotherLastVisitSelector,
+  getMotherVisits,
+} from '@/store/mother/mother.selectors';
+import { visitThunkActions } from '@/store/visit';
+import { VisitDataStatus } from '@/../../../packages/graphql/lib';
+import {
+  activitiesColours,
+  activitiesSectionTypes,
+} from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
+import { useLocation } from 'react-router';
+
+export interface FollowUpWalkthroughData {
+  progressBar: {
+    message: string;
+    label: string;
+    value: number;
+    primaryColour: Colours;
+    secondaryColour: Colours;
+  };
+  infoCard: {
+    [key: string]: {
+      comment: string;
+      visitData: { visitName: string };
+    }[];
+  };
+}
 
 interface FollowUpComponentProps {
   mother: MotherDto;
+  walkthroughData?: FollowUpWalkthroughData;
+  isPrint?: boolean;
+  isVisit: boolean;
 }
 
 interface Status {
@@ -28,12 +81,126 @@ interface Status {
 
 type StatusType = keyof Status;
 
-export const FollowUp = ({ mother }: FollowUpComponentProps) => {
+export const FollowUp = ({
+  mother,
+  walkthroughData,
+  isPrint,
+  isVisit,
+}: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
+  const appDispatch = useAppDispatch();
+  const introScreenRef = useRef<HTMLDivElement>(null);
+  const [showPrintData, setShowPrintData] = useState(false);
+  const location = useLocation();
 
+  useEffect(() => {
+    if (isPrint) {
+      setShowPrintData(true);
+      setTimeout(() => {
+        if (introScreenRef.current) {
+          captureAndDownloadComponent(
+            introScreenRef.current,
+            'mother-progress-summary.jpg'
+          );
+          setShowPrintData(false);
+        }
+      }, 100);
+    }
+  }, [isPrint]);
+
+  // this provides the status of previous visit
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
+
+  // getting all visits for a client
+  const allVisits = useSelector(getMotherVisits);
+  // this will be available when you are busy completing a questionnaire
+  const [, , , , , visitId] = location.pathname.split('/');
+
+  const getCurrentVisit = () => {
+    // grab visit id from url and set current visit
+    if (visitId) {
+      for (var i = 0; i < allVisits.length; i++) {
+        if (allVisits[i].id === visitId) {
+          return allVisits[i];
+        }
+      }
+    } else {
+      // grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    }
+  };
+
+  const previousVisitToSort = Object.assign({}, previousVisit);
+  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const currentVisit = getCurrentVisit();
+  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  // if the previousVisit is null, lets fetch the latest
+  if (!previousVisit && currentVisit) {
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForMother({
+        visitId: currentVisit.id,
+      })
+    );
+  }
+
+  const diffDates = !!mother?.expectedDateOfDelivery
+    ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
+    : '';
+
+  const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
+
+  const printData = useSelector(GetMotherSummaryByPrioritySelector);
+
+  // Get Printing data
+  useLayoutEffect(() => {
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      if (isVisit) {
+        appDispatch(
+          visitThunkActions.GetMotherSummaryByPriority({
+            visitId: currentVisit.id,
+          })
+        );
+        appDispatch(
+          visitThunkActions.getPreviousVisitInformationForMother({
+            visitId: currentVisit.id,
+          })
+        );
+      } else {
+        if (previousCurrentVisit) {
+          appDispatch(
+            visitThunkActions.GetMotherSummaryByPriority({
+              visitId: previousCurrentVisit.id,
+            })
+          );
+          appDispatch(
+            visitThunkActions.getPreviousVisitInformationForMother({
+              visitId: previousCurrentVisit.id,
+            })
+          );
+        }
+      }
+  }, [
+    appDispatch,
+    currentVisit,
+    currentVisit?.id,
+    isVisit,
+    previousCurrentVisit,
+  ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -72,38 +239,41 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
     message: string;
   } => {
     switch (previousVisit?.scoreColor) {
-      case 'Error':
-        return {
-          primaryColour: 'errorMain',
-          secondaryColour: 'errorBg',
-          message: `${name} need urgent support`,
-          value: 25,
-        };
       case 'Warning':
         return {
           primaryColour: 'alertMain',
           secondaryColour: 'alertBg',
-          message: `${name} need support`,
+          message: `${name} needs support`,
           value: 50,
         };
       case 'Success':
-      default:
         return {
           primaryColour: 'successMain',
           secondaryColour: 'successBg',
           message: `${name} are going well`,
           value: 100,
         };
+      case 'Error':
+      default:
+        return {
+          primaryColour: 'errorMain',
+          secondaryColour: 'errorBg',
+          message: `${name} needs urgent support`,
+          value: 25,
+        };
     }
   }, [name, previousVisit?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
-      case activitiesTypes.healthCare:
-        return { icon: Pregnant, color: activitiesColours.other.primaryColor };
-      case activitiesTypes.nutrition:
-        return { icon: Infant, color: activitiesColours.other.primaryColor };
-      case activitiesTypes.pregnancyCare:
+      case activitiesSectionTypes.healthCare:
+        return {
+          icon: BabyHealthcare,
+          color: activitiesColours.other.primaryColor,
+        };
+      case activitiesSectionTypes.nutrition:
+        return { icon: P1, color: '#8CDBDF' };
+      case activitiesSectionTypes.pregnancyCare:
         return { icon: P1, color: activitiesColours.pillar1.primaryColor };
       default:
         return { icon: P5, color: activitiesColours.pillar5.primaryColor };
@@ -111,7 +281,18 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
   };
 
   const groupedData = useMemo(() => {
-    const groupedData = previousVisit?.visitDataStatus?.reduce(
+    if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
+
+    const sortedData = previousVisitToSort?.visitDataStatus
+      ?.slice()
+      .sort(function (a, b) {
+        var colorOrder = ['Success', 'Warning', 'Error'];
+        return (
+          colorOrder.indexOf(a?.color || '') -
+          colorOrder.indexOf(b?.color || '')
+        );
+      });
+    const groupedData = sortedData?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const color = toCamelCase(currentValue?.color || '');
         if (!color) return acc;
@@ -123,29 +304,65 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
       },
       {}
     );
-
     return groupedData;
-  }, [previousVisit?.visitDataStatus]) as Status | undefined;
+  }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
+    | Status
+    | undefined;
 
-  return (
-    <>
-      <div className="flex gap-4">
-        <Typography
-          className="w-2/4"
-          type="h4"
-          text={progressBarOptions.message}
-        />
-        <div className="w-2/4">
-          <ProgressBar
-            className="h-2"
-            label={previousVisit?.score || ''}
-            subLabel="score"
-            value={progressBarOptions.value}
-            primaryColour={progressBarOptions.primaryColour}
-            secondaryColour={progressBarOptions.secondaryColour}
+  if (
+    !previousVisit?.visitDataStatus?.length &&
+    previousVisit?.scoreComment === 'No data available for visit' &&
+    !walkthroughData
+  ) {
+    return (
+      <div className="mt-20 flex flex-col items-center justify-center gap-4">
+        <Home />
+        <div className="h-24">
+          <Typography
+            type="h3"
+            align="center"
+            text={`You haven't visited ${name} yet`}
           />
         </div>
       </div>
+    );
+  }
+
+  return (
+    <>
+      <div
+        className="flex gap-4"
+        id={getStringFromClassNameOrId(progressSteps[0].target)}
+      >
+        <Typography
+          className="w-2/4"
+          type="h4"
+          text={
+            walkthroughData?.progressBar.message || progressBarOptions.message
+          }
+        />
+        <div className="h-16 w-2/4">
+          <ProgressBar
+            className="h-2"
+            label={
+              walkthroughData?.progressBar.label || previousVisit?.score || ''
+            }
+            subLabel="score"
+            value={
+              walkthroughData?.progressBar.value || progressBarOptions.value
+            }
+            primaryColour={
+              walkthroughData?.progressBar.primaryColour ||
+              progressBarOptions.primaryColour
+            }
+            secondaryColour={
+              walkthroughData?.progressBar.secondaryColour ||
+              progressBarOptions.secondaryColour
+            }
+          />
+        </div>
+      </div>
+
       <Divider dividerType="dashed" className="my-8" />
       <Typography
         className="mb-8"
@@ -154,41 +371,265 @@ export const FollowUp = ({ mother }: FollowUpComponentProps) => {
       />
 
       <Divider dividerType="dashed" className="mt-4 mb-8" />
-      {!!groupedData &&
-        Object.keys(groupedData).map((item, index) => {
-          const { icon, primaryColour, secondaryColour } =
-            getColorAndIcon(item);
+      <div id={getStringFromClassNameOrId(progressSteps[1].target)}>
+        {!!groupedData &&
+          Object.keys(groupedData).map((item, index) => {
+            const { icon, primaryColour, secondaryColour } =
+              getColorAndIcon(item);
 
-          const dataByStatus = groupedData[item as StatusType];
-          const uniqueData = dataByStatus.filter((object, index, array) => {
+            const dataByStatus = groupedData[item as StatusType];
+            const uniqueData = dataByStatus.filter((object, index, array) => {
+              return (
+                index ===
+                array.findIndex(
+                  (newObject) => newObject.comment === object.comment
+                )
+              );
+            });
+
             return (
-              index ===
-              array.findIndex(
-                (newObject) => newObject.comment === object.comment
-              )
+              <InfoCard
+                key={index}
+                className="my-6"
+                icon={icon}
+                items={uniqueData.map((data): Item => {
+                  const { icon, color } = getVisitIcon(data?.section || '');
+                  return {
+                    customIcon: icon,
+                    iconHexBackgroundColour: color,
+                    title: `${data.comment}`,
+                  };
+                })}
+                primaryColour={primaryColour}
+                secondaryColour={secondaryColour}
+              />
             );
-          });
+          })}
+      </div>
 
-          return (
-            <InfoCard
-              key={index}
-              className="my-6"
-              icon={icon}
-              items={uniqueData.map((data): Item => {
-                const { icon, color } = getVisitIcon(
-                  data?.visitData?.visitName || ''
-                );
-                return {
-                  customIcon: icon,
-                  iconHexBackgroundColour: color,
-                  title: `${data.comment}`,
-                };
-              })}
-              primaryColour={primaryColour}
-              secondaryColour={secondaryColour}
-            />
-          );
-        })}
+      {/* Client print data display */}
+      <div
+        ref={introScreenRef}
+        style={{ display: showPrintData ? 'block' : 'none' }}
+      >
+        <img src={PrintBanner} alt="" />
+        <div
+          className="mb-2 flex flex-col justify-center p-4"
+          style={{ backgroundColor: '#FEF1E8' }}
+        >
+          <Typography
+            type="h2"
+            align="center"
+            weight="bold"
+            text={`${name}'s Progress`}
+            color="textDark"
+          />
+          <Typography
+            type="body"
+            align="center"
+            weight="skinny"
+            text={`${actualGestationWeek} weeks pregnant`}
+            color="textMid"
+          />
+        </div>
+        {!!printData &&
+          Object.values(printData).map((visit, index) => {
+            const summaryItems = visit?.summaryData?.map((item) => {
+              return item?.comment?.toString();
+            });
+
+            const documentItems = visit?.documentData?.map((item) => {
+              return item?.comment?.toString();
+            });
+
+            return (
+              <div key={index}>
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'success' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyHappy}
+                              className="text-successMain h-10 w-10"
+                              alt=""
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'BadgeCheckIcon',
+                                        `w-5 h-5 text-successDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-1"></div>
+                    </>
+                  )}
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'warning' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyInformational}
+                              className="text-alertMain h-10 w-10"
+                              alt=""
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'ExclamationIcon',
+                                        `w-5 h-5 text-alertDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-1"></div>
+                    </>
+                  )}
+                {visit?.areaName !== 'ID document' &&
+                  visit?.color?.toLowerCase() === 'error' &&
+                  summaryItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            <img
+                              src={PollyShock}
+                              className="text-errorMain h-10 w-10"
+                              alt=""
+                            />
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                                {visit?.areaName}
+                              </p>
+                              <div className="pt-2">
+                                {summaryItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <div className="bg-undefined flex flex-shrink-0 items-center justify-center rounded-full text-white">
+                                      {renderIcon(
+                                        'ExclamationIcon',
+                                        `w-5 h-5 text-errorDark`
+                                      )}
+                                    </div>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-1"></div>
+                    </>
+                  )}
+
+                {visit?.areaName === 'ID document' &&
+                  visit?.color?.toLowerCase() === 'success' &&
+                  documentItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            {renderIcon(
+                              'BadgeCheckIcon',
+                              'text-successMain w-10 h-10'
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                              <div className="pt-2">
+                                {documentItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      <div className="h-1"></div>
+                    </>
+                  )}
+                {visit?.areaName === 'ID document' &&
+                  visit?.color?.toLowerCase() === 'warning' &&
+                  documentItems?.length !== 0 && (
+                    <>
+                      <div className="rounded-10 text-alertDark false bg-alertBg border-warningMain mb-4 border-2 p-4">
+                        <div className="flex flex-row ">
+                          <div className="rounded-full">
+                            {renderIcon(
+                              'ExclamationIcon',
+                              'text-alertMain w-10 h-10'
+                            )}
+                          </div>
+                          <div className="flex flex-col items-start justify-start ">
+                            <div className="ml-3 ">
+                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                              <div className="pt-2">
+                                {documentItems?.map((item, indexb) => (
+                                  <div className="flex gap-2" key={indexb}>
+                                    <article className="w-full font-semibold text-black">
+                                      {item}
+                                    </article>
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                    </>
+                  )}
+              </div>
+            );
+          })}
+      </div>
     </>
   );
 };

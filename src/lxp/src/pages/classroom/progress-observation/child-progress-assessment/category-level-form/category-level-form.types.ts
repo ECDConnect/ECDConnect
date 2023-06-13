@@ -5,7 +5,8 @@ import { CategoryLevelFormResult } from '@models/classroom/progress-observation/
 export interface CategoryLevelFormProps extends ComponentBaseProps {
   progressTrackingCategoryId: number;
   levelId: ProgressTrackingLevels;
+  level: number;
   childId: string;
   optionSelected?: () => void;
-  onSubmit: (result: CategoryLevelFormResult) => void;
+  onSubmit: (result: CategoryLevelFormResult, exit: boolean) => void;
 }

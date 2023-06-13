@@ -1,9 +1,15 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
+using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -16,7 +22,6 @@ using Microsoft.AspNetCore.Identity;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 {
@@ -76,6 +81,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                         }
                         else
                         {
+                            if (practitioner.CoachHierarchy == null || practitioner.CoachHierarchy != principal.CoachHierarchy) 
+                            {
+                                return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "Oh no! You can't add this practitioner to your programme. They don't have the same coach that you have. If you need more help, please contact the SmartStart call centre."};
+                            }
                             return new PractitionerUserAndNote() { AppUser = practitioner.User, Note = "This practitioner is linked to a different SmartStart programme" };
                         }
                     }
@@ -175,6 +184,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             string userId)
         {
             return practiManager.GetAllClassroomGroupsForPractitioner(userId);
+        }
+
+        public PractitionerReportDetails GetReportDetailsForPractitioner([Service] IHttpContextAccessor contextAccessor, [Service] PersonnelService practiManager, IGenericRepositoryFactory repoFactory,
+    string userId)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practiRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practi = practiRepo.GetByUserId(userId);
+            PrincipalClassroom classDetails = practiManager.GetClassroomDetailsForPractitioner(userId);
+            PractitionerReportDetails details = new PractitionerReportDetails() { 
+                ClassroomGroupId = classDetails.ClassroomGroupId, 
+                ClassroomGroupName = classDetails.ClassroomGroupName, 
+                Id = classDetails.Id, 
+                IdNumber = practi.User.IdNumber, 
+                InsertedDate = classDetails.InsertedDate, 
+                Name = practi.User.FullName, 
+                Phone = practi.User.PhoneNumber, 
+                PrincipalName = classDetails.PrincipalName, 
+                ProgrammeDays = "Monday to Friday", 
+                ProgrammeTypeName = classDetails.ProgrammeTypeName,
+                ClassSiteAddress = classDetails.ClassSiteAddress
+            };
+            return details;
         }
 
         public List<PractitionerClassroomName> GetClassroomNamesForPractitioner([Service] IHttpContextAccessor contextAccessor,
@@ -337,6 +369,35 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             var messageType = "invitation";
             return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
         }
+
+        public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)
+        {
+            return visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_practitioner);
+
+        }
+        public PractitionerTimeline GetPractitionerTimeline([Service] PersonnelService personnelService, string userId)
+        {
+            return personnelService.GetPractitionerTimeline(userId);
+        }
+
+        public Trainee GetTraineeByUserId(
+    [Service] PersonnelService practiManager,
+    [Service] UserLicenseManager userLicenseManager,
+    string userId)
+        {
+            return practiManager.GetTraineeByUserId(userLicenseManager, userId);
+        }
+
+        public PQARating GetPractitionerPQARating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerPQARating(userId);
+        }
+
+        public PQARating GetPractitionerReAccreditationRating([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetPractitionerReAccreditationRating(userId);
+        }
+
 
     }
 

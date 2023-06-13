@@ -56,3 +56,10 @@ export const toCamelCase = (str: string) => {
     .replace(/[,\s]+/g, '')
     .replace(/[&\s]+/g, 'And');
 };
+
+export const getStringFromClassNameOrId = (data: string | HTMLElement) =>
+  data.toString().split(/#|\./)[1];
+
+export const parseBool = (str: string) => {
+  return /^(true|1)$/i.test(str);
+};

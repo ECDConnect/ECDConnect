@@ -1,9 +1,10 @@
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
-    public class TrackAttendanceModel
+    public class TrackAttendanceModel : ITrackableType
     {
         public Guid ClassroomProgrammeId { get; set; }
 

@@ -13,7 +13,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
     public class VisitBackReferralExtension {
         
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public VisitBackReferral AddVisitBackReferralData([Service] VisitBackReferralManager visitBackReferralManager, VisitBackReferralModel input)
+        public VisitBackReferral AddVisitBackReferral([Service] VisitBackReferralManager visitBackReferralManager, VisitBackReferralModel input)
         {
             return visitBackReferralManager.AddVisitBackReferral(input);
         }

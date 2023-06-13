@@ -1,4 +1,10 @@
-import { Button, Divider, LoadingSpinner, Typography } from '@ecdlink/ui';
+import {
+  BannerWrapper,
+  Button,
+  Divider,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { Header } from '@/pages/infant/infant-profile/components';
 import LanguageSelector from '@/components/language-selector/language-selector';
 import { useAppDispatch } from '@/store';
@@ -45,7 +51,7 @@ export const HealthPromotion = ({
 
   const formattedHealthPromotion = useMemo(() => {
     const healthPromotion = healthPromotions?.find(
-      (item) => item.section === section
+      (item) => item?.section === section
     );
 
     const parser = new DOMParser();
@@ -54,8 +60,20 @@ export const HealthPromotion = ({
       'text/html'
     );
     const items = doc.querySelectorAll('li');
+    const headerItems = doc.querySelectorAll('p');
 
     const itemStrings = Array.from(items).map((item) => item.outerHTML);
+    const headerStrings = Array.from(headerItems).map((item) => item.outerHTML);
+
+    const formattedHeader = headerStrings.reduce(
+      (accumulator: string[] | undefined, current) => {
+        if (!accumulator?.some((item) => item?.includes(current))) {
+          accumulator?.push(current);
+        }
+        return accumulator;
+      },
+      []
+    ) as string[];
 
     const formattedDescription = itemStrings.reduce(
       (accumulator: string[] | undefined, current) => {
@@ -67,7 +85,11 @@ export const HealthPromotion = ({
       []
     ) as string[];
 
-    return { ...healthPromotion, description: formattedDescription };
+    return {
+      ...healthPromotion,
+      description: formattedDescription,
+      header: formattedHeader,
+    };
   }, [healthPromotions, section]);
 
   const getContent = useCallback(async () => {
@@ -79,6 +101,25 @@ export const HealthPromotion = ({
       })
     ).unwrap();
   }, [appDispatch, isOnline, language.locale, section]);
+
+  const renderHeader = useMemo(() => {
+    if (!!formattedHealthPromotion?.header?.length) {
+      return formattedHealthPromotion?.header?.map((item) => (
+        <Fragment key={item}>
+          <div className="flex items-start gap-2">
+            <ul className="list-none">
+              <Typography
+                type="markdown"
+                className="text-infoDark font-medium"
+                color="infoDark"
+                text={replaceBraces(item, client || '')}
+              />
+            </ul>
+          </div>
+        </Fragment>
+      ));
+    }
+  }, [client, formattedHealthPromotion?.header]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -111,7 +152,6 @@ export const HealthPromotion = ({
               />
             </ul>
           </div>
-          <Divider dividerType="dashed" className="my-2" />
         </Fragment>
       ));
     }
@@ -129,7 +169,13 @@ export const HealthPromotion = ({
   }, [getContent]);
 
   return (
-    <>
+    <BannerWrapper
+      size="small"
+      onBack={onClose}
+      title={section}
+      renderOverflow
+      onClose={onClose}
+    >
       <Header
         backgroundColor="infoMain"
         icon="ChatIcon"
@@ -140,7 +186,9 @@ export const HealthPromotion = ({
         <LanguageSelector selectLanguage={setLanguage} />
       </div>
       <div className="flex h-full flex-col p-4">
+        {renderHeader}
         {renderContent}
+        <Divider dividerType="dashed" className="my-2" />
         <Button
           className="mt-auto"
           type="filled"
@@ -151,6 +199,6 @@ export const HealthPromotion = ({
           onClick={onClose}
         />
       </div>
-    </>
+    </BannerWrapper>
   );
 };

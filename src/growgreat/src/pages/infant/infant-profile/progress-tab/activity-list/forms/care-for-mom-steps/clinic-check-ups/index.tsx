@@ -1,4 +1,11 @@
-import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
+import {
+  Alert,
+  DialogPosition,
+  Dialog,
+  ButtonGroup,
+  ButtonGroupTypes,
+  renderIcon,
+} from '@ecdlink/ui';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import {
@@ -11,6 +18,8 @@ import { DynamicFormProps } from '../../dynamic-form';
 import { useCallback, useMemo, useState } from 'react';
 import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
+
+export const clinicCheckupQuestion = `Has {client} been to the clinic for a postnatal check-up?`;
 
 export const ClinicCheckupStep = ({
   infant,
@@ -33,11 +42,6 @@ export const ClinicCheckupStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(
-    () => `Has {client} been to the clinic for a postnatal check-up?`,
-    []
-  );
-
   const onOptionSelected = useCallback(
     (value) => {
       setAnswer(value);
@@ -47,25 +51,31 @@ export const ClinicCheckupStep = ({
             visitSection: sectionName,
             questions: [
               {
-                question,
+                question: clinicCheckupQuestion,
                 answer: value,
               },
             ],
           },
         ]);
-      setEnableButton && setEnableButton(true);
+      setEnableButton?.(true);
     },
-    [question, setEnableButton, setQuestions]
+    [setEnableButton, setQuestions]
   );
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle="Clinic check-ups"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle="Clinic check-ups"
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
@@ -84,7 +94,10 @@ export const ClinicCheckupStep = ({
         />
 
         <Label
-          text={replaceBraces(question, infant?.caregiver?.firstName || '')}
+          text={replaceBraces(
+            clinicCheckupQuestion,
+            infant?.caregiver?.firstName || ''
+          )}
         />
         <ButtonGroup<boolean>
           color="secondary"
