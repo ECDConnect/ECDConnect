@@ -12,6 +12,7 @@ import {
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './coach-programme-information.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import * as styles from './coach-programme-information.styles';
@@ -23,11 +24,13 @@ import { useEffect, useState } from 'react';
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@store/auth';
 import { getClassroomGroupSchoolDays } from '@/utils/classroom/attendance/track-attendance-utils';
+import { userSelectors } from '@store/user';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
-  const isCoach = true;
+  const userData = useSelector(userSelectors.getUser);
+  const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -77,7 +80,11 @@ export const CoachProgrammeInformation: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
 
   const handleClick = (practitionerId: string) => {

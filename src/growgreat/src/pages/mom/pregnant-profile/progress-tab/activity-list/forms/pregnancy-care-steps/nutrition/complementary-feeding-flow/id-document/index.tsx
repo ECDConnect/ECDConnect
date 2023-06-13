@@ -1,11 +1,22 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
 import { useEffect, useMemo, useState } from 'react';
-import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  ButtonGroup,
+  ButtonGroupTypes,
+  Typography,
+  DialogPosition,
+  Dialog,
+} from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { HealthPromotion } from '../../../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
+
+export const idDocumentFirstQuestion = 'Does {client} have an ID document?';
+export const idDocumentSecondQuestion =
+  'Is {client} a South African citizen or permanent resident?';
 
 export const IdDocumentStep = ({
   mother,
@@ -25,13 +36,6 @@ export const IdDocumentStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(() => `Does {client} have an ID document?`, []);
-
-  const question2 = useMemo(
-    () => `Is {client} a South African citizen or permanent resident?`,
-    []
-  );
-
   useEffect(() => {
     setQuestions &&
       setQuestions([
@@ -39,26 +43,18 @@ export const IdDocumentStep = ({
           visitSection: visitSection,
           questions: [
             {
-              question: question,
+              question: idDocumentFirstQuestion,
               answer: answer,
             },
             {
-              question: question2,
+              question: idDocumentSecondQuestion,
               answer: answer1,
             },
           ],
         },
       ]);
     setEnableButton && setEnableButton(true);
-  }, [
-    answer,
-    answer1,
-    question,
-    question2,
-    setEnableButton,
-    setQuestions,
-    visitSection,
-  ]);
+  }, [answer, answer1, setEnableButton, setQuestions, visitSection]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
@@ -66,12 +62,18 @@ export const IdDocumentStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${name}`}
-        subTitle={visitSection}
-        section={visitSection}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${name}`}
+          subTitle={visitSection}
+          section={visitSection}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
@@ -91,7 +93,7 @@ export const IdDocumentStep = ({
         <div className="mt-2 flex flex-col gap-2">
           <Typography
             type="body"
-            text={replaceBraces(question, name)}
+            text={replaceBraces(idDocumentFirstQuestion, name)}
             color="textDark"
           />
           <ButtonGroup<boolean>
@@ -108,7 +110,7 @@ export const IdDocumentStep = ({
           <div className="mt-2 flex flex-col gap-2">
             <Typography
               type="body"
-              text={replaceBraces(question2, name)}
+              text={replaceBraces(idDocumentSecondQuestion, name)}
               color="textDark"
             />
             <ButtonGroup<boolean | undefined>

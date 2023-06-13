@@ -1,3 +1,5 @@
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
@@ -26,6 +28,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Practitioner> GetAllPractitionersForCoach(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] PersonnelService personnelService,
+            [Service] VisitManager visitManager,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
@@ -34,6 +38,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             List<Practitioner> practitioners = dbRepo.GetAll().Where(x => x.CoachHierarchy.HasValue).ToList();
             practitioners.Where(x => x.CoachHierarchy.Equals(userId)).ToList();
 
+            foreach (Practitioner item in practitioners)
+            {
+                // let's make sure that the default visits are added when the smartSpace license is available
+                var isAdded = visitManager.ValidateDefaultVisitsForPractitioner(item.UserId);
+                if (isAdded)
+                {
+                    item.timeline = personnelService.GetPractitionerTimeline(item.UserId);
+                }
+            }
             return practitioners;
         }
 
@@ -112,7 +125,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var uId = contextAccessor.HttpContext.GetUser()?.Id ?? throw new ArgumentNullException("User.Id"); ;
+            
             var classRepo = repoFactory.CreateRepository<Classroom>(userContext: uId);
 
             List<Classroom> classrooms = new List<Classroom>();

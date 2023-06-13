@@ -12,6 +12,7 @@ import { useHistory, useLocation } from 'react-router';
 import { ReassignClassPageState } from './reassign-class.types';
 import ROUTES from '@routes/routes';
 import { format } from 'date-fns';
+import { useStoreSetup } from '@hooks/useStoreSetup';
 import {
   ReassignClassModel,
   reassignClassSchema,
@@ -55,6 +56,7 @@ const absentInfo = [
 ];
 
 export const ReassignClass: React.FC<ComponentBaseProps> = () => {
+  const { refreshClassroom } = useStoreSetup();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
@@ -84,7 +86,13 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
   const [practitionersList, setPractitionersList] = useState<
     { label: string; value: any }[]
   >([]);
+  const [practitionersTeachList, setPractitionersTeachList] = useState<
+    { label: string; value: any }[]
+  >([]);
   const [classroomGroupsList, setClassroomGroupsList] = useState<
+    { label: string; value: any }[]
+  >([]);
+  const [absentInfoList, setAbsentInfoList] = useState<
     { label: string; value: any }[]
   >([]);
 
@@ -136,7 +144,18 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
       .filter(Boolean) as { label: string; value: any }[];
 
     setPractitionersList(_list);
+    setPractitionersTeachList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
+    const _list = absentInfo?.map((item) => {
+      return {
+        label: item.name,
+        value: item.name,
+      };
+    });
+    setAbsentInfoList(_list);
   }, []);
 
   useEffect(() => {
@@ -173,7 +192,9 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         userData?.id,
         reassignedClass
       );
+      await refreshClassroom();
     }
+
     history.push(ROUTES.DASHBOARD);
   };
 
@@ -239,11 +260,14 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
           selectedValue={practitioner}
           onChange={(item: any) => {
             setReassignClassValue('practitioner', item);
+            setPractitionersTeachList(
+              practitionersList.filter((prac) => prac.value !== item)
+            );
           }}
         />
         <Dropdown
           placeholder={'Select practitioner'}
-          list={practitionersList || []}
+          list={practitionersTeachList || []}
           fillType="clear"
           label={'Which practitioner will teach this class instead?'}
           fullWidth
@@ -254,21 +278,12 @@ export const ReassignClass: React.FC<ComponentBaseProps> = () => {
         />
         <Dropdown
           placeholder={'Select reason'}
-          list={
-            (absentInfo &&
-              absentInfo.map((item) => {
-                return {
-                  label: item.name,
-                  value: item.name,
-                };
-              })) ||
-            []
-          }
+          list={absentInfoList}
           fillType="clear"
           label={'Why is the practitioner absent?'}
           fullWidth
           className={'mt-3 w-11/12'}
-          onChange={(item: string) => {
+          onChange={(item: any) => {
             setReassignClassValue('reason', item);
           }}
         />

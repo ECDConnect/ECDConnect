@@ -67,6 +67,7 @@ module.exports = {
         infoMain: 'var(--infoMain)',
         infoDark: 'var(--infoDark)',
         infoBb: 'var(--infoBb)',
+        darkBackground: 'var(--darkBackground)'
       },      
       animation: {
         spinner: 'spin 1.5s linear infinite',

@@ -1,4 +1,8 @@
-import { LocalStorageKeys, MonthlyAttendanceRecord } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  LocalStorageKeys,
+  MonthlyAttendanceRecord,
+} from '@ecdlink/core';
 import { Button, MessageModal, renderIcon, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -16,20 +20,24 @@ import { AttendanceReportProps } from './attendance-report.types';
 import { AttendanceMonthlyReport } from './components/attendance-monthly-report/attendance-monthly-report';
 import { attendanceThunkActions } from '@/store/attendance';
 import { addDays, startOfYear } from 'date-fns';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   classroom,
   currentClassroomGroup,
+  classroomGroups,
 }) => {
   const appDispatch = useAppDispatch();
   const isOnline = true;
 
-  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
-  const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
+  const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 
-  const successStatus = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedSuccessAttendanceSubmitted
-  );
+  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
+  const classroomID =
+    classroom?.id ??
+    currentClassroomGroup?.classroomId ??
+    classroomGroup?.classroomId;
+
   const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
     LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
   );
@@ -60,33 +68,50 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     }
   }, []);
 
-  const closeNotification = () => {
-    setSuccessMessageVisible(false);
-    setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
-    const today = new Date().toDateString();
-    localStorage.setItem('lastDate', today);
-  };
+  // const closeNotification = () => {
+  //   setSuccessMessageVisible(false);
+  //   setStorageItem(true, LocalStorageKeys.hasClosedSuccessAttendanceSubmitted);
+  //   const today = new Date().toDateString();
+  //   localStorage.setItem('lastDate', today);
+  // };
 
   const [attendanceData, setAttendanceData] = useState<AttendanceSummary[]>([]);
   const [reportData, setReportData] = useState<MonthlyAttendanceRecord[]>();
   const [attendanceTracked, setAttendanceTracked] = useState<boolean>(false);
+  const [selectedClassroomGroups, setSelectedClassroomGroups] = useState<
+    ClassroomGroupDto[]
+  >([]);
 
   useEffect(() => {
-    const trackAttendance = async () => {
-      return await appDispatch(attendanceThunkActions.trackAttendanceSync({}));
-    };
-    trackAttendance().then(() => {
-      setAttendanceTracked(true);
-    });
+    if (!attendanceTracked) {
+      const trackAttendance = async () => {
+        return await appDispatch(
+          attendanceThunkActions.trackAttendanceSync({})
+        );
+      };
+      trackAttendance().then(() => {
+        setAttendanceTracked(true);
+      });
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const today = new Date();
 
+  const { errorDialog } = useRequestResponseDialog();
+
+  useEffect(() => {
+    setSelectedClassroomGroups(
+      classroomGroups
+        ?.filter((x) => x.classroomId === classroomID)
+        .slice(0, 1) || []
+    );
+  }, [classroomGroups, classroomID]);
+
   useEffect(() => {
     const lastDayCurrentMonth = new Date(
       today.getFullYear(),
-      today.getMonth() + 1,
+      today.getMonth(),
       0
     );
 
@@ -104,10 +129,13 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         )
         .then((data) => {
           setReportData(data);
+        })
+        .catch((err) => {
+          errorDialog(err.message);
         });
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroom]);
+  }, [selectedClassroomGroups]);
 
   useEffect(() => {
     if (!reportData) return;
@@ -129,9 +157,8 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
       <div className={'flex flex-col'}>
         <PointsSuccessCard
           visible={successMessageVisible}
-          onClose={() => closeNotification()}
           className={'mb-4'}
-          message={'Your attendance registers are up to date this week!'}
+          message={`Good job! All your attendance registers are up to date!`}
           icon={'SparklesIcon'}
         />
         <AttendanceMonthlyReport
@@ -166,8 +193,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          !hasClosedAttendanceSmartStartPointsMessage ??
-          displaySmartStartMessage
+          false
+          //!hasClosedAttendanceSmartStartPointsMessage ??
+          //displaySmartStartMessage
         }
         icon={'GiftIcon'}
         className={'mt-4'}

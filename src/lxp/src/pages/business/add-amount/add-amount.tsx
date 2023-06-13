@@ -15,11 +15,13 @@ import { useAppContext } from '@/walkthrougContext';
 export const AddAmount: React.FC<ComponentBaseProps> = () => {
   const history = useHistory();
 
-  const { setState } = useAppContext();
+  const { setState, state } = useAppContext();
 
   const nextStep = () => {
     setState({ stepIndex: 3 });
   };
+  const stateStepIndex1 = state?.stepIndex === 1 && state?.run === true;
+  const stateStepIndex2 = state?.stepIndex === 2 && state?.run === true;
 
   return (
     <BannerWrapper
@@ -40,15 +42,18 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             className="mt-4"
           />
           <div className="flex gap-2">
-            <div id="createIncome">
+            <div>
               <Button
                 type="filled"
                 color="primary"
-                className={'mx-auto mt-4 w-11/12 rounded-xl'}
+                className={`mx-auto mt-4 w-11/12 rounded-xl  ${
+                  stateStepIndex1 ? 'pointer-events-none' : ''
+                }`}
                 onClick={() => {
                   history.push(ROUTES.BUSINESS_ADD_INCOME);
                   nextStep();
                 }}
+                id="createIncome"
               >
                 {renderIcon('PlusIcon', styles.buttonIconPrimary)}
                 <Typography
@@ -62,7 +67,9 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
             <Button
               type="outlined"
               color="primary"
-              className={'mx-auto mt-4 w-11/12 rounded-xl px-1'}
+              className={`mx-auto mt-4 w-11/12 rounded-xl px-1 ${
+                stateStepIndex1 || stateStepIndex2 ? 'pointer-events-none' : ''
+              } `}
               onClick={() => history.push(ROUTES.BUSINESS_ADD_EXPENSE)}
             >
               {renderIcon('MinusIcon', styles.buttonIconSecondary)}

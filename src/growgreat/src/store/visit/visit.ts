@@ -18,6 +18,8 @@ import {
   getMomCompletedVisitsForVisitId,
   addVisitForMomFormData,
   getVisitAnswersForMother,
+  GetMotherSummaryByPriority,
+  GetInfantSummaryByPriority,
 } from './visit.actions';
 import { CompletedVisitsForVisitId, VisitState } from './visit.types';
 
@@ -31,7 +33,7 @@ const handleAddCompletedVisitsByVisitId = (
   state: VisitState & ThunkStateStatus,
   action: PayloadAction<CompletedVisitsForVisitId>
 ) => {
-  return typeof state.completedVisitsForVisitId?.[0] === 'string'
+  return state.completedVisitsForVisitId
     ? state.completedVisitsForVisitId?.map((item) => {
         if (item.visitId === action.payload.visitId) {
           const uniqueVisits = [
@@ -133,6 +135,8 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getVisitAnswersForInfant);
     setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
+    setThunkActionStatus(builder, GetMotherSummaryByPriority);
+    setThunkActionStatus(builder, GetInfantSummaryByPriority);
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
@@ -148,18 +152,42 @@ const visitSlice = createSlice({
       }
     );
     builder.addCase(getHealthPromotion.fulfilled, (state, action) => {
-      state.healthPromotion = state.healthPromotion?.length
-        ? [...state.healthPromotion, ...action.payload]
-        : action.payload;
-
       setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.healthPromotion?.findIndex(
+        (item) => item?.id === action.payload.id
+      );
+
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.healthPromotion
+      ) {
+        state.healthPromotion[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.healthPromotion = state.healthPromotion?.length
+        ? [...state.healthPromotion, ...[action.payload]]
+        : [action.payload];
     });
     builder.addCase(getMoreInformation.fulfilled, (state, action) => {
-      state.moreInformation = state.moreInformation?.length
-        ? [...state.moreInformation, ...action.payload]
-        : action.payload;
-
       setFulfilledThunkActionStatus(state, action);
+      const updatedDataIndex = state.moreInformation?.findIndex(
+        (item) => item.id === action.payload.id
+      );
+
+      if (
+        updatedDataIndex !== undefined &&
+        updatedDataIndex !== -1 &&
+        !!state.moreInformation
+      ) {
+        state.moreInformation[updatedDataIndex] = action.payload;
+        return;
+      }
+
+      state.moreInformation = state.moreInformation?.length
+        ? [...state.moreInformation, ...[action.payload]]
+        : [action.payload];
     });
     builder.addCase(getCompletedVisitsForVisitId.fulfilled, (state, action) => {
       state.completedVisitsForVisitId = handleAddCompletedVisitsByVisitId(
@@ -236,6 +264,14 @@ const visitSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(GetMotherSummaryByPriority.fulfilled, (state, action) => {
+      state.motherSummaryByPriority = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(GetInfantSummaryByPriority.fulfilled, (state, action) => {
+      state.infantSummaryByPriority = action.payload;
+      setFulfilledThunkActionStatus(state, action);
+    });
   },
 });
 

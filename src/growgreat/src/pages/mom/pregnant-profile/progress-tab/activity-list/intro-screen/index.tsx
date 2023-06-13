@@ -1,41 +1,109 @@
 import { Header } from '../../../components';
-import { MotherDto } from '@ecdlink/core';
+import { MotherDto, getWeeksDiff } from '@ecdlink/core';
 import { useMemo } from 'react';
 import { Button } from '@ecdlink/ui';
 import Infant from '@/assets/infant.svg';
 
-import { FollowUp } from '../forms/components/follow-up';
+import {
+  FollowUp,
+  FollowUpWalkthroughData,
+} from '../forms/components/follow-up';
 import { useSelector } from 'react-redux';
-import { motherSelectors } from '@/store/mother';
-import { getMomCompletedVisitsByVisitIdSelector } from '@/store/visit/visit.selectors';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import {
+  getMotherCurrentVisitSelector,
+  getMotherPreviousVisitSelector,
+} from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
+import { useAppDispatch } from '@/store';
 
 interface IntroScreenProps {
   mother?: MotherDto;
-  onStartVisit: () => void;
+  walkthroughData?: FollowUpWalkthroughData;
+  headerText?: string;
+  onStartVisit?: () => void;
+  isPrint?: boolean;
 }
 
-export const IntroScreen = ({ mother, onStartVisit }: IntroScreenProps) => {
+export const IntroScreen = ({
+  mother,
+  headerText,
+  walkthroughData,
+  onStartVisit,
+  isPrint,
+}: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const motherVisit = useSelector(
-    motherSelectors?.getMotherCurrentVisitSelector
+  const appDispatch = useAppDispatch();
+
+  const diffDates = !!mother?.expectedDateOfDelivery
+    ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
+    : '';
+
+  const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
+
+  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  //const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  const previousPlannedVisit = useSelector((state: RootState) =>
+    getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
+  );
+  const previousVisit = useSelector(
+    getPreviousVisitInformationForMotherSelector
   );
 
-  const completedVisits = useSelector((state: RootState) =>
-    getMomCompletedVisitsByVisitIdSelector(state, motherVisit?.id!)
-  )?.visits;
+  // useLayoutEffect(() => {
+  //   if (
+  //     (!previousCurrentVisit ||
+  //       (!!previousCurrentVisit &&
+  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
+  //     !!currentVisit
+  //   )
+  //     appDispatch(
+  //       visitThunkActions.getPreviousVisitInformationForMother({
+  //         visitId: currentVisit?.id,
+  //       })
+  //     );
+  // }, [
+  //   appDispatch,
+  //   currentVisit,
+  //   currentVisit?.id,
+  //   mother?.id,
+  //   previousCurrentVisit,
+  // ]);
 
   return (
     <>
-      {/* TODO(header): add age and date (G5.0.1) */}
       <Header
         backgroundColor="tertiary"
         customIcon={Infant}
-        title={`Summary of your last visit with ${name}`}
+        title={headerText ?? `Summary of your last visit with ${name}`}
+        {...(!!actualGestationWeek
+          ? {
+              subTitle: `${actualGestationWeek} ${
+                actualGestationWeek > 1 ? 'weeks' : 'week'
+              }`,
+            }
+          : {})}
+        description={`Your last home visit: ${
+          !!previousVisit?.visitDataStatus?.length
+            ? new Date(
+                String(previousPlannedVisit?.actualVisitDate)
+              ).toLocaleDateString('en-ZA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
+            : 'None'
+        }`}
       />
       <div className="p-4 pt-8">
-        <FollowUp mother={mother || {}} />
-        {completedVisits?.length! > 0 && (
+        <FollowUp
+          mother={mother || {}}
+          walkthroughData={walkthroughData}
+          isPrint={isPrint}
+          isVisit={false}
+        />
+        {!!onStartVisit && (
           <Button
             className="mt-8 w-full"
             type="filled"

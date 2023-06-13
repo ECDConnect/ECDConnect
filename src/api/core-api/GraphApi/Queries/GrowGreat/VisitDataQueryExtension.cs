@@ -1,3 +1,4 @@
+using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
@@ -34,6 +35,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<string> GetCompletedVisitsForVisitId([Service] VisitDataManager visitDataManager, string visitId) {
             return visitDataManager.GetCompletedVisitsForVisitId(visitId);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<VisitData> GetVisitDataForVisitId([Service] VisitDataManager visitDataManager, string visitId)
+        {
+            return visitDataManager.GetVisitDataForVisitId(visitId);
         }
 
     }

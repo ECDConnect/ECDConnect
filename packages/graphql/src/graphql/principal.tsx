@@ -43,6 +43,8 @@ export const GetAllPrincipal = gql`
       dateToBeRemoved
       dateAccepted
       progress
+      attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -88,6 +90,8 @@ export const allPrincipal = gql`
       dateToBeRemoved
       dateAccepted
       progress
+      attendedChildProgress
+      usePhotoInReport
     }
   }
 `;
@@ -131,6 +135,8 @@ export const GetPrincipalById = gql`
       dateToBeRemoved
       dateAccepted
       progress
+      attendedChildProgress
+      usePhotoInReport
     }
   }
 `;

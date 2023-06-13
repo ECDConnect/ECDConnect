@@ -11,7 +11,7 @@ const programmeRoutineSlice = createSlice({
   name: 'programmeRoutine',
   initialState,
   reducers: {
-    resetProgrammeThemeState: (state) => {
+    resetProgrammeRoutineState: (state) => {
       state.programmeRoutines = initialState.programmeRoutines;
     },
   },

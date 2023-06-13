@@ -1,4 +1,8 @@
-import { EventRecordType } from '@ecdlink/graphql';
+import {
+  EventRecordType,
+  VisitBackReferral,
+  VisitDataStatus,
+} from '@ecdlink/graphql';
 import { MotherDto, VisitDto } from '@ecdlink/core';
 
 export interface MotherState {
@@ -7,4 +11,6 @@ export interface MotherState {
   visits?: VisitDto[];
   motherCountForMonth?: number;
   eventRecordTypes?: EventRecordType[];
+  referralsForMother?: VisitDataStatus[];
+  completedReferralsForMother?: VisitDataStatus[];
 }

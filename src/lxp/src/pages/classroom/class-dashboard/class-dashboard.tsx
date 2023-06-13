@@ -26,16 +26,19 @@ import ProgrammeDashboard from '../programme-planning/programme-dashboard/progra
 import * as styles from './class-dashboard.styles';
 import { ClassDashboardRouteState } from './class-dashboard.types';
 import ROUTES from '@routes/routes';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import PractitionersList from './practitioners/practitioners-list/practitioners-list';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
 import walktroughImage from '../../../assets/walktroughImage.png';
 import { childrenSelectors } from '@/store/children';
+import { getReportingPeriodDateInReportDate } from '@/utils/child/child-profile-utils';
+import { userSelectors } from '@/store/user';
+import { contentReportSelectors } from '@/store/content/report';
 
 export const ClassDashboard: React.FC = () => {
   const dialog = useDialog();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const history = useHistory();
   const { state } = useLocation<ClassDashboardRouteState>();
   const date = format(new Date(), 'EEEE, d LLLL');
@@ -46,11 +49,17 @@ export const ClassDashboard: React.FC = () => {
   const [selectedTabIndex, setSelectedTabIndex] = useState<number>(
     state?.activeTabIndex !== undefined ? state?.activeTabIndex : 1
   );
+  const [programmeStartDate, setProgrammeStartDate] = useState(
+    state?.programmeStartDate
+  );
+  const [promptPhotoReportPermission, setPromptPhotoReportPermission] =
+    useState<boolean>(false);
   const [showAttendance, setShowAttendance] = useState(true);
   const appDispatch = useAppDispatch();
   const [previousTabIndex, setPreviousTabIndex] = useState<number>();
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
+  const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
@@ -61,6 +70,16 @@ export const ClassDashboard: React.FC = () => {
       children?.length! > 0 &&
       showAttendance,
     [children?.length, practitioner?.progress, selectedTabIndex, showAttendance]
+  );
+
+  const reportingPeriod = useMemo(
+    () => getReportingPeriodDateInReportDate(new Date()),
+    []
+  );
+  const hasCreatedReportForCurrentPeriod = useSelector(
+    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
+      reportingPeriod?.reportingDate
+    )
   );
 
   const backToDashboard = () => {
@@ -78,6 +97,18 @@ export const ClassDashboard: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!practitioner || !user || !user.profileImageUrl) return;
+    if (!reportingPeriod || hasCreatedReportForCurrentPeriod) return;
+    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
+    if (
+      !practitioner.usePhotoInReport ||
+      !practitioner.usePhotoInReport.startsWith(prefix)
+    ) {
+      setPromptPhotoReportPermission(true);
+    }
+  }, [practitioner]);
 
   useEffect(() => {
     if (!isOnline) {
@@ -116,7 +147,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -148,7 +179,7 @@ export const ClassDashboard: React.FC = () => {
     {
       title: 'Programme',
       initActive: false,
-      child: <ProgrammeDashboard />,
+      child: <ProgrammeDashboard programmeStartDate={programmeStartDate} />,
     },
     {
       title: 'Resources',
@@ -162,6 +193,7 @@ export const ClassDashboard: React.FC = () => {
   ];
 
   const setTabSelected = (tab: TabItem, tabIndex: number) => {
+    setProgrammeStartDate(new Date());
     setPreviousTabIndex(selectedTabIndex);
     setSelectedTabIndex(tabIndex);
   };
@@ -190,9 +222,12 @@ export const ClassDashboard: React.FC = () => {
   }, [attendanceTutorialComplete, previousTabIndex]);
 
   const updatePractitionerProgress = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerProgress(practitioner?.userId!, 3.0);
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerProgress({
+        practitionerId: practitioner?.userId,
+        progress: 3.0,
+      })
+    );
   };
 
   const completeTutorial = () => {
@@ -284,12 +319,81 @@ export const ClassDashboard: React.FC = () => {
   };
 
   useEffect(() => {
-    if (showAttendanceTutorial && attendanceTutorialComplete) {
-      // if (showAttendanceTutorial && attendanceTutorialComplete) {
-
+    if (showAttendanceTutorial && !attendanceTutorialComplete) {
       handleAttendanceTutorial();
     }
-  }, [showAttendanceTutorial]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [attendanceTutorialComplete, showAttendanceTutorial]);
+
+  const updatePractitionerUsePhotoReportPermission = async (
+    usePhotoInReport: string
+  ) => {
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerUsePhotoInReport({
+        practitionerId: practitioner?.userId,
+        usePhotoInReport: usePhotoInReport,
+      })
+    );
+  };
+
+  const handlePromptPhotoReportPermission = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          customIcon={
+            <div className="flex">
+              <img
+                src={user?.profileImageUrl}
+                alt="profile image"
+                className="mb-5 h-20 w-20"
+              />
+            </div>
+          }
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Would you like to include your Funda App profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+          detailText={'You can change this photo in your profile.'}
+          actionButtons={[
+            {
+              text: 'Yes, include photo!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
+                );
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
+                );
+              },
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  useEffect(() => {
+    if (promptPhotoReportPermission) {
+      handlePromptPhotoReportPermission();
+      setPromptPhotoReportPermission(false);
+    }
+  }, [promptPhotoReportPermission]);
 
   return (
     <>
@@ -328,6 +432,7 @@ export const ClassDashboard: React.FC = () => {
           <AttendanceTutorial
             onComplete={completeTutorial}
             onClose={() => closeAttendanceTutorial()}
+            updatePractitionerProgress={updatePractitionerProgress}
           />
         </div>
       </Dialog>

@@ -54,6 +54,11 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             context.SaveChanges();
 
             _hierarchyEngine.RemoveHierarchy(((IUserType)entity).UserId);
+
+
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                DoAudit(entity, "Delete");
         }
 
 
@@ -282,6 +287,10 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
 
             _domainEventService.NotifyCreate(_userId, entity);
 
+            //Populate Audit records
+            if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                DoAudit(entity, "Insert");
+
             return entity;
         }
 
@@ -306,6 +315,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 entity.InsertedDate = dbEntity.InsertedDate;
 
                 ((IUserType)entity).Hierarchy = ((IUserType)dbEntity).Hierarchy;
+                //Populate Audit records
+                if (typeof(ITrackableType).IsAssignableFrom(typeof(T)))
+                {
+                    if (DoAudit(entity, "Update", dbEntity))
+                    {
+                        if (entity.UpdatedDate == default(DateTime)) { entity.UpdatedDate = DateTime.Now; }
+                        entity.UpdatedDate = DateTime.Now;
+                    }
+                }
+                else
+                {
+                    entity.UpdatedDate = DateTime.Now;
+                }
                 context.Entry(dbEntity).CurrentValues.SetValues(entity);
                 // Do not modify inserted date.
                 entities.Entry(dbEntity).Property(e => e.InsertedDate).IsModified = false;
@@ -313,6 +335,8 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                 entities.Entry(dbEntity).Property(e => e.TenantId).IsModified = false;
 
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
+
+
             }
 
             context.SaveChanges();

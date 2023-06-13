@@ -12,6 +12,8 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Identity;
 using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
@@ -39,14 +41,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             }
 
             var practitionerUser = await userManager.FindByIdAsync(tokenModel.AddedByUserId);
-
-            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: tokenModel.AddedByUserId);
-
             var classroomRepo = repoFactory.CreateRepository<Classroom>(userContext: tokenModel.AddedByUserId);
+            var classGroupRepo = repoFactory.CreateRepository<ClassroomGroup>(userContext: tokenModel.AddedByUserId);        
 
             var classGroup = classGroupRepo.GetById(tokenModel.ClassroomGroupId);
-
-            var classroom = classroomRepo.GetById(classGroup.ClassroomId);
+            var classRoom = new Classroom();
+ 
+            if (classGroup == null)
+            {
+                classRoom = classroomRepo.GetAll().Where(x => x.UserId.Equals(tokenModel.AddedByUserId)).OrderBy(x => x.Id).FirstOrDefault();
+            }
+            else
+            {
+                classRoom = classroomRepo.GetById(classGroup.ClassroomId);
+            }
 
             var jwt = await securityManager.GenerateJwtForUserAsync(appUser, JwtEncoderEnum.OneTime);
 
@@ -56,7 +64,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
                 {
                     Firstname = appUser.FirstName,
                     Surname = appUser.Surname,
-                    GroupName = classroom.Name
+                    GroupName = classRoom?.Name ?? classGroup.Name
                 },
                 Practitoner = new TokenAccessPractitionerDetailModel
                 {

@@ -1,7 +1,6 @@
 import ROUTES from '@/routes/routes';
 import {
   Typography,
-  Button,
   Card,
   StackedList,
   BannerWrapper,
@@ -12,10 +11,14 @@ import React, { useEffect, useMemo, useState } from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useSelector } from 'react-redux';
-import { statementsSelectors } from '@/store/statements';
+import {
+  statementsSelectors,
+  statementsThunkActions,
+} from '@/store/statements';
 import {
   ExpensesStatementsDto,
   IncomeStatementsDto,
+  ReportTableDataDto,
 } from '@/../../../packages/core/lib';
 import { authSelectors } from '@/store/auth';
 import { IncomeStatementsService } from '@/services/IncomeStatementsService';
@@ -27,9 +30,28 @@ import { MonthStatementsDetailsState } from './month-statements-details.types';
 import { getMonthName } from '@/utils/classroom/attendance/track-attendance-utils';
 import ExpensesStatementsService from '@/services/ExpensesStatementsService/ExpensesStatementsService';
 import { PreschoolsFeesChildList } from './preschool-fees-details/preschool-fees-child-list';
+import GeneratePdfReportButton from '../../../../../../../../src/components/download-pdf-button/download-pdf-button';
+import { UserOptions } from 'jspdf-autotable';
+import { practitionerSelectors } from '@/store/practitioner';
+import { PractitionerService } from '@/services/PractitionerService';
+import { useAppDispatch } from '@/store';
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
+}
 
 export const MonthStatementsDetails: React.FC = () => {
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const [reportDeatils, setReportDetails] =
+    useState<ReportDetailsForPractitionerData>();
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const location = useLocation<MonthStatementsDetailsState>();
@@ -60,11 +82,14 @@ export const MonthStatementsDetails: React.FC = () => {
   }, [offlineExpenses]);
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
   const [income, setIncome] = useState<IncomeStatementsDto[]>([]);
+  const [pdfReportData, setPdfReportData] = useState<ReportTableDataDto[]>([]);
   const [expenses, setExpenses] = useState<ExpensesStatementsDto[]>([]);
+
   const submittedIncome = useMemo(
     () => income?.filter((item) => item?.submitted === true),
     [income]
   );
+
   const today = new Date();
 
   const isSameMonth =
@@ -74,6 +99,8 @@ export const MonthStatementsDetails: React.FC = () => {
     () => expenses?.filter((item) => item?.submitted === true),
     [expenses]
   );
+
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
@@ -144,6 +171,7 @@ export const MonthStatementsDetails: React.FC = () => {
   const offLineTotalBalance = (
     offlineTotalIncome - offlineTotalExpenses
   )?.toFixed(2);
+  const appDispatch = useAppDispatch();
 
   // Income values
   const [preschoolFees, setPreschoolFees] = useState<any>([]);
@@ -159,6 +187,10 @@ export const MonthStatementsDetails: React.FC = () => {
   const [otherExpenseValues, setOtherExpenseValues] = useState<any>([]);
   const [utilities, setUtilities] = useState<any>([]);
   const [salary, setSalary] = useState<any>([]);
+
+  const enableDownload = income.length > 0;
+  const isIncomeSubmitted = income?.every((item) => item?.submitted === true);
+  const signature = practitioner?.signingSignature ?? '';
 
   useEffect(() => {
     const preschoolValue: IncomeStatementsDto[] = [];
@@ -266,6 +298,20 @@ export const MonthStatementsDetails: React.FC = () => {
   ]);
 
   useEffect(() => {
+    const getClassroomDetails = async () => {
+      const res = await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).getReportDetailsForPractitioner(userAuth?.id || '');
+      return res;
+    };
+
+    getClassroomDetails().then((data) => {
+      setReportDetails(data);
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  useEffect(() => {
     const monthlyDetailsdata = async () => {
       const incomeData = await new IncomeStatementsService(
         userAuth?.auth_token!
@@ -275,12 +321,26 @@ export const MonthStatementsDetails: React.FC = () => {
         userAuth?.auth_token!
       ).allStatementsExpenses(userAuth?.id!, statementMonth, statementYear);
 
+      const report = await appDispatch(
+        statementsThunkActions.getIncomeExpensesPDFreport({
+          month: statementMonth,
+          year: statementYear,
+        })
+      ).unwrap();
+
+      setPdfReportData(report);
       setIncome(incomeData);
       setExpenses(expensesData);
     };
 
     monthlyDetailsdata();
-  }, [statementMonth, statementYear, userAuth?.auth_token, userAuth?.id]);
+  }, [
+    appDispatch,
+    statementMonth,
+    statementYear,
+    userAuth?.auth_token,
+    userAuth?.id,
+  ]);
 
   const incomeItems = [
     {
@@ -420,6 +480,39 @@ export const MonthStatementsDetails: React.FC = () => {
     },
   ];
 
+  const footer = [
+    'Total',
+    '', // Placeholder for Day 2 column
+  ];
+
+  const tableTopContent = {
+    pageTitle: `Income Statement`,
+    subtitle: '',
+    //column2 with 3 rows of text
+    text_column_two_row_one: `Name: ${practitioner?.user?.fullName}`,
+    text_column_two_row_two: `ID: ${reportDeatils?.idNumber}`,
+    text_column_two_row_three: `Phone: ${reportDeatils?.phone}`,
+  };
+
+  const tableHeadStyles: UserOptions['headStyles'] = {
+    fillColor: [211, 211, 211], // Light grey
+    textColor: [0, 0, 0],
+    fontSize: 8,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableStyles: UserOptions['styles'] = {
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+  const tableFootStyles: UserOptions['footStyles'] = {
+    textColor: [0, 0, 0],
+    fillColor: [211, 211, 211], // Light grey
+    fontSize: 10,
+    lineWidth: 0.1,
+    lineColor: 0x000000,
+  };
+
   return (
     <>
       <BannerWrapper
@@ -517,16 +610,26 @@ export const MonthStatementsDetails: React.FC = () => {
               className="w-8/12 text-right"
             />
           </Card>
-          <Button
-            shape="normal"
-            color="primary"
-            type="filled"
-            icon="DocumentDownloadIcon"
-            onClick={() => {}}
-            className="mt-6 rounded-2xl"
-          >
-            <Typography type="help" color="white" text="Download" />
-          </Button>
+          <div className={'flex h-full w-full flex-1 flex-col px-4 py-4'}>
+            {enableDownload && isIncomeSubmitted && (
+              <GeneratePdfReportButton
+                component="income-statements"
+                title="Download Statement"
+                outputName={`${getMonthName(
+                  Number(statementMonth) - 1
+                )}-income-statement-report.pdf`}
+                tableFooter={footer}
+                tableData={pdfReportData}
+                content={tableTopContent}
+                tableHeadStyles={tableHeadStyles}
+                tableFootStyles={tableFootStyles}
+                tableStyles={tableStyles}
+                pageOriantations={'portrait'}
+                signature={signature}
+                downloadDate={today.toDateString()}
+              />
+            )}
+          </div>
         </div>
       </BannerWrapper>
       <Dialog

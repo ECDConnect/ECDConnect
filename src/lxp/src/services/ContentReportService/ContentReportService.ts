@@ -71,7 +71,9 @@ class ContentReportService {
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating child failed - Server connection error');
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
     }
 
     return response.data.data.createChildProgressReport;
@@ -83,8 +85,8 @@ class ContentReportService {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation createChildProgressReport($input: ChildProgressReportInput) {
-          createChildProgressReport(input: $input) {
+        mutation updateChildProgressReport($input: ChildProgressReportInput, $id: UUID) {
+          updateChildProgressReport(input: $input, id: $id) {
             id
             reportContent
             classroomGroupId
@@ -95,11 +97,14 @@ class ContentReportService {
       `,
       variables: {
         input: input,
+        id: input.Id,
       },
     });
 
     if (response.status !== 200) {
-      throw new Error('Updating child failed - Server connection error');
+      throw new Error(
+        'Updating child progress report failed - Server connection error'
+      );
     }
 
     return true;
@@ -174,13 +179,21 @@ class ContentReportService {
             reportId      
             categories {
               achievedLevelId
-              categoryId       
+              categoryId
+              tasks {
+                levelId
+                skillId
+                value
+              }       
             }
             childId
             childFirstname
             childSurname
             classroomName
             reportDate      
+            reportPeriod
+            reportDateCreated
+            reportDateCompleted
         }
       }
       `,
@@ -196,6 +209,59 @@ class ContentReportService {
     return response.data.data.childProgressReportSummary;
   }
 
+  async getDetailedProgressReports(
+    count: number = 5
+  ): Promise<ChildProgressObservationReport[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        query childProgressReports($count: Int!) {
+          childProgressReports(count: $count) {  
+            id
+            categories {
+              achievedLevelId
+              categoryId
+              status
+              supportingTask {
+                taskDescription
+                taskId
+                todoText
+              }
+              tasks {
+                description
+                levelId
+                skillId
+                value
+              }
+            }
+            childId
+            childFirstname
+            childSurname
+            classroomName
+            dateCompleted
+            dateCreated
+            reportingPeriod
+            reportingDate
+            howCanCaregiverHelpChild
+            practitionerPhotoUrl
+            practitionerSurname
+            practitionerFirstname
+            childEnjoys 
+          }
+        }
+      `,
+      variables: {
+        count: count,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Get child progress reports failed - Server connection error'
+      );
+    }
+    return response.data.data.childProgressReports;
+  }
+
   async getDetailedProgressReport(
     reportId: string
   ): Promise<ChildProgressObservationReport> {
@@ -208,10 +274,12 @@ class ContentReportService {
           categories {
             achievedLevelId
             categoryId
+            status
             missingTasks {
               description
               levelId
               skillId
+              value
             }
             supportingTask {
               taskDescription
@@ -222,6 +290,7 @@ class ContentReportService {
               description
               levelId
               skillId
+              value
             }
           }
           childId
@@ -229,6 +298,7 @@ class ContentReportService {
           childSurname
           classroomName
           dateCompleted
+          dateCreated
           reportingPeriod
           reportingDate
           howCanCaregiverHelpChild

@@ -1,6 +1,7 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -20,7 +21,8 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class Practitioner<TKey> : EntityBase<TKey>,
         IDocumentQueryable,
         SiteAddressJoin<Guid?>,
-        IUserType
+        IUserType,
+        ITrackableType
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]
@@ -69,6 +71,19 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? DateToBeRemoved { get; set; }
         public bool? IsLeaving { get; set; }
         public decimal Progress { get; set; }
+        public string ProgrammeType { get; set; }
+        public bool? IsClubOwner { get; set; }
+        public bool? AttendedChildProgress { get; set; }
+        public bool? AttendedBusinessSkills { get; set; }
+        public string LeavingComment { get; set; }
+        public string StipendType { get; set; }
+        public string UsePhotoInReport { get; set; }
+        public bool? IsOnStipend { get; set; }
+        public bool? AttendedFirstAidCourse { get; set; }
+
+        [NotMapped]
+        public virtual PractitionerTimeline timeline  { get; set; }
+
     }
 
     public interface PractitionerJoin<TKey>

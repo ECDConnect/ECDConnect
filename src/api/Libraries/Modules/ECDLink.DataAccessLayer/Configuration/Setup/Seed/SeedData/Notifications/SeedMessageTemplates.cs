@@ -29,7 +29,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Notification
         new T
         {
           Subject = "Welcome to [[ApplicationName]]",
-          Message = "Hello [[FirstName]]!\r\n\r\nYou have been added to the [[ApplicationName]] admin portal.\r\n\r\nPlease tap the link below to register:\r\n[[InvitationLink:shorturl]]\r\n\r\nThank you!\r\n[[OrganisationName]]",
+          Message = "Welcome to [[ApplicationName]] App, the SmartStart online Platform! Please tap this link to register and learn more [[InvitationLink:shorturl]]",
           TemplateType = TemplateTypeConstants.Invitation,
           Protocol = MessageTypeConstants.SMS
         },
@@ -79,7 +79,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Notification
         new T
         {
           Subject = "Welcome to [[ApplicationName]]",
-          Message = "Hello [[FirstName]]!\r\n\r\nYou have been added to the [[ApplicationName]] admin portal.\r\n\r\nPlease tap the link below to register:\r\n[[InvitationLink:shorturl]]\r\n\r\nThank you!\r\n[[OrganisationName]]",
+          Message = "Hello [[FirstName]]!\r\n\r\nYou have been added to [[ApplicationName]].\r\n\r\nPlease tap the link below to register:\r\n[[InvitationLink:shorturl]]\r\n\r\nThank you!\r\n[[OrganisationName]]",
           TemplateType = TemplateTypeConstants.Invitation,
           Protocol = MessageTypeConstants.EMAIL
         },

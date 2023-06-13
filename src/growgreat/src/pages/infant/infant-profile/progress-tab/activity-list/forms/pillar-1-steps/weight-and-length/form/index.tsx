@@ -2,13 +2,14 @@ import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import {
   ActionModal,
+  Alert,
   DialogPosition,
   FormInput,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { useEffect, useMemo } from 'react';
-import { useDialog } from '@ecdlink/core';
+import { useEffect, useMemo, useCallback } from 'react';
+import { getAgeInYearsMonthsAndDays, useDialog } from '@ecdlink/core';
 import { DynamicFormProps, Question } from '../../../dynamic-form';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -17,10 +18,12 @@ import {
   infantRoadToHealthModelSchema,
 } from '@/schemas/infant/infant-road-to-health';
 import { activitiesColours } from '../../../../activities-list';
+import { differenceInMonths } from 'date-fns';
 
-export const weightAndLengthFormQuestions = {
+export const weightLengthAndHeightFormQuestions = {
   weight: 'Weight',
   length: 'Length',
+  height: 'Height',
 };
 export const weightAndLengthFormSection = 'Growth monitoring (Weight & length)';
 
@@ -29,16 +32,37 @@ export const WeightAndLengthFormStep = ({
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
-  const { formState, register, watch } = useForm<InfantRoadToHealthModel>({
+  const { register, watch } = useForm<InfantRoadToHealthModel>({
     resolver: yupResolver(infantRoadToHealthModelSchema),
     mode: 'onBlur',
     reValidateMode: 'onChange',
   });
 
-  const { lengthAtBirth, weightAtBirth } = watch();
-  const { isValid } = formState;
+  const { lengthAtBirth, weightAtBirth, height } = watch();
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const dateOfBirth = infant?.user?.dateOfBirth as string;
+
+  const ageInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
+  const { years: ageInYears } = getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  const isDisplayLength = useMemo(
+    () => ageInMonths >= 6 && ageInMonths < 15,
+    [ageInMonths]
+  );
+  const isDisplayHeight = useMemo(
+    () => ageInMonths >= 24 && ageInYears < 5,
+    [ageInMonths, ageInYears]
+  );
+
+  const isCheckedWeight = useCallback(() => {
+    return (
+      weightAtBirth && Number(weightAtBirth) > 0 && Number(weightAtBirth) <= 7
+    );
+  }, [weightAtBirth]);
+
+  const isCheckedLength =
+    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 70;
 
   const dialog = useDialog();
 
@@ -73,32 +97,53 @@ export const WeightAndLengthFormStep = ({
     });
 
   useEffect(() => {
-    if (isValid) {
+    if (
+      !!weightAtBirth &&
+      weightAtBirth <= 50 &&
+      ((isDisplayHeight && height) ||
+        !isDisplayHeight ||
+        (isDisplayLength && lengthAtBirth) ||
+        !isDisplayLength)
+    ) {
       setSectionQuestions?.([
         {
           visitSection: weightAndLengthFormSection,
           questions: [
             {
-              question: weightAndLengthFormQuestions.weight,
-              answer: weightAtBirth as Question['answer'],
+              question: weightLengthAndHeightFormQuestions.weight,
+              answer: String(weightAtBirth) as Question['answer'],
             },
-            {
-              question: weightAndLengthFormQuestions.length,
-              answer: lengthAtBirth as Question['answer'],
-            },
+            ...(isDisplayLength
+              ? [
+                  {
+                    question: weightLengthAndHeightFormQuestions.length,
+                    answer: lengthAtBirth as Question['answer'],
+                  },
+                ]
+              : []),
+            ...(isDisplayHeight
+              ? [
+                  {
+                    question: weightLengthAndHeightFormQuestions.height,
+                    answer: height as Question['answer'],
+                  },
+                ]
+              : []),
           ],
         },
       ]);
-      return setEnableButton && setEnableButton(true);
+      return setEnableButton?.(true);
     }
 
-    return setEnableButton && setEnableButton(false);
+    return setEnableButton?.(false);
   }, [
     setEnableButton,
-    isValid,
     setSectionQuestions,
     weightAtBirth,
     lengthAtBirth,
+    isDisplayLength,
+    isDisplayHeight,
+    height,
   ]);
 
   return (
@@ -108,7 +153,9 @@ export const WeightAndLengthFormStep = ({
         iconHexBackgroundColor={activitiesColours.pillar1.primaryColor}
         hexBackgroundColor={activitiesColours.pillar1.secondaryColor}
         title="Growth monitoring"
-        subTitle="Weight & length"
+        subTitle={`Weight${isDisplayLength ? ' & length' : ''}${
+          isDisplayHeight ? ' & height' : ''
+        }`}
       />
       <div className="relative flex flex-col gap-3 p-4">
         <button className="absolute right-4" onClick={showInfo}>
@@ -118,9 +165,10 @@ export const WeightAndLengthFormStep = ({
           <FormInput
             register={register}
             nameProp={'weightAtBirth'}
-            label={'Weight'}
+            label={weightLengthAndHeightFormQuestions.weight}
             placeholder={'Tap to add'}
             type={'number'}
+            min={0}
           ></FormInput>
           <Typography
             type="body"
@@ -129,16 +177,57 @@ export const WeightAndLengthFormStep = ({
             className="mt-7"
           />
         </div>
-        <div className="flex items-center gap-1">
-          <FormInput
-            register={register}
-            nameProp={'lengthAtBirth'}
-            label={'Length'}
-            placeholder={'Tap to add'}
-            type={'number'}
-          ></FormInput>
-          <Typography type="body" color="textDark" text="cm" className="mt-7" />
-        </div>
+        {!isCheckedWeight && (
+          <Alert
+            className="mb-4"
+            type="error"
+            title="Please enter a valid weight"
+          />
+        )}
+        {isDisplayLength && (
+          <>
+            <div className="flex items-center gap-1">
+              <FormInput
+                register={register}
+                nameProp={'lengthAtBirth'}
+                label={weightLengthAndHeightFormQuestions.length}
+                placeholder={'Tap to add'}
+                type={'number'}
+                min={0}
+              ></FormInput>
+              <Typography
+                type="body"
+                color="textDark"
+                text="cm"
+                className="mt-7"
+              />
+            </div>
+            {!!lengthAtBirth && !isCheckedLength && (
+              <Alert
+                className="mb-4"
+                type="error"
+                title="Please enter a valid length"
+              />
+            )}
+          </>
+        )}
+        {isDisplayHeight && (
+          <div className="flex items-center gap-1">
+            <FormInput
+              register={register}
+              nameProp={'height'}
+              label={weightLengthAndHeightFormQuestions.height}
+              placeholder={'Tap to add'}
+              type={'number'}
+            ></FormInput>
+            <Typography
+              type="body"
+              color="textDark"
+              text="cm"
+              className="mt-7"
+            />
+          </div>
+        )}
       </div>
     </>
   );

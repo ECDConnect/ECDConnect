@@ -13,4 +13,7 @@ export interface DocumentDto extends EntityBase {
   reference?: string;
   workflowStatus?: WorkflowStatusDto;
   workflowStatusId: string;
+  file?: string;
+  fileName?: string;
+  fileType?: string;
 }

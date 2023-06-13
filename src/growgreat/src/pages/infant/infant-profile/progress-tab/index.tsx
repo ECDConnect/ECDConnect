@@ -6,41 +6,32 @@ import { Button, LoadingSpinner } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { IntroScreen } from './activity-list/intro-screen';
-import { useLayoutEffect, useMemo, useRef } from 'react';
-import html2canvas from 'html2canvas';
-import { saveAs } from 'file-saver';
+import { useLayoutEffect, useMemo, useState } from 'react';
 import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { VisitDto, usePrevious } from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
+import { activitiesTypes } from './activity-list/activities-list';
+import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
+import { useWalkthrough } from '@/context/walkthroughContext';
 
 const HEADER_HEIGHT = 540;
 
-const captureAndDownloadComponent = async (element: HTMLElement) => {
-  try {
-    const canvas = await html2canvas(element);
-    canvas.toBlob((blob) => {
-      if (blob) {
-        saveAs(blob, 'summary.png');
-      }
-    });
-  } catch (error) {
-    console.error('Failed to capture component:', error);
-  }
-};
-
 export const ProgressTab = () => {
+  const { walkthroughState, isWalkthroughSession } = useWalkthrough();
+
   const { height } = useWindowSize();
 
   const { id: infantId } = useParams<InfantProfileParams>();
 
   const appDispatch = useAppDispatch();
+
+  const [isPrint, setIsPrint] = useState(false);
 
   const history = useHistory();
   const location = useLocation();
@@ -57,9 +48,9 @@ export const ProgressTab = () => {
     getPreviousVisitInformationForInfantSelector
   );
   const currentVisit = useSelector(getInfantCurrentVisitSelector);
-  const previousCurrentVisit = usePrevious(currentVisit) as
-    | VisitDto
-    | undefined;
+  // const previousCurrentVisit = usePrevious(currentVisit) as
+  //   | VisitDto
+  //   | undefined;
 
   const infantName = useMemo(
     () => infant?.user?.firstName || '',
@@ -70,27 +61,43 @@ export const ProgressTab = () => {
     [infant?.caregiver?.firstName]
   );
 
-  const introScreenRef = useRef<HTMLDivElement>(null);
+  const walkthroughData: FollowUpWalkthroughData = {
+    progressBar: {
+      message: `${infantName} need urgent support`,
+      label: '3/7',
+      value: 0,
+      primaryColour: 'errorMain',
+      secondaryColour: 'errorBg',
+    },
+    growCard: {
+      comment: `${infantName} is not growing well`,
+      color: 'error',
+    },
+    weightCard: {
+      value: '4.2',
+      color: 'Error',
+      comment: 'Severely underweight',
+    },
+    infoCard: {
+      error: [
+        {
+          comment: `${infantName} has a fever and is not feeding`,
+          visitData: { visitName: activitiesTypes.pillar4 },
+        },
+      ],
+    },
+  };
 
   const handleCaptureClick = () => {
-    if (introScreenRef.current) {
-      captureAndDownloadComponent(introScreenRef.current);
-    }
+    setIsPrint((isPrint) => true);
   };
 
   useLayoutEffect(() => {
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      appDispatch(
-        visitThunkActions.getPreviousVisitInformationForInfant({
-          visitId: currentVisit?.id,
-        })
-      );
-  }, [appDispatch, currentVisit, currentVisit?.id, previousCurrentVisit]);
+    if (isWalkthroughSession) {
+      window.sessionStorage.clear();
+      return;
+    }
+  }, [appDispatch, isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -110,13 +117,22 @@ export const ProgressTab = () => {
   }
 
   return (
-    <div className="pt-14" style={{ height: height - HEADER_HEIGHT }}>
-      <div ref={introScreenRef}>
+    <div
+      className="pt-14"
+      style={
+        walkthroughState?.isTourActive ? {} : { height: height - HEADER_HEIGHT }
+      }
+    >
+      <div>
         <IntroScreen
           infant={infant}
+          walkthroughData={
+            walkthroughState?.isTourActive ? walkthroughData : undefined
+          }
           headerText={`${
             !!caregiverName ? caregiverName + ' &' : ''
           } ${infantName}`}
+          isPrint={isPrint}
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">
@@ -137,7 +153,11 @@ export const ProgressTab = () => {
               textColor="primary"
               text="Manage referrals"
               icon="ClipboardListIcon"
-              onClick={() => window.alert('add redirect to referral tab')} // TODO
+              onClick={() =>
+                history.push(location.pathname, {
+                  activeTabIndex: INFANT_PROFILE_TABS.REFERRALS,
+                })
+              }
             />
           </>
         ) : (

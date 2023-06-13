@@ -1,5 +1,10 @@
 import { MotherDto, Config, VisitDto } from '@ecdlink/core';
-import { EventRecordType, MotherModelInput } from '@ecdlink/graphql';
+import {
+  EventRecordType,
+  MotherModelInput,
+  Visit,
+  VisitModelInput,
+} from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 class MotherService {
   _accessToken: string;
@@ -17,6 +22,10 @@ class MotherService {
       query: `
         query GetAllMothersForHealthCareWorker($id: String, $visitType: String) {
           allMothersForHealthCareWorker(id: $id, visitType: $visitType) {
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab
             statusInfo {
               icon
               color
@@ -69,10 +78,16 @@ class MotherService {
       query: `
         mutation updateMother($input: MotherModelInput, $id: String) {
           updateMother(input: $input, id: $id) {
-            id
-            firstName
-            surname
-            phoneNumber
+            clickedVisitTab
+            clickedProgressTab
+            clickedReferralsTab
+            clickedContactTab
+            user {
+              id
+              firstName
+              surname
+              phoneNumber
+            }
             siteAddress {
               id
               province {
@@ -178,28 +193,48 @@ class MotherService {
     return response.data.data.motherCountForHealthCareWorkerForMonth;
   }
 
-  async addAdditionalVisitForMother(id: string): Promise<any> {
+  async addAdditionalVisitForMother(input: VisitModelInput): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = await apiInstance.post<any>(``, {
+    const response = await apiInstance.post<{
+      data: { addAdditionalVisitForMother: Visit };
+      errors?: {};
+    }>(``, {
       query: `
-        mutation addAdditionalVisitForMother($input: VisitModel) {
-          addAdditionalVisitForMother(input: @input) {
-            id
+        mutation addAdditionalVisitForMother($input: VisitModelInput) {
+          addAdditionalVisitForMother(input: $input) {
+            actualVisitDate,
+            plannedVisitDate,
+            orderDate
+            attended,
+            id,
+            risk
+            visitType{
+              id
+              order
+              normalizedName
+              description
+              insertedDate
+              isActive
+              name
+              type
+              updatedBy
+              updatedDate
+            }      
           }
         }
         `,
       variables: {
-        userId: id,
+        input,
       },
     });
 
     if (response.status !== 200) {
       throw new Error(
-        'Getting Mothers visits failed - Server connection error'
+        'add Additional Visit For Mother failed - Server connection error'
       );
     }
 
-    return response.data.data.motherVisits;
+    return response.data.data.addAdditionalVisitForMother;
   }
 
   async getMotherVisits(id: string): Promise<VisitDto[]> {
@@ -212,6 +247,7 @@ class MotherService {
           motherVisits(id: $userId) {
               actualVisitDate,
               plannedVisitDate,
+              orderDate
               attended,
               id,
               risk

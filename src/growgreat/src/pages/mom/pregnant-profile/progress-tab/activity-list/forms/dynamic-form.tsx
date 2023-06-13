@@ -17,10 +17,12 @@ import {
 import { visitActions, visitThunkActions } from '@/store/visit';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { useParams } from 'react-router';
+import { activitiesTypes } from '../activities-list';
+import ROUTES from '@/routes/routes';
+import { useHistory } from 'react-router';
 
 export interface Question {
   question: string;
@@ -77,6 +79,7 @@ export const DynamicForm = ({
     useState<SectionQuestions[]>();
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
+  const history = useHistory();
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -86,12 +89,16 @@ export const DynamicForm = ({
     'referrals',
     ReferralActions.UPDATE_VISIT_DATA_STATUS
   );
+  const { isLoading: isLoadingCompletedVisits } = useThunkFetchCall(
+    'visits',
+    VisitActions.GET_MOM_COMPLETED_VISITS_FOR_VISIT_ID
+  );
 
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
-  const { visitId } = useParams<MotherProfileParams>();
+  const wasLoadingCompletedVisits = isLoadingCompletedVisits;
 
-  const { successDialog } = useRequestResponseDialog();
+  const { visitId } = useParams<MotherProfileParams>();
 
   const appDispatch = useAppDispatch();
 
@@ -182,36 +189,38 @@ export const DynamicForm = ({
       isCompleted: String(item.isCompleted),
     })) as VisitDataStatusFilterInput[];
 
-    appDispatch(
-      visitActions.addMomCompletedVisitsByVisitId({
+    appDispatch(visitActions.addVisitFormDataForMother(input));
+    await appDispatch(visitThunkActions.addVisitForMomFormData(input));
+    await appDispatch(
+      visitThunkActions.getMomCompletedVisitsForVisitId({
         visitId: visitId,
-        visits: [name || ''],
       })
     );
-
-    if (!!sections?.length) {
-      appDispatch(visitActions.addVisitFormDataForMother(input));
-      await appDispatch(visitThunkActions.addVisitForMomFormData(input));
-
-      await appDispatch(
-        visitThunkActions.getMomCompletedVisitsForVisitId({
-          visitId: visitId,
-        })
-      );
-    }
+    // TODO: fix local update
+    // appDispatch(
+    //   visitActions.addMomCompletedVisitsByVisitId({
+    //     visitId: visitId,
+    //     visits: [name || ''],
+    //   })
+    // );
 
     if (!!referrals?.length) {
       appDispatch(
         referralThunkActions.updateVisitDataStatus({ input: referrals })
       );
     }
+
+    if (name === activitiesTypes.followUp) {
+      history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}`);
+    }
   }, [
+    sectionQuestions,
     visitId,
-    appDispatch,
     mother?.user?.id,
     name,
     referralsInput,
-    sectionQuestions,
+    appDispatch,
+    history,
   ]);
 
   // TODO: sync visit form
@@ -221,6 +230,8 @@ export const DynamicForm = ({
     if (!steps) return;
 
     const CurrentStep = steps[Number(currentStep)];
+
+    if (!CurrentStep) return;
 
     return (
       <CurrentStep
@@ -249,7 +260,10 @@ export const DynamicForm = ({
   ]);
 
   const renderButton = useMemo(() => {
-    if (Number(currentStep) === 0) {
+    if (
+      Number(currentStep) === 0 &&
+      !(Number(currentStep) <= Number(steps?.length) - 1)
+    ) {
       return {
         action: handleOnNext,
         text: 'Start',
@@ -275,17 +289,18 @@ export const DynamicForm = ({
   useEffect(() => {
     if (
       (wasLoading && !isLoading) ||
-      (wasLoadingReferral && !isLoadingReferral)
+      (wasLoadingReferral && !isLoadingReferral) ||
+      (wasLoadingCompletedVisits && !isLoadingCompletedVisits)
     ) {
-      successDialog();
       onClose?.();
     }
   }, [
     isLoading,
+    isLoadingCompletedVisits,
     isLoadingReferral,
     onClose,
-    successDialog,
     wasLoading,
+    wasLoadingCompletedVisits,
     wasLoadingReferral,
   ]);
 

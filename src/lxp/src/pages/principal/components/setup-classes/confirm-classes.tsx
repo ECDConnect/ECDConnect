@@ -43,13 +43,12 @@ export const ConfirmClasses = ({
     const list = [];
     for (const classroomGroup of classroomGroups as ClassroomGroupDto[]) {
       const current =
-        currentPractitioner?.userId === classroomGroup.practitionerId
+        currentPractitioner?.userId === classroomGroup.userId
           ? currentPractitioner?.user?.firstName
           : 'Practitioner';
       const _practitioner =
-        practitioners
-          ?.filter((a) => a.userId === classroomGroup?.practitionerId)
-          .at(0)?.firstName || current;
+        practitioners?.filter((a) => a.userId === classroomGroup?.userId).at(0)
+          ?.firstName || current;
 
       list.push({
         title: classroomGroup.name,
@@ -93,7 +92,7 @@ export const ConfirmClasses = ({
         {classroomGroups.length ? (
           <div>
             <StackedList
-              className={'bg-white w-full'}
+              className={'w-full bg-white'}
               listItems={actionList}
               type={'ActionList'}
             />
@@ -127,7 +126,7 @@ export const ConfirmClasses = ({
       </div>
 
       {classroomGroups.length > 0 && (
-        <div className="absolute bottom-0 left-0 right-0 p-4 bg-white max-h-20">
+        <div className="absolute bottom-0 left-0 right-0 max-h-20 bg-white p-4">
           <Button
             size="normal"
             className="w-full"
@@ -137,7 +136,7 @@ export const ConfirmClasses = ({
             textColor="white"
             icon="SaveIcon"
             onClick={() => {
-              onSubmit(PractitionerSetupSteps.ADD_PHOTO);
+              onSubmit(PractitionerSetupSteps.ADD_SIGNATURE);
             }}
           />
         </div>

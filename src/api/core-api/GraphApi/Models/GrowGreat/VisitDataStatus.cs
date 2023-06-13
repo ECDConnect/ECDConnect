@@ -10,10 +10,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Comment { get; set; }
         public string Color { get; set; }
         public string Type { get; set; }
-        public string IsCompleted { get; set; }
+        public Boolean? IsCompleted { get; set; }
         public DateTime? ReferralDateCompleted { get; set; }
-        public string BackReferralCompleted { get; set; }
+        public Boolean? BackReferralCompleted { get; set; }
         public DateTime? BackReferralDateCompleted { get; set; }
+        public VisitBackReferral BackReferral { get; set; }
 
     }
 
@@ -24,6 +25,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     public class Progress_VisitDataStatus {
         public string Score { get; set; }
         public string ScoreColor { get; set; }
+        public string ScoreComment { get; set; }
         public string GrowComment { get; set; }
         public string GrowCommentColor { get; set; }
         public string Weight { get; set; }
@@ -47,17 +49,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
     {
         public string VisitName { get; set; }
         public int Order { get; set; }
-        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
-        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
+        public virtual ICollection<VisitDataStatus> SummaryData { get; set; }
+        public virtual ICollection<VisitDataStatus> DocumentData { get; set; }
     }
 
     public class ClientSummaryByPriority
     {
         public string AreaName { get; set; }
         public int Order { get; set; }
-        public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
-
-        public virtual ICollection<VisitDataStatus> IdDocStatus { get; set; }
+        public string Color { get; set; }
+        public virtual ICollection<VisitDataStatus> SummaryData { get; set; }
+        public virtual ICollection<VisitDataStatus> DocumentData { get; set; }
     }
 }
 

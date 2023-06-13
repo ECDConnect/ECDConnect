@@ -9,7 +9,6 @@ import {
   notificationsSelectors,
 } from './store/notifications';
 import { settingSelectors } from './store/settings';
-import { practitionerSelectors } from '@/store/practitioner';
 
 type IntialNotificationSetupContextValues = {
   startService: () => void;
@@ -23,7 +22,9 @@ export const IntialNotificationSetupContext =
 
 const InitialNotificationSetup: React.FC = ({ children }) => {
   const dispatch = useAppDispatch();
-  const notifications = useSelector(notificationsSelectors.getAllNotifications);
+  const notificationReferences = useSelector(
+    notificationsSelectors.getAllNotificationReferences
+  );
   const notificationPollInterval = useSelector(
     settingSelectors.getNotificationPollInterval
   );
@@ -31,7 +32,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const notificationServiceRef = useRef<NotificationService | undefined>(
     undefined
   );
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   useEffect(() => {
     initializeServices();
@@ -44,17 +44,13 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
   const onNotificationsRecieved = useCallback(
     (messages: Message[]) => {
       const newMessages = messages.filter(
-        (message) =>
-          !notifications.some(
-            (notification) =>
-              notification.message.reference === message.reference
-          )
+        (message) => !notificationReferences.includes(message.reference)
       );
       if (newMessages.length > 0) {
         dispatch(notificationActions.addNotifications(newMessages));
       }
     },
-    [dispatch, notifications]
+    [dispatch, notificationReferences]
   );
 
   const initializeServices = useCallback(() => {
@@ -74,12 +70,6 @@ const InitialNotificationSetup: React.FC = ({ children }) => {
     notificationServiceRef.current.initialEvaluate();
     notificationServiceRef.current.start();
   }, [initloading, notificationPollInterval, onNotificationsRecieved]);
-
-  useEffect(() => {
-    if (practitioner) {
-      initializeServices();
-    }
-  }, [initializeServices, practitioner]);
 
   const stopService = () => {
     if (notificationServiceRef.current) {

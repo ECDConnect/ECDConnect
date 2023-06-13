@@ -1,14 +1,11 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
 import { useEffect, useMemo } from 'react';
 import { HealthPromotion } from '../../components/health-promotion';
-import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
-import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
-import { RootState } from '@/store/types';
 import { getIsInfantFirstVisitSelector } from '@/store/infant/infant.selectors';
 
 export const NewbornCareStep = ({
@@ -17,8 +14,6 @@ export const NewbornCareStep = ({
   setIsTip,
   setEnableButton,
 }: DynamicFormProps) => {
-  const { visitId } = useParams<InfantProfileParams>();
-
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
     [infant?.caregiver?.firstName]
@@ -26,9 +21,7 @@ export const NewbornCareStep = ({
 
   const sectionName = 'Newborn care';
 
-  const isFirstVisit = useSelector((state: RootState) =>
-    getIsInfantFirstVisitSelector(state, visitId)
-  );
+  const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
 
   useEffect(() => {
     setEnableButton?.(true);
@@ -36,12 +29,18 @@ export const NewbornCareStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${caregiverName}`}
-        subTitle={sectionName}
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${caregiverName}`}
+          subTitle={sectionName}
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 

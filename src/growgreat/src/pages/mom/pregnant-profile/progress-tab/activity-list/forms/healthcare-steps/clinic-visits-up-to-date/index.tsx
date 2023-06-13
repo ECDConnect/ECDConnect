@@ -1,4 +1,10 @@
-import { Alert, ButtonGroup, ButtonGroupTypes } from '@ecdlink/ui';
+import {
+  Alert,
+  ButtonGroup,
+  ButtonGroupTypes,
+  DialogPosition,
+  Dialog,
+} from '@ecdlink/ui';
 import {
   Label,
   Header,
@@ -60,12 +66,18 @@ export const ClinicVisitsUpToDateStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${motherName}`}
-        subTitle="Clinic check-ups"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${motherName}`}
+          subTitle="Clinic check-ups"
+          section={'Clinic visits'}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
@@ -74,7 +86,7 @@ export const ClinicVisitsUpToDateStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={AntenatalCareSvg}
-        title={sectionName}
+        title={`Clinic visits`}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard

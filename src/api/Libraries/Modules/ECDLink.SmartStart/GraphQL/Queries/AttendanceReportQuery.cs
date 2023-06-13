@@ -23,7 +23,10 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endMonth)
         {
             startMonth = startMonth.GetStartOfMonth();
-            endMonth = endMonth.GetEndOfMonth();
+            //endMonth = endMonth.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1).Date : DateTime.Now.GetEndOfDay()) : endMonth.GetEndOfMonth().GetEndOfDay());
+
 
             return report.GenerateMonthlyAttendanceReport(userId, classroomId, startMonth, endMonth);
         }
@@ -35,8 +38,12 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endMonth,
           string ownerId)
         {
-            var startOfMonth = startMonth;
-            var endOfMonth = endMonth;
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1).Date : DateTime.Now.GetEndOfDay()) : endMonth.GetEndOfMonth().GetEndOfDay());
+
+
+            var startOfMonth = startMonth.Date;
+            var endOfMonth = endMonth.GetEndOfDay();
 
             var reportList = new List<MonthlyAttendanceCSVReport>();
 
@@ -74,9 +81,13 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
           DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
-            var endMonth = endDate.GetEndOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
 
-            return report.GetChildAttendance(classgroupId, userId, startMonth, endMonth);
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
+
+
+            return report.GetChildAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
 
         public async Task<List<ClassroomGroupChildAttendanceReportModel>> ClassroomAttendanceReport(
@@ -87,9 +98,26 @@ namespace ECDLink.EGraphQL.ObjectTypes.Extentions.Query
   DateTime endDate)
         {
             var startMonth = startDate.GetStartOfMonth();
-            var endMonth = endDate.GetEndOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
 
-            return report.GetClassroomAttendance(classgroupId, userId, startMonth, endMonth);
+            return report.GetClassroomAttendance(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
+        }
+
+        public async Task<ClassroomGroupChildAttendanceReportOverviewModel> ClassroomAttendanceOverviewReport(
+[Service] ChildAttendanceReport report,
+string userId,
+Guid classgroupId,
+DateTime startDate,
+DateTime endDate)
+        {
+            var startMonth = startDate.GetStartOfMonth();
+            //var endMonth = endDate.GetEndOfMonth();
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            var endMonth = (endDate.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endDate.GetEndOfMonth());
+
+            return report.GetClassroomAttendanceOverView(classgroupId, userId, startMonth.Date, endMonth.GetEndOfDay());
         }
     }
 }

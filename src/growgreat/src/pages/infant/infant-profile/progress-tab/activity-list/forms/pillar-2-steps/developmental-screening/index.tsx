@@ -1,4 +1,4 @@
-import { Alert } from '@ecdlink/ui';
+import { Alert, DialogPosition, Dialog } from '@ecdlink/ui';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { Header, TipCard } from '@/pages/infant/infant-profile/components';
 import P2 from '@/assets/pillar/p2.svg';
@@ -26,11 +26,17 @@ export const DevelopmentalScreeningStep = ({
 
   if (isTipPage) {
     return (
-      <MoreInformation
-        section="Developmental Screening"
-        subTitle="Developmental Screening"
-        onClose={() => setIsTip?.(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <MoreInformation
+          section="Developmental Screening"
+          subTitle="Developmental Screening"
+          onClose={() => setIsTip?.(false)}
+        />
+      </Dialog>
     );
   }
 

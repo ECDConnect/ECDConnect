@@ -6,6 +6,7 @@ import {
   ChildDto,
   LearnerDto,
   Document,
+  useDialog,
 } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
@@ -31,7 +32,11 @@ import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
 import { caregiverActions, caregiverSelectors } from '@store/caregiver';
 import { childrenActions, childrenSelectors } from '@store/children';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsThunkActions,
+  classroomsSelectors,
+} from '@store/classroom';
 import { staticDataSelectors } from '@store/static-data';
 import { newGuid } from '@utils/common/uuid.utils';
 import { CareGiverChildInformationForm } from '../child-registration/care-giver-child-information-form/care-giver-child-information-form';
@@ -56,14 +61,17 @@ import { useStaticData } from '@hooks/useStaticData';
 import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
 import { documentActions, documentSelectors } from '@store/document';
 import { userSelectors } from '@store/user';
+import ROUTES from '../../../../src/routes/routes';
 
 export const EditChildInformation: React.FC = () => {
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
   const location = useLocation<EditChildInformationLocationParams>();
   const childId = location.state.childId;
+  const isFromEditClass = location?.state?.isFromEditClass;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
   const languages = useSelector(staticDataSelectors.getLanguages);
@@ -184,6 +192,51 @@ export const EditChildInformation: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, childCaregiver, currentChildLearnerRecord]);
+
+  useEffect(() => {
+    if (isFromEditClass) {
+      setChangeClassroomGroupPromptVisible(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const openChildConfirmEditClassPrompt = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          icon={'ExclamationCircleIcon'}
+          iconColor="alertMain"
+          iconBorderColor="alertBg"
+          importantText={`Confirm ${childUser?.firstName}'s class change`}
+          detailText={`Confirm that ${childUser?.firstName}'s caregiver has agreed to the class change and that you've informed them of the new practitioner if relevant. Select 'Yes' below to confirm. Make sure you submit today's attendance before changing the class.`}
+          actionButtons={[
+            {
+              text: 'Yes, confirmed with caregiver',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                openEditField();
+                onSubmit();
+              },
+              leadingIcon: 'PencilIcon',
+            },
+            {
+              text: 'No, do this later',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onCancel();
+              },
+              leadingIcon: 'ArrowLeftIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
 
   const openViewInformation = (
     childInformationViewType: ChildInformationViewType
@@ -457,37 +510,79 @@ export const EditChildInformation: React.FC = () => {
     const newClassroomGroupId =
       editChildInformationFormGetValues().classroomGroupId;
 
-    const learnerInputModel: LearnerDto = {
-      id: currentChildLearnerRecord?.id,
-      classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
-      stoppedAttendance: new Date().toISOString(),
-      isActive: currentChildLearnerRecord?.isActive,
-    };
+    if (currentChildLearnerRecord) {
+      const learnerInputModel: LearnerDto = {
+        id: currentChildLearnerRecord?.id,
+        classroomGroupId: currentChildLearnerRecord?.classroomGroupId ?? '',
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: currentChildLearnerRecord?.startedAttendance ?? '',
+        stoppedAttendance: new Date().toISOString(),
+        isActive: false,
+      };
 
-    appDispatch(
-      classroomsActions.updateClassroomGroupLearner(learnerInputModel)
-    );
+      appDispatch(
+        classroomsActions.updateClassroomGroupLearner(learnerInputModel)
+      );
 
-    const newLearnerModel: LearnerDto = {
-      id: newGuid(),
-      classroomGroupId: newClassroomGroupId,
-      userId: currentChildLearnerRecord?.userId ?? '',
-      attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
-      otherAttendanceReason:
-        currentChildLearnerRecord?.otherAttendanceReason ?? '',
-      startedAttendance: new Date().toISOString(),
-      stoppedAttendance: null,
-      isActive: currentChildLearnerRecord?.isActive,
-    };
+      await appDispatch(
+        classroomsThunkActions.updateLearner({
+          id: learnerInputModel.id as string,
+          learner: learnerInputModel,
+        })
+      );
 
-    appDispatch(classroomsActions.createClassroomGroupLearner(newLearnerModel));
+      const newLearnerModel: LearnerDto = {
+        id: newGuid(),
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChildLearnerRecord?.userId ?? '',
+        attendanceReasonId: currentChildLearnerRecord?.attendanceReasonId,
+        otherAttendanceReason:
+          currentChildLearnerRecord?.otherAttendanceReason ?? '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: currentChildLearnerRecord?.isActive,
+      };
 
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
+    } else {
+      //this child does not belong to any classroomgroup
+      const newLearnerModel: LearnerDto = {
+        classroomGroupId: newClassroomGroupId,
+        userId: currentChild?.userId ?? '',
+        attendanceReasonId: undefined,
+        otherAttendanceReason: '',
+        startedAttendance: new Date().toISOString(),
+        stoppedAttendance: null,
+        isActive: true,
+      };
+
+      appDispatch(
+        classroomsActions.createClassroomGroupLearner(newLearnerModel)
+      );
+
+      await appDispatch(
+        classroomsThunkActions.createLearner({ learner: newLearnerModel })
+      ).unwrap();
+
+      await appDispatch(
+        classroomsThunkActions.upsertClassroomGroups({})
+      ).unwrap();
+    }
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const saveChildCareGiver = async (
@@ -608,6 +703,7 @@ export const EditChildInformation: React.FC = () => {
 
   const closeEditField = () => {
     setEditFieldVisible(false);
+    history.push(ROUTES.CHILD_PROFILE, { childId });
   };
 
   const picturePromtOnAction = async (imageBaseString: string) => {
@@ -722,7 +818,7 @@ export const EditChildInformation: React.FC = () => {
         stretch={true}
         borderRadius="normal"
         visible={editFieldVisible}
-        position={DialogPosition.Bottom}
+        position={DialogPosition.Middle}
       >
         <div className={'p-4'}>
           <div className={styles.labelContainer}>
@@ -789,7 +885,7 @@ export const EditChildInformation: React.FC = () => {
               textColour: 'white',
               colour: 'primary',
               type: 'filled',
-              onClick: () => openEditField(),
+              onClick: () => openChildConfirmEditClassPrompt(),
               leadingIcon: 'PencilIcon',
             },
             {
@@ -797,7 +893,10 @@ export const EditChildInformation: React.FC = () => {
               textColour: 'primary',
               colour: 'primary',
               type: 'outlined',
-              onClick: () => setChangeClassroomGroupPromptVisible(false),
+              onClick: () => {
+                setChangeClassroomGroupPromptVisible(false);
+                history.push(ROUTES.CHILD_PROFILE, { childId });
+              },
               leadingIcon: 'ClockIcon',
             },
           ]}

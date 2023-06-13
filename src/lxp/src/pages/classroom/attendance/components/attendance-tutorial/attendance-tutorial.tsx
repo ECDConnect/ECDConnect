@@ -18,15 +18,15 @@ import { useAppContext } from '@/walkthrougContext';
 export const AttendanceTutorial = ({
   onComplete,
   onClose,
+  updatePractitionerProgress,
 }: AttendanceTutorialProps) => {
   const { isOnline } = useOnlineStatus();
   const tutorialCompleteClicks = 3;
   const tutorialResetClicks = 4;
   const [tutorialProgressClicks, setTutorialProgressClicks] =
     useState<number>(0);
-  const [displayTutorialComplete, setDisplayTutorialComplete] =
-    useState<boolean>(false);
-  const [attendanceItem, setAttendanceItem] = useState<AttendanceListDataItem>({
+  const [, setDisplayTutorialComplete] = useState<boolean>(false);
+  const [, setAttendanceItem] = useState<AttendanceListDataItem>({
     title: 'Amahle Khumalo',
     profileText: 'AM',
     attenendeeId: '1',
@@ -39,6 +39,7 @@ export const AttendanceTutorial = ({
 
   const handleClickStart = () => {
     setState({ run: true, tourActive: true, stepIndex: 0 });
+    updatePractitionerProgress();
     history.push(ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH);
   };
 

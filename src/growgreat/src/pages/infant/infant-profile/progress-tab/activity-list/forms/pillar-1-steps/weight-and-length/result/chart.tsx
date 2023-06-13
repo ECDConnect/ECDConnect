@@ -205,12 +205,11 @@ export const Chart = ({
     scales: {
       x: {
         ticks: {
-          callback: function (value, index) {
+          callback: function (_, index) {
             if (index === 0) {
               return '';
             }
-
-            return value + suffix;
+            return chartData.date[index] + suffix;
           },
         },
       },

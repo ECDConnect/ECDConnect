@@ -23,4 +23,10 @@ export const alerts = {
       'Encourage {client} to continue breastfeeding and giving the child a balanced diet that always includes starches, dairy, meat, eggs, fruits and vegetables.',
     ],
   },
+  dietIsGreat: {
+    title: 'Dietary diversity is great!',
+    list: [
+      'Encourage {client} to continue breastfeeding and giving the child a balanced diet that always includes starches, dairy, meat, eggs, fruits and vegetables.',
+    ],
+  },
 };

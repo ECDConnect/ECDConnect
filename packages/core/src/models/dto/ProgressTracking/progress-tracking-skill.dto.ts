@@ -5,4 +5,5 @@ export interface ProgressTrackingSkillDto {
   description: string;
   name: string;
   level: ProgressTrackingLevelDto[];
+  value: string;
 }

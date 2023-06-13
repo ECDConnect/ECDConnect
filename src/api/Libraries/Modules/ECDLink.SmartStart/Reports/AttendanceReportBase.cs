@@ -3,6 +3,7 @@ using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
@@ -25,7 +26,10 @@ namespace ECDLink.SmartStart.Reports
         {
             var holidays = _holidayService.GetHolidays(startMonth, endMonth, "en-za").ToList();
 
-            var datesBetween = startMonth.DaysBetween(endMonth);
+            //if current month, do not project as per business rules and use current date as enddate - if its the 1st of the month and dates match, then add 1 day
+            //endMonth = (endMonth.Month == DateTime.Now.Month ? (startMonth.Date == DateTime.Now.Date ? DateTime.Now.AddDays(1) : DateTime.Now) : endMonth);
+
+            var datesBetween = startMonth.DaysBetween(endMonth.GetEndOfDay());
 
             return RemoveHolidays(datesBetween, holidays);
         }
@@ -42,7 +46,7 @@ namespace ECDLink.SmartStart.Reports
             return _dbContext.Attendances
               .Include(i => i.ClassroomProgramme)
               .Where(a => string.Equals(userId, a.UserId) && ClassroomProgrammeIds.Contains(a.ClassroomProgrammeId))
-              .Where(f => f.AttendanceDate >= startMonth && f.AttendanceDate < endMonth)
+              .Where(f => f.AttendanceDate >= startMonth.Date && f.AttendanceDate < endMonth.GetEndOfDay())
               .ToList();
         }
 
@@ -52,7 +56,7 @@ namespace ECDLink.SmartStart.Reports
               .Include(x => x.ClassroomGroup)
               .ThenInclude(x => x.Classroom)
               .ThenInclude(x => x.User)
-              .Where(cp => cp.ProgrammeStartDate <= endMonth)
+              .Where(cp => cp.ProgrammeStartDate <= endMonth.GetEndOfDay())
               .Select(c => c.ClassroomGroup.Classroom)
               .Distinct();
 
@@ -74,7 +78,7 @@ namespace ECDLink.SmartStart.Reports
                     return Enumerable.Empty<DateTime>();
                 }
             }
-
+            
             var actualEnd = actualStart.GetEndOfMonth();
             if (endBound.HasValue && endBound.Value < actualEnd)
             {
@@ -88,7 +92,7 @@ namespace ECDLink.SmartStart.Reports
                 }
             }
 
-            var monthRange = validClassdays.Where(x => x >= actualStart && x <= actualEnd);
+            var monthRange = validClassdays.Where(x => x.Date >= actualStart.Date && x.Date <= actualEnd.GetEndOfDay()).ToList();
 
             return monthRange.Where(x => (int)x.DayOfWeek == day).ToList();
         }

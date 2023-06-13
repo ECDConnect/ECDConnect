@@ -17,12 +17,11 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
 
         public string FormatBulletList(Array arrData)
         {
-            var result = "<ul>";
+            var result = "";
             foreach (var item in arrData)
             {
                 result = result + "<li>" + item + "</li>";
             }
-            result = result + "</ul>";
 
             return result;
         }

@@ -3,8 +3,8 @@ import {
   Alert,
   ButtonGroup,
   ButtonGroupTypes,
-  Checkbox,
   CheckboxChange,
+  CheckboxGroup,
   DialogPosition,
   Divider,
   Typography,
@@ -100,10 +100,12 @@ export const BreastfeedingIssuesStep = ({
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        const none = 'None of the above';
         if (
-          (event.value === none && checkboxAnswers?.length) ||
-          checkboxAnswers?.includes(none)
+          (event.value === breastfeedingIssuesCheckboxOptions.noneOption &&
+            checkboxAnswers?.length) ||
+          checkboxAnswers?.includes(
+            breastfeedingIssuesCheckboxOptions.noneOption
+          )
         ) {
           return dialog({
             blocking: false,
@@ -183,23 +185,16 @@ export const BreastfeedingIssuesStep = ({
           color="black"
         />
         {checkboxOptions.map((option, index) => (
-          <div
-            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={checkboxAnswers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <Typography
-              type="body"
-              align="left"
-              weight="skinny"
-              text={option?.name || ''}
-              color="textMid"
-            />
-          </div>
+          <CheckboxGroup
+            checkboxColor="primary"
+            className="mt-2"
+            id={option.name}
+            key={option.name}
+            title={option.name}
+            checked={checkboxAnswers?.some((item) => item === option.name)}
+            value={option.name}
+            onChange={onCheckboxChange}
+          />
         ))}
         <Divider dividerType="dashed" className="mt-5 mb-4" />
         {showReminder ? (

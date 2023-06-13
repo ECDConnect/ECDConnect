@@ -1,4 +1,5 @@
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using System;
@@ -12,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities
     {
     }
 
-    public class SiteAddress<TKey> : EntityBase<TKey>, ProvinceJoin<Guid?>
+    public class SiteAddress<TKey> : EntityBase<TKey>, ProvinceJoin<Guid?>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }
@@ -26,6 +27,10 @@ namespace ECDLink.DataAccessLayer.Entities
         public string PostalCode { get; set; }
 
         public string Ward { get; set; }
+        public string Longitude { get; set; }
+        public string Latitude { get; set; }
+        public string Municipality { get; set; }
+        public string Area { get; set; }
 
         [ForeignKey(nameof(ProvinceId))]
         public virtual Province Province { get; set; }

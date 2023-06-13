@@ -332,7 +332,6 @@ export const SignUp: React.FC = () => {
                   ? 'errorDark'
                   : 'textMid'
               }
-              weight="bold"
             />
             &nbsp;
             <Typography

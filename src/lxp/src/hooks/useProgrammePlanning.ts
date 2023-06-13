@@ -4,18 +4,27 @@ import {
   ProgrammeThemeDto,
   sortDateFunction,
 } from '@ecdlink/core';
-import { addDays, isAfter, isFriday, isWeekend } from 'date-fns';
+import {
+  addDays,
+  differenceInBusinessDays,
+  isAfter,
+  isFriday,
+  isWeekend,
+} from 'date-fns';
 import { useSelector } from 'react-redux';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
 import { programmeActions, programmeSelectors } from '@store/programme';
+import { practitionerSelectors } from '@store/practitioner';
 import {
   findConflictingProgramme,
+  findConflictingProgrammes,
   getProgrammeDaysForInterval,
   refreshProgrammeDateRange,
 } from '@utils/classroom/programme-planning/programmes.utils';
 import { newGuid } from '@utils/common/uuid.utils';
 import { useHolidays } from './useHolidays';
+import { cloneDeep } from 'lodash';
 
 type DailyProgrammesCreateResult = {
   dailyProgrammes: DailyProgrammeDto[];
@@ -28,21 +37,27 @@ export const useProgrammePlanning = () => {
   const programmes = useSelector(programmeSelectors.getProgrammes);
   const holiday = useHolidays();
   const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const practitionerClassroomGroups = classroomGroups?.filter((item: any) => {
+    return item?.userId === practitioner?.userId;
+  });
 
   const createProgramme = async (
     startDate: Date,
     language: string,
-    theme?: ProgrammeThemeDto
+    theme?: ProgrammeThemeDto,
+    endDate?: Date
   ): Promise<ProgrammeDto> => {
     const newProgramme: ProgrammeDto = {
       id: newGuid(),
-      classroomId: classroom?.id || '',
+      classroomId:
+        classroom?.id || practitionerClassroomGroups?.at(0)?.classroomId || '',
       name: theme?.name || 'No theme',
       preferredLanguage: language,
       startDate: startDate.toISOString(),
-      endDate: '',
+      endDate: endDate?.toISOString() || '',
       dailyProgrammes: [],
-      classroomGroupId: classroomGroups.at(0)?.id,
+      classroomGroupId: practitionerClassroomGroups?.at(0)?.id,
     };
 
     const dailyProgrammesResult = createProgrammeDailyProgrammes(
@@ -139,7 +154,11 @@ export const useProgrammePlanning = () => {
 
     const dailyProgrammes: DailyProgrammeDto[] = [];
     let themeDay = 1;
-    while (dailyProgrammes.length < 20) {
+    const diffDays = differenceInBusinessDays(
+      new Date(programme?.endDate),
+      startDate
+    );
+    while (dailyProgrammes.length < diffDays) {
       if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }
@@ -187,21 +206,28 @@ export const useProgrammePlanning = () => {
     startDate: Date
   ) => {
     let dayDate = startDate;
+    // let endDateResult = getNoThemedProgrammeEndDate(startDate);
     let endDateResult = getNoThemedProgrammeEndDate(startDate);
     const dailyProgrammes: DailyProgrammeDto[] = [];
+    const diffDays = differenceInBusinessDays(
+      new Date(endDateResult.endDate),
+      startDate
+    );
+    let themeDay = 1;
 
-    for (let i = 0; i < endDateResult.totalDays; i++) {
-      if (i > 0) {
+    while (dailyProgrammes.length <= diffDays) {
+      if (dailyProgrammes.length > 0) {
         dayDate = getNextValidDate(dayDate);
       }
 
       dailyProgrammes.push({
         id: newGuid(),
-        day: (i + 1).toString(),
+        day: themeDay.toString(),
         dayDate: dayDate.toISOString(),
         programmeId: programme.id ?? '',
         messageBoardText: '',
       });
+      themeDay += 1;
     }
 
     return {
@@ -214,45 +240,47 @@ export const useProgrammePlanning = () => {
     const newProgrammeStartDate = new Date(newPrograme.startDate);
     const newProgrammeEndDate = new Date(newPrograme.endDate);
 
-    const conflictingProgramme = findConflictingProgramme(
+    const conflictingProgrammes = findConflictingProgrammes(
       programmes,
       newProgrammeStartDate,
       newProgrammeEndDate
     );
 
-    if (conflictingProgramme) {
-      let conflictingProgrammeCopy = { ...conflictingProgramme };
-      const overlappingDays = getProgrammeDaysForInterval(
-        { start: newProgrammeStartDate, end: newProgrammeEndDate },
-        conflictingProgrammeCopy
-      );
-      const nonConflictingDays =
-        conflictingProgrammeCopy.dailyProgrammes.filter(
-          (dailyProg) =>
-            !overlappingDays.some(
-              (overlappingDay) => overlappingDay.day === dailyProg.day
-            )
+    if (conflictingProgrammes) {
+      for (const conflictingProgramme of conflictingProgrammes) {
+        let conflictingProgrammeCopy = cloneDeep(conflictingProgramme);
+        const overlappingDays = getProgrammeDaysForInterval(
+          { start: newProgrammeStartDate, end: newProgrammeEndDate },
+          conflictingProgrammeCopy
         );
-      const sortedDays = nonConflictingDays.sort((a, b) =>
-        sortDateFunction(new Date(a.dayDate), new Date(b.dayDate))
-      );
+        const nonConflictingDays =
+          conflictingProgrammeCopy.dailyProgrammes.filter(
+            (dailyProg) =>
+              !overlappingDays.some(
+                (overlappingDay) => overlappingDay.day === dailyProg.day
+              )
+          );
+        const sortedDays = nonConflictingDays.sort((a, b) =>
+          sortDateFunction(new Date(a.dayDate), new Date(b.dayDate))
+        );
 
-      conflictingProgrammeCopy.dailyProgrammes = nonConflictingDays;
+        conflictingProgrammeCopy.dailyProgrammes = nonConflictingDays;
 
-      if (sortedDays.length > 0) {
-        conflictingProgrammeCopy.startDate = sortedDays[0].dayDate;
-        conflictingProgrammeCopy.endDate =
-          sortedDays[sortedDays.length - 1].dayDate;
+        if (sortedDays.length > 0) {
+          conflictingProgrammeCopy.startDate = sortedDays[0].dayDate;
+          conflictingProgrammeCopy.endDate =
+            sortedDays[sortedDays.length - 1].dayDate;
+        }
+
+        conflictingProgrammeCopy = refreshProgrammeDateRange(
+          conflictingProgrammeCopy
+        );
+        dispatch(
+          programmeActions.updateProgrammes({
+            programme: conflictingProgrammeCopy,
+          })
+        );
       }
-
-      conflictingProgrammeCopy = refreshProgrammeDateRange(
-        conflictingProgrammeCopy
-      );
-      dispatch(
-        programmeActions.updateProgramme({
-          programme: conflictingProgrammeCopy,
-        })
-      );
     }
   };
 

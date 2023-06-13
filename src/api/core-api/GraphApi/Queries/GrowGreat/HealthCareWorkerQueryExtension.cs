@@ -1,9 +1,9 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
@@ -14,7 +14,6 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 {
@@ -95,6 +94,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             }
 
             return caregivers;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public List<Document> GetDocumentsForHCW([Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string createdUserId)
+        {
+
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
+            return documentRepo.GetAll().Where(x => x.CreatedUserId == createdUserId).OrderBy(x => x.Name).ToList();
         }
 
     }

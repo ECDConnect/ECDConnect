@@ -1,7 +1,5 @@
 import * as Yup from 'yup';
 
-const expression = new RegExp('(test)=(A:([0-9.]*))', 'g');
-
 export interface DonationsOrVouchersModel {
   date: Date | string;
   donations: string[];

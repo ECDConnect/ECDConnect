@@ -11,6 +11,7 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 import { PractitionerProfileRouteState } from './other-colleagues.types';
 import * as styles from './other-colleagues.styles';
 import { useTheme } from '@ecdlink/core';
@@ -30,7 +31,11 @@ export const OtherPractitionerProfile: React.FC<
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
   const classroomGroups = colleagueProfile?.classroomNames.split(',');
 

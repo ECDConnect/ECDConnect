@@ -7,4 +7,5 @@ export interface StatementsState {
   contributionTypes: any[] | undefined;
   payTypes: any[] | undefined;
   balanceSheet: any[] | undefined;
+  pdfReportData: any[] | undefined;
 }

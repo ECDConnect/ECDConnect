@@ -18,15 +18,13 @@ export const initialEditPractitionerValues: EditCellphoneModel = {
   email: '',
 };
 
-export const editCelphoneNumberSchema = Yup.object().shape({
+export const editCellphoneNumberSchema = Yup.object().shape({
   name: Yup.string(),
-  cellphone: Yup.string().matches(
-    SA_CELL_REGEX,
-    'Please enter a valid cellphone number'
-  ),
+  cellphone: Yup.string()
+    .required('Cellphone number is required')
+    .matches(SA_CELL_REGEX, 'Please enter a valid cellphone number'),
   whatsapp: Yup.string().matches(
     SA_CELL_REGEX,
-    'Please enter a valid cellphone number'
+    'Please enter a valid cell number'
   ),
-  email: Yup.string(),
 });

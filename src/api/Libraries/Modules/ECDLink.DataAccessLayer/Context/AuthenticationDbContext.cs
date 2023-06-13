@@ -3,11 +3,13 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.DataIngestion;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.EventRecords;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Integration.IntegrationMapping;
+using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
@@ -43,7 +45,6 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Absentees> Absents { get; set; }
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
         public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
-        public DbSet<SL_Ingestion_ChildCaregiver> SL_Ingestion_ChildCaregivers { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
 
         // Notes
@@ -84,6 +85,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<HealthCareWorker> HealthCareWorkers { get; set; }
         public DbSet<Mother> Mothers { get; set; }
         public DbSet<Infant> Infants { get; set; }
+        public DbSet<Trainee> Trainees { get; set; }
 
         //Reports
         public DbSet<ChildProgressReport> ChildProgressReports { get; set; }
@@ -100,8 +102,10 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<JobNotification> JobNotifications { get; set; }
 
         // Integration
-        public DbSet<IntegrationMapping> IntegrationMappings { get; set; }
-
+        public DbSet<IntegrationEntityMapping> IntegrationEntityMappings { get; set; }
+        public DbSet<IntegrationColumnMapping> IntegrationColumnMappings { get; set; }
+        public DbSet<IntegrationAudit> IntegrationAudits { get; set; }
+        public DbSet<IntegrationLog> IntegrationLogs { get; set; }
 
 
         // Service Scheduling
@@ -127,12 +131,19 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<VisitGrowthDataHeight> VisitGrowthDataHeight { get; set; }
         public DbSet<VisitBackReferral> VisitBackReferral { get; set; }
 
+        // Licenses
+        public DbSet<LicenseType> LicenseType { get; set; }
+        public DbSet<License> License { get; set; }
+
+
         // Event Records
         public DbSet<EventRecordType> EventRecordTypes { get; set; }
         public DbSet<EventRecord> EventRecords { get; set; }
 
         // Clubs
         public DbSet<Club> Clubs { get; set; }
+        public DbSet<ClubMeeting> ClubMeeting { get; set; }
+        public DbSet<ClubMeetingRegister> ClubMeetingRegister { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
@@ -141,6 +152,7 @@ namespace ECDLink.DataAccessLayer.Context
 
         protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
         {
+            optionsBuilder.EnableSensitiveDataLogging();
             base.OnConfiguring(optionsBuilder);
         }
 
@@ -197,12 +209,12 @@ namespace ECDLink.DataAccessLayer.Context
 
             builder.Entity<Learner>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.UserId });
+                x.HasKey(e => new { e.ClassroomGroupId, e.UserId, e.Id });
             });
 
             builder.Entity<ChildProgressReport>(x =>
             {
-                x.HasKey(e => new { e.ClassroomGroupId, e.ChildId, e.Id });
+                x.HasKey(e => new { e.Id });
             });
         }
     }

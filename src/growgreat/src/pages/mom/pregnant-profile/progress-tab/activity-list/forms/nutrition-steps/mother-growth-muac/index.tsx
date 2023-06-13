@@ -1,9 +1,8 @@
 import { Alert, FormInput, Typography } from '@ecdlink/ui';
-import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { Header } from '@/pages/infant/infant-profile/components';
 import NutritionCare from '@/assets/nutritionCare.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { ChangeEvent, useEffect, useMemo, useState } from 'react';
+import { ChangeEvent, useEffect, useState } from 'react';
 import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { replaceBraces } from '@ecdlink/core';
@@ -21,8 +20,8 @@ export const MotherGrowthMUACStep = ({
   const errorMessage =
     (Number(answer) === 0 && answer !== '') ||
     (Number(answer) >= 100 && answer !== '');
-  const underWeightError = Number(answer) <= 20 && Number(answer) > 0;
-  const notUnderWeightMessage = notUnderWeight > 20 && notUnderWeight < 100;
+  const underWeightError = Number(answer) < 22 && Number(answer) > 0;
+  const notUnderWeightMessage = notUnderWeight > 21 && notUnderWeight < 100;
 
   const muacQuestion = `What is {client} mid-upper arm circumference (MUAC) today?`;
 
@@ -93,7 +92,7 @@ export const MotherGrowthMUACStep = ({
           <Alert
             className="mb-4"
             type="error"
-            title="Lethabo might be underweight. Refer her to the clinic."
+            title={`${mother?.user?.firstName} might be underweight. Refer her to the clinic.`}
             list={['Encourage her to eat 3 meals and 1 small snack every day.']}
           />
         )}

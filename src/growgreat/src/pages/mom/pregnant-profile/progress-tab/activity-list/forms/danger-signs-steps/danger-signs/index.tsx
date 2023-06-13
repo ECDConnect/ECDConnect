@@ -1,18 +1,20 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P4 from '@/assets/pillar/p4.svg';
 import { useCallback, useEffect, useMemo, useState } from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { replaceBraces, useDialog } from '@ecdlink/core';
 import {
+  ActionModal,
   Alert,
   CheckboxChange,
   Colours,
+  Dialog,
+  DialogPosition,
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
 import { noneOption, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
-import { activitiesColours } from '../../../activities-list';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { Translations } from './translations';
 
@@ -28,9 +30,9 @@ export const getGroupColor = (count: number): Colours => {
   return 'successDark';
 };
 
-export const dietFormQuestion =
-  'What did you give {client} to eat or drink in the last 24 hours?';
-
+export const DangerSignsQuestion =
+  'Tick the danger signs {client} is experiencing:';
+export const dangerSignsSectionName = 'Danger signs';
 export const DangerSignsStep = ({
   mother,
   isTipPage,
@@ -46,7 +48,7 @@ export const DangerSignsStep = ({
   >(options);
   const [currentOption, setCurrentOption] = useState<string>();
   const [question, setAnswers] = useState({
-    question: `Tick the danger signs {client} is experiencing:`,
+    question: DangerSignsQuestion,
     answer: [] as (string | number | undefined)[],
   });
 
@@ -54,11 +56,44 @@ export const DangerSignsStep = ({
 
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
-  const visitSection = 'Danger signs';
+  const dialog = useDialog();
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
+        if (
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
+        ) {
+          return dialog({
+            blocking: false,
+            position: DialogPosition.Middle,
+            color: 'bg-white',
+            render: (onClose) => {
+              return (
+                <ActionModal
+                  className="z-50"
+                  icon="ExclamationCircleIcon"
+                  iconColor="alertMain"
+                  iconClassName="h-10 w-10"
+                  title="You can only select “None of the above” if there are no danger signs"
+                  detailText={`If ${name} is not experiencing any danger signs, first deselect all danger signs before selecting “None of the above”.`}
+                  actionButtons={[
+                    {
+                      colour: 'primary',
+                      text: 'Close',
+                      textColour: 'primary',
+                      type: 'outlined',
+                      leadingIcon: 'XIcon',
+                      onClick: onClose,
+                    },
+                  ]}
+                />
+              );
+            },
+          });
+        }
+
         const currentAnswers = answers
           ? [...answers, event.value]
           : [event.value];
@@ -69,7 +104,7 @@ export const DangerSignsStep = ({
         setEnableButton?.(true);
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsSectionName,
             questions: [updatedQuestion],
           },
         ]);
@@ -81,12 +116,12 @@ export const DangerSignsStep = ({
       setAnswers(updatedQuestion);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsSectionName,
           questions: [updatedQuestion],
         },
       ]);
     },
-    [answers, question, setEnableButton, setQuestions]
+    [answers, dialog, name, question, setEnableButton, setQuestions]
   );
 
   const handleOnChangeSelectedOptions = useCallback(() => {
@@ -125,10 +160,17 @@ export const DangerSignsStep = ({
 
   if (isTipPage && currentOption) {
     return (
-      <Translations
-        toTranslate={currentOption}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage ? isTipPage : false}
+        position={DialogPosition.Full}
+      >
+        <Translations
+          toTranslate={currentOption}
+          onClose={() => setIsTip && setIsTip(false)}
+          section={dangerSignsSectionName}
+        />
+      </Dialog>
     );
   }
   // TODO: add dialog (G5.6.3)
@@ -136,7 +178,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         customIcon={P4}
-        title={visitSection}
+        title={dangerSignsSectionName}
         subTitle="Check for these signs"
         backgroundColor="tertiary"
       />
@@ -152,13 +194,14 @@ export const DangerSignsStep = ({
         />
         {optionList.map((item, index) => (
           <CheckboxGroup
+            checkboxColor="primary"
             id={item.title}
             key={item.title}
             title={item.title}
             checked={answers?.some((option) => option === item.title)}
             value={item.title}
             onChange={onCheckboxChange}
-            disabled={item?.disabled}
+            disabled={answers?.includes(noneOption) ? item?.disabled : false}
             {...(options.length - 1 > index && {
               extraChildren: (
                 <button

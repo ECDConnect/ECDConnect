@@ -25,10 +25,15 @@ import { CreateNote } from './components/create-note/create-note';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { authSelectors } from '@store/auth';
 import { classroomsSelectors } from '@/store/classroom';
 import { CoachPractitionerNotRegistered } from './components/coach-practitioner-not-registered/coach-practitioner-not-registered';
+import { useAppDispatch } from '@store';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 
 export const CoachPractitionerProfileInfo: React.FC = () => {
   const history = useHistory();
@@ -57,7 +62,36 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
+  };
+
+  const appDispatch = useAppDispatch();
+  const removePractitioner = async () => {
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token || ''
+    ).UpdatePrincipalInvitation(
+      practitioner?.userId!,
+      practitioner?.principalHierarchy!,
+      false
+    );
+    await new PractitionerService(
+      userAuth?.auth_token!
+    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    history.push(ROUTES.COACH.PRACTITIONERS);
   };
 
   const classroomsDetailsForPractitioner = async () => {
@@ -75,20 +109,47 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const listItems = [
     {
+      title: 'SmartStarter journey',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Training, PQA rating & performance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BadgeCheckIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
+      classNames: 'bg-uiBg',
+    },
+    {
       title: 'Classroom',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: 'Children, progress & attendance',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'AcademicCapIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'secondary',
+      iconBackgroundColor: 'tertiary',
       chipConfig: {
         colorPalette: {
           backgroundColour: 'white',
           borderColour: 'errorMain',
-          textColour: 'errorMain',
+          textColour: 'white',
         },
       },
       text: '1',
@@ -105,14 +166,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'secondary',
+      iconBackgroundColor: 'tertiary',
       chipConfig: {
         colorPalette: {
           backgroundColour: 'white',
           borderColour: 'errorMain',
-          textColour: 'errorMain',
+          textColour: 'white',
         },
       },
       text: '1',
@@ -126,20 +187,47 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
 
   const noClassroomGroupsListItems = [
     {
+      title: 'SmartStarter journey',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Training, PQA rating & performance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'BadgeCheckIcon',
+      menuIconClassName: 'text-white',
+      showIcon: true,
+      iconBackgroundColor: 'tertiary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'white',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(
+          ROUTES.COACH.PRACTITIONER_JOURNEY.replace(
+            ':practitionerId',
+            practitionerId
+          )
+        ),
+      classNames: 'bg-uiBg',
+    },
+    {
       title: 'Programme Information',
       titleStyle: 'text-textDark font-semibold text-base leading-snug',
       subTitle: 'Location, classes & staff',
       subTitleStyle:
         'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
       menuIcon: 'InformationCircleIcon',
-      menuIconClassName: 'bg-secondary text-white',
+      menuIconClassName: 'text-white',
       showIcon: true,
-      iconBackgroundColor: 'secondary',
+      iconBackgroundColor: 'tertiary',
       chipConfig: {
         colorPalette: {
           backgroundColour: 'white',
           borderColour: 'errorMain',
-          textColour: 'errorMain',
+          textColour: 'white',
         },
       },
       text: '1',
@@ -271,16 +359,23 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
-                  type="outlined"
+                  color="secondaryAccent2"
+                  type="filled"
                   onClick={() => {
-                    navigator.clipboard.writeText(
-                      practitioner?.user?.phoneNumber!
-                    );
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.phoneNumber!
+                      );
                   }}
                 >
-                  <Typography type="help" color="primary" text="Copy" />
-                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                  <Typography
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
+                    text="Copy"
+                  />
+                  {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
                 </Button>
               </div>
             </div>
@@ -304,14 +399,23 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
-                  type="outlined"
+                  color="secondaryAccent2"
+                  type="filled"
                   onClick={() => {
-                    navigator.clipboard.writeText(practitioner?.user?.email!);
+                    //TODO: what if copy fails?
+                    navigator?.clipboard?.writeText &&
+                      navigator?.clipboard?.writeText(
+                        practitioner?.user?.email!
+                      );
                   }}
                 >
-                  <Typography type="help" color="primary" text="Copy" />
-                  {renderIcon('DocumentDuplicateIcon', styles.buttonIcon)}
+                  <Typography
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
+                    text="Copy"
+                  />
+                  {renderIcon('DocumentDuplicateIcon', styles.actionIcon)}
                 </Button>
               </div>
             </div>
@@ -361,20 +465,20 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 <Button
                   size="small"
                   shape="normal"
-                  color="primary"
+                  color="secondaryAccent2"
                   type="filled"
                   onClick={
                     () => history.push(ROUTES.COACH.NOTES, { practitionerId })
                     // setCreatePractitionerdNoteVisible(true)
                   }
                 >
-                  {renderIcon('EyeIcon', styles.buttonIcon)}
                   <Typography
-                    type="help"
-                    color="white"
+                    className={'mr-1'}
+                    type="buttonSmall"
+                    color="secondary"
                     text="View"
-                    className="ml-1"
                   />
+                  {renderIcon('EyeIcon', styles.actionIcon)}
                 </Button>
               </div>
               <Dialog
@@ -394,6 +498,25 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
+            <div className="flex w-full justify-center">
+              <Button
+                type="outlined"
+                color="primary"
+                className={'mt-6 mb-6 w-11/12'}
+                onClick={removePractitioner}
+              >
+                {renderIcon(
+                  'TrashIcon',
+                  'w-5 h-5 color-primary text-primary mr-2'
+                )}
+                <Typography
+                  type="body"
+                  className="mr-4"
+                  color="primary"
+                  text={`Remove ${practitioner?.user?.firstName}`}
+                ></Typography>
+              </Button>
+            </div>
           </>
         </div>
       )}

@@ -75,6 +75,8 @@ import { WalkthroughTutorial } from '@/pages/classroom/attendance/components/att
 import { SubmitIncomeStatementsList } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/submit-income-statements-list';
 import { PreviousStatementsList } from '@/pages/business/money/submit-income-statements/components/previous-statements-list/previous-statements-list';
 import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
+import { Community } from '@/pages/community/community';
+import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journey';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -162,6 +164,7 @@ const AuthRoutes: React.FC = () => {
         exact={true}
       />
       <Route path={ROUTES.TRAINING} component={Training} exact={true} />
+      <Route path={ROUTES.COMMUNITY} component={Community} exact={true} />
       <Route
         path={ROUTES.ATTENDANCE_TUTORIAL_WALKTHROUGH}
         component={WalkthroughTutorial}
@@ -372,6 +375,11 @@ const AuthRoutes: React.FC = () => {
       <Route exact path={ROUTES.COACH.ABOUT.ADDRESS} component={CoachAddress} />
 
       <Route exact path={ROUTES.COACH.ACCOUNT} component={CoachAccount} />
+      <Route
+        exact
+        path={ROUTES.COACH.PRACTITIONER_JOURNEY}
+        component={CoachPractitionerJourney}
+      />
       <Route render={() => <Redirect to={ROUTES.DASHBOARD} />} />
     </Switch>
   );

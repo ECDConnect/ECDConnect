@@ -15,8 +15,6 @@ import {
 } from '@ecdlink/ui/';
 import { useHistory, useLocation } from 'react-router';
 import ActivitySearch from '../components/activities/activity/activity-search/activity-search';
-import { ProgrammePlanningRoutineListItem } from '../components/programme-planning-routine-list-item/programme-planning-routine-list-item';
-import { ProgrammePlanningHeader } from '../components/programme-planning-header/programme-planning-header';
 import { WeekTab } from '../components/week-tab/week-tab';
 import { useEffect, useState } from 'react';
 import { ProgrammeRoutineRouteState } from './programme-routine.types';
@@ -49,8 +47,6 @@ import ActivityDetails from '../components/activities/activity/activity-details/
 import StoryActivityDetails from '../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
-import { isFriday } from 'date-fns';
-import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../components/programme-planning-header-updated/programme-planning-header-updated';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
 import { ProgrammePlanningRoutineListItemUpdated } from '../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
@@ -98,12 +94,8 @@ export const ProgrammeRoutine: React.FC = () => {
   const isProgrammeCompleted =
     programmeWeeks.filter((week) => week.totalIncompleteDays === 0).length ===
     programmeWeeks.length;
+
   const [successMessage, setSuccessMessage] = useState(false);
-  // const allProgrammesPlanned =
-  //   isDayCompleted &&
-  //   isProgrammeCompleted &&
-  //   isWeekComplete &&
-  //   displayDayCompletedCard;
   const allProgrammesPlanned =
     isDayCompleted &&
     isProgrammeCompleted &&
@@ -165,20 +157,12 @@ export const ProgrammeRoutine: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentDay]);
 
-  const handleSummaryView = () => {
-    history.replace(ROUTES.PROGRAMMES.SUMMARY, {
-      programmeId: programme?.id,
-      variation: 'update',
-    });
-  };
-
   const onActivitySelected = (
     routineItem: ProgrammeRoutineItemDto,
     day?: DailyProgrammeDto,
     activityId?: number
   ) => {
     if (!day) return;
-
     const currentDayCopy = { ...day };
     switch (routineItem.name) {
       case DailyRoutineItemType.largeGroup:
@@ -501,12 +485,6 @@ export const ProgrammeRoutine: React.FC = () => {
 
     const dayDate = new Date(day?.dayDate);
 
-    const subTitleText = dayDate.toLocaleString(
-      'en-ZA',
-      DateFormats.dayWithShortMonthName
-    );
-    // return isFriday(dayDate) ? dayDate : dayDate;
-
     return dayDate;
   };
 
@@ -568,7 +546,6 @@ export const ProgrammeRoutine: React.FC = () => {
                 }}
               />
             )}
-          // check the necessity of this alert message
           {/* {isDayCompleted &&
             isProgrammeCompleted &&
             isWeekComplete &&
@@ -595,24 +572,31 @@ export const ProgrammeRoutine: React.FC = () => {
             )} */}
           <div className={'pt-4'}>
             {isDayCompleted &&
-              sortedRoutineItems.map((routineItem) => (
-                <ProgrammePlanningRoutineListItemUpdated
-                  key={routineItem.id}
-                  day={currentDay}
-                  routineItem={routineItem}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              ))}
+              sortedRoutineItems.map((routineItem) => {
+                if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
+                  return (
+                    <ProgrammePlanningRoutineListItemUpdated
+                      key={routineItem.id}
+                      day={currentDay}
+                      routineItem={routineItem}
+                      onClick={() => onProgrammeClick(routineItem)}
+                    />
+                  );
+                }
+                return null;
+              })}
 
             {!isDayCompleted &&
-              activityRequiredProgrammeRoutineItems?.map((routineItem) => (
-                <ProgrammePlanningRoutineListItemNotCompleted
-                  key={routineItem.id}
-                  day={currentDay}
-                  routineItem={routineItem}
-                  onClick={() => onProgrammeClick(routineItem)}
-                />
-              ))}
+              activityRequiredProgrammeRoutineItems?.map((routineItem) => {
+                return (
+                  <ProgrammePlanningRoutineListItemNotCompleted
+                    key={routineItem.id}
+                    day={currentDay}
+                    routineItem={routineItem}
+                    onClick={() => onProgrammeClick(routineItem)}
+                  />
+                );
+              })}
           </div>
         </>
       )}

@@ -12,7 +12,7 @@ import {
   DialogPosition,
 } from '@ecdlink/ui';
 import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import * as styles from './login.styles';
 import {
@@ -26,6 +26,8 @@ import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { settingActions } from '@store/settings';
 import ROUTES from '@routes/routes';
 import { StorageFull } from './storage-full/storage-full';
+import { getTime } from 'date-fns';
+var CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
 export const Login: React.FC = () => {
@@ -38,27 +40,38 @@ export const Login: React.FC = () => {
   const [freeMemory, setFreeMemory] = useState(0);
   const [errorMessage, setErrorMessage] = useState(false);
 
-  navigator.storage.estimate().then((estimate) => {
-    if (estimate?.quota) {
-      const freMemoryResult = estimate?.quota / 1024 / 1024;
-      setFreeMemory(Number(freMemoryResult.toFixed(0)));
-      return estimate;
-    }
-  });
+  navigator?.storage?.estimate &&
+    navigator?.storage?.estimate().then((estimate) => {
+      if (estimate?.quota) {
+        const freMemoryResult = estimate?.quota / 1024 / 1024;
+        setFreeMemory(Number(freMemoryResult.toFixed(0)));
+        return estimate;
+      }
+    });
 
   const {
     register: loginRegister,
     setValue: loginSetValue,
     formState: loginFormState,
     getValues: loginFormGetValues,
+    control,
   } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
   const { isValid, errors } = loginFormState;
+  const { password } = useWatch({ control });
+
+  const userHash = CryptoJS.AES.encrypt(password, 'secret key 123').toString();
+  const userLocalxpiration = Date.now() + 3600000;
 
   const submitForm = async () => {
+    localStorage.setItem('userHash', JSON.stringify(userHash));
+    localStorage.setItem(
+      'userLocalxpiration',
+      JSON.stringify(userLocalxpiration)
+    );
     setDisplayError(false);
     if (isValid) {
       if (freeMemory > 50 || freeMemory === 0) {

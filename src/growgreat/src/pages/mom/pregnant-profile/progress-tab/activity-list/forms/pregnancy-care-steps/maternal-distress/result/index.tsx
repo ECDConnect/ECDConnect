@@ -11,14 +11,15 @@ import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
 import { Label, Header } from '@/pages/mom/pregnant-profile/components';
 import { DynamicFormProps } from '../../../dynamic-form';
 
-export const MidUpperArmCircumferenceResultStep = ({
+export const maternalDistressVisitSection = 'Maternal distress screening';
+
+export const MaternalDistressScreenStep = ({
   mother,
   sectionQuestions,
   setEnableButton,
   setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
-  const visitSection = 'Maternal distress screening';
   const sectionQuestionsValues = sectionQuestions?.[0]?.questions;
 
   useEffect(() => {
@@ -106,7 +107,7 @@ export const MidUpperArmCircumferenceResultStep = ({
       setAnswers(updatedQuestions);
       setQuestions?.([
         {
-          visitSection,
+          visitSection: maternalDistressVisitSection,
           questions: updatedQuestions,
         },
       ]);
@@ -119,7 +120,7 @@ export const MidUpperArmCircumferenceResultStep = ({
       <Header
         customIcon={Pregnant}
         backgroundColor={'tertiary'}
-        title={visitSection}
+        title={maternalDistressVisitSection}
       />
       <div className="p-4">
         <Label text="In the last 2 weeks, have you:" />

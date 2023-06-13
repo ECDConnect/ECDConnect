@@ -52,10 +52,6 @@ const ProgrammeTheme: React.FC = () => {
     });
   };
 
-  const handleNoTheme = () => {
-    history.push(ROUTES.PROGRAMMES.TIMING);
-  };
-
   const handelThemeSelected = (theme: ProgrammeThemeModel) => {
     history.push(ROUTES.PROGRAMMES.TIMING, { theme });
   };

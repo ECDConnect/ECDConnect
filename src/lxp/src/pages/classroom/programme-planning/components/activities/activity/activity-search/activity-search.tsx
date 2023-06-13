@@ -449,7 +449,10 @@ const ActivitySearch: React.FC<ActivitySearchProps> = ({
             text={submitButtonText}
             textColor="white"
             iconPosition="start"
-            disabled={!selectedActivityId}
+            disabled={
+              !selectedActivityId ||
+              (hasActiveFilters && filteredActivities.length === 0)
+            }
             onClick={() => onSave(selectedActivityId)}
           />
         </div>

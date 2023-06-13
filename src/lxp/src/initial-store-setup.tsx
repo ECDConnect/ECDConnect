@@ -1,5 +1,5 @@
 import { getYear, getMonth, getWeek } from 'date-fns';
-import React, { useEffect, useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch, useAppSelector } from './store';
@@ -49,7 +49,7 @@ import hash from 'object-hash';
 import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
-import { programmeThunkActions } from './store/programme';
+import { programmeActions, programmeThunkActions } from './store/programme';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -58,6 +58,7 @@ type IntialStoreSetupContextValues = {
   resetAuth: () => Promise<void>;
   getLoadingMessage: () => string;
   syncClassroom: () => Promise<void>;
+  refreshClassroom: () => Promise<void>;
 };
 
 export const IntialStoreSetupContext =
@@ -89,17 +90,32 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   useEffect(() => {
-    if (practitioner?.coachHierarchy) {
-      if (!isCoach) {
+    if (userData) {
+      if (practitioner?.coachHierarchy) {
+        if (!isCoach) {
+          (async () =>
+            await appDispatch(
+              coachThunkActions.getCoachByCoachId({
+                coachId: practitioner?.coachHierarchy!,
+              })
+            ).unwrap())();
+        }
+      }
+    }
+  }, [appDispatch, userData, practitioner, isCoach]);
+
+  useEffect(() => {
+    if (userData) {
+      if (isCoach) {
+        (async () =>
+          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
         (async () =>
           await appDispatch(
-            coachThunkActions.getCoachByCoachId({
-              coachId: practitioner?.coachHierarchy!,
-            })
+            practitionerForCoachThunkActions.getPractitionersForCoach({})
           ).unwrap())();
       }
     }
-  }, [appDispatch, isCoach, practitioner]);
+  }, [appDispatch, userData, isCoach, practitioner]);
 
   useEffect(() => {
     if (userData) {
@@ -107,19 +123,17 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         const currentPractitioner = practitioners.find(
           (item) => item?.userId === userData?.id!
         );
-        (async () =>
-          await appDispatch(
-            practitionerThunkActions.getPractitionerById({
-              id: currentPractitioner?.id || '',
-            })
-          ).unwrap())();
-      }
-      if (isCoach) {
-        (async () =>
-          await appDispatch(coachThunkActions.getCoachByUserId({})).unwrap())();
+        if (currentPractitioner) {
+          (async () =>
+            await appDispatch(
+              practitionerThunkActions.getPractitionerById({
+                id: currentPractitioner?.id || '',
+              })
+            ).unwrap())();
+        }
       }
     }
-  }, [appDispatch, userData, practitioners, isCoach]);
+  }, [appDispatch, userData, practitioners]);
 
   useEffect(() => {
     if (userData) {
@@ -148,7 +162,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const resetStaticStoreSetup = async () => {
     appDispatch(staticDataActions.resetStaticDataState());
     appDispatch(progressTrackingActions.resetProgressTrackingState());
-    appDispatch(programmeRoutineActions.resetProgrammeThemeState());
+    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
     appDispatch(activityActions.resetActivityState());
     appDispatch(storyBookActions.resetStoryBookState());
     appDispatch(programmeThemeActions.resetProgrammeThemeState());
@@ -156,6 +170,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(notificationActions.resetNotificationState());
     appDispatch(settingActions.resetSettingsState());
     appDispatch(analyticsActions.resetAnalyticsState());
+    appDispatch(programmeActions.resetProgrammeState());
   };
 
   const resetAdditionalStoreSetup = async () => {
@@ -172,8 +187,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     appDispatch(contentReportActions.resetContentReportState());
   };
 
-  const initStoreSetup = async () => {
-    if (isOnline) {
+  const initStoreSetup = useCallback(async () => {
+    if (isOnline && !userData) {
       setInitLoading(true);
       await initStaticStoreSetup();
       await initAdditionalStoreSetup();
@@ -181,7 +196,8 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       setInitLoading(false);
       setShouldSaveStateHash(true);
     }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isOnline]);
 
   useEffect(() => {
     if (shouldSaveStateHash) {
@@ -199,25 +215,22 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.getClassroomProgrammes({})
     ).unwrap();
-    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       classroomsThunkActions.getClassroomGroupLearners({})
     ).unwrap();
     await appDispatch(userThunkActions.getUser({})).unwrap();
     await appDispatch(userThunkActions.getUserConsents({})).unwrap();
     await appDispatch(
-      practitionerForCoachThunkActions.getPractitionersForCoach({})
-    ).unwrap();
-    await appDispatch(
       practitionerThunkActions.getAllPractitioners({})
     ).unwrap();
     await appDispatch(childrenThunkActions.getChildren({})).unwrap();
     await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
     await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
     await appDispatch(
-      contentReportThunkActions.getChildProgressReportSummary(10)
+      contentReportThunkActions.getChildProgressReportSummary(50)
     ).unwrap();
-
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
     await appDispatch(
       attendanceThunkActions.getAttendance({
         year: getYear(new Date()),
@@ -273,6 +286,21 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     await appDispatch(
       classroomsThunkActions.upsertClassroomGroupProgrammes({})
     ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.upsertClassroomGroupLearners({})
+    ).unwrap();
+  };
+
+  const refreshClassroom = async () => {
+    appDispatch(classroomsActions.resetClassroomState());
+    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
+    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomProgrammes({})
+    ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomGroupLearners({})
+    ).unwrap();
   };
 
   const getLoadingMessage = () => {
@@ -296,6 +324,7 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     resetAuth,
     getLoadingMessage,
     syncClassroom,
+    refreshClassroom,
   };
 
   useEffect(() => {

@@ -1,14 +1,15 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import P1 from '@/assets/pillar/p1.svg';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { useEffect, useMemo } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { Alert, Button, Divider, renderIcon, Typography } from '@ecdlink/ui';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
-import imgMocked from './mocked.png';
+import imgDietaryDiversity from './dietarydiversity2.jpg';
+import eggInfographic from './eggInfographic.png';
 import { alerts } from './alerts';
-import { replaceBraces } from '@ecdlink/core';
+import { getAgeInYearsMonthsAndDays, replaceBraces } from '@ecdlink/core';
 import { dietFormQuestion, getGroupColor } from '../diet-form';
 import { noneOption } from '../diet-form/options';
 import { DownloadResource } from './download-resource';
@@ -54,6 +55,20 @@ export const ResourcesStep = ({
     () => infant?.caregiver?.firstName || '',
     [infant]
   );
+  const dateOfBirth = useMemo(
+    () => infant?.user?.dateOfBirth,
+    [infant?.user?.dateOfBirth]
+  ) as string;
+
+  const { years: ageYears, months: ageMonths } =
+    getAgeInYearsMonthsAndDays(dateOfBirth);
+
+  const isChild6Months = useMemo(
+    () => !ageYears && ageMonths < 7,
+    [ageMonths, ageYears]
+  );
+
+  const [resource, setResource] = useState('');
 
   const answers = questions
     ?.flatMap((section) => section.questions)
@@ -102,7 +117,7 @@ export const ResourcesStep = ({
       );
     }
 
-    if (count < 6) {
+    if (count < 5) {
       return (
         <>
           <Alert
@@ -125,11 +140,34 @@ export const ResourcesStep = ({
       );
     }
 
+    if (isChild6Months ? count < 7 : count < 8) {
+      return (
+        <>
+          <Alert
+            type="warning"
+            title={`${name} is eating lots of different foods!`}
+            titleColor="textDark"
+            customIcon={
+              <div className="rounded-full">
+                <PollyHappy className="h-14 w-14" />
+              </div>
+            }
+          />
+          <Description
+            value={count}
+            title={alerts.dietIsGood.title}
+            list={alerts.dietIsGood.list}
+            clientName={caregiverName}
+          />
+        </>
+      );
+    }
+
     return (
       <>
         <Alert
           type="warning"
-          title={`${name} is eating lots of different foods!`}
+          title={`${name} is eating food from all the groups`}
           titleColor="textDark"
           customIcon={
             <div className="rounded-full">
@@ -139,20 +177,25 @@ export const ResourcesStep = ({
         />
         <Description
           value={count}
-          title={alerts.dietIsGood.title}
-          list={alerts.dietIsGood.list}
+          title={alerts.dietIsGreat.title}
+          list={alerts.dietIsGreat.list}
           clientName={caregiverName}
         />
       </>
     );
-  }, [caregiverName, count, name]);
+  }, [caregiverName, count, isChild6Months, name]);
 
   useEffect(() => {
     setEnableButton && setEnableButton(true);
   }, [setEnableButton]);
 
   if (isTipPage) {
-    return <DownloadResource onClose={() => setIsTip && setIsTip(false)} />;
+    return (
+      <DownloadResource
+        resource={resource}
+        onClose={() => setIsTip && setIsTip(false)}
+      />
+    );
   }
 
   return (
@@ -165,8 +208,12 @@ export const ResourcesStep = ({
         subTitle="Resources"
       />
       <div className="flex flex-col gap-4 p-4">
-        {renderAlert}
-        <Divider dividerType="dashed" />
+        {answers !== undefined && (
+          <>
+            {renderAlert}
+            <Divider dividerType="dashed" />
+          </>
+        )}
         <Typography
           type="h4"
           color="black"
@@ -176,7 +223,7 @@ export const ResourcesStep = ({
           <img
             alt="infographic"
             className="h-32 w-32 rounded-2xl object-cover"
-            src={imgMocked}
+            src={imgDietaryDiversity}
           />
           <Button
             type="filled"
@@ -186,7 +233,10 @@ export const ResourcesStep = ({
             textColor="secondary"
             iconPosition="end"
             className="h-8"
-            onClick={() => setIsTip && setIsTip(true)}
+            onClick={() => {
+              setResource(imgDietaryDiversity);
+              setIsTip && setIsTip(true);
+            }}
           />
         </div>
         <Divider dividerType="dashed" />
@@ -199,7 +249,7 @@ export const ResourcesStep = ({
           <img
             alt="infographic"
             className="h-32 w-32 rounded-2xl object-cover"
-            src={imgMocked}
+            src={eggInfographic}
           />
           <Button
             type="filled"
@@ -209,7 +259,10 @@ export const ResourcesStep = ({
             textColor="secondary"
             iconPosition="end"
             className="h-8"
-            onClick={() => setIsTip && setIsTip(true)}
+            onClick={() => {
+              setResource(eggInfographic);
+              setIsTip && setIsTip(true);
+            }}
           />
         </div>
       </div>

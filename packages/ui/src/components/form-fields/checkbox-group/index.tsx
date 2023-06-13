@@ -1,16 +1,25 @@
 import { ReactElement } from 'react';
-import { Colours } from '../../../models';
+import { FieldValues, Path, UseFormRegister } from 'react-hook-form';
+import { CheckboxChange, Colours, ComponentBaseProps } from '../../../models';
 import { classNames } from '../../../utils';
-import Checkbox, { CheckboxProps } from '../checkbox-input/checkbox-input';
-import { CheckboxChange } from '../checkbox-input/models/Checkbox';
 
-export interface CheckboxGroupProps extends CheckboxProps {
+export interface CheckboxGroupProps<T extends FieldValues = {}>
+  extends ComponentBaseProps {
   icon?: ReactElement;
   title: string;
   titleColours?: Colours;
+  titleWeight?: string;
+  titleSize?: string;
   description?: string;
   extraChildren?: JSX.Element;
   onChange?: (e: CheckboxChange) => void;
+  nameProp?: Path<T>;
+  register?: UseFormRegister<T>;
+  disabled?: boolean;
+  checked?: boolean;
+  value?: number | string;
+  name?: string;
+  checkboxColor?: Colours;
 }
 
 export const CheckboxGroup = ({
@@ -20,53 +29,90 @@ export const CheckboxGroup = ({
   icon,
   title,
   titleColours = 'textDark',
+  titleWeight = 'bold',
+  titleSize = 'base',
   description,
   onChange,
   value,
   extraChildren,
+  nameProp,
+  register,
+  name,
+  testId,
+  checkboxColor,
+  className,
   ...rest
-}: CheckboxGroupProps) => (
-  <div
-    className={`text-textDark relative flex items-center overflow-hidden rounded-lg p-4 ${
-      checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
-    }`}
-  >
-    <Checkbox
-      disabled={disabled}
-      checked={checked}
-      value={value}
-      onCheckboxChange={onChange}
-      {...rest}
-    />
+}: CheckboxGroupProps) => {
+  const checkboxChange = (e: any) => {
+    onChange?.({
+      checked: e.target.checked,
+      name: e.target.name,
+      value: value,
+    } as CheckboxChange);
+  };
+
+  return (
     <label
       htmlFor={id}
-      className="flex w-full flex-col items-start gap-2 font-bold"
+      className={`${className} text-textDark relative flex items-center overflow-hidden rounded-lg p-4 ${
+        checked ? 'bg-secondaryAccent2 border-secondary border-2' : 'bg-uiBg'
+      }`}
     >
-      <div className="flex items-center gap-2">
-        {icon && (
-          <div
-            className={`flex h-9 w-9 items-center justify-center rounded-full ${
-              checked ? 'bg-secondary' : 'bg-tertiary'
-            }`}
-          >
-            {icon}
-          </div>
-        )}
-        <article
+      {nameProp && register && (
+        <input
+          id={id}
+          disabled={disabled}
+          data-testid={testId}
+          type="checkbox"
           className={classNames(
-            'prose',
-            `text-${titleColours} text-base font-bold`
+            'ring:none h-4 w-4 rounded',
+            `border-${checkboxColor}`
           )}
-          dangerouslySetInnerHTML={{ __html: title || '' }}
+          {...register(nameProp)}
         />
+      )}
+      {!nameProp && (
+        <input
+          id={id}
+          name={name}
+          disabled={disabled}
+          data-testid={testId}
+          type="checkbox"
+          className={classNames(
+            'ring:none h-4 w-4 rounded',
+            `border-${checkboxColor}`
+          )}
+          checked={checked}
+          onChange={(e) => checkboxChange(e)}
+        />
+      )}
+      <div className="ml-2 flex w-full flex-col items-start gap-2 font-bold">
+        <div className="flex items-center gap-2">
+          {icon && (
+            <div
+              className={`flex h-9 w-9 items-center justify-center rounded-full ${
+                checked ? 'bg-secondary' : 'bg-tertiary'
+              }`}
+            >
+              {icon}
+            </div>
+          )}
+          <article
+            className={classNames(
+              'prose',
+              `text-${titleColours} text-${titleSize} font-${titleWeight}`
+            )}
+            dangerouslySetInnerHTML={{ __html: title || '' }}
+          />
+        </div>
+        {description && (
+          <p className="text-textMid text-sm font-normal">{description}</p>
+        )}
       </div>
-      {description && (
-        <p className="text-textMid text-sm font-normal">{description}</p>
+      {extraChildren}
+      {disabled && (
+        <span className="absolute left-0 h-full w-full bg-gray-100 opacity-70" />
       )}
     </label>
-    {extraChildren}
-    {disabled && (
-      <span className="absolute left-0 h-full w-full bg-gray-100 opacity-70" />
-    )}
-  </div>
-);
+  );
+};

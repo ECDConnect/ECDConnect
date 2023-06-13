@@ -2,7 +2,9 @@ using EcdLink.Api.CoreApi.Documents;
 using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
@@ -29,6 +31,7 @@ using ECDLink.Security;
 using ECDLink.Security.AccessModifiers.OpenAccess;
 using ECDLink.Security.Managers;
 using ECDLink.SmartStart;
+using ECDLink.SmartStart.Services;
 using ECDLink.Tenancy.Extensions;
 using ECDLink.UrlShortner;
 using Microsoft.AspNetCore.Builder;
@@ -91,7 +94,7 @@ namespace EcdLink.Api.CoreApi
 
             SecurityStartup.ConfigureSecurityServices(services, Configuration);
 
-            GraphStartup.ConfigureGraphQlServices(services, Environment.IsDevelopment());
+            GraphStartup.ConfigureGraphQlServices(services);
 
             ContentManagementStartup.ConfigureContentManagement(services, Configuration);
 
@@ -130,16 +133,24 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<VisitManager>();
             services.AddTransient<VisitDataManager>();
             services.AddTransient<VisitDataStatusManager>();
+            services.AddTransient<VisitDataStatusManager_Practitioner>();
             services.AddTransient<VisitBackReferralManager>();
+            services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
             services.AddTransient<IncomeExpenseService>();
+            services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
             services.AddTransient<IUserInterceptHandler, UserInterceptHandler>();
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
+            services.AddTransient<IIntegrationService, IntegrationService>();
+            services.AddTransient<ISchedulerService, SchedulerService>();
+            services.AddTransient<IntegrationAPIManager>();
+            services.AddTransient<IntegrationLogManager>();
+            
 
             ConfigureJobs(services);
             

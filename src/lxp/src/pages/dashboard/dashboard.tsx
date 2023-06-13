@@ -22,7 +22,10 @@ import OfflineSyncTimeExceeded from '../../modals/offline-sync/offline-sync-time
 import { useAppDispatch } from '@store';
 import { classroomsForCoachThunkActions } from '../../store/classroomForCoach';
 import { classroomsSelectors, classroomsThunkActions } from '@store/classroom';
-import { notificationsSelectors } from '@store/notifications';
+import {
+  notificationActions,
+  notificationsSelectors,
+} from '@store/notifications';
 import { settingSelectors, settingThunkActions } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
@@ -57,6 +60,7 @@ export enum NavigationTypes {
   Profile = 'Profile',
   Messages = 'Messages',
   Training = 'Training',
+  Community = 'Community',
   Logout = 'Logout',
   Practitioners = 'Practitioners',
   Business = 'Business',
@@ -141,6 +145,12 @@ export const Dashboard: React.FC = () => {
 
   useEffect(() => {
     initStaticStoreSetup();
+  }, []);
+
+  useEffect(() => {
+    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+      appDispatch(notificationActions.resetNotificationState());
+    }
   }, []);
 
   useEffect(() => {
@@ -299,6 +309,13 @@ export const Dashboard: React.FC = () => {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
       icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
       current: false,
       showDivider: true,
     },
@@ -500,7 +517,7 @@ export const Dashboard: React.FC = () => {
             iconColor="errorMain"
             title="Missing programme information"
             paragraphs={[
-              `Before you begin, please fill in your type of ECD service and programme name.`,
+              `Ask the principal of the programme to add you to the programme on Funda App. If you are the principal or if your principal is not a SmartStarter, please update your profile.`,
             ]}
             actionButtons={[
               {

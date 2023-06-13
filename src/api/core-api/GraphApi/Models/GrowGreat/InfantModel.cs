@@ -15,6 +15,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? MotherCaregiverId { get; set; }
         public MotherModel Mother { get; set; }
         public Boolean? Completed24MonthVisits { get; set; }
+        public Boolean? ClickedVisitTab { get; set; }
+        public Boolean? ClickedProgressTab { get; set; }
+        public Boolean? ClickedReferralsTab { get; set; }
+        public Boolean? ClickedContactTab { get; set; }
     }
 }
 

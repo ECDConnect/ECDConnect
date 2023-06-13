@@ -3,22 +3,29 @@ import {
   EventRecordType,
   MotherModelInput,
   SiteAddressInput,
+  VisitDataStatus,
+  VisitDataStatusFilterInput,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { MotherService } from '@services/MotherService';
 import { SiteAddressService } from '@services/SiteAddressService';
 import { RootState, ThunkApiType } from '../types';
+import { Referral } from '@/services/ReferralService';
 
 export const MotherActions = {
   GET_MOTHERS: 'getMothers',
   GET_MOTHER_VISITS: 'getMotherVisits',
   GET_MOTHER_EVENT_RECORD_TYPES: 'getMotherEventRecordTypes',
   ADD_MOTHER: 'addMother',
-  ADD_ADDITIONAL_MOTHER_VISIT: 'addAdditionalMotherVisit',
   GET_MOTHER_COUNT_FOR_MONTH: 'getMotherCountForMonth',
   GET_MOTHERS_WEEKLY_VISITS: 'getMothersWeeklyVisits',
   UPDATE_MOTHER_ADDRESS: 'updateMotherAddress',
+  ADD_ADDITIONAL_VISIT_FOR_MOTHER: 'addAdditionalVisitForMother',
+  GET_REFERRALS_FOR_MOTHER: 'getReferralsForMother',
+  GET_COMPLETED_REFERRALS_FOR_MOTHER: 'getCompletedReferralsForMother',
+  UPDATE_VISIT_DATA_STATUS: 'updateVisitDataStatus',
 };
 
 export const getMothers = createAsyncThunk<
@@ -169,12 +176,10 @@ export const updateMother = createAsyncThunk<
     auth: { userAuth },
   } = getState();
   try {
-    let mappedMotherInput = mapMother(mother);
-
     if (userAuth?.auth_token) {
       return await new MotherService(userAuth?.auth_token).updateMother(
         id,
-        mappedMotherInput
+        mother as MotherModelInput
       );
     } else {
       return rejectWithValue('no access token, profile check required');
@@ -208,31 +213,6 @@ export const getMotherCountForMonth = createAsyncThunk<
       }
 
       return count;
-    } catch (err) {
-      return rejectWithValue(err);
-    }
-  }
-);
-
-export const addAdditionalVisitForMother = createAsyncThunk<
-  any, // TODO: add type
-  any, // TODO: add type
-  ThunkApiType<RootState>
->(
-  MotherActions.ADD_ADDITIONAL_MOTHER_VISIT,
-  async ({ motherId }, { getState, rejectWithValue }) => {
-    const {
-      auth: { userAuth },
-    } = getState();
-
-    try {
-      if (userAuth?.auth_token) {
-        await new MotherService(
-          userAuth?.auth_token
-        ).addAdditionalVisitForMother(motherId);
-      } else {
-        return rejectWithValue('no access token, profile check required');
-      }
     } catch (err) {
       return rejectWithValue(err);
     }
@@ -338,6 +318,120 @@ export const updateMotherContactDetails = createAsyncThunk<
         return await new MotherService(
           userAuth?.auth_token
         ).updateMotherContactDetails(id, mappedMotherInput);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addAdditionalVisitForMother = createAsyncThunk<
+  VisitDto,
+  VisitModelInput,
+  ThunkApiType<RootState>
+>(
+  MotherActions.ADD_ADDITIONAL_VISIT_FOR_MOTHER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        const response = await new MotherService(
+          userAuth?.auth_token
+        ).addAdditionalVisitForMother(input);
+
+        return response;
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getReferralsForMother = createAsyncThunk<
+  VisitDataStatus[],
+  { motherId: string },
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_REFERRALS_FOR_MOTHER,
+  async ({ motherId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let referrals: VisitDataStatus[];
+
+      if (userAuth?.auth_token) {
+        referrals = await new Referral(
+          userAuth?.auth_token
+        ).getReferralsForMother(motherId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!referrals) {
+        return rejectWithValue('Error getting more information');
+      }
+      return referrals;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const getCompletedReferralsForMother = createAsyncThunk<
+  VisitDataStatus[],
+  { motherId: string },
+  ThunkApiType<RootState>
+>(
+  MotherActions.GET_COMPLETED_REFERRALS_FOR_MOTHER,
+  async ({ motherId }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let referrals: VisitDataStatus[];
+
+      if (userAuth?.auth_token) {
+        referrals = await new Referral(
+          userAuth?.auth_token
+        ).getCompletedReferralsForMother(motherId);
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!referrals) {
+        return rejectWithValue('Error getting more information');
+      }
+      return referrals;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateVisitDataStatus = createAsyncThunk<
+  {},
+  { input: VisitDataStatusFilterInput[] },
+  ThunkApiType<RootState>
+>(
+  MotherActions.UPDATE_VISIT_DATA_STATUS,
+  async ({ input }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        new Referral(userAuth?.auth_token ?? '').updateVisitDataStatus(input);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

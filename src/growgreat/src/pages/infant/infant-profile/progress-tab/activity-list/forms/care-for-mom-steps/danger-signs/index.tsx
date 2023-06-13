@@ -1,8 +1,9 @@
 import {
   ActionModal,
   Alert,
-  Checkbox,
   CheckboxChange,
+  CheckboxGroup,
+  Dialog,
   DialogPosition,
   renderIcon,
   Typography,
@@ -11,7 +12,7 @@ import { Header } from '@/pages/infant/infant-profile/components';
 import Pregnant from '@/assets/pregnant.svg';
 import { ReactComponent as Translation } from '@/assets/translation.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { replaceBraces, useDialog } from '@ecdlink/core';
 import { Translations } from './translations';
 
@@ -26,7 +27,6 @@ export const DangerSignsStep = ({
 }: DynamicFormProps) => {
   const [currentOption, setCurrentOption] = useState<string>();
   const [answers, setAnswer] = useState<(string | number | undefined)[]>();
-
   const dialog = useDialog();
   const noneOption = 'None of the above';
 
@@ -45,15 +45,22 @@ export const DangerSignsStep = ({
     { name: noneOption },
   ];
 
+  const [optionList, setOptionList] = useState<
+    {
+      name: string;
+      disabled?: boolean;
+      description?: string;
+    }[]
+  >(options);
+
   const question = `Tick the danger signs {client} is experiencing:`;
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
       if (event.checked) {
-        const none = 'None of the above';
         if (
-          (event.value === none && answers?.length) ||
-          answers?.includes(none)
+          (event.value === noneOption && answers?.length) ||
+          answers?.includes(noneOption)
         ) {
           return dialog({
             blocking: false,
@@ -128,12 +135,51 @@ export const DangerSignsStep = ({
     ]
   );
 
+  const handleOnChangeSelectedOptions = useCallback(() => {
+    if (!answers?.includes(noneOption) && answers?.length) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name === noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    if (answers?.includes(noneOption)) {
+      return setOptionList((prevState) =>
+        prevState.map((item) => {
+          if (item.name !== noneOption) {
+            return { ...item, disabled: true };
+          }
+          return { ...item, disabled: false };
+        })
+      );
+    }
+
+    return setOptionList((prevState) =>
+      prevState.map((item) => ({ ...item, disabled: false }))
+    );
+  }, [answers]);
+
+  useEffect(() => {
+    handleOnChangeSelectedOptions();
+  }, [handleOnChangeSelectedOptions]);
+
   if (isTipPage && currentOption) {
     return (
-      <Translations
-        toTranslate={currentOption}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage ? isTipPage : false}
+        position={DialogPosition.Full}
+      >
+        <Translations
+          toTranslate={currentOption}
+          onClose={() => setIsTip && setIsTip(false)}
+          section={dangerSignsVisitSection}
+        />
+      </Dialog>
     );
   }
 
@@ -161,46 +207,31 @@ export const DangerSignsStep = ({
           color="textMid"
           className="mb-4"
         />
-        {options.map((option, index) => (
-          <div
-            className="bg-uiBg mt-2 flex items-center rounded-xl p-4"
-            key={option?.name}
-          >
-            <Checkbox
-              checked={answers?.some((item) => item === option.name)}
-              value={option.name}
-              onCheckboxChange={onCheckboxChange}
-            />
-            <div>
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={option?.name || ''}
-                color="textMid"
-              />
-              {option?.description && (
-                <Typography
-                  type="body"
-                  align="left"
-                  weight="skinny"
-                  color="textLight"
-                  text={option?.description}
-                />
-              )}
-            </div>
-            {options.length - 1 > index && (
-              <button
-                className="ml-auto"
-                onClick={() => {
-                  setCurrentOption(option?.name);
-                  setIsTip && setIsTip(true);
-                }}
-              >
-                <Translation className="h-6 w-6" />
-              </button>
-            )}
-          </div>
+        {options.map((item, index) => (
+          <CheckboxGroup
+            checkboxColor="primary"
+            className="mt-2"
+            id={item.name}
+            key={item.name}
+            title={item.name}
+            description={item.description}
+            checked={answers?.some((option) => option === item.name)}
+            value={item.name}
+            onChange={onCheckboxChange}
+            {...(options.length - 1 > index && {
+              extraChildren: (
+                <button
+                  className="ml-auto"
+                  onClick={() => {
+                    setCurrentOption(item.name);
+                    setIsTip?.(true);
+                  }}
+                >
+                  <Translation className="h-6 w-6" />
+                </button>
+              ),
+            })}
+          />
         ))}
         {answers?.some((item) => item !== noneOption) && (
           <Alert

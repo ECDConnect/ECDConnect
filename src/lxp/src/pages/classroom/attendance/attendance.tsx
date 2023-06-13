@@ -5,7 +5,13 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { addDays, getDayOfYear, isSameDay, startOfWeek } from 'date-fns';
+import {
+  addDays,
+  getDate,
+  getDayOfYear,
+  isSameDay,
+  startOfWeek,
+} from 'date-fns';
 import getDay from 'date-fns/getDay';
 import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
@@ -17,7 +23,7 @@ import { staticDataSelectors } from '@store/static-data';
 import {
   classroomGroupHasAttendanceDate,
   getClassroomGroupSchoolDays,
-  getMissedClassAttendance,
+  getMissedAttendanceSummaryGroups,
   isValidAttendableDate,
 } from '@utils/classroom/attendance/track-attendance-utils';
 import { IconInformationIndicator } from '../programme-planning/components/icon-information-indicator/icon-information-indicator';
@@ -30,10 +36,16 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
 import MultiRouteWrapper from '@/pages/classroom/attendance/components/attendance-wrapper/AttendanceWrapper';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { MissedAttendanceGroups } from '@/models/classroom/attendance/MissedAttendanceGroups';
 
 export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const userData = useSelector(userSelectors.getUser);
   const [seeRegister, setSeeRegister] = useState<boolean>(false);
+  const [previousClassroomGroupId, setPreviousClassroomGroupId] =
+    useState<string>('');
+
   const [userCurrentClassroomGroup, setUserCurrentClassroomGroup] =
     useState<ClassroomGroupDto>();
 
@@ -48,7 +60,6 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const classroomGroupsForPrincipal = allClassroomGroups.filter(
     (item) => item?.userId === userData?.id
   );
-
   const classroomGroups = isPrincipal
     ? classroomGroupsForPrincipal.filter(
         (x) => x.name !== NoPlaygroupClassroomType.name
@@ -70,7 +81,32 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const attendance = useSelector(attendanceSelectors.getAttendance);
   const learners = useSelector(classroomsSelectors.getClassroomGroupLearners);
   const holidays = useSelector(staticDataSelectors.getHolidays);
-  const currentDate = new Date();
+  const [currentDate] = useState(new Date());
+
+  const { errorDialog } = useRequestResponseDialog();
+
+  const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
+    'attendanceData',
+    'getAttendance'
+  );
+
+  useEffect(() => {
+    if (isAttendnaceRejected) {
+      errorDialog();
+    }
+  }, [errorDialog, isAttendnaceRejected]);
+
+  function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
+    const filteredArray: boolean[] = studentsArray.map((student) => {
+      const insertedDate = new Date(student.insertedDate); // convert insertedDate to a Date object
+      return getDayOfYear(insertedDate) <= getDayOfYear(currentDate);
+    });
+    return filteredArray.every((value) => value === true);
+  }
+
+  const allChildrenInsertedBeforeToday = isAllStudentsInsertedBeforeToday(
+    children ?? []
+  );
 
   useEffect(() => {
     if (!classroomGroups || classroomGroups?.length === 0) return;
@@ -89,12 +125,8 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       (x) => x.id === currentClassProgramme?.classroomGroupId
     );
 
+    //this must be updated for user with multiple classes
     setUserCurrentClassroomGroup(currentDayClassroomGroup);
-
-    if (!currentDayClassroomGroup) {
-      setAttendanceComponentType('summary');
-      return;
-    }
 
     const currentLearners = [];
     const programmeStartDate =
@@ -109,23 +141,22 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
 
       const showChildInRegister =
         startedAttendanceDay >= getDayOfYear(programmeStartDate);
+
       if (showChildInRegister) {
         currentLearners.push(learner);
       }
     }
 
-    if (!currentLearners.length) {
-      setAttendanceComponentType('summary');
-      return;
-    }
-
     const currentClassProgrammes = classProgrammesUpdated.filter(
-      (x) => x.classroomGroupId === currentDayClassroomGroup.id
+      (x) => x.classroomGroupId === currentDayClassroomGroup?.id
     );
     const meetingDays = getClassroomGroupSchoolDays(currentClassProgrammes);
 
     const attendanceAlreadyTaken = currentWeekAttendance.some((att) => {
-      return isSameDay(new Date(att.attendanceDate as Date), currentDate);
+      return isSameDay(
+        getDay(new Date(att.attendanceDate as Date)) - 1,
+        getDay(currentDate)
+      );
     });
 
     const isValidDayForAttendance = isValidAttendableDate(
@@ -134,43 +165,48 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       publicHolidays || []
     );
 
-    if (!attendanceAlreadyTaken && isValidDayForAttendance) {
-      setAttendanceComponentType('attendance');
+    const missedDays: MissedAttendanceGroups[] =
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance,
+        holidays,
+        currentDate,
+        learners
+      );
+
+    //weekend check
+    if (!currentDayClassroomGroup && missedDays.length === 0) {
+      setAttendanceComponentType('report');
       return;
     }
-
-    const missedClassAttendance = getMissedClassAttendance(
-      [currentDayClassroomGroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === currentDayClassroomGroup.id
-      ),
-      attendance || [],
-      currentDate
-    );
-
-    const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(currentDate)
-    );
-
-    const removeHolidays = removeTodaysAttendance.filter((x) => {
-      return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
-        holidays
-      );
-    });
-
-    if (removeHolidays.length === 0) {
+    if (!attendanceAlreadyTaken && isValidDayForAttendance && !seeRegister) {
+      setAttendanceComponentType('attendance');
+    } else if (missedDays.length === 0) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
+      return;
     }
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [classroomGroups, attendance]);
+  }, [
+    allChildrenInsertedBeforeToday,
+    attendance,
+    classProgrammesUpdated,
+    classroomGroups,
+    classroomGroupsForPrincipal,
+    currentDate,
+    holidays,
+    learners,
+    practitioner?.isPrincipal,
+    publicHolidays,
+    seeRegister,
+    previousClassroomGroupId,
+    classProgrammes,
+  ]);
 
   const attendanceSubmitted = async (attendanceResult: AttendanceResult) => {
-    setSeeRegister(true);
-
     // is attendance complete for whole weeek?
     if (!classroom) return;
 
@@ -178,27 +214,33 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
       (x) => x.id === attendanceResult.classroomGroupId
     );
 
+    setPreviousClassroomGroupId(attendanceResult.classroomGroupId);
+
     if (!classgroup) return;
 
-    const missedClassAttendance = getMissedClassAttendance(
-      [classgroup],
-      classProgrammesUpdated.filter(
-        (x) => x.classroomGroupId === classgroup.id
-      ),
-      attendance || [],
-      currentDate
-    );
+    const missedClassAttendance: MissedAttendanceGroups[] =
+      getMissedAttendanceSummaryGroups(
+        practitioner?.isPrincipal === true
+          ? classroomGroupsForPrincipal
+          : classroomGroups || [],
+        classProgrammesUpdated,
+        attendance || [],
+        holidays,
+        currentDate,
+        learners
+      );
+
     const removeTodaysAttendance = missedClassAttendance.filter(
-      (x) => x.meetingDay !== getDay(attendanceResult.attendanceDate)
+      (x) => getDay(x.missedDay) !== getDay(attendanceResult.attendanceDate)
     );
     const removeHolidays = removeTodaysAttendance.filter((x) => {
       return isWorkingDay(
-        addDays(startOfWeek(currentDate), x.meetingDay),
+        addDays(startOfWeek(currentDate), getDay(x.missedDay)),
         holidays
       );
     });
 
-    if (removeHolidays.length === 0) {
+    if (removeHolidays.length === 0 && missedClassAttendance) {
       setAttendanceComponentType('report');
     } else {
       setAttendanceComponentType('summary');
@@ -214,10 +256,16 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
           <AttendanceReport
             classroom={classroom}
             currentClassroomGroup={userCurrentClassroomGroup}
+            classroomGroups={classroomGroups}
           />
         );
       case 'summary':
-        return <AttendanceSummary openReports={() => {}} />;
+        return (
+          <AttendanceSummary
+            openReports={() => setAttendanceComponentType('report')}
+            currentUserId={userData?.id || ''}
+          />
+        );
       default:
         return null;
     }
@@ -232,27 +280,18 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     );
   }
 
-  const gotToReports = () => {
-    setSeeRegister(false);
-    setAttendanceComponentType('report');
-  };
-
   return (
     <div>
       <MultiRouteWrapper />
-      {attendanceComponentType && !seeRegister ? (
-        getComponentToRender(attendanceComponentType)
-      ) : (
-        <AttendanceSummary hidePopup={seeRegister} openReports={gotToReports} />
-      )}
+      {attendanceComponentType && getComponentToRender(attendanceComponentType)}
       <div className={'flex h-full w-full flex-1 flex-col px-4'}>
-        {attendanceComponentType === 'attendance' && !seeRegister && (
+        {attendanceComponentType === 'attendance' && (
           <Button
             type="outlined"
             color="primary"
             className={'mt-0'}
             onClick={() => {
-              setSeeRegister(true);
+              setSeeRegister(!seeRegister);
             }}
           >
             {renderIcon('EyeIcon', 'h-5 w-5 text-primary')}

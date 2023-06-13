@@ -1,5 +1,6 @@
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -16,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
 
     }
 
-    public class Programme<TKey> : EntityBase<TKey>, ClassroomJoin<TKey>
+    public class Programme<TKey> : EntityBase<TKey>, ClassroomJoin<TKey>, ITrackableType
          where TKey : IEquatable<TKey>
     {
         public string Name { get; set; }

@@ -18,10 +18,6 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import ROUTES from '@/routes/routes';
 
-import {
-  getInfantById,
-  getInfantVisitsSelector,
-} from '@/store/infant/infant.selectors';
 import { activitiesList, activitiesTypes } from './activities-list';
 import { Form } from './forms';
 import { useWindowSize } from '@reach/window-size';
@@ -31,21 +27,21 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import {
   getMomCompletedVisitsByVisitIdSelector,
-  getPreviousVisitInformationForInfantSelector,
   getPreviousVisitInformationForMotherSelector,
 } from '@/store/visit/visit.selectors';
 import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/danger-signs-steps/developmental-screening-weeks';
-import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
+// import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
-import { motherSelectors, motherThunkActions } from '@/store/mother';
+import { motherThunkActions } from '@/store/mother';
 import {
+  getIsMotherFirstVisitSelector,
   getMotherById,
-  getMotherVisits,
+  getMotherLastVisitSelector,
 } from '@/store/mother/mother.selectors';
 
 export const INFANT_PROFILE_TABS = {
@@ -70,21 +66,66 @@ export const MomActivityList: React.FC = () => {
   const { visitId } = useParams<MotherProfileParams>();
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
+  const MOCKED_VISIT_ID = visitId;
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const location = useLocation();
+  const [, , , infantId] = location.pathname.split('/');
+  const [, , , motherId] = location.pathname.split('/');
+
+  const currentVisit = useSelector(getMotherLastVisitSelector);
+
+  useLayoutEffect(() => {
+    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
+
+    appDispatch(motherThunkActions?.getMotherVisits({ motherId }));
+    appDispatch(
+      visitThunkActions.getGrowthDataForInfant({ infantId })
+    ).unwrap();
+    appDispatch(
+      referralThunkActions.getReferralsForVisitId({ visitId })
+    ).unwrap();
+  }, [appDispatch, infantId, motherId, visitId]);
+
+  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+
+  useLayoutEffect(() => {
+    if (
+      (!previousCurrentVisit ||
+        (!!previousCurrentVisit &&
+          previousCurrentVisit?.id !== currentVisit?.id)) &&
+      !!currentVisit
+    )
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit?.id,
+        })
+      );
+  }, [
+    appDispatch,
+    visitId,
+    currentVisit?.id,
+    currentVisit,
+    previousCurrentVisit,
+  ]);
+
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getVisitAnswersForMother({
+        visitId: MOCKED_VISIT_ID,
+        visitName: activitiesTypes.nutrition,
+        visitSection: DevelopmentalScreeningVisitSection,
+      })
+    );
+  }, [MOCKED_VISIT_ID, appDispatch]);
 
   const { isOnline } = useOnlineStatus();
 
   const { width } = useWindowSize();
 
-  const history = useHistory();
-
-  const location = useLocation();
-
   const user = useSelector(userSelectors.getUser);
 
-  const visits2 = useSelector(getMotherVisits);
-
-  const MOCKED_VISIT_ID = visitId;
-  // '454686a9-2142-4061-aa47-4e89d46110b9';
+  const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
 
   const completedVisits = useSelector((state: RootState) =>
     getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
@@ -94,30 +135,27 @@ export const MomActivityList: React.FC = () => {
     getPreviousVisitInformationForMotherSelector
   );
 
-  const isFollowUp = completedVisits?.length === 7;
-  const isAllCompleted = completedVisits?.length === 8;
+  const activityListUpdated =
+    previousMotherVisit?.visitDataStatus?.length! > 0
+      ? activitiesList
+      : activitiesList;
 
-  const [, , , infantId] = location.pathname.split('/');
-  const [, , , motherId] = location.pathname.split('/');
+  const { visibleActivities } = useMemo(() => {
+    const visibleActivities = activityListUpdated.filter((item) => {
+      if (item.id === activitiesTypes.dangerSigns && isFirstVisit)
+        return undefined;
 
-  const appDispatch = useAppDispatch();
+      return item;
+    });
 
-  const infant = useSelector((state: RootState) =>
-    getInfantById(state, infantId)
-  );
+    return { visibleActivities };
+  }, [activityListUpdated, isFirstVisit]);
+
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
 
-  const infantName = useMemo(
-    () => infant?.user?.firstName || '',
-    [infant?.user?.firstName]
-  );
-
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+  const name = mother?.user?.firstName;
 
   const { isLoading } = useThunkFetchCall(
     'visits',
@@ -125,9 +163,7 @@ export const MomActivityList: React.FC = () => {
   );
 
   const isLargeName =
-    (infant?.user?.firstName || '').length +
-      (infant?.user?.surname || '').length >
-    22;
+    (name || '').length + (mother?.user?.surname || '').length > 22;
 
   const today = useMemo(() => new Date(), []);
   const options: Intl.DateTimeFormatOptions = useMemo(
@@ -139,80 +175,88 @@ export const MomActivityList: React.FC = () => {
     []
   );
 
-  const { completedForms, uncompletedForms, followUpForm } = useMemo(() => {
-    const motherType = relationshipTypes.find(
-      (item) => item.label === 'Mother'
-    );
+  const { completedForms, uncompletedForms, followUpForm, stepperCount } =
+    useMemo(() => {
+      const completedActivities = visibleActivities.filter((item) =>
+        completedVisits?.includes(item.title)
+      );
+      const uncompletedActivities = visibleActivities.filter(
+        (item) => !completedVisits?.includes(item.title)
+      );
 
-    const completedActivities = activitiesList.filter((item) =>
-      completedVisits?.includes(item.title)
-    );
-    const uncompletedActivities = activitiesList.filter(
-      (item) => !completedVisits?.includes(item.title)
-    );
+      const completedForms = completedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'w-7 h-7',
+          title: item?.title,
+          titleStyle: 'text-textDark',
+          subTitle: '',
+          iconBackgroundColor: 'successMain' as Colours,
+          backgroundColor: 'successBg' as Colours,
+          rightIcon: 'BadgeCheckIcon',
+          rightIconClassName: 'h-5 w-5 text-successMain',
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
+        })
+      );
 
-    const completedForms = completedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        titleStyle: 'text-textDark',
-        subTitle: '',
-        iconBackgroundColor: 'successMain' as Colours,
-        backgroundColor: 'successBg' as Colours,
-        rightIcon: 'BadgeCheckIcon',
-        rightIconClassName: 'h-5 w-5 text-successMain',
-      })
-    );
+      const uncompletedForms = uncompletedActivities.map(
+        (item): MenuListDataItem => ({
+          showIcon: true,
+          menuIconUrl: item?.menuIconUrl,
+          menuIconClassName: 'w-7 h-7',
+          title: item?.title,
+          subTitle: '',
+          iconBackgroundColor: item.iconBackgroundColor as Colours,
+          hexBackgroundColor: item.hexBackgroundColor || '',
+          className: item.className,
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
+        })
+      );
 
-    const uncompletedForms = uncompletedActivities.map(
-      (item): MenuListDataItem => ({
-        showIcon: true,
-        menuIconUrl: item?.menuIconUrl,
-        menuIconClassName: 'border-0',
-        title: item?.title,
-        subTitle: '',
-        iconBackgroundColor: item.iconBackgroundColor as Colours,
-        // iconHexBackgroundColor: item.bac,
-        // backgroundColor: (item.backgroundColor as Colours) || '',
-        hexBackgroundColor: item.hexBackgroundColor || '',
-        className: item.className,
-        onActionClick: () => {
-          if (item.id) {
-            window.sessionStorage.setItem(currentActivityKey, item.id);
+      const stepperCount = completedForms.length + uncompletedForms.length + 1; // +1 is for followup
+
+      const followUpForm: MenuListDataItem[] = [
+        {
+          showIcon: true,
+          menuIcon: 'CalendarIcon',
+          menuIconClassName: 'border-0',
+          iconColor: 'white',
+          title: 'Follow up',
+          titleStyle: 'text-textDark semibold',
+          subTitle: 'Schedule your next visit, make referrals & save notes',
+          subTitleStyle: 'text-textMid',
+          iconBackgroundColor: 'tertiary' as Colours,
+          backgroundColor: 'uiBg' as Colours,
+          onActionClick: () => {
+            window.sessionStorage.setItem(currentActivityKey, 'Follow up');
             setShowForm(true);
-          }
+          },
         },
-      })
-    );
+      ];
 
-    const followUpForm: MenuListDataItem[] = [
-      {
-        showIcon: true,
-        menuIcon: 'CalendarIcon',
-        menuIconClassName: 'border-0',
-        iconColor: 'white',
-        title: 'Follow up',
-        subTitle: 'Schedule your next visit, make referrals & save notes',
-        iconBackgroundColor: 'tertiary' as Colours,
-        backgroundColor: 'uiBg' as Colours,
-        onActionClick: () => {
-          window.sessionStorage.setItem(currentActivityKey, 'Follow up');
-          setShowForm(true);
-        },
-      },
-    ];
+      return { uncompletedForms, completedForms, followUpForm, stepperCount };
+    }, [visibleActivities, completedVisits]);
 
-    return { uncompletedForms, completedForms, followUpForm };
-  }, [completedVisits]);
+  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isAllCompleted = completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
       return setIsStartVisit(false);
     }
-    return history.push(ROUTES.CLIENTS.ROOT);
-  }, [history, isStartVisit]);
+    history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);
+  }, [history, isStartVisit, motherId]);
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
@@ -228,42 +272,6 @@ export const MomActivityList: React.FC = () => {
       setShowForm(true);
     }
   }, [selectedOption]);
-
-  useLayoutEffect(() => {
-    appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
-
-    appDispatch(motherThunkActions?.getMotherVisits({ motherId }));
-    appDispatch(
-      visitThunkActions.getGrowthDataForInfant({ infantId })
-    ).unwrap();
-    appDispatch(
-      referralThunkActions.getReferralsForInfant({ infantId })
-    ).unwrap();
-  }, [appDispatch, infantId, motherId]);
-
-  useLayoutEffect(() => {
-    // TODO: add integration
-    appDispatch(
-      visitThunkActions.getMomCompletedVisitsForVisitId({
-        visitId: MOCKED_VISIT_ID,
-      })
-    );
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForMother({
-        visitId: MOCKED_VISIT_ID,
-      })
-    );
-  }, [MOCKED_VISIT_ID, appDispatch]);
-
-  useLayoutEffect(() => {
-    appDispatch(
-      visitThunkActions.getVisitAnswersForMother({
-        visitId: MOCKED_VISIT_ID,
-        visitName: activitiesTypes.nutrition,
-        visitSection: DevelopmentalScreeningVisitSection,
-      })
-    );
-  }, [MOCKED_VISIT_ID, appDispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -309,7 +317,7 @@ export const MomActivityList: React.FC = () => {
               <Typography
                 type="body"
                 align="center"
-                text={`You supported ${caregiverName} and ${infantName} through their first thousand days by completing all activities. Thank you!`}
+                text={`You supported ${name} through their first thousand days by completing all activities. Thank you!`}
                 color="textMid"
                 className="mb-4"
               />
@@ -360,18 +368,18 @@ export const MomActivityList: React.FC = () => {
                 </>
               )}
               <div className="mt-8 flex gap-1">
-                {Object.values(activitiesTypes).map((item, index) => (
+                {Array.from({ length: stepperCount }, (_, i) => (
                   <span
-                    key={item}
+                    key={i}
                     className="rounded-10 h-2"
                     style={{
                       minWidth: 37,
                       background:
                         !!completedVisits?.length &&
-                        index + 1 <= completedVisits?.length
+                        i + 1 <= completedVisits?.length
                           ? '#26ACAF'
                           : '#D4EEEF',
-                      width: width / Object.values(activitiesTypes).length,
+                      width: width / stepperCount,
                     }}
                   />
                 ))}
@@ -409,24 +417,24 @@ export const MomActivityList: React.FC = () => {
       <IntroScreen mother={mother} onStartVisit={() => setIsStartVisit(true)} />
     );
   }, [
-    caregiverName,
-    completedForms,
-    completedVisits?.length,
-    followUpForm,
-    goBack,
-    mother,
-    infantName,
-    isAllCompleted,
-    isFollowUp,
     isLoading,
-    isShowCompletedForms,
     isStartVisit,
-    options,
     previousMotherVisit?.visitDataStatus?.length,
+    mother,
     today,
-    uncompletedForms,
+    options,
+    isAllCompleted,
     user?.firstName,
+    name,
+    goBack,
+    isFollowUp,
+    followUpForm,
+    uncompletedForms,
+    completedVisits?.length,
+    isShowCompletedForms,
+    completedForms,
     width,
+    stepperCount,
   ]);
 
   if (showForm && selectedOption) {
@@ -439,8 +447,8 @@ export const MomActivityList: React.FC = () => {
         size="medium"
         renderBorder
         onBack={goBack}
-        title={`${infant?.user?.firstName || ''} ${
-          !isLargeName ? infant?.user?.surname || '' : ''
+        title={`${name || ''} ${
+          !isLargeName ? mother?.user?.surname || '' : ''
         }`}
         subTitle="Pregnancy activities"
         backgroundColour="white"
@@ -451,13 +459,13 @@ export const MomActivityList: React.FC = () => {
         {renderContent}
       </BannerWrapper>
       <Dialog
-        fullScreen={false}
+        fullScreen={true}
         visible={displayHelp}
         position={DialogPosition.Full}
       >
         <ActivityInfoPage
-          section="Activity Info"
-          subTitle="Road to health activities"
+          section="Pregnancy activities"
+          subTitle="Pregnancy activities"
           setDisplayHelp={setDisplayHelp}
         />
       </Dialog>

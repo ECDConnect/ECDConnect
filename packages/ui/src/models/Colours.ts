@@ -31,4 +31,5 @@ export type Colours =
   | 'white'
   | 'black'
   | 'transparent'
-  | 'quatenary';
+  | 'quatenary'
+  | 'darkBackground';

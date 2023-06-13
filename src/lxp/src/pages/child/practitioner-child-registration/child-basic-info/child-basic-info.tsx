@@ -24,6 +24,9 @@ import { ChildService } from '@/services/ChildService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { ChildMatchingDto } from './child-basic-info.types';
+import { useLocation } from 'react-router';
+import { PractitionerChildRegisterState } from '../types';
+import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 
 export const ChildBasicInfo: React.FC<
   FormComponentProps<ChildBasicInfoModel>
@@ -33,9 +36,17 @@ export const ChildBasicInfo: React.FC<
   const getAllClassroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
+  const location = useLocation<PractitionerChildRegisterState>();
+
+  const { practitionerId } = location.state;
+
+  const practitionerFromState = useSelector(
+    getPractitionerByUserId(practitionerId || '')
+  );
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const getClassroomForPrincipal = getAllClassroomGroups.filter((item) => {
-    return item?.userId === practitioner?.userId || item?.isActive !== true;
+  const userId = practitioner?.userId || practitionerFromState?.userId;
+  const getClassroomForPractitioner = getAllClassroomGroups.filter((item) => {
+    return item?.userId === userId || item?.isActive !== true;
   });
 
   const isPrincipal = practitioner?.isPrincipal;
@@ -139,8 +150,8 @@ export const ChildBasicInfo: React.FC<
         placeholder="Select class"
         selectedValue={getSelectedClassroom()}
         list={
-          isPrincipal
-            ? getClassroomForPrincipal.map((x) => ({
+          !isPrincipal
+            ? getClassroomForPractitioner.map((x) => ({
                 label: x.name,
                 value: x.id || '',
               }))

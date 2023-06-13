@@ -1,6 +1,5 @@
 import {
   ActionModal,
-  Alert,
   Button,
   Typography,
   DialogPosition,
@@ -27,7 +26,7 @@ import ActivityDetails from '../../../components/activities/activity/activity-de
 import StoryActivityDetails from '../../../components/activities/storybooks/story-activity-details/story-activity-details';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../../../modals/offline-sync/online-only-modal';
-import { programmeActions } from '@store/programme';
+import { programmeActions, programmeSelectors } from '@store/programme';
 import { useAppDispatch } from '@store';
 import ActivitySearch from '../../../components/activities/activity/activity-search/activity-search';
 import { getFirstActivityByType } from '@utils/classroom/programme-planning/activity-search.utils';
@@ -40,6 +39,9 @@ import ROUTES from '@routes/routes';
 import { ProgrammePlanningHeaderUpdated } from '../../../components/programme-planning-header-updated/programme-planning-header-updated';
 import { ProgrammePlanningRoutineListItemUpdated } from '../../../components/programme-planning-routine-list-item-updated/programme-planning-routine-list-item-updated';
 import { programmeThemeSelectors } from '@/store/content/programme-theme';
+import { useProgrammePlanning } from '@hooks/useProgrammePlanning';
+import { WeekendDayIndicator } from '../../../programme-routine/components/weekend-day-indicator/weekend-day-indicator';
+import { isSameWeek, isWeekend } from 'date-fns';
 
 export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   programme,
@@ -60,8 +62,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     useProgrammePlanningRecommendations();
   const recommendedActivities =
     getCurrentProgrammeRecommendedActivities(programme);
-  const routineContainsIncompleteDays =
-    programmeWeeks.filter((week) => week.totalIncompleteDays > 0).length > 0;
   const isCurrentDayEmpty =
     !currentDailyProgramme?.largeGroupActivityId &&
     !currentDailyProgramme?.smallGroupActivityId &&
@@ -70,11 +70,31 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
   const [isCurrentDayHoliday, setIsCurrentDayHoliday] = useState(false);
   const themes = useSelector(programmeThemeSelectors.getProgrammeThemes);
   const chosedTheme = themes?.find((item) => item?.name === programme?.name);
+  const { createProgramme } = useProgrammePlanning();
+  const [selectedActitivy, setSelectedActivity] = useState(0);
+  const [routineItemSet, setRoutineItemSet] =
+    useState<ProgrammeRoutineItemDto>();
+  const [triggerSaveActivity, setTriggerSaveActivity] = useState(false);
+  const isWeekendDay = isWeekend(new Date(selectedDate!));
+  const nextProgrammes = useSelector(
+    programmeSelectors.getProgrammesAfterDate(selectedDate!)
+  );
+  const nextProgrammeDaysWithoutActivity =
+    nextProgrammes?.[0]?.dailyProgrammes?.filter((item) => {
+      return (
+        !item?.storyActivityId &&
+        isSameWeek(new Date(item?.dayDate), new Date(selectedDate!), {
+          weekStartsOn: 6,
+        })
+      );
+    });
 
   useEffect(() => {
-    setIsCurrentDayHoliday(isHoliday(new Date()));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+    if (selectedDate) {
+      setIsCurrentDayHoliday(isHoliday(selectedDate));
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
+  }, [isHoliday, selectedDate]);
 
   const handleAddProgramme = () => {
     if (isOnline) {
@@ -93,11 +113,8 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
-  const handleViewProgrammeSummary = () => {
-    history.push(ROUTES.PROGRAMMES.SUMMARY, {
-      variation: 'view',
-    });
-  };
+  const regex = /(<([^>]+)>)/gi;
+  const secondRegEx = /((&nbsp;))*/gim;
 
   const openInfoItem = (routineItem: ProgrammeRoutineItemDto) => {
     dialog({
@@ -108,7 +125,9 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             className={'mx-4'}
             title={routineItem.name}
             importantText={`${routineItem.timeSpan}`}
-            detailText={routineItem.description}
+            detailText={routineItem.description
+              .replace(regex, '')
+              .replace(secondRegEx, '')}
             icon={'InformationCircleIcon'}
             iconColor={'infoDark'}
             iconBorderColor={'infoBb'}
@@ -128,7 +147,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     });
   };
 
-  const openActivityItem = (routineItem: ProgrammeRoutineItemDto) => {
+  const openActivityItem = (
+    routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto
+  ) => {
     const activityId = getActivityIdForRoutineItem(
       routineItem.name,
       currentDailyProgramme
@@ -145,19 +167,45 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         return routineItem.name !== DailyRoutineItemType.storyBook ? (
           <ActivityDetails
             activityId={activityId}
-            isSelected={false}
-            disabled={true}
-            onActivitySelected={() => {}}
-            onActivityChanged={() => {}}
+            isSelected={true}
+            disabled={false}
+            onActivitySelected={() => {
+              onClose();
+              // onEditActivityItem(routineItem, day);
+            }}
+            onActivityChanged={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
             onBack={onClose}
           />
         ) : (
           <StoryActivityDetails
-            selected={false}
+            selected={true}
             activityId={activityId}
-            disabled={true}
+            disabled={false}
             viewType={'StoryActivity'}
             onBack={onClose}
+            onStoryBookSwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
+            onActivitySwitched={
+              currentDailyProgramme
+                ? () => {
+                    onClose();
+                    onEditActivityItem(routineItem, day);
+                  }
+                : () => {}
+            }
           />
         );
       },
@@ -168,7 +216,6 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     if (!currentDailyProgramme) return;
 
     const currentDayCopy = { ...currentDailyProgramme };
-
     currentDayCopy.messageBoardText = message;
 
     saveCurrentDay(currentDayCopy);
@@ -207,29 +254,58 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
       openInfoItem(routineItem);
       return;
     }
+    if (currentDailyProgramme) {
+      openActivityItem(routineItem, currentDailyProgramme);
+      return;
+    }
 
     openActivityItem(routineItem);
   };
 
-  const onActivitySelected = (
+  const onActivitySelected = async (
     routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto,
     activityId?: number
   ) => {
-    if (!currentDailyProgramme) return;
-
-    const currentDayCopy = { ...currentDailyProgramme };
-
-    switch (routineItem.name) {
-      case DailyRoutineItemType.largeGroup:
-        currentDayCopy.largeGroupActivityId = activityId;
-        break;
-      case DailyRoutineItemType.smallGroup:
-        currentDayCopy.smallGroupActivityId = activityId;
-        break;
+    if (!currentDailyProgramme) {
+      await createProgramme(selectedDate!, 'en-za', undefined, selectedDate!);
     }
 
-    saveCurrentDay(currentDayCopy);
+    if (day) {
+      const currentDayCopy = { ...day };
+      switch (routineItem.name) {
+        case DailyRoutineItemType.largeGroup:
+          currentDayCopy.largeGroupActivityId = activityId;
+          break;
+        case DailyRoutineItemType.smallGroup:
+          currentDayCopy.smallGroupActivityId = activityId;
+          break;
+      }
+
+      saveCurrentDay(currentDayCopy);
+    }
   };
+
+  useEffect(() => {
+    if (currentDailyProgramme && routineItemSet && triggerSaveActivity) {
+      const currentDayCopy = { ...currentDailyProgramme! };
+      if (routineItemSet) {
+        switch (routineItemSet.name) {
+          case DailyRoutineItemType.largeGroup:
+            currentDayCopy.largeGroupActivityId = selectedActitivy;
+            break;
+          case DailyRoutineItemType.smallGroup:
+            currentDayCopy.smallGroupActivityId = selectedActitivy;
+            break;
+        }
+      }
+
+      saveCurrentDay(currentDayCopy);
+      setTriggerSaveActivity(false);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentDailyProgramme, routineItemSet]);
+
   const onStoryAndActivitySelected = (
     storyId?: number,
     activityId?: number
@@ -244,7 +320,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
     saveCurrentDay(currentDayCopy);
   };
 
-  const onEditActivityItem = (routineItem: ProgrammeRoutineItemDto) => {
+  const onEditActivityItem = (
+    routineItem: ProgrammeRoutineItemDto,
+    day?: DailyProgrammeDto
+  ) => {
     dialog({
       position: DialogPosition.Full,
       render: (onSubmit, onClose) => {
@@ -266,7 +345,10 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
             )}
             routineItem={routineItem}
             onSave={(activityId?: number) => {
-              onActivitySelected(routineItem, activityId);
+              onActivitySelected(routineItem, day, activityId);
+              setRoutineItemSet(routineItem);
+              setSelectedActivity(activityId!);
+              setTriggerSaveActivity(true);
               onSubmit();
             }}
             onClose={onClose}
@@ -318,73 +400,56 @@ export const DailyRoutine: React.FC<DailyRoutineProps> = ({
         chosedTheme={chosedTheme}
         setSelectedDate={setSelectedDate}
         selectedDate={selectedDate}
+        isWeekendDay={isWeekendDay}
       />
 
-      <div className={'items-centers flex w-full flex-row p-4'}>
-        <Button
-          className={'w-1/2'}
-          size="small"
-          type={'outlined'}
-          color={'primary'}
-          onClick={handleViewProgrammeSummary}
-        >
-          {renderIcon('CalendarIcon', 'h-5 w-5 text-primary')}
-          <Typography
-            type={'small'}
-            color={'primary'}
-            text={'Programme summary'}
-          />
-        </Button>
-        <Button
-          id="gtm-add-programme"
-          className={'ml-2 w-1/2'}
-          size="small"
-          type={'filled'}
-          color={'primary'}
-          onClick={handleAddProgramme}
-        >
-          {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
-          <Typography type={'small'} color={'white'} text={'Add new theme'} />
-        </Button>
-      </div>
-
-      {!isCurrentDayEmpty &&
-        routineContainsIncompleteDays &&
-        !isCurrentDayHoliday && (
-          <Alert
-            className={'mx-4 mb-4'}
-            type={'warning'}
-            title={'There are incomplete days in your programme.'}
-            message={'Tap on Programme summary to complete your programme.'}
-          />
-        )}
-
-      {isCurrentDayEmpty && !isCurrentDayHoliday && (
-        <Alert
-          className={'mx-4'}
-          type={'warning'}
-          title={'You don’t have a plan for today'}
-          message={'Add activities to your daily routine!'}
-        />
-      )}
-
-      {currentDailyProgramme &&
-        (isCurrentDayHoliday ? (
-          <PublicHolidayIndicator
-            date={new Date(currentDailyProgramme.dayDate)}
-          />
+      {(isCurrentDayEmpty || currentDailyProgramme) &&
+        (isCurrentDayHoliday || isWeekendDay ? (
+          isWeekendDay ? (
+            <WeekendDayIndicator
+              date={new Date(selectedDate!)}
+              nextProgrammeDaysWithoutActivity={
+                nextProgrammeDaysWithoutActivity
+              }
+              setSelectedDate={setSelectedDate}
+            />
+          ) : (
+            <PublicHolidayIndicator
+              date={new Date(selectedDate!)}
+              nextProgrammeDaysWithoutActivity={
+                nextProgrammeDaysWithoutActivity
+              }
+              setSelectedDate={setSelectedDate}
+            />
+          )
         ) : (
           <div className="mt-4">
-            {programmeRoutine?.routineItems.map((routineItem) => (
-              <ProgrammePlanningRoutineListItemUpdated
-                key={`id_${routineItem.id}`}
-                routineItem={routineItem}
-                day={currentDailyProgramme}
-                onClick={() => onProgrammeClick(routineItem)}
-              />
-            ))}
+            {programmeRoutine?.routineItems.map((routineItem) => {
+              if (routineItem?.name !== DailyRoutineItemType?.messageBoard) {
+                return (
+                  <ProgrammePlanningRoutineListItemUpdated
+                    key={`id_${routineItem.id}`}
+                    routineItem={routineItem}
+                    day={currentDailyProgramme}
+                    onClick={() => onProgrammeClick(routineItem)}
+                  />
+                );
+              }
+              return null;
+            })}
           </div>
         ))}
+      <Button
+        id="gtm-add-programme"
+        className={'absolute bottom-6 right-4 ml-2 mt-4 w-1/2 rounded-2xl'}
+        size="small"
+        type={'filled'}
+        color={'primary'}
+        onClick={handleAddProgramme}
+      >
+        {renderIcon('PlusIcon', 'h-5 w-5 text-white')}
+        <Typography type={'small'} color={'white'} text={'Add new theme'} />
+      </Button>
     </div>
   );
 };

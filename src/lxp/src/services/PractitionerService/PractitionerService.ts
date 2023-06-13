@@ -12,6 +12,18 @@ import {
   PractitionerInput,
 } from '@ecdlink/graphql';
 
+interface ReportDetailsForPractitionerData {
+  classroomGroupName: string;
+  name: string;
+  principalName: string;
+  classroomGroupId: string;
+  programmeTypeName: string;
+  idNumber: string;
+  insertedDate: string;
+  programmeDays: string;
+  phone: string;
+  classSiteAddress: null | string;
+}
 class PractitionerService {
   _accessToken: string;
 
@@ -28,6 +40,71 @@ class PractitionerService {
           allPractitionersForCoach(userId: $userId) {
             id
             userId
+            programmeType
+            timeline {
+              consolidationMeetingColor
+              consolidationMeetingDate
+              consolidationMeetingStatus
+              firstAidCourseColor
+              firstAidCourseStatus
+              firstAidDate
+              prePQAVisitDate1
+              prePQAVisitDate1Color
+              prePQAVisitDate1Status
+              prePQAVisitDate2
+              prePQAVisitDate2Color
+              prePQAVisitDate2Status
+              supportVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              prePQASiteVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              pQASiteVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              smartSpaceLicenseColor
+              smartSpaceLicenseDate
+              smartSpaceLicenseStatus
+              starterLicenseColor
+              starterLicenseDate
+              starterLicenseStatus
+              supportVisits {
+                id
+                plannedVisitDate
+                attended
+              }
+            }
           }
         }
       `,
@@ -54,6 +131,9 @@ class PractitionerService {
             id
             userId
             user {
+              gender {
+                description
+              }
               firstName
               surname
               fullName
@@ -74,6 +154,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -92,6 +173,8 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -123,6 +206,9 @@ class PractitionerService {
               email
               isSouthAfricanCitizen
               verifiedByHomeAffairs
+              gender {
+                description
+              }
             }
             siteAddress {
               id
@@ -137,6 +223,7 @@ class PractitionerService {
               postalCode
               ward
             }
+            programmeType
             isPrincipal
             isRegistered
             principalHierarchy
@@ -154,6 +241,8 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -180,6 +269,7 @@ class PractitionerService {
             isPrincipal
             isFundaAppAdmin
             isTrainee
+            programmeType
             principalHierarchy
             isActive
             coachHierarchy
@@ -191,6 +281,9 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             user {
+              gender {
+                description
+              }
               emergencyContactFirstName
               emergencyContactSurname
               emergencyContactPhoneNumber
@@ -212,6 +305,8 @@ class PractitionerService {
             dateToBeRemoved
             isLeaving
             progress
+            attendedChildProgress
+            usePhotoInReport
           }
         }
       `,
@@ -241,13 +336,16 @@ class PractitionerService {
                 isPrincipal
                 id
                 shareInfo
+                programmeType
                 principalHierarchy
                 dateLinked
                 dateAccepted
                 dateToBeRemoved
                 isLeaving
                 progress
-
+                isTrainee
+                attendedChildProgress
+                usePhotoInReport
               }
             }
             note
@@ -299,6 +397,39 @@ class PractitionerService {
 
     return response.data.data.promotePractitionerToPrincipal;
   }
+  async getReportDetailsForPractitioner(
+    userId: string
+  ): Promise<ReportDetailsForPractitionerData> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query reportDetailsForPractitioner($userId: String) {
+          reportDetailsForPractitioner(userId: $userId) { 
+          classroomGroupName
+          name
+          principalName
+          classroomGroupId
+          programmeTypeName
+          idNumber
+          insertedDate
+          programmeDays
+          phone classSiteAddress
+          }     
+        }
+      `,
+      variables: {
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.reportDetailsForPractitioner;
+  }
 
   async getClassroomDetailsForPractitioner(
     userId: string
@@ -312,7 +443,6 @@ class PractitionerService {
             name
             classroomGroupName
             classroomGroupId
-            classroomId
             insertedDate
           }
         }
@@ -480,6 +610,38 @@ class PractitionerService {
     return response.data.data.updatePractitionerProgress;
   }
 
+  async UpdatePractitionerUsePhotoInReport(
+    practitionerId: string,
+    usePhotoInReport: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updatePractitionerUsePhotoInReport(
+          $practitionerId: String
+          $usePhotoInReport: String
+        ) {
+          updatePractitionerUsePhotoInReport(
+            practitionerId: $practitionerId
+            usePhotoInReport: $usePhotoInReport
+          )
+        }
+      `,
+      variables: {
+        practitionerId,
+        usePhotoInReport,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'UpdatePractitionerProgress Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerUsePhotoInReport;
+  }
+
   async AddPractitionerToPrincipal(
     input: MutationAddPractitionerToPrincipalArgs
   ): Promise<UserDto> {
@@ -602,6 +764,30 @@ class PractitionerService {
       `,
       variables: {
         type,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error('Display metrics Failed - Server connection error');
+    }
+
+    return response.data.data.displayMetrics;
+  }
+
+  async classroomActionItems(
+    practitionerId: string
+  ): Promise<PractitionerDto[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query classroomActionItems($practitionerId: String) {
+        classroomActionItems(practitionerId: $practitionerId) {
+          subject icon color message notes userId userType
+        }
+      }
+      `,
+      variables: {
+        practitionerId,
       },
     });
 
@@ -808,6 +994,34 @@ class PractitionerService {
     }
 
     return response.data.data.sendPractitionerInviteToApplication;
+  }
+
+  async deActivatePractitioner(
+    userId: string,
+    leavingComment?: string
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+
+    const response = await apiInstance.post<{
+      data: { deActivatePractitioner: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation DeActivatePractitioner($userId: String, $leavingComment: String) {          
+        deActivatePractitioner(userId: $userId, leavingComment: $leavingComment) {          
+      }        
+      }
+      `,
+      variables: {
+        userId,
+        leavingComment,
+      },
+    });
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Get Practitioner Failed - Server connection error');
+    }
+
+    return response.data.data.deActivatePractitioner;
   }
 }
 

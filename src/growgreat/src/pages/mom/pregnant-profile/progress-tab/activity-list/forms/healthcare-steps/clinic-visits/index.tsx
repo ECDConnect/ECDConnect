@@ -1,6 +1,11 @@
-import { Alert, ButtonGroup, ButtonGroupTypes, renderIcon } from '@ecdlink/ui';
-import { SuccessCard } from '@/components/success-card/success-card';
-import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
+import {
+  Alert,
+  ButtonGroup,
+  ButtonGroupTypes,
+  renderIcon,
+  DialogPosition,
+  Dialog,
+} from '@ecdlink/ui';
 import {
   Label,
   Header,
@@ -11,6 +16,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 import AntenatalCareSvg from '@/assets/antenatalCare.svg';
+
+export const antenatalClinicQuestion = `Has {client} gone to the clinic for her first antenatal visit?`;
 
 export const ClinicVisitsStep = ({
   infant,
@@ -34,10 +41,7 @@ export const ClinicVisitsStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(
-    () => `Has {client} gone to the clinic for her first antenatal visit?`,
-    []
-  );
+  const question = useMemo(() => antenatalClinicQuestion, []);
 
   const onOptionSelected = useCallback(
     (value) => {
@@ -61,12 +65,18 @@ export const ClinicVisitsStep = ({
 
   if (isTipPage) {
     return (
-      <HealthPromotion
-        title={`Discuss with ${motherName}`}
-        subTitle="Clinic check-ups"
-        section={sectionName}
-        onClose={() => setIsTip && setIsTip(false)}
-      />
+      <Dialog
+        fullScreen={true}
+        visible={isTipPage}
+        position={DialogPosition.Full}
+      >
+        <HealthPromotion
+          title={`Discuss with ${motherName}`}
+          subTitle="Clinic check-ups"
+          section={sectionName}
+          onClose={() => setIsTip && setIsTip(false)}
+        />
+      </Dialog>
     );
   }
 
@@ -91,16 +101,6 @@ export const ClinicVisitsStep = ({
           options={options}
           onOptionSelected={onOptionSelected}
         />
-        {!!answer && (
-          <SuccessCard
-            customIcon={<CelebrateIcon className="h-14	w-14" />}
-            text="Well done for keeping up with your clinic visits!"
-            subText="Remember to go back to the clinic at 6 weeks for your baby’s immunisations."
-            textColour="successDark"
-            subTextColours="textDark"
-            color="successBg"
-          />
-        )}
         {answer === false && (
           <Alert
             type="error"

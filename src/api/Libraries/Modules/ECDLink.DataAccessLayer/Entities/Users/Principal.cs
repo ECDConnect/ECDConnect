@@ -20,7 +20,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     public class Principal<TKey> : EntityBase<TKey>,
         IDocumentQueryable,
         SiteAddressJoin<Guid?>,
-        IUserType, IUserElevatedScoped
+        IUserType, IUserElevatedScoped, ITrackableType
          where TKey : IEquatable<TKey>
     {
         [GraphQLIgnore]

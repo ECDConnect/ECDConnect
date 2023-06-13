@@ -14,6 +14,7 @@ import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
 import { useSelector } from 'react-redux';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
+import { formatPhonenumberInternational } from '@utils/common/contact-details.utils';
 
 export const CoachContactPractitioner: React.FC = () => {
   const history = useHistory();
@@ -30,7 +31,11 @@ export const CoachContactPractitioner: React.FC = () => {
   };
 
   const whatsapp = () => {
-    window.open(`https://wa.me/${practitioner?.user?.phoneNumber}`);
+    window.open(
+      `https://wa.me/${formatPhonenumberInternational(
+        practitioner?.user?.phoneNumber ?? ''
+      )}`
+    );
   };
 
   return (

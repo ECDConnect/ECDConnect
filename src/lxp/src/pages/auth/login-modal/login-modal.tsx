@@ -9,8 +9,8 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
-import { useForm } from 'react-hook-form';
+import { useCallback, useMemo, useState } from 'react';
+import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
@@ -20,37 +20,61 @@ import {
   loginSchema,
 } from '@schemas/auth/login/login';
 import { useAppDispatch } from '@store';
-import { authActions, authThunkActions } from '@store/auth';
+import { authActions, authSelectors, authThunkActions } from '@store/auth';
 import { settingActions } from '@store/settings';
 import * as styles from './login-modal.styles';
 import ROUTES from '@routes/routes';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+const CryptoJS = require('crypto-js');
 const { version } = require('../../../../package.json');
 
 interface LoginModalProps {
   loginSuccessful: () => void;
+  updateTime?: () => void;
+  isLocalExpiration?: boolean;
 }
 
-export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
+export const LoginModal: React.FC<LoginModalProps> = ({
+  loginSuccessful,
+  updateTime,
+  isLocalExpiration,
+}) => {
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { resetAppStore } = useStoreSetup();
+  const userAuth = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
 
   const { isOnline } = useOnlineStatus();
+
+  const [userHashUpdated, setUserHashUpdated] = useState(
+    JSON.parse(localStorage?.getItem('userHash')!)
+  );
+  // const userHash = useMemo(() => (JSON.parse(localStorage?.getItem('userHash')!)), [] );
+  const userHashDecrypted = CryptoJS.AES.decrypt(
+    userHashUpdated,
+    'secret key 123'
+  );
+  const userHashToString = userHashDecrypted.toString(CryptoJS.enc.Utf8);
 
   const {
     register: loginRegister,
     setValue: loginSetValue,
     formState: loginFormState,
     getValues: loginFormGetValues,
+    control,
   } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
   const { isValid } = loginFormState;
+  const { idField, passportField, password, preferId } = useWatch({ control });
+  const checkIdOrPassport = preferId ? idField : passportField;
 
   const submitForm = async () => {
     setDisplayError(false);
@@ -70,6 +94,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             isAuthenticated?.payload?.response?.status !== 401
           ) {
             loginSuccessful();
+            // updateTime()
+            const userLocalxpiration = Date.now() + 60000;
+            localStorage.setItem(
+              'userLocalxpiration',
+              JSON.stringify(userLocalxpiration)
+            );
             await appDispatch(settingActions.setApplicationVersion(version));
             await appDispatch(authActions.setUserExpired());
             setIsLoading(false);
@@ -79,11 +109,33 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
           }
         })
         .catch(() => {
+          console.log('catch');
           setDisplayError(true);
           setIsLoading(false);
         });
+
+      setUserHashUpdated(JSON.parse(localStorage?.getItem('userHash')!));
     }
   };
+
+  const offlineSubmitForm = useCallback(async () => {
+    if (userHashToString === password && user?.idNumber === checkIdOrPassport) {
+      loginSuccessful();
+      await appDispatch(settingActions.setApplicationVersion(version));
+      await appDispatch(authActions.setUserExpired());
+      setIsLoading(false);
+    } else {
+      setDisplayError(true);
+      setIsLoading(false);
+    }
+  }, [
+    appDispatch,
+    checkIdOrPassport,
+    loginSuccessful,
+    password,
+    user?.idNumber,
+    userHashToString,
+  ]);
 
   const toggleIdAndpassport = (visible: boolean) => {
     const flag = !visible;
@@ -186,8 +238,12 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
             type="filled"
             isLoading={isLoading}
             color="primary"
-            disabled={!isValid || !isOnline}
-            onClick={submitForm}
+            disabled={!isValid || (!userAuth?.auth_token && !isOnline)}
+            onClick={
+              isLocalExpiration && userAuth?.auth_token
+                ? offlineSubmitForm
+                : submitForm
+            }
           >
             <Typography type="help" color="white" text={'Log in'}></Typography>
           </Button>

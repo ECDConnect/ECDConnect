@@ -17,7 +17,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class MotherQueryExtension
     {
@@ -38,11 +39,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] MotherManager motherManager,
+            [Service] VisitManager visitManager,
             string id,
             string visitType = Constants.GGSettings.visitType_all) // visitType can be all / overdue / due
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
+
+            // first validate if the linked mothers should not be archive because of maternal case records missing after 60 days from when client was registered.
+            motherManager.ArchiveMotherProfilesWithoutMaternalRecord(id);
+
+            // Now we can return all active mothers to the FE
             List<Mother> allMothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true)).ToList();
             List<Mother> mothers = new List<Mother>();
 
@@ -52,7 +59,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
-                    if (mother.StatusInfo.Color == MetricsIconEnum.Warning.ToString() && mother.StatusInfo.Subject.Contains(" due "))
+                    var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, true);
+                     if (nextVisit != "")
                     {
                         mothers.Add(mother);
                     }
@@ -61,9 +69,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             {
                 foreach (var mother in allMothers)
                 {
-                    mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
+                    mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
                     mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
-                    if (mother.StatusInfo.Color == MetricsIconEnum.Error.ToString() && mother.StatusInfo.Subject.Contains(" overdue "))
+                    var missedVisit = visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
+                    if (missedVisit != "")
                     {
                         mothers.Add(mother);
                     }
@@ -104,7 +113,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var motherRepo = repoFactory.CreateGenericRepository<Mother>(userContext: uId);
             List<Mother> mothers = motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == id &&
-                                                                  x.IsActive.Equals(true) && 
+                                                                  x.IsActive.Equals(true) &&
                                                                   x.InsertedDate.Month == today.Month &&
                                                                   x.InsertedDate.Year == today.Year).ToList();
 
@@ -117,23 +126,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
             return visitManager.GetVisitsForClient(id, Constants.GGSettings.client_mother);
         }
 
-       [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
             return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitData> GetVisitAnswersForMother([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection) {
-            return visitDataManager.GetVisitAnswersForClient( visitId, visitName, visitSection );
+        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        {
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+        public List<VisitData> GetVisitAnswersForMother([Service] VisitDataManager visitDataManager, string visitId, string visitName, string visitSection)
+        {
+            return visitDataManager.GetVisitAnswersForClient(visitId, visitName, visitSection);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
+        {
             var _visitId = new Guid(visitId);
             return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
         }
-        
+
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Progress_VisitDataStatus GetVisitClientSummaryDataForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
         {
@@ -195,7 +212,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, bool referralCompleted, bool backReferralCompleted) {
+        public List<VisitBackReferral> GetBackReferralsForMother([Service] VisitBackReferralManager visitBackReferralManager, string id, Boolean referralCompleted, Boolean backReferralCompleted)
+        {
             return visitBackReferralManager.GetBackReferralDataForClient(id, Constants.GGSettings.client_mother, referralCompleted, backReferralCompleted);
         }
 
@@ -203,42 +221,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         public List<ClientSummary> GetMotherSummaryByGroup(
             [Service] VisitManager visitManager,
             [Service] VisitDataStatusManager visitDataStatusManager,
-            string id)
+            string visitId)
         {
             List<ClientSummary> summary = new List<ClientSummary>();
 
-            // get most recent visit completed
-            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
+            Guid _visitId = new Guid(visitId);
 
             var sumObj = new ClientSummary();
             sumObj.VisitName = Constants.GGSettings.antenatalCare;
             sumObj.Order = 1;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.antenatalCare);
-            summary.Add(sumObj);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.pregnancyCare);
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummary();
             sumObj.VisitName = Constants.GGSettings.nutrition;
             sumObj.Order = 2;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.nutrition);
-            summary.Add(sumObj);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.nutrition);
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummary();
             sumObj.VisitName = Constants.GGSettings.pregnancyCare;
             sumObj.Order = 3;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.pregnancyCare);
-            summary.Add(sumObj);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.pregnancyCare);
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummary();
             sumObj.VisitName = Constants.GGSettings.dangerSigns;
             sumObj.Order = 4;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByGroup(visitId, Constants.GGSettings.dangerSigns);
-            summary.Add(sumObj);
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByGroup(_visitId, Constants.GGSettings.dangerSigns);
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummary();
-            sumObj.VisitName = Constants.GGSettings.q_ID_doc;
+            sumObj.VisitName = Constants.GGSettings.idDocSection;
             sumObj.Order = 5;
-            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
-            summary.Add(sumObj);
+            sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Success.ToString());
+            if (sumObj.DocumentData != null)
+            {
+                summary.Add(sumObj);
+            }
+
+            sumObj = new ClientSummary();
+            sumObj.VisitName = Constants.GGSettings.idDocSection;
+            sumObj.Order = 6;
+            sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Warning.ToString());
+            if (sumObj.DocumentData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             return summary;
         }
@@ -247,36 +288,61 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
         public List<ClientSummaryByPriority> GetMotherSummaryByPriority(
            [Service] VisitManager visitManager,
            [Service] VisitDataStatusManager visitDataStatusManager,
-           string id)
+           string visitId)
         {
             List<ClientSummaryByPriority> summary = new List<ClientSummaryByPriority>();
 
-            // get most recent visit completed
-            var visitId = visitManager.GetLastCompletedVisitId(id, Constants.GGSettings.client_mother);
-           
+            Guid _visitId = new Guid(visitId);
+
             var sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.doingWell;
             sumObj.Order = 1;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Success.ToString());
-            summary.Add(sumObj);
+            sumObj.Color = MetricsColorEnum.Success.ToString().ToLower();
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Success.ToString());
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.needSupport;
             sumObj.Order = 2;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Warning.ToString());
-            summary.Add(sumObj);
+            sumObj.Color = MetricsColorEnum.Warning.ToString().ToLower();
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Warning.ToString());
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummaryByPriority();
             sumObj.AreaName = Constants.GGSettings.needUrgentSupport;
             sumObj.Order = 3;
-            sumObj.VisitDataStatus = visitDataStatusManager.GetSummaryDataForVisitByPriority(visitId, MetricsColorEnum.Error.ToString());
-            summary.Add(sumObj);
+            sumObj.Color = MetricsColorEnum.Error.ToString().ToLower();
+            sumObj.SummaryData = visitDataStatusManager.GetSummaryDataForVisitByPriority(_visitId, MetricsColorEnum.Error.ToString());
+            if (sumObj.SummaryData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             sumObj = new ClientSummaryByPriority();
-            sumObj.AreaName = Constants.GGSettings.q_ID_doc;
+            sumObj.AreaName = Constants.GGSettings.idDocSection;
             sumObj.Order = 4;
-            sumObj.IdDocStatus = visitDataStatusManager.GetIDDocSummaryDataForVisit(visitId);
-            summary.Add(sumObj);
+            sumObj.Color = MetricsColorEnum.Success.ToString().ToLower();
+            sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Success.ToString());
+            if (sumObj.DocumentData != null)
+            {
+                summary.Add(sumObj);
+            }
+
+            sumObj = new ClientSummaryByPriority();
+            sumObj.AreaName = Constants.GGSettings.idDocSection;
+            sumObj.Order = 5;
+            sumObj.Color = MetricsColorEnum.Warning.ToString().ToLower();
+            sumObj.DocumentData = visitDataStatusManager.GetIDDocSummaryDataForVisit(_visitId, MetricsColorEnum.Warning.ToString());
+            if (sumObj.DocumentData != null)
+            {
+                summary.Add(sumObj);
+            }
 
             return summary;
         }

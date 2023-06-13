@@ -1,26 +1,23 @@
-import { LocalStorageKeys, UserDto, useTheme } from '@ecdlink/core';
+import { LocalStorageKeys, UserDto, useDialog, useTheme } from '@ecdlink/core';
 import { FileTypeEnum } from '@ecdlink/graphql';
 import {
   ActionListDataItem,
+  ActionModal,
   BannerWrapper,
-  Button,
   Dialog,
   DialogPosition,
-  FormInput,
   ProfileAvatar,
-  renderIcon,
   StackedList,
-  Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { cloneDeep } from 'lodash';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { DialogFormInput } from '@models/practitioner/DialogFormInput';
 import {
   initialPractitionerAboutValues,
   PractitionerAboutModel,
@@ -33,12 +30,19 @@ import { setStorageItem } from '@utils/common/local-storage.utils';
 import * as styles from './practitioner-about.styles';
 import ROUTES from '@routes/routes';
 import { EditCellPhoneNumber } from './edit-cellphone-number/edit-cellphone-number';
-import { practitionerSelectors } from '@/store/practitioner';
+import { EditEmail } from './edit-email/edit-email';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { NextToKin } from './next-to-kin/next-to-kin';
 import { coachSelectors } from '@/store/coach';
+import { contentReportSelectors } from '@/store/content/report';
+import { getReportingPeriodForProfileUsePhotoInReport } from '@/utils/child/child-profile-utils';
 
 export const PractitionerAbout: React.FC = () => {
   const history = useHistory();
+  const dialog = useDialog();
   const appDispatch = useAppDispatch();
   const { isOnline } = useOnlineStatus();
   const {
@@ -48,11 +52,10 @@ export const PractitionerAbout: React.FC = () => {
     updateDocument,
   } = useDocuments();
 
-  const [editFieldVisible, setEditFieldVisible] = useState(false);
-  const [displayError, setDisplayError] = useState<boolean>(false);
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
   const [editiCellPhoneNumber, setEditiCellPhoneNumber] = useState(false);
+  const [editEmail, setEditEmail] = useState(false);
   const [addNextToKin, setAddNextToKin] = useState(false);
 
   useEffect(() => {
@@ -72,13 +75,22 @@ export const PractitionerAbout: React.FC = () => {
   const coach = useSelector(coachSelectors?.getCoach);
   const pictureStorageKey = LocalStorageKeys.practitionerProfilePicture;
   const [listItems, setListItems] = useState<ActionListDataItem[]>([]);
+  const reportingPeriod = useMemo(
+    () => getReportingPeriodForProfileUsePhotoInReport(new Date()),
+    []
+  );
+  const hasCreatedReportForCurrentPeriod = useSelector(
+    contentReportSelectors.hasChildSummaryReportsForReportingPeriod(
+      reportingPeriod.reportingDate
+    )
+  );
 
   useEffect(() => {
     if (user) {
       setNewStackListItems(user);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [user]);
+  }, [user, practitioner]);
 
   const getDefaultFormvalues = () => {
     if (user) {
@@ -86,7 +98,7 @@ export const PractitionerAbout: React.FC = () => {
         name: user.firstName || '',
         surname: user.surname || '',
         cellphone: user.phoneNumber || '',
-        email: user?.email! || '',
+        email: user.email || '',
       };
       return tempPractitioner;
     } else {
@@ -94,25 +106,166 @@ export const PractitionerAbout: React.FC = () => {
     }
   };
 
-  const {
-    register: practitionerAboutRegister,
-    formState: practitionerAboutFormState,
-    getValues: practitionerAboutFormGetValues,
-  } = useForm({
+  const { getValues: practitionerAboutFormGetValues } = useForm({
     resolver: yupResolver(practitionerAboutModelSchema),
     defaultValues: getDefaultFormvalues(),
     mode: 'onChange',
   });
 
-  const [dialogFormInput, setDialogFormInput] = useState<
-    DialogFormInput<PractitionerAboutModel>
-  >({
-    label: '',
-    formFieldName: 'name',
-    value: '',
-  });
-
   const { theme } = useTheme();
+
+  const handleUsingPhotoInReports = (using: boolean) => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          icon={'QuestionMarkIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={
+            using
+              ? `Your Funda App profile photo will be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+              : `Your Funda App profile photo will not be added to the ${reportingPeriod.monthName} ${reportingPeriod.year} progress reports`
+          }
+          detailText={
+            using
+              ? `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.
+
+            If you want to change your profile photo, tap the camera icon on your profile.`
+              : `You have already created at least one caregiver report and cannot change this choice for the ${reportingPeriod.monthName} ${reportingPeriod.year} reports.`
+          }
+          actionButtons={[
+            {
+              text: 'Close',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+              },
+              leadingIcon: 'XIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const updatePractitionerUsePhotoReportPermission = async (
+    usePhotoInReport: string
+  ) => {
+    await appDispatch(
+      practitionerThunkActions.updatePractitionerUsePhotoInReport({
+        practitionerId: practitioner?.userId,
+        usePhotoInReport: usePhotoInReport,
+      })
+    );
+  };
+
+  const promptPhotoReportPermission = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (submit, cancel) => (
+        <ActionModal
+          className="bg-white"
+          icon={'QuestionMarkCircleIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={`Would you like to include your profile photo on your ${reportingPeriod?.monthName} ${reportingPeriod?.year} child progress reports?`}
+          actionButtons={[
+            {
+              text: 'Yes, include photo!',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-yes`
+                );
+              },
+              leadingIcon: 'CheckCircleIcon',
+            },
+            {
+              text: 'No, skip',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                submit();
+                updatePractitionerUsePhotoReportPermission(
+                  `${reportingPeriod?.monthName}-${reportingPeriod?.year}-no`
+                );
+              },
+              leadingIcon: 'ClockIcon',
+            },
+          ]}
+        />
+      ),
+    });
+  };
+
+  const getPhotoOnProgressReportItem = (): ActionListDataItem => {
+    var item: ActionListDataItem = {
+      title: `Photo on ${reportingPeriod.monthName} progress report`,
+      subTitle: '',
+      switchTextStyles: true,
+      actionName: '',
+      actionIcon: '',
+      buttonType: 'filled',
+      onActionClick: () => {},
+    };
+    const prefix = `${reportingPeriod.monthName}-${reportingPeriod.year}-`;
+    const hasAnswered =
+      !!practitioner?.usePhotoInReport &&
+      practitioner?.usePhotoInReport.startsWith(prefix);
+    const answer = hasAnswered
+      ? practitioner?.usePhotoInReport?.endsWith('-yes')
+        ? 'yes'
+        : 'no'
+      : undefined;
+    if (!hasAnswered && !hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle: `Add your photo to ${reportingPeriod.monthName} report`,
+        actionName: 'Add',
+        actionIcon: 'PlusIcon',
+        onActionClick: () => {
+          promptPhotoReportPermission();
+        },
+      };
+    }
+    if (hasAnswered && !hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle:
+          answer === 'yes'
+            ? `Photo added to ${reportingPeriod.monthName} report`
+            : `Photo not added to ${reportingPeriod.monthName} report`,
+        actionName: 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          promptPhotoReportPermission();
+        },
+      };
+    }
+    if (hasAnswered && hasCreatedReportForCurrentPeriod) {
+      item = {
+        ...item,
+        subTitle:
+          answer === 'yes'
+            ? `Photo added to ${reportingPeriod.monthName} report`
+            : `Photo not added to ${reportingPeriod.monthName} report`,
+        actionName: 'View',
+        actionIcon: 'EyeIcon',
+        onActionClick: () => {
+          handleUsingPhotoInReports(answer === 'yes');
+        },
+      };
+    }
+    return item;
+  };
 
   const setNewStackListItems = (currentUser: UserDto) => {
     const list: ActionListDataItem[] = [
@@ -135,27 +288,13 @@ export const PractitionerAbout: React.FC = () => {
         actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
         buttonType: currentUser?.email ? 'outlined' : 'filled',
         onActionClick: () => {
-          editField({
-            label: 'Email Address',
-            formFieldName: 'email',
-            value: practitionerAboutFormGetValues().email,
-          });
+          setEditEmail(true);
         },
       },
       {
         title: 'Your SmartStart club',
         subTitle: 'N/A',
         switchTextStyles: true,
-        actionName: currentUser?.email ? 'Edit' : 'Add',
-        actionIcon: currentUser?.email ? 'PencilIcon' : 'PlusIcon',
-        buttonType: currentUser?.email ? 'outlined' : 'filled',
-        // onActionClick: () => {
-        //   editField({
-        //     label: 'Email Address',
-        //     formFieldName: 'email',
-        //     value: practitionerAboutFormGetValues().email,
-        //   });
-        // },
       },
       {
         title: 'Your SmartStart coach',
@@ -190,33 +329,14 @@ export const PractitionerAbout: React.FC = () => {
           history.push(ROUTES.PRACTITIONER.ABOUT.SIGNATURE);
         },
       },
+      getPhotoOnProgressReportItem(),
     ];
 
     setListItems(list);
   };
 
-  const editField = (
-    formInputToLoad: DialogFormInput<PractitionerAboutModel>
-  ) => {
-    setDialogFormInput(formInputToLoad);
-    setEditFieldVisible(true);
-  };
-
-  const saveEdit = async () => {
-    if (practitionerAboutFormState.errors[dialogFormInput.formFieldName]) {
-      setDisplayError(true);
-    } else {
-      setEditFieldVisible(false);
-      await savePractitionerUserData();
-    }
-  };
-
   const displayProfilePicturePrompt = () => {
     setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
-
-  const closeEditField = () => {
-    setEditFieldVisible(false);
   };
 
   const deleteProfilePicture = () => {
@@ -257,11 +377,11 @@ export const PractitionerAbout: React.FC = () => {
 
   const savePractitionerUserData = (imageBaseString: string = '') => {
     const practitionerForm = practitionerAboutFormGetValues();
-    const copy = Object.assign({}, user);
+    const copy = cloneDeep(user);
     if (copy) {
       copy.firstName = practitionerForm.name;
       copy.surname = practitionerForm.surname;
-      copy.phoneNumber = practitionerForm.cellphone;
+      copy.phoneNumber = practitionerForm.cellphone!;
       copy.email = practitionerForm.email;
       if (imageBaseString?.length > 0) {
         copy.profileImageUrl = imageBaseString;
@@ -285,6 +405,9 @@ export const PractitionerAbout: React.FC = () => {
           setEditiCellPhoneNumber={setEditiCellPhoneNumber}
           user={user}
         />
+      </Dialog>
+      <Dialog fullScreen visible={editEmail} position={DialogPosition.Top}>
+        <EditEmail setEditEmail={setEditEmail} user={user} />
       </Dialog>
       <Dialog fullScreen visible={addNextToKin} position={DialogPosition.Top}>
         <NextToKin setAddNextToKin={setAddNextToKin} user={user} />
@@ -324,63 +447,6 @@ export const PractitionerAbout: React.FC = () => {
           )}
         </div>
       </BannerWrapper>
-
-      <Dialog
-        stretch={true}
-        borderRadius="normal"
-        visible={editFieldVisible}
-        position={DialogPosition.Bottom}
-      >
-        <div className={'p-4'}>
-          <div className={styles.labelContainer}>
-            <Typography
-              type="body"
-              className=""
-              color="textDark"
-              text={dialogFormInput.label}
-              weight="bold"
-            ></Typography>
-            <div onClick={closeEditField}>
-              {renderIcon('XIcon', 'h-6 w-6 text-uiLight')}
-            </div>
-          </div>
-          <FormInput<PractitionerAboutModel>
-            visible={true}
-            nameProp={dialogFormInput.formFieldName}
-            register={practitionerAboutRegister}
-            disabled={false}
-            className={!displayError ? 'mb-6' : ''}
-          />
-          {displayError && (
-            <div className={'mt-2'}>
-              <Typography
-                type="help"
-                color="errorMain"
-                text={
-                  practitionerAboutFormState.errors[
-                    dialogFormInput.formFieldName
-                  ]?.message || ''
-                }
-                className={'mb-6'}
-              ></Typography>
-            </div>
-          )}
-          <Button
-            type="filled"
-            color="primary"
-            className={'w-full'}
-            onClick={saveEdit}
-          >
-            {renderIcon('SaveIcon', styles.buttonIcon)}
-            <Typography
-              type="help"
-              className="mr-2"
-              color="white"
-              text={'Save'}
-            ></Typography>
-          </Button>
-        </div>
-      </Dialog>
       <Dialog
         visible={editProfilePictureVisible}
         position={DialogPosition.Bottom}

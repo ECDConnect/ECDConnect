@@ -4,7 +4,7 @@
   "scripts": {
     "bootstrap": "lerna bootstrap --force-local && lerna run tsc",
     "build:ui": "lerna bootstrap --force-local && lerna run --scope @ecdlink/ui tsc",
-    "portal": "cd ./src/admin-portal && SET PORT=3000 && yarn start",
+    "portal": "cd ./src/admin-portal && yarn start",
     "portal-gg": "cd ./src/admin-portal && SET PORT=3001 && yarn start",
     "portal-wl": "cd ./src/admin-portal && SET PORT=3005 && yarn start",
     "fe": "cd ./src/lxp && yarn start",
@@ -84,6 +84,7 @@
     "chart.js": "^3.7.0",
     "compressorjs": "^1.0.7",
     "core-js": "^3.6.5",
+    "crypto-js": "^4.1.1",
     "cssnano": "^4.1.11",
     "date-fns": "^2.22.1",
     "file-saver": "^2.0.5",
@@ -92,6 +93,8 @@
     "i18next": "^20.3.5",
     "inline-style-prefixer": "^6.0.3",
     "ionicons": "^5.4.0",
+    "jspdf": "^2.5.1",
+    "jspdf-autotable": "^3.5.28",
     "jwt-decode": "^3.1.2",
     "learna": "^1.0.1",
     "localforage": "^1.10.0",
@@ -136,7 +139,8 @@
     "workbox-routing": "^5.1.4",
     "workbox-strategies": "^5.1.4",
     "workbox-streams": "^5.1.4",
-    "yup": "^0.32.9"
+    "yup": "^0.32.9",
+    "zxcvbn-typescript": "^5.0.1"
   },
   "devDependencies": {
     "@capacitor/cli": "3.3.1",

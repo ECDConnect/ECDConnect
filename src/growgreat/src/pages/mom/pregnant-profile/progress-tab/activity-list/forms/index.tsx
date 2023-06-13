@@ -8,20 +8,29 @@ import { useSelector } from 'react-redux';
 import { useLocation } from 'react-router';
 import { currentActivityKey } from '..';
 import { activitiesTypes } from '../activities-list';
-import { DynamicForm, SectionQuestions } from './dynamic-form';
+import { DynamicForm } from './dynamic-form';
 import {
   careForBabySteps,
   getHealhcareteps,
   followUpSteps,
-  getPillar1Steps,
+  getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
-import { DevelopmentalScreeningVisitSection } from './danger-signs-steps/developmental-screening-weeks';
-import { getReferralsForInfantSelector } from '@/store/referral/referral.selectors';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
+import {
+  getIsMotherFirstVisitSelector,
+  getMotherById,
+} from '@/store/mother/mother.selectors';
 import { dangerSignsVisitSection } from '@/pages/infant/infant-profile/progress-tab/activity-list/forms/care-for-mom-steps/danger-signs';
+import { getPregnancyDay } from '@/utils/mom/pregnant.utils';
+import {
+  idDocumentFirstQuestion,
+  idDocumentSecondQuestion,
+} from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
+import { dangerSignsSectionName } from './danger-signs-steps/danger-signs';
+import { maternalDistressVisitSection } from './pregnancy-care-steps/maternal-distress/result';
 
 interface FormProps {
   onBack: () => void;
@@ -32,13 +41,10 @@ const sessionStorageKey = 'currentStepNumber';
 export const Form = ({ onBack }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
-  const [sectionQuestions, setSectionQuestions] =
-    useState<SectionQuestions[]>();
-
   const previousVisit = useSelector(
-    getPreviousVisitInformationForInfantSelector
+    getPreviousVisitInformationForMotherSelector
   );
-  const referralsForInfant = useSelector(getReferralsForInfantSelector);
+  const referralsForMother = useSelector(getReferralsForMothertSelector);
 
   const { isOnline } = useOnlineStatus();
 
@@ -57,8 +63,20 @@ export const Form = ({ onBack }: FormProps) => {
     getMotherById(state, motherId)
   );
 
-  // TODO: add G3 visits tab integration
-  const isFirstVisit = true;
+  const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
+
+  const IDDocumentFirstPreviousAnswer = previousVisit?.visitDataStatus?.find(
+    (item) => item?.visitData?.question === idDocumentFirstQuestion
+  );
+  const IDDocumentSecondPreviousAnswer = previousVisit?.visitDataStatus?.find(
+    (item) => item?.visitData?.question === idDocumentSecondQuestion
+  );
+
+  const antenatalVisitQuestionAnswer = previousVisit?.visitDataStatus?.find(
+    (item) => item?.comment === 'Clinic visits up to date'
+  )
+    ? true
+    : false;
 
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
@@ -72,6 +90,33 @@ export const Form = ({ onBack }: FormProps) => {
     [previousVisit?.visitDataStatus]
   );
 
+  const pregnancyDay = getPregnancyDay(mother?.expectedDateOfDelivery!);
+
+  const isEqualOrAfter98andEqualOrBefore168Days =
+    pregnancyDay >= 98 && pregnancyDay <= 168;
+
+  const isIDDocumentStep =
+    isFirstVisit ||
+    (Boolean(IDDocumentFirstPreviousAnswer?.visitData?.questionAnswer) ===
+      false &&
+      Boolean(IDDocumentSecondPreviousAnswer?.visitData?.questionAnswer) ===
+        true);
+
+  const isAntenatalClinicStep = isFirstVisit || antenatalVisitQuestionAnswer;
+
+  const isAlcoholUseStep =
+    isFirstVisit && isEqualOrAfter98andEqualOrBefore168Days;
+
+  const isMaternalDistress =
+    pregnancyDay < 98 ||
+    (pregnancyDay >= 169 && pregnancyDay <= 196) ||
+    pregnancyDay > 197;
+
+  const isMaternalDistressFollowUp = isFollowUp(
+    maternalDistressVisitSection,
+    activitiesTypes.pregnancyCare
+  );
+
   const isDangerSignsFollowUpForMom = isFollowUp(
     dangerSignsVisitSection,
     activitiesTypes.healthCare
@@ -81,9 +126,9 @@ export const Form = ({ onBack }: FormProps) => {
     activitiesTypes.nutrition
   );
 
-  const isDevelopmentalScreeningWeeksFollowUp = isFollowUp(
-    DevelopmentalScreeningVisitSection,
-    activitiesTypes.pregnancyCare
+  const isDangerSignsFollowUpStep = isFollowUp(
+    dangerSignsSectionName,
+    activitiesTypes.dangerSigns
   );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
@@ -149,22 +194,39 @@ export const Form = ({ onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     switch (activityName) {
       case activitiesTypes.healthCare:
-        return getHealhcareteps(isDangerSignsFollowUpForMom);
+        return getHealhcareteps(
+          isDangerSignsFollowUpForMom,
+          isFirstVisit,
+          isAntenatalClinicStep
+        );
       case activitiesTypes.nutrition:
         return careForBabySteps(isDangerSignsFollowUpForBaby);
       case activitiesTypes.pregnancyCare:
-        return getPillar1Steps();
+        return getPregnancyCareSteps(
+          isEqualOrAfter98andEqualOrBefore168Days,
+          isAlcoholUseStep,
+          isIDDocumentStep,
+          isMaternalDistressFollowUp,
+          isMaternalDistress
+        );
       case activitiesTypes.dangerSigns:
-        return dangerSignsSteps(isDevelopmentalScreeningWeeksFollowUp);
+        return dangerSignsSteps(isDangerSignsFollowUpStep, isFirstVisit);
       default:
-        return followUpSteps(!!referralsForInfant?.length);
+        return followUpSteps(!!referralsForMother?.length);
     }
   }, [
     activityName,
     isDangerSignsFollowUpForMom,
+    isFirstVisit,
+    isAntenatalClinicStep,
     isDangerSignsFollowUpForBaby,
-    isDevelopmentalScreeningWeeksFollowUp,
-    referralsForInfant?.length,
+    isEqualOrAfter98andEqualOrBefore168Days,
+    isAlcoholUseStep,
+    isIDDocumentStep,
+    isMaternalDistressFollowUp,
+    isMaternalDistress,
+    isDangerSignsFollowUpStep,
+    referralsForMother?.length,
   ]);
 
   return (
@@ -186,7 +248,6 @@ export const Form = ({ onBack }: FormProps) => {
         isTipPage={isTip}
         currentStep={step}
         setIsTip={setIsTip}
-        setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
         onClose={onBack}

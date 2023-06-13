@@ -6,6 +6,7 @@ import {
   renderIcon,
   Typography,
   Card,
+  StackedList,
 } from '@ecdlink/ui';
 import { PractitionerProfileRouteState } from './coach-practitioner-classroom.types';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -60,6 +61,8 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const [practitionerClassroomsData, setPractitionerClassroomsData] =
     useState<any[]>();
 
+  const [actionItems, setActionItems] = useState<any>();
+
   const classroomsMetrics = async () => {
     const today = new Date();
     const firstDayPrevMonth = new Date(
@@ -92,16 +95,19 @@ export const CoachPractitionerClassroom: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [classMetrics]);
 
-  const classroomsDetailsForPractitioner = async () => {
-    const practitionersMessageData = await new PractitionerService(
+  const getClassroomsActionItems = async () => {
+    const newActionItems = await new PractitionerService(
       userAuth?.auth_token!
-    ).displayMetrics('practitioner');
+    ).classroomActionItems(practitionerId);
 
-    return practitionersMessageData;
+    setActionItems(newActionItems);
+
+    return newActionItems;
   };
 
   useEffect(() => {
-    classroomsDetailsForPractitioner();
+    getClassroomsActionItems();
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -122,6 +128,58 @@ export const CoachPractitionerClassroom: React.FC = () => {
     );
   };
 
+  // TODO: Complete list based on 'getClassroomsActionItems':
+  const listItems = [
+    {
+      title: 'Classroom',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Children, progress & attendance',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'AcademicCapIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'secondary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.PRACTITIONER_CLASSROOM, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+    {
+      title: 'Programme Information',
+      titleStyle: 'text-textDark font-semibold text-base leading-snug',
+      subTitle: 'Location, classes & staff',
+      subTitleStyle:
+        'text-sm font-h1 font-normal text-textMid w-9/12 overflow-clip',
+      menuIcon: 'InformationCircleIcon',
+      menuIconClassName: 'bg-secondary text-white',
+      showIcon: true,
+      iconBackgroundColor: 'secondary',
+      chipConfig: {
+        colorPalette: {
+          backgroundColour: 'white',
+          borderColour: 'errorMain',
+          textColour: 'errorMain',
+        },
+      },
+      text: '1',
+      onActionClick: () =>
+        history.push(ROUTES.COACH.PROGRAMME_INFORMATION, {
+          practitionerId,
+        }),
+      classNames: 'bg-uiBg',
+    },
+  ];
+
   return (
     <div className={styles.contentWrapper}>
       <BannerWrapper
@@ -138,6 +196,15 @@ export const CoachPractitionerClassroom: React.FC = () => {
         displayOffline={!isOnline}
       ></BannerWrapper>
       <div className="flex w-full flex-wrap justify-center">
+        <div className="mt-4 flex justify-center">
+          <div className="w-11/12">
+            <StackedList
+              className="-mt-0.5 flex w-full flex-col gap-1 rounded-2xl"
+              type="MenuList"
+              listItems={actionItems?.length > 0 ? listItems : []}
+            />
+          </div>
+        </div>
         <>
           <Card
             className={styles.registeredChildrenCard}
@@ -156,7 +223,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
             </div>
             <div className="mr-4 mt-8 h-full">
               <Button
-                color="textMid"
+                color="primary"
                 type="filled"
                 size="small"
                 onClick={() =>

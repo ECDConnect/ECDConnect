@@ -32,6 +32,7 @@ const ROUTES = {
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
+  COMMUNITY: '/community',
   CHILD: addPrefix('/child', {
     INFORMATION: addPrefix('/information', {
       EDIT: '/edit',
@@ -86,6 +87,7 @@ const ROUTES = {
     }),
     PRACTITIONERS: '/practitioners',
     PRACTITIONER_PROFILE_INFO: '/practitioner-profile-info',
+    PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
     PROGRAMME_INFORMATION: '/programme-information',
@@ -98,6 +100,7 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  SMART_STARTER_JOURNEY: addPrefix('/smart-starter-journey/:clientId', {}),
 };
 
 export default ROUTES;
