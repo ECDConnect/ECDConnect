@@ -32,7 +32,7 @@ export const Step6ReAccreditation = ({
     },
   ]);
 
-  const visitSection = 'Step 5';
+  const visitSection = 'Step 6';
 
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups

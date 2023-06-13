@@ -34,6 +34,7 @@ import {
   Step4ReAccreditation,
   Step5ReAccreditation,
   Step6ReAccreditation,
+  Step7ReAccreditation,
 } from './reaccreditation';
 
 export const prePqaVisits = [
@@ -79,4 +80,5 @@ export const reaccreditationSteps = [
   Step4ReAccreditation,
   Step5ReAccreditation,
   Step6ReAccreditation,
+  Step7ReAccreditation,
 ];
