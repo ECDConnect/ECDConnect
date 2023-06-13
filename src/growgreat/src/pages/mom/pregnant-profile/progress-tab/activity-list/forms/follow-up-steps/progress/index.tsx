@@ -1,17 +1,13 @@
 import { Header } from '@/pages/infant/infant-profile/components';
-import { useEffect, useLayoutEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
 import { TipCard } from '../../../../../components';
 import { FollowUp } from '../../components/follow-up';
-import { useDialog, usePrevious, VisitDto } from '@ecdlink/core';
+import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { useSelector } from 'react-redux';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { useAppDispatch } from '@/store';
-import { visitThunkActions } from '@/store/visit';
 
 export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
@@ -19,7 +15,6 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     () => mother?.user?.firstName || '',
     [mother?.user?.firstName]
   );
-  const appDispatch = useAppDispatch();
   const dialog = useDialog();
 
   // Previous visit data

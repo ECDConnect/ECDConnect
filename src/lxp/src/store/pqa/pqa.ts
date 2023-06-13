@@ -32,6 +32,33 @@ const pqaSlice = createSlice({
         const visitId = action.payload.visitId;
         switch (formType) {
           case 'pqa':
+            if (state?.pqaFormData?.length) {
+              if (
+                !state.pqaFormData.some(
+                  (item) => item.formData.visitId === visitId
+                )
+              ) {
+                state.pqaFormData = [
+                  ...state.pqaFormData,
+                  { practitionerId: userId, formData: action.payload },
+                ];
+                return;
+              }
+
+              const newState = state.pqaFormData.map((item) => {
+                if (item.formData.visitId === visitId) {
+                  return { ...item, formData: action.payload };
+                }
+
+                return item;
+              });
+
+              state.pqaFormData = newState;
+            } else {
+              state.pqaFormData = [
+                { practitionerId: userId, formData: action.payload },
+              ];
+            }
             break;
           case 'support-visit':
             handleAddSupportVisit({

@@ -127,15 +127,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother);
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -145,13 +145,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, [Service] IHttpContextAccessor contextAccessor, IGenericRepositoryFactory repoFactory, string visitId)
+        public Progress_VisitDataStatus GetPreviousVisitInformationForMother([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
         {
-            Progress_VisitDataStatus visitResult = new Progress_VisitDataStatus();
-
             var _visitId = new Guid(visitId);
-            visitResult = visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
-            return visitResult;
+            return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

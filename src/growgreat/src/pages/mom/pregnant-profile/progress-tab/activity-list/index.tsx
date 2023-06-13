@@ -66,7 +66,6 @@ export const MomActivityList: React.FC = () => {
   const { visitId } = useParams<MotherProfileParams>();
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
-  const MOCKED_VISIT_ID = visitId;
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const location = useLocation();
@@ -112,12 +111,12 @@ export const MomActivityList: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(
       visitThunkActions.getVisitAnswersForMother({
-        visitId: MOCKED_VISIT_ID,
+        visitId: visitId,
         visitName: activitiesTypes.nutrition,
         visitSection: DevelopmentalScreeningVisitSection,
       })
     );
-  }, [MOCKED_VISIT_ID, appDispatch]);
+  }, [visitId, appDispatch]);
 
   const { isOnline } = useOnlineStatus();
 
@@ -128,8 +127,18 @@ export const MomActivityList: React.FC = () => {
   const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
 
   const completedVisits = useSelector((state: RootState) =>
-    getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
+    getMomCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
+
+  useLayoutEffect(() => {
+    if (!completedVisits) {
+      appDispatch(
+        visitThunkActions.getMomCompletedVisitsForVisitId({
+          visitId,
+        })
+      );
+    }
+  }, [visitId, appDispatch, completedVisits]);
 
   const previousMotherVisit = useSelector(
     getPreviousVisitInformationForMotherSelector

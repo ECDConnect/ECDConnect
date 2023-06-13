@@ -7,11 +7,6 @@ import { IntroScreen } from './activity-list/intro-screen';
 import { RootState } from '@/store/types';
 import { PREGNANT_PROFILE_TABS } from '..';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
-import { visitThunkActions } from '@/store/visit';
-import {
-  getMotherLastVisitSelector,
-  getMotherCurrentVisitSelector,
-} from '@/store/mother/mother.selectors';
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
@@ -20,6 +15,7 @@ import { useWindowSize } from '@reach/window-size';
 import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
+import { getCurrentVisitSelector } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
@@ -48,7 +44,11 @@ export const ProgressTab = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
+
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
+
   // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
 
   const walkthroughData: FollowUpWalkthroughData = {

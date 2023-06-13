@@ -674,7 +674,7 @@ export const ChildProfile: React.FC = () => {
         renderBorder={true}
         renderOverflow={false}
         onBack={() => {
-          if (isPrincipal && practitioners && practitioners.length > 0) {
+          if (isPrincipal && practitioners?.length! > 1) {
             history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
           } else {
             history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });

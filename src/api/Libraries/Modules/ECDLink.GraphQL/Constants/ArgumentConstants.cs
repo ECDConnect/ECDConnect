@@ -11,5 +11,7 @@ namespace ECDLink.EGraphQL.Constants
         public const string Input = "input";
 
         public const string Token = "token";
+
+        public const string PagingInput = "pagingInput";
     }
 }

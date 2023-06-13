@@ -67,7 +67,7 @@ export const getFirstPqaSteps = ({
   Step15,
   Step16,
   Step17,
-  // ...(isToRemoveSmartStarter ? [] : [Step18, Step19]),
+  ...(isToRemoveSmartStarter ? [] : [Step18, Step19]),
 ];
 
 export const delicensingSteps = [Step1Delicensing, Step2Delicensing];

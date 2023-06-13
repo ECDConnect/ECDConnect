@@ -43,10 +43,11 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 // import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
+  getCurrentVisitSelector,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -55,6 +56,7 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
+import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -112,6 +114,10 @@ export const FollowUp = ({
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
 
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, visitId)
+  );
+
   useEffect(() => {
     if (isPrint) {
       setShowPrintData(true);
@@ -137,16 +143,23 @@ export const FollowUp = ({
     getPreviousVisitInformationForInfantSelector
   );
 
-  const printData = useSelector(GetInfantSummaryByPrioritySelector);
-  // Get Printing data
   useLayoutEffect(() => {
-    if (!!visit)
+    // if the previousVisit is null, lets fetch the latest
+    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
       appDispatch(
-        visitThunkActions.GetInfantSummaryByPriority({
-          visitId: visit?.id || '',
+        getPreviousVisitInformationForInfant({
+          visitId: currentVisit.id,
         })
       );
-  }, [appDispatch, previousVisit, visit, visit?.id]);
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId: currentVisit?.id || '',
+        })
+      );
+    }
+  }, [appDispatch, currentVisit, previousVisit]);
+
+  const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
   const getColorAndIcon = useCallback(
     (
@@ -296,8 +309,11 @@ export const FollowUp = ({
 
     return groupedData;
   }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
-
-  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+  if (
+    !previousVisit?.visitDataStatus?.length &&
+    previousVisit?.scoreComment === 'No data available for visit' &&
+    !walkthroughData
+  ) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />

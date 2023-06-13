@@ -9,7 +9,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useForm, useWatch } from 'react-hook-form';
 import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
@@ -54,7 +54,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({
   const [userHashUpdated, setUserHashUpdated] = useState(
     JSON.parse(localStorage?.getItem('userHash')!)
   );
-  // const userHash = useMemo(() => (JSON.parse(localStorage?.getItem('userHash')!)), [] );
+
   const userHashDecrypted = CryptoJS.AES.decrypt(
     userHashUpdated,
     'secret key 123'
@@ -109,7 +109,6 @@ export const LoginModal: React.FC<LoginModalProps> = ({
           }
         })
         .catch(() => {
-          console.log('catch');
           setDisplayError(true);
           setIsLoading(false);
         });

@@ -146,10 +146,10 @@ export const VisitsTab: React.FC = () => {
       (item) => !item.attended
     );
 
-    const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    );
+    // const visitsBeforeCurrentVisit = filterArrayBeforeId(
+    //   filteredVisits,
+    //   currentVisit?.id || ''
+    // );
 
     const isPastVisits = !!filterArrayBeforeId(
       filteredVisits,

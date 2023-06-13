@@ -849,7 +849,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (q1 != null && q1.Question == Constants.GGSettings.q_weight) {
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
+                var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
@@ -1100,7 +1100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 } 
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
-                comment = Constants.GGSettings.formula_milk_only + " " + listFoods;
+                comment = Constants.GGSettings.mixed_feeding + " " + listFoods;
                 AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
 
                 // G9 Client summary: amber - ""Try to make sure you give Themba only breast milk or only formula milk""
@@ -1374,30 +1374,52 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         
         /* ALL METHODS BELOW ARE RETURNING DATA FOR FE VIA INFANT AND MOTHER MANAGERS/QUERY EXTENSIONS*/
-        public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType) {
+        public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType, string visitId) {
             // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
             DateTime today = DateTime.Today;
             var sixMonthsBack = today.AddMonths(-6);
 
             if (clientType == Constants.GGSettings.client_mother) {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             } else {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == false && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
             return allReferrals;
         }
-        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType)
+        public List<VisitDataStatus> GetCompletedReferralDataForClient(string id, string clientType, string visitId)
         {
             // This data is for the past 6 months
             List<VisitDataStatus> allReferrals = new List<VisitDataStatus>();
@@ -1406,21 +1428,44 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (clientType == Constants.GGSettings.client_mother)
             {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                } else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
             else
             {
-                allReferrals = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
-                    join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
-                    join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
-                    select visitStatusData
-                ).ToList();
+                if (visitId == "" && visitId == null)
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
+                else
+                {
+                    allReferrals = (
+                        from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.Id.ToString() == visitId && x.PlannedVisitDate.Date >= sixMonthsBack.Date).OrderBy(x => x.PlannedVisitDate)
+                        join visitData in _visitDataRepo.GetAll() on visit.Id equals visitData.VisitId
+                        join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.IsCompleted == true && x.Type == _referral) on visitData.Id equals visitStatusData.VisitDataId
+                        select visitStatusData
+                    ).ToList();
+                }
             }
 
             foreach (var item in allReferrals)
@@ -1512,9 +1557,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             var totalGreen = 0;
             var totalRed = 0;
             var totalAmber = 0;
-            var fScore = 0;
+            var fScore = 0.0;
             var scoreColor = "";
+
             Progress_VisitDataStatus result = new Progress_VisitDataStatus();
+            result.VisitId = visitId.ToString();
 
             List<VisitDataStatus> visitDataStatus = new List<VisitDataStatus>();
             visitDataStatus = (
@@ -1522,6 +1569,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 join visitStatusData in _visitDataStatusRepo.GetAll().Where(y => y.Type == Constants.GGSettings.visit_data_client_progress) on visitData.Id equals visitStatusData.VisitDataId
                 select visitStatusData
             ).ToList();
+
+            if (visitDataStatus.Count == 0)
+            {
+                VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitId).FirstOrDefault();
+                result.ScoreComment = record == null ? "No data available for visit" : "Data available, but no client progress flags available";
+            }
 
             VisitDataStatus growthStatus;
             growthStatus = (
@@ -1534,9 +1587,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             totalRed = visitDataStatus.Where(x => x.Color == _red).Count();
             totalAmber = visitDataStatus.Where(x => x.Color == _amber).Count();
 
-            if ((totalGreen + totalRed + totalAmber) != 0)
+            var totalItems = totalGreen + totalRed + totalAmber;
+
+            if (totalItems != 0)
             {
-                fScore = (totalGreen / (totalGreen + totalRed + totalAmber)) * 100;
+                fScore = (double)totalGreen / (double)totalItems * 100;
             }
 
             if (fScore > 80)
@@ -1545,7 +1600,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else if (fScore >= 51 && fScore <= 80)
             {
                 scoreColor = _amber;
-            } else if (fScore < 51)
+            } else if (fScore > 0 && fScore < 51)
             {
                 scoreColor = _red;
             }
@@ -1559,13 +1614,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Weight = weightData?.VisitData.QuestionAnswer;
+            result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
             var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
 
-            result.Length = lengthData?.VisitData.QuestionAnswer;
+            result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
