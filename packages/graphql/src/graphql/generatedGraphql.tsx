@@ -2054,6 +2054,7 @@ export type FilterByFieldInput = {
 export type FollowUpVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
@@ -3233,6 +3234,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
@@ -3250,6 +3252,7 @@ export type Mutation = {
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
+  addSelfAssessmentForPractitioner?: Maybe<Visit>;
   addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
@@ -3644,6 +3647,10 @@ export type MutationAddCoachToFranchisorArgs = {
   franchisorId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationAddCoachVisitInviteForPractitionerArgs = {
+  input?: InputMaybe<VisitModelInput>;
+};
+
 export type MutationAddCoachVisitInviteForTraineeArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
@@ -3725,6 +3732,10 @@ export type MutationAddRoleArgs = {
 
 export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
+};
+
+export type MutationAddSelfAssessmentForPractitionerArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddStartupSupportAgreementForTraineeArgs = {
@@ -5969,6 +5980,10 @@ export type PractitionerTimeline = {
   prePQAVisitDate2Status?: Maybe<Scalars['String']>;
   reAccreditationRating?: Maybe<PqaRating>;
   reAccreditationVisits?: Maybe<Array<Maybe<Visit>>>;
+  requestedCoachVisits?: Maybe<Array<Maybe<Visit>>>;
+  selfAssessmentColor?: Maybe<Scalars['String']>;
+  selfAssessmentDate?: Maybe<Scalars['DateTime']>;
+  selfAssessmentStatus?: Maybe<Scalars['String']>;
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
@@ -6009,6 +6024,10 @@ export type PractitionerTimelineFilterInput = {
   prePQAVisitDate2Status?: InputMaybe<StringOperationFilterInput>;
   reAccreditationRating?: InputMaybe<PqaRatingFilterInput>;
   reAccreditationVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
+  requestedCoachVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
+  selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
+  selfAssessmentDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  selfAssessmentStatus?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
@@ -6047,6 +6066,10 @@ export type PractitionerTimelineInput = {
   prePQAVisitDate2Status?: InputMaybe<Scalars['String']>;
   reAccreditationRating?: InputMaybe<PqaRatingInput>;
   reAccreditationVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
+  requestedCoachVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
+  selfAssessmentColor?: InputMaybe<Scalars['String']>;
+  selfAssessmentDate?: InputMaybe<Scalars['DateTime']>;
+  selfAssessmentStatus?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;
@@ -8554,6 +8577,7 @@ export type RaceInput = {
 export type ReAccreditationVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['UUID']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
@@ -9433,6 +9457,7 @@ export type StringOperationFilterInput = {
 export type SupportVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['UUID']>;
   isSupportCall?: InputMaybe<Scalars['Boolean']>;
