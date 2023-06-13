@@ -9,6 +9,7 @@ import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selec
 import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { calculateCapacity } from './utils/math';
 
 export const Step5ReAccreditation = ({
   smartStarter,
@@ -29,7 +30,8 @@ export const Step5ReAccreditation = ({
   const visitSection = 'Step 5';
 
   const onOptionSelected = useCallback(
-    (value, index) => {
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index) => {
+      const value = event.target.value;
       const currentQuestion = questions[index];
 
       const updatedQuestions = questions.map((question, currentIndex) => {
@@ -55,6 +57,15 @@ export const Step5ReAccreditation = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  const t = calculateCapacity({
+    longSide: 800,
+    shortSide: 205,
+    numberOfAssistants: 1,
+    programType: 'preschool',
+  });
+
+  console.log({ t });
+
   return (
     <div className="p-4">
       <Typography type="h2" text="Programme details" color="textDark" />
@@ -79,8 +90,15 @@ export const Step5ReAccreditation = ({
             placeholder="e.g. 410"
             value={item.answer}
             onChange={(value) => onOptionSelected(value, index)}
+            {...(!!item.answer &&
+              Number(item.answer) < 50 && {
+                error: {
+                  type: 'max',
+                  message: 'Please enter a number that is more 49.',
+                },
+              })}
           />
-          <span className="">cm</span>
+          <span className="mb-4">cm</span>
         </div>
       ))}
     </div>
