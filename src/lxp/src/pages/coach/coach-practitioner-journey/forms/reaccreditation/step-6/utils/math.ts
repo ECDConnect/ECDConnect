@@ -1,4 +1,4 @@
-interface CalculateCapacityProps {
+export interface CalculateCapacityProps {
   shortSide: number;
   longSide: number;
   numberOfAssistants: number;
@@ -12,6 +12,7 @@ export function calculateTotalSquareMeters(
   const totalSquareMeters = (shortSide * longSide) / 10000; // Divide by 10000 to convert from cm^2 to m^2
   return totalSquareMeters;
 }
+
 export function calculateCapacity({
   longSide,
   numberOfAssistants,

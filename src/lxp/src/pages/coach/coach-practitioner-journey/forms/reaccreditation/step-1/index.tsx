@@ -17,7 +17,7 @@ export const Step1ReAccreditation = ({
     const value = event.target.value;
     setAnswer(value);
     setSectionQuestions?.([
-      { visitSection, questions: [{ answer, question }] },
+      { visitSection, questions: [{ answer: value, question }] },
     ]);
   };
 

@@ -1,95 +1,174 @@
-import { FormInput, Typography } from '@ecdlink/ui';
-import { useCallback, useEffect, useState, ChangeEvent } from 'react';
+import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
+import { useCallback, useState, ChangeEvent } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useParams } from 'react-router';
-import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { useSelector } from 'react-redux';
-import { ClassroomGroup } from '@ecdlink/graphql';
-import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
-import { PractitionerService } from '@/services/PractitionerService';
-import { authSelectors } from '@/store/auth';
-import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import {
+  CalculateCapacityProps,
+  calculateCapacity,
+  calculateTotalSquareMeters,
+} from './utils/math';
+import { classroomsSelectors } from '@/store/classroom';
+import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { toCamelCase } from '@ecdlink/core';
+import {
+  step5ReAccreditationQuestion,
+  step5ReAccreditationVisitSection,
+} from '../step-5';
 
-export const Step5ReAccreditation = ({
+export const Step6ReAccreditation = ({
   smartStarter,
+  sectionQuestions,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
-  const [answer, setAnswer] = useState('');
+  const [questions, setAnswers] = useState([
+    {
+      question: 'How many cm is the short side of the room?',
+      answer: '',
+    },
+    {
+      question: 'How many cm is the long side of the room?',
+      answer: '',
+    },
+  ]);
 
-  const question = 'How many assistants will attend every session?';
+  const visitSection = 'Step 5';
 
-  const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
-    useState<ClassroomGroup[]>();
+  const allClassroomGroups = useSelector(
+    classroomsSelectors.getClassroomGroups
+  );
+  const classroomGroups = allClassroomGroups.filter(
+    (x) => x.name !== NoPlaygroupClassroomType.name
+  );
 
-  const visitSection = 'Programme details';
+  const currentClassroomGroups = classroomGroups.filter(
+    (item) => item?.userId === smartStarter?.userId
+  );
+  const numberOfAssistants = sectionQuestions
+    ?.find((item) => item.visitSection === step5ReAccreditationVisitSection)
+    ?.questions.find(
+      (item) => item.question === step5ReAccreditationQuestion
+    )?.answer;
 
-  const { isOnline } = useOnlineStatus();
+  const onOptionSelected = useCallback(
+    (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index) => {
+      const value = event.target.value;
+      const currentQuestion = questions[index];
 
-  const { practitionerId } = useParams<PractitionerJourneyParams>();
-  const practitioner = useSelector(getPractitionerByUserId(practitionerId));
-  const userAuth = useSelector(authSelectors.getAuthUser);
+      const updatedQuestions = questions.map((question, currentIndex) => {
+        if (question.question === currentQuestion.question) {
+          return {
+            ...question,
+            answer: value,
+          };
+        }
+        return question;
+      });
 
-  const onChange = (
-    event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    const value = event.target.value;
-    setAnswer(value);
-    setSectionQuestions?.([
-      { visitSection, questions: [{ answer, question }] },
-    ]);
+      setAnswers(updatedQuestions);
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions: updatedQuestions,
+        },
+      ]);
 
-    if (value !== '') {
-      setEnableButton?.(true);
-    } else {
-      setEnableButton?.(false);
+      setEnableButton?.(updatedQuestions.every((item) => !!item.answer));
+    },
+    [questions, setEnableButton, setSectionQuestions]
+  );
+
+  const getCapacity = () => {
+    const result = calculateCapacity({
+      longSide: Number(questions[1].answer),
+      shortSide: Number(questions[0].answer),
+      numberOfAssistants: Number(numberOfAssistants),
+      programType: toCamelCase(
+        currentClassroomGroups[0].programmeType?.description ?? ''
+      ) as CalculateCapacityProps['programType'],
+    });
+
+    if (result > 0) {
+      return `${result} children`;
     }
+
+    if (!currentClassroomGroups[0].programmeType?.description) {
+      return 'Programme type could not be found';
+    }
+
+    return 'It was not possible to calculate the capacity';
   };
-
-  const classroomsDetailsForPractitioner = useCallback(async () => {
-    const classroomDetails = (await new PractitionerService(
-      userAuth?.auth_token!
-    ).getClassroomGroupClassroomsForPractitioner(
-      practitioner?.userId!
-    )) as unknown;
-
-    setPractitionerClassroomDetails(classroomDetails as ClassroomGroup[]);
-    return classroomDetails;
-  }, [practitioner?.userId, userAuth?.auth_token]);
-
-  useEffect(() => {
-    classroomsDetailsForPractitioner();
-  }, [classroomsDetailsForPractitioner]);
 
   return (
     <div className="p-4">
-      <Typography type="h2" text={visitSection} color="textDark" />
-      <div className="flex">
-        <Typography
-          type="h4"
-          text="Programme type:"
-          color="textDark"
-          className="my-4"
-        />
-        <Typography
-          type="h4"
-          text={
-            isOnline
-              ? practitionerClassroomDetails?.[0].programmeType?.description ||
-                ''
-              : 'You need to be online to view programme type'
-          }
-          color={isOnline ? 'textDark' : 'errorMain'}
-          className="my-4 ml-1 font-bold"
-        />
-      </div>
-      <FormInput
-        className="mt-2"
-        label={question}
-        subLabel="Any programme with more than 10 children must have an assistant."
-        placeholder="e.g. 2"
-        value={answer}
-        onChange={onChange}
+      <Typography type="h2" text="Programme details" color="textDark" />
+      <Typography
+        type="h4"
+        text="Measure the room in centimetres:"
+        color="textDark"
+        className="my-4"
+      />
+      <Typography
+        type="h4"
+        text="Help the SmartStarter clear the space so that it is laid out as it will be when the programme is running. Now use your measuring tape to measure it."
+        color="textMid"
+        className="my-4"
+      />
+      {questions.map((item, index) => (
+        <div className="flex items-end gap-2">
+          <FormInput
+            type="number"
+            className="mt-2"
+            label={item.question}
+            placeholder="e.g. 410"
+            value={item.answer}
+            onChange={(value) => onOptionSelected(value, index)}
+            {...(!!item.answer &&
+              Number(item.answer) < 50 && {
+                error: {
+                  type: 'max',
+                  message: 'Please enter a number that is more 49.',
+                },
+              })}
+          />
+          <span className="mb-4">cm</span>
+        </div>
+      ))}
+      {questions.every((item) => Number(item.answer) > 49) && (
+        <>
+          <Divider dividerType="dashed" className="mt-4" />
+          <Typography
+            type="h4"
+            text={`Total metres squared available: ${calculateTotalSquareMeters(
+              Number(questions[0].answer),
+              Number(questions[1].answer)
+            )}`}
+            color="textDark"
+            className="my-4"
+          />
+          <Typography
+            type="h4"
+            text={`Assistants: ${numberOfAssistants}`}
+            color="textDark"
+            className="my-4"
+          />
+          <Typography
+            type="h4"
+            text={`Capacity: ${getCapacity()}`}
+            color="textDark"
+            className="my-4"
+          />
+          <Divider dividerType="dashed" className="mb-4" />
+        </>
+      )}
+      <Alert
+        type="info"
+        title="Check the capacity above before tapping Next. How is programme capacity calculated?"
+        list={[
+          'Playgroups can have a maximum of 12 children at a time.',
+          'Every child must have at least 1 square metre of free space each to play in.',
+          'There should be 10 children to every 1 adult in the programme.',
+        ]}
       />
     </div>
   );
