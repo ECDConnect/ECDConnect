@@ -94,11 +94,15 @@ export function fillInMissingNumbers(
         return startValue + (endValue - startValue) * alpha;
       }
     );
-
     arr.splice(startIndex + 1, segmentLength - 1, ...interpolatedValues);
   });
 
-  return arr;
+  // removing nan values which the chart don't display
+  const newArray = arr.filter(function (value) {
+    return !Number.isNaN(value);
+  });
+
+  return newArray;
 }
 
 //TODO: add type
