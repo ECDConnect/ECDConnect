@@ -5646,11 +5646,12 @@ export type ObservationCategoryTaskSummary = {
 
 export type PqaRating = {
   __typename?: 'PQARating';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
   children?: Maybe<Array<Maybe<PqaRatingChild>>>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
   overallRatingStars?: Maybe<Scalars['String']>;
-  overallScore: Scalars['Int'];
+  overallScore: Scalars['Float'];
   plannedDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
 };
@@ -5659,7 +5660,7 @@ export type PqaRatingChild = {
   __typename?: 'PQARatingChild';
   sectionRating?: Maybe<Scalars['String']>;
   sectionRatingColor?: Maybe<Scalars['String']>;
-  sectionScore: Scalars['Int'];
+  sectionScore: Scalars['Float'];
   visitSection?: Maybe<Scalars['String']>;
 };
 
@@ -5668,35 +5669,37 @@ export type PqaRatingChildFilterInput = {
   or?: InputMaybe<Array<PqaRatingChildFilterInput>>;
   sectionRating?: InputMaybe<StringOperationFilterInput>;
   sectionRatingColor?: InputMaybe<StringOperationFilterInput>;
-  sectionScore?: InputMaybe<ComparableInt32OperationFilterInput>;
+  sectionScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
   visitSection?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type PqaRatingChildInput = {
   sectionRating?: InputMaybe<Scalars['String']>;
   sectionRatingColor?: InputMaybe<Scalars['String']>;
-  sectionScore: Scalars['Int'];
+  sectionScore: Scalars['Float'];
   visitSection?: InputMaybe<Scalars['String']>;
 };
 
 export type PqaRatingFilterInput = {
+  actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<PqaRatingFilterInput>>;
   children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
   or?: InputMaybe<Array<PqaRatingFilterInput>>;
   overallRating?: InputMaybe<StringOperationFilterInput>;
   overallRatingColor?: InputMaybe<StringOperationFilterInput>;
   overallRatingStars?: InputMaybe<StringOperationFilterInput>;
-  overallScore?: InputMaybe<ComparableInt32OperationFilterInput>;
+  overallScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
   plannedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   visitName?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type PqaRatingInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
   overallRating?: InputMaybe<Scalars['String']>;
   overallRatingColor?: InputMaybe<Scalars['String']>;
   overallRatingStars?: InputMaybe<Scalars['String']>;
-  overallScore: Scalars['Int'];
+  overallScore: Scalars['Float'];
   plannedDate?: InputMaybe<Scalars['DateTime']>;
   visitName?: InputMaybe<Scalars['String']>;
 };
@@ -5936,6 +5939,14 @@ export type PractitionerMetricReport = {
   outstandingSyncs: Scalars['Int'];
   programTypesData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
+};
+
+export type PractitionerNotes = {
+  __typename?: 'PractitionerNotes';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
+  answers?: Maybe<Array<Maybe<VisitData>>>;
+  plannedVisitDate?: Maybe<Scalars['DateTime']>;
+  visitName?: Maybe<Scalars['String']>;
 };
 
 export type PractitionerReportDetails = {
@@ -6938,6 +6949,7 @@ export type Query = {
   visitClientSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
   visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
   visitDataForVisitId?: Maybe<Array<Maybe<VisitData>>>;
+  visitNotesForPractitioner?: Maybe<Array<Maybe<PractitionerNotes>>>;
   visitVideos: Array<Maybe<VisitVideos>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
@@ -8535,6 +8547,10 @@ export type QueryVisitDataForVisitArgs = {
 
 export type QueryVisitDataForVisitIdArgs = {
   visitId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryVisitNotesForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitVideosArgs = {
@@ -10285,6 +10301,7 @@ export type VisitModelInput = {
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
+  isSupportCall?: InputMaybe<Scalars['Boolean']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
   mother?: InputMaybe<MotherModelInput>;
   motherId?: InputMaybe<Scalars['UUID']>;

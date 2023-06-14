@@ -485,7 +485,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_visit).FirstOrDefault();
+            VisitType visitType;
+            if (input.isSupportCall == true)
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            }
+            else
+            {
+                visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_practitioner_visit).OrderBy(x => x.NormalizedName).FirstOrDefault();
+            }
+
             Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
