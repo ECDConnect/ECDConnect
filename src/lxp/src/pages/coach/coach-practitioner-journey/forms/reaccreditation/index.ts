@@ -5,3 +5,8 @@ export * from './step-4';
 export * from './step-5';
 export * from './step-6';
 export * from './step-7';
+export * from './step-8';
+export * from './step-9';
+export * from './step-10';
+export * from './step-11';
+export * from './step-12';
