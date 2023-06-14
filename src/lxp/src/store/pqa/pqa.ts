@@ -25,7 +25,10 @@ const pqaSlice = createSlice({
         action: PayloadAction<
           CmsVisitDataInputModelInput,
           string,
-          { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+          {
+            userId: string;
+            formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+          }
         >
       ) => {
         const { userId, formType } = action.meta;
@@ -100,7 +103,10 @@ const pqaSlice = createSlice({
       },
       prepare: (
         payload: CmsVisitDataInputModelInput,
-        meta: { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+        meta: {
+          userId: string;
+          formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+        }
       ) => ({ payload, meta }),
     },
   },

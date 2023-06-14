@@ -44,6 +44,10 @@ import {
   delicensingStep1VisitSection,
 } from './delicensing';
 import { ChildrenDialog } from './dialog';
+import {
+  step15ReAccreditationQuestions,
+  step15ReAccreditationVisitSection,
+} from './reaccreditation';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -84,7 +88,14 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
-  const isToRemoveSmartStarter = step16Question1Answer === true;
+  const step15ReAccreditationQuestion1Answer = sectionQuestions
+    ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
+    ?.questions.find(
+      (item) => item.question === step15ReAccreditationQuestions.question1
+    )?.answer;
+  const isToRemoveSmartStarter =
+    step16Question1Answer === true ||
+    step15ReAccreditationQuestion1Answer === true;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -319,6 +330,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     [appDispatch, displayChildrenDialog, practitionerId]
   );
 
+  const onSubmitReAccreditation = useCallback(
+    ({ payload }: SubmitProps) => {
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 're-accreditation',
+        })
+      );
+      appDispatch(pqaThunkActions.addVisitFormData(payload));
+    },
+    [appDispatch, practitionerId]
+  );
+
   const onSubmit = useCallback(() => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
@@ -344,6 +368,9 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       case visitTypes.pqa.firstPQA.name:
         onSubmitPqa({ payload, sections });
         break;
+      case visitTypes.reaccreditation.name:
+        onSubmitReAccreditation({ payload, sections });
+        break;
       default:
         onSubmitPrePqa({ payload, sections });
         break;
@@ -352,6 +379,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     activityName,
     onSubmitPqa,
     onSubmitPrePqa,
+    onSubmitReAccreditation,
     onSubmitSupportVisit,
     practitionerId,
     sectionQuestions,

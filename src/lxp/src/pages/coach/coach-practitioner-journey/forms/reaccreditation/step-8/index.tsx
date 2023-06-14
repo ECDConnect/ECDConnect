@@ -18,6 +18,11 @@ import {
 } from '@heroicons/react/solid';
 import { Score } from '../components/score';
 
+export const step8ReAccreditation = {
+  visitSection: 'Step 8',
+  totalScore: 12,
+};
+
 export const Step8ReAccreditation = ({
   smartStarter,
   setSectionQuestions,
@@ -29,7 +34,6 @@ export const Step8ReAccreditation = ({
   });
 
   const answers = question.answer as string[];
-  const visitSection = 'Step 8';
   const firstName = smartStarter?.user?.firstName || 'the SmartStarter';
 
   const dialog = useDialog();
@@ -47,7 +51,7 @@ export const Step8ReAccreditation = ({
         setEnableButton?.(true);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: step8ReAccreditation.visitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -59,7 +63,7 @@ export const Step8ReAccreditation = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: step8ReAccreditation.visitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -153,7 +157,9 @@ export const Step8ReAccreditation = ({
           />
         );
       })}
-      {!!answers.length && <Score sum={answers.length} total={12} />}
+      {!!answers.length && (
+        <Score sum={answers.length} total={step8ReAccreditation.totalScore} />
+      )}
     </div>
   );
 };
