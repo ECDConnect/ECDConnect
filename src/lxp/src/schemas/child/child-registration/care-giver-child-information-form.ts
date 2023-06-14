@@ -14,5 +14,8 @@ export const careGiverChildInformationFormSchema = Yup.object().shape({
   suburb: Yup.string().required('Suburb is required'),
   city: Yup.string().required('City is required'),
   provinceId: Yup.string().required(),
-  postalCode: Yup.string().required('Postal code is required'),
+  postalCode: Yup.string()
+    .length(4, 'Please enter a valid postal code.')
+    .matches(/^[0-9]{4}/)
+    .required('Please enter a valid postal code.'),
 });

@@ -71,7 +71,8 @@ namespace EcdLink.Api.CoreApi
                 "https://*.ecdlink.co.za",
                 "https://*.azurewebsites.net",
                 "http://localhost:3001",
-                "http://localhost:3000" };
+                "http://localhost:3000" ,
+                "https://smartstart-ecdconnect-co-za-funda.datafree.co"};
 
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                           .AllowAnyMethod()

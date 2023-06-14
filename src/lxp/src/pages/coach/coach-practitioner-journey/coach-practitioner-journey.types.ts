@@ -18,6 +18,10 @@ export const visitTypes = {
   pqa: {
     firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
   },
+  reaccreditation: {
+    name: 'reaccreditation',
+    description: 'Reaccreditation',
+  },
 };
 
 export const generalSupportVisitTypes = {
