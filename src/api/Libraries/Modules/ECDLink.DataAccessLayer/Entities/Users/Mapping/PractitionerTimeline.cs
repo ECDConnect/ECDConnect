@@ -61,18 +61,19 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
     public class PQARating
     {
         public string VisitName { get; set; }
-        public int OverallScore { get; set; }
+        public double OverallScore { get; set; }
         public string OverallRating { get; set; }
         public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
         public DateTime? PlannedDate { get; set; }
+        public DateTime? ActualVisitDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }
     }
 
     public class PQARatingChild
     {
         public string VisitSection { get; set; }
-        public int SectionScore { get; set; }
+        public double SectionScore { get; set; }
         public string SectionRating { get; set; }
         public string SectionRatingColor { get; set; }
     }
@@ -81,5 +82,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
     {
         public string Name { get; set; }
         public DateTime? MeetingDate { get; set; }
+    }
+    public class PractitionerNotes
+    {
+        public string VisitName { get; set; }
+        public DateTime? ActualVisitDate { get; set; }
+        public DateTime? PlannedVisitDate { get; set; }
+        public virtual ICollection<VisitData> Answers { get; set; }
     }
 }
