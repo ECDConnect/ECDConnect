@@ -21,7 +21,7 @@ export const Step16ReAccreditation = ({
   const [answer, setAnswer] = useState('');
 
   const question = 'Summary of discussion';
-  const visitSection = 'Step 17';
+  const visitSection = 'Step 16';
   const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
 
