@@ -63,7 +63,7 @@ export const PastVisits: React.FC = () => {
         actionButtonColor: 'secondaryAccent2',
         actionButtonOnClick: () =>
           history.push(
-            `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}/antenatal-visit`
+            `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}/activities-form/${item.id}`
           ),
       };
     });

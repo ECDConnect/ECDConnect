@@ -48,7 +48,7 @@ export const ChildInformationForm: React.FC<ChildInformationFormProps> = ({
 }) => {
   const daysInMonth = getArrayRange(1, 31);
   const years = getArrayRange(
-    subYears(new Date(), 20).getFullYear(),
+    subYears(new Date(), 10).getFullYear(),
     new Date().getFullYear()
   );
   const [dayDropDownList, setDayDropDownList] = useState<

@@ -352,7 +352,7 @@ export const MomActivityList: React.FC = () => {
               {isFollowUp && (
                 <StackedList
                   isFullHeight={false}
-                  className={'flex flex-col gap-2'}
+                  className={'mb-2 flex flex-col gap-2'}
                   listItems={followUpForm}
                   type={'MenuList'}
                 />
