@@ -91,7 +91,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA.description, name: visitTypes.pqa.firstPQA.name}, plannedVisitDate: new Date()}]
+  // pqa mock -> [{ id: '01',visitType: {description: visitTypes.reaccreditation.description,name: visitTypes.reaccreditation.name,},plannedVisitDate: new Date(),},]
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)

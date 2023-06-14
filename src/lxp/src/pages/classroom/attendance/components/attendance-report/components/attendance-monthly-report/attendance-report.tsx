@@ -151,12 +151,26 @@ export const MonthlyAttendanceReport = ({
     pageTitle: `${reportMonth} Attendance Report`,
     subtitle: '',
     text_coulumn_one_row_one: `Name: ${practitioner?.user?.fullName}`,
-    text_coulumn_one_row_two: `ID: ${reportDetails?.idNumber === null ? '': reportDetails?.idNumber}`,
-    text_coulumn_one_row_three: `Phone: ${reportDetails?.phone === null ? '': reportDetails?.phone}`,
+    text_coulumn_one_row_two: `ID: ${
+      reportDetails?.idNumber === null ? '' : reportDetails?.idNumber
+    }`,
+    text_coulumn_one_row_three: `Phone: ${
+      reportDetails?.phone === null ? '' : reportDetails?.phone
+    }`,
     //column2 with 3 rows of text
-    text_column_two_row_one: `ProgrammeType:${reportDetails?.programmeTypeName === null ? '': reportDetails?.programmeTypeName} `,
-    text_column_two_row_two: `Programme Days:${reportDetails?.programmeDays === null ? '': reportDetails?.programmeDays} `,
-    text_column_two_row_three: `Site: ${reportDetails?.classSiteAddress  === null ? '': reportDetails?.classSiteAddress}`,
+    text_column_two_row_one: `ProgrammeType:${
+      reportDetails?.programmeTypeName === null
+        ? ''
+        : reportDetails?.programmeTypeName
+    } `,
+    text_column_two_row_two: `Programme Days:${
+      reportDetails?.programmeDays === null ? '' : reportDetails?.programmeDays
+    } `,
+    text_column_two_row_three: `Site: ${
+      reportDetails?.classSiteAddress === null
+        ? ''
+        : reportDetails?.classSiteAddress
+    }`,
   };
 
   const tableBottomContent = [
