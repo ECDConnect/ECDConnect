@@ -555,7 +555,7 @@ export const ReferralsTab: React.FC = () => {
                 <div className="my-4 flex items-center gap-3">
                   <div className="flex w-full flex-col">
                     <Typography
-                      type="h4"
+                      type="markdown"
                       align="left"
                       weight="bold"
                       text={item?.comment || ''}
