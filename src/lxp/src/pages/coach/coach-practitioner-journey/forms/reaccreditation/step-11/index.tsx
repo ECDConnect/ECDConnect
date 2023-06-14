@@ -10,6 +10,11 @@ import { options } from './options';
 import { DynamicFormProps } from '../../dynamic-form';
 import { Score } from '../components/score';
 
+export const step11ReAccreditation = {
+  visitSection: 'Step 11',
+  totalScore: 6,
+};
+
 export const Step11ReAccreditation = ({
   setSectionQuestions,
   setEnableButton,
@@ -20,7 +25,6 @@ export const Step11ReAccreditation = ({
   });
 
   const answers = question.answer as string[];
-  const visitSection = 'Step 11';
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -35,7 +39,7 @@ export const Step11ReAccreditation = ({
         setEnableButton?.(true);
         return setSectionQuestions?.([
           {
-            visitSection: visitSection,
+            visitSection: step11ReAccreditation.visitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -46,7 +50,7 @@ export const Step11ReAccreditation = ({
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
-          visitSection: visitSection,
+          visitSection: step11ReAccreditation.visitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -84,7 +88,7 @@ export const Step11ReAccreditation = ({
           />
         );
       })}
-      <Score sum={answers.length} total={6} />
+      <Score sum={answers.length} total={step11ReAccreditation.totalScore} />
     </div>
   );
 };

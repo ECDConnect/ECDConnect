@@ -91,7 +91,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{ id: '01',visitType: {description: visitTypes.reaccreditation.description,name: visitTypes.reaccreditation.name,},plannedVisitDate: new Date(),},]
+  // pqa mock -> [{ id: '01',visitType: {description: visitTypes.reaccreditation.description,name: visitTypes.reaccreditation.name,},plannedVisitDate: new Date(),},] as Maybe<Visit>[]
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
@@ -115,6 +115,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
+        titleStyle: 'text-textDark',
         title: visit?.visitType?.description || 'Visit',
         subTitle: !!visit?.plannedVisitDate
           ? new Date(visit?.plannedVisitDate).toLocaleDateString(
@@ -122,6 +123,7 @@ export const CoachPractitionerJourney: React.FC = () => {
               dateLongMonthOptions
             )
           : '',
+        subTitleStyle: 'text-textDark',
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
@@ -231,7 +233,7 @@ export const CoachPractitionerJourney: React.FC = () => {
             variant="flat"
             title={timeline?.smartSpaceLicenseStatus || ''}
             message={
-              !!timeline?.smartSpaceLicenseDate
+              timeline?.smartSpaceLicenseDate
                 ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
                     'en-ZA',
                     dateLongMonthOptions

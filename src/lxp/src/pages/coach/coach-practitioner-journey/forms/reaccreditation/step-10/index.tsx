@@ -18,8 +18,10 @@ import {
 import { useDialog } from '@ecdlink/core';
 import { Score } from '../components/score';
 
-export const step2VisitSection = 'Step 2';
-export const step2TotalScore = 12;
+export const step10ReAccreditation = {
+  visitSection: 'Step 10',
+  totalScore: 20,
+};
 
 export const Step10ReAccreditation = ({
   smartStarter,
@@ -69,7 +71,6 @@ export const Step10ReAccreditation = ({
     },
   ]);
 
-  const visitSection = 'Step 10';
   const firstName = smartStarter?.user?.firstName || 'the SmartStarter';
 
   const optionsButtonGroup = [
@@ -97,7 +98,7 @@ export const Step10ReAccreditation = ({
       setAnswers(updatedQuestions);
       setSectionQuestions?.([
         {
-          visitSection,
+          visitSection: step10ReAccreditation.visitSection,
           questions: updatedQuestions,
         },
       ]);
@@ -223,7 +224,7 @@ export const Step10ReAccreditation = ({
             (total, question) => total + Number(question.answer),
             0
           )}
-          total={20}
+          total={step10ReAccreditation.totalScore}
         />
       )}
     </div>
