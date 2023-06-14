@@ -33,7 +33,6 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
   const date = format(new Date(), 'EEEE, d LLLL');
@@ -52,8 +51,6 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
 
   const { haveSupport } = useWatch({ control });
 
-  console.log(communitySupportGetValues().haveSupport);
-
   const sendCommunitySupportAnswer = async () => {
     await new TraineeService(userAuth?.auth_token!).updateCommunitySupport(
       practitioner?.userId!,
@@ -62,8 +59,6 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
 
     history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
   };
-
-  console.log({ haveSupport });
 
   return (
     <>

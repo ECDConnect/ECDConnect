@@ -26,11 +26,11 @@ export const TraineeOnboarding = () => {
             setNotificationStep={setNotificationStep}
           />
         );
-      case 'startupSupportAgreement':
+      case 'Register 3 children':
         return (
           <StartupSupportAgreement setNotificationStep={setNotificationStep} />
         );
-      case 'SmartSpaceChecklist':
+      case 'Fill in the SmartSpace checklist':
         return (
           <SmartSpaceChecklist setNotificationStep={setNotificationStep} />
         );
@@ -38,7 +38,7 @@ export const TraineeOnboarding = () => {
         return (
           <GetCommunitySupport setNotificationStep={setNotificationStep} />
         );
-      case 'Register3Children':
+      case 'Register 3 childre2n':
         return history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
       default:
         return (

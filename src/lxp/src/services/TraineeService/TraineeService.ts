@@ -2,9 +2,12 @@ import { api } from '../axios.helper';
 import { Config, TraineeDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
-  PractitionerTimeline,
   SsChecklistVisitModelInput,
+  TraineeOnBoardTimeline,
   UserConsentInput,
+  Visit,
+  VisitData,
+  VisitModelInput,
 } from '@ecdlink/graphql';
 
 class TraineeService {
@@ -55,7 +58,7 @@ class TraineeService {
     return response.data.data.traineeByUserId;
   }
 
-  async getTraineeTimeline(userId: string): Promise<PractitionerTimeline> {
+  async getTraineeTimeline(userId: string): Promise<TraineeOnBoardTimeline> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -121,6 +124,33 @@ class TraineeService {
     return response.data.data.onBoardTraineeTimeline;
   }
 
+  async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      query GetVisitDataForVisitId($visitId: String) {
+        visitDataForVisitId(visitId: $visitId) {
+            visitName
+            visitSection
+            question
+            questionAnswer
+        }
+    }
+      `,
+      variables: {
+        visitId: visitId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Trainee visit data for visit id Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.visitDataForVisitId;
+  }
+
   async updateCommunitySupport(
     userId: string,
     haveCommunitySupport: boolean
@@ -152,7 +182,7 @@ class TraineeService {
     return true;
   }
 
-  async signSupportAgreement(
+  async signFranchisorAgreement(
     id: string,
     input: UserConsentInput
   ): Promise<boolean> {
@@ -245,6 +275,42 @@ class TraineeService {
     return true;
   }
 
+  async addStartupSupportAgreementForTrainee(
+    input: CmsVisitDataInputModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddStartupSupportAgreementForTrainee($userId: String, $scheduledDate: DateTime ) {
+        addStartupSupportAgreementForTrainee(userId: $userId, scheduledDate: $scheduledDate) {
+            id
+           plannedVisitDate
+           actualVisitDate
+           attended
+           visitType {
+               name
+               description
+           } 
+        } 
+    }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
   async scheduleConsolidationMeetingDate(
     userId: string,
     scheduledDate: Date
@@ -274,6 +340,40 @@ class TraineeService {
     }
 
     return true;
+  }
+
+  async addCoachVisitInviteForTrainee(input: VisitModelInput): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addAdditionalVisitForInfant: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation AddCoachVisitInviteForTrainee($input: VisitModelInput) {  
+        addCoachVisitInviteForTrainee(input: $input) {            
+            id
+            plannedVisitDate
+            attended
+            visitType {
+                id
+                name
+                description
+            }
+        }        
+    }
+        `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'add Additional Visit For Child failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addAdditionalVisitForInfant;
   }
 }
 

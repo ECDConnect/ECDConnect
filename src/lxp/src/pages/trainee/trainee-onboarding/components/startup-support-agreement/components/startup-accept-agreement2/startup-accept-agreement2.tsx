@@ -1,22 +1,72 @@
 import Article from '@/components/article/article';
 import { practitionerSelectors } from '@/store/practitioner';
 import { Alert, Button, Checkbox, Typography } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { coachSelectors } from '@/store/coach';
+import {
+  SectionQuestions,
+  visitSection,
+} from '../../startup-accept-agreement.types';
 
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
+  setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  sectionQuestions?: SectionQuestions[];
 }
 
 export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
   setAgreementStep,
+  setSectionQuestions,
+  sectionQuestions,
 }) => {
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
+
+  const [questions, setAnswers] = useState([
+    {
+      question:
+        'The contract will be for the fixed term and amount agreed upon for a full day programme. I recognise that this amount will be paid monthly into my below mentioned bank account.',
+      answer: false,
+    },
+    {
+      question:
+        'I recognise that the payment of the monthly start up subsidy depends on the following, and failure to comply on a monthly basis will result in the non-payment of the start-up subsidy:',
+      answer: false,
+    },
+  ]);
+
+  const onOptionSelected = useCallback(
+    (value, index) => {
+      const currentQuestion = questions[index];
+
+      const updatedQuestions = questions.map((question) => {
+        if (question.question === currentQuestion.question) {
+          return {
+            ...question,
+            answer: value,
+          };
+        }
+        return question;
+      });
+
+      setAnswers(updatedQuestions);
+    },
+    [questions]
+  );
+
+  const onSubmitQuestions = () => {
+    setSectionQuestions?.([
+      {
+        visitSection,
+        questions:
+          sectionQuestions && sectionQuestions?.length > 0
+            ? [...sectionQuestions?.[0]?.questions, ...questions]
+            : questions,
+      },
+    ]);
+  };
 
   return (
     <>
@@ -50,8 +100,7 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
           <div className="'flex items-center' w-full flex-row justify-start">
             <div className="flex items-start gap-2">
               <Checkbox
-                // checked={}
-                onCheckboxChange={(value) => {}}
+                onCheckboxChange={(e) => onOptionSelected(e.checked, 0)}
               />
               <Typography
                 text={
@@ -63,8 +112,7 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
             </div>
             <div className="mt-2 flex items-start gap-2">
               <Checkbox
-                // checked={}
-                onCheckboxChange={(value) => {}}
+                onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
               />
               <Typography
                 text={`I recognise that the payment of the monthly start up subsidy depends on the following, and failure to comply on a monthly basis will result in the non-payment of the start-up subsidy:
@@ -85,7 +133,11 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
               text="Next"
               textColor="white"
               icon="ArrowCircleRightIcon"
-              onClick={() => setAgreementStep('StartupAcceptAgreement3')}
+              onClick={() => {
+                onSubmitQuestions();
+                setAgreementStep('StartupAcceptAgreement3');
+              }}
+              disabled={questions?.some((item) => item?.answer === false)}
             />
           </div>
         </div>

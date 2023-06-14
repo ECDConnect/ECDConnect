@@ -148,7 +148,11 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+    if (
+      dashboardNotification?.isNew &&
+      practitioner?.progress! >= 2 &&
+      !practitioner?.isTrainee
+    ) {
       appDispatch(notificationActions.resetNotificationState());
     }
   }, []);

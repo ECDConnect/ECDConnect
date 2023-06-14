@@ -8,23 +8,67 @@ import {
   Checkbox,
   Typography,
 } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ContentConsentTypeEnum } from '@ecdlink/core';
 import { coachSelectors } from '@/store/coach';
-import { yesNoOptions } from './startup-accept-agreement3.types';
+import { startupAgreementPaymentOptions } from './startup-accept-agreement3.types';
+import {
+  SectionQuestions,
+  visitSection,
+} from '../../startup-accept-agreement.types';
 
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
+  setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  sectionQuestions?: SectionQuestions[];
 }
 
 export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
   setAgreementStep,
+  setSectionQuestions,
+  sectionQuestions,
 }) => {
-  const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
+
+  const [questions, setAnswers] = useState([
+    {
+      question: 'Have set up my own enterprise',
+      answer: '',
+    },
+  ]);
+
+  const onOptionSelected = useCallback(
+    (value, index) => {
+      const currentQuestion = questions[index];
+
+      const updatedQuestions = questions.map((question) => {
+        if (question.question === currentQuestion.question) {
+          return {
+            ...question,
+            answer: value,
+          };
+        }
+        return question;
+      });
+
+      setAnswers(updatedQuestions);
+    },
+    [questions]
+  );
+
+  const onSubmitQuestions = () => {
+    setSectionQuestions?.([
+      {
+        visitSection,
+        questions:
+          sectionQuestions && sectionQuestions?.length > 0
+            ? [...sectionQuestions?.[0]?.questions, ...questions]
+            : questions,
+      },
+    ]);
+  };
 
   return (
     <>
@@ -58,9 +102,11 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
               If you do not have a bank account, please select FNB eWallet.
             </label>
             <div className="mt-1">
-              <ButtonGroup<boolean>
-                options={yesNoOptions}
-                onOptionSelected={(value: boolean | boolean[]) => {}}
+              <ButtonGroup<string>
+                options={startupAgreementPaymentOptions}
+                onOptionSelected={(value: string | string[]) =>
+                  onOptionSelected(value, 0)
+                }
                 color="secondary"
                 type={ButtonGroupTypes.Button}
                 className={'w-full'}
@@ -76,7 +122,11 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
               text="Next"
               textColor="white"
               icon="ArrowCircleRightIcon"
-              onClick={() => setAgreementStep('StartupAcceptAgreement3')}
+              onClick={() => {
+                onSubmitQuestions();
+                setAgreementStep('StartupAcceptAgreement4');
+              }}
+              disabled={questions?.some((item) => item?.answer === '')}
             />
           </div>
         </div>

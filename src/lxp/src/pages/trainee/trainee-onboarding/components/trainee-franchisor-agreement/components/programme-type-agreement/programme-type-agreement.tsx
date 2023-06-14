@@ -4,25 +4,22 @@ import {
   Button,
   ButtonGroup,
   ButtonGroupTypes,
-  Checkbox,
   Dialog,
   DialogPosition,
   Typography,
 } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ContentConsentTypeEnum, ProgrammeTypeDto } from '@ecdlink/core';
-import { Controller, useForm } from 'react-hook-form';
+import { ProgrammeTypeDto } from '@ecdlink/core';
+import { Controller } from 'react-hook-form';
 import { staticDataSelectors } from '@/store/static-data';
-import {
-  EditProgrammeModel,
-  editProgrammeSchema,
-} from '@/schemas/practitioner/edit-programme';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useHistory } from 'react-router';
-import ROUTES from '@/routes/routes';
 import { ModelInfo } from './components/model-info';
 import { ProgrammeTypeTexts } from './components/modelTexts';
+import { authSelectors } from '@/store/auth';
+import { TraineeService } from '@/services/TraineeService';
+import { UserConsentInput } from '@ecdlink/graphql';
+import { contentConsentSelectors } from '@/store/content/consent';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 interface ProgrammeTypeAgreementProps {
   setAgreementStep: any;
@@ -33,27 +30,39 @@ export const ProgrammeTypeAgreement: React.FC<ProgrammeTypeAgreementProps> = ({
   setAgreementStep,
   setNotificationStep,
 }) => {
-  const {
-    getValues: getProgrammeFormValues,
-    setValue: setProgrammeFormValue,
-    register: programmeFormRegister,
-    control: programmeFormControl,
-    handleSubmit,
-  } = useForm<EditProgrammeModel>({
-    resolver: yupResolver(editProgrammeSchema),
-    shouldUnregister: true,
-    mode: 'onChange',
-  });
-
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [openModelInfo, setOpenModelInfo] = useState<boolean>(false);
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
-  const history = useHistory();
   const [modelType, setModelType] = useState('');
+  const [programmeType, setProgrammeType] = useState('');
+  const consentList = useSelector(contentConsentSelectors.getConsent);
+  const franchisorAgreement = consentList?.find((item) => item.id === 740);
 
   const handleSetInfoModelPage = (model: string) => {
     setOpenModelInfo(true);
     setModelType(model);
+  };
+
+  const handleUpdateConsent = async () => {
+    if (franchisorAgreement) {
+      const agreementInput: UserConsentInput = {
+        ConsentId: franchisorAgreement?.id,
+        ConsentType: 'FranchiseeAgreement',
+        CreatedUserId: practitioner?.userId,
+        Id: newGuid(),
+        IsActive: true,
+        // UpdatedBy: '',
+        UserId: practitioner?.userId,
+      };
+
+      await new TraineeService(userAuth?.auth_token!).signFranchisorAgreement(
+        agreementInput?.Id,
+        agreementInput
+      );
+    }
+
+    setNotificationStep('');
   };
 
   const renderInfoPage = (page: string) => {
@@ -163,27 +172,19 @@ export const ProgrammeTypeAgreement: React.FC<ProgrammeTypeAgreementProps> = ({
             What type of programme are you running or planning to run?
           </label>
           <div className="mt-1">
-            <Controller
-              name={'type'}
-              control={programmeFormControl}
-              render={({ field: { onChange, value, ref } }) => (
-                <ButtonGroup<string>
-                  inputRef={ref}
-                  options={
-                    (programData &&
-                      programData.map((x: ProgrammeTypeDto) => {
-                        return { text: x.description, value: x.id ?? '' };
-                      })) ||
-                    []
-                  }
-                  onOptionSelected={onChange}
-                  selectedOptions={value}
-                  color="secondary"
-                  type={ButtonGroupTypes.Button}
-                  className={'w-full'}
-                />
-              )}
-            ></Controller>
+            <ButtonGroup<string>
+              options={
+                (programData &&
+                  programData.map((x: ProgrammeTypeDto) => {
+                    return { text: x?.description, value: x.id ?? '' };
+                  })) ||
+                []
+              }
+              onOptionSelected={(value) => setProgrammeType(value as string)}
+              color="secondary"
+              type={ButtonGroupTypes.Button}
+              className={'w-full'}
+            />
           </div>
         </div>
         <div className="mt-4 -mb-4 h-full w-full self-end">
@@ -195,7 +196,8 @@ export const ProgrammeTypeAgreement: React.FC<ProgrammeTypeAgreementProps> = ({
             text="Save"
             textColor="white"
             icon="SaveIcon"
-            onClick={() => setNotificationStep('')}
+            onClick={handleUpdateConsent}
+            disabled={!programmeType}
           />
         </div>
       </div>

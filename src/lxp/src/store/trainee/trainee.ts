@@ -1,12 +1,18 @@
 import { PractitionerDto, TraineeDto } from '@ecdlink/core';
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getTraineeById, getTraineeTimeline } from './trainee.actions';
+import {
+  getTraineeById,
+  getTraineeTimeline,
+  getTraineeVisitData,
+} from './trainee.actions';
 import { TraineeState } from './trainee.types';
+import { setFulfilledThunkActionStatus, setThunkActionStatus } from '../utils';
 
 const initialState: TraineeState = {
   trainee: undefined,
   traineeOnboardTimeline: undefined,
+  traineeVisitData: undefined,
 };
 
 const traineeSlice = createSlice({
@@ -18,11 +24,16 @@ const traineeSlice = createSlice({
     },
   },
   extraReducers: (builder) => {
+    setThunkActionStatus(builder, getTraineeVisitData);
     builder.addCase(getTraineeById.fulfilled, (state, action) => {
       state.trainee = action.payload;
     });
     builder.addCase(getTraineeTimeline.fulfilled, (state, action) => {
       state.traineeOnboardTimeline = action.payload;
+    });
+    builder.addCase(getTraineeVisitData.fulfilled, (state, action) => {
+      state.traineeVisitData = action.payload;
+      setFulfilledThunkActionStatus(state, action);
     });
   },
 });

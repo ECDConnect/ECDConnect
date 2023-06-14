@@ -7,12 +7,13 @@ import {
   Checkbox,
   Dialog,
   DialogPosition,
+  LoadingSpinner,
   MenuListDataItem,
   StackedList,
   Typography,
 } from '@ecdlink/ui';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
@@ -24,7 +25,11 @@ import {
   SsChecklistVisitModelInput,
 } from '@ecdlink/graphql';
 import { newGuid } from '@/utils/common/uuid.utils';
-import { traineeSelectors } from '@/store/trainee';
+import {
+  traineeActions,
+  traineeSelectors,
+  traineeThunkActions,
+} from '@/store/trainee';
 import { SectionQuestions } from './components/programme-details/programme-details.types';
 import { TraineeService } from '@/services/TraineeService';
 import { practitionerSelectors } from '@/store/practitioner';
@@ -32,6 +37,8 @@ import { SmartSpaceChecklisstStepsSteps } from './smart-space-checklist.types';
 import { HealthSanitationSafety } from './components/health-sanitation-safety/health-sanitation-safety';
 import { HealthStructureArea } from './components/safety-structure-area/health-strutcture-area.';
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useAppDispatch } from '@/store';
 
 interface SmartSpaceChecklistProps {
   setNotificationStep: any;
@@ -41,6 +48,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   setNotificationStep,
 }) => {
   const { isOnline } = useOnlineStatus();
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const date = format(new Date(), 'EEEE, d LLLL');
   const userAuth = useSelector(authSelectors.getAuthUser);
@@ -48,16 +56,33 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     useState<SectionQuestions[]>();
   const [visitSection, setVisitSection] = useState('');
   const [showProgrammeDetails, setShowProgrammeDetails] = useState(false);
-  const a = true;
   const trainee = useSelector(traineeSelectors.getTrainee);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [activeStep, setActiveStep] = useState(
     SmartSpaceChecklisstStepsSteps.INITIAL
   );
+  const traineeTimeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline
+  );
+  const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const traineeVisits = traineeTimeline?.traineeVisits;
+  const traineeCurrentVisit = traineeVisits?.[0];
+
+  const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
+
+  useEffect(() => {
+    const getVisitData = async () => {
+      await appDispatch(
+        traineeThunkActions.getTraineeVisitData({
+          visitId: traineeCurrentVisit?.id,
+        })
+      );
+    };
+
+    getVisitData();
+  }, []);
 
   const onSubmit = async () => {
-    const questionsPayload = sectionQuestions;
-
     const sections = sectionQuestions?.map((item) => ({
       ...item,
       questions: item.questions.map((question) => ({
@@ -67,7 +92,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const visitDateInput: CmsVisitDataInputModelInput = {
-      visitId: await newGuid(),
+      visitId: traineeCurrentVisit?.id,
       traineeId: practitioner?.userId,
       visitData: {
         visitName: 'SmartSpace Checklist',
@@ -97,34 +122,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       visitDateInput
     );
   };
-
-  //   const handleVisitCreation = async () => {
-  //     const sections = sectionQuestions?.map((item) => ({
-  //       ...item,
-  //       questions: item.questions.map((question) => ({
-  //         ...question,
-  //         answer: String(question.answer),
-  //       })),
-  //     })) as InputMaybe<Array<InputMaybe<SsChecklistVisitModelInput>>>;
-  //     const visitDateInput: SsChecklistVisitModelInput = {
-  //       traineeId: trainee?.id,
-  //       plannedVisitDate: "2023-05-23T14:25:27.887Z",
-  //       checklistData: {
-  //         traineeId:trainee?.id,
-  //       visitData: {
-  //         visitName: 'SmartSpace Checklist',
-  //         sections: [
-  //           visitSection: visitSection,
-  //          sections
-  //         ],
-  //       },
-  //     };
-
-  // await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(visitDateInput)
-  //   }
-
-  //     setShowProgrammeDetails(true)
-  //   }
 
   const steps = (step: SmartSpaceChecklisstStepsSteps) => {
     switch (step) {
@@ -174,8 +171,14 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     }
   };
 
-  const notificationItems: MenuListDataItem[] = [
-    {
+  const notificationItems: MenuListDataItem[] = [];
+
+  const notificationItemsLaterStage: MenuListDataItem[] = [];
+
+  if (
+    !traineeVisitData?.some((item) => item.visitSection === 'Programme details')
+  ) {
+    notificationItems.push({
       showIcon: true,
       menuIcon: 'DocumentTextIcon',
       menuIconClassName: 'border-0',
@@ -188,8 +191,15 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS),
-    },
-    {
+    });
+  }
+
+  if (
+    !traineeVisitData?.some(
+      (item) => item.visitSection === 'Health, sanitation & safety'
+    )
+  ) {
+    notificationItems.push({
       showIcon: true,
       menuIcon: 'PlusCircleIcon',
       menuIconClassName: 'border-0',
@@ -202,27 +212,14 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       backgroundColor: 'uiBg',
       onActionClick: () =>
         setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
-    },
-  ];
+    });
+  }
 
-  const notificationItemsLaterStage: MenuListDataItem[] = [
-    {
-      showIcon: true,
-      menuIcon: 'ShieldExclamationIcon',
-      menuIconClassName: 'border-0',
-      iconColor: 'white',
-      title: 'Space & emergency planning',
-      titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 4 completed',
-      subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'tertiary',
-      backgroundColor: 'uiBg',
-      onActionClick: () =>
-        setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
-    },
-  ];
-
-  if (a) {
+  if (
+    !traineeVisitData?.some(
+      (item) => item.visitSection === 'Safety - structure, space & area'
+    )
+  ) {
     notificationItems.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
@@ -239,8 +236,31 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
+  if (
+    !traineeVisitData?.some(
+      (item) => item.visitSection === 'Space & emergency planning'
+    )
+  ) {
+    notificationItemsLaterStage.push({
+      showIcon: true,
+      menuIcon: 'ShieldExclamationIcon',
+      menuIconClassName: 'border-0',
+      iconColor: 'white',
+      title: 'Space & emergency planning',
+      titleStyle: 'text-textDark semibold',
+      subTitle: '0 of 4 completed',
+      subTitleStyle: 'text-textMid',
+      iconBackgroundColor: 'tertiary',
+      backgroundColor: 'uiBg',
+      onActionClick: () =>
+        setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
+    });
+  }
+
   return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
     <div className="h-screen">{steps(activeStep)}</div>
+  ) : isLoading ? (
+    <LoadingSpinner size="big" spinnerColor="white" backgroundColor="uiMid" />
   ) : (
     <BannerWrapper
       showBackground={false}

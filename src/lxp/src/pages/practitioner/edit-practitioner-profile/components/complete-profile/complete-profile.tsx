@@ -20,23 +20,37 @@ export const CompleteProfile: React.FC = () => {
 
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
-
-  return (
-    <div className="px-4">
-      <NotificationHeaderCard
-        header={'Tell us more about you!'}
-        message={
-          'Share more information about your programme to make Funda App useful for you.'
-        }
-        actionText={'Tell us more about you!'}
-        onActioned={
-          showNotificationForPractitionerFlow
-            ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
-            : () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
-        }
-      />
-    </div>
-  );
+  if (practitioner?.isTrainee) {
+    return (
+      <div className="px-4">
+        <NotificationHeaderCard
+          header={'Start your trainee journey!'}
+          message={
+            'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.'
+          }
+          actionText={'Get started'}
+          onActioned={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
+        />
+      </div>
+    );
+  } else {
+    return (
+      <div className="px-4">
+        <NotificationHeaderCard
+          header={'Tell us more about you!'}
+          message={
+            'Share more information about your programme to make Funda App useful for you.'
+          }
+          actionText={'Tell us more about you!'}
+          onActioned={
+            showNotificationForPractitionerFlow
+              ? () => history.push(ROUTES.PRACTITIONER.PROFILE.EDIT)
+              : () => history.push(ROUTES.PRINCIPAL.SETUP_PROFILE)
+          }
+        />
+      </div>
+    );
+  }
 };
 
 export default CompleteProfile;

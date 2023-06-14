@@ -1,9 +1,11 @@
 import Article from '@/components/article/article';
 import { practitionerSelectors } from '@/store/practitioner';
 import { Button, Checkbox, Typography } from '@ecdlink/ui';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ContentConsentTypeEnum } from '@ecdlink/core';
+import { contentConsentThunkActions } from '@/store/content/consent';
+import { useAppDispatch } from '@/store';
 
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
@@ -15,6 +17,19 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [viewPermissionToShare, setViewPermissionToShare] =
     useState<boolean>(false);
+  const [becomeSmartStartuser, setBecomeSmartStartuser] = useState(false);
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const appDispatch = useAppDispatch();
+
+  useEffect(() => {
+    const updateConsents = async () => {
+      await appDispatch(
+        contentConsentThunkActions.getConsent({ locale: 'en-za' })
+      ).unwrap();
+    };
+
+    updateConsents();
+  }, []);
 
   return (
     <>
@@ -38,7 +53,9 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             <div className="flex items-start gap-2">
               <Checkbox
                 // checked={}
-                onCheckboxChange={(value) => {}}
+                onCheckboxChange={() =>
+                  setBecomeSmartStartuser(!becomeSmartStartuser)
+                }
               />
               <Typography
                 text={`I, ${practitioner?.user?.fullName}, want to become a SmartStart franchisee so that I can help children in my community to have a brighter future.`}
@@ -47,9 +64,9 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
               />
             </div>
             <div className="mt-4 flex flex-wrap items-start">
-              <Checkbox
+              <Checkbox<Boolean>
                 // checked={}
-                onCheckboxChange={(value) => {}}
+                onCheckboxChange={() => setAcceptTerms(!acceptTerms)}
               />
               <div className="flex">
                 <Typography
@@ -89,6 +106,7 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             textColor="white"
             icon="ArrowCircleRightIcon"
             onClick={() => setAgreementStep('programmeTypeAgreement')}
+            disabled={!becomeSmartStartuser || !acceptTerms}
           />
         </div>
       </div>

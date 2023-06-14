@@ -12,7 +12,7 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import OnboardingInfoPage from '../onboarding-info-page/onboarding-info-page';
 import { timelineSteps } from './timeline-steps';
@@ -98,6 +98,15 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
 
+  const uncompletedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+
   const completedSteps = timelineSteps(
     timeline!,
     () => {},
@@ -121,13 +130,13 @@ export const OnboardingTraineeDashboard: React.FC<
       menuIcon: 'PencilAltIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: 'Get Community support',
+      title: uncompletedSteps?.[0].title,
       titleStyle: 'text-textDark semibold',
-      subTitle: 'By 13 December 2021',
+      subTitle: uncompletedSteps?.[0].subTitle,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep('Register3Children'),
+      onActionClick: () => setNotificationStep(uncompletedSteps?.[0].title),
     },
   ];
 

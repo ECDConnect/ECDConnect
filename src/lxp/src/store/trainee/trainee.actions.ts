@@ -2,7 +2,7 @@ import { TraineeDto } from '@ecdlink/core';
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { RootState, ThunkApiType } from '../types';
 import { TraineeService } from '@/services/TraineeService';
-import { PractitionerTimeline } from '@ecdlink/graphql';
+import { TraineeOnBoardTimeline, VisitData } from '@ecdlink/graphql';
 
 export const getTraineeById = createAsyncThunk<
   TraineeDto,
@@ -43,7 +43,7 @@ export const getTraineeById = createAsyncThunk<
 );
 
 export const getTraineeTimeline = createAsyncThunk<
-  PractitionerTimeline,
+  TraineeOnBoardTimeline,
   { userId: string },
   ThunkApiType<RootState>
 >('getTraineeTimeline', async ({ userId }, { getState, rejectWithValue }) => {
@@ -59,6 +59,35 @@ export const getTraineeTimeline = createAsyncThunk<
     } else {
       return rejectWithValue('no access token, profile check required');
     }
+  } catch (err) {
+    return rejectWithValue(err);
+  }
+});
+
+export const getTraineeVisitData = createAsyncThunk<
+  VisitData[],
+  { visitId: string },
+  ThunkApiType<RootState>
+>('getTraineeVisitData', async ({ visitId }, { getState, rejectWithValue }) => {
+  const {
+    auth: { userAuth },
+  } = getState();
+
+  try {
+    let content: VisitData[] | undefined = undefined;
+
+    if (userAuth?.auth_token) {
+      content = await new TraineeService(
+        userAuth?.auth_token ?? ''
+      ).getVisitDataForVisitId(visitId);
+    } else {
+      return rejectWithValue('no access token, profile check required');
+    }
+
+    if (!content) {
+      return rejectWithValue('Error getting visit answers for mother');
+    }
+    return content;
   } catch (err) {
     return rejectWithValue(err);
   }
