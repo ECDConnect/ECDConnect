@@ -505,7 +505,7 @@ export const ReferralsTab: React.FC = () => {
                       }
                     >
                       <Typography
-                        type="h4"
+                        type="markdown"
                         align="left"
                         weight="bold"
                         text={item?.comment || ''}
