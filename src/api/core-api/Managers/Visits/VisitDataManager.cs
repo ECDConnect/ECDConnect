@@ -409,6 +409,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step2.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step2.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step2.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step2.GetItemByIndex(0).VisitSection;
@@ -424,6 +425,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step3.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step3.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step3.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step3.GetItemByIndex(0).VisitSection;
@@ -438,6 +440,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step4.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step4.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step4.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step4.GetItemByIndex(0).VisitSection;
@@ -452,6 +455,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step5.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step5.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step5.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step5.GetItemByIndex(0).VisitSection;
@@ -466,6 +470,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step6.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step6.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step6.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step6.GetItemByIndex(0).VisitSection;
@@ -480,6 +485,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step7.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step7.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step7.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step7.GetItemByIndex(0).VisitSection;
@@ -494,6 +500,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         rating.VisitName = step8.GetItemByIndex(0).VisitName;
                         rating.PlannedDate = step8.GetItemByIndex(0).Visit.PlannedVisitDate;
+                        rating.ActualVisitDate = step8.GetItemByIndex(0).Visit.ActualVisitDate;
 
                         var child = new PQARatingChild();
                         child.VisitSection = step8.GetItemByIndex(0).VisitSection;
@@ -602,6 +609,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                     rating.VisitName = stepA.GetItemByIndex(0).VisitName;
                     rating.PlannedDate = stepA.GetItemByIndex(0).Visit.PlannedVisitDate;
+                    rating.ActualVisitDate = stepA.GetItemByIndex(0).Visit.ActualVisitDate;
 
                     // Section A
                     if (stepA.Count > 0)

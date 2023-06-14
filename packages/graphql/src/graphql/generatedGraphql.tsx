@@ -5646,6 +5646,7 @@ export type ObservationCategoryTaskSummary = {
 
 export type PqaRating = {
   __typename?: 'PQARating';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
   children?: Maybe<Array<Maybe<PqaRatingChild>>>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
@@ -5680,6 +5681,7 @@ export type PqaRatingChildInput = {
 };
 
 export type PqaRatingFilterInput = {
+  actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   and?: InputMaybe<Array<PqaRatingFilterInput>>;
   children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
   or?: InputMaybe<Array<PqaRatingFilterInput>>;
@@ -5692,6 +5694,7 @@ export type PqaRatingFilterInput = {
 };
 
 export type PqaRatingInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
   overallRating?: InputMaybe<Scalars['String']>;
   overallRatingColor?: InputMaybe<Scalars['String']>;

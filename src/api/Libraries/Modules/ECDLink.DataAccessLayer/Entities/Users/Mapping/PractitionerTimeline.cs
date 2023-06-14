@@ -66,6 +66,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
         public DateTime? PlannedDate { get; set; }
+        public DateTime? ActualVisitDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }
     }
 
