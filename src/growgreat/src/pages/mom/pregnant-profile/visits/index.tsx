@@ -17,6 +17,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import {
+  getCurrentVisitSelector,
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
@@ -56,8 +57,8 @@ export const Visits: React.FC = () => {
     getMotherById(state, motherId)
   );
 
-  const motherCurrentVisit = useSelector(
-    motherSelectors.getMotherCurrentVisitSelector
+  const motherCurrentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
   );
 
   const visits = useSelector(getMotherVisits);
@@ -145,7 +146,7 @@ export const Visits: React.FC = () => {
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(getType(item, isMissedVisit) === 'inProgress' && {
+        ...(isMissedVisit && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit
