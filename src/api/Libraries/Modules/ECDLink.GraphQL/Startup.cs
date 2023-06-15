@@ -38,8 +38,6 @@ namespace ECDLink.EGraphQL
               .AddTypeModule(sp => new SettingsModule(contentReloader))
               .AddMutationType<Mutation>()
               .AddType<UploadType>()
-              .AddType<FilterByField>()
-              .AddType<SortByField>()
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()

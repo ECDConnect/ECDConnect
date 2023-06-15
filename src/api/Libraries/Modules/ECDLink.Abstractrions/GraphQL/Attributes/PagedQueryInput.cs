@@ -1,6 +1,7 @@
 ﻿using HotChocolate;
 using HotChocolate.Types;
 using System;
+using System.Collections.Generic;
 
 namespace ECDLink.Abstractrions.GraphQL.Attributes
 {
@@ -17,8 +18,8 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
         {
         }
 
-        public SortByField[] SortBy { get; set; } = Array.Empty<SortByField>();
-        public FilterByField[] FilterBy { get; set; } = Array.Empty<FilterByField>();
+        public List<SortByField>? SortBy { get; set; }
+        public List<FilterByField>? FilterBy { get; set; }
 
         [GraphQLIgnore]
         public int RowOffset
@@ -32,8 +33,8 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
         protected override void Configure(
             IInputObjectTypeDescriptor<PagedQueryInput> descriptor)
         {
-            descriptor.Field(f => f.FilterBy).Type<FilterByFieldType>();
-            descriptor.Field(f => f.SortBy).Type<SortByFieldType>();
+            descriptor.Field(f => f.FilterBy).Type<ListType<FilterByFieldType>>();
+            descriptor.Field(f => f.SortBy).Type<ListType<SortByFieldType>>();
         }
     }
 

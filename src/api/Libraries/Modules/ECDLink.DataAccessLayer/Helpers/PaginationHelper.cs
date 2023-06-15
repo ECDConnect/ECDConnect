@@ -3,7 +3,9 @@ using ECDLink.DataAccessLayer.Entities;
 using ECDLink.Security;
 using Microsoft.EntityFrameworkCore;
 using System;
+using System.Collections.Generic;
 using System.Linq;
+using static Microsoft.Extensions.Logging.EventSource.LoggingEventSource;
 
 namespace ECDLink.DataAccessLayer.Helpers
 {
@@ -13,7 +15,7 @@ namespace ECDLink.DataAccessLayer.Helpers
         private static readonly string[] _customFilterTypes = new string[] { nameof(SiteAddress.Province).ToLowerInvariant(), Roles.ADMINISTRATOR.ToLowerInvariant() };
 
 
-        public static IQueryable<T> AddFiltering<T>(FilterByField[] inputFilter, in IQueryable<T> usersQuery)
+        public static IQueryable<T> AddFiltering<T>(IEnumerable<FilterByField> inputFilter, in IQueryable<T> usersQuery)
         {
             IQueryable<T> newUsersQuery = usersQuery.AsQueryable();
 
@@ -42,7 +44,7 @@ namespace ECDLink.DataAccessLayer.Helpers
                         }
                         break;
                     case InputFilterComparer.Contains:
-                        newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
+                        newUsersQuery = newUsersQuery.Where(u => EF.Functions.ILike(EF.Property<string>(u, filter.FieldName), $"%{input}%"));
                         break;
                     case InputFilterComparer.ContainedBy:
                         newUsersQuery = newUsersQuery.Where(u => filter.Value.Contains(EF.Property<string>(u, filter.FieldName)));
@@ -166,7 +168,7 @@ namespace ECDLink.DataAccessLayer.Helpers
             return inputValue?.ToString();
         }
 
-        public static IQueryable<T> AddSorting<T>(SortByField[] sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
+        public static IQueryable<T> AddSorting<T>(IEnumerable<SortByField> sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
         {
             // Don't mutate the input:
             var newQuery = usersQuery.AsQueryable();
