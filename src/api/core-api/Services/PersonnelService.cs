@@ -399,18 +399,23 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // deadline - First PQA green rating received date + 1 year
             if (timeline.PQARating?.OverallRatingColor == MetricsColorEnum.Success.ToString())
             {
-                var deadlineDate = timeline.PQARating.ActualVisitDate.Value.AddYears(1);
+                Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
 
-                VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-                var visitModel = new VisitModel();
-                visitModel.VisitType = visitType;
-                visitModel.MotherId = null;
-                visitModel.InfantId = null;
-                visitModel.LinkedVisitId = null;
-                visitModel.PractitionerId = practitioner.Id;
-                visitModel.Attended = false;
-                visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                _visitManager.AddVisitForPractitioner(visitModel);
+                if (reVisit == null)
+                {
+                    var deadlineDate = timeline.PQARating.ActualVisitDate.Value.AddYears(1);
+
+                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                    var visitModel = new VisitModel();
+                    visitModel.VisitType = visitType;
+                    visitModel.MotherId = null;
+                    visitModel.InfantId = null;
+                    visitModel.LinkedVisitId = null;
+                    visitModel.PractitionerId = practitioner.Id;
+                    visitModel.Attended = false;
+                    visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                    _visitManager.AddVisitForPractitioner(visitModel);
+                }
             }
 
             // Starter license received
