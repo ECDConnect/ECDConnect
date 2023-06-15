@@ -26,5 +26,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string NextOfKinSurname { get; set; }
         public string NextOfKinContactNumber { get; set; }
         public string WhatsAppNumber { get; set; }
+        public bool? IsAdmin { get; set; } = false;
     }
 }

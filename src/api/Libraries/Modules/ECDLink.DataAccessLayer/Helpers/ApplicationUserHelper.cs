@@ -20,6 +20,7 @@ namespace ECDLink.DataAccessLayer.Helpers
             user.NormalizedEmail = "";
             user.NormalizedUserName = "";
             user.IdNumber = "";
+            user.InsertedDate = DateTime.MinValue;
         }
     }
 }

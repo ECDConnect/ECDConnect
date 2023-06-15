@@ -86,8 +86,8 @@ namespace ECDLink.Development.Notifications
             {
                 message.Body = _dropModel["Body"];
                 message.BodyEncoding = System.Text.Encoding.UTF8;
-                
-                message.Subject = _dropModel?["Subject"] ?? "";
+
+                message.Subject = _dropModel.ContainsKey("Subject") ? _dropModel["Subject"] : "";
                 message.SubjectEncoding = System.Text.Encoding.UTF8;
 
                 // The userState can be any object that allows your callback
@@ -96,7 +96,7 @@ namespace ECDLink.Development.Notifications
                 string userState = "test message1";
 
                 client.SendAsync(message, userState);
-                
+
                 return Task.CompletedTask;
             }
         }
@@ -121,7 +121,11 @@ namespace ECDLink.Development.Notifications
 
         public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
         {
-            _fieldTransform.Add(key, value);
+            if (_fieldTransform.ContainsKey(key))
+                _fieldTransform[key] = value;
+            else
+                _fieldTransform.Add(key, value);
+
             return this;
         }
 

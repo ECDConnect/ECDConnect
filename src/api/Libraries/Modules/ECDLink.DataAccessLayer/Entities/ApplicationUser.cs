@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType,ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
+    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
         public virtual Race Race { get; set; }

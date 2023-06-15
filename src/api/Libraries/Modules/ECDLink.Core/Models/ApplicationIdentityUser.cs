@@ -26,5 +26,8 @@ namespace ECDLink.Core.Models
         public bool IsActive { get; set; }
 
         public DateTime LastSeen { get; set; } = DateTime.UtcNow;
+
+        public DateTime InsertedDate { get; set; }
+        public DateTime? UpdatedDate { get; set; }
     }
 }

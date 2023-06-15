@@ -9,6 +9,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -28,8 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
-          UserModel input,
-          bool createAdmin = false)
+          UserModel input)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
@@ -41,11 +41,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new Exception("Invalid input.");
             }
 
-            if (createAdmin)
+            if (input?.IsAdmin ?? false)
             {
                 currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
-                if (currentUserIsAdmin)
+                if (!currentUserIsAdmin)
                 {
                     throw new Exception("You may not create an admin user.");
                 }
@@ -70,12 +70,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
                 TenantId = tenantId,
-                LanguageId = input.LanguageId
+                LanguageId = input.LanguageId,
+                InsertedDate = DateTime.UtcNow,
+                UpdatedDate = null
             };
 
-            var userCreatedResult = await userManager.CreateAsync(newUser);
+            if (string.IsNullOrEmpty(newUser.UserName))
+            {
+                newUser.UserName = string.IsNullOrEmpty(newUser.Email) ? Guid.NewGuid().ToString() : newUser.Email;
+            }
 
-            if (!userCreatedResult.Succeeded)
+
+            IdentityResult userCreatedResult = null;
+            try
+            {
+                userCreatedResult = await userManager.CreateAsync(newUser);
+            } catch (Exception ex)
+            {
+                throw new QueryException(ex?.InnerException?.Message ?? ex.Message);
+            }
+
+            if (!(userCreatedResult?.Succeeded ?? false))
             {
                 throw new Exception(userCreatedResult.Errors.Count() > 0 ? userCreatedResult.Errors.First().Description : "Could not add user");
             }
@@ -83,7 +98,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             DoAudit(currentUserId, repoFactory, null, newUser.Id);
 
             // If requested, and allowed, add the admin role to the new user
-            if (createAdmin)
+            if (input.IsAdmin ?? false)
             {
                 if (currentUserIsAdmin)
                 {
@@ -232,6 +247,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
             user.TenantId = user.TenantId == null ? null : tenantId;
+            user.UpdatedDate = DateTime.UtcNow;
 
             if (!string.IsNullOrWhiteSpace(input.IdNumber))
             {
