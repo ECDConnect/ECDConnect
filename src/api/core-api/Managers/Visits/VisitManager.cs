@@ -644,7 +644,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Visit GetVisitForUserForType(string id, string userType, string vType)
         {
-            Visit vData = new Visit();
 
             if (userType == Constants.SSSettings.client_trainee)
             {
@@ -664,9 +663,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     ).FirstOrDefault();
                 }
             }
-                
 
-            return vData;
+            if (userType == Constants.SSSettings.client_practitioner)
+            {
+                if (vType == Constants.SSSettings.visitType_re_accreditation_1)
+                {
+                    return (
+                       from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id)
+                       join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
+                       select visit
+                   ).FirstOrDefault();
+                }
+
+            }
+
+            return null;
         }
 
         #endregion

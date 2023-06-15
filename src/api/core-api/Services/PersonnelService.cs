@@ -395,6 +395,29 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             timeline.PQARating = _visitDataManager.GetPractitionerPQARating(userId);
             timeline.ReAccreditationRating = _visitDataManager.GetPractitionerReAccreditationRating(userId);
 
+            // Re-accreditation visit
+            // deadline - First PQA green rating received date + 1 year
+            if (timeline.PQARating?.OverallRatingColor == MetricsColorEnum.Success.ToString())
+            {
+                Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+
+                if (reVisit == null)
+                {
+                    var deadlineDate = timeline.PQARating.ActualVisitDate.Value.AddYears(1);
+
+                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                    var visitModel = new VisitModel();
+                    visitModel.VisitType = visitType;
+                    visitModel.MotherId = null;
+                    visitModel.InfantId = null;
+                    visitModel.LinkedVisitId = null;
+                    visitModel.PractitionerId = practitioner.Id;
+                    visitModel.Attended = false;
+                    visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                    _visitManager.AddVisitForPractitioner(visitModel);
+                }
+            }
+
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
             if (starterLicense?.LicenseDate != null)
@@ -545,7 +568,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
+
+                        var months = GetMonthDifference(today, visit.PlannedVisitDate);
+                        if (months <= 3)
+                        {
+                            reaccreditation_visits.Add(visit);
+                        }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
                     {
@@ -826,6 +854,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private string GetUserIdOrGenerateNew(string userId)
         {
             return userId ?? Guid.NewGuid().ToString();
+        }
+
+        private static int GetMonthDifference(DateTime startDate, DateTime endDate)
+        {
+            int monthsApart = 12 * (startDate.Year - endDate.Year) + startDate.Month - endDate.Month;
+            return Math.Abs(monthsApart);
         }
 
     }
