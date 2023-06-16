@@ -504,7 +504,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, _green, _progress, vData.VisitSection, false);
 
                         // G9 Client summary green, ""You applied for the child support grant - this will support Themba's healthy growth!"""
-                        comment = firstName + Constants.GGSettings.has_csg2.Replace("{client}", firstName);
+                        comment = Constants.GGSettings.has_csg2.Replace("{client}", firstName);
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
                 }
