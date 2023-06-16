@@ -469,7 +469,7 @@ export const WeightAndLengthResultStep = ({
           new Date(age)
         );
         // if date is 0, it means that planned date and age is in same month and year
-        if (date == 0) {
+        if (date === 0) {
           date = 1;
         }
         const scale = dateAxios;

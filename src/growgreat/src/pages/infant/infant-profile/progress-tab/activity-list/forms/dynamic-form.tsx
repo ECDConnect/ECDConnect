@@ -22,7 +22,7 @@ import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { GrowthMonitoring } from './pillar-1-steps';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
@@ -47,6 +47,10 @@ export interface Question {
 export interface SectionQuestions {
   visitSection: string;
   questions: Question[];
+}
+
+export interface ViewEditState {
+  editView?: true;
 }
 
 export interface DynamicFormProps {
@@ -111,6 +115,9 @@ export const DynamicForm = ({
   const appDispatch = useAppDispatch();
   const dialog = useDialog();
   const history = useHistory();
+
+  const location = useLocation<ViewEditState>();
+  const canEdit = location.state?.editView;
 
   const goHome = useCallback(() => {
     history.push(ROUTES.CLIENTS.ROOT, {
@@ -192,48 +199,77 @@ export const DynamicForm = ({
   }, [onNextStep]);
 
   const onSubmit = useCallback(async () => {
-    const sections = sectionQuestions?.map((item) => ({
-      ...item,
-      questions: item.questions.map((question) => ({
-        ...question,
-        answer: String(question.answer),
-      })),
-    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+    if (!canEdit) {
+      return dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render(onClose) {
+          return (
+            <ActionModal
+              className="z-50"
+              icon="ExclamationCircleIcon"
+              iconColor="alertMain"
+              iconClassName="h-10 w-10"
+              title="You cannot edit this form"
+              detailText="You have completed this visit and can only view this information"
+              actionButtons={[
+                {
+                  text: 'Close',
+                  colour: 'primary',
+                  type: 'filled',
+                  textColour: 'white',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      });
+    } else {
+      const sections = sectionQuestions?.map((item) => ({
+        ...item,
+        questions: item.questions.map((question) => ({
+          ...question,
+          answer: String(question.answer),
+        })),
+      })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const input: CmsVisitDataInputModelInput = {
-      visitId,
-      infantId: infant?.user?.id,
-      visitData: {
-        visitName: name,
-        sections,
-      },
-    };
-
-    const referrals = referralsInput?.map((item) => ({
-      ...item,
-      isCompleted: String(item.isCompleted),
-    })) as VisitDataStatusFilterInput[];
-
-    appDispatch(
-      visitActions.addCompletedVisitsByVisitId({
+      const input: CmsVisitDataInputModelInput = {
         visitId,
-        visits: [name || ''],
-      })
-    );
+        infantId: infant?.user?.id,
+        visitData: {
+          visitName: name,
+          sections,
+        },
+      };
 
-    appDispatch(visitActions.addVisitFormData(input));
-    await appDispatch(visitThunkActions.addVisitFormData(input));
+      const referrals = referralsInput?.map((item) => ({
+        ...item,
+        isCompleted: String(item.isCompleted),
+      })) as VisitDataStatusFilterInput[];
 
-    await appDispatch(
-      visitThunkActions.getCompletedVisitsForVisitId({
-        visitId,
-      })
-    );
-
-    if (!!referrals?.length) {
       appDispatch(
-        referralThunkActions.updateVisitDataStatus({ input: referrals })
+        visitActions.addCompletedVisitsByVisitId({
+          visitId,
+          visits: [name || ''],
+        })
       );
+
+      appDispatch(visitActions.addVisitFormData(input));
+      await appDispatch(visitThunkActions.addVisitFormData(input));
+
+      await appDispatch(
+        visitThunkActions.getCompletedVisitsForVisitId({
+          visitId,
+        })
+      );
+
+      if (!!referrals?.length) {
+        appDispatch(
+          referralThunkActions.updateVisitDataStatus({ input: referrals })
+        );
+      }
     }
   }, [
     visitId,
@@ -242,6 +278,8 @@ export const DynamicForm = ({
     name,
     referralsInput,
     sectionQuestions,
+    canEdit,
+    dialog,
   ]);
 
   // TODO: sync visit form
