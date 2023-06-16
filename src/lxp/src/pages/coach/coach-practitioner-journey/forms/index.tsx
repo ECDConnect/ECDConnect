@@ -361,20 +361,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       },
     };
 
-    switch (activityName) {
-      case visitTypes.supportVisit:
-        onSubmitSupportVisit({ payload, sections });
-        break;
-      case visitTypes.pqa.firstPQA.name:
-        onSubmitPqa({ payload, sections });
-        break;
-      case visitTypes.reaccreditation.name:
-        onSubmitReAccreditation({ payload, sections });
-        break;
-      default:
-        onSubmitPrePqa({ payload, sections });
-        break;
+    if (activityName === visitTypes.supportVisit) {
+      return onSubmitSupportVisit({ payload, sections });
     }
+
+    if (activityName.includes(visitTypes.prePqa.includes)) {
+      return onSubmitPrePqa({ payload, sections });
+    }
+
+    if (activityName.includes(visitTypes.reaccreditation.includes)) {
+      return onSubmitReAccreditation({ payload, sections });
+    }
+
+    return onSubmitPqa({ payload, sections });
   }, [
     activityName,
     onSubmitPqa,
@@ -419,26 +418,31 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
-    switch (visitName) {
-      case visitTypes.pqa.firstPQA.name:
-        setTitle(visitTypes.pqa.firstPQA.description);
-        return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
-      case visitTypes.supportVisit:
-        return generalSupportVisit;
-      case visitTypes.delicensing:
-        return delicensingSteps;
-      case visitTypes.reaccreditation.name:
-        setTitle(visitTypes.reaccreditation.description);
-        return reaccreditationSteps;
-      default:
-        if (activityName === visitTypes.prePqa.first.name) {
-          setTitle(visitTypes.prePqa.first.description);
-        } else {
-          setTitle(visitTypes.prePqa.second.description);
-        }
-
-        return prePqaVisits;
+    if (visitName === visitTypes.supportVisit) {
+      return generalSupportVisit;
     }
+
+    if (visitName === visitTypes.delicensing) {
+      return delicensingSteps;
+    }
+
+    if (visitName.includes(visitTypes.prePqa.includes)) {
+      if (activityName === visitTypes.prePqa.first.name) {
+        setTitle(visitTypes.prePqa.first.description);
+      } else {
+        setTitle(visitTypes.prePqa.second.description);
+      }
+
+      return prePqaVisits;
+    }
+
+    if (visitName.includes(visitTypes.reaccreditation.includes)) {
+      setTitle('Reaccreditation');
+      return reaccreditationSteps;
+    }
+
+    setTitle(visitTypes.pqa.firstPQA.description);
+    return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   useEffect(() => {

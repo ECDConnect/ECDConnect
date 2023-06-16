@@ -15,6 +15,17 @@ export const getPractitionerTimelineByIdSelector = (userId: string) => {
   );
 };
 
+export const getReAccreditationFormDataByIdSelector = (userId: string) => {
+  return createSelector(
+    (state: RootState) => state.pqa.reAccreditationFormData,
+    (items: FormData[] | undefined) => {
+      return items
+        ?.filter((item) => item.practitionerId === userId)
+        .map((item) => item.formData);
+    }
+  );
+};
+
 export const getPrePqaFormDataByIdSelector = (userId: string) => {
   return createSelector(
     (state: RootState) => state.pqa.prePqaFormData,

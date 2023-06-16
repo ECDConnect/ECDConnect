@@ -6,6 +6,7 @@ export const visitTypes = {
   supportVisit: 'General support visit',
   delicensing: 'Delicensing',
   prePqa: {
+    includes: 'pre_pqa_visit',
     first: {
       name: 'pre_pqa_visit_1',
       description: 'First site visit',
@@ -19,8 +20,11 @@ export const visitTypes = {
     firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
   },
   reaccreditation: {
-    name: 'reaccreditation',
-    description: 'Reaccreditation',
+    includes: 're_accreditation',
+    first: {
+      name: 're_accreditation_1',
+      description: 'Re-accreditation visit',
+    },
   },
 };
 

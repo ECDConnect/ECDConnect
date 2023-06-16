@@ -31,6 +31,7 @@ import {
   getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
+  getReAccreditationFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   dateOptions,
@@ -79,6 +80,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   );
   const pqaFormData = useSelector(getPqaFormDataByIdSelector(practitionerId));
 
+  const reAccreditationFormData = useSelector(
+    getReAccreditationFormDataByIdSelector(practitionerId)
+  );
+
   const practitionerFirstName = practitioner?.user?.firstName;
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -91,7 +96,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{ id: '01',visitType: {description: visitTypes.reaccreditation.description,name: visitTypes.reaccreditation.name,},plannedVisitDate: new Date(),},] as Maybe<Visit>[]
+
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
@@ -102,9 +107,16 @@ export const CoachPractitionerJourney: React.FC = () => {
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const uncompletedReAccreditationVisits =
+    timeline?.reAccreditationVisits?.filter(
+      (visit) =>
+        !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
     ...uncompletedPqaVisits,
+    ...uncompletedReAccreditationVisits,
   ];
 
   const currentVisit = uncompletedVisits
@@ -132,6 +144,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     )
     .shift();
 
+  console.log({ currentVisit });
   const onSupportVisit = () => {
     window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
     setShowForm(true);

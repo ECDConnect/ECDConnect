@@ -24,7 +24,7 @@ export const addVisitFormData = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { prePqaFormData, pqaFormData },
+      pqa: { prePqaFormData, pqaFormData, reAccreditationFormData },
     } = getState();
 
     try {
@@ -50,6 +50,17 @@ export const addVisitFormData = createAsyncThunk<
 
         if (!!pqaFormData?.length) {
           const promises = pqaFormData?.map(
+            async (item) =>
+              await new PQAService(userAuth?.auth_token).addVisitData(
+                item.formData
+              )
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+
+        if (!!reAccreditationFormData?.length) {
+          const promises = reAccreditationFormData?.map(
             async (item) =>
               await new PQAService(userAuth?.auth_token).addVisitData(
                 item.formData

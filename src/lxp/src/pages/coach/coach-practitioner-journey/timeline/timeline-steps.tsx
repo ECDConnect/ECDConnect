@@ -126,23 +126,19 @@ export const timelineSteps = ({
     const isAllCompleted = timeline.prePQASiteVisits?.every(
       (item) => !!item?.attended
     );
-    const getType = (): StepItem['type'] => {
-      if (isAllCompleted) {
-        return 'completed';
-      }
 
-      if (isLateDate) {
-        return 'inProgress';
-      }
+    const stepType = getStepType(
+      (isLateDate ? 'error' : '') ||
+        (isAllCompleted ? 'success' : '') ||
+        undefined
+    );
 
-      return 'todo';
-    };
     steps.push({
       title: 'Pre-PQA site visits',
       subTitle: `By ${date}`,
-      type: getType(),
-      inProgressStepIcon: 'ExclamationCircleIcon',
-      subTitleColor: isLateDate ? 'alertDark' : 'textMid',
+      subTitleColor: stepType.color,
+      type: stepType.type,
+      inProgressStepIcon: isLateDate && 'ExclamationCircleIcon',
       showAccordion: true,
       extraData: {
         date: new Date(date),
@@ -205,24 +201,20 @@ export const timelineSteps = ({
     const isAllCompleted = timeline.pQASiteVisits?.every(
       (item) => !!item?.attended
     );
-    const getType = (): StepItem['type'] => {
-      if (isAllCompleted) {
-        return 'completed';
-      }
 
-      if (isLateDate) {
-        return 'inProgress';
-      }
-
-      return 'todo';
-    };
+    const stepType = getStepType(
+      (isLateDate ? 'error' : '') ||
+        (isAllCompleted ? 'success' : '') ||
+        undefined
+    );
 
     steps.push({
       title: 'First PQA',
       subTitle: `By ${new Date(
         currentVisit?.plannedVisitDate
       ).toLocaleDateString('en-ZA', dateOptions)}`,
-      type: getType(),
+      subTitleColor: stepType.color,
+      type: stepType.type,
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
       },
@@ -237,6 +229,52 @@ export const timelineSteps = ({
           isOnline={isOnline}
         />
       ),
+    });
+  }
+
+  if (timeline.reAccreditationVisits?.length) {
+    const visits = timeline.reAccreditationVisits
+      ?.filter(
+        (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
+      )
+      ?.sort(sortVisit);
+
+    const visitToAttend = visits.find((item) => !item?.attended);
+    const currentVisit = !!visitToAttend
+      ? visitToAttend
+      : visits[visits.length - 1];
+
+    const isLateDate =
+      new Date(currentVisit?.plannedVisitDate) < new Date() &&
+      timeline.reAccreditationVisits.some((item) => !item?.attended);
+    const isAllCompleted = timeline.reAccreditationVisits?.every(
+      (item) => !!item?.attended
+    );
+
+    const stepType = getStepType(
+      (isLateDate ? 'error' : '') ||
+        (isAllCompleted ? 'success' : '') ||
+        undefined
+    );
+
+    steps.push({
+      title: 'Re-accreditation visit',
+      subTitle: `By ${new Date(
+        currentVisit?.plannedVisitDate
+      ).toLocaleDateString('en-ZA', dateOptions)}`,
+      subTitleColor: stepType.color,
+      type: stepType.type,
+      inProgressStepIcon: isLateDate && 'ExclamationCircleIcon',
+      extraData: {
+        date: new Date(currentVisit?.plannedVisitDate),
+      },
+      showActionButton: true,
+      // TODO: add schedule feature
+      actionButtonText: 'Start',
+      actionButtonIcon: 'ArrowCircleRightIcon',
+      actionButtonOnClick: () => {
+        onStart(String(currentVisit?.visitType?.name));
+      },
     });
   }
 
