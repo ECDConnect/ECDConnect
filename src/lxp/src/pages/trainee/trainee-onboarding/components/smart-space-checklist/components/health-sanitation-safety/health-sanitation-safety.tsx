@@ -7,8 +7,9 @@ import {
   CheckboxGroup,
   Colours,
   Divider,
+  Alert,
 } from '@ecdlink/ui';
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState } from 'react-hook-form';
 import * as styles from './health-sanitation-safety.styles';
 import { HealthSanitationSafetysProps } from './health-sanitation-safety.types';
@@ -18,6 +19,8 @@ import {
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
 import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import { useSelector } from 'react-redux';
+import { traineeSelectors } from '@/store/trainee';
 
 export const getGroupColor = (count: number): Colours => {
   if (count === 0) {
@@ -38,14 +41,14 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   onSubmit,
   setActiveStep,
 }) => {
-  const { control: programmeFormControl } = useForm<ProgrammeDetailsModel>({
+  useForm<ProgrammeDetailsModel>({
     resolver: yupResolver(ProgrammeDetailsSchema),
     shouldUnregister: true,
     mode: 'onChange',
   });
 
   const { isOnline } = useOnlineStatus();
-  const { isValid } = useFormState({ control: programmeFormControl });
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
 
   const [questions, setAnswers] = useState([
     {
@@ -89,6 +92,30 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   }, [questions]);
 
   const visitSection = 'Health, sanitation & safety';
+
+  // const checkedquestion = (question: string) => {
+  //   const isChecked = visitData?.map(item => item?.question === question)
+  //   setAnswers
+  //   return isChecked
+  // }
+
+  const disableSection = visitData?.some(
+    (item) => item?.visitSection === 'Health, sanitation & safety'
+  );
+
+  useEffect(() => {
+    const previousData = questions.map((item) => {
+      const previousAnswer = visitData?.find(
+        (obj) => obj.question === item.question
+      );
+      if (previousAnswer) {
+        return { ...item, answer: Boolean(previousAnswer.questionAnswer) };
+      }
+      return item;
+    });
+
+    setAnswers(previousData);
+  }, []);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -138,67 +165,81 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
 
           <Divider dividerType="dashed" className={'my-4'} />
 
-          {questions.map((item, index) => (
-            <CheckboxGroup
-              id={item.question}
-              key={item.question}
-              title={''}
-              description={item.question}
-              checked={questions?.some(
-                (option) =>
-                  option.question === item.question && option?.answer === true
-              )}
-              value={item.question}
-              onChange={() => onOptionSelected(!item.answer, index)}
-              className="mb-1"
+          {disableSection && (
+            <Alert
+              className="my-4"
+              type="warning"
+              title="You are viewing this form and cannot edit responses."
+              list={['This form should be filled in by the trainee.']}
             />
-          ))}
-          <div className="mt-2 flex items-center gap-2">
-            <div
-              className={`text-14 flex h-5 w-12 rounded-full bg-${getGroupColor(
-                trueAnswers.length
-              )} items-center justify-center font-bold text-white`}
-            >
-              {`${trueAnswers.length} / ${questions?.length}`}
-            </div>
-            <Typography type={'body'} text={'checked'} color={'textDark'} />
-          </div>
-
-          <div className="mt-2 space-y-4">
-            <div>
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className={styles.button}
-                  onClick={() => {
-                    // setSectionQuestions(questions)
-                    setVisitSection(visitSection);
-                    onSubmit();
-                  }}
-                >
-                  {renderIcon('SaveIcon', styles.icon)}
-                  <Typography
-                    type={'help'}
-                    text={'Save & continue'}
-                    color={'white'}
-                  />
-                </Button>
+          )}
+          <div
+            className={`${
+              disableSection ? 'pointer-events-none opacity-50' : ''
+            }`}
+          >
+            {questions.map((item, index) => (
+              <CheckboxGroup
+                id={item.question}
+                key={item.question}
+                title={''}
+                description={item.question}
+                checked={questions?.some(
+                  (option) =>
+                    option.question === item.question && option?.answer === true
+                )}
+                value={item.question}
+                onChange={() => onOptionSelected(!item.answer, index)}
+                className="mb-1"
+              />
+            ))}
+            <div className="mt-2 flex items-center gap-2">
+              <div
+                className={`text-14 flex h-5 w-12 rounded-full bg-${getGroupColor(
+                  trueAnswers.length
+                )} items-center justify-center font-bold text-white`}
+              >
+                {`${trueAnswers.length} / ${questions?.length}`}
               </div>
+              <Typography type={'body'} text={'checked'} color={'textDark'} />
+            </div>
+
+            <div className="mt-2 space-y-4">
               <div>
-                <Button
-                  type="outlined"
-                  color="primary"
-                  className={styles.button}
-                  onClick={() => {}} // Navigate to a different page if it is principle
-                >
-                  {renderIcon('SaveIcon', styles.icon)}
-                  <Typography
-                    type={'help'}
-                    text={'Save & exit'}
-                    color={'primary'}
-                  />
-                </Button>
+                <div>
+                  <Button
+                    type="filled"
+                    color="primary"
+                    className={styles.button}
+                    onClick={() => {
+                      // setSectionQuestions(questions)
+                      setVisitSection(visitSection);
+                      onSubmit();
+                    }}
+                  >
+                    {renderIcon('SaveIcon', styles.icon)}
+                    <Typography
+                      type={'help'}
+                      text={'Save & continue'}
+                      color={'white'}
+                    />
+                  </Button>
+                </div>
+                <div>
+                  <Button
+                    type="outlined"
+                    color="primary"
+                    className={styles.button}
+                    onClick={() => {}} // Navigate to a different page if it is principle
+                  >
+                    {renderIcon('SaveIcon', styles.icon)}
+                    <Typography
+                      type={'help'}
+                      text={'Save & exit'}
+                      color={'primary'}
+                    />
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

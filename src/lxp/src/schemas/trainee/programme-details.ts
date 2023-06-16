@@ -1,7 +1,7 @@
 import * as Yup from 'yup';
 
 export interface ProgrammeDetailsModel {
-  haveReadTheSmartStarterInformation: boolean;
+  haveReadTheSmartStarterInformation: boolean | undefined;
   programmeName: string;
   programmeAddress: string;
   programmeType: string;

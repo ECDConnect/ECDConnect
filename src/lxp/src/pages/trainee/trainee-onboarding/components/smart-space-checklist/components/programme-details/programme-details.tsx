@@ -19,10 +19,6 @@ import { useForm, useFormState, useWatch, Controller } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import { staticDataSelectors } from '@store/static-data';
 import * as styles from './programme-details.styles';
-import {
-  EditProgrammeModel,
-  editProgrammeSchema,
-} from '@schemas/practitioner/edit-programme';
 import { ProgrammeDetailsProps, yesNoOptions } from './programme-details.types';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import Article from '@/components/article/article';
@@ -30,9 +26,9 @@ import {
   ProgrammeDetailsModel,
   ProgrammeDetailsSchema,
 } from '@/schemas/trainee/programme-details';
-import { CommunitySupportSchema } from '@/schemas/trainee/community-support';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
+import { traineeSelectors } from '@/store/trainee';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -44,7 +40,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const {
     getValues: getProgrammeFormValues,
     setValue: setProgrammeFormValue,
-    reset: resetProgrammeFormValue,
     register: programmeFormRegister,
     trigger: triggerR4bForm,
     control: programmeFormControl,
@@ -56,18 +51,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
 
   const { isOnline } = useOnlineStatus();
   const { isValid } = useFormState({ control: programmeFormControl });
-  const {
-    haveReadTheSmartStarterInformation,
-    haveTheTitleDeeds,
-    ownTheProperty,
-    programmeName,
-    programmeType,
-    unproclaimedLand,
-    r4bPhoto,
-  } = useWatch<ProgrammeDetailsModel>({
-    control: programmeFormControl,
-    defaultValue: {},
-  });
+  const { haveTheTitleDeeds, ownTheProperty, unproclaimedLand } =
+    useWatch<ProgrammeDetailsModel>({
+      control: programmeFormControl,
+      defaultValue: {},
+    });
   const [articleTitle, setArticleTitle] = useState<string>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
@@ -76,6 +64,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   const [photoActionBarVisible, setPhotoActionBarVisible] =
     useState<boolean>(false);
   const acceptedFormats = ['jpg, bmp'];
+  const visitData = useSelector(traineeSelectors.getTraineeVisitData);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
   const [questions, setAnswers] = useState([
@@ -117,6 +106,11 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   ]);
   const visitSection = 'Programme details';
 
+  const checkedquestion = (question: string) => {
+    const isChecked = visitData?.find((item) => item?.question === question);
+    return isChecked;
+  };
+
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
   const displayArticle = async (key: ContentConsentTypeEnum, title: string) => {
@@ -150,11 +144,6 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     [questions, setSectionQuestions]
   );
 
-  //   useEffect(() => {
-  // if(ownTheProperty && unproclaimedLand)
-  // // setPhotoActionBarVisible(true)
-  //   }, [ownTheProperty, unproclaimedLand])
-
   const setPhotoUrl = (imageUrl: string) => {
     setProgrammeFormValue('r4bPhoto', imageUrl);
 
@@ -169,6 +158,61 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     setDisplayPhotoDeleteWarning(false);
   };
 
+  useEffect(() => {
+    if (checkedquestion(questions?.[0].question)?.questionAnswer) {
+      setProgrammeFormValue('haveReadTheSmartStarterInformation', true);
+    }
+
+    if (checkedquestion(questions?.[1].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'programmeName',
+        checkedquestion(questions?.[1].question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[2].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'programmeType',
+        checkedquestion(questions?.[2].question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[3].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'programmeAddress',
+        checkedquestion(questions?.[3].question)?.questionAnswer!
+      );
+    }
+
+    if (checkedquestion(questions?.[4].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'ownTheProperty',
+        Boolean(checkedquestion(questions?.[4].question)?.questionAnswer)
+      );
+    }
+
+    if (checkedquestion(questions?.[5].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'haveTheTitleDeeds',
+        Boolean(checkedquestion(questions?.[5].question)?.questionAnswer)
+      );
+    }
+
+    if (checkedquestion(questions?.[6].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'unproclaimedLand',
+        Boolean(checkedquestion(questions?.[6].question)?.questionAnswer)
+      );
+    }
+
+    if (checkedquestion(questions?.[7].question)?.questionAnswer) {
+      setProgrammeFormValue(
+        'r4bPhoto',
+        checkedquestion(questions?.[7].question)?.questionAnswer!
+      );
+    }
+  }, []);
+
   return (
     <>
       <BannerWrapper
@@ -182,7 +226,13 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         displayOffline={!isOnline}
         renderOverflow={true}
       >
-        <div className="p-4">
+        <div
+          className={`p-4 ${
+            Boolean(checkedquestion(questions?.[0].question))
+              ? 'pointer-events-none'
+              : ''
+          }`}
+        >
           <Typography
             type={'h2'}
             text={'Programme details'}
@@ -197,19 +247,31 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           />
           <div className="flex items-center">
             <div className="'flex items-center' w-full flex-row justify-start">
-              <div
-                className="flex items-start gap-2"
-                onClick={() =>
-                  onOptionSelected(
-                    !getProgrammeFormValues()
-                      .haveReadTheSmartStarterInformation,
-                    0
-                  )
-                }
-              >
+              <div className="flex items-start gap-2">
                 <Checkbox<ProgrammeDetailsModel>
+                  checked={
+                    Boolean(
+                      checkedquestion(questions?.[0].question)?.questionAnswer
+                    ) ||
+                    getProgrammeFormValues().haveReadTheSmartStarterInformation
+                  }
                   register={programmeFormRegister}
                   nameProp={'haveReadTheSmartStarterInformation'}
+                  onCheckboxChange={() =>
+                    onOptionSelected(
+                      !getProgrammeFormValues()
+                        .haveReadTheSmartStarterInformation,
+                      0
+                    )
+                  }
+                  value={
+                    String(
+                      getProgrammeFormValues()
+                        .haveReadTheSmartStarterInformation
+                    ) ||
+                    checkedquestion(questions?.[0].question)?.questionAnswer!
+                  }
+                  disabled={Boolean(checkedquestion(questions?.[0].question))}
                 ></Checkbox>
                 <Typography
                   text={questions?.[0].question}
@@ -244,9 +306,16 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 onChange={(e) =>
                   onOptionSelected((e.target as HTMLInputElement).value, 1)
                 }
+                disabled={Boolean(checkedquestion(questions?.[1].question))}
               ></FormInput>
 
-              <div className={'w-full'}>
+              <div
+                className={`w-full ${
+                  Boolean(checkedquestion(questions?.[2].question))
+                    ? 'pointer-events-none'
+                    : ''
+                }`}
+              >
                 <label className={styles.label}>
                   {questions?.[2].question}
                 </label>
@@ -288,13 +357,20 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 onChange={(e) =>
                   onOptionSelected((e.target as HTMLInputElement).value, 3)
                 }
+                disabled={Boolean(checkedquestion(questions?.[3].question))}
               ></FormInput>
 
               <div className={'w-full'}>
                 <label className={styles.label}>
                   {questions?.[4].question}
                 </label>
-                <div className="mt-1">
+                <div
+                  className={`mt-1 ${
+                    Boolean(checkedquestion(questions?.[4].question))
+                      ? 'pointer-events-none'
+                      : ''
+                  }`}
+                >
                   <ButtonGroup<boolean | undefined>
                     options={yesNoOptions}
                     onOptionSelected={(value: any) => {
@@ -320,7 +396,13 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   <label className={styles.label}>
                     {questions?.[5].question}
                   </label>
-                  <div className="mt-1">
+                  <div
+                    className={`mt-1 ${
+                      Boolean(checkedquestion(questions?.[5].question))
+                        ? 'pointer-events-none'
+                        : ''
+                    }`}
+                  >
                     <ButtonGroup<boolean | undefined>
                       options={yesNoOptions}
                       onOptionSelected={(value: any) => {
@@ -349,7 +431,13 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 <label className={styles.label}>
                   {questions?.[6].question}
                 </label>
-                <div className="mt-1">
+                <div
+                  className={`mt-1 ${
+                    Boolean(checkedquestion(questions?.[6].question))
+                      ? 'pointer-events-none'
+                      : ''
+                  }`}
+                >
                   <Controller
                     name="unproclaimedLand"
                     control={programmeFormControl}
@@ -392,6 +480,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   setProgrammeFormValue('r4bPhoto', imageString);
                   triggerR4bForm();
                 }}
+                disabled={Boolean(checkedquestion(questions?.[7].question))}
               ></ImageInput>
             )}
 
@@ -406,13 +495,36 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 ]}
               />
             )}
+
+            {unproclaimedLand === true && (
+              <Alert
+                className="mb-4"
+                type="info"
+                title={`Please get a signed, stamped copy of an R4c form instead.`}
+                list={[
+                  'This form can be stamped by any commissioner of oaths. This could include: police officers, South African Post Office workers, lawyers, or accountants for example.',
+                ]}
+                button={
+                  <Button
+                    text="Download the R4c form"
+                    icon="DownloadIcon"
+                    type={'filled'}
+                    color={'primary'}
+                    textColor={'white'}
+                  />
+                }
+              />
+            )}
             <div>
               <div>
                 <Button
                   type="filled"
                   color="primary"
                   className={styles.button}
-                  disabled={!isValid}
+                  disabled={
+                    !isValid ||
+                    Boolean(checkedquestion(questions?.[0].question))
+                  }
                   onClick={() => {
                     // setSectionQuestions(questions)
                     setVisitSection(visitSection);
@@ -432,7 +544,10 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   type="outlined"
                   color="primary"
                   className={styles.button}
-                  disabled={!isValid}
+                  disabled={
+                    !isValid ||
+                    Boolean(checkedquestion(questions?.[0].question))
+                  }
                   onClick={() => {}} // Navigate to a different page if it is principle
                 >
                   {renderIcon('SaveIcon', styles.icon)}
@@ -461,7 +576,13 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
         position={DialogPosition.Bottom}
         stretch
       >
-        <div className={'p-4'}>
+        <div
+          className={`p-4 ${
+            Boolean(checkedquestion(questions?.[6].question))
+              ? 'pointer-events-none'
+              : ''
+          }`}
+        >
           <PhotoPrompt
             title={'R4b photo'}
             onClose={() => setPhotoActionBarVisible(false)}

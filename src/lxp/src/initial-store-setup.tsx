@@ -102,6 +102,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             ).unwrap())();
         }
       }
+      if (practitioner?.isTrainee) {
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeTimeline({
+              userId: practitioner?.userId ? practitioner?.userId : '',
+            })
+          ).unwrap())();
+      }
     }
   }, [appDispatch, userData, practitioner, isCoach]);
 

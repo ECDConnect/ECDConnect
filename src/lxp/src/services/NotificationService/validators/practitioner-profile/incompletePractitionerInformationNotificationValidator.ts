@@ -67,7 +67,7 @@ export class IncompletePractitionerInformationNotificationValidator
       if (isTrainee) {
         return [
           {
-            reference: `practitioner-profile`,
+            reference: `trainee-profile`,
             title: 'Start your trainee journey!',
             message:
               'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',

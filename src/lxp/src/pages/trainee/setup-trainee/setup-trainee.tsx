@@ -58,23 +58,11 @@ export const SetupTrainee = () => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const { theme } = useTheme();
-  const appDispatch = useAppDispatch();
-  const user = useSelector(userSelectors.getUser);
-
-  useEffect(() => {
-    (async () =>
-      await appDispatch(
-        traineeThunkActions.getTraineeTimeline({
-          userId: user?.id ? user?.id : '',
-        })
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   return (
     <>
       <BannerWrapper
-        onBack={history.goBack}
+        onBack={() => history?.push(ROUTES.DASHBOARD)}
         color="primary"
         className={'h-full'}
         title={`Welcome`}

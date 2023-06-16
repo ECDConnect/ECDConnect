@@ -12,79 +12,22 @@ import {
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
 import { format } from 'date-fns';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useHistory } from 'react-router';
 import OnboardingInfoPage from '../onboarding-info-page/onboarding-info-page';
 import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
-
-const MOCKED_DATA = {
-  visit: {
-    title: 'First site visit',
-    subTitle: 'By 10 April 2020',
-  },
-  alert: {
-    title: 'SmartSpace Licence received',
-    subTitle: '10 March 2020',
-  },
-  steps: [
-    {
-      title: 'Attended day 1 of start-up training',
-      subTitle: '22 Feb 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Starter licence',
-      subTitle: '25 Feb 2020',
-      type: 'completed',
-    },
-    {
-      title: 'Consolidation meeting scheduled',
-      subTitle: '10 Mar 2020',
-      type: 'todo',
-      todoStepIcon: 'CalendarIcon',
-    },
-    {
-      title: 'Fill in the SmartSpace checklist',
-      subTitle: '5 Mar 2020',
-      type: 'todo',
-    },
-    {
-      title: 'Get community support',
-      subTitle: '25 Aug 2020',
-      type: 'todo',
-    },
-    {
-      title: 'Register 3 children',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-    },
-    {
-      title: 'SmartSpace visit from coach',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-    },
-    {
-      title: 'Sign franchisee agreement',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-    },
-    {
-      title: 'Sign start-up support agreement',
-      subTitle: 'By 10 Apr 2020',
-      type: 'todo',
-    },
-  ] as StepItem[],
-};
+import ROUTES from '@/routes/routes';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
+  setIsSmartChecklist?: any;
 }
 
 export const OnboardingTraineeDashboard: React.FC<
   OnboardingTraineeDashboardProps
-> = ({ setNotificationStep }) => {
+> = ({ setNotificationStep, setIsSmartChecklist }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const date = format(new Date(), 'EEEE, d LLLL');
@@ -97,6 +40,13 @@ export const OnboardingTraineeDashboard: React.FC<
   };
 
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const onView = async (notificationStep: string) => {
+    if (notificationStep === 'Fill in the SmartSpace checklist') {
+      setIsSmartChecklist(true);
+    }
+    setNotificationStep(notificationStep);
+  };
 
   const uncompletedSteps = timelineSteps(
     timeline!,
@@ -148,7 +98,7 @@ export const OnboardingTraineeDashboard: React.FC<
       title={'Business'}
       subTitle={date}
       color={'primary'}
-      onBack={history.goBack}
+      onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
       displayHelp={true}
       onHelp={displayTutorial}
       displayOffline={!isOnline}
@@ -187,7 +137,7 @@ export const OnboardingTraineeDashboard: React.FC<
           <Steps
             items={timelineSteps(
               timeline,
-              () => {},
+              (a) => onView(a),
               false,
               isOnline,
               // @ts-ignore

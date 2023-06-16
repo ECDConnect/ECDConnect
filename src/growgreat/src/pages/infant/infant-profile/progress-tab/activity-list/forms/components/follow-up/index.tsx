@@ -136,8 +136,6 @@ export const FollowUp = ({
   };
   const currentVisit = getCurrentVisit();
 
-  console.log('currentVisit', currentVisit);
-
   useEffect(() => {
     if (isPrint) {
       setShowPrintData(true);

@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
 import { useHistory } from 'react-router';
@@ -23,6 +23,8 @@ import {
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
 import ROUTES from '@/routes/routes';
+import { timelineSteps } from '../trainee-onboarding-dashboard/timeline-steps';
+import { traineeSelectors } from '@/store/trainee';
 interface GetCommunitySupportProps {
   setNotificationStep: any;
 }
@@ -33,8 +35,6 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
   const date = format(new Date(), 'EEEE, d LLLL');
   const userAuth = useSelector(authSelectors.getAuthUser);
 
@@ -58,7 +58,28 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
     );
 
     history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+    setNotificationStep('');
   };
+
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const completedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type === 'completed');
+
+  useEffect(() => {
+    if (
+      completedSteps &&
+      completedSteps.some((x) => x.title === 'Community support gained')
+    ) {
+      setValue('haveSupport', !haveSupport);
+    }
+  }, []);
 
   return (
     <>
@@ -69,7 +90,7 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
         title={'Business'}
         subTitle={date}
         color={'primary'}
-        onBack={history.goBack}
+        onBack={() => setNotificationStep('')}
         displayOffline={!isOnline}
         renderOverflow={true}
       >
@@ -82,15 +103,21 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
               text={'Community support'}
             />
             <div className="'flex items-center' w-full flex-row justify-start">
-              <div
-                className="flex items-start gap-2"
-                onClick={() => setValue('haveSupport', !haveSupport)}
-              >
+              <div className="flex items-start gap-2">
                 <Checkbox<CommunitySupportModel>
+                  onCheckboxChange={() => setValue('haveSupport', !haveSupport)}
                   register={communitySupportRegister}
                   nameProp={'haveSupport'}
-                  checked={communitySupportGetValues().haveSupport}
+                  checked={
+                    communitySupportGetValues().haveSupport ||
+                    completedSteps.some(
+                      (x) => x.title === 'Community support gained'
+                    )
+                  }
                   name="haveSupport"
+                  disabled={completedSteps.some(
+                    (x) => x.title === 'Community support gained'
+                  )}
                 ></Checkbox>
                 <Typography
                   text={
@@ -118,7 +145,12 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
                 text="Save"
                 textColor="white"
                 icon="ArrowCircleRightIcon"
-                disabled={!communitySupportGetValues().haveSupport}
+                disabled={
+                  !communitySupportGetValues().haveSupport ||
+                  completedSteps.some(
+                    (x) => x.title === 'Community support gained'
+                  )
+                }
                 onClick={sendCommunitySupportAnswer}
               />
             </div>
