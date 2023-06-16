@@ -359,7 +359,7 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${mother?.user?.firstName || ''} `}
+              text={`Back-referrals for ${mother?.user?.firstName || ''} `}
             />
             <Typography
               className="col-span-2 row-span-2"
