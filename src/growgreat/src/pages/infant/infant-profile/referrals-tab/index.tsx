@@ -363,7 +363,7 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${infant?.user?.firstName || ''} & ${
+              text={`Back-referrals for ${infant?.user?.firstName || ''} & ${
                 infant?.caregiver?.firstName
               } `}
             />
