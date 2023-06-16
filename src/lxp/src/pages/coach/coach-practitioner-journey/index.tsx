@@ -171,10 +171,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
-      window.sessionStorage.setItem(
-        currentActivityKey,
-        visit.visitType?.description!
-      );
+      window.sessionStorage.setItem(currentActivityKey, visit.visitType?.name!);
     }
 
     window.sessionStorage.setItem(isViewKey, 'true');
