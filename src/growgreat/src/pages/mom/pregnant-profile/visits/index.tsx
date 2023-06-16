@@ -160,7 +160,8 @@ export const Visits: React.FC = () => {
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
           history.push(
-            `${location.pathname}/activities-form/${currentVisit?.id}`
+            `${location.pathname}/activities-form/${currentVisit?.id}`,
+            { editView: true }
           ),
       };
     });

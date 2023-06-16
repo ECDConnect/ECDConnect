@@ -190,7 +190,9 @@ export const VisitsTab: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/activities-form/${item.id}`),
+          history.push(`${location.pathname}/activities-form/${item.id}`, {
+            editView: true,
+          }),
       };
     });
 
