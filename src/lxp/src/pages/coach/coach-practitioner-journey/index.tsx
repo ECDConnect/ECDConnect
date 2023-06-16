@@ -144,7 +144,6 @@ export const CoachPractitionerJourney: React.FC = () => {
     )
     .shift();
 
-  console.log({ currentVisit });
   const onSupportVisit = () => {
     window.sessionStorage.setItem(currentActivityKey, visitTypes.supportVisit);
     setShowForm(true);
