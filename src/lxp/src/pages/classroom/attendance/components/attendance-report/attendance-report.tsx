@@ -38,9 +38,6 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
     currentClassroomGroup?.classroomId ??
     classroomGroup?.classroomId;
 
-  const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-  );
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(true);
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =

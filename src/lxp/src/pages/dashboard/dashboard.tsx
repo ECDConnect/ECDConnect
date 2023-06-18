@@ -171,58 +171,64 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (isCoach) {
-      (async () =>
-        await appDispatch(
-          practitionerForCoachThunkActions.getPractitionersForCoach({})
-        ).unwrap())();
-
-      (async (id) =>
-        await appDispatch(
-          classroomsForCoachThunkActions.getClassroomForCoach({
-            id: userData?.id!,
-          })
-        ).unwrap())();
-
-      (async () =>
-        await appDispatch(
-          childrenThunkActions.getChildrenForCoach({})
-        ).unwrap())();
-    }
-
-    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
-      const currentPrincipal = practitionerData?.filter(
-        (x) => x?.user?.id === userData.id
-      );
-      const _current = currentPrincipal?.at(0);
-      if (_current) {
+    if (isOnline) {
+      if (isCoach) {
         (async () =>
           await appDispatch(
-            practitionerThunkActions.getPractitionerById({
-              id: _current?.id || '',
+            practitionerForCoachThunkActions.getPractitionersForCoach({})
+          ).unwrap())();
+
+        (async (id) =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomForCoach({
+              id: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            childrenThunkActions.getChildrenForCoach({})
+          ).unwrap())();
+      }
+
+      if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+        const currentPrincipal = practitionerData?.filter(
+          (x) => x?.user?.id === userData.id
+        );
+        const _current = currentPrincipal?.at(0);
+        if (_current) {
+          (async () =>
+            await appDispatch(
+              practitionerThunkActions.getPractitionerById({
+                id: _current?.id || '',
+              })
+            ).unwrap())();
+        }
       }
     }
   }, [userData]);
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, []);
 
   useEffect(() => {
-    if (practitioner?.userId && !classroom) {
-      (async () =>
-        await appDispatch(
-          classroomsThunkActions.getClassroomDetailsForPractitioner({
-            id: practitioner?.userId!,
-          })
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      if (practitioner?.userId && !classroom) {
+        (async () =>
+          await appDispatch(
+            classroomsThunkActions.getClassroomDetailsForPractitioner({
+              id: practitioner?.userId!,
+            })
+          ).unwrap())();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }
     }
   }, [practitioner?.userId]);
 
