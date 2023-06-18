@@ -179,11 +179,11 @@ namespace ECDLink.Core.Services
             return Math.Round(allIncome, 2);
         }
 
-        private List<StatementsIncome> GetAllIncomeLines(string userId, int year, int month, string lineStatus = LinesStatus.ANY)
+        private List<StatementsIncome> GetAllIncomeLines(string userId, int year, int month, string lineStatus)
         {
             var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
             List<StatementsIncome> incomeRows = incomeRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month))
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year))
                     .ToList();
 
             if (month > 0) //filter into months if we need to focus on a specific month
@@ -218,12 +218,12 @@ namespace ECDLink.Core.Services
             return incomeRows;
         }
 
-        private StatementsIncomeStatement GetStatementsIncomeStatementById(string lineId)
+        private StatementsIncomeStatement GetStatementsIncomeStatementById(string lineId, string userId)
         {
             //retrieve lines not submitted from a month where others have been submitted
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             return statementRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.Id, lineId) && x.IsActive == true)
+                    .Where(x => string.Equals(x.Id, lineId) && x.IsActive == true && string.Equals(x.UserId, userId))
                     .OrderBy(x => x.Id)
                     .FirstOrDefault();
         }
@@ -241,11 +241,11 @@ namespace ECDLink.Core.Services
             return Math.Round(allExpenses, 2);
         }
 
-        private List<StatementsExpenses> GetAllExpenseLines(string userId, int year, int month, string lineStatus = LinesStatus.ANY)
+        private List<StatementsExpenses> GetAllExpenseLines(string userId, int year, int month, string lineStatus)
         {
             var expenseRepo = _repoFactory.CreateGenericRepository<StatementsExpenses>(userContext: _applicationUserId);
             List<StatementsExpenses> expenseRows = expenseRepo.GetAll() //get all rows for year to date
-                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DatePaid.Year.Equals(year) && x.DatePaid.Month.Equals(month))
+                    .Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DatePaid.Year.Equals(year))
                     .ToList();
 
             if (month > 0) //filter into months if we need to focus on a specific month
@@ -307,8 +307,11 @@ namespace ECDLink.Core.Services
             }
             if (statementIdAll != null)
             {
-                var statement = GetStatementsIncomeStatementById(statementIdAll);
-                incomeExpenses.AllLines.AutoSubmitted = statement.AutoSubmitted;
+                var statement = GetStatementsIncomeStatementById(statementIdAll, userId);
+                if (statement != null )
+                {
+                    incomeExpenses.AllLines.AutoSubmitted = statement.AutoSubmitted;
+                }
             }
             //submitted lines only
             incomeExpenses.AllSubmitted = new IncomeExpenseLines();
@@ -333,8 +336,11 @@ namespace ECDLink.Core.Services
             }
             if (statementIdSubmitted != null)
             {
-                var statement = GetStatementsIncomeStatementById(statementIdSubmitted);
-                incomeExpenses.AllSubmitted.AutoSubmitted = statement.AutoSubmitted;
+                var statement = GetStatementsIncomeStatementById(statementIdSubmitted, userId);
+                if (statement != null)
+                {
+                    incomeExpenses.AllSubmitted.AutoSubmitted = statement.AutoSubmitted;
+                }  
             }
 
             //unsubmitted lines of this month and previous month
@@ -364,7 +370,7 @@ namespace ECDLink.Core.Services
                 incomeExpenses.AllUnSubmitted.Income = latestIncomeRowsUnSubmitted;
                 incomeExpenses.AllUnSubmitted.IncomeTotal = latestIncomeRowsUnSubmitted.Select(x => x.Amount).Sum();
             }
-            if (latestIncomeRowsUnSubmitted.Any())
+            if (latestExpenseRowsUnSubmitted.Any())
             {
                 incomeExpenses.AllUnSubmitted.Expenses = latestExpenseRowsUnSubmitted;
                 incomeExpenses.AllUnSubmitted.ExpenseTotal = latestExpenseRowsUnSubmitted.Select(x => x.Amount).Sum();
