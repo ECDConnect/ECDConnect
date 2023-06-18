@@ -50,12 +50,8 @@ export function Users() {
     } else {
       return [
         {
-          name: 'All Users',
-          href: '/users/',
-        },
-        {
-          name: 'Application Users',
-          href: '/users/application',
+          name: 'All Roles',
+          href: '/users/all-roles',
         },
         {
           name: 'Franchisors',

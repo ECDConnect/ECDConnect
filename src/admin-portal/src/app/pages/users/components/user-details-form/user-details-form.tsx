@@ -25,7 +25,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   setValue,
   control,
 }) => {
-  const { data } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
 
   useEffect(() => {
     if (user) {

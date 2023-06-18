@@ -1,9 +1,9 @@
 import { classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
-import debounce from 'lodash.debounce';
 import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
+import { Link } from 'react-router-dom';
 
 export default function UiTable({
   columns = [],
@@ -14,10 +14,12 @@ export default function UiTable({
   editRow,
   deleteRow,
   viewRow,
+  searchInput,
 }: UiTableProps) {
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
   const [searchRows, setSearchRows] = useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = useState([]);
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -37,12 +39,9 @@ export default function UiTable({
   useEffect(() => {
     setSearchRows(getSearchResults());
     setLastUpdate(Date.now());
+    setSearchValue(searchInput);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [searchValue]);
-
-  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value || '');
-  }, 150);
+  }, [searchInput]);
 
   const getSearchResults = () => {
     if (!searchValue) {
@@ -53,8 +52,39 @@ export default function UiTable({
   };
 
   const makeColumns = (cols: any[] = []) => {
-    cols.push({ field: '_action', use: ' ' });
-    return [...columns, ...cols];
+    const selectColumn = {
+      field: 'select',
+      use: '',
+      Header: 'Select',
+      accessor: '', // Set the accessor value based on your data structure
+      Cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selectedRows.includes(row.id)}
+          onChange={() => handleRowSelect(row.id)}
+        />
+      ),
+    };
+
+    const columnsWithSelect = [selectColumn, ...cols];
+
+    return [...columnsWithSelect, ...columns];
+  };
+
+  const handleRowSelect = (row: any) => {
+    console.log(row);
+    const isSelected = selectedRows.includes(row);
+    let updatedSelectedRows = [];
+
+    if (isSelected) {
+      updatedSelectedRows = selectedRows.filter(
+        (selectedRow) => selectedRow !== row
+      );
+    } else {
+      updatedSelectedRows = [...selectedRows, row];
+    }
+
+    setSelectedRows(updatedSelectedRows);
   };
 
   const makeRows = () => {
@@ -62,17 +92,46 @@ export default function UiTable({
       return [{ [columns[0].field]: 'No entries found' }];
     }
 
+    const handleRowSelect = (row: any) => {
+      if (selectedRows.includes(row)) {
+        setSelectedRows(
+          selectedRows.filter((selectedRow) => selectedRow !== row)
+        );
+      } else {
+        setSelectedRows([...selectedRows, row]);
+      }
+    };
+
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
-      row._action = (
-        <div className="flex justify-center">
+
+      const checkboxCell = (
+        <input
+          type="checkbox"
+          className="form-checkbox text-primary h-5 w-5 rounded border-gray-30 focus:ring-2 focus:bg-blue-600 "
+          onChange={() => handleRowSelect(row)}
+          checked={selectedRows.includes(row)}
+        />
+      );
+
+      const rowWithCheckbox = {
+        select: checkboxCell,
+        ...row,
+      };
+
+      const rowClassName = selectedRows.includes(row)
+        ? 'bg-red-500 text-white'
+        : '';
+
+      rowWithCheckbox._action = (
+        <div className={`flex justify-start ${rowClassName}`}>
           {viewRow && (
             <Icon
               key={`viewRow_${rowKey}`}
               icon="SearchIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => viewRow(row)}
             />
           )}
@@ -82,7 +141,7 @@ export default function UiTable({
               icon="PencilAltIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => editRow(row)}
             />
           )}
@@ -92,7 +151,7 @@ export default function UiTable({
               icon="PencilAltIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => urlRow(row)}
             />
           )}
@@ -102,7 +161,7 @@ export default function UiTable({
               icon="MailIcon"
               color="transparent"
               height="20px"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               onClick={() => sendRow(row)}
             />
           )}
@@ -110,7 +169,7 @@ export default function UiTable({
             <Icon
               key={`deleteRow${rowKey}`}
               icon="TrashIcon"
-              className="ml-2 text-gray-400 cursor-pointer"
+              className="ml-2 cursor-pointer text-gray-400"
               height="20px"
               color="transparent"
               onClick={() => deleteRow(row)}
@@ -118,8 +177,9 @@ export default function UiTable({
           )}
         </div>
       );
+
       ++rowKey;
-      return row;
+      return rowWithCheckbox;
     });
   };
 
@@ -136,27 +196,27 @@ export default function UiTable({
     }
   };
 
-  const renderFormat = (row, column, display_value) => {
+  const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
 
-    let rowValue;
+    let rowValue: any;
 
     if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="flex ml-5">
+        <div className="ml-5 flex">
           {display_value ? (
             <Icon
               icon="CheckCircleIcon"
-              className="ml-1 text-successMain"
+              className="text-successMain ml-1"
               height="20px"
               color="transparent"
             />
           ) : (
             <Icon
               icon="XCircleIcon"
-              className="ml-1 text-errorMain"
+              className="text-errorMain ml-1"
               height="20px"
               color="transparent"
             />
@@ -169,12 +229,12 @@ export default function UiTable({
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-4 flex items-center flex-row flex-wrap">
+        <div className="ml-4 flex flex-row flex-wrap items-center">
           {display_value &&
             display_value.map((item) => (
               <div
                 key={item.id}
-                className="text-xs rounded-full py-1 px-3 m-1 bg-uiMid text-white"
+                className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white"
               >
                 {item[column.displayProperty]}
               </div>
@@ -185,7 +245,7 @@ export default function UiTable({
       rowValue = (
         <span
           className={classNames(
-            'px-2 inline-flex text-xs leading-5 font-semibold rounded-full text-white',
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white',
             display_value && display_value[0].statusColor
           )}
         >
@@ -195,7 +255,9 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis">{display_value}</div>
+          <div className="inline-block overflow-ellipsis"  >
+            <Link to={{ pathname: `/view-user/`, state: {} }} >{display_value}</Link>
+          </div>
         ) : (
           display_value
         );
@@ -204,31 +266,7 @@ export default function UiTable({
   };
 
   return (
-    <div className="w-full overflow-hidden rounded-lg shadow-lg table-top">
-      <div className="relative p-2 px-4 text-gray-400 bg-gray-50 focus-within:text-gray-600">
-        <input
-          className="block w-full py-2 pl-8 pr-3 leading-5 text-gray-900 placeholder-gray-600 bg-white border border-gray-200 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-offset-primary focus:ring-white focus:border-white sm:text-sm"
-          placeholder="Search..."
-          onChange={search}
-        />
-        <span className="inset-y-1/2 left-6 absolute input-group-text flex items-center text-base font-normal text-gray-600 text-center whitespace-nowrap rounded">
-          <svg
-            aria-hidden="true"
-            focusable="false"
-            data-prefix="fas"
-            data-icon="search"
-            className="w-4"
-            role="img"
-            xmlns="http://www.w3.org/2000/svg"
-            viewBox="0 0 512 512"
-          >
-            <path
-              fill="currentColor"
-              d="M505 442.7L405.3 343c-4.5-4.5-10.6-7-17-7H372c27.6-35.3 44-79.7 44-128C416 93.1 322.9 0 208 0S0 93.1 0 208s93.1 208 208 208c48.3 0 92.7-16.4 128-44v16.3c0 6.4 2.5 12.5 7 17l99.7 99.7c9.4 9.4 24.6 9.4 33.9 0l28.3-28.3c9.4-9.4 9.4-24.6.1-34zM208 336c-70.7 0-128-57.2-128-128 0-70.7 57.2-128 128-128 70.7 0 128 57.2 128 128 0 70.7-57.2 128-128 128z"
-            ></path>
-          </svg>
-        </span>
-      </div>
+    <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       <Table
         key={`table-${lastUpdate}`}
         row_render={renderFormat}
@@ -244,12 +282,14 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-gray-900 border-b-2 border-gray-100`,
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
+            table_row: `text-red-900 border-b-8 border-gray-100 bg-D2F1F9`,
+            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-8 bg-infoBb',
+
             table_data:
               'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
@@ -270,7 +310,7 @@ export default function UiTable({
         no_content_text="-"
         striped
         bordered
-        hovered={false}
+        
       />
     </div>
   );

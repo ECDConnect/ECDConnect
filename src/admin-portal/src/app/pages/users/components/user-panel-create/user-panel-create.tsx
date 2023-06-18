@@ -18,10 +18,7 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
-import PasswordForm from '../password-form/password-form';
 import UserDetailsForm from '../user-details-form/user-details-form';
-import UserPanelSave from '../user-panel-save/user-panel-save';
-import UserRoles from '../user-roles/user-roles';
 import { UserPanelCreateProps } from '../users';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
@@ -177,6 +174,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             </h3>
           </div>
 
+<<<<<<< Updated upstream
           <PasswordForm
             formKey={`createPassword-${new Date().getTime()}`}
             isEdit={false}
@@ -185,6 +183,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
         <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+=======
+        {/* <div className="mt-0 rounded-lg  px-4 py-0">
+>>>>>>> Stashed changes
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
@@ -195,6 +196,18 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             roles={selectedUserRoles}
             onUserRoleChange={(values) => setUserRoles(values)}
           />
+<<<<<<< Updated upstream
+=======
+        </div> */}
+        <div className="mt-0 rounded-lg  px-4 py-0">
+          <Alert
+            className={'mt-5 mb-3'}
+            message={
+              'An invitation will be sent to the new user when you click add.'
+            }
+            type={'info'}
+          />
+>>>>>>> Stashed changes
         </div>
       </>
     );

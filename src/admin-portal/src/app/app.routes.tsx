@@ -8,6 +8,7 @@ import Dashboard from './pages/dashboard/dashboard';
 import Documents from './pages/documents/documents';
 import { Preview } from './pages/preview/preview';
 import Profile from './pages/profile/profile';
+import ViewUser from './pages/view-user/view-user';
 import Reports from './pages/reports/reports';
 import Roles from './pages/roles/roles';
 import Settings from './pages/settings/settings';
@@ -64,6 +65,7 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={`/profile`} component={Profile}></Route>
+      <Route path={`/view-user`} component={ViewUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
@@ -87,6 +89,8 @@ const SettingsRoutes: React.FC = () => {
 const UserRoutes: React.FC = () => {
   return (
     <Switch>
+      <Route path={`/users/all-roles`} component={ApplicationAdmins}></Route>
+
       <Route path={`/users/application`} component={ApplicationUsers}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>

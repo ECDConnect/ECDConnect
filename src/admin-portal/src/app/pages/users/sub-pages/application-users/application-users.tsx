@@ -200,6 +200,18 @@ export default function ApplicationUsers() {
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
+                  // columns={[
+                  //   { field: 'email', use: 'Email' },
+                  //   { field: 'fullName', use: 'name' },
+                  //   {
+                  //     field: 'roles',
+                  //     use: 'admin type',
+                  //     type: 'array',
+                  //     displayProperty: 'name',
+                  //   },
+
+                  //   { field: 'isActive', use: 'Active' },
+                  // ]}
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
@@ -209,7 +221,13 @@ export default function ApplicationUsers() {
                       use: 'roles',
                       type: 'array',
                       displayProperty: 'name',
+                   
                     },
+<<<<<<< Updated upstream
+=======
+                 
+                    
+>>>>>>> Stashed changes
                   ]}
                   rows={tableData}
                   editRow={
@@ -220,6 +238,11 @@ export default function ApplicationUsers() {
                     hasPermission(PermissionEnum.delete_user) &&
                     deleteUserAndRefresh
                   }
+<<<<<<< Updated upstream
+=======
+                  sendRow={true}
+                  searchInput={searchValue}
+>>>>>>> Stashed changes
                 />
               </div>
             </div>
