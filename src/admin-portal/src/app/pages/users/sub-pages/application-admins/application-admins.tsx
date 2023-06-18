@@ -236,7 +236,7 @@ export default function ApplicationAdmins() {
 
 =======
 
-console.log(">>", tableData )
+console.log(">>", data )
 const getDefaultStartDate = () => {
   const currentDate = new Date();
   const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
@@ -422,7 +422,7 @@ const getDefaultStartDate = () => {
 =======
                     { field: 'fullName', use: 'Name' },
                     { field: 'roles', use: 'Role' },
-                    { field: 'Date', use: 'Date Invited' },
+                    { field: 'startDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}

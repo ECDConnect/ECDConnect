@@ -3,6 +3,7 @@ import Fuse from 'fuse.js';
 import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
+import { Link } from 'react-router-dom';
 
 export default function UiTable({
   columns = [],
@@ -50,24 +51,10 @@ export default function UiTable({
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
+  
   const makeColumns = (cols: any[] = []) => {
-    const selectColumn = {
-      field: 'select',
-      use: '',
-      Header: 'Select',
-      accessor: '', // Set the accessor value based on your data structure
-      Cell: ({ row }) => (
-        <input
-          type="checkbox"
-          checked={selectedRows.includes(row.id)}
-          onChange={() => handleRowSelect(row.id)}
-        />
-      ),
-    };
-
-    const columnsWithSelect = [selectColumn, ...cols];
-
-    return [...columnsWithSelect, ...columns];
+    cols.push({ field: '_action', use: ' ' });
+    return [...columns, ...cols];
   };
 
   const handleRowSelect = (row: any) => {
@@ -104,13 +91,67 @@ export default function UiTable({
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
 
-      const checkboxCell = (
-        <input
-          type="checkbox"
-          className="form-checkbox text-primary h-5 w-5 rounded border-gray-30 focus:ring-2 focus:bg-blue-600 "
-          onChange={() => handleRowSelect(row)}
-          checked={selectedRows.includes(row)}
-        />
+      row._action = (
+        <div className="flex justify-center">
+          <input
+            type="checkbox"
+            className="form-checkbox text-primary h-5 w-5"
+            onChange={() => handleRowSelect(row)}
+            checked={selectedRows.includes(row)}
+          />
+          <div className="flex justify-start">
+            {viewRow && (
+              <Icon
+                key={`viewRow_${rowKey}`}
+                icon="SearchIcon"
+                color="transparent"
+                height="20px"
+                className="ml-2 cursor-pointer text-gray-400"
+                onClick={() => viewRow(row)}
+              />
+            )}
+            {editRow && (
+              <Icon
+                key={`editRow${rowKey}`}
+                icon="PencilAltIcon"
+                color="transparent"
+                height="20px"
+                className="ml-2 cursor-pointer text-gray-400"
+                onClick={() => editRow(row)}
+              />
+            )}
+            {urlRow && (
+              <Icon
+                key={`urlRow${rowKey}`}
+                icon="PencilAltIcon"
+                color="transparent"
+                height="20px"
+                className="ml-2 cursor-pointer text-gray-400"
+                onClick={() => urlRow(row)}
+              />
+            )}
+            {sendRow && (
+              <Icon
+                key={`sendRow${rowKey}`}
+                icon="MailIcon"
+                color="transparent"
+                height="20px"
+                className="ml-2 cursor-pointer text-gray-400"
+                onClick={() => sendRow(row)}
+              />
+            )}
+            {deleteRow && (
+              <Icon
+                key={`deleteRow${rowKey}`}
+                icon="TrashIcon"
+                className="ml-2 cursor-pointer text-gray-400"
+                height="20px"
+                color="transparent"
+                onClick={() => deleteRow(row)}
+              />
+            )}
+          </div>
+        </div>
       );
 
       const rowWithCheckbox = {
@@ -118,64 +159,7 @@ export default function UiTable({
         ...row,
       };
 
-      const rowClassName = selectedRows.includes(row)
-        ? 'bg-red-500 text-white'
-        : '';
-
-      rowWithCheckbox._action = (
-        <div className={`flex justify-start ${rowClassName}`}>
-          {viewRow && (
-            <Icon
-              key={`viewRow_${rowKey}`}
-              icon="SearchIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => viewRow(row)}
-            />
-          )}
-          {editRow && (
-            <Icon
-              key={`editRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => editRow(row)}
-            />
-          )}
-          {urlRow && (
-            <Icon
-              key={`urlRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => urlRow(row)}
-            />
-          )}
-          {sendRow && (
-            <Icon
-              key={`sendRow${rowKey}`}
-              icon="MailIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => sendRow(row)}
-            />
-          )}
-          {deleteRow && (
-            <Icon
-              key={`deleteRow${rowKey}`}
-              icon="TrashIcon"
-              className="ml-2 cursor-pointer text-gray-400"
-              height="20px"
-              color="transparent"
-              onClick={() => deleteRow(row)}
-            />
-          )}
-        </div>
-      );
+      console.log("f", rowWithCheckbox)
 
       ++rowKey;
       return rowWithCheckbox;
@@ -195,12 +179,12 @@ export default function UiTable({
     }
   };
 
-  const renderFormat = (row, column, display_value) => {
+  const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
 
-    let rowValue;
+    let rowValue: any;
 
     if (typeof display_value === 'boolean') {
       rowValue = (
@@ -254,7 +238,9 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis">{display_value}</div>
+          <div className="inline-block overflow-ellipsis"  >
+            <Link to={{ pathname: `/view-user/`, state: {} }} >{display_value}</Link>
+          </div>
         ) : (
           display_value
         );
@@ -279,12 +265,14 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-red-900 border-b-8 border-gray-100 bg-D2F1F9`,
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_row: `text-red-900 border-b-8 border-gray-100`,
+            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-8 bg-infoBb',
+
             table_data:
               'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
@@ -305,7 +293,7 @@ export default function UiTable({
         no_content_text="-"
         striped
         bordered
-        hovered={false}
+        
       />
     </div>
   );

@@ -212,7 +212,6 @@ export default function ApplicationUsers() {
 
                   //   { field: 'isActive', use: 'Active' },
                   // ]}
-
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
@@ -224,8 +223,11 @@ export default function ApplicationUsers() {
                       displayProperty: 'name',
                    
                     },
+<<<<<<< Updated upstream
+=======
                  
                     
+>>>>>>> Stashed changes
                   ]}
                   rows={tableData}
                   editRow={
@@ -236,8 +238,11 @@ export default function ApplicationUsers() {
                     hasPermission(PermissionEnum.delete_user) &&
                     deleteUserAndRefresh
                   }
+<<<<<<< Updated upstream
+=======
                   sendRow={true}
                   searchInput={searchValue}
+>>>>>>> Stashed changes
                 />
               </div>
             </div>
