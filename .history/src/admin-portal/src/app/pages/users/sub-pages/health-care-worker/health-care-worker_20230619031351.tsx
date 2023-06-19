@@ -153,7 +153,26 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
 
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
 
   const displayPanel = () => {
     panel({

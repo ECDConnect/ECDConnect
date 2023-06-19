@@ -21,8 +21,6 @@ import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
 import UserDetailsForm from '../user-details-form/user-details-form';
 import { UserPanelCreateProps } from '../users';
-import { Alert } from '@ecdlink/ui';
-import UserPanelSave from '../user-panel-save/user-panel-save';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -191,13 +189,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   console.log(userDetailForm.email)
-  function getIsValid() {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <article>
-      <UserPanelSave disabled={false} onSave={onSave} />
+      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );

@@ -85,7 +85,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                       error={errors.idNumber?.message}
                     />
                   </div>
-                  {/* <div className="sm:col-span-3">
+                  <div className="sm:col-span-3">
                     <FormSelectorField
                       label="Sex *"
                       nameProp={'genderId'}
@@ -99,7 +99,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
                       }
                       error={errors.programTypeId?.message}
                     />
-                  </div> */}
+                  </div>
                   <div className="sm:col-span-3">
                     <FormField
                       label={'Phone number *'}

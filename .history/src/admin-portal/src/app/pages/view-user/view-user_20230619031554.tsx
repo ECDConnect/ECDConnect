@@ -38,7 +38,7 @@ export function ViewUser(props) {
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-  const { errors, isValid } = formState;
+  // const { errors, isValid } = formState;
 
   // console.log(isValid);
   return (

@@ -91,7 +91,6 @@ const FormField: React.FC<FormFieldProps> = ({
           })}
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
-          defaultValue={defaultValue}
         />
         {type === 'checkbox' && nameProp === 'terms' && (
           <a className="text-md text-secondary mb-3 pl-2" href="/terms">

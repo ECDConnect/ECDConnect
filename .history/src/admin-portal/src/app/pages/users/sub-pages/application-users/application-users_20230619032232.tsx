@@ -9,7 +9,6 @@ import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
-import debounce from 'lodash.debounce';
 
 export default function ApplicationUsers() {
   const dialog = useDialog();

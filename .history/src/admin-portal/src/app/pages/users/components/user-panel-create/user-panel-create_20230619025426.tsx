@@ -21,8 +21,6 @@ import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
 import UserDetailsForm from '../user-details-form/user-details-form';
 import { UserPanelCreateProps } from '../users';
-import { Alert } from '@ecdlink/ui';
-import UserPanelSave from '../user-panel-save/user-panel-save';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -84,10 +82,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-      
+      password: passwordForm.password,
     };
 
     await createUser({
@@ -150,12 +145,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className="rounded-lg px-4 py-0">
-          <div className="border-b border-dashed pb-4">
-            <h1 className="py-4 text-2xl text-black">Administrator details</h1>
-            <label className="text-md block font-medium text-gray-700">
-              Step 1 of 1
-            </label>
-          </div>
           <UserDetailsForm
             formKey={`createUserDetails-${new Date().getTime()}`}
             register={userDetailRegister}
@@ -191,13 +180,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   console.log(userDetailForm.email)
-  function getIsValid() {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <article>
-      <UserPanelSave disabled={false} onSave={onSave} />
+      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );

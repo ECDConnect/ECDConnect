@@ -1,4 +1,5 @@
-import { useQuery } from '@apollo/client';
+import {  useQuery } from '@apollo/client';
+import debounce from 'lodash.debounce';
 import {
   useDialog,
   UserDto,
@@ -9,11 +10,10 @@ import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
-import debounce from 'lodash.debounce';
 
 export default function ApplicationUsers() {
   const dialog = useDialog();
-  const [searchValue, setSearchValue] = useState('');
+  const [dateFilter, setDateFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -63,7 +63,7 @@ export default function ApplicationUsers() {
       allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
     );
   }, [selectedRoleFilter]);
-
+ 
 
   const mapUserTableItem = (user: UserDto) => {
     return {
@@ -76,11 +76,11 @@ export default function ApplicationUsers() {
   };
 
 
-  const getDefaultStartDate = () => {
-    const currentDate = new Date();
-    const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-    return previousMonth.toISOString().split('T')[0];
-  };
+const getDefaultStartDate = () => {
+  const currentDate = new Date();
+  const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
+  return previousMonth.toISOString().split('T')[0];
+};
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -188,7 +188,7 @@ export default function ApplicationUsers() {
 
             </div>
 
-
+        
           </div>
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

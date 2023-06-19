@@ -21,8 +21,8 @@ import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
 import UserDetailsForm from '../user-details-form/user-details-form';
 import { UserPanelCreateProps } from '../users';
-import { Alert } from '@ecdlink/ui';
-import UserPanelSave from '../user-panel-save/user-panel-save';
+import { PaperAirplaneIcon, PlusIcon } from '@heroicons/react/solid';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -84,15 +84,19 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       email: userDetailForm.email,
+      isSouthAfricanCitizen: false,
+      idNumber: null,
+      verifiedByHomeAffairs: false,
       dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-      
+      genderId: null,
+      contactPreference: null,
+      phoneNumber: null
     };
 
     await createUser({
       variables: {
         input: { ...userInputModel },
+        createAdmin: true,
       },
     })
       .then(async (response) => {
@@ -170,6 +174,10 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
             </h3>
+            <p className="text-Light text-md font-medium leading-6">
+              Please select one administrator type. Once the user has been
+              added, you can add additional roles.
+            </p>
           </div>
           <UserRoles
             roleList={filteredRoles ? filteredRoles : []}
@@ -191,14 +199,28 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   console.log(userDetailForm.email)
-  function getIsValid() {
-    throw new Error('Function not implemented.');
-  }
-
   return (
     <article>
-      <UserPanelSave disabled={false} onSave={onSave} />
-      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      {/* <UserPanelSave disabled={!getIsValid()} onSave={onSave} /> */}
+      <div className="mx-1  max-w-5xl">
+        {getComponent()}
+
+        <Button
+          className={'mt-6 w-full rounded-xl'}
+          type="filled"
+          // isLoading={isLoading}
+          color={'secondary'}
+          disabled={userDetailForm.email ? false : true}
+          onClick={onSave}
+        >
+          <PaperAirplaneIcon className="mx-4 h-5 w-5 text-white"></PaperAirplaneIcon>
+          <Typography
+            type="help"
+            color="white"
+            text={'Add & invite user'}
+          ></Typography>
+        </Button>
+      </div>
     </article>
   );
 }

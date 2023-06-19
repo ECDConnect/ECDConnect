@@ -47,7 +47,16 @@ export default function HealthCareWorkers() {
   const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
+  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: clinicData } = useQuery(GetAllClinic, {
+    fetchPolicy: 'cache-and-network',
+  });
 
+  const { data: provinceData } = useQuery(GetAllProvince, {
+    fetchPolicy: 'cache-and-network',
+  });
   const [tableData, setTableData] = useState<any[]>([]);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
@@ -153,7 +162,26 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
 
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
 
   const displayPanel = () => {
     panel({
