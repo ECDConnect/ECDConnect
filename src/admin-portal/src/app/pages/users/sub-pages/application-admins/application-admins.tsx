@@ -1,4 +1,3 @@
-<<<<<<< Updated upstream
 import { useMutation, useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import {
@@ -35,23 +34,6 @@ export default function ApplicationAdmins() {
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
 
-=======
-import {  useQuery } from '@apollo/client';
-import debounce from 'lodash.debounce';
-import {
-  useDialog,
-  UserDto,
-} from '@ecdlink/core';
-import { UserList } from '@ecdlink/graphql';
-import { Dropdown } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
-import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import UiTable from '../../../../components/ui-table';
-import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
-
-export default function ApplicationAdmins() {
-  const dialog = useDialog();
->>>>>>> Stashed changes
   const [dateFilter, setDateFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
@@ -71,7 +53,6 @@ export default function ApplicationAdmins() {
     setEndDate(event.target.value);
   };
 
-<<<<<<< Updated upstream
 
   useEffect(() => {
     if (data && data.users) {
@@ -81,21 +62,6 @@ export default function ApplicationAdmins() {
           user.roles.some((role) => role.name === 'Administrator')
         );
       console.log('>>', data);
-=======
-  const { data, refetch } = useQuery(UserList, {
-    fetchPolicy: 'cache-and-network',
-  });
-
-  const [searchValue, setSearchValue] = useState('');
-  const [tableData, setTableData] = useState<any[]>([]);
-
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
-
-
-  useEffect(() => {
-    if (data && data.users) {
-      const copyItems = data.users;
->>>>>>> Stashed changes
       setTableData(copyItems);
     }
   }, [data]);
@@ -117,7 +83,6 @@ export default function ApplicationAdmins() {
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoleFilter]);
-<<<<<<< Updated upstream
 
   const displayUserPanel = () => {
     panel({
@@ -136,9 +101,6 @@ export default function ApplicationAdmins() {
       ),
     });
   };
-=======
- 
->>>>>>> Stashed changes
 
   const mapUserTableItem = (user: UserDto) => {
     return {
@@ -150,7 +112,6 @@ export default function ApplicationAdmins() {
     };
   };
 
-<<<<<<< Updated upstream
   const displayEditUserPanel = (user: any) => {
     panel({
       noPadding: true,
@@ -234,15 +195,6 @@ export default function ApplicationAdmins() {
     );
   };
 
-=======
-
-console.log(">>", data )
-const getDefaultStartDate = () => {
-  const currentDate = new Date();
-  const previousMonth = new Date(currentDate.getFullYear(), currentDate.getMonth() - 1, 1);
-  return previousMonth.toISOString().split('T')[0];
-};
->>>>>>> Stashed changes
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
@@ -269,7 +221,6 @@ const getDefaultStartDate = () => {
                 {showFilter && (
                   <div className="flex items-center mt-4 sm:mt-6 ">
                     <div>
-<<<<<<< Updated upstream
                       <Dropdown
                         fillType="filled"
                         textColor="white"
@@ -282,19 +233,6 @@ const getDefaultStartDate = () => {
                           setSelectedRoleFilter(item);
                         }}
                       />
-=======
-                      <button
-                        id="dropdownDividerButton"
-                        className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
-                        type="button"
-                        onClick={toggleDropdown}
-                      >
-                        Date Invited
-                        <ChevronDownIcon className="w-4 h-4 ml-2" />
-                      </button>
-
-
->>>>>>> Stashed changes
                     </div>
 
                     <div>
@@ -317,41 +255,7 @@ const getDefaultStartDate = () => {
                       />
                     </div>
 
-<<<<<<< Updated upstream
 
-=======
-                    <div className="flex flex-col flex-start justify-around ">
-                      {isDropdownVisible && (
-                        <div
-                          id="dropdownDivider"
-                          className=" bg-white divide-y divide-gray-100 rounded-lg shadow w-96 dark:bg-gray-700 dark:divide-gray-600 flex"
-                        >
-                          <div className="p-4 w-1/2">
-                            <label htmlFor="">Start Date</label>
-
-                            <input
-                              defaultValue={startDate}
-                              type="date"
-                              className="bg-uiBg focus:outline-none sm:text-md block w-full border-secondary rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                              onChange={handleStartDateChange}
-                              placeholder="Start Date"
-                            />
-                          </div>
-                          <div className="p-4 w-1/2">
-                            <label htmlFor="">End Date</label>
-
-                            <input
-                              defaultValue={endDate}
-                              type="date"
-                              className="bg-uiBg focus:outline-none sm:text-md block w-full border-secondary rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                              onChange={handleEndDateChange}
-                              placeholder="End Date"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
->>>>>>> Stashed changes
                   </div>
                 )}
               </div>
@@ -369,7 +273,6 @@ const getDefaultStartDate = () => {
 
             </div>
 
-<<<<<<< Updated upstream
             <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
               {hasPermission(PermissionEnum.create_user) && (
                 <button
@@ -386,18 +289,12 @@ const getDefaultStartDate = () => {
 
 
 
-=======
-        
-          </div>
-
->>>>>>> Stashed changes
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
                     { field: 'email', use: 'Email' },
-<<<<<<< Updated upstream
                     { field: 'fullName', use: 'name' },
                     {
                       field: 'roles',
@@ -419,14 +316,6 @@ const getDefaultStartDate = () => {
                     deleteUserAndRefresh
                   }
                   sendRow={true}
-=======
-                    { field: 'fullName', use: 'Name' },
-                    { field: 'roles', use: 'Role' },
-                    { field: 'startDate', use: 'Date Invited' },
-                    { field: 'isActive', use: 'Status' },
-                  ]}
-                  rows={tableData}
->>>>>>> Stashed changes
                   searchInput={searchValue}
                 />
               </div>

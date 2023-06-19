@@ -1,13 +1,17 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
   ClinicDto,
+  ClinicDto,
   NOTIFICATION,
   PermissionEnum,
+  TeamLeadDto,
   TeamLeadDto,
   useDialog,
   useNotifications,
   usePanel,
 } from '@ecdlink/core';
+import debounce from 'lodash.debounce';
+
 import { HealthCareWorkerDto } from '@ecdlink/core/lib/models/dto/Users/health-care-worker.dto';
 import {
   SendInviteToApplication,
@@ -16,14 +20,16 @@ import {
   GetAllClinic,
   GetAllProvince,
 } from '@ecdlink/graphql';
-import { DialogPosition } from '@ecdlink/ui';
+import { DialogPosition, Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 
+
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
+import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
 
 export default function HealthCareWorkers() {
@@ -31,6 +37,16 @@ export default function HealthCareWorkers() {
   const { setNotification } = useNotifications();
   const dialog = useDialog();
   const { data, refetch } = useQuery(GetAllHealthCareWorker, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const { data: clinicData } = useQuery(GetAllClinic, {
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
@@ -148,6 +164,27 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
   const displayPanel = () => {
     panel({
       noPadding: true,
@@ -166,6 +203,9 @@ export default function HealthCareWorkers() {
       ),
     });
   };
+
+
+
 
 
 
@@ -327,6 +367,34 @@ export default function HealthCareWorkers() {
                     )}
                   </div>
                 </div>
+
+              <div className="w-full ml-10 mt-4">
+
+                <button onClick={() => setShowFilter(!showFilter)} id="dropdownHoverButton"
+                  className="text-white bg-secondary hover:bg-gray-300 focus:bg-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
+                  type="button">Filter
+                  <svg className="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                </button>
+
+              </div>
+              <div className="pb-5 sm:flex sm:items-center sm:justify-between">
+                <span className="text-lg font-medium leading-6 text-gray-900"></span>
+                <div className="flex flex-row">
+                  <div className="mt-3 w-60">
+                    {hasPermission(PermissionEnum.create_user) && (
+                      <button
+                        onClick={displayPanel}
+                        type="button"
+                        className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                      >
+                        <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                        Add CHWs
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </div>
+
               </div>
 
             </div>
@@ -357,6 +425,7 @@ export default function HealthCareWorkers() {
           </div>
         </div>
       </div>
+
     );
   } else {
     return <ContentLoader />;

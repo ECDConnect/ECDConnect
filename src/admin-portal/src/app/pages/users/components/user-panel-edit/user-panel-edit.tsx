@@ -5,15 +5,18 @@ import {
   NOTIFICATION,
   passwordSchema,
   RoleDto,
+  useDialog,
   useNotifications,
   userSchema,
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
+  DeleteUser,
   RemoveUserFromRoles,
   ResetUserPassword,
   RoleList,
   UpdateUser,
+  UserList,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -25,6 +28,9 @@ import UserHierarchy from '../user-hierarchy/user-hierarchy';
 import UserPanelSave from '../user-panel-save/user-panel-save';
 import UserRoles from '../user-roles/user-roles';
 import { UserPanelProps } from '../users';
+import { Button, DialogPosition, Typography } from '@ecdlink/ui';
+import { PaperAirplaneIcon, SaveIcon } from '@heroicons/react/solid';
+import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 
 export default function UserPanelEdit(props: UserPanelProps) {
   const { setNotification } = useNotifications();
@@ -257,20 +263,59 @@ export default function UserPanelEdit(props: UserPanelProps) {
 
     return isValid && internalIsPasswordValid ? true : false;
   };
+  const dialog = useDialog();
+
+  const { data, refetch } = useQuery(UserList, {
+    fetchPolicy: 'cache-and-network',
+  });
+  const [deleteUser] = useMutation(DeleteUser);
+
+  const deleteUserAndRefresh = async (user: any) => {
+    dialog({
+      blocking: true,
+      position: DialogPosition.Middle,
+      render: (onSubmit: any, onCancel: any) => (
+        <AlertModal
+          title="Deactivate Administrator"
+          message={`You are about to deactivate a user. Would you like to go ahead`}
+          onCancel={onCancel}
+          onSubmit={() => {
+            onSubmit();
+
+            deleteUser({
+              variables: {
+                id: user.id,
+              },
+            })
+              .then((response: any) => {
+                if (response.data.deleteUser) {
+                  refetch();
+
+                  setNotification({
+                    title: 'Successfully Deactivated User!',
+                    variant: NOTIFICATION.SUCCESS,
+                  });
+                }
+              })
+              .catch((error) => {
+                console.log(error);
+              });
+          }}
+        />
+      ),
+    });
+  };
 
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
-          <div className="pb-2">
-            <h3 className="text-lg leading-6 font-medium text-uiMidDark">
-              User Detail
-            </h3>
+        <div className="px-4 ">
+          <div className="border-b border-dashed pb-4">
+            <h1 className="py-4 text-2xl text-black"> Edit Administrator details</h1>
           </div>
           <UserDetailsForm
-            formKey={`editUserDetails-${new Date().getTime()}-${
-              props.user?.id
-            }`}
+            formKey={`editUserDetails-${new Date().getTime()}-${props.user?.id
+              }`}
             register={userDetailRegister}
             errors={userDetailFormErrors}
             setValue={userDetailSetValue}
@@ -278,7 +323,8 @@ export default function UserPanelEdit(props: UserPanelProps) {
             control={control}
           />
         </div>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+
+        <div className="rounded-lg px-4 ">
           <div className="pb-2">
             <h3 className="text-lg leading-6 font-medium text-uiMidDark">
               Password
@@ -303,21 +349,51 @@ export default function UserPanelEdit(props: UserPanelProps) {
             onUserRoleChange={(values) => setUserRoles(values)}
           />
         </div>
-        <div className="mt-5 bg-uiBg px-4 py-5 border-b border-gray-200 rounded-lg">
+        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <UserHierarchy userId={props.user.id} />
-        </div>
+        </div> */}
       </>
     );
   };
 
   return (
     <article>
-      <UserPanelSave
+      {/* <UserPanelSave
         user={props.user}
         disabled={!getIsValid()}
         onSave={onSave}
-      />
-      <div className="mt-5 max-w-5xl mx-auto">{getComponent()}</div>
+      /> */}
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <div className="flex flex-row">
+        <Button
+          className={'mt-6 w-full rounded-xl m-2'}
+          type="filled"
+          // isLoading={isLoading}
+          color={'secondary'}
+          // disabled={userDetailForm.email ? false : true}
+          onClick={onSave}
+        >
+          <SaveIcon className="mx-4 h-5 w-5 text-white"></SaveIcon>
+          <Typography
+            type="help"
+            color="white"
+            text={'Save Changes'}
+          ></Typography>
+        </Button>
+        <Button
+          className={'border-tertiary border-2 mt-6 w-full rounded-xl m-2'}
+          type='outlined'
+          color='tertiary'     
+          onClick={() => deleteUserAndRefresh(props.user?.id)}
+        >
+          <Typography
+            type='button'
+            color='tertiary'
+            text={'Deactivate user'}
+          ></Typography>
+        </Button>
+      </div>
+
     </article>
   );
 }

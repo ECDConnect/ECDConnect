@@ -50,7 +50,7 @@ td.truncate {
   width: auto !important;
 }
 
-.page-numbers,
+/* .page-numbers,
 .table-footer .w-7.h-7.flex.flex-grow {
   max-width: 32px !important;
   width: 32px !important;
@@ -62,7 +62,7 @@ td.truncate {
 
 .page-numbers.white.text-white {
   background: #eef2ff !important;
-}
+} */
 
 /* CKEditor */
 

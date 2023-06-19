@@ -3,6 +3,7 @@ import Fuse from 'fuse.js';
 import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
+import { Link } from 'react-router-dom';
 
 export default function UiTable({
   columns = [],
@@ -118,64 +119,7 @@ export default function UiTable({
         ...row,
       };
 
-      const rowClassName = selectedRows.includes(row)
-        ? 'bg-red-500 text-white'
-        : '';
-
-      rowWithCheckbox._action = (
-        <div className={`flex justify-start ${rowClassName}`}>
-          {viewRow && (
-            <Icon
-              key={`viewRow_${rowKey}`}
-              icon="SearchIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => viewRow(row)}
-            />
-          )}
-          {editRow && (
-            <Icon
-              key={`editRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => editRow(row)}
-            />
-          )}
-          {urlRow && (
-            <Icon
-              key={`urlRow${rowKey}`}
-              icon="PencilAltIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => urlRow(row)}
-            />
-          )}
-          {sendRow && (
-            <Icon
-              key={`sendRow${rowKey}`}
-              icon="MailIcon"
-              color="transparent"
-              height="20px"
-              className="ml-2 cursor-pointer text-gray-400"
-              onClick={() => sendRow(row)}
-            />
-          )}
-          {deleteRow && (
-            <Icon
-              key={`deleteRow${rowKey}`}
-              icon="TrashIcon"
-              className="ml-2 cursor-pointer text-gray-400"
-              height="20px"
-              color="transparent"
-              onClick={() => deleteRow(row)}
-            />
-          )}
-        </div>
-      );
+      console.log("f", rowWithCheckbox)
 
       ++rowKey;
       return rowWithCheckbox;
@@ -195,12 +139,12 @@ export default function UiTable({
     }
   };
 
-  const renderFormat = (row, column, display_value) => {
+  const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
 
-    let rowValue;
+    let rowValue: any;
 
     if (typeof display_value === 'boolean') {
       rowValue = (
@@ -254,7 +198,9 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis">{display_value}</div>
+          <div className="inline-block overflow-ellipsis"  >
+            <Link to={{ pathname: `/view-user/`, state: {} }} >{display_value}</Link>
+          </div>
         ) : (
           display_value
         );
@@ -279,21 +225,22 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: `text-red-900 border-b-8 border-gray-100 bg-D2F1F9`,
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
+            table_row: ` mb-10 border-b-2 border-secondary `,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-8 bg-infoBb',
+
             table_data:
               'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${
-                rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: `page-numbers z-10 text-primary relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
@@ -305,7 +252,7 @@ export default function UiTable({
         no_content_text="-"
         striped
         bordered
-        hovered={false}
+        
       />
     </div>
   );

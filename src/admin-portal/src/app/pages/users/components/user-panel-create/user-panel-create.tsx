@@ -12,6 +12,7 @@ import {
   AddUsersToRole,
   CreateUser,
   RoleList,
+  SendInviteToApplication,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -30,7 +31,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { data: roleData } = useQuery(RoleList, {
     fetchPolicy: 'cache-and-network',
   });
-
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
@@ -67,38 +68,19 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
-
   const onSave = async () => {
     await saveUser();
     emitCloseDialog(true);
   };
 
+  console.log(">", isUserDetailValid)
+
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
-    const passwordForm = passwordGetValues();
-
     const userInputModel: UserModelInput = {
       id: newGuid(),
-      isSouthAfricanCitizen: userDetailForm.isSouthAfricanCitizen,
-      idNumber: userDetailForm.idNumber,
-      verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
-      dateOfBirth: userDetailForm.dateOfBirth,
-      genderId: userDetailForm.genderId && +userDetailForm.genderId,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
-      contactPreference: userDetailForm.contactPreference,
-      phoneNumber: userDetailForm.phoneNumber,
       email: userDetailForm.email,
       password: passwordForm.password,
     };
@@ -115,6 +97,15 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         });
 
         const userId = response.data.addUser.id;
+        await sendInviteToApplication({
+          variables: {
+            userId: userId,
+          },
+        });
+        setNotification({
+          title: 'Successfully User an Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        });
         await saveRoles(userId);
       })
       .catch((error) => {
@@ -139,26 +130,21 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
           title: 'Successfully Added roles to User!',
           variant: NOTIFICATION.SUCCESS,
         });
+
       })
       .catch((error) => {
         console.log(error);
       });
-  };
 
-  const getIsValid = () => {
-    let isValid = isUserDetailValid;
-    return isValid && isPasswordValid ? true : false;
+
   };
+  const userDetailForm = userDetailGetValues();
+  console.log(userDetailForm);
 
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
-          </div>
+        <div className="rounded-lg px-4 py-0">
           <UserDetailsForm
             formKey={`createUserDetails-${new Date().getTime()}`}
             register={userDetailRegister}
@@ -167,25 +153,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             control={control}
           />
         </div>
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Password
-            </h3>
-          </div>
 
-<<<<<<< Updated upstream
-          <PasswordForm
-            formKey={`createPassword-${new Date().getTime()}`}
-            isEdit={false}
-            register={passwordRegister}
-            errors={passwordFormErrors}
-          />
-        </div>
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-=======
         {/* <div className="mt-0 rounded-lg  px-4 py-0">
->>>>>>> Stashed changes
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
@@ -196,8 +165,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             roles={selectedUserRoles}
             onUserRoleChange={(values) => setUserRoles(values)}
           />
-<<<<<<< Updated upstream
-=======
         </div> */}
         <div className="mt-0 rounded-lg  px-4 py-0">
           <Alert
@@ -207,12 +174,12 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             }
             type={'info'}
           />
->>>>>>> Stashed changes
         </div>
       </>
     );
   };
 
+  console.log(userDetailForm.email)
   return (
     <article>
       <UserPanelSave disabled={!getIsValid()} onSave={onSave} />

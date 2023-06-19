@@ -29,6 +29,7 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   useEffect(() => {
     if (user) {
       setValue('email', user.email, { shouldValidate: true });
+      console.log(user.email)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -39,6 +40,10 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
 
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
+      <div className="space-y-0">
+      
+        <div className="grid grid-cols-1 ">
+          <div className="my-4 sm:col-span-3">
       <div className="space-y-8">
         <div>
           <label className="block text-sm font-medium text-gray-700">
