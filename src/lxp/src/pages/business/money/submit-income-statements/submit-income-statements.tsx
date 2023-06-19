@@ -29,6 +29,15 @@ export const SubmitIncomeStatements: React.FC = () => {
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
+  const [addButtonExpanded, setAddButtonExpanded] = useState<boolean>(true);
+
+  const handleListScroll = (event: any) => {
+    if (event?.currentTarget?.scrollTop! < 5) {
+      setAddButtonExpanded(true);
+    } else {
+      setAddButtonExpanded(false);
+    }
+  };
 
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
@@ -150,7 +159,8 @@ export const SubmitIncomeStatements: React.FC = () => {
 
     if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
 
-    if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
+    if (value < 0)
+      return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
   };
 
   const today = new Date();
@@ -356,7 +366,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                         )}
                         type="body"
                         color={
-                          currentMonthTotalBalance! >= 0
+                          Number(currentMonthTotalBalance!) >= 0
                             ? 'successMain'
                             : 'errorMain'
                         }
@@ -510,7 +520,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                       )}
                       type="body"
                       color={
-                        currentMonthTotalBalance! >= 0
+                        Number(currentMonthTotalBalance!) >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -544,7 +554,13 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div className="flex flex-col justify-center p-4">
+      <div
+        className="flex flex-col justify-center p-4"
+        style={{ height: '100%', width: '100%', overflow: 'auto' }}
+        onScroll={(scrollTop) =>
+          handleListScroll && handleListScroll(scrollTop)
+        }
+      >
         {isOnline && (
           <div
             className={
@@ -590,16 +606,16 @@ export const SubmitIncomeStatements: React.FC = () => {
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end pt-8">
+        <div className="h-full flex-1 bg-white px-4 pt-4">
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
             iconDirection={'left'}
-            textToggle={true}
+            textToggle={addButtonExpanded}
             type={'filled'}
             color={'primary'}
             shape={'round'}
-            className={`'m-3 py-2.5' absolute bottom-4 right-0 z-10 px-3.5 ${
+            className={`'m-3 absolute bottom-14 right-0 z-10 px-3.5 py-2.5 ${
               stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
             } `}
             click={() => {

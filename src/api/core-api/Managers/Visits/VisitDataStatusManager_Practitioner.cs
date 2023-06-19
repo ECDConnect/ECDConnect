@@ -484,7 +484,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return color;
         }
-        public string GetStep3RatingColor(int finalScore)
+        public string GetStep3RatingColor(double finalScore)
         {
             string color = "";
             if (finalScore == 0)

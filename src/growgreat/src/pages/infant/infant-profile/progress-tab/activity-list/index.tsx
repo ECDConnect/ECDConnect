@@ -441,9 +441,12 @@ export const ActivityList: React.FC = () => {
       visitThunkActions.getGrowthDataForInfant({ infantId })
     ).unwrap();
     appDispatch(
-      referralThunkActions.getReferralsForInfant({ infantId })
+      referralThunkActions.getReferralsForInfant({
+        infantId: infantId,
+        visitId: visitId,
+      })
     ).unwrap();
-  }, [appDispatch, infantId]);
+  }, [appDispatch, infantId, visitId]);
 
   useLayoutEffect(() => {
     appDispatch(

@@ -22,17 +22,16 @@ import {
 import { EmptyPractitioners } from './components/empty-practitioners/empty-practitioners';
 import { PractitionerDto } from '@/../../../packages/core/lib';
 import { useAppDispatch } from '@store';
-import { authSelectors } from '@/store/auth';
-import { PractitionerService } from '@/services/PractitionerService';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 
 export const PractitionersList: React.FC = () => {
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const dialog = useDialog();
   const { errorDialog } = useRequestResponseDialog();
+  const { isOnline } = useOnlineStatus();
 
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
@@ -64,19 +63,21 @@ export const PractitionersList: React.FC = () => {
   };
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, []);
 
   useEffect(() => {
     if (
-      practitionersList &&
-      practitionersList?.length > 0 &&
-      practitionersMessages?.length &&
-      practitionersMessages?.length > 0
+      (isOnline &&
+        !!practitionersList?.length &&
+        !!practitionersMessages?.length) ||
+      (!isOnline && !!practitionersList?.length)
     ) {
       const practitionerListItem: UserAlertListDataItem[] = [];
       for (const practitioner of practitionersList) {
@@ -85,17 +86,19 @@ export const PractitionersList: React.FC = () => {
       setPractitionerListData(practitionerListItem);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersMessages]);
+  }, [practitionersList?.length, practitionersMessages]);
 
   const classroomsDetailsForPractitioner = async () => {
-    setLoading(true);
-    const practitionersMessageData = await new PractitionerService(
-      userAuth?.auth_token!
-    ).displayMetrics('practitioner');
+    if (isOnline) {
+      setLoading(true);
+      const practitionersMessageData = await appDispatch(
+        practitionerThunkActions.getPractitionerDisplayMetrics({})
+      ).unwrap();
 
-    setPractitionersMessages(practitionersMessageData);
-    setLoading(false);
-    return practitionersMessageData;
+      setPractitionersMessages(practitionersMessageData);
+      setLoading(false);
+      return practitionersMessageData;
+    }
   };
 
   useEffect(() => {
@@ -118,16 +121,19 @@ export const PractitionersList: React.FC = () => {
       id: practitioner?.id,
       profileDataUrl: practitioner?.user?.profileImageUrl!,
       title: `${practitioner?.user?.firstName} ${practitioner?.user?.surname}`,
-      subTitle: `${currentPractitionerMessage?.subject}`,
+      ...(isOnline
+        ? { subTitle: `${currentPractitionerMessage?.subject}` }
+        : {}),
       profileText: `${
         practitioner?.user?.firstName && practitioner?.user?.firstName[0]
       }${practitioner?.user?.surname && practitioner?.user?.surname[0]}`,
-      alertSeverity:
-        currentPractitionerMessage?.color === 'Success'
-          ? 'success'
-          : currentPractitionerMessage?.color === 'Warning'
-          ? 'warning'
-          : 'error',
+      alertSeverity: !isOnline
+        ? 'none'
+        : currentPractitionerMessage?.color === 'Success'
+        ? 'success'
+        : currentPractitionerMessage?.color === 'Warning'
+        ? 'warning'
+        : 'error',
       avatarColor: getAvatarColor() || '',
       onActionClick: () => handleClick(practitioner?.userId!),
     };
@@ -183,7 +189,7 @@ export const PractitionersList: React.FC = () => {
     <>
       {practitionersList?.length! > 0 || practitionersList !== undefined ? (
         <div className="flex flex-wrap justify-center">
-          {loading ? (
+          {loading && isOnline ? (
             <LoadingSpinner
               className="mt-6"
               size={'medium'}

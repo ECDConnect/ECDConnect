@@ -137,7 +137,15 @@ export const NutritonEatingStep = ({
         setQuestions([{ visitSection, questions: [updatedQuestion] }])
       );
     },
-    [answers, question, setEnableButton, setQuestions, visitSection]
+    [
+      answers,
+      question,
+      setEnableButton,
+      setQuestions,
+      visitSection,
+      dialog,
+      name,
+    ]
   );
 
   const handleOnChangeSelectedOptions = useCallback(() => {

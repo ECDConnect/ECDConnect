@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Abstractrions.Services;
@@ -118,7 +119,7 @@ namespace ECDLink.SmartStart.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
-            List<ClassroomGroup> groups = _classGroupRepo.GetAll().ToList(); //Hierarchy based groups
+            List<ClassroomGroup> groups = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).ToList();
             return groups;
         }
 

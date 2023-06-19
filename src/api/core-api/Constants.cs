@@ -33,11 +33,18 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
+            public const string visitType_sef_assessment = "sef_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
+            public const string visitType_practitioner_visit = "practitioner_visit";
+            public const string visitType_practitioner_call = "practitioner_call";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
+
+            public const string section_discussion = "Discussion notes";
+            public const string question_next_steps = "What next steps did you agree on?";
+            public const string question_next_steps_step4 = "What next steps or plans to improve did you discuss with {client}?";
 
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";

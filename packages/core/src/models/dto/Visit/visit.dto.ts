@@ -2,6 +2,7 @@ export interface VisitDto {
   id: string;
   actualVisitDate: string;
   attended: boolean;
+  visitInProgress: boolean;
   plannedVisitDate: string;
   orderDate: string;
   visitType?: {

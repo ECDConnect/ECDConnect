@@ -11,7 +11,10 @@ import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
-import { handleAddSupportVisit } from './pqa.utils';
+import {
+  handleAddReAccreditationVisit,
+  handleAddSupportVisit,
+} from './pqa.utils';
 
 const initialState: PQAState = {};
 
@@ -25,18 +28,56 @@ const pqaSlice = createSlice({
         action: PayloadAction<
           CmsVisitDataInputModelInput,
           string,
-          { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+          {
+            userId: string;
+            formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+          }
         >
       ) => {
         const { userId, formType } = action.meta;
         const visitId = action.payload.visitId;
         switch (formType) {
           case 'pqa':
+            if (state?.pqaFormData?.length) {
+              if (
+                !state.pqaFormData.some(
+                  (item) => item.formData.visitId === visitId
+                )
+              ) {
+                state.pqaFormData = [
+                  ...state.pqaFormData,
+                  { practitionerId: userId, formData: action.payload },
+                ];
+                return;
+              }
+
+              const newState = state.pqaFormData.map((item) => {
+                if (item.formData.visitId === visitId) {
+                  return { ...item, formData: action.payload };
+                }
+
+                return item;
+              });
+
+              state.pqaFormData = newState;
+            } else {
+              state.pqaFormData = [
+                { practitionerId: userId, formData: action.payload },
+              ];
+            }
             break;
           case 'support-visit':
             handleAddSupportVisit({
               payload: action.payload,
               state,
+              userId,
+            });
+            break;
+          case 're-accreditation':
+            handleAddReAccreditationVisit({
+              payload: action.payload,
+              state,
+              visitId,
               userId,
             });
             break;
@@ -73,7 +114,10 @@ const pqaSlice = createSlice({
       },
       prepare: (
         payload: CmsVisitDataInputModelInput,
-        meta: { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+        meta: {
+          userId: string;
+          formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+        }
       ) => ({ payload, meta }),
     },
   },

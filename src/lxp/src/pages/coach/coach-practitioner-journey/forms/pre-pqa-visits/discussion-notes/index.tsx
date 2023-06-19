@@ -1,4 +1,10 @@
-import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
+import {
+  Alert,
+  Divider,
+  FormInput,
+  LoadingSpinner,
+  Typography,
+} from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import {
   ChangeEvent,
@@ -7,7 +13,7 @@ import {
   useLayoutEffect,
   useState,
 } from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { replaceBraces, usePrevious } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import {
   getCurrentCoachPractitionerVisitByUserId,
@@ -16,10 +22,11 @@ import {
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
 import { useAppDispatch } from '@/store';
-import { getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
+import { PqaActions, getVisitDataForVisitId } from '@/store/pqa/pqa.actions';
 import { useParams } from 'react-router';
 import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
 import { Maybe } from 'graphql/jsutils/Maybe';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 export const DiscussionNotes = ({
   isView,
@@ -36,6 +43,12 @@ export const DiscussionNotes = ({
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
   const appDispatch = useAppDispatch();
+
+  const { isLoading } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
+  const wasLoading = usePrevious(isLoading);
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
@@ -100,11 +113,27 @@ export const DiscussionNotes = ({
   }, [appDispatch, practitionerId, previousVisit]);
 
   useEffect(() => {
-    if (isView) {
-      setEnableButton?.(true);
+    if (wasLoading && !isLoading) {
       setPreviousAnswers();
     }
+  }, [isLoading, setPreviousAnswers, wasLoading]);
+
+  useEffect(() => {
+    if (isView) {
+      setEnableButton?.(true);
+    }
   }, [isView, setEnableButton, setPreviousAnswers]);
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        className="mt-4"
+        size="medium"
+        spinnerColor="primary"
+        backgroundColor="uiLight"
+      />
+    );
+  }
 
   return (
     <div className="p-4">
@@ -119,10 +148,10 @@ export const DiscussionNotes = ({
       <Divider dividerType="dashed" className="my-3" />
       <FormInput
         label={replaceBraces(question, name)}
-        subLabel={`These notes will be shared with client.`}
+        subLabel={`These notes will be shared with ${name}.`}
         textInputType="textarea"
         className="mb-4"
-        value={String(answer)}
+        value={answer ?? ''}
         disabled={isView}
         onChange={onChange}
       />

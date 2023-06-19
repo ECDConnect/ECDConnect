@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using System;
 using System.Collections.Generic;
@@ -11,7 +12,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
         where TKey : IEquatable<TKey>
     {
         void SetUserContext(string userId);
-        IQueryable<T> GetAll();
+        IQueryable<T> GetAll(PagedQueryInput pagingInput = null);
         T GetById(TKey id);
         Task<T> GetByIdAsync(TKey id);
         T GetByUserId(string id);

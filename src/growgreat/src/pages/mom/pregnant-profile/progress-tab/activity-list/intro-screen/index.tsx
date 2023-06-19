@@ -11,7 +11,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
-  getMotherCurrentVisitSelector,
+  getCurrentVisitSelector,
   getMotherPreviousVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
@@ -39,33 +39,15 @@ export const IntroScreen = ({
 
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
   const previousPlannedVisit = useSelector((state: RootState) =>
     getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
   );
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     appDispatch(
-  //       visitThunkActions.getPreviousVisitInformationForMother({
-  //         visitId: currentVisit?.id,
-  //       })
-  //     );
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   mother?.id,
-  //   previousCurrentVisit,
-  // ]);
 
   return (
     <>

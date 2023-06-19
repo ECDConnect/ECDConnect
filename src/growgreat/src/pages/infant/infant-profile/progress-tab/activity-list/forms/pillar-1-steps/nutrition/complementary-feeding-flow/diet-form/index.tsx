@@ -144,7 +144,15 @@ export const DietFormStep = ({
         setQuestions([{ visitSection, questions: [updatedQuestion] }])
       );
     },
-    [answers, question, setEnableButton, setQuestions, visitSection]
+    [
+      answers,
+      question,
+      setEnableButton,
+      setQuestions,
+      visitSection,
+      name,
+      dialog,
+    ]
   );
 
   const handleOnChangeSelectedOptions = useCallback(() => {
