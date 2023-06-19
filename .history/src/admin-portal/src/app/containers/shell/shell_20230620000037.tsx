@@ -21,7 +21,7 @@ import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
-import ggLogo from '../../../assets/gg-logo.svg'
+
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -107,10 +107,10 @@ export default function Shell() {
 
 
   const getLogoUrl = () => {
-    if (theme && theme.images && data?.tenantContext.applicationName !== 'GrowGreat') {
+    if (theme && theme.images && data.tenantContext.applicationName !== 'GrowGreat') {
       return theme.images.logoUrl;
     } else {
-      return ggLogo;
+      return '';
     }
   };
 
@@ -190,7 +190,6 @@ export default function Shell() {
                   src={getLogoUrl()}
                   alt="Workflow"
                 />
-           
               </div>
               <div className="mt-5 h-0 flex-1 overflow-y-auto">
                 <nav className="space-y-1 px-2">

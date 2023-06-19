@@ -27,13 +27,12 @@ export function ViewUser(props) {
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
 
+  console.log(">rowDta>>", userId)
   const { data: GetUserByIdData } = useQuery(GetUserById, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-  console.log(">rowDta>>", userId)
-
     let x = GetUserByIdData(
       {
         variables: {
@@ -42,7 +41,7 @@ export function ViewUser(props) {
       }
     )
     console.log(x)
-  }, [GetUserByIdData, userId])
+  }, [GetUserByIdData])
 
   const { register, getValues, formState, watch } = useForm({
     // resolver: yupResolver(editProfileSchema),

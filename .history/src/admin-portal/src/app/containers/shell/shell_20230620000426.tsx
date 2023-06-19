@@ -21,7 +21,7 @@ import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
-import ggLogo from '../../../assets/gg-logo.svg'
+import ggLogo from '../../../../public/gg-logo.svg'
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -190,7 +190,6 @@ export default function Shell() {
                   src={getLogoUrl()}
                   alt="Workflow"
                 />
-           
               </div>
               <div className="mt-5 h-0 flex-1 overflow-y-auto">
                 <nav className="space-y-1 px-2">

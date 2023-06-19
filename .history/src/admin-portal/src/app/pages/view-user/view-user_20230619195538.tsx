@@ -17,23 +17,22 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetUserById, UpdateUser } from '@ecdlink/graphql';
+import { DeleteUser, GetUserById } from '@ecdlink/graphql';
 
 export function ViewUser(props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
-  const [updateUser] = useMutation(UpdateUser);
+  // const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
 
+  console.log(">rowDta>>", userId)
   const { data: GetUserByIdData } = useQuery(GetUserById, {
     fetchPolicy: 'cache-and-network',
   });
 
   useEffect(() => {
-  console.log(">rowDta>>", userId)
-
     let x = GetUserByIdData(
       {
         variables: {
@@ -42,7 +41,7 @@ export function ViewUser(props) {
       }
     )
     console.log(x)
-  }, [GetUserByIdData, userId])
+  }, [GetUserByIdData])
 
   const { register, getValues, formState, watch } = useForm({
     // resolver: yupResolver(editProfileSchema),
