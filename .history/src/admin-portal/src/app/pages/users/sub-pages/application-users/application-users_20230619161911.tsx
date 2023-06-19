@@ -36,8 +36,16 @@ export default function ApplicationUsers() {
     fetchPolicy: 'cache-and-network',
   });
 
+  const { data: GetUserByIdData} = useQuery(GetUserById, {
+    fetchPolicy: 'cache-and-network',
+  });
+  
+  useEffect(() => {
+    GetUserByIdData()
+  }, [])
+  
 
-  console.log("users", data)
+console.log("users",  data)
   const [tableData, setTableData] = useState<any[]>([]);
 
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
@@ -46,17 +54,9 @@ export default function ApplicationUsers() {
   useEffect(() => {
     if (data && data.users) {
       const copyItems = data.users;
-      const modifiedData = copyItems.map(obj => {
-        const { "__typename": _, roles, ...rest } = obj;
-        const modifiedRoles = roles.map(role => {
-          const { "__typename": __, ...roleRest } = role;
-          return roleRest;
-        });
-        return { ...rest, roles: modifiedRoles };
-      });
-      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
-      setTableData(finalTableData);
-      console.log('>>', finalTableData);
+      setTableData(copyItems);
+      console.log('>>', data);
+      setTableData(copyItems);
     }
   }, [data]);
 
@@ -213,12 +213,7 @@ export default function ApplicationUsers() {
                   columns={[
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'Name' },
-                    {
-                      field: 'roles',
-                      use: 'Role',
-                      type: 'array',
-                      displayProperty: 'name',
-                    },
+                    { field: 'roles', use: 'Role' },
                     { field: 'startDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}

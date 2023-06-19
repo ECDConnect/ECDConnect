@@ -33,14 +33,13 @@ export function ViewUser(props) {
   });
 
   useEffect(() => {
-    let x = GetUserByIdData(
+    GetUserByIdData(
       {
         variables: {
           userId: userId,
         },
       }
     )
-    console.log(x)
   }, [])
 
   const { register, getValues, formState, watch } = useForm({

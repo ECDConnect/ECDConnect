@@ -38,8 +38,28 @@ export function Users() {
     } else {
       return [
         {
+          name: 'All Roles',
+          href: '/users/all-roles',
+        },
+        {
+          name: 'Franchisors',
+          href: '/users/franchisors',
+        },
+        {
+          name: 'Coaches',
+          href: '/users/coaches',
+        },
+        {
+          name: 'Practitioners',
+          href: '/users/practitioners',
+        },
+        {
+          name: 'Children',
+          href: '/users/children',
+        },
+        {
           name: 'Administrators',
-          href: '/users/admins',
+          href: '/users/application',
         },
       ];
     }
@@ -64,7 +84,7 @@ export function Users() {
     <div className="">
       <div className="flex justify-center bg-white ">
         {navigation.map((item) => (
-          <div className={data.tenantContext.applicationName === 'GrowGreat' ? "w-3/12 ": "w-full"}>
+          <div className="w-3/12 ">
             <SubNavigationLink
               key={`${item.name}-${new Date().getTime()}`}
               item={item}

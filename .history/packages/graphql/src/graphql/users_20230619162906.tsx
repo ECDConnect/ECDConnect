@@ -1,8 +1,5 @@
 import { gql } from '@apollo/client';
 
-
-
-
 export const UserList = gql`
 {
   users (pagingInput: {
@@ -28,7 +25,9 @@ export const UserList = gql`
       roles {
         id
         name
+        __typename
       }
+      __typename
     }
   }
 `;

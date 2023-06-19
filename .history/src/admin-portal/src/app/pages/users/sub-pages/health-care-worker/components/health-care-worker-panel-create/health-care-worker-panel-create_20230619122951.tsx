@@ -271,9 +271,8 @@ export default function HealthCareWorkerPanelCreate(
 
   const getIsValid = () => {
     console.log(userDetailFormErrors);
+    console.log(healthCareWorkerFormErrors);
     let isValid = isUserDetailValid;
-    console.log(healthCareWorkerFormErrors, isValid);
-
     if (!isHealthCareWorkerValid) isValid = false;
     return isValid ? true : false;
   };
