@@ -763,7 +763,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             
 
             // ThreeChildrenRegistered
-            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
+            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
             if (allChildren.Count >= 3)
             {
                 timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
