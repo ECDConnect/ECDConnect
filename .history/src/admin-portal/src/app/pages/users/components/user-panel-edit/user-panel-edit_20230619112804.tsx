@@ -121,9 +121,6 @@ export default function UserPanelEdit(props: UserPanelProps) {
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
     };
 
     await updateUser({
@@ -271,38 +268,35 @@ export default function UserPanelEdit(props: UserPanelProps) {
         <div className="px-4 ">
           <div className="border-b border-dashed pb-4">
             <h1 className="py-4 text-2xl text-black"> Edit Administrator details</h1>
-            <div className="rounded-lg border-t border-dashed border-gray-200 px-4 py-5">
-              <div className="pb-2">
-                <h3 className="text-uiMidDark text-lg font-medium leading-6">
-                  User Detail
-                </h3>
-              </div>
-              <UserDetailsForm
-                formKey={`editUserDetails-${new Date().getTime()}-${props.user?.id
-                  }`}
-                register={userDetailRegister}
-                errors={userDetailFormErrors}
-                setValue={userDetailSetValue}
-                user={props.user}
-                control={control}
-              />
-            </div>
-
-            <div className="rounded-lg px-4 ">
-              <div className="pb-2">
-                <h3 className="text-uiMidDark text-lg font-medium leading-6">
-                  Roles
-                </h3>
-              </div>
-              <UserRoles
-                roleList={roleData ? roleData.roles : []}
-                roles={selectedUserRoles}
-                onUserRoleChange={(values) => setUserRoles(values)}
-              />
-            </div>
+        <div className="rounded-lg border-t border-dashed border-gray-200 px-4 py-5">
+          <div className="pb-2">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
+              User Detail
+            </h3>
           </div>
+          <UserDetailsForm
+            formKey={`editUserDetails-${new Date().getTime()}-${props.user?.id
+              }`}
+            register={userDetailRegister}
+            errors={userDetailFormErrors}
+            setValue={userDetailSetValue}
+            user={props.user}
+            control={control}
+          />
         </div>
 
+        <div className="rounded-lg px-4 ">
+          <div className="pb-2">
+            <h3 className="text-uiMidDark text-lg font-medium leading-6">
+              Roles
+            </h3>
+          </div>
+          <UserRoles
+            roleList={roleData ? roleData.roles : []}
+            roles={selectedUserRoles}
+            onUserRoleChange={(values) => setUserRoles(values)}
+          />
+        </div>
         {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <UserHierarchy userId={props.user.id} />
         </div> */}
@@ -337,7 +331,7 @@ export default function UserPanelEdit(props: UserPanelProps) {
         <Button
           className={'border-tertiary border-2 mt-6 w-full rounded-xl m-2'}
           type='outlined'
-          color='tertiary'
+          color='tertiary'     
           onClick={() => deleteUserAndRefresh(props.user?.id)}
         >
           <Typography

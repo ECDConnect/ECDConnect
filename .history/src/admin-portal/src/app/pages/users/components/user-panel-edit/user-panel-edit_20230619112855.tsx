@@ -300,54 +300,51 @@ export default function UserPanelEdit(props: UserPanelProps) {
                 onUserRoleChange={(values) => setUserRoles(values)}
               />
             </div>
-          </div>
-        </div>
-
-        {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+            {/* <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <UserHierarchy userId={props.user.id} />
         </div> */}
-      </>
-    );
+          </>
+          );
   };
 
-  return (
-    <article>
-      {/* <UserPanelSave
+          return (
+          <article>
+            {/* <UserPanelSave
         user={props.user}
         disabled={!getIsValid()}
         onSave={onSave}
       /> */}
-      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
-      <div className="flex flex-row">
-        <Button
-          className={'mt-6 w-full rounded-xl m-2'}
-          type="filled"
-          // isLoading={isLoading}
-          color={'secondary'}
-          // disabled={userDetailForm.email ? false : true}
-          onClick={onSave}
-        >
-          <SaveIcon className="mx-4 h-5 w-5 text-white"></SaveIcon>
-          <Typography
-            type="help"
-            color="white"
-            text={'Save Changes'}
-          ></Typography>
-        </Button>
-        <Button
-          className={'border-tertiary border-2 mt-6 w-full rounded-xl m-2'}
-          type='outlined'
-          color='tertiary'
-          onClick={() => deleteUserAndRefresh(props.user?.id)}
-        >
-          <Typography
-            type='button'
-            color='tertiary'
-            text={'Deactivate user'}
-          ></Typography>
-        </Button>
-      </div>
+            <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+            <div className="flex flex-row">
+              <Button
+                className={'mt-6 w-full rounded-xl m-2'}
+                type="filled"
+                // isLoading={isLoading}
+                color={'secondary'}
+                // disabled={userDetailForm.email ? false : true}
+                onClick={onSave}
+              >
+                <SaveIcon className="mx-4 h-5 w-5 text-white"></SaveIcon>
+                <Typography
+                  type="help"
+                  color="white"
+                  text={'Save Changes'}
+                ></Typography>
+              </Button>
+              <Button
+                className={'border-tertiary border-2 mt-6 w-full rounded-xl m-2'}
+                type='outlined'
+                color='tertiary'
+                onClick={() => deleteUserAndRefresh(props.user?.id)}
+              >
+                <Typography
+                  type='button'
+                  color='tertiary'
+                  text={'Deactivate user'}
+                ></Typography>
+              </Button>
+            </div>
 
-    </article>
-  );
+          </article>
+          );
 }

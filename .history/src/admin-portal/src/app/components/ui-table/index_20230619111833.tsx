@@ -54,7 +54,9 @@ export default function UiTable({
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
-
+  const handleRowSelect = (row: any) => {
+    console.log(row);
+  };
   const makeColumns = (cols: any[] = []) => {
     const selectColumn = {
       field: 'select',
