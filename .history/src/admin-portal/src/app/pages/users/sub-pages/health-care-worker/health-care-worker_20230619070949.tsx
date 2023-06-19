@@ -4,7 +4,6 @@ import {
   NOTIFICATION,
   PermissionEnum,
   TeamLeadDto,
-  b64toBlob,
   useDialog,
   useNotifications,
   usePanel,
@@ -32,7 +31,6 @@ import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-c
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
 import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
-import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -240,23 +238,23 @@ export default function HealthCareWorkers() {
     });
   };
 
-  // const UploadContentImport = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Import Users`,
-  //     render: (onSubmit: any) => (
-  //       <UploadAllImportTemplate
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
+  const UploadContentImport = () => {
+    panel({
+      noPadding: true,
+      title: `Import Users`,
+      render: (onSubmit: any) => (
+        <UploadAllImportTemplate
+          closeDialog={(created: boolean) => {
+            onSubmit();
 
-  //           if (created) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
+            if (created) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
 
   const UploadContentImportChildren = () => {
     panel({

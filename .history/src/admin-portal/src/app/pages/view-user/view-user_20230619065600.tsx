@@ -1,73 +1,23 @@
 import FormField from '../../components/form-field/form-field';
-import { Button, DialogPosition, Dropdown, Typography } from '@ecdlink/ui';
+import { Button, Dropdown, Typography } from '@ecdlink/ui';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
+import { usePanel } from '@ecdlink/core';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
-import { useMutation, useQuery } from '@apollo/client';
-import debounce from 'lodash.debounce';
-import {
-  NOTIFICATION,
-  PermissionEnum,
-  useDialog,
-  useNotifications,
-  usePanel,
-  UserDto,
-} from '@ecdlink/core';
-import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser } from '@ecdlink/graphql';
 
 export function ViewUser(props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
-  const [deleteUser] = useMutation(DeleteUser);
 
   const { register, getValues, formState, watch } = useForm({
     // resolver: yupResolver(editProfileSchema),
     // defaultValues: initialEditProfileValues,
     mode: 'onChange',
   });
-  const { setNotification } = useNotifications();
-  const dialog = useDialog();
-
-  const deleteUserAndRefresh = async (user: any) => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Deactivate Administrator"
-          message={`You are about to deactivate a user. Would you like to go ahead`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-
-            deleteUser({
-              variables: {
-                id: user.id,
-              },
-            })
-              .then((response: any) => {
-                if (response.data.deleteUser) {
-                  // refetch();
-
-                  setNotification({
-                    title: 'Successfully Deactivated User!',
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }}
-        />
-      ),
-    });
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -361,25 +311,26 @@ export function ViewUser(props) {
             </div>
           </div>
 
-
+          
         </div>
-        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-            {/* Start main area*/}
-            <div className="flex flex-row border-b-4 border-dashed pb-0">
-              < StarIcon className='w-12 h-12 pb-2 successMain' style={{
-                color: '#83BB26'
-              }}></StarIcon>
-              <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
-            </div>
-            <div className='flex flex-col justify-evenly pt-4 text-current'>
-              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
-              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
-            </div>
+        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-alertMain">
+            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              {/* Start main area*/}
+              <div className="flex flex-row border-b-4 border-dashed pb-0">
+                < StarIcon className='w-12 h-12 pb-2 successMain' style={{
+                  color: '#83BB26'
+                }}></StarIcon>
+                <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlightss</h3>
+              </div>
+              <div className='flex flex-col justify-evenly pt-4 text-current'>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">12</span>visits overdue</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>pregnant moms have other issues</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">3</span>caregivers & children have other issues</p>
+              </div>
 
-            {/* End main area */}
+              {/* End main area */}
+            </div>
           </div>
-        </div>
 
         <div className="pl-4 flex flex-row w-6/12">
           <Button
@@ -388,16 +339,29 @@ export function ViewUser(props) {
             isLoading={isLoading}
             color="tertiary"
             disabled={!isValid}
-            onClick={() => deleteUserAndRefresh}
+          // onClick={signIn}
           >
             <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
             <Typography
               type="help"
               color="tertiary"
-              text={'Deactivate User'}
+              text={'Deactivate'}
             ></Typography>
           </Button>
-
+          <Button
+            className={'mt-3 w-4/12 rounded mx-6'}
+            type="filled"
+            isLoading={isLoading}
+            color="secondary"
+            disabled={!isValid}
+          // onClick={signIn}
+          >
+            <Typography
+              type="help"
+              color="white"
+              text={'Update profile'}
+            ></Typography>
+          </Button>
         </div>
       </div>
     </div>

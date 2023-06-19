@@ -1,10 +1,9 @@
-import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
+import { useMutation, useQuery } from '@apollo/client';
 import {
   ClinicDto,
   NOTIFICATION,
   PermissionEnum,
   TeamLeadDto,
-  b64toBlob,
   useDialog,
   useNotifications,
   usePanel,
@@ -18,7 +17,6 @@ import {
   GetAllTeamLead,
   GetAllClinic,
   GetAllProvince,
-  practitionerExcelTemplateGenerator,
 } from '@ecdlink/graphql';
 import { DialogPosition, Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
@@ -31,8 +29,6 @@ import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
-import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -51,44 +47,6 @@ export default function HealthCareWorkers() {
   const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
-
-  const [getPractitionerExcelTemplateGenerator, { data: templateData }] =
-    useLazyQuery(practitionerExcelTemplateGenerator, {
-      fetchPolicy: 'cache-and-network',
-    });
-    
-  const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (
-      templateData &&
-      templateData.practitionerExcelTemplateGenerator &&
-      !templateDownloaded
-    ) {
-      const b64Data =
-        templateData.practitionerExcelTemplateGenerator.base64File;
-      const contentType =
-        templateData.practitionerExcelTemplateGenerator.fileType;
-      const fileName = templateData.practitionerExcelTemplateGenerator.fileName;
-      const extension =
-        templateData.practitionerExcelTemplateGenerator.extension;
-      const blob = b64toBlob(b64Data, contentType);
-
-      const link = document.createElement('a');
-
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${fileName}${extension}`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      setTemplateDownloaded(true);
-    }
-  }, [templateData, templateDownloaded]);
 
   const [tableData, setTableData] = useState<any[]>([]);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
@@ -217,64 +175,8 @@ export default function HealthCareWorkers() {
   };
 
 
-  const downloadContentTypeTemplate = async () => {
-    setTemplateDownloaded(false);
-    await getPractitionerExcelTemplateGenerator();
-  };
 
-  const UploadContent = () => {
-    panel({
-      noPadding: true,
-      title: `Upload Practitioners`,
-      render: (onSubmit: any) => (
-        <UploadPractitionerTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
 
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  // const UploadContentImport = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Import Users`,
-  //     render: (onSubmit: any) => (
-  //       <UploadAllImportTemplate
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
-
-  const UploadContentImportChildren = () => {
-    panel({
-      noPadding: true,
-      title: `Import Children`,
-      render: (onSubmit: any) => (
-        <UploadAllChildrenTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
 
 
 

@@ -361,25 +361,25 @@ export function ViewUser(props) {
             </div>
           </div>
 
-
+          
         </div>
-        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
-          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-            {/* Start main area*/}
-            <div className="flex flex-row border-b-4 border-dashed pb-0">
-              < StarIcon className='w-12 h-12 pb-2 successMain' style={{
-                color: '#83BB26'
-              }}></StarIcon>
-              <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
-            </div>
-            <div className='flex flex-col justify-evenly pt-4 text-current'>
-              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
-              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
-            </div>
+        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-alertMain">
+            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              {/* Start main area*/}
+              <div className="flex flex-row border-b-4 border-dashed pb-0">
+                < StarIcon className='w-12 h-12 pb-2 successMain' style={{
+                  color: '#83BB26'
+                }}></StarIcon>
+                <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
+              </div>
+              <div className='flex flex-col justify-evenly pt-4 text-current'>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
+              </div>
 
-            {/* End main area */}
+              {/* End main area */}
+            </div>
           </div>
-        </div>
 
         <div className="pl-4 flex flex-row w-6/12">
           <Button
@@ -388,7 +388,7 @@ export function ViewUser(props) {
             isLoading={isLoading}
             color="tertiary"
             disabled={!isValid}
-            onClick={() => deleteUserAndRefresh}
+          onClick={DeactivateUser}
           >
             <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
             <Typography
@@ -397,7 +397,7 @@ export function ViewUser(props) {
               text={'Deactivate User'}
             ></Typography>
           </Button>
-
+      
         </div>
       </div>
     </div>

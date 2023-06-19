@@ -363,7 +363,7 @@ export function ViewUser(props) {
 
 
         </div>
-        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
+        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-alertMain">
           <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <div className="flex flex-row border-b-4 border-dashed pb-0">
