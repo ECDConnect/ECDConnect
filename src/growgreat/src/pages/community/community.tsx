@@ -23,6 +23,16 @@ export const Community: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
+      title: 'League',
+      initActive: false,
+      child: 'Coming Soon!',
+    },
+    {
+      title: 'Breastfeeding clubs',
+      initActive: false,
+      child: 'Coming Soon!',
+    },
+    {
       title: 'Connect',
       initActive: true,
       child: <Connect />,

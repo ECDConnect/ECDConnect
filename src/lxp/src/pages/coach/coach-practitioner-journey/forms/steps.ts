@@ -27,6 +27,25 @@ import {
   Step19,
 } from './pqa-visits/first-pqa';
 import { Step1Delicensing, Step2Delicensing } from './delicensing';
+import {
+  Step10ReAccreditation,
+  Step11ReAccreditation,
+  Step12ReAccreditation,
+  Step13ReAccreditation,
+  Step14ReAccreditation,
+  Step15ReAccreditation,
+  Step16ReAccreditation,
+  Step17ReAccreditation,
+  Step1ReAccreditation,
+  Step2ReAccreditation,
+  Step3ReAccreditation,
+  Step4ReAccreditation,
+  Step5ReAccreditation,
+  Step6ReAccreditation,
+  Step7ReAccreditation,
+  Step8ReAccreditation,
+  Step9ReAccreditation,
+} from './reaccreditation';
 
 export const prePqaVisits = [
   ProgrammeDetails,
@@ -63,3 +82,23 @@ export const getFirstPqaSteps = ({
 ];
 
 export const delicensingSteps = [Step1Delicensing, Step2Delicensing];
+
+export const reaccreditationSteps = [
+  Step1ReAccreditation,
+  Step2ReAccreditation,
+  Step3ReAccreditation,
+  Step4ReAccreditation,
+  Step5ReAccreditation,
+  Step6ReAccreditation,
+  Step7ReAccreditation,
+  Step8ReAccreditation,
+  Step9ReAccreditation,
+  Step10ReAccreditation,
+  Step11ReAccreditation,
+  Step12ReAccreditation,
+  Step13ReAccreditation,
+  Step14ReAccreditation,
+  Step15ReAccreditation,
+  Step16ReAccreditation,
+  Step17ReAccreditation,
+];

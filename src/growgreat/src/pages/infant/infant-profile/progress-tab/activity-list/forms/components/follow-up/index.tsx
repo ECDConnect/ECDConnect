@@ -33,9 +33,9 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
-import PollyHappy from '@/assets/pollyHappy.svg';
-import PollyInformational from '@/assets/pollyInformational.svg';
-import PollyShock from '@/assets/pollyShock.svg';
+import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
+import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { ReactComponent as Home } from '@/assets/home.svg';
 
@@ -483,12 +483,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyHappy}
-                                className="text-successMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyHappy className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -522,12 +518,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyInformational}
-                                className="text-alertMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyInformational className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -561,12 +553,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyShock}
-                                className="text-errorMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyShock className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">

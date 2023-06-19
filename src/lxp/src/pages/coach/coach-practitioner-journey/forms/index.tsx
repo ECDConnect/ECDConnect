@@ -15,6 +15,7 @@ import {
   generalSupportVisit,
   getFirstPqaSteps,
   prePqaVisits,
+  reaccreditationSteps,
 } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
@@ -43,6 +44,10 @@ import {
   delicensingStep1VisitSection,
 } from './delicensing';
 import { ChildrenDialog } from './dialog';
+import {
+  step15ReAccreditationQuestions,
+  step15ReAccreditationVisitSection,
+} from './reaccreditation';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -83,7 +88,14 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const step16Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step16VisitSection)
     ?.questions.find((item) => item.question === step16Question1)?.answer;
-  const isToRemoveSmartStarter = step16Question1Answer === true;
+  const step15ReAccreditationQuestion1Answer = sectionQuestions
+    ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
+    ?.questions.find(
+      (item) => item.question === step15ReAccreditationQuestions.question1
+    )?.answer;
+  const isToRemoveSmartStarter =
+    step16Question1Answer === true ||
+    step15ReAccreditationQuestion1Answer === true;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -283,9 +295,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         })
       );
       appDispatch(pqaThunkActions.addVisitFormData(payload));
-      displayChildrenDialog('First site visit');
+      displayChildrenDialog(
+        activityName === visitTypes.prePqa.first.name
+          ? 'First site visit'
+          : 'Second site visit'
+      );
     },
-    [appDispatch, displayChildrenDialog, practitionerId]
+    [activityName, appDispatch, displayChildrenDialog, practitionerId]
   );
 
   const onSubmitPqa = useCallback(
@@ -314,6 +330,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     [appDispatch, displayChildrenDialog, practitionerId]
   );
 
+  const onSubmitReAccreditation = useCallback(
+    ({ payload }: SubmitProps) => {
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 're-accreditation',
+        })
+      );
+      appDispatch(pqaThunkActions.addVisitFormData(payload));
+    },
+    [appDispatch, practitionerId]
+  );
+
   const onSubmit = useCallback(() => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
@@ -332,21 +361,24 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       },
     };
 
-    switch (activityName) {
-      case visitTypes.supportVisit:
-        onSubmitSupportVisit({ payload, sections });
-        break;
-      case visitTypes.pqa.firstPQA.name:
-        onSubmitPqa({ payload, sections });
-        break;
-      default:
-        onSubmitPrePqa({ payload, sections });
-        break;
+    if (activityName === visitTypes.supportVisit) {
+      return onSubmitSupportVisit({ payload, sections });
     }
+
+    if (activityName.includes(visitTypes.prePqa.includes)) {
+      return onSubmitPrePqa({ payload, sections });
+    }
+
+    if (activityName.includes(visitTypes.reaccreditation.includes)) {
+      return onSubmitReAccreditation({ payload, sections });
+    }
+
+    return onSubmitPqa({ payload, sections });
   }, [
     activityName,
     onSubmitPqa,
     onSubmitPrePqa,
+    onSubmitReAccreditation,
     onSubmitSupportVisit,
     practitionerId,
     sectionQuestions,
@@ -386,26 +418,31 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
-    switch (visitName) {
-      case visitTypes.pqa.firstPQA.name:
-        setTitle(visitTypes.pqa.firstPQA.description);
-        return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
-      case visitTypes.supportVisit:
-        return generalSupportVisit;
-      case visitTypes.delicensing:
-        return delicensingSteps;
-      case visitTypes.pqa.followUp.name:
-        setTitle(visitTypes.pqa.followUp.description);
-        return generalSupportVisit;
-      default:
-        if (activityName === visitTypes.prePqa.first.name) {
-          setTitle(visitTypes.prePqa.first.description);
-        } else {
-          setTitle(visitTypes.prePqa.second.description);
-        }
-
-        return prePqaVisits;
+    if (visitName === visitTypes.supportVisit) {
+      return generalSupportVisit;
     }
+
+    if (visitName === visitTypes.delicensing) {
+      return delicensingSteps;
+    }
+
+    if (visitName.includes(visitTypes.prePqa.includes)) {
+      if (activityName === visitTypes.prePqa.first.name) {
+        setTitle(visitTypes.prePqa.first.description);
+      } else {
+        setTitle(visitTypes.prePqa.second.description);
+      }
+
+      return prePqaVisits;
+    }
+
+    if (visitName.includes(visitTypes.reaccreditation.includes)) {
+      setTitle('Reaccreditation');
+      return reaccreditationSteps;
+    }
+
+    setTitle(visitTypes.pqa.firstPQA.description);
+    return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   useEffect(() => {

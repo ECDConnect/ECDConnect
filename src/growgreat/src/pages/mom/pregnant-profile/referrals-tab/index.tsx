@@ -359,7 +359,7 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${mother?.user?.firstName || ''} `}
+              text={`Back-referrals for ${mother?.user?.firstName || ''} `}
             />
             <Typography
               className="col-span-2 row-span-2"
@@ -546,7 +546,7 @@ export const ReferralsTab: React.FC = () => {
                 <div className="my-4 flex items-center gap-3">
                   <div className="flex flex-col">
                     <Typography
-                      type="h4"
+                      type="markdown"
                       align="left"
                       weight="bold"
                       text={item?.comment || ''}

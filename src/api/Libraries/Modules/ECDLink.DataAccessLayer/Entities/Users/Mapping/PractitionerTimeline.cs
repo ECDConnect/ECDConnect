@@ -43,31 +43,41 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public string SmartStarterUniteConferenceColor { get; set; }
         public DateTime? SmartStarterUniteConferenceDate { get; set; }
 
+        public string SelfAssessmentStatus { get; set; }
+        public string SelfAssessmentColor { get; set; }
+        public DateTime? SelfAssessmentDate { get; set; }
+
         public virtual ICollection<Visit> PrePQASiteVisits { get; set; }
         public virtual ICollection<Visit> PQASiteVisits { get; set; }
         public virtual ICollection<Visit> SupportVisits { get; set; }
         public virtual ICollection<Visit> ReAccreditationVisits { get; set; }
+        public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
         public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }
         public virtual ICollection<ClubMeetingRegister> ClubMeetings { get; set; }
-        public virtual PQARating PQARating { get; set; }
-        public virtual PQARating ReAccreditationRating { get; set; }
+        public virtual PQARating PQARating1 { get; set; }
+        public virtual PQARating PQARating2 { get; set; }
+        public virtual PQARating PQARating3 { get; set; }
+        public virtual PQARating ReAccreditationRating1 { get; set; }
+        public virtual PQARating ReAccreditationRating2 { get; set; }
+        public virtual PQARating ReAccreditationRating3 { get; set; }
     }
 
     public class PQARating
     {
         public string VisitName { get; set; }
-        public int OverallScore { get; set; }
+        public double OverallScore { get; set; }
         public string OverallRating { get; set; }
         public string OverallRatingStars { get; set; }
         public string OverallRatingColor { get; set; }
         public DateTime? PlannedDate { get; set; }
+        public DateTime? ActualVisitDate { get; set; }
         public virtual ICollection<PQARatingChild> Children { get; set; }
     }
 
     public class PQARatingChild
     {
         public string VisitSection { get; set; }
-        public int SectionScore { get; set; }
+        public double SectionScore { get; set; }
         public string SectionRating { get; set; }
         public string SectionRatingColor { get; set; }
     }
@@ -76,5 +86,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
     {
         public string Name { get; set; }
         public DateTime? MeetingDate { get; set; }
+    }
+    public class PractitionerNotes
+    {
+        public string VisitName { get; set; }
+        public DateTime? ActualVisitDate { get; set; }
+        public DateTime? PlannedVisitDate { get; set; }
+        public virtual ICollection<VisitData> Answers { get; set; }
     }
 }
