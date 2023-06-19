@@ -50,6 +50,8 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
+const enableCalendar = false;
+
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
@@ -414,31 +416,41 @@ export const Dashboard: React.FC = () => {
   }
 
   if (!isCoach) {
-    dashboardItems.push(
-      {
-        title: 'Classroom',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.classRoomIcon,
-        classNames: 'bg-uiBg',
-        onActionClick: () => {
-          goToClassroom();
-        },
+    dashboardItems.push({
+      title: 'Classroom',
+      titleIcon: 'AcademicCapIcon',
+      titleIconClassName: styles.classRoomIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToClassroom();
       },
-      {
-        title: 'Calendar',
-        titleIcon: 'CalendarIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
-        },
-      }
+    });
+    dashboardItems.push(
+      enableCalendar
+        ? {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.calendarIcon,
+            classNames: 'bg-uiBg',
+            onActionClick: () => {
+              goToCalendar();
+            },
+          }
+        : {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.businessIcon,
+            onActionClick: () => ({}),
+            classNames: 'bg-uiBg',
+            chipConfig: {
+              colorPalette: {
+                backgroundColour: 'alertMain',
+                borderColour: 'alertMain',
+                textColour: 'white',
+              },
+              text: 'Coming soon',
+            },
+          }
     );
   }
 
@@ -499,6 +511,10 @@ export const Dashboard: React.FC = () => {
     } else {
       showCompleteProfileBlockingDialog();
     }
+  };
+
+  const goToCalendar = () => {
+    history.push(ROUTES.CALENDAR);
   };
 
   const goToBusiness = () => {
