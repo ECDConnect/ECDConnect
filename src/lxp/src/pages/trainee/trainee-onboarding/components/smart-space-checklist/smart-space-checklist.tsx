@@ -51,7 +51,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [visitSection, setVisitSection] = useState('');
-  const trainee = useSelector(traineeSelectors.getTrainee);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [activeStep, setActiveStep] = useState(
     SmartSpaceChecklisstStepsSteps.INITIAL
@@ -63,6 +62,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
+  const [continueChecklist, setContinueChecklist] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
 
@@ -128,7 +128,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(
         visitDateInput
       );
-
+      if (continueChecklist) {
+        setActiveStep(activeStep + 1);
+        setContinueChecklist(false);
+        return;
+      }
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
     }
   };
@@ -152,6 +156,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
             setActiveStep={setActiveStep}
+            setContinueChecklist={setContinueChecklist}
           />
         );
       case SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA:
@@ -161,6 +166,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
             setActiveStep={setActiveStep}
+            setContinueChecklist={setContinueChecklist}
           />
         );
       case SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING:
@@ -170,6 +176,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
             setActiveStep={setActiveStep}
+            setContinueChecklist={setContinueChecklist}
           />
         );
       default:

@@ -13,6 +13,7 @@ import {
   CmsVisitSectionInput,
   InputMaybe,
   SsChecklistVisitModelInput,
+  SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
@@ -35,12 +36,11 @@ export const StartupSupportAgreement: React.FC<
   const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 4');
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
-  const traineeTimeline = useSelector(
-    traineeSelectors.getTraineeOnboardTimeline
-  );
-  const traineeVisitData = useSelector(traineeSelectors.getTraineeVisitData);
-  const traineeVisits = traineeTimeline?.traineeVisits;
-  const traineeCurrentVisit = traineeVisits?.[0];
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+
+  const startupSupportAgreementSigned =
+    timeline?.signStartUpSupportAgreementStatus ===
+    'Start-up support agreement signed';
 
   const onAllStepsComplete = async () => {
     const sections = sectionQuestions?.map((item) => ({
@@ -51,12 +51,17 @@ export const StartupSupportAgreement: React.FC<
       })),
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const visitDateInput: CmsVisitDataInputModelInput = {
-      visitId: traineeCurrentVisit?.id,
+    const visitDateInput: SupportVisitModelInput = {
+      // visitId: traineeCurrentVisit?.id,
       traineeId: practitioner?.userId,
-      visitData: {
-        visitName: 'SmartSpace Checklist',
-        sections,
+      plannedVisitDate: new Date(),
+      attended: true,
+      supportData: {
+        traineeId: practitioner?.userId,
+        visitData: {
+          visitName: 'Startup Support',
+          sections,
+        },
       },
     };
 
@@ -65,6 +70,7 @@ export const StartupSupportAgreement: React.FC<
     ).addStartupSupportAgreementForTrainee(visitDateInput);
 
     history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
+    setNotificationStep('');
   };
 
   const renderStep = (step: string) => {
@@ -99,6 +105,7 @@ export const StartupSupportAgreement: React.FC<
           <StartupAcceptAgreement1
             setAgreementStep={setAgreementStep}
             setSectionQuestions={setSectionQuestions}
+            startupSupportAgreementSigned={startupSupportAgreementSigned}
           />
         );
     }

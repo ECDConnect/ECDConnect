@@ -40,6 +40,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
   setVisitSection,
   onSubmit,
   setActiveStep,
+  setContinueChecklist,
 }) => {
   useForm<ProgrammeDetailsModel>({
     resolver: yupResolver(ProgrammeDetailsSchema),
@@ -93,14 +94,8 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
 
   const visitSection = 'Health, sanitation & safety';
 
-  // const checkedquestion = (question: string) => {
-  //   const isChecked = visitData?.map(item => item?.question === question)
-  //   setAnswers
-  //   return isChecked
-  // }
-
   const disableSection = visitData?.some(
-    (item) => item?.visitSection === 'Health, sanitation & safety'
+    (item) => item?.visitSection === visitSection
   );
 
   useEffect(() => {
@@ -212,7 +207,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
                     color="primary"
                     className={styles.button}
                     onClick={() => {
-                      // setSectionQuestions(questions)
+                      setContinueChecklist(true);
                       setVisitSection(visitSection);
                       onSubmit();
                     }}
@@ -230,7 +225,10 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
                     type="outlined"
                     color="primary"
                     className={styles.button}
-                    onClick={() => {}} // Navigate to a different page if it is principle
+                    onClick={() => {
+                      setVisitSection(visitSection);
+                      onSubmit();
+                    }}
                   >
                     {renderIcon('SaveIcon', styles.icon)}
                     <Typography

@@ -1,4 +1,3 @@
-import Article from '@/components/article/article';
 import { practitionerSelectors } from '@/store/practitioner';
 import { Alert, Button, Checkbox, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
@@ -12,11 +11,13 @@ import {
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
+  startupSupportAgreementSigned?: boolean;
 }
 
 export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
   setAgreementStep,
   setSectionQuestions,
+  startupSupportAgreementSigned,
 }) => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const coach = useSelector(coachSelectors.getCoach);
@@ -67,7 +68,11 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
 
   return (
     <>
-      <div className="flex h-screen flex-col justify-around p-4">
+      <div
+        className={`flex h-screen flex-col justify-around p-4 ${
+          startupSupportAgreementSigned ? 'pointer-events-none opacity-50' : ''
+        }`}
+      >
         <div>
           <Typography
             className={'my-3'}
@@ -98,6 +103,11 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
             <div className="flex items-start gap-2">
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 0)}
+                checked={
+                  startupSupportAgreementSigned
+                    ? startupSupportAgreementSigned
+                    : undefined
+                }
               />
               <Typography
                 text={`I, ${practitioner?.user?.fullName} (ID: ${practitioner?.user?.idNumber}; Cellphone: ${practitioner?.user?.phoneNumber}) have set up my own enterprise, with the following site standard number: XYZ and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the next 24 months at the site, ${coach?.siteAddress?.addressLine1}, ${coach?.siteAddress?.addressLine2}, ${coach?.siteAddress?.addressLine3}.`}
@@ -108,6 +118,11 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
             <div className="mt-2 flex items-start gap-2">
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
+                checked={
+                  startupSupportAgreementSigned
+                    ? startupSupportAgreementSigned
+                    : undefined
+                }
               />
               <Typography
                 text={
@@ -119,7 +134,11 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
             </div>
             <div className="mt-2 flex items-start gap-2">
               <Checkbox
-                // checked={}
+                checked={
+                  startupSupportAgreementSigned
+                    ? startupSupportAgreementSigned
+                    : undefined
+                }
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 2)}
               />
               <Typography

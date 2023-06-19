@@ -147,7 +147,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                 color={'textMid'}
               />
             </div>
-            {questions?.some((item) => item?.answer === false) && (
+            {!questions?.some((item) => item?.answer === false) && (
               <Alert
                 className="my-4"
                 variant="outlined"

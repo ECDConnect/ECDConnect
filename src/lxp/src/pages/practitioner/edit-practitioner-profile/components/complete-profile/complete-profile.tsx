@@ -4,11 +4,25 @@ import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
 import { userSelectors } from '@store/user';
+import { traineeSelectors } from '@/store/trainee';
+import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 
 export const CompleteProfile: React.FC = () => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const userData = useSelector(userSelectors.getUser);
   const history = useHistory();
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const { isOnline } = useOnlineStatus();
+
+  const completedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type === 'completed');
 
   const hasPractitionerRole = userData?.roles?.some(
     (role) => role.name === 'Practitioner'
@@ -20,7 +34,7 @@ export const CompleteProfile: React.FC = () => {
 
   const showNotificationForPractitionerFlow =
     (hasPractitionerRole || addedByPrincipal) && notRegistered;
-  if (practitioner?.isTrainee) {
+  if (practitioner?.isTrainee && completedSteps?.length < 7) {
     return (
       <div className="px-4">
         <NotificationHeaderCard

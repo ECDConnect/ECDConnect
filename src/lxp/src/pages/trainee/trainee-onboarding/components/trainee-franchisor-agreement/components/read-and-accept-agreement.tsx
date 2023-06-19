@@ -9,10 +9,12 @@ import { useAppDispatch } from '@/store';
 
 interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
+  franchisorAgreementSigned?: boolean;
 }
 
 export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
   setAgreementStep,
+  franchisorAgreementSigned,
 }) => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const [viewPermissionToShare, setViewPermissionToShare] =
@@ -34,7 +36,11 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
   return (
     <>
       <div className="flex flex-col justify-around p-4">
-        <div>
+        <div
+          className={`${
+            franchisorAgreementSigned ? 'pointer-events-none opacity-50' : ''
+          }`}
+        >
           <Typography
             className={'my-3'}
             color={'textDark'}
@@ -52,7 +58,11 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
           <div className="'flex items-center' w-full flex-row justify-start">
             <div className="flex items-start gap-2">
               <Checkbox
-                // checked={}
+                checked={
+                  franchisorAgreementSigned
+                    ? franchisorAgreementSigned
+                    : undefined
+                }
                 onCheckboxChange={() =>
                   setBecomeSmartStartuser(!becomeSmartStartuser)
                 }
@@ -65,7 +75,11 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             </div>
             <div className="mt-4 flex flex-wrap items-start">
               <Checkbox<Boolean>
-                // checked={}
+                checked={
+                  franchisorAgreementSigned
+                    ? franchisorAgreementSigned
+                    : undefined
+                }
                 onCheckboxChange={() => setAcceptTerms(!acceptTerms)}
               />
               <div className="flex">

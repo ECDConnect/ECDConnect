@@ -33,6 +33,7 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
   setVisitSection,
   onSubmit,
   setActiveStep,
+  setContinueChecklist,
 }) => {
   const { isOnline } = useOnlineStatus();
   const visitData = useSelector(traineeSelectors.getTraineeVisitData);
@@ -66,7 +67,7 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
 
   const visitSection = 'Space & emergency planning';
   const disableSection = visitData?.some(
-    (item) => item?.visitSection === 'Health, sanitation & safety'
+    (item) => item?.visitSection === visitSection
   );
 
   const onOptionSelected = useCallback(
@@ -183,7 +184,7 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
                     color="primary"
                     className={styles.button}
                     onClick={() => {
-                      // setSectionQuestions(questions)
+                      setContinueChecklist(true);
                       setVisitSection(visitSection);
                       onSubmit();
                     }}
@@ -201,7 +202,10 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
                     type="outlined"
                     color="primary"
                     className={styles.button}
-                    onClick={() => {}} // Navigate to a different page if it is principle
+                    onClick={() => {
+                      setVisitSection(visitSection);
+                      onSubmit();
+                    }}
                   >
                     {renderIcon('SaveIcon', styles.icon)}
                     <Typography

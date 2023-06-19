@@ -7,6 +7,7 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
+import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -26,9 +27,20 @@ export class IncompletePractitionerInformationNotificationValidator
       user: userState,
       classroomData: classroomState,
       practitioner: practitionerState,
+      trainee: traineeState,
     } = this.store.getState();
 
     if (!classroomState || !userState) return [];
+
+    const timeline = traineeState?.traineeOnboardTimeline;
+    const completedSteps = timelineSteps(
+      timeline!,
+      () => {},
+      false,
+      true,
+      // @ts-ignore
+      undefined
+    ).filter((item) => item?.type === 'completed');
 
     /**
      * Notification is returned when
@@ -64,7 +76,7 @@ export class IncompletePractitionerInformationNotificationValidator
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
       const isTrainee = practitionerState?.practitioner?.isTrainee;
 
-      if (isTrainee) {
+      if (isTrainee && completedSteps?.length < 7) {
         return [
           {
             reference: `trainee-profile`,

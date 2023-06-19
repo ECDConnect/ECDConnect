@@ -9,6 +9,7 @@ export interface HealthSanitationSafetysProps {
   setVisitSection?: any;
   onSubmit: () => void;
   setActiveStep?: any;
+  setContinueChecklist?: any;
 }
 
 export interface Question {

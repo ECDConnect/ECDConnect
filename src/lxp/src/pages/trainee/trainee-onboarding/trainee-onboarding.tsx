@@ -21,19 +21,34 @@ export const TraineeOnboarding = () => {
   const user = useSelector(userSelectors.getUser);
   const [isSmartChecklist, setIsSmartChecklist] = useState(false);
 
+  const updateTimeline = async () => {
+    await appDispatch(
+      traineeThunkActions.getTraineeTimeline({
+        userId: user?.id ? user?.id : '',
+      })
+    );
+  };
+
+  // useEffect(() => {
+  //   (async () =>
+  //     await appDispatch(
+  //       traineeThunkActions.getTraineeTimeline({
+  //         userId: user?.id ? user?.id : '',
+  //       })
+  //     ).unwrap())();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, []);
+
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        traineeThunkActions.getTraineeTimeline({
-          userId: user?.id ? user?.id : '',
-        })
-      ).unwrap())();
+    if (notificationStep) {
+      updateTimeline();
+    }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [notificationStep]);
 
   const renderStep = (step: string) => {
     switch (step) {
-      case 'signupFranchisor':
+      case 'Sign franchisee agreement':
         if (practitioner?.signingSignature) {
           return <TraineeAddSignature />;
         }

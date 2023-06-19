@@ -3,6 +3,7 @@ import { Config, TraineeDto } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
   SsChecklistVisitModelInput,
+  SupportVisitModelInput,
   TraineeOnBoardTimeline,
   UserConsentInput,
   Visit,
@@ -276,7 +277,7 @@ class TraineeService {
   }
 
   async addStartupSupportAgreementForTrainee(
-    input: CmsVisitDataInputModelInput
+    input: SupportVisitModelInput
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -284,8 +285,8 @@ class TraineeService {
       errors?: {};
     }>(``, {
       query: `
-      mutation AddStartupSupportAgreementForTrainee($userId: String, $scheduledDate: DateTime ) {
-        addStartupSupportAgreementForTrainee(userId: $userId, scheduledDate: $scheduledDate) {
+      mutation AddStartupSupportAgreementForTrainee($input: SupportVisitModelInput) {
+        addStartupSupportAgreementForTrainee(input: $input) {
             id
            plannedVisitDate
            actualVisitDate
