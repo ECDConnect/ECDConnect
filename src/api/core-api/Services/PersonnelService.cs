@@ -835,18 +835,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
             if (franchiseeAgreement != null && trainee.Practitioner.IsOnStipend == true)
             {
-                // Get support agreement signature
-                UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();
-                if (supportAgreement != null)
+
+                // Get support agreement data captured
+                Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
+                if (supportVisit != null)
                 {
-                    // Get support agreement data captured
-                    Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
-                    if (supportVisit != null)
-                    {
-                        timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
-                        timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
-                        timeline.SignStartUpSupportAgreementDate = supportAgreement.InsertedDate;
-                    }
+                    timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
+                    timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
+                    timeline.SignStartUpSupportAgreementDate = supportVisit.InsertedDate;
                 }
             }
 
