@@ -3712,7 +3712,6 @@ export type MutationAddReAccreditationFollowUpVisitForPractitionerArgs = {
 
 export type MutationAddReAccreditationVisitForPractitionerArgs = {
   input?: InputMaybe<ReAccreditationVisitModelInput>;
-  visitNumber?: InputMaybe<Scalars['Int']>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
