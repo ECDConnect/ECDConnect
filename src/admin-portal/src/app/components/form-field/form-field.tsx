@@ -16,6 +16,7 @@ export interface FormFieldProps {
   showPassword?: boolean;
   customStyle?: string;
   defaultValue?: any;
+  defaultValue?: any
 }
 
 const FormField: React.FC<FormFieldProps> = ({
@@ -31,8 +32,7 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   togglePasswordVisibility,
   showPassword,
-  customStyle,
-  defaultValue,
+  defaultValue
 }) => {
   const checkboxStyle =
     'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';

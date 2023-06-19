@@ -236,9 +236,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                                 year = attendanceData.FirstOrDefault().Year;
                                 weekOfYear = attendanceData.FirstOrDefault().WeekOfYear;
                             }
-                            metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
                         }
                     }
+                    metric.Add(new ClassroomMetricReport() { childCount = childCount, attendancePercentage = attendancePercentage, classroomGroupId = group.Id.ToString(), classroomId = group.ClassroomId.ToString(), month = month, year = year, weekOfYear = weekOfYear, practitionerId = userId });
                 }
             }
 

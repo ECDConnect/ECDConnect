@@ -50,6 +50,7 @@ export const Step18 = ({
 
   const visitSection = 'Step 18';
   const name = smartStarter?.user?.firstName || 'the SmartStarter';
+  const isPrincipal = smartStarter?.isPrincipal === true;
 
   const options = [
     { text: 'Yes', value: true },
@@ -82,9 +83,11 @@ export const Step18 = ({
     });
   });
 
-  const days = currentClassProgrammes
-    .map((item) => item.meetingDay, 'short')
-    .sort()
+  const days = currentClassProgrammes.map((item) => item.meetingDay).sort();
+
+  const stringDays = days
+    // remove duplicates
+    .filter((element, index) => days.indexOf(element) === index)
     .map((item) => numberToDayOfWeek(item, 'short'));
 
   const onOptionSelected = useCallback(
@@ -158,19 +161,19 @@ export const Step18 = ({
 
     const sortedChildren = filteredChildren
       .filter((child) => {
-        if (child.dateOfBirth === undefined) {
+        if (child?.dateOfBirth === undefined) {
           return false;
         }
 
-        const date = new Date(child.dateOfBirth);
+        const date = new Date(child?.dateOfBirth);
         const minDate = new Date('1900-01-01');
         const maxDate = new Date();
         return !isNaN(date.getTime()) && date >= minDate && date <= maxDate;
       })
       .sort(
         (a, b) =>
-          new Date(String(a.dateOfBirth)).getTime() -
-          new Date(String(b.dateOfBirth)).getTime()
+          new Date(String(a?.dateOfBirth)).getTime() -
+          new Date(String(b?.dateOfBirth)).getTime()
       );
 
     setRegisteredChildren(sortedChildren);
@@ -206,7 +209,7 @@ export const Step18 = ({
           type="body"
           text={`Youngest child’s age: ${getFormattedDateInYearsMonthsAndDays(
             String(
-              registeredChildren?.[registeredChildren?.length - 1].dateOfBirth
+              registeredChildren?.[registeredChildren?.length - 1]?.dateOfBirth
             )
           )}`}
         />
@@ -214,20 +217,33 @@ export const Step18 = ({
           color="textMid"
           type="body"
           text={`Oldest child’s age: ${getFormattedDateInYearsMonthsAndDays(
-            String(registeredChildren?.[0].dateOfBirth)
+            String(registeredChildren?.[0]?.dateOfBirth)
           )}`}
         />
       </div>
       <Divider dividerType="dashed" />
       <div className="flex items-center gap-2">
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
-          {currentClassProgrammes?.length}
+          {isPrincipal
+            ? currentClassProgrammes?.length
+            : currentClassroomGroups.length}
         </span>
-        <Typography type="h4" text={`classes assigned to ${name}`} />
+        <Typography
+          type="h4"
+          text={
+            isPrincipal
+              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
+              : `classes assigned to ${name}`
+          }
+        />
       </div>
       <div>
-        <Typography color="textMid" type="body" text="Class days:" />
-        <Typography color="textMid" type="body" text={days.join(', ')} />
+        <Typography
+          color="textMid"
+          type="body"
+          text={isPrincipal ? 'Programme days' : 'Class days:'}
+        />
+        <Typography color="textMid" type="body" text={stringDays.join(', ')} />
       </div>
       <Divider dividerType="dashed" />
       <FormInput

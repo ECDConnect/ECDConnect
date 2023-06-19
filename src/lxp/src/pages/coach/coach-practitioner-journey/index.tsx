@@ -31,6 +31,7 @@ import {
   getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
+  getReAccreditationFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   dateOptions,
@@ -54,6 +55,7 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const { isOnline } = useOnlineStatus();
   const wasOnline = usePrevious(isOnline);
+  const previousShowForm = usePrevious(showForm);
 
   const history = useHistory();
   const appDispatch = useAppDispatch();
@@ -78,6 +80,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   );
   const pqaFormData = useSelector(getPqaFormDataByIdSelector(practitionerId));
 
+  const reAccreditationFormData = useSelector(
+    getReAccreditationFormDataByIdSelector(practitionerId)
+  );
+
   const practitionerFirstName = practitioner?.user?.firstName;
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -90,7 +96,7 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA.description, name: visitTypes.pqa.firstPQA.name}, plannedVisitDate: new Date()}]
+
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
@@ -101,9 +107,16 @@ export const CoachPractitionerJourney: React.FC = () => {
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const uncompletedReAccreditationVisits =
+    timeline?.reAccreditationVisits?.filter(
+      (visit) =>
+        !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
     ...uncompletedPqaVisits,
+    ...uncompletedReAccreditationVisits,
   ];
 
   const currentVisit = uncompletedVisits
@@ -114,6 +127,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
+        titleStyle: 'text-textDark',
         title: visit?.visitType?.description || 'Visit',
         subTitle: !!visit?.plannedVisitDate
           ? new Date(visit?.plannedVisitDate).toLocaleDateString(
@@ -121,6 +135,7 @@ export const CoachPractitionerJourney: React.FC = () => {
               dateLongMonthOptions
             )
           : '',
+        subTitleStyle: 'text-textDark',
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
@@ -156,10 +171,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
-      window.sessionStorage.setItem(
-        currentActivityKey,
-        visit.visitType?.description!
-      );
+      window.sessionStorage.setItem(currentActivityKey, visit.visitType?.name!);
     }
 
     window.sessionStorage.setItem(isViewKey, 'true');
@@ -181,10 +193,10 @@ export const CoachPractitionerJourney: React.FC = () => {
   }, [getTimeline]);
 
   useEffect(() => {
-    if (!wasOnline && isOnline) {
+    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
       getTimeline();
     }
-  }, [getTimeline, isOnline, wasOnline]);
+  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
   if (
     (showForm && isView) ||
@@ -230,7 +242,7 @@ export const CoachPractitionerJourney: React.FC = () => {
             variant="flat"
             title={timeline?.smartSpaceLicenseStatus || ''}
             message={
-              !!timeline?.smartSpaceLicenseDate
+              timeline?.smartSpaceLicenseDate
                 ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
                     'en-ZA',
                     dateLongMonthOptions

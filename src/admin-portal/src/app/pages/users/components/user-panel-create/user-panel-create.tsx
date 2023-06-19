@@ -12,19 +12,17 @@ import {
   AddUsersToRole,
   CreateUser,
   RoleList,
+  SendInviteToApplication,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
-import PasswordForm from '../password-form/password-form';
 import UserDetailsForm from '../user-details-form/user-details-form';
-import UserPanelSave from '../user-panel-save/user-panel-save';
-import UserRoles from '../user-roles/user-roles';
 import { UserPanelCreateProps } from '../users';
-import { PaperAirplaneIcon, PlusIcon } from '@heroicons/react/solid';
-import { Alert, Button, Typography } from '@ecdlink/ui';
+import { Alert } from '@ecdlink/ui';
+import UserPanelSave from '../user-panel-save/user-panel-save';
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -35,7 +33,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { data: roleData } = useQuery(RoleList, {
     fetchPolicy: 'cache-and-network',
   });
-
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
@@ -77,7 +75,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     emitCloseDialog(true);
   };
 
-  console.log(">", selectedUserRoles)
+  console.log(">", isUserDetailValid)
 
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
@@ -86,13 +84,10 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       email: userDetailForm.email,
-      isSouthAfricanCitizen: false,
-      idNumber: null,
-      verifiedByHomeAffairs: false,
       dateOfBirth: new Date(),
-      genderId: null,
-      contactPreference: null,
-      phoneNumber: null
+      isSouthAfricanCitizen: true,
+      verifiedByHomeAffairs: true
+      
     };
 
     await createUser({
@@ -108,6 +103,15 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         });
 
         const userId = response.data.addUser.id;
+        await sendInviteToApplication({
+          variables: {
+            userId: userId,
+          },
+        });
+        setNotification({
+          title: 'Successfully User an Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        });
         await saveRoles(userId);
       })
       .catch((error) => {
@@ -132,10 +136,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
           title: 'Successfully Added roles to User!',
           variant: NOTIFICATION.SUCCESS,
         });
+
       })
       .catch((error) => {
         console.log(error);
       });
+
+
   };
   const userDetailForm = userDetailGetValues();
   console.log(userDetailForm);
@@ -144,6 +151,12 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className="rounded-lg px-4 py-0">
+          <div className="border-b border-dashed pb-4">
+            <h1 className="py-4 text-2xl text-black">Administrator details</h1>
+            <label className="text-md block font-medium text-gray-700">
+              Step 1 of 1
+            </label>
+          </div>
           <UserDetailsForm
             formKey={`createUserDetails-${new Date().getTime()}`}
             register={userDetailRegister}
@@ -153,7 +166,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="mt-0 rounded-lg  px-4 py-0">
+        {/* <div className="mt-0 rounded-lg  px-4 py-0">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Roles
@@ -167,6 +180,15 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             roleList={filteredRoles ? filteredRoles : []}
             roles={selectedUserRoles}
             onUserRoleChange={(values) => setUserRoles(values)}
+          />
+        </div> */}
+        <div className="mt-0 rounded-lg  px-4 py-0">
+          <Alert
+            className={'mt-5 mb-3'}
+            message={
+              'An invitation will be sent to the new user when you click add.'
+            }
+            type={'info'}
           />
         </div>
         <div className="mt-0 rounded-lg  px-4 py-0">
@@ -182,28 +204,15 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     );
   };
 
+  console.log(userDetailForm.email)
+  function getIsValid() {
+    throw new Error('Function not implemented.');
+  }
+
   return (
     <article>
-      {/* <UserPanelSave disabled={!getIsValid()} onSave={onSave} /> */}
-      <div className="mx-1  max-w-5xl">
-        {getComponent()}
-
-        <Button
-          className={'mt-6 w-full rounded-xl'}
-          type="filled"
-          // isLoading={isLoading}
-          color={'secondary'}
-          disabled={userDetailForm.email ? false : true}
-          onClick={onSave}
-        >
-          <PaperAirplaneIcon className="mx-4 h-5 w-5 text-white"></PaperAirplaneIcon>
-          <Typography
-            type="help"
-            color="white"
-            text={'Add & invite user'}
-          ></Typography>
-        </Button>
-      </div>
+      <UserPanelSave disabled={false} onSave={onSave} />
+      <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );
 }

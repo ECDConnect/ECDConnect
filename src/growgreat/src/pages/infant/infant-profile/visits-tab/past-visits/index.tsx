@@ -81,7 +81,8 @@ export const PastVisits: React.FC = () => {
         actionButtonColor: 'secondaryAccent2',
         actionButtonOnClick: () =>
           history.push(
-            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/activities-form/${item.id}`
+            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/activities-form/${item.id}`,
+            { editView: false }
           ),
       };
     });

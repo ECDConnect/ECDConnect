@@ -145,6 +145,19 @@ class PQAService {
                 description
               }
             }
+            reAccreditationVisits {
+              id
+              plannedVisitDate
+              attended
+              comment
+              visitType {
+                type
+                order
+                name
+                normalizedName
+                description
+              }
+            }
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus
