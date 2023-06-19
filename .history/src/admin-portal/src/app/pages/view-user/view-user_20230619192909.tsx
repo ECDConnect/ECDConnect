@@ -28,7 +28,20 @@ export function ViewUser(props) {
   let userId = localStorage.getItem("selectedUser");
 
   console.log(">rowDta>>", userId)
+  const { data: GetUserByIdData } = useQuery(GetUserById, {
+    fetchPolicy: 'cache-and-network',
+  });
 
+  useEffect(() => {
+    let x = GetUserByIdData(
+      {
+        variables: {
+          userId: userId,
+        },
+      }
+    )
+    console.log(x)
+  }, [data])
 
   const { register, getValues, formState, watch } = useForm({
     // resolver: yupResolver(editProfileSchema),

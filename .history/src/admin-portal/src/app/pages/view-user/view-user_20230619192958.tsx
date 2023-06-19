@@ -27,8 +27,21 @@ export function ViewUser(props) {
   const [getUser] = useMutation(GetUserById);
   let userId = localStorage.getItem("selectedUser");
 
-  console.log(">rowDta>>", userId)
+  // console.log(">rowDta>>", userId)
+  // const { data: GetUserByIdData } = useQuery(GetUserById, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
 
+  // useEffect(() => {
+  //   let x = GetUserByIdData(
+  //     {
+  //       variables: {
+  //         userId: userId,
+  //       },
+  //     }
+  //   )
+  //   console.log(x)
+  // }, [GetUserByIdData])
 
   const { register, getValues, formState, watch } = useForm({
     // resolver: yupResolver(editProfileSchema),
