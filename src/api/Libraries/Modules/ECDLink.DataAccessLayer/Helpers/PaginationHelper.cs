@@ -27,7 +27,7 @@ namespace ECDLink.DataAccessLayer.Helpers
                 var fieldType = typeof(T).GetProperty(filter?.FieldName)?.PropertyType;
 
                 // This filter is not actually a field type and was handled seperately.
-                if (_customFilterTypes.Contains(fieldType?.Name?.ToLowerInvariant()))
+                if (_customFilterTypes.Contains(filter?.FieldName?.ToLowerInvariant()))
                     continue;
 
                 // If field does not exist on this type, ignore it
