@@ -24,12 +24,14 @@ export default function ApplicationAdmins() {
 
   const { data, refetch, loading } = useQuery(UserList, {
     variables: {
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
-      ],
-      sortBy: [{ fieldName: "FullName", descending: true }]
+      pagingInput: {
+        pageNumber: 1,
+        pageSize: 10,
+        filterBy: [
+          { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+        ],
+        sortBy: [{ fieldName: "FullName", descending: true }]
+      }
     }
   });
 

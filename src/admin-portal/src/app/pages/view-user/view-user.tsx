@@ -46,8 +46,6 @@ export function ViewUser(props) {
 
   useEffect(() => {
     getUserById({ variables: { userId: userId } });
-    console.log(">rowDta>>", userId, userData)
-
   }, [userId])
 
 
@@ -55,7 +53,7 @@ export function ViewUser(props) {
   const dialog = useDialog();
 
   const deleteUserAndRefresh = async (user: any) => {
-    console.log(">>")
+ 
     dialog({
       blocking: true,
       position: DialogPosition.Middle,
