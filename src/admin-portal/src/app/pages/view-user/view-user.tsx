@@ -444,11 +444,7 @@ export function ViewUser(props) {
             </div>
           </div>
         }
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          && <div className="pl-4 flex flex-row w-6/12">
+        <div className="pl-4 flex flex-row w-6/12">
 
             <Button
               className={'mt-3 w-4/12 rounded'}
@@ -465,7 +461,7 @@ export function ViewUser(props) {
               ></Typography>
             </Button>
 
-          </div>}
+          </div>
       </div>
     </div>
 
