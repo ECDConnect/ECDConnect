@@ -160,9 +160,9 @@ export function ViewUser(props) {
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm.phoneNumber,
       idNumber: userDetailForm.idNumber,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
+      dateOfBirth: null,
+      isSouthAfricanCitizen: null,
+      verifiedByHomeAffairs: null
     };
 
     await updateUser({
