@@ -29,6 +29,7 @@ import {
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
+import { AddressMap } from '../map/map';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -65,6 +66,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     useState<boolean>(false);
   const acceptedFormats = ['jpg, bmp'];
   const visitData = useSelector(traineeSelectors.getTraineeVisitData);
+  const [showMap, setShowMap] = useState(false);
   const [displayPhotoDeleteWarning, setDisplayPhotoDeleteWarning] =
     useState<boolean>(false);
   const [questions, setAnswers] = useState([
@@ -358,6 +360,9 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   onOptionSelected((e.target as HTMLInputElement).value, 3)
                 }
                 disabled={Boolean(checkedquestion(questions?.[3].question))}
+                suffixIcon={'LocationMarkerIcon'}
+                sufficIconColor="primary"
+                suffixIconAction={() => setShowMap(true)}
               ></FormInput>
 
               <div className={'w-full'}>
@@ -571,6 +576,12 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           isOpen={true}
         />
       )}
+      <Dialog visible={showMap} position={DialogPosition.Bottom} stretch>
+        <AddressMap
+          onClose={() => setShowMap?.(false)}
+          onSubmit={(address) => onOptionSelected(address, 3)}
+        />
+      </Dialog>
       <Dialog
         visible={photoActionBarVisible}
         position={DialogPosition.Bottom}
