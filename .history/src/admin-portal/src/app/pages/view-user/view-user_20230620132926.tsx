@@ -140,7 +140,7 @@ export function ViewUser(props) {
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (userData?.userById && userDetailFormState) {
+    if (props.user && userDetailFormState) {
       userDetailSetValue('idNumber', userData?.userById?.idNumber , {
         shouldValidate: true,
       });
@@ -170,7 +170,7 @@ export function ViewUser(props) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id,
+        id: props.user.id,
         input: { ...userInputModel },
       },
     });
@@ -183,7 +183,7 @@ export function ViewUser(props) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id,
+          id: props.user.id,
           newPassword: passwordForm.password,
         },
       });

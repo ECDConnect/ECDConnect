@@ -140,12 +140,12 @@ export function ViewUser(props) {
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (userData?.userById && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber , {
+    if (props.user && userDetailFormState) {
+      userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
         shouldValidate: true,
       });
 
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber , {
+      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
         shouldValidate: true,
       });
     }
@@ -159,35 +159,35 @@ export function ViewUser(props) {
     console.log("test>>", userDetailForm);
 
 
-    const userInputModel: UserModelInput = {
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-    };
+    // const userInputModel: UserModelInput = {
+    //   firstName: userDetailForm.firstName,
+    //   surname: userDetailForm.surname,
+    //   email: userDetailForm.email,
+    //   dateOfBirth: new Date(),
+    //   isSouthAfricanCitizen: true,
+    //   verifiedByHomeAffairs: true
+    // };
 
-    await updateUser({
-      variables: {
-        id: userData?.userById.id,
-        input: { ...userInputModel },
-      },
-    });
+    // await updateUser({
+    //   variables: {
+    //     id: props.user.id,
+    //     input: { ...userInputModel },
+    //   },
+    // });
 
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
+    // setNotification({
+    //   title: 'Successfully Updated User!',
+    //   variant: NOTIFICATION.SUCCESS,
+    // });
 
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id: userData?.userById.id,
-          newPassword: passwordForm.password,
-        },
-      });
-    }
+    // if (passwordChange) {
+    //   await resetUserPassword({
+    //     variables: {
+    //       id: props.user.id,
+    //       newPassword: passwordForm.password,
+    //     },
+    //   });
+    // }
   };
 
   const onSave = async () => {
@@ -201,10 +201,9 @@ export function ViewUser(props) {
       internalIsPasswordValid = isPasswordValid;
     }
 
-    // if (isValid && internalIsPasswordValid) {
-
+    if (isValid && internalIsPasswordValid) {
       await saveUser(passwordChange);
-    // }
+    }
   };
 
   // console.log(isValid);

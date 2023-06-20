@@ -140,12 +140,12 @@ export function ViewUser(props) {
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (userData?.userById && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber , {
+    if (props.user && userDetailFormState) {
+      userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
         shouldValidate: true,
       });
 
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber , {
+      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
         shouldValidate: true,
       });
     }
@@ -155,9 +155,6 @@ export function ViewUser(props) {
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
-
-    console.log("test>>", userDetailForm);
-
 
     const userInputModel: UserModelInput = {
       firstName: userDetailForm.firstName,
@@ -170,7 +167,7 @@ export function ViewUser(props) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id,
+        id: props.user.id,
         input: { ...userInputModel },
       },
     });
@@ -183,7 +180,7 @@ export function ViewUser(props) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id,
+          id: props.user.id,
           newPassword: passwordForm.password,
         },
       });
@@ -201,10 +198,9 @@ export function ViewUser(props) {
       internalIsPasswordValid = isPasswordValid;
     }
 
-    // if (isValid && internalIsPasswordValid) {
-
+    if (isValid && internalIsPasswordValid) {
       await saveUser(passwordChange);
-    // }
+    }
   };
 
   // console.log(isValid);

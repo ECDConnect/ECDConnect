@@ -140,12 +140,12 @@ export function ViewUser(props) {
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (userData?.userById && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber , {
+    if (props.user && userDetailFormState) {
+      userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
         shouldValidate: true,
       });
 
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber , {
+      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
         shouldValidate: true,
       });
     }
@@ -155,9 +155,6 @@ export function ViewUser(props) {
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
-
-    console.log("test>>", userDetailForm);
-
 
     const userInputModel: UserModelInput = {
       firstName: userDetailForm.firstName,
@@ -170,7 +167,7 @@ export function ViewUser(props) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id,
+        id: props.user.id,
         input: { ...userInputModel },
       },
     });
@@ -183,7 +180,7 @@ export function ViewUser(props) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id,
+          id: props.user.id,
           newPassword: passwordForm.password,
         },
       });
@@ -201,10 +198,9 @@ export function ViewUser(props) {
       internalIsPasswordValid = isPasswordValid;
     }
 
-    // if (isValid && internalIsPasswordValid) {
-
+    if (isValid && internalIsPasswordValid) {
       await saveUser(passwordChange);
-    // }
+    }
   };
 
   // console.log(isValid);
@@ -300,23 +296,38 @@ export function ViewUser(props) {
                   </div>
                 </div>
                 <div className="pl-4 flex flex-row w-6/12">
-                  <Button
-                    className={'mt-3 w-4/12 rounded mr-6'}
-                    type="filled"
-                    // isLoading={isLoading}
-                    color="secondary"
-                    // disabled={!isValid}
-                    onClick={onSave}
-                  >
-                    <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Save Changes'}
-                    ></Typography>
-                  </Button>
+          <Button
+            className={'mt-3 w-4/12 rounded mr-6'}
+            type="filled"
+            // isLoading={isLoading}
+            color="secondary"
+            // disabled={!isValid}
+            onClick={()=>onSave}
+          >
+            <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+            <Typography
+              type="help"
+              color="white"
+              text={'Save Changes'}
+            ></Typography>
+          </Button>
+          <Button
+            className={'mt-3 w-4/12 rounded'}
+            type="outlined"
+            isLoading={isLoading}
+            color="tertiary"
+            disabled={!isValid}
+            onClick={() => deleteUserAndRefresh}
+          >
+            <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
+            <Typography
+              type="help"
+              color="tertiary"
+              text={'Deactivate User'}
+            ></Typography>
+          </Button>
 
-                </div>
+        </div>
               </form> :
                 <div className='flex flex-row justify-start pt-4 text-current'>
                   <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
@@ -330,7 +341,8 @@ export function ViewUser(props) {
           <div className='flex justify-end p-4'>
             <button onClick={() => setEditActive(!editActive)} id="dropdownHoverButton"
               className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary w-1/ text-center focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm py-2.5 px-12 inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
-              type="button"> {editActive ? "Done" : "Edit"}
+              type="button">Edit
+
             </button>
           </div>
 
@@ -437,7 +449,21 @@ export function ViewUser(props) {
         </div>
 
         <div className="pl-4 flex flex-row w-6/12">
-
+          <Button
+            className={'mt-3 w-4/12 rounded mr-6'}
+            type="filled"
+            // isLoading={isLoading}
+            color="secondary"
+            // disabled={!isValid}
+            onClick={()=>onSave}
+          >
+            <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+            <Typography
+              type="help"
+              color="white"
+              text={'Save Changes'}
+            ></Typography>
+          </Button>
           <Button
             className={'mt-3 w-4/12 rounded'}
             type="outlined"

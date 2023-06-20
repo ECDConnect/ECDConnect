@@ -170,7 +170,7 @@ export function ViewUser(props) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id,
+        id: props.user.id,
         input: { ...userInputModel },
       },
     });
@@ -183,7 +183,7 @@ export function ViewUser(props) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id,
+          id: props.user.id,
           newPassword: passwordForm.password,
         },
       });
