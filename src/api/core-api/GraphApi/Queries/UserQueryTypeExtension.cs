@@ -68,16 +68,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 return usersQuery;
 
             var provinceFilters = pagingInput.FilterBy?
-                .Where(f => f.FieldName == nameof(SiteAddress.Province))
-                .Select(f => f.Value)
+                .Where(f => f.FieldName.ToLowerInvariant() == nameof(SiteAddress.Province).ToLowerInvariant())
                 .ToList();
 
             if (provinceFilters?.Any() ?? false)
             {
                 using var provinceRepo = repoFactory.CreateGenericRepository<Province>();
-                var provinceIds = provinceRepo.GetAll()
-                    .Where(p => provinceFilters.Contains(p.Description))
-                    .Select(p => p.Id).ToList();
+                var provinces = provinceRepo.GetAll()
+                    .Where(p => 
+                    (p.TenantId == null || p.TenantId == TenantExecutionContext.Tenant.Id)
+                    && p.IsActive);
+                
+                var provinceIds = new List<Guid>();
+
+                foreach (var provinceFilter in provinceFilters)
+                {
+                    if (provinceFilter.FilterType == InputFilterComparer.Equals)
+                    {
+                        var provinceId = provinces.FirstOrDefault(p => p.Description == provinceFilter.Value)?.Id;
+                        if (provinceId is not null && provinceId != Guid.Empty)
+                            provinceIds.Add(provinceId ?? Guid.Empty);
+                    }
+                    else if (provinceFilter.FilterType == InputFilterComparer.Contains)
+                    {
+                        var provinceIdsToAdd = provinces
+                            .Where(p => EF.Functions.ILike(p.Description, $"%{provinceFilter.Value}%"))
+                            .Select(p => p.Id)
+                            .ToList();
+                        provinceIds.AddRange(provinceIdsToAdd);
+                    }
+                }
+                    
 
                 return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
