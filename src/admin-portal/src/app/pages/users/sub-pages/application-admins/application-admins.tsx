@@ -83,7 +83,6 @@ export default function ApplicationAdmins() {
       });
       const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
       setTableData(finalTableData);
-      console.log('>>', copyItems);
     }
   }, [data]);
 
@@ -240,7 +239,7 @@ export default function ApplicationAdmins() {
                 </div>
                 {showFilter && (
                   <div className="flex items-center mt-4 sm:mt-6 ">
-                    <div>
+                    {/* <div>
                       <Dropdown
                         fillType="filled"
                         textColor="white"
@@ -253,7 +252,7 @@ export default function ApplicationAdmins() {
                           setSelectedRoleFilter(item);
                         }}
                       />
-                    </div>
+                    </div> */}
 
                     <div>
                       <Dropdown
@@ -262,17 +261,14 @@ export default function ApplicationAdmins() {
                         fillColor="secondary"
                         placeholder="Filter by status"
                         labelColor="white"
-                        selectedValue={statusFilter}
-                        list={[
-                          { label: 'All', value: '' },
-                          { label: 'Active', value: 'active' },
-                          { label: 'Inactive', value: 'inactive' },
-                        ]}
+                        selectedValue={'active'}
+                        list={[]}
                         onChange={(item) => {
-                          setStatusFilter(item);
+                          // setStatusFilter(item);
                         }}
                         className='p-2'
                       />
+                      
                     </div>
 
 

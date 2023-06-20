@@ -52,8 +52,7 @@ export function ViewUser(props) {
   const { setNotification } = useNotifications();
   const dialog = useDialog();
 
-  const deleteUserAndRefresh = async (user: any) => {
- 
+  const deleteUserAndRefresh = async () => {
     dialog({
       blocking: true,
       position: DialogPosition.Middle,
@@ -67,7 +66,7 @@ export function ViewUser(props) {
 
             deleteUser({
               variables: {
-                id: user.id,
+                id: userId,
               },
             })
               .then((response: any) => {
@@ -228,17 +227,17 @@ export function ViewUser(props) {
                 />
                 <div className='sm: pt-12'>
                   <p className='text-3xl font-normal '>{userData?.userById?.firstName + ' ' + userData?.userById?.surname}</p>
+                  <div className="flex flex-row pt-4">
+                    {userData && userData?.userById.roles.map((i: any, index: number) => {
+                      return <div
+                        key={i.id}
+                        className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-6/12 flex justify-center flex-row"
+                      >
+                        <p className='text-16'> {i.name}</p>
+                      </div>
+                    })}
 
-                  {userData?.userById.roles.map((i: any, index: number) => {
-                    return <div
-                      key={i.id}
-                      className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-6/12 flex justify-center flex-row"
-                    >
-                      <p className='text-16'> {i.name}</p>
-                    </div>
-                  })}
-
-
+                  </div>
                   <p>{userData?.firstName}</p>
                 </div>
 
@@ -444,22 +443,22 @@ export function ViewUser(props) {
         }
         <div className="pl-4 flex flex-row w-6/12">
 
-            <Button
-              className={'mt-3 w-4/12 rounded'}
-              type="outlined"
-              // isLoading={isLoading}
+          <Button
+            className={'mt-3 w-4/12 rounded'}
+            type="outlined"
+            // isLoading={isLoading}
+            color="tertiary"
+            onClick={() => deleteUserAndRefresh}
+          >
+            <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
+            <Typography
+              type="help"
               color="tertiary"
-              onClick={() => deleteUserAndRefresh}
-            >
-              <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
-              <Typography
-                type="help"
-                color="tertiary"
-                text={'Deactivate User'}
-              ></Typography>
-            </Button>
+              text={'Deactivate User'}
+            ></Typography>
+          </Button>
 
-          </div>
+        </div>
       </div>
     </div>
 
