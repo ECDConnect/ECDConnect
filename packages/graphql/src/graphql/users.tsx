@@ -5,10 +5,7 @@ import { gql } from '@apollo/client';
 
 export const UserList = gql`
 {
-  users (pagingInput: {
-        pageNumber: 1
-        pageSize: 10
-          })
+  query users (pagingInput: $pagingInput)
       {
       id
       isActive

@@ -12,9 +12,7 @@ import { SearchIcon } from '@heroicons/react/solid';
 import { Dropdown } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 export default function TeamLeads() {
-  const { data, refetch } = useQuery(GetAllTeamLead, {
-    fetchPolicy: 'cache-and-network',
-  });
+
   const [tableData, setTableData] = useState<any[]>([]);
   const panel = usePanel();
   const { hasPermission } = useUser();
@@ -24,6 +22,18 @@ export default function TeamLeads() {
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
   const [searchValue, setSearchValue] = useState('');
+
+
+  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
+    variables: {
+      pageNumber: 1,
+      pageSize: 10,
+      filterBy: [
+        // { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+      ],
+      sortBy: [{ fieldName: "FullName", descending: true }]
+    }
+  });
 
   const toggleDropdown = () => {
     setIsDropdownVisible(!isDropdownVisible);

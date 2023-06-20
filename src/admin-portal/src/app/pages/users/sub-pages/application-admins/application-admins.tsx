@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import {
   NOTIFICATION,
@@ -21,9 +21,19 @@ import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 
 export default function ApplicationAdmins() {
   const dialog = useDialog();
-  const { data, refetch } = useQuery(UserList, {
-    fetchPolicy: 'cache-and-network',
+
+  const { data, refetch, loading } = useQuery(UserList, {
+    variables: {
+      pageNumber: 1,
+      pageSize: 10,
+      filterBy: [
+        { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+      ],
+      sortBy: [{ fieldName: "FullName", descending: true }]
+    }
   });
+
+
   const { setNotification } = useNotifications();
   const { hasPermission } = useUser();
 

@@ -38,9 +38,18 @@ export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
-  const { data, refetch } = useQuery(GetAllHealthCareWorker, {
-    fetchPolicy: 'cache-and-network',
+
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+    variables: {
+      pageNumber: 1,
+      pageSize: 10,
+      filterBy: [
+        { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+      ],
+      sortBy: [{ fieldName: "FullName", descending: true }]
+    }
   });
+
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
   });
@@ -442,7 +451,6 @@ export default function HealthCareWorkers() {
 
             </div>
           </div>
-
 
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">

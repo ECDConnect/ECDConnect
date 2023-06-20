@@ -32,8 +32,15 @@ export default function ApplicationUsers() {
     setEndDate(event.target.value);
   };
 
-  const { data, refetch } = useQuery(UserList, {
-    fetchPolicy: 'cache-and-network',
+  const { data, refetch, loading } = useQuery(UserList, {
+    variables: {
+      pageNumber: 1,
+      pageSize: 10,
+      filterBy: [
+        // { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+      ],
+      sortBy: [{ fieldName: "FullName", descending: true }]
+    }
   });
 
 
