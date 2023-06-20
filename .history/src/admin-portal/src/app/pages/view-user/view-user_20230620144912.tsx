@@ -21,7 +21,7 @@ import {
   userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { DeleteUser, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -33,9 +33,7 @@ export function ViewUser(props) {
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
   const [resetUserPassword] = useMutation(ResetUserPassword);
-  const { data } = useQuery(GetTenantContext, {
-    fetchPolicy: 'cache-and-network',
-  });
+
 
   const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
     variables: {
@@ -55,7 +53,6 @@ export function ViewUser(props) {
   const dialog = useDialog();
 
   const deleteUserAndRefresh = async (user: any) => {
-    console.log(">>")
     dialog({
       blocking: true,
       position: DialogPosition.Middle,
@@ -208,7 +205,7 @@ export function ViewUser(props) {
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <Breadcrumb
-
+     
       />
 
 
@@ -327,145 +324,124 @@ export function ViewUser(props) {
 
         </div>
 
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          && <div className=" flex justify-end">
-            <div>
-              <Dropdown
-                fillType="filled"
-                textColor="white"
-                fillColor="secondary"
-                placeholder="Filter "
-                labelColor="white"
-                // selectedValue={statusFilter}
-                list={[
-                  { label: 'All', value: '' },
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-                onChange={(item) => {
-                  // setStatusFilter(item);
-                }}
-                className='p-2'
-              />
+        <div className=" flex justify-end">
+          <div>
+            <Dropdown
+              fillType="filled"
+              textColor="white"
+              fillColor="secondary"
+              placeholder="Filter "
+              labelColor="white"
+              // selectedValue={statusFilter}
+              list={[
+                { label: 'All', value: '' },
+                { label: 'Active', value: 'active' },
+                { label: 'Inactive', value: 'inactive' },
+              ]}
+              onChange={(item) => {
+                // setStatusFilter(item);
+              }}
+              className='p-2'
+            />
+          </div>
+        </div>
+
+        <div className="m-10 my-6 mt-4 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-secondary  border-l-8 border-2 border-secondary">
+          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+            {/* Start main area*/}
+            <h3 className='pb-2 border-b-4 border-dashed text-xl mb-2'> Clients summary</h3>
+            <div className='flex flex-row justify-evenly pt-4 text-current'>
+              <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">4</span>pregnant moms</p>
+              <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">44</span>children</p>
+              <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">90</span>clients visited</p>
+              <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">24</span>folders opened</p>
+
+
             </div>
-          </div>}
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          &&
-          <div className="m-10 my-6 mt-4 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-secondary  border-l-8 border-2 border-secondary">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <h3 className='pb-2 border-b-4 border-dashed text-xl mb-2'> Clients summary</h3>
-              <div className='flex flex-row justify-evenly pt-4 text-current'>
-                <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">4</span>pregnant moms</p>
-                <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">44</span>children</p>
-                <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">90</span>clients visited</p>
-                <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">24</span>folders opened</p>
+            {/* End main area */}
+          </div>
+        </div>
 
+        <div className='flex flex-row'>
 
-              </div>
-              {/* End main area */}
-            </div>
-          </div>}
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          &&
-          <div className='flex flex-row'>
-
-            <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-errorMain  border-l-8 border-2 border-errorMain">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <ExclamationCircleIcon className='w-12 h-12 pb-2' style={{
-                    color: '#ED1414'
-                  }}></ExclamationCircleIcon>
-                  <h3 className='pb-0  text-2xl mb-2 pt-2'> Urgent issues</h3>
-
-                </div>
-                <div className='flex flex-col justify-evenly pt-4 text-current'>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>visits missed</p>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>pregnant moms have urgent issues</p>
-
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>caregivers & children have urgent issues</p>
-                </div>
-                {/* End main area */}
-              </div>
-            </div>
-            <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-alertMain  border-l-8 border-2 border-alertMain">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12" style={{
-                    color: '#FF5C00'
-                  }}>
-                    <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
-                  </svg>
-                  <h3 className='pb-0  text-2xl mb-2 pt-2'> Other issues</h3>
-                </div>
-                <div className='flex flex-col justify-evenly pt-4 text-current'>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">12</span>visits overdue</p>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">2</span>pregnant moms have other issues</p>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">3</span>caregivers & children have other issues</p>
-                </div>
-
-                {/* End main area */}
-              </div>
-            </div>
-
-
-          </div>}
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          &&
-          <div className="m-10  mb-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
+          <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-errorMain  border-l-8 border-2 border-errorMain">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               {/* Start main area*/}
               <div className="flex flex-row border-b-4 border-dashed pb-0">
-                < StarIcon className='w-12 h-12 pb-2 successMain' style={{
-                  color: '#83BB26'
-                }}></StarIcon>
-                <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
+                <ExclamationCircleIcon className='w-12 h-12 pb-2' style={{
+                  color: '#ED1414'
+                }}></ExclamationCircleIcon>
+                <h3 className='pb-0  text-2xl mb-2 pt-2'> Urgent issues</h3>
+
               </div>
               <div className='flex flex-col justify-evenly pt-4 text-current'>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>visits missed</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>pregnant moms have urgent issues</p>
+
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>caregivers & children have urgent issues</p>
+              </div>
+              {/* End main area */}
+            </div>
+          </div>
+          <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-alertMain  border-l-8 border-2 border-alertMain">
+            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              {/* Start main area*/}
+              <div className="flex flex-row border-b-4 border-dashed pb-0">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="currentColor" className="w-12 h-12" style={{
+                  color: '#FF5C00'
+                }}>
+                  <path fillRule="evenodd" d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z" clipRule="evenodd" />
+                </svg>
+                <h3 className='pb-0  text-2xl mb-2 pt-2'> Other issues</h3>
+              </div>
+              <div className='flex flex-col justify-evenly pt-4 text-current'>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">12</span>visits overdue</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">2</span>pregnant moms have other issues</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">3</span>caregivers & children have other issues</p>
               </div>
 
               {/* End main area */}
             </div>
           </div>
-        }
-        {
-          data &&
-          data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          && <div className="pl-4 flex flex-row w-6/12">
 
-            <Button
-              className={'mt-3 w-4/12 rounded'}
-              type="outlined"
-              // isLoading={isLoading}
+
+        </div>
+        <div className="m-10  mb-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
+          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+            {/* Start main area*/}
+            <div className="flex flex-row border-b-4 border-dashed pb-0">
+              < StarIcon className='w-12 h-12 pb-2 successMain' style={{
+                color: '#83BB26'
+              }}></StarIcon>
+              <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
+            </div>
+            <div className='flex flex-col justify-evenly pt-4 text-current'>
+              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
+              <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
+            </div>
+
+            {/* End main area */}
+          </div>
+        </div>
+
+        <div className="pl-4 flex flex-row w-6/12">
+
+          <Button
+            className={'mt-3 w-4/12 rounded'}
+            type="outlined"
+            isLoading={isLoading}
+            color="tertiary"
+            onClick={deleteUserAndRefresh}
+          >
+            <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
+            <Typography
+              type="help"
               color="tertiary"
-              onClick={() => deleteUserAndRefresh}
-            >
-              <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
-              <Typography
-                type="help"
-                color="tertiary"
-                text={'Deactivate User'}
-              ></Typography>
-            </Button>
+              text={'Deactivate User'}
+            ></Typography>
+          </Button>
 
-          </div>}
+        </div>
       </div>
     </div>
 
