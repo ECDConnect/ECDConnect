@@ -37,10 +37,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         }
 
         public string Id { get; set; }
-        public bool IsSouthAfricanCitizen { get; set; }
+        public bool? IsSouthAfricanCitizen { get; set; }
         public string IdNumber { get; set; }
-        public bool VerifiedByHomeAffairs { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public bool? VerifiedByHomeAffairs { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public Guid? GenderId { get; set; }
         public Guid? RaceId { get; set; }
         public string FirstName { get; set; }
