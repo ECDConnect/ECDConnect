@@ -21,7 +21,7 @@ import {
   userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { DeleteUser, GetUserById, UpdateUser } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -32,7 +32,6 @@ export function ViewUser(props) {
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
-  const [resetUserPassword] = useMutation(ResetUserPassword);
 
 
   const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
@@ -96,8 +95,43 @@ export function ViewUser(props) {
     setShowPassword(!showPassword);
   };
 
+
+  //check password strength
+  const password = watch('password');
+  const formValues = getValues();
+  // const passwordStrength = zxcvbn(password);
+  // const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+  const passwordScore = 2;
+
   const { errors, isValid } = formState;
   const [editActive, setEditActive] = useState<boolean>(false);
+  const panel = usePanel();
+  // const { data, refetch } = useQuery(GetAllTeamLead, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
+
+
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              // refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
 
   const {
     register: userDetailRegister,
@@ -110,6 +144,7 @@ export function ViewUser(props) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+  userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -120,10 +155,8 @@ export function ViewUser(props) {
     defaultValues: initialPasswordValue,
     mode: 'onBlur',
   });
-
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
-
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     let internalIsPasswordValid = true;
@@ -138,7 +171,7 @@ export function ViewUser(props) {
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
-  // SET EDIT FORMS
+      // SET EDIT FORMS
   useEffect(() => {
     if (props.user && userDetailFormState) {
       userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
@@ -148,60 +181,12 @@ export function ViewUser(props) {
       userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
         shouldValidate: true,
       });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.userById]);
-
-  const saveUser = async (passwordChange: boolean) => {
-    const passwordForm = passwordGetValues();
-    const userDetailForm = userDetailGetValues();
-
-    const userInputModel: UserModelInput = {
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-    };
-
-    await updateUser({
-      variables: {
-        id: props.user.id,
-        input: { ...userInputModel },
-      },
-    });
-
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id: props.user.id,
-          newPassword: passwordForm.password,
-        },
+      userDetailSetValue('surname', props.user.surname ?? '', {
+        shouldValidate: true,
       });
     }
-  };
-
-  const onSave = async () => {
-    const passwordForm = passwordGetValues();
-    let passwordChange = false;
-    let internalIsPasswordValid = true;
-    let isValid = isUserDetailValid;
-
-    if (passwordForm.password.length > 0) {
-      passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    if (isValid && internalIsPasswordValid) {
-      await saveUser(passwordChange);
-    }
-  };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [props.user]);
 
   // console.log(isValid);
   return (
@@ -419,10 +404,10 @@ export function ViewUser(props) {
           <Button
             className={'mt-3 w-4/12 rounded mr-6'}
             type="filled"
-            // isLoading={isLoading}
+            isLoading={isLoading}
             color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
+            disabled={!isValid}
+          // onClick={() => saveUser()}
           >
             <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
             <Typography

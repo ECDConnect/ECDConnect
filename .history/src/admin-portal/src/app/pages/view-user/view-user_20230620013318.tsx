@@ -21,7 +21,7 @@ import {
   userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { DeleteUser, GetUserById, UpdateUser } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -32,7 +32,6 @@ export function ViewUser(props) {
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
-  const [resetUserPassword] = useMutation(ResetUserPassword);
 
 
   const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
@@ -110,6 +109,7 @@ export function ViewUser(props) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+  userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -138,7 +138,7 @@ export function ViewUser(props) {
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
-  // SET EDIT FORMS
+      // SET EDIT FORMS
   useEffect(() => {
     if (props.user && userDetailFormState) {
       userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
@@ -151,57 +151,6 @@ export function ViewUser(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.userById]);
-
-  const saveUser = async (passwordChange: boolean) => {
-    const passwordForm = passwordGetValues();
-    const userDetailForm = userDetailGetValues();
-
-    const userInputModel: UserModelInput = {
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-    };
-
-    await updateUser({
-      variables: {
-        id: props.user.id,
-        input: { ...userInputModel },
-      },
-    });
-
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id: props.user.id,
-          newPassword: passwordForm.password,
-        },
-      });
-    }
-  };
-
-  const onSave = async () => {
-    const passwordForm = passwordGetValues();
-    let passwordChange = false;
-    let internalIsPasswordValid = true;
-    let isValid = isUserDetailValid;
-
-    if (passwordForm.password.length > 0) {
-      passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    if (isValid && internalIsPasswordValid) {
-      await saveUser(passwordChange);
-    }
-  };
 
   // console.log(isValid);
   return (
@@ -419,10 +368,10 @@ export function ViewUser(props) {
           <Button
             className={'mt-3 w-4/12 rounded mr-6'}
             type="filled"
-            // isLoading={isLoading}
+            isLoading={isLoading}
             color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
+            disabled={!isValid}
+          // onClick={() => saveUser()}
           >
             <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
             <Typography

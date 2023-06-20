@@ -422,7 +422,7 @@ export function ViewUser(props) {
             // isLoading={isLoading}
             color="secondary"
             // disabled={!isValid}
-            onClick={()=>onSave}
+            onClick={()=>onSave()}
           >
             <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
             <Typography

@@ -3,27 +3,21 @@ import { Button, DialogPosition, Dropdown, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import {
-  initialPasswordValue,
-  initialUserDetailsValues,
   NOTIFICATION,
-  passwordSchema,
   PermissionEnum,
   useDialog,
   useNotifications,
   usePanel,
   UserDto,
-  userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
-import UserDetailsForm from '../users/components/user-details-form/user-details-form';
-import { yupResolver } from '@hookform/resolvers/yup';
+import { DeleteUser, GetUserById, UpdateUser } from '@ecdlink/graphql';
 
 export function ViewUser(props) {
   const [showPassword, setShowPassword] = useState(false);
@@ -32,7 +26,6 @@ export function ViewUser(props) {
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
-  const [resetUserPassword] = useMutation(ResetUserPassword);
 
 
   const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
@@ -45,7 +38,7 @@ export function ViewUser(props) {
   useEffect(() => {
     getUserById({ variables: { userId: userId } });
     console.log(">rowDta>>", userId, userData)
-
+ 
   }, [userId])
 
   const { register, getValues, formState, watch } = useForm({
@@ -96,112 +89,143 @@ export function ViewUser(props) {
     setShowPassword(!showPassword);
   };
 
+
+  //check password strength
+  const password = watch('password');
+  const formValues = getValues();
+  // const passwordStrength = zxcvbn(password);
+  // const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+  const passwordScore = 2;
+
   const { errors, isValid } = formState;
   const [editActive, setEditActive] = useState<boolean>(false);
+  const panel = usePanel();
+  // const { data, refetch } = useQuery(GetAllTeamLead, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
 
-  const {
-    register: userDetailRegister,
-    setValue: userDetailSetValue,
-    formState: userDetailFormState,
-    getValues: userDetailGetValues,
-    control,
-  } = useForm({
-    resolver: yupResolver(userSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onBlur',
-  });
-  // PASSWORD FORMS
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
 
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
 
-  const getIsValid = () => {
-    let isValid = isUserDetailValid;
-    let internalIsPasswordValid = true;
-    const passwordForm = passwordGetValues();
-
-    if (passwordForm.password.length > 0) {
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    return isValid && internalIsPasswordValid ? true : false;
-  };
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
-
-  // SET EDIT FORMS
-  useEffect(() => {
-    if (props.user && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
-        shouldValidate: true,
-      });
-
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
-        shouldValidate: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.userById]);
-
-  const saveUser = async (passwordChange: boolean) => {
-    const passwordForm = passwordGetValues();
-    const userDetailForm = userDetailGetValues();
-
-    const userInputModel: UserModelInput = {
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-    };
-
-    await updateUser({
-      variables: {
-        id: props.user.id,
-        input: { ...userInputModel },
-      },
+            if (userCreated) {
+              // refetch();
+            }
+          }}
+        />
+      ),
     });
-
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id: props.user.id,
-          newPassword: passwordForm.password,
-        },
-      });
-    }
   };
 
-  const onSave = async () => {
-    const passwordForm = passwordGetValues();
-    let passwordChange = false;
-    let internalIsPasswordValid = true;
-    let isValid = isUserDetailValid;
 
-    if (passwordForm.password.length > 0) {
-      passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
-    }
+  const personalEditInformationComponent = () => {
+    return <form className="">
+      <div className="rounded-2xl bg-white  lg:min-w-0 lg:flex-1">
+        <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+          {/* Start main area*/}
+          <div className="flex h-full " style={{ minHeight: '30rem' }}>
+            <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+              <div
+                className="flex  "
+                style={{ width: '50rem' }}
+              >
 
-    if (isValid && internalIsPasswordValid) {
-      await saveUser(passwordChange);
-    }
-  };
+
+                <div className="flex w-full flex-col">
+                  <div>
+                    <FormField
+                      label={'First Name *'}
+                      nameProp={'firstName'}
+                      register={register}
+                      error={errors.firstName?.message}
+                    />
+                  </div>
+
+                  <div className="w-full pt-10">
+                    <FormField
+                      label={'Surname *'}
+                      nameProp={'surname'}
+                      register={register}
+                      error={errors.surname?.message}
+                    />
+                  </div>
+                </div>
+              </div>
+              <div className="flex w-full flex-col pt-6">
+                <div>
+                  <FormField
+                    label={'Email address *'}
+                    nameProp={'email'}
+                    placeholder="elishabere@gmail.com"
+                    register={register}
+                    defaultValue={'elishabere@gmail.com'}
+                    disabled
+                  />
+                </div>
+
+                <div className="space-y-2 pt-6 pb-4">
+                  <FormField
+                    label={'Password *'}
+                    nameProp={'password'}
+                    register={register}
+                    type="password"
+                    error={errors.password?.message}
+                    showPassword={showPassword}
+                    togglePasswordVisibility={togglePasswordVisibility}
+                  />
+                </div>
+                <div className="-mx-1 flex">
+                  {[...Array(4)].map((_, i) => (
+                    <div className="w-1/4 px-1" key={i}>
+                      <div
+                        className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                          ? passwordScore <= 2
+                            ? 'bg-red-400'
+                            : passwordScore <= 3
+                              ? 'bg-yellow-400'
+                              : passwordScore <= 4
+                                ? 'bg-green-500'
+                                : 'bg-yellow-400'
+                          : 'bg-gray-200'
+                          }`}
+                      ></div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+          {/* End main area */}
+        </div>
+      </div>
+      <div className="pl-4 flex flex-row w-6/12">
+        <Button
+          className={'mt-3 w-4/12 rounded'}
+          type="outlined"
+          isLoading={isLoading}
+          color="tertiary"
+          disabled={!isValid}
+        // onClick={signIn}
+        >
+          <Typography
+            type="help"
+            color="tertiary"
+            text={'Deactivate'}
+          ></Typography>
+        </Button>
+
+      </div>
+    </form>;
+  }
 
   // console.log(isValid);
   return (
@@ -231,18 +255,19 @@ export function ViewUser(props) {
                   className="h-40 w-40 mr-6 flex-shrink-0 self-center rounded-full md:justify-self-start"
                 />
                 <div className='sm: pt-12'>
-                  <p className='text-3xl font-normal '>{userData?.userById?.firstName + ' ' + userData?.userById?.surname}</p>
-
-                  {userData?.userById.roles.map((i: any, index: number) => {
-                    return <div
-                      key={i.id}
-                      className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-6/12 flex justify-center flex-row"
-                    >
-                      <p className='text-16'> {i.name}</p>
-                    </div>
+                  <p className='text-3xl font-normal '>{userData?.userById?.firstName}</p>
+                
+                  {userData?.userById.roles.map((i: any,index:number)=>{
+                   return    <div
+                   key={i.id}
+                   className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white w-6/12 flex"
+                 >
+              
+                  <p className='text-md'>    {i.name}</p>
+                 </div>
                   })}
 
-
+                 
                   <p>{userData?.firstName}</p>
                 </div>
 
@@ -259,54 +284,19 @@ export function ViewUser(props) {
             {/* Start main area*/}
             <h3 className='pb-2 border-b-4 border-dashed text-xl '> Personal information </h3>
             {
-              editActive ? <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
-                <div className="space-y-0">
-
-                  <div className="grid grid-cols-1 ">
-                    <div className="my-4 sm:col-span-3 w-6/12">
-                      <FormField
-                        label={'ID number *'}
-                        nameProp={'idNumber'}
-                        register={register}
-                        error={errors.firstName?.message}
-                        defaultValue={userData?.userById?.idNumber}
-                      />
-                    </div>
-                    <div className="my-4 sm:col-span-3 w-6/12">
-                      <FormField
-                        label={'Cellphone number *'}
-                        nameProp={'phoneNumber'}
-                        register={register}
-                        error={errors.surname?.message}
-                        defaultValue={userData?.userById?.phoneNumber}
-
-                      />
-                    </div>
-                    <div className="my-4 sm:col-span-3 w-6/12">
-                      <FormField
-                        label={'Password *'}
-                        nameProp={'password'}
-                        register={passwordRegister}
-                        type="password"
-                        error={errors.password?.message}
-                        showPassword={showPassword}
-                        togglePasswordVisibility={togglePasswordVisibility}
-                      />
-                    </div>
-                  </div>
-                </div>
-              </form> :
+              editActive ? personalEditInformationComponent() :
                 <div className='flex flex-row justify-start pt-4 text-current'>
-                  <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
-                  <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
-                  <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
+                  <p className='text-xl px-4'>ID: 1234567891234</p>
+                  <p className='text-xl px-4'> Cellphone: 067 891 2345</p>
+                  <p className='text-xl px-4'>WhatsApp:  072 891 2345</p>
+
                 </div>
 
             }
             {/* End main area */}
           </div>
           <div className='flex justify-end p-4'>
-            <button onClick={() => setEditActive(!editActive)} id="dropdownHoverButton"
+            <button onClick={displayEditUserPanel} id="dropdownHoverButton"
               className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary w-1/ text-center focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm py-2.5 px-12 inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
               type="button">Edit
 
@@ -397,7 +387,7 @@ export function ViewUser(props) {
 
 
         </div>
-        <div className="m-10  mb-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
+        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
           <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <div className="flex flex-row border-b-4 border-dashed pb-0">
@@ -416,21 +406,6 @@ export function ViewUser(props) {
         </div>
 
         <div className="pl-4 flex flex-row w-6/12">
-          <Button
-            className={'mt-3 w-4/12 rounded mr-6'}
-            type="filled"
-            // isLoading={isLoading}
-            color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
-          >
-            <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-            <Typography
-              type="help"
-              color="white"
-              text={'Save Changes'}
-            ></Typography>
-          </Button>
           <Button
             className={'mt-3 w-4/12 rounded'}
             type="outlined"

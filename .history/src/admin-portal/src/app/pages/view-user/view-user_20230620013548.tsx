@@ -110,6 +110,7 @@ export function ViewUser(props) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
+  userDetailFormState;
   // PASSWORD FORMS
   const {
     register: passwordRegister,
@@ -151,7 +152,7 @@ export function ViewUser(props) {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData?.userById]);
-
+  
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
@@ -419,10 +420,10 @@ export function ViewUser(props) {
           <Button
             className={'mt-3 w-4/12 rounded mr-6'}
             type="filled"
-            // isLoading={isLoading}
+            isLoading={isLoading}
             color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
+            disabled={!isValid}
+          // onClick={() => saveUser()}
           >
             <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
             <Typography

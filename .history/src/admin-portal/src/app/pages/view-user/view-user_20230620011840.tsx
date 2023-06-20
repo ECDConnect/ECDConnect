@@ -3,16 +3,14 @@ import { Button, DialogPosition, Dropdown, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import debounce from 'lodash.debounce';
 import {
-  initialPasswordValue,
   initialUserDetailsValues,
   NOTIFICATION,
-  passwordSchema,
   PermissionEnum,
   useDialog,
   useNotifications,
@@ -21,7 +19,7 @@ import {
   userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { DeleteUser, GetUserById, UpdateUser } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 
@@ -32,7 +30,6 @@ export function ViewUser(props) {
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
-  const [resetUserPassword] = useMutation(ResetUserPassword);
 
 
   const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
@@ -96,8 +93,43 @@ export function ViewUser(props) {
     setShowPassword(!showPassword);
   };
 
+
+  //check password strength
+  const password = watch('password');
+  const formValues = getValues();
+  // const passwordStrength = zxcvbn(password);
+  // const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+  const passwordScore = 2;
+
   const { errors, isValid } = formState;
   const [editActive, setEditActive] = useState<boolean>(false);
+  const panel = usePanel();
+  // const { data, refetch } = useQuery(GetAllTeamLead, {
+  //   fetchPolicy: 'cache-and-network',
+  // });
+
+
+  const displayEditUserPanel = (user: any) => {
+    panel({
+      noPadding: true,
+      title: '',
+      presentationStyle: 'overFullScreen',
+      render: (onSubmit) => (
+        <HealthCareWorkerPanelEdit
+          key={`userPanelEdit`}
+          practitioner={user}
+          closeDialog={(userCreated: boolean) => {
+            onSubmit();
+
+            if (userCreated) {
+              // refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
+
 
   const {
     register: userDetailRegister,
@@ -110,98 +142,9 @@ export function ViewUser(props) {
     defaultValues: initialUserDetailsValues,
     mode: 'onBlur',
   });
-  // PASSWORD FORMS
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
 
-  const { errors: passwordFormErrors, isValid: isPasswordValid } =
-    passwordFormState;
-
-  const getIsValid = () => {
-    let isValid = isUserDetailValid;
-    let internalIsPasswordValid = true;
-    const passwordForm = passwordGetValues();
-
-    if (passwordForm.password.length > 0) {
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    return isValid && internalIsPasswordValid ? true : false;
-  };
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
-
-  // SET EDIT FORMS
-  useEffect(() => {
-    if (props.user && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber ?? '', {
-        shouldValidate: true,
-      });
-
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber ?? '', {
-        shouldValidate: true,
-      });
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.userById]);
-
-  const saveUser = async (passwordChange: boolean) => {
-    const passwordForm = passwordGetValues();
-    const userDetailForm = userDetailGetValues();
-
-    const userInputModel: UserModelInput = {
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
-      dateOfBirth: new Date(),
-      isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-    };
-
-    await updateUser({
-      variables: {
-        id: props.user.id,
-        input: { ...userInputModel },
-      },
-    });
-
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
-    if (passwordChange) {
-      await resetUserPassword({
-        variables: {
-          id: props.user.id,
-          newPassword: passwordForm.password,
-        },
-      });
-    }
-  };
-
-  const onSave = async () => {
-    const passwordForm = passwordGetValues();
-    let passwordChange = false;
-    let internalIsPasswordValid = true;
-    let isValid = isUserDetailValid;
-
-    if (passwordForm.password.length > 0) {
-      passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    if (isValid && internalIsPasswordValid) {
-      await saveUser(passwordChange);
-    }
-  };
 
   // console.log(isValid);
   return (
@@ -262,14 +205,14 @@ export function ViewUser(props) {
               editActive ? <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
                 <div className="space-y-0">
 
-                  <div className="grid grid-cols-1 ">
-                    <div className="my-4 sm:col-span-3 w-6/12">
+                  <div className="grid grid-cols-1 w-6/12">
+                    <div className="my-4 sm:col-span-3">
                       <FormField
                         label={'ID number *'}
                         nameProp={'idNumber'}
                         register={register}
                         error={errors.firstName?.message}
-                        defaultValue={userData?.userById?.idNumber}
+                        placeholder="First name"
                       />
                     </div>
                     <div className="my-4 sm:col-span-3 w-6/12">
@@ -278,19 +221,19 @@ export function ViewUser(props) {
                         nameProp={'phoneNumber'}
                         register={register}
                         error={errors.surname?.message}
-                        defaultValue={userData?.userById?.phoneNumber}
-
+                        placeholder="Surname/family name"
                       />
                     </div>
                     <div className="my-4 sm:col-span-3 w-6/12">
                       <FormField
                         label={'Password *'}
                         nameProp={'password'}
-                        register={passwordRegister}
+                        register={register}
                         type="password"
                         error={errors.password?.message}
                         showPassword={showPassword}
                         togglePasswordVisibility={togglePasswordVisibility}
+                       
                       />
                     </div>
                   </div>
@@ -397,7 +340,7 @@ export function ViewUser(props) {
 
 
         </div>
-        <div className="m-10  mb-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
+        <div className="m-10  mb-12 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
           <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <div className="flex flex-row border-b-4 border-dashed pb-0">
@@ -416,21 +359,6 @@ export function ViewUser(props) {
         </div>
 
         <div className="pl-4 flex flex-row w-6/12">
-          <Button
-            className={'mt-3 w-4/12 rounded mr-6'}
-            type="filled"
-            // isLoading={isLoading}
-            color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
-          >
-            <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-            <Typography
-              type="help"
-              color="white"
-              text={'Save Changes'}
-            ></Typography>
-          </Button>
           <Button
             className={'mt-3 w-4/12 rounded'}
             type="outlined"

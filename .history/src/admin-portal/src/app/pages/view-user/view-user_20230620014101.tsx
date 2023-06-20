@@ -419,10 +419,10 @@ export function ViewUser(props) {
           <Button
             className={'mt-3 w-4/12 rounded mr-6'}
             type="filled"
-            // isLoading={isLoading}
+            isLoading={isLoading}
             color="secondary"
-            // disabled={!isValid}
-            onClick={()=>onSave}
+            disabled={!isValid}
+            onClick={onSave()}
           >
             <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
             <Typography
