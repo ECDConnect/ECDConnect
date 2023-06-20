@@ -1,9 +1,41 @@
+using ECDLink.DataAccessLayer.Entities;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class UserModel
     {
+        public UserModel()
+        {
+        }
+
+        public UserModel(ApplicationUser user)
+        {
+            Id = user.Id;
+            IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
+            IdNumber = user.IdNumber;
+            VerifiedByHomeAffairs = user.VerifiedByHomeAffairs;
+            DateOfBirth = user.DateOfBirth;
+            GenderId = user.GenderId;
+            RaceId = user.RaceId;
+            FirstName = user.FirstName;
+            Surname = user.Surname;
+            ContactPreference = user.ContactPreference ?? "sms";
+            PhoneNumber = user.PhoneNumber;
+            Email = user.Email;
+            ProfileImageUrl = user.ProfileImageUrl;
+            LanguageId = user.LanguageId;
+            EmergencyContactPhoneNumber = user.EmergencyContactPhoneNumber;
+            EmergencyContactFirstName = user.EmergencyContactFirstName;
+            EmergencyContactSurname = user.EmergencyContactSurname;
+            NextOfKinFirstName = user.NextOfKinFirstName;
+            NextOfKinSurname = user.NextOfKinSurname;
+            NextOfKinContactNumber = user.NextOfKinContactNumber;
+            WhatsAppNumber = user.WhatsAppNumber;
+            Password = null;
+            IsAdmin = null;
+        }
+
         public string Id { get; set; }
         public bool IsSouthAfricanCitizen { get; set; }
         public string IdNumber { get; set; }

@@ -14,4 +14,9 @@
 
         public const string CHILD = "Child";
     }
+    public static class RolesGG
+    {
+        public const string HEALTH_CARE_WORKER = "Health Care Worker";
+        public const string TEAM_LEAD = "Team Lead";
+    }
 }
