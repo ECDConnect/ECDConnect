@@ -453,7 +453,7 @@ export const ActivityList: React.FC = () => {
       visitThunkActions.getCompletedVisitsForVisitId({
         visitId,
       })
-    );
+    ).unwrap();
     // appDispatch(
     //   visitThunkActions.getPreviousVisitInformationForInfant({
     //     visitId,

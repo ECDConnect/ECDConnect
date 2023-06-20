@@ -66,6 +66,7 @@ export enum NavigationTypes {
   Logout = 'Logout',
   Practitioners = 'Practitioners',
   Business = 'Business',
+  SmartStarters = 'SmartStarters',
 }
 
 export const Dashboard: React.FC = () => {
@@ -354,7 +355,7 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationTypes.Practitioners,
+      name: NavigationTypes.SmartStarters,
       icon: 'AcademicCapIcon',
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
