@@ -129,7 +129,7 @@ export const CoachVisitInfo: React.FC<CoachVisitInfoProps> = ({
           className="mt-4 mb-2 w-full"
           onClick={() => setSHowCoachVisit(false)}
         >
-          {renderIcon('XIcon', 'mr-2 text-primary w-5')}
+          {renderIcon('XIcon', 'mr-2 text-white w-5')}
           <Typography type={'body'} text={'Close'} color={'white'} />
         </Button>
       </div>

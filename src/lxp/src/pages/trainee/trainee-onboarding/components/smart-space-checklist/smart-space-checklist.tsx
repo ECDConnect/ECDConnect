@@ -4,6 +4,8 @@ import {
   Alert,
   BannerWrapper,
   Button,
+  Dialog,
+  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
@@ -33,6 +35,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useAppDispatch } from '@/store';
 import ROUTES from '@/routes/routes';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
+import { CoachVisitInfo } from '../trainee-onboarding-dashboard/components/coach-visit-info';
 
 interface SmartSpaceChecklistProps {
   setNotificationStep: any;
@@ -63,6 +66,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const traineeCurrentVisit = traineeVisits?.[0];
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [continueChecklist, setContinueChecklist] = useState(false);
+  const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
 
@@ -448,7 +452,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
                   type="filled"
                   color="primary"
                   className="mt-4 mb-2 w-full"
-                  onClick={() => {}}
+                  onClick={() => setSHowCoachVisit(true)}
                 >
                   {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                   <Typography
@@ -506,6 +510,14 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
           )}
         </div>
       </div>
+      <Dialog
+        fullScreen={false}
+        visible={showCoachVisit}
+        position={DialogPosition.Full}
+        stretch={true}
+      >
+        <CoachVisitInfo setSHowCoachVisit={setSHowCoachVisit} />
+      </Dialog>
     </BannerWrapper>
   );
 };

@@ -133,7 +133,6 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
             />
             <div className="mt-2 flex items-start gap-2">
               <Checkbox
-                // checked={}
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 2)}
               />
               <Typography
@@ -162,7 +161,7 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
               className="mb-4 w-full"
               type="filled"
               color="primary"
-              text="Next"
+              text="Save"
               textColor="white"
               icon="ArrowCircleRightIcon"
               onClick={() => {

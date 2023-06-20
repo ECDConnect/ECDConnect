@@ -90,19 +90,24 @@ export const OnboardingTraineeDashboard: React.FC<
     }
   }, [completedFlow]);
 
+  const filteredUncompletedSteps = uncompletedSteps.filter(
+    (item) => item?.title !== 'SmartSpace visit from coach'
+  );
+
   const notificationItem: MenuListDataItem[] = [
     {
       showIcon: true,
       menuIcon: 'PencilAltIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
-      title: uncompletedSteps?.[0].title,
+      title: filteredUncompletedSteps?.[0]?.title,
       titleStyle: 'text-textDark semibold',
-      subTitle: uncompletedSteps?.[0].subTitle,
+      subTitle: filteredUncompletedSteps?.[0]?.subTitle,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'primary',
       backgroundColor: 'uiBg',
-      onActionClick: () => setNotificationStep(uncompletedSteps?.[0].title),
+      onActionClick: () =>
+        setNotificationStep(filteredUncompletedSteps?.[0]?.title),
     },
   ];
 
@@ -185,12 +190,14 @@ export const OnboardingTraineeDashboard: React.FC<
         )}
         {showSteps && (
           <>
-            <StackedList
-              isFullHeight={false}
-              className={'flex flex-col gap-2'}
-              listItems={notificationItem}
-              type={'MenuList'}
-            />
+            {!completedFlow && (
+              <StackedList
+                isFullHeight={false}
+                className={'flex flex-col gap-2'}
+                listItems={notificationItem}
+                type={'MenuList'}
+              />
+            )}
             <Typography
               className={'my-3 w-11/12'}
               color={'textDark'}

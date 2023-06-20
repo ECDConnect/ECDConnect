@@ -29,18 +29,8 @@ export const TraineeOnboarding = () => {
     );
   };
 
-  // useEffect(() => {
-  //   (async () =>
-  //     await appDispatch(
-  //       traineeThunkActions.getTraineeTimeline({
-  //         userId: user?.id ? user?.id : '',
-  //       })
-  //     ).unwrap())();
-  //   // eslint-disable-next-line react-hooks/exhaustive-deps
-  // }, []);
-
   useEffect(() => {
-    if (notificationStep) {
+    if (notificationStep === '') {
       updateTimeline();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
