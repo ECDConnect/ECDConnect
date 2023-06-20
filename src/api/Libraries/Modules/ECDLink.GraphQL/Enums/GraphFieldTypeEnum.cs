@@ -8,6 +8,7 @@ namespace ECDLink.EGraphQL.Enums
         GetAll,
         Create,
         Update,
-        Delete
+        Delete,
+        Count
     }
 }

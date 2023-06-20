@@ -35,5 +35,18 @@ namespace ECDLink.EGraphQL.Resolvers
             
             return getAllQuery;
         }
+
+        public int Count(
+          IGenericRepositoryFactory repositoryFactory,
+          [Service] IHttpContextAccessor httpContextAccessor,
+          PagedQueryInput? pagingInput = null)
+        {
+            var repository = repositoryFactory.CreateRepository<T>();
+            repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
+
+            var getAllQuery = repository.Count(pagingInput);
+
+            return getAllQuery;
+        }
     }
 }

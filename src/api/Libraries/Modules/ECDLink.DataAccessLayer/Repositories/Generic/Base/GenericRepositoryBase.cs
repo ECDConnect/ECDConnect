@@ -55,6 +55,19 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             return queryable;
         }
 
+        public virtual int Count(PagedQueryInput pagingInput = null)
+        {
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+
+            if (pagingInput is not null)
+            {
+                queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
+                // No need to sort or paginate for counts.
+            }
+
+            return queryable.Count();
+        }
+
         public virtual T GetById(Guid id)
         {
             return entities.Where(e => e.TenantId.Equals(_tenantId)).SingleOrDefault(s => s.Id == id);

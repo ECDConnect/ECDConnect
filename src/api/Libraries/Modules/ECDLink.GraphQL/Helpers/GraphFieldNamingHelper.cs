@@ -24,6 +24,8 @@ namespace ECDLink.EGraphQL.Services
                     return $"update{contentType.NoSpace()}";
                 case GraphFieldTypeEnum.Delete:
                     return $"delete{contentType.NoSpace()}";
+                case GraphFieldTypeEnum.Count:
+                    return $"count{contentType.NoSpace()}";
                 default:
                     throw new NotImplementedException("No such Field case exists");
             }

@@ -35,6 +35,14 @@ namespace ECDLink.EGraphQL.Registration.AutoGenerateTypes.Queries
               .ResolveWith<GenericQueryResolvers<T>>(r => r.GetAll(default, default, default))
               .UseFiltering();
 
+            descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.Count, typeof(T).Name))
+              .Type<IntType>()
+              .Directive(metadata)
+              .UseDbContext<AuthenticationDbContext>()
+              .Argument(ArgumentConstants.PagingInput, a => a.Type<PagedQueryInputType>())
+              .ResolveWith<GenericQueryResolvers<T>>(r => r.Count(default, default, default))
+              .UseFiltering();
+
             descriptor.Field(GraphFieldNamingHelper.GetFieldName(GraphFieldTypeEnum.GetById, typeof(T).Name))
               .Argument(ArgumentConstants.Id, a => a.Type<UuidType>())
               .Type<ObjectType<T>>()
