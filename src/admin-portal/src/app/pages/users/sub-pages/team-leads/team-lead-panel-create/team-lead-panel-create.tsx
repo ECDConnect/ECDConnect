@@ -257,7 +257,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="b px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
@@ -273,7 +273,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="mt-5 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Team Lead Detail
@@ -287,7 +287,7 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" r-4 mt-5 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Address Detail
@@ -297,21 +297,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
             formKey={`createSiteAddress-${new Date().getTime()}`}
             register={siteAddressRegister}
             errors={siteAddressFormErrors}
-          />
-        </div>
-
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Password
-            </h3>
-          </div>
-
-          <PasswordForm
-            formKey={`createPassword-${new Date().getTime()}`}
-            isEdit={false}
-            register={passwordRegister}
-            errors={passwordFormErrors}
           />
         </div>
       </>

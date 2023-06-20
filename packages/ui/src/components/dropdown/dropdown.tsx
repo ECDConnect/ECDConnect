@@ -166,6 +166,8 @@ export function Dropdown<T>({
               leaveFrom={styles.leaveFrom}
               leaveTo={styles.leaveTo}
             >
+              {renderSearchInput}
+
               <Menu.Items static className={styles.menuItems}>
                 {options.length ? (
                   options.map((item: any, index: number) => {

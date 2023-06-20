@@ -8,6 +8,7 @@ import Dashboard from './pages/dashboard/dashboard';
 import Documents from './pages/documents/documents';
 import { Preview } from './pages/preview/preview';
 import Profile from './pages/profile/profile';
+import ViewUser from './pages/view-user/view-user';
 import Reports from './pages/reports/reports';
 import Roles from './pages/roles/roles';
 import Settings from './pages/settings/settings';
@@ -24,7 +25,7 @@ import ProvinceView from './pages/static-data/sub-pages/provinces/provinces';
 import RaceView from './pages/static-data/sub-pages/race/race';
 import ReasonForLeavingView from './pages/static-data/sub-pages/reason-for-leaving/reason-for-leaving';
 import RelationsView from './pages/static-data/sub-pages/relations/relations';
-import ApplicationUsers from './pages/users/sub-pages/application-users/application-users';
+import ApplicationAdmins from './pages/users/sub-pages/application-admins/application-admins';
 import Children from './pages/users/sub-pages/children/children';
 import Coaches from './pages/users/sub-pages/coaches/coaches';
 import HealthCareWorkers from './pages/users/sub-pages/health-care-worker/health-care-worker';
@@ -37,7 +38,7 @@ import Clinics from './pages/users/sub-pages/clincs/clinics';
 import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
 import ForgotPassword from './components/auth/forgot-password/forgot-password';
 import ResetPassword from './components/auth/reset-password/reset-password';
-
+import ApplicationUsers from './pages/users/sub-pages/application-users/application-users';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -65,12 +66,12 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={`/profile`} component={Profile}></Route>
+      <Route path={`/view-user`} component={ViewUser}></Route>
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>
       <Route path={`/Reports`} component={Reports}></Route>
       <Route path={`/roles`} component={Roles}></Route>
-
     </Switch>
   );
 };
@@ -90,7 +91,10 @@ const UserRoutes: React.FC = () => {
   return (
     <Switch>
       <Route path={`/users/roles`} component={Roles}></Route>
-      <Route path={`/users/application`} component={ApplicationUsers}></Route>
+      <Route path={`/users/all-roles`} component={ApplicationUsers}></Route>
+      <Route path={`/users/roles`} component={Roles}></Route>
+
+      <Route path={`/users/admins`} component={ApplicationAdmins}></Route>
       <Route path={`/users/franchisors`} component={Franchisors}></Route>
       <Route path={`/users/coaches`} component={Coaches}></Route>
       <Route path={`/users/practitioners`} component={Practitioners}></Route>

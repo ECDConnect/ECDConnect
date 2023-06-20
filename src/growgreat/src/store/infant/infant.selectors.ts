@@ -125,3 +125,44 @@ export const getCompletedReferralsForInfantSelector = (
   state: RootState
 ): VisitDataStatus[] | undefined =>
   state.infants.completedReferralsForInfant || [];
+
+export const getCurrentVisitSelector = (
+  state: RootState,
+  visitId: string
+): VisitDto | undefined => {
+  const allVisits = state.infants.visits || [];
+  // Priority 1: if a visit id is available, then return visit for id
+  if (visitId && visitId !== '') {
+    for (var i = 0; i < allVisits.length; i++) {
+      if (allVisits[i].id === visitId) {
+        return allVisits[i];
+      }
+    }
+  } else {
+    // Priority 2: if there is a visit in progress, we grab the first one
+    const inProgressList =
+      allVisits?.filter((item) => item.visitInProgress) || [];
+    if (inProgressList.length !== 0) {
+      return inProgressList[0];
+    }
+
+    // Priority 3: grab the latest completed visit from the list
+    const lastAttended = allVisits?.filter((item) => item.attended) || [];
+    if (lastAttended.length !== 0) {
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    } else {
+      // Priority 4: grab the latest uncompleted visit from the list
+      const noAttended =
+        allVisits?.filter(
+          (item) => !item.attended && new Date(item.orderDate) >= new Date()
+        ) || [];
+      return noAttended[0];
+    }
+  }
+};

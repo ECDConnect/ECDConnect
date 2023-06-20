@@ -73,20 +73,17 @@ export const Step19 = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const classroomGroupsForPrincipal = classroomGroups.filter(
+  const currentClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === smartStarter?.userId
   );
   const isPrincipal = smartStarter?.isPrincipal === true;
-  const classProgrammesForPrincipal = classProgrammes.filter((el) => {
-    return classroomGroupsForPrincipal.some((f) => {
+  const currentClassProgrammes = classProgrammes.filter((el) => {
+    return currentClassroomGroups.some((f) => {
       return f.id === el.classroomGroupId;
     });
   });
-  const classProgrammesUpdated = isPrincipal
-    ? classProgrammesForPrincipal
-    : classProgrammes;
 
-  const primaryClassProgramme = classProgrammesUpdated.filter(
+  const primaryClassProgramme = currentClassProgrammes.filter(
     (prog) => prog.meetingDay === getDay(new Date())
   );
 
@@ -189,7 +186,7 @@ export const Step19 = ({
       previousClassroomGroups?.length !== classroomGroups.length
     ) {
       const selectedGroups = isPrincipal
-        ? classroomGroupsForPrincipal.filter(
+        ? currentClassroomGroups.filter(
             (x) => x.id === primaryClassProgramme[0]?.classroomGroupId
           )
         : classroomGroups.filter(
@@ -199,7 +196,7 @@ export const Step19 = ({
     }
   }, [
     classroomGroups,
-    classroomGroupsForPrincipal,
+    currentClassroomGroups,
     isPrincipal,
     previousClassroomGroups?.length,
     primaryClassProgramme,
@@ -266,7 +263,7 @@ export const Step19 = ({
         text={renderTitle}
         color="textDark"
       />
-      {hasChildren && classroomGroupsForPrincipal.length > 1 && (
+      {hasChildren && currentClassroomGroups.length > 1 && (
         <div className="flex flex-row justify-between overflow-x-auto px-4 pt-4">
           <SearchDropDown<any>
             displayMenuOverlay
@@ -274,7 +271,7 @@ export const Step19 = ({
             className={'mr-1'}
             options={
               (classroomGroups && isPrincipal
-                ? classroomGroupsForPrincipal.map((x) => {
+                ? currentClassroomGroups.map((x) => {
                     return {
                       id: x.id ?? '',
                       value: x,

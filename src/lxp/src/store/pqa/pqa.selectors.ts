@@ -15,6 +15,17 @@ export const getPractitionerTimelineByIdSelector = (userId: string) => {
   );
 };
 
+export const getReAccreditationFormDataByIdSelector = (userId: string) => {
+  return createSelector(
+    (state: RootState) => state.pqa.reAccreditationFormData,
+    (items: FormData[] | undefined) => {
+      return items
+        ?.filter((item) => item.practitionerId === userId)
+        .map((item) => item.formData);
+    }
+  );
+};
+
 export const getPrePqaFormDataByIdSelector = (userId: string) => {
   return createSelector(
     (state: RootState) => state.pqa.prePqaFormData,
@@ -38,24 +49,24 @@ export const getPqaFormDataByIdSelector = (userId: string) => {
 };
 
 export const getCurrentCoachPractitionerVisitByUserId = (
-  currentVisitDescription: string,
+  currentVisitName: string,
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const currentVisit = timeline?.prePQASiteVisits?.find(
-      (visit) => visit?.visitType?.description === currentVisitDescription
+      (visit) => visit?.visitType?.name === currentVisitName
     );
 
     return currentVisit || undefined;
   });
 
 export const getPreviousCoachVisitByUserId = (
-  currentVisitDescription: string,
+  currentVisitName: string,
   userId: string
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const currentVisit = timeline?.prePQASiteVisits?.find(
-      (visit) => visit?.visitType?.description === currentVisitDescription
+      (visit) => visit?.visitType?.name === currentVisitName
     );
 
     if (currentVisit) {

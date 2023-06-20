@@ -5,7 +5,7 @@ import {
   usePanel,
   useTheme,
 } from '@ecdlink/core';
-import { GetAllNavigation } from '@ecdlink/graphql';
+import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
 import { Button, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
@@ -21,7 +21,7 @@ import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
-
+import ggLogo from '../../../assets/gg-logo.svg';
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -36,8 +36,10 @@ const MenuItem: React.FC<menuItemProps> = ({ item }) => {
     <Link
       to={item.route}
       className={classNames(
-        routeMatch ? 'bg-tertiary text-white' : 'hover:text-black hover:bg-white',
-        'group flex items-center rounded-md px-2 py-2 my-2 mx-1 text-sm font-medium text-white'
+        routeMatch
+          ? 'bg-tertiary text-white'
+          : 'hover:bg-white hover:text-black',
+        'group my-2 mx-1 flex items-center rounded-md px-2 py-2 text-sm font-medium text-white'
       )}
     >
       <Icon
@@ -101,11 +103,19 @@ export default function Shell() {
     }
   }, [user, navigationData]);
 
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const getLogoUrl = () => {
-    if (theme && theme.images) {
+    if (
+      theme &&
+      theme.images &&
+      data?.tenantContext.applicationName !== 'GrowGreat'
+    ) {
       return theme.images.logoUrl;
     } else {
-      return '';
+      return ggLogo;
     }
   };
 
@@ -211,7 +221,7 @@ export default function Shell() {
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <div >
+                  <div>
                     <MenuItem
                       key={`${item.name}-${new Date().getTime()}`}
                       item={item}

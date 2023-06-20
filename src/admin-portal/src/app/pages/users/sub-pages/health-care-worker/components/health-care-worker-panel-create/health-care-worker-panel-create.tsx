@@ -271,8 +271,9 @@ export default function HealthCareWorkerPanelCreate(
 
   const getIsValid = () => {
     console.log(userDetailFormErrors);
-    console.log(healthCareWorkerFormErrors);
     let isValid = isUserDetailValid;
+    console.log(healthCareWorkerFormErrors, isValid);
+
     if (!isHealthCareWorkerValid) isValid = false;
     return isValid ? true : false;
   };
@@ -280,7 +281,7 @@ export default function HealthCareWorkerPanelCreate(
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" border-b border-dashed border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               User Detail
@@ -296,7 +297,7 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Health Care Worker Detail
@@ -310,7 +311,7 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className=" mt-5 rounded-lg border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Address Detail
@@ -323,7 +324,7 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
+        <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password

@@ -20,58 +20,26 @@ export function Users() {
       return [
         {
           name: 'All Roles',
-          href: '/users/roles',
+          href: '/users/all-roles',
         },
         {
-          name: 'Clinics',
-          href: '/users/clinics',
+          name: "CHW's",
+          href: '/users/health-care-worker',
         },
         {
           name: 'Team Leads',
           href: '/users/team-leads',
         },
         {
-          name: 'Health Care Worker',
-          href: '/users/health-care-worker',
-        },
-        {
-          name: 'Mothers',
-          href: '/users/mother',
-        },
-        {
-          name: 'Children',
-          href: '/users/infant',
-        },
-        {
           name: 'Administrators',
-          href: '/users/application',
+          href: '/users/admins',
         },
       ];
     } else {
       return [
         {
-          name: 'All Roles',
-          href: '/users/roles',
-        },
-        {
-          name: 'Franchisors',
-          href: '/users/franchisors',
-        },
-        {
-          name: 'Coaches',
-          href: '/users/coaches',
-        },
-        {
-          name: 'Practitioners',
-          href: '/users/practitioners',
-        },
-        {
-          name: 'Children',
-          href: '/users/children',
-        },
-        {
           name: 'Administrators',
-          href: '/users/application',
+          href: '/users/admins',
         },
       ];
     }
@@ -81,6 +49,8 @@ export function Users() {
 
   const history = useHistory();
   useEffect(() => {
+    localStorage.removeItem('selectedUser');
+
     // GO TO DEFAULT ROUTE
     async function init() {
       history.push(navigation[0].href);
@@ -94,7 +64,13 @@ export function Users() {
     <div className="">
       <div className="flex justify-center bg-white ">
         {navigation.map((item) => (
-          <div className="w-3/12 ">
+          <div
+            className={
+              data?.tenantContext.applicationName === 'GrowGreat'
+                ? 'w-3/12 '
+                : 'w-full'
+            }
+          >
             <SubNavigationLink
               key={`${item.name}-${new Date().getTime()}`}
               item={item}

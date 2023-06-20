@@ -22,7 +22,7 @@ import PractitionerForm from '../../../../components/practitioner-form/practitio
 import SiteAddressForm from '../../../../components/site-address-form/site-address-form';
 import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 
-export interface PractitionerPanelProps {
+export interface HealthCareWorkerProps {
   practitioner: HealthCareWorkerDto;
   closeDialog: (value: boolean) => void;
 }
@@ -30,7 +30,7 @@ export interface PractitionerPanelProps {
 export default function HealthCareWorkerPanelEdit({
   practitioner,
   closeDialog,
-}: PractitionerPanelProps) {
+}: HealthCareWorkerProps) {
   const { setNotification } = useNotifications();
 
   const emitCloseDialog = (value: boolean) => {

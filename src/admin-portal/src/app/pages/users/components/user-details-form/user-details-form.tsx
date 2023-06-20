@@ -1,3 +1,4 @@
+import React from 'react';
 import { useQuery } from '@apollo/client';
 import { GenderDto, UserDto } from '@ecdlink/core';
 import { GenderList } from '@ecdlink/graphql';
@@ -7,7 +8,6 @@ import 'react-datepicker/dist/react-datepicker.css';
 import { UseFormRegister, UseFormSetValue, useWatch } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
 import FormSelectorField from '../../../../components/form-selector-field/form-selector-field';
-
 export interface UserDetailsFormProps {
   formKey: string;
   user?: UserDto;
@@ -25,11 +25,10 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   setValue,
   control,
 }) => {
-  const { data } = useQuery(GenderList, { fetchPolicy: 'cache-and-network' });
-
   useEffect(() => {
     if (user) {
       setValue('email', user.email, { shouldValidate: true });
+      console.log(user.email);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
@@ -37,12 +36,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
       <div className="space-y-0">
-        <div className="border-b border-dashed pb-4">
-          <h1 className="py-4 text-2xl text-black">Administrator details</h1>
-          <label className="text-md block font-medium text-gray-700">
-            Step 1 of 1
-          </label>
-        </div>
         <div className="grid grid-cols-1 ">
           <div className="my-4 sm:col-span-3">
             <FormField

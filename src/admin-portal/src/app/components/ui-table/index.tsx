@@ -1,9 +1,9 @@
 import { classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
-import debounce from 'lodash.debounce';
 import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
+import { Link, useHistory } from 'react-router-dom';
 
 export default function UiTable({
   columns = [],
@@ -15,10 +15,14 @@ export default function UiTable({
   deleteRow,
   viewRow,
   searchInput,
+  component,
 }: UiTableProps) {
+  const history = useHistory();
+
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
   const [searchRows, setSearchRows] = useState<any[]>([]);
+  const [selectedRows, setSelectedRows] = useState([]);
   const searchKeys = useRef(columns.map(({ field }) => field));
   const fuseOptions = {
     keys: searchKeys.current,
@@ -50,11 +54,40 @@ export default function UiTable({
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
+  const makeColumns = (cols: any[] = []) => {
+    const selectColumn = {
+      field: 'select',
+      use: '',
+      Header: 'Select',
+      accessor: '', // Set the accessor value based on your data structure
+      Cell: ({ row }) => (
+        <input
+          type="checkbox"
+          checked={selectedRows.includes(row.id)}
+          onChange={() => handleRowSelect(row.id)}
+        />
+      ),
+    };
+
+    const columnsWithSelect = [selectColumn, ...cols];
+
+    return [...columnsWithSelect, ...columns];
+  };
+
   const handleRowSelect = (row: any) => {
     console.log(row);
-  };
-  const makeColumns = (cols: any[] = []) => {
-    return [{ field: '_select', use: ' ' }, ...columns, ...cols];
+    const isSelected = selectedRows.includes(row);
+    let updatedSelectedRows = [];
+
+    if (isSelected) {
+      updatedSelectedRows = selectedRows.filter(
+        (selectedRow) => selectedRow !== row
+      );
+    } else {
+      updatedSelectedRows = [...selectedRows, row];
+    }
+
+    setSelectedRows(updatedSelectedRows);
   };
 
   const makeRows = () => {
@@ -62,28 +95,39 @@ export default function UiTable({
       return [{ [columns[0].field]: 'No entries found' }];
     }
 
+    const handleRowSelect = (row: any) => {
+      if (selectedRows.includes(row)) {
+        setSelectedRows(
+          selectedRows.filter((selectedRow) => selectedRow !== row)
+        );
+      } else {
+        setSelectedRows([...selectedRows, row]);
+      }
+    };
+
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
-      row._select = (
-        <div className="flex justify-start">
-          <input
-            type="checkbox"
-            className="form-checkbox text-primary h-5 w-5"
-            onChange={() => handleRowSelect(row)}
-          />
-        </div>
+
+      const checkboxCell = (
+        <input
+          type="checkbox"
+          className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
+          onChange={() => handleRowSelect(row)}
+          checked={selectedRows.includes(row)}
+        />
       );
-      row._action = (
-        <div className="flex justify-center">
-          {/* Your other action icons here */}
-        </div>
-      );
+
+      const rowWithCheckbox = {
+        select: checkboxCell,
+        ...row,
+      };
+
       ++rowKey;
-      return row;
+      return rowWithCheckbox;
     });
   };
 
-  const formatDate = (value) => {
+  const formatDate = (value: string | number | Date) => {
     try {
       // date stored in UTC add 2 hours
       const date = new Date(value);
@@ -95,13 +139,24 @@ export default function UiTable({
       return 'N/A';
     }
   };
+  const viewSelectedRow = (selectedRow: any) => {
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    console.log(component);
+    history.push({
+      pathname: urlRow,
+      state: component,
+    });
+  };
 
-  const renderFormat = (row, column, display_value) => {
+  const renderFormat = (row: any, column: any, display_value: any) => {
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
 
-    let rowValue;
+    let rowValue: any;
 
     if (typeof display_value === 'boolean') {
       rowValue = (
@@ -155,7 +210,12 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis">{display_value}</div>
+          <div
+            className="inline-block overflow-ellipsis"
+            onClick={() => viewSelectedRow(row)}
+          >
+            <p>{display_value}</p>
+          </div>
         ) : (
           display_value
         );
@@ -180,12 +240,14 @@ export default function UiTable({
           },
           main: 'rounded-lg',
           table_head: {
-            table_row: 'text-red-900 bg-red-200 border-b-8 border-gray-100',
-            table_data: `px-6 py-3 pl-6 pr-6 pt-3 pb-3 bg-gray-50 text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none`,
+            table_row: ` mb-10 border-b-2 border-secondary `,
+            table_data: `px-6 py-8 pl-6 pr-6 pt-4 pb-4 bg-infoBb text-left text-xs font-medium text-gray-500 uppercase tracking-wider leading-none bg-D2F1F9`,
           },
           table_body: {
             main: ``,
-            table_row: 'border-none  ',
+            // table_row: 'border-none bg-secondary ',
+            table_row: 'border-none py-8 bg-infoBb',
+
             table_data:
               'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
@@ -206,7 +268,6 @@ export default function UiTable({
         no_content_text="-"
         striped
         bordered
-        hovered={false}
       />
     </div>
   );

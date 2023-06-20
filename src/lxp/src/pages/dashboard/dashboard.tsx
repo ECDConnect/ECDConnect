@@ -371,6 +371,13 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',

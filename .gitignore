@@ -23,6 +23,7 @@ bld/
 # Roslyn cache directories
 *.ide/
 
+
 # MSTest test Results
 [Tt]est[Rr]esult*/
 [Bb]uild[Ll]og.*
@@ -100,7 +101,7 @@ ClientBin/
 *.dbproj.schemaview
 *.pfx
 *.publishsettings
-
+*.history
 # Backup & report files from converting an old project file
 # to a newer Visual Studio version. Backup files are not needed,
 # because we have git ;-)
@@ -142,6 +143,7 @@ packages/*/node_modules
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+/.history
 
 # misc
 /.sass-cache

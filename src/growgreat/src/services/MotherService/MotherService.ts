@@ -245,11 +245,13 @@ class MotherService {
       query: `
         query GetMotherVisits($userId: String) {
           motherVisits(id: $userId) {
-              actualVisitDate,
-              plannedVisitDate,
+              actualVisitDate
+              plannedVisitDate
               orderDate
-              attended,
-              id,
+              dueDate
+              attended
+              visitInProgress
+              id
               risk
               visitType{
                 id
