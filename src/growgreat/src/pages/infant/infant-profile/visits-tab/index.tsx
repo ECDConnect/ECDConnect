@@ -25,6 +25,7 @@ import {
 } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
+  getCurrentVisitSelector,
   getInfantById,
   getInfantCurrentVisitSelector,
   getInfantVisitsSelector,
@@ -67,7 +68,9 @@ export const VisitsTab: React.FC = () => {
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
 
   const { isLoading } = useThunkFetchCall(
     'infants',
@@ -146,10 +149,10 @@ export const VisitsTab: React.FC = () => {
       (item) => !item.attended
     );
 
-    const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    );
+    // const visitsBeforeCurrentVisit = filterArrayBeforeId(
+    //   filteredVisits,
+    //   currentVisit?.id || ''
+    // );
 
     const isPastVisits = !!filterArrayBeforeId(
       filteredVisits,
@@ -176,7 +179,7 @@ export const VisitsTab: React.FC = () => {
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(getType(item, isMissedVisit) === 'inProgress' && {
+        ...(isMissedVisit && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit
@@ -187,7 +190,9 @@ export const VisitsTab: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/activities-form/${item.id}`),
+          history.push(`${location.pathname}/activities-form/${item.id}`, {
+            editView: true,
+          }),
       };
     });
 

@@ -37,6 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat {
         public string Muac { get; set; }
         public string MuacColor { get; set; }
         public string MuacComment { get; set; }
+        public string VisitId { get; set; }
         public virtual ICollection<VisitDataStatus> VisitDataStatus { get; set; }
     }
 

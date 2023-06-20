@@ -6,6 +6,7 @@ import { ButtonGroupTypes } from './models/ButtonGroupTypes';
 import { Colours } from '../../models/Colours';
 import React, { useEffect } from 'react';
 import { useState } from 'react';
+import { classNames } from '../../utils';
 
 export interface ButtonGroupProps<T> extends ComponentBaseProps {
   options: ButtonGroupOption<T>[];
@@ -26,6 +27,7 @@ export const ButtonGroup = <T,>({
   multiple,
   onOptionSelected,
   inputRef,
+  className,
 }: React.PropsWithChildren<ButtonGroupProps<T>>) => {
   const [selectedValues, setSelectedValues] = useState<T | T[] | undefined>(
     selectedOptions
@@ -66,11 +68,12 @@ export const ButtonGroup = <T,>({
   return (
     <div
       data-testid={testId}
-      className={
+      className={classNames(
+        className,
         type === ButtonGroupTypes.Button
           ? styles.buttonTypeWrapper
           : styles.chipTypeWrapper
-      }
+      )}
     >
       {options &&
         options.map((option, index) => {

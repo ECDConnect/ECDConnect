@@ -1,7 +1,4 @@
-import {
-  getInfantById,
-  getInfantCurrentVisitSelector,
-} from '@/store/infant/infant.selectors';
+import { getInfantById } from '@/store/infant/infant.selectors';
 import { Button, LoadingSpinner } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
@@ -13,7 +10,6 @@ import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visi
 import { useAppDispatch } from '@/store';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { VisitDto, usePrevious } from '@ecdlink/core';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
 import { activitiesTypes } from './activity-list/activities-list';
@@ -47,7 +43,7 @@ export const ProgressTab = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  // const currentVisit = useSelector(getInfantCurrentVisitSelector);
   // const previousCurrentVisit = usePrevious(currentVisit) as
   //   | VisitDto
   //   | undefined;
@@ -153,7 +149,11 @@ export const ProgressTab = () => {
               textColor="primary"
               text="Manage referrals"
               icon="ClipboardListIcon"
-              onClick={() => window.alert('add redirect to referral tab')} // TODO
+              onClick={() =>
+                history.push(location.pathname, {
+                  activeTabIndex: INFANT_PROFILE_TABS.REFERRALS,
+                })
+              }
             />
           </>
         ) : (

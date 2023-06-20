@@ -52,6 +52,8 @@ import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
+const enableCalendar = false;
+
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
@@ -187,58 +189,64 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (isCoach) {
-      (async () =>
-        await appDispatch(
-          practitionerForCoachThunkActions.getPractitionersForCoach({})
-        ).unwrap())();
-
-      (async (id) =>
-        await appDispatch(
-          classroomsForCoachThunkActions.getClassroomForCoach({
-            id: userData?.id!,
-          })
-        ).unwrap())();
-
-      (async () =>
-        await appDispatch(
-          childrenThunkActions.getChildrenForCoach({})
-        ).unwrap())();
-    }
-
-    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
-      const currentPrincipal = practitionerData?.filter(
-        (x) => x?.user?.id === userData.id
-      );
-      const _current = currentPrincipal?.at(0);
-      if (_current) {
+    if (isOnline) {
+      if (isCoach) {
         (async () =>
           await appDispatch(
-            practitionerThunkActions.getPractitionerById({
-              id: _current?.id || '',
+            practitionerForCoachThunkActions.getPractitionersForCoach({})
+          ).unwrap())();
+
+        (async (id) =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomForCoach({
+              id: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            childrenThunkActions.getChildrenForCoach({})
+          ).unwrap())();
+      }
+
+      if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+        const currentPrincipal = practitionerData?.filter(
+          (x) => x?.user?.id === userData.id
+        );
+        const _current = currentPrincipal?.at(0);
+        if (_current) {
+          (async () =>
+            await appDispatch(
+              practitionerThunkActions.getPractitionerById({
+                id: _current?.id || '',
+              })
+            ).unwrap())();
+        }
       }
     }
   }, [userData]);
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, []);
 
   useEffect(() => {
-    if (practitioner?.userId && !classroom) {
-      (async () =>
-        await appDispatch(
-          classroomsThunkActions.getClassroomDetailsForPractitioner({
-            id: practitioner?.userId!,
-          })
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      if (practitioner?.userId && !classroom) {
+        (async () =>
+          await appDispatch(
+            classroomsThunkActions.getClassroomDetailsForPractitioner({
+              id: practitioner?.userId!,
+            })
+          ).unwrap())();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }
     }
   }, [practitioner?.userId]);
 
@@ -387,6 +395,13 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
+      current: false,
+      showDivider: true,
+    },
+    {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
@@ -417,31 +432,41 @@ export const Dashboard: React.FC = () => {
   }
 
   if (!isCoach) {
-    dashboardItems.push(
-      {
-        title: 'Classroom',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.classRoomIcon,
-        classNames: 'bg-uiBg',
-        onActionClick: () => {
-          goToClassroom();
-        },
+    dashboardItems.push({
+      title: 'Classroom',
+      titleIcon: 'AcademicCapIcon',
+      titleIconClassName: styles.classRoomIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToClassroom();
       },
-      {
-        title: 'Calendar',
-        titleIcon: 'CalendarIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
-        },
-      }
+    });
+    dashboardItems.push(
+      enableCalendar
+        ? {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.calendarIcon,
+            classNames: 'bg-uiBg',
+            onActionClick: () => {
+              goToCalendar();
+            },
+          }
+        : {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.businessIcon,
+            onActionClick: () => ({}),
+            classNames: 'bg-uiBg',
+            chipConfig: {
+              colorPalette: {
+                backgroundColour: 'alertMain',
+                borderColour: 'alertMain',
+                textColour: 'white',
+              },
+              text: 'Coming soon',
+            },
+          }
     );
   }
 
@@ -502,6 +527,10 @@ export const Dashboard: React.FC = () => {
     } else {
       showCompleteProfileBlockingDialog();
     }
+  };
+
+  const goToCalendar = () => {
+    history.push(ROUTES.CALENDAR);
   };
 
   const goToBusiness = () => {

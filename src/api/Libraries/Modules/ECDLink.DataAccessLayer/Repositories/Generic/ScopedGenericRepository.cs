@@ -1,8 +1,10 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -43,7 +45,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             _userManager = userManager;
         }
 
-        public override IQueryable<T> GetAll()
+        public override IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
             if (string.IsNullOrEmpty(_userId))
             {
@@ -55,8 +57,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
 
+            if (pagingInput is not null)
+            {
+                query = PaginationHelper.AddFiltering(pagingInput?.FilterBy, query);
+                query = PaginationHelper.AddSorting(pagingInput?.SortBy, query);
+                query = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, query);
+            }
+
             if (isAdmin)
             {
+                
                 return query;
             }
             else
@@ -77,6 +87,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     return null;
                 }
             }
+
             return query.Take(0);
         }
 

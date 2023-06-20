@@ -11,11 +11,10 @@ import {
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
-  getMotherCurrentVisitSelector,
+  getCurrentVisitSelector,
   getMotherPreviousVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
-import { useAppDispatch } from '@/store';
 
 interface IntroScreenProps {
   mother?: MotherDto;
@@ -33,7 +32,6 @@ export const IntroScreen = ({
   isPrint,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const appDispatch = useAppDispatch();
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -41,35 +39,15 @@ export const IntroScreen = ({
 
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  //const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
-
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
   const previousPlannedVisit = useSelector((state: RootState) =>
     getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
   );
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     appDispatch(
-  //       visitThunkActions.getPreviousVisitInformationForMother({
-  //         visitId: currentVisit?.id,
-  //       })
-  //     );
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   mother?.id,
-  //   previousCurrentVisit,
-  // ]);
 
   return (
     <>
@@ -85,7 +63,8 @@ export const IntroScreen = ({
             }
           : {})}
         description={`Your last home visit: ${
-          !!previousVisit?.visitDataStatus?.length
+          !!previousVisit?.visitDataStatus?.length &&
+          previousVisit?.scoreComment !== 'No data available for visit'
             ? new Date(
                 String(previousPlannedVisit?.actualVisitDate)
               ).toLocaleDateString('en-ZA', {

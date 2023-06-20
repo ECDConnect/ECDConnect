@@ -398,6 +398,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             return visitDataManager.GetPractitionerReAccreditationRating(userId);
         }
 
+        public List<PractitionerNotes> GetVisitNotesForPractitioner([Service] VisitDataManager visitDataManager, string userId)
+        {
+            return visitDataManager.GetVisitNotesForPractitioner(userId);
+        }
+
 
     }
 

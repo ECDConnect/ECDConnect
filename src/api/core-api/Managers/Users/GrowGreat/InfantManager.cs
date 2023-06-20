@@ -457,7 +457,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
-            List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);
+            List<VisitModel> visits = GetVisitDates(BirthDate.Date, visitTypes);
 
             if (visits.Count > 0)
             {   // Add visits for child

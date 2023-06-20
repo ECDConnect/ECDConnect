@@ -346,6 +346,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> ResetUserPassword(
           UserManager<ApplicationUser> userManager,
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] SecurityNotificationManager securityNotificationManager,
           string id,
           string newPassword)
         {
@@ -369,7 +370,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (!updatedPassword.Succeeded)
             {
-                throw new Exception("Unable to update password");
+                // Send notification to Super Admin
+                await securityNotificationManager.SendAdminPasswordChangedMessageAsync(user);
             }
             return updatedPassword.Succeeded;
         }

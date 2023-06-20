@@ -281,6 +281,24 @@ class PractitionerService {
             dateLinked
             dateAccepted
             dateToBeRemoved
+            siteAddress {
+              addressLine1
+              addressLine2
+              addressLine3
+              area
+              id
+              municipality
+              name
+              postalCode
+              province {
+                id
+                description
+              }
+              provinceId
+              updatedBy
+              updatedDate
+              ward
+            }
             isLeaving
             user {
               gender {

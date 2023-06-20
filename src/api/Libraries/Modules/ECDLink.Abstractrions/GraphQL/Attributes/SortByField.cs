@@ -1,7 +1,5 @@
 ﻿
-using System;
-
-namespace ECDLink.EGraphQL.ObjectTypes.Input
+namespace ECDLink.Abstractrions.GraphQL.Attributes
 {
     public class SortByField
     {
@@ -9,7 +7,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         {
         }
 
-        public SortByField(string fieldName, bool descending)
+        public SortByField(string fieldName, bool descending = false)
         {
             FieldName = FirstCharToUpper(fieldName);
             Descending = descending;
@@ -18,7 +16,7 @@ namespace ECDLink.EGraphQL.ObjectTypes.Input
         public string FieldName { get; } = null;
         public bool Descending { get; } = false;
 
-        private static string FirstCharToUpper(string str) 
+        private static string FirstCharToUpper(string str)
                => string.Create(str.Length, str, (output, input) =>
                {
                    input.CopyTo(output);

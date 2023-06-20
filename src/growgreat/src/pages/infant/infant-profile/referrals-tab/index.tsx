@@ -20,7 +20,10 @@ import {
   useState,
 } from 'react';
 import { useAppDispatch } from '@/store';
-import { getInfantById } from '@/store/infant/infant.selectors';
+import {
+  getCurrentVisitSelector,
+  getInfantById,
+} from '@/store/infant/infant.selectors';
 import thumbsUpImage from '@/assets/thumbsUp.png';
 import { infantSelectors, infantThunkActions } from '@/store/infant';
 import {
@@ -71,6 +74,10 @@ export const ReferralsTab: React.FC = () => {
     getInfantById(state, infantId)
   );
 
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
+
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
   const wasWalkthrough = usePrevious(isWalkthrough);
@@ -85,17 +92,27 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    appDispatch(
-      infantThunkActions.getReferralsForInfant({ infantId })
-    ).unwrap();
-  }, [appDispatch, infantId]);
+    if (currentVisit) {
+      appDispatch(
+        infantThunkActions.getReferralsForInfant({
+          infantId: infantId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, infantId, currentVisit]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    appDispatch(
-      infantThunkActions.getCompletedReferralsForInfant({ infantId })
-    ).unwrap();
-  }, [appDispatch, infantId]);
+    if (currentVisit) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, infantId, currentVisit]);
 
   const referralsForInfant = useSelector(
     infantSelectors.getReferralsForInfantSelector
@@ -277,9 +294,14 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
-    appDispatch(
-      infantThunkActions.getCompletedReferralsForInfant({ infantId })
-    ).unwrap();
+    if (currentVisit) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
 
     setIsReferralsView(false);
     if (completedReferralsForInfant) {
@@ -290,7 +312,7 @@ export const ReferralsTab: React.FC = () => {
         }
       }
     }
-  }, [appDispatch, infantId, completedReferralsForInfant]);
+  }, [appDispatch, infantId, completedReferralsForInfant, currentVisit]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -341,7 +363,7 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${infant?.user?.firstName || ''} & ${
+              text={`Back-referrals for ${infant?.user?.firstName || ''} & ${
                 infant?.caregiver?.firstName
               } `}
             />
@@ -483,7 +505,7 @@ export const ReferralsTab: React.FC = () => {
                       }
                     >
                       <Typography
-                        type="h4"
+                        type="markdown"
                         align="left"
                         weight="bold"
                         text={item?.comment || ''}
@@ -533,7 +555,7 @@ export const ReferralsTab: React.FC = () => {
                 <div className="my-4 flex items-center gap-3">
                   <div className="flex w-full flex-col">
                     <Typography
-                      type="h4"
+                      type="markdown"
                       align="left"
                       weight="bold"
                       text={item?.comment || ''}
