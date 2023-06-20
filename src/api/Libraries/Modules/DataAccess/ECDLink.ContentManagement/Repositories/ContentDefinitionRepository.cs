@@ -27,6 +27,7 @@ namespace ECDLink.ContentManagement.Repositories
             var contentTypeModel = _context.ContentTypes
                                     .Include(i => i.Fields)
                                     .ThenInclude(ti => ti.FieldType)
+                                    .AsNoTracking()
                                     .Where(x => x.IsActive);
 
             var definition = new List<ContentDefinitionModel>();
