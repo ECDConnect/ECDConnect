@@ -1,0 +1,5 @@
+{
+    "graphQlApi": "https://a105-41-10-222-10.ngrok-free.app/graphql/",
+    "authApi": "https://a105-41-10-222-10.ngrok-free.app/",
+    "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/smartstart.json"
+  }

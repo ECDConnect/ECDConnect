@@ -191,8 +191,10 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             }
             type={'info'}
           />
-             <Button
-                    className={'mt-3  rounded mr-6 w-full'}
+        </div>
+        <div className="pl-4 flex flex-row w-6/12">
+                  <Button
+                    className={'mt-3 w-4/12 rounded mr-6'}
                     type="filled"
                     // isLoading={isLoading}
                     color="secondary"
@@ -206,8 +208,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
                       text={'Send Invitation'}
                     ></Typography>
                   </Button>
-        </div>
-      
+
+                </div>
       </>
     );
   };

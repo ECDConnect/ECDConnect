@@ -192,7 +192,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             type={'info'}
           />
              <Button
-                    className={'mt-3  rounded mr-6 w-full'}
+                    className={'mt-3  rounded mr-6'}
                     type="filled"
                     // isLoading={isLoading}
                     color="secondary"

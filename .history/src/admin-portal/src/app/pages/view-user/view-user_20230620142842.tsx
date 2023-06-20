@@ -154,6 +154,9 @@ export function ViewUser(props) {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
 
+    console.log("test>>", userDetailForm);
+
+
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm.phoneNumber,
       idNumber: userDetailForm.idNumber,
@@ -278,6 +281,7 @@ export function ViewUser(props) {
                         register={userDetailRegister}
                         error={detailFormErrors.surname?.message}
                         defaultValue={userData?.userById?.phoneNumber}
+
                       />
                     </div>
                     <div className="my-4 sm:col-span-3 w-6/12">

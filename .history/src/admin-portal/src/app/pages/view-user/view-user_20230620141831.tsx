@@ -48,7 +48,11 @@ export function ViewUser(props) {
 
   }, [userId])
 
-
+  const { register, getValues, formState, watch } = useForm({
+    // resolver: yupResolver(editProfileSchema),
+    // defaultValues: initialEditProfileValues,
+    mode: 'onChange',
+  });
   const { setNotification } = useNotifications();
   const dialog = useDialog();
 
@@ -92,6 +96,7 @@ export function ViewUser(props) {
     setShowPassword(!showPassword);
   };
 
+  const { errors, isValid } = formState;
   const [editActive, setEditActive] = useState<boolean>(false);
 
   const {
@@ -119,9 +124,6 @@ export function ViewUser(props) {
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
 
-  const { errors: detailFormErrors, isValid: isDetailValid } =
-    userDetailFormState;
-
   const getIsValid = () => {
     let isValid = isUserDetailValid;
     let internalIsPasswordValid = true;
@@ -139,11 +141,11 @@ export function ViewUser(props) {
   // SET EDIT FORMS
   useEffect(() => {
     if (userData?.userById && userDetailFormState) {
-      userDetailSetValue('idNumber', userData?.userById?.idNumber, {
+      userDetailSetValue('idNumber', userData?.userById?.idNumber , {
         shouldValidate: true,
       });
 
-      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber, {
+      userDetailSetValue('phoneNumber', userData?.userById?.phoneNumber , {
         shouldValidate: true,
       });
     }
@@ -154,9 +156,13 @@ export function ViewUser(props) {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
 
+    console.log("test>>", userDetailForm);
+
+
     const userInputModel: UserModelInput = {
-      phoneNumber: userDetailForm.phoneNumber,
-      idNumber: userDetailForm.idNumber,
+      firstName: userDetailForm.firstName,
+      surname: userDetailForm.surname,
+      email: userDetailForm.email,
       dateOfBirth: new Date(),
       isSouthAfricanCitizen: true,
       verifiedByHomeAffairs: true
@@ -197,7 +203,7 @@ export function ViewUser(props) {
 
     // if (isValid && internalIsPasswordValid) {
 
-    await saveUser(passwordChange);
+      await saveUser(passwordChange);
     // }
   };
 
@@ -265,19 +271,19 @@ export function ViewUser(props) {
                       <FormField
                         label={'ID number *'}
                         nameProp={'idNumber'}
-                        register={userDetailRegister}
-                        error={detailFormErrors.firstName?.message}
+                        register={register}
+                        error={errors.firstName?.message}
                         defaultValue={userData?.userById?.idNumber}
-
                       />
                     </div>
                     <div className="my-4 sm:col-span-3 w-6/12">
                       <FormField
                         label={'Cellphone number *'}
                         nameProp={'phoneNumber'}
-                        register={userDetailRegister}
-                        error={detailFormErrors.surname?.message}
+                        register={register}
+                        error={errors.surname?.message}
                         defaultValue={userData?.userById?.phoneNumber}
+
                       />
                     </div>
                     <div className="my-4 sm:col-span-3 w-6/12">
@@ -286,7 +292,7 @@ export function ViewUser(props) {
                         nameProp={'password'}
                         register={passwordRegister}
                         type="password"
-                        error={passwordFormErrors.password?.message}
+                        error={errors.password?.message}
                         showPassword={showPassword}
                         togglePasswordVisibility={togglePasswordVisibility}
                       />
@@ -294,20 +300,20 @@ export function ViewUser(props) {
                   </div>
                 </div>
                 <Button
-                  className={'mt-3 w-4/12 rounded mr-6'}
-                  type="filled"
-                  // isLoading={isLoading}
-                  color="secondary"
-                  // disabled={!isValid}
-                  onClick={onSave}
-                >
-                  <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-                  <Typography
-                    type="help"
-                    color="white"
-                    text={'Save Changes'}
-                  ></Typography>
-                </Button>
+                    className={'mt-3 w-4/12 rounded mr-6'}
+                    type="filled"
+                    // isLoading={isLoading}
+                    color="secondary"
+                    // disabled={!isValid}
+                    onClick={onSave}
+                  >
+                    <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Save Changes'}
+                    ></Typography>
+                  </Button>
               </form> :
                 <div className='flex flex-row justify-start pt-4 text-current'>
                   <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
@@ -434,6 +440,7 @@ export function ViewUser(props) {
             type="outlined"
             isLoading={isLoading}
             color="tertiary"
+            disabled={!isValid}
             onClick={() => deleteUserAndRefresh}
           >
             <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>

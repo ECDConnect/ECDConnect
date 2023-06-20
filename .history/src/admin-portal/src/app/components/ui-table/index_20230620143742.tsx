@@ -140,9 +140,9 @@ export default function UiTable({
       return 'N/A';
     }
   };
-  const viewSelectedRow = (selectedRow: any) => {
-
-    localStorage.setItem("selectedUser", selectedRow?.userId ??  selectedRow?.id);
+  const viewSelectedRow = (selectedRow) => {
+    console.log(selectedRow)
+    localStorage.setItem("selectedUser", selectedRow?.userId);
     console.log(component)
     history.push({
       pathname:urlRow,

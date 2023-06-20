@@ -153,6 +153,7 @@ export default function ApplicationAdmins() {
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
+
             deleteUser({
               variables: {
                 id: user.id,
