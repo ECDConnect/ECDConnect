@@ -248,13 +248,18 @@ const AuthRoutes: React.FC = () => {
         component={PrincipalPractitionerChildList}
       />
       <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
-      <Route exact component={SetupTrainee} />
+      <Route
+        exact
+        path={ROUTES.TRAINEE.SETUP_TRAINEE}
+        component={SetupTrainee}
+      />
       <Route
         exact
         path={ROUTES.TRAINEE.TRAINEE_ONBOARDING}
         component={TraineeOnboarding}
       />
       <Route path={ROUTES.CALENDAR} component={Calendar} />
+      <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route
         exact

@@ -64,7 +64,8 @@ const ROUTES = {
   }),
   TRAINEE: addPrefix('/trainee', {
     SETUP_TRAINEE: '/setup-trainee',
-    TRAINEE_ONBOARDING: 'trainee-onboarding',
+    TRAINEE_ONBOARDING: '/trainee-onboarding',
+    TRAINEE_ONBOARDING_DASHBOARD: 'trainee-onboarding-dashboard',
   }),
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
