@@ -87,7 +87,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       const response = await createUser({
         variables: {
           input: { ...userInputModel },
-          createAdmin: true,
+          IsAdmin: true,
         },
       });
 
@@ -97,16 +97,16 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       });
 
       const userId = response.data.addUser.id;
-      await sendInviteToApplication({
-        variables: {
-          userId: userId,
-        },
-      });
-
-      setNotification({
-        title: 'Successfully Sent User an Invite!',
-        variant: NOTIFICATION.SUCCESS,
-      });
+      // await sendInviteToApplication({
+      //   variables: {
+      //     userId: userId,
+      //   },
+      // }).then(()=>{
+      //   setNotification({
+      //     title: 'Successfully Sent User an Invite!',
+      //     variant: NOTIFICATION.SUCCESS,
+      //   });
+      // });
 
       await saveRoles(userId);
     } catch (error) {
