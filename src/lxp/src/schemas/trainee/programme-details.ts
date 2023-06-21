@@ -6,6 +6,7 @@ export interface ProgrammeDetailsModel {
   programmeAddress: string;
   programmeType: string;
   ownTheProperty: boolean | undefined;
+  liveAtTheProperty?: boolean | undefined;
   haveTheTitleDeeds: boolean | undefined;
   unproclaimedLand: boolean | undefined;
   r4bPhoto: string | undefined;
@@ -17,6 +18,7 @@ export const initialProgrammeDetailsValues: ProgrammeDetailsModel = {
   programmeAddress: '',
   programmeType: '',
   ownTheProperty: undefined,
+  liveAtTheProperty: undefined,
   haveTheTitleDeeds: undefined,
   unproclaimedLand: undefined,
   r4bPhoto: '',
@@ -28,7 +30,8 @@ export const ProgrammeDetailsSchema = Yup.object().shape({
   programmeAddress: Yup.string().required(),
   programmeType: Yup.string().required(),
   ownTheProperty: Yup.boolean().required(),
-  haveTheTitleDeeds: Yup.boolean().required(),
+  liveAtTheProperty: Yup.boolean(),
+  haveTheTitleDeeds: Yup.boolean(),
   unproclaimedLand: Yup.boolean(),
   r4bPhoto: Yup.string().required(),
 });
