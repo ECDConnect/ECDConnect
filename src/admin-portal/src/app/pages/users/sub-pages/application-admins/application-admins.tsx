@@ -25,7 +25,7 @@ export default function ApplicationAdmins() {
   const { data, refetch, loading } = useQuery(UserList, {
     variables: {
       pagingInput: {
-        pageNumber: 1,
+        pageNumber: 2,
         pageSize: 20,
         filterBy: [
           { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
@@ -105,88 +105,6 @@ export default function ApplicationAdmins() {
       _edit: undefined,
       _url: undefined,
     };
-  };
-
-  const displayEditUserPanel = (user: any) => {
-    panel({
-      noPadding: true,
-      title: '',
-      presentationStyle: 'overFullScreen',
-      render: (onSubmit) => (
-        <UserPanelEdit
-          key={`userPanelEdit`}
-          user={user}
-          closeDialog={(userCreated: boolean) => {
-            onSubmit();
-
-            if (userCreated) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  const deleteUserAndRefresh = async (user: any) => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Deactivate Administrator"
-          message={`You are about to deactivate a user. Would you like to go ahead`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
-            deleteUser({
-              variables: {
-                id: user.id,
-              },
-            })
-              .then((response: any) => {
-                if (response.data.deleteUser) {
-                  refetch();
-
-                  setNotification({
-                    title: 'Successfully Deactivated User!',
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }}
-        />
-      ),
-    });
-  };
-
-  const getRoleOptions = (users: UserDto[]) => {
-    if (!users) return [];
-
-    return users.reduce(
-      (acc, curr) => {
-        const items = curr.roles.map((x) => ({ label: x.name, value: x.name }));
-
-        const distinctItems = items.filter(
-          (item) => !acc.some((ac) => ac.value === item.value)
-        );
-
-        if (distinctItems) {
-          return [...acc, ...distinctItems];
-        }
-
-        return acc;
-      },
-      [
-        {
-          label: 'All',
-          value: undefined,
-        },
-      ] as DropDownOption<string>[]
-    );
   };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -317,14 +235,8 @@ export default function ApplicationAdmins() {
                   urlRow={'/view-user/'}
 
                   rows={tableData}
-                  editRow={
-                    hasPermission(PermissionEnum.update_user) &&
-                    displayEditUserPanel
-                  }
-                  deleteRow={
-                    hasPermission(PermissionEnum.delete_user) &&
-                    deleteUserAndRefresh
-                  }
+                 
+                
                   sendRow={true}
                   searchInput={searchValue}
                 />

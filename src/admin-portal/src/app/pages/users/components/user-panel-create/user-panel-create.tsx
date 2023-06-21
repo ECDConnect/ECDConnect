@@ -39,7 +39,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       surname: '',
       email: '',
     },
-    mode: 'onBlur',
+    mode: 'onChange'
   });
   const { errors, isValid } = formState;
 

@@ -21,18 +21,18 @@ import {
   practitionerExcelTemplateGenerator,
 } from '@ecdlink/graphql';
 import { DialogPosition, Dropdown } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
-
-
+import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import { ChevronDownIcon, CogIcon, DownloadIcon, PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
 import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
 import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
+import { Menu, Transition } from '@headlessui/react';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -65,7 +65,7 @@ export default function HealthCareWorkers() {
     useLazyQuery(practitionerExcelTemplateGenerator, {
       fetchPolicy: 'cache-and-network',
     });
-    
+
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
 
   useEffect(() => {
@@ -104,14 +104,9 @@ export default function HealthCareWorkers() {
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState('');
   const [teamLeadFilter, setTeamLeadFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
-
-  const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
-  };
 
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -285,27 +280,43 @@ export default function HealthCareWorkers() {
     });
   };
 
+  const UploadContentImport = () => {
+    panel({
+      noPadding: true,
+      title: `Import Users`,
+      render: (onSubmit: any) => (
+        <UploadAllImportTemplate
+          closeDialog={(created: boolean) => {
+            onSubmit();
 
+            if (created) {
+              refetch();
+            }
+          }}
+        />
+      ),
+    });
+  };
 
   if (tableData) {
     return (
       <div>
-      <div className="flex flex-col">
-        <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-          <div className="text-body w-8/12 sm:flex  sm:justify-around">
-            <div className="text-body w-10/12 sm:flex flex-col sm:justify-around">
-              <div className="relative w-full">
-                <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
-                  {searchValue === '' && (
-                    <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
-                  )}
-                </span>
-                <input
-                  className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                  placeholder="      Search by email or name..."
-                  onChange={search}
-                />
-              </div>
+        <div className="flex flex-col">
+          <div className="pb-5 sm:flex sm:items-center sm:justify-between">
+            <div className="text-body w-8/12 sm:flex  sm:justify-around">
+              <div className="text-body w-10/12 sm:flex flex-col sm:justify-around">
+                <div className="relative w-full">
+                  <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                    {searchValue === '' && (
+                      <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+                    )}
+                  </span>
+                  <input
+                    className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                    placeholder="      Search by email or name..."
+                    onChange={search}
+                  />
+                </div>
                 {showFilter && (
                   <div className="flex items-center  w-full ">
 
@@ -443,9 +454,101 @@ export default function HealthCareWorkers() {
                       </button>
                     )}
                   </div>
+                  {hasPermission(PermissionEnum.create_user) && (
+                    <div className="flex flex-col">
+                      <div className="ml-4">
+                        <Menu as="div" className=" inline-block text-right">
+                          {({ open }) => (
+                            <>
+                              <div>
+                                <Menu.Button
+                                  type="button"
+                                  className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                                >
+                                  <span className="sr-only">Open options</span>
+                                  <CogIcon className="h-5 w-5" aria-hidden="true" />
+                                </Menu.Button>
+                              </div>
+
+                              <Transition
+                                show={open}
+                                as={Fragment}
+                                enter="transition ease-out duration-100"
+                                enterFrom="transform opacity-0 scale-95"
+                                enterTo="transform opacity-100 scale-100"
+                                leave="transition ease-in duration-75"
+                                leaveFrom="transform opacity-100 scale-100"
+                                leaveTo="transform opacity-0 scale-95"
+                              >
+                                <Menu.Items
+                                  static
+                                  className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+                                >
+                                  <div className="py-1">
+                                    <Menu.Item>
+                                      <div
+                                        onClick={() =>
+                                          downloadContentTypeTemplate()
+                                        }
+                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                      >
+                                        <DownloadIcon
+                                          className="mr-3 h-5 w-5 text-gray-400"
+                                          aria-hidden="true"
+                                        />
+                                        Download template
+                                      </div>
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                      <div
+                                        onClick={() => UploadContent()}
+                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                      >
+                                        <UploadIcon
+                                          className="mr-3 h-5 w-5 text-gray-400"
+                                          aria-hidden="true"
+                                        />
+                                        Upload Practitioners
+                                      </div>
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                      <div
+                                        onClick={() => UploadContentImport()}
+                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                      >
+                                        <UploadIcon
+                                          className="mr-3 h-5 w-5 text-gray-400"
+                                          aria-hidden="true"
+                                        />
+                                        Import Users
+                                      </div>
+                                    </Menu.Item>
+                                    <Menu.Item>
+                                      <div
+                                        onClick={() =>
+                                          UploadContentImportChildren()
+                                        }
+                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                      >
+                                        <UploadIcon
+                                          className="mr-3 h-5 w-5 text-gray-400"
+                                          aria-hidden="true"
+                                        />
+                                        Import Children Classes
+                                      </div>
+                                    </Menu.Item>
+                                  </div>
+                                </Menu.Items>
+                              </Transition>
+                            </>
+                          )}
+                        </Menu>
+                      </div>
+                    </div>
+                  )}
                 </div>
 
-            
+
 
               </div>
 
