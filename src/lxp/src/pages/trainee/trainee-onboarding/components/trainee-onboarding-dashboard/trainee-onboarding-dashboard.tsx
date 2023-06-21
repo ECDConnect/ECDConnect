@@ -70,7 +70,7 @@ export const OnboardingTraineeDashboard: React.FC<
 
   const checkOverdueDate = differenceInDays(
     new Date(),
-    new Date(extradataTimeValue[0])
+    new Date(extradataTimeValue[0] as Date)
   );
 
   const completedSteps = timelineSteps(
