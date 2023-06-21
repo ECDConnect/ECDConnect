@@ -349,9 +349,9 @@ export const ActivityList: React.FC = () => {
       const completedActivities = visibleActivities.filter((item) =>
         completedVisits?.includes(item.title)
       );
-      const uncompletedActivities = visibleActivities.filter(
+      const uncompletedActivities = visibleActivities; /* .filter(
         (item) => !completedVisits?.includes(item.title)
-      );
+      ); */
 
       const completedForms = completedActivities.map(
         (item): MenuListDataItem => ({
@@ -359,6 +359,7 @@ export const ActivityList: React.FC = () => {
           menuIconUrl: item?.menuIconUrl,
           menuIconClassName: 'border-0',
           title: item?.title,
+          titleStyle: 'text-textDark',
           subTitle: '',
           iconBackgroundColor: 'successMain' as Colours,
           backgroundColor: 'successBg' as Colours,
@@ -373,6 +374,7 @@ export const ActivityList: React.FC = () => {
           menuIconUrl: item?.menuIconUrl,
           menuIconClassName: 'border-0',
           title: item?.title,
+          titleStyle: 'text-textDark',
           subTitle: '',
           iconBackgroundColor: item.iconBackgroundColor as Colours,
           iconHexBackgroundColor: item.iconHexBackgroundColor,
@@ -397,7 +399,9 @@ export const ActivityList: React.FC = () => {
           menuIconClassName: 'border-0',
           iconColor: 'white',
           title: 'Follow up',
+          titleStyle: 'text-textDark',
           subTitle: 'Schedule your next visit, make referrals & save notes',
+          subTitleStyle: 'text-textDark',
           iconBackgroundColor: 'tertiary' as Colours,
           backgroundColor: 'uiBg' as Colours,
           onActionClick: () => {
