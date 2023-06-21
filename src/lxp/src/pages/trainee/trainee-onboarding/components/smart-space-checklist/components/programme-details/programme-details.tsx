@@ -53,11 +53,15 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
 
   const { isOnline } = useOnlineStatus();
   const { isValid } = useFormState({ control: programmeFormControl });
-  const { haveTheTitleDeeds, ownTheProperty, unproclaimedLand } =
-    useWatch<ProgrammeDetailsModel>({
-      control: programmeFormControl,
-      defaultValue: {},
-    });
+  const {
+    haveTheTitleDeeds,
+    ownTheProperty,
+    unproclaimedLand,
+    liveAtTheProperty,
+  } = useWatch<ProgrammeDetailsModel>({
+    control: programmeFormControl,
+    defaultValue: {},
+  });
   const [articleTitle, setArticleTitle] = useState<string>();
   const [presentArticle, setPresentArticle] = useState<boolean>(false);
   const [contentConsentTypeEnum, setContentConsentTypeEnum] =
@@ -108,6 +112,20 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     {
       question:
         'Take a photo of the filled and signed R4c Affidavit - Property Ownership',
+      answer: '',
+    },
+    {
+      question: 'Do you live at the property?',
+      answer: '',
+    },
+    {
+      question:
+        'Take a photo of the filled and signed R4a form - Agreement for premises to be uesd for early learning programme.',
+      answer: '',
+    },
+    {
+      question:
+        'Take a photo of the filled and signed R4b form - Confirmation of Lease.',
       answer: '',
     },
   ]);
@@ -219,6 +237,12 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       );
     }
   }, []);
+
+  useEffect(() => {
+    if (ownTheProperty === false) {
+      setProgrammeFormValue('haveTheTitleDeeds', false);
+    }
+  }, [ownTheProperty, setProgrammeFormValue]);
 
   const onDownloadImage = () => {
     const pdfUrl = Tool_R4c_form;
@@ -444,8 +468,120 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   </div>
                 </div>
               )}
+              {ownTheProperty === false && (
+                <div className={'w-full'}>
+                  <label className={styles.label}>
+                    {questions?.[9].question}
+                  </label>
+                  <div
+                    className={`mt-1 ${
+                      Boolean(checkedquestion(questions?.[9].question))
+                        ? 'pointer-events-none'
+                        : ''
+                    }`}
+                  >
+                    <ButtonGroup<boolean | undefined>
+                      options={yesNoOptions}
+                      onOptionSelected={(value: any) => {
+                        setProgrammeFormValue(
+                          'liveAtTheProperty',
+                          value as boolean,
+                          {
+                            shouldValidate: true,
+                          }
+                        );
+                        onOptionSelected(value, 9);
+                      }}
+                      selectedOptions={[
+                        getProgrammeFormValues().liveAtTheProperty,
+                      ]}
+                      color="secondary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                    />
+                  </div>
+                </div>
+              )}
+              {liveAtTheProperty === true && (
+                <>
+                  <Alert
+                    className="mb-4"
+                    type="info"
+                    title={`The owner or landlord of the property will need to fill in the “confirmation of lease” with you (form R4b).`}
+                    list={[
+                      'Fill in the form with your landlord and upload a picture of it below.',
+                    ]}
+                    button={
+                      <Button
+                        onClick={onDownloadImage}
+                        text="Download the R4c form"
+                        icon="DownloadIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                      />
+                    }
+                  />
+                  <ImageInput<ProgrammeDetailsModel>
+                    acceptedFormats={acceptedFormats}
+                    label={questions?.[11].question}
+                    nameProp="r4bPhoto"
+                    icon="CameraIcon"
+                    className={'py-4'}
+                    currentImageString={r4bPhotoUrl}
+                    register={programmeFormRegister}
+                    overrideOnClick={() => setPhotoActionBarVisible(true)}
+                    onValueChange={(imageString: string) => {
+                      setProgrammeFormValue('r4bPhoto', imageString);
+                      triggerR4bForm();
+                    }}
+                    disabled={Boolean(
+                      checkedquestion(questions?.[11].question)
+                    )}
+                  ></ImageInput>
+                </>
+              )}
+              {liveAtTheProperty === false && (
+                <>
+                  <Alert
+                    className="mb-4"
+                    type="info"
+                    title={`The owner or landlord of the property will need to fill in the “Agreement for premises to be used for early learning programme” with you (form 4a).`}
+                    list={[
+                      'Fill in the form with your landlord and upload a picture of it below.',
+                    ]}
+                    button={
+                      <Button
+                        onClick={onDownloadImage}
+                        text="Download the R4c form"
+                        icon="DownloadIcon"
+                        type={'filled'}
+                        color={'primary'}
+                        textColor={'white'}
+                      />
+                    }
+                  />
+                  <ImageInput<ProgrammeDetailsModel>
+                    acceptedFormats={acceptedFormats}
+                    label={questions?.[10].question}
+                    nameProp="r4bPhoto"
+                    icon="CameraIcon"
+                    className={'py-4'}
+                    currentImageString={r4bPhotoUrl}
+                    register={programmeFormRegister}
+                    overrideOnClick={() => setPhotoActionBarVisible(true)}
+                    onValueChange={(imageString: string) => {
+                      setProgrammeFormValue('r4bPhoto', imageString);
+                      triggerR4bForm();
+                    }}
+                    disabled={Boolean(
+                      checkedquestion(questions?.[10].question)
+                    )}
+                  ></ImageInput>
+                </>
+              )}
             </>
-            {haveTheTitleDeeds === false && (
+            {haveTheTitleDeeds === false && ownTheProperty === true && (
               <div className={'w-full'}>
                 <label className={styles.label}>
                   {questions?.[6].question}
