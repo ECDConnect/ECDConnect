@@ -9,23 +9,18 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import { DeleteUser, UserList } from '@ecdlink/graphql';
-import { DialogPosition, Dropdown, DropDownOption } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
-import AlertModal from '../../../../components/dialog-alert/dialog-alert';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
-import UserPanelEdit from '../../components/user-panel-edit/user-panel-edit';
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 
 export default function ApplicationAdmins() {
-  const dialog = useDialog();
-
   const { data, refetch, loading } = useQuery(UserList, {
     variables: {
       pagingInput: {
-        pageNumber: 2,
+        pageNumber: 1,
         pageSize: 20,
         filterBy: [
           { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
@@ -34,8 +29,6 @@ export default function ApplicationAdmins() {
       }
     }
   });
-
-  const { setNotification } = useNotifications();
   const { hasPermission } = useUser();
 
   const [searchValue, setSearchValue] = useState('');
@@ -71,8 +64,6 @@ export default function ApplicationAdmins() {
     let userStatus = statusFilter === 'active' ? true : false
 
     let allUsers: UserDto[] = [...data.users];
-    console.log(statusFilter);
-
     setTableData(
       allUsers.filter((v) => v.isActive === (statusFilter === '' ? true : userStatus)).map(mapUserTableItem)
     );
@@ -108,7 +99,7 @@ export default function ApplicationAdmins() {
   };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value || '');
+    setSearchValue(e.target.value || ' ');
   }, 150);
 
   if (tableData) {
@@ -131,7 +122,7 @@ export default function ApplicationAdmins() {
                   />
                 </div>
                 {showFilter && (
-                  <div className="flex items-center mt-4 sm:mt-6 ">
+                  <div className="flex items-center mt-4 sm:mt-6 flex-row justify-between">
                     {/* <div>
                       <Dropdown
                         fillType="filled"
@@ -189,6 +180,16 @@ export default function ApplicationAdmins() {
 
                     </div>
 
+                    <div className='justify-self col-end-3 '>
+                      <button
+                        onClick={() => setStatusFilter('')}
+                        type="button"
+                        className="text-secondary hover:bg-secondary hover:text-white outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm "
+                      >
+                        Clear All
+                      </button>
+                    </div>
+
 
                   </div>
                 )}
@@ -235,8 +236,8 @@ export default function ApplicationAdmins() {
                   urlRow={'/view-user/'}
 
                   rows={tableData}
-                 
-                
+
+
                   sendRow={true}
                   searchInput={searchValue}
                 />

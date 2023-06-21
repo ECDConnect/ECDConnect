@@ -18,13 +18,19 @@ import {
   useNotifications,
   usePanel,
   UserDto,
-  userSchema,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
 import { DeleteUser, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
+import * as yup from 'yup';
+
+const userSchema = yup.object().shape({
+  idNumber: yup.string().required('ID number is required'),
+  phoneNumber: yup.string().required('Cellphone number is required'),
+});
+
 
 export function ViewUser(props) {
   const [showPassword, setShowPassword] = useState(false);
@@ -54,60 +60,25 @@ export function ViewUser(props) {
   const { setNotification } = useNotifications();
   const dialog = useDialog();
 
-  const deleteUserAndRefresh = () => {
-    console.log("test")
-    // dialog({
-    //   blocking: true,
-    //   position: DialogPosition.Middle,
-    //   render: (onSubmit: any, onCancel: any) => (
-    //     <AlertModal
-    //       title="Deactivate Administrator"
-    //       message={`You are about to deactivate a user. Would you like to go ahead`}
-    //       onCancel={onCancel}
-    //       onSubmit={() => {
-    //         onSubmit();
-    //         deleteUser({
-    //           variables: {
-    //             id: userId,
-    //           },
-    //         })
-    //           .then((response: any) => {
-    //             if (response.data.deleteUser) {
-    //               refetch();
-
-    //               setNotification({
-    //                 title: 'Successfully Deactivated User!',
-    //                 variant: NOTIFICATION.SUCCESS,
-    //               });
-    //             }
-    //           })
-    //           .catch((error) => {
-    //             console.log(error);
-    //           });
-    //       }}
-    //     />
-    //   ),
-    // });
-  };
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
 
   const [editActive, setEditActive] = useState<boolean>(false);
-
   const {
     register: userDetailRegister,
     setValue: userDetailSetValue,
     formState: userDetailFormState,
     getValues: userDetailGetValues,
     control,
+    handleSubmit,
   } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
-    mode: 'onBlur',
+    mode: 'onChange',
   });
-  // PASSWORD FORMS
+
   const {
     register: passwordRegister,
     formState: passwordFormState,
@@ -115,7 +86,7 @@ export function ViewUser(props) {
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
-    mode: 'onBlur',
+    mode: 'onChange',
   });
 
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
@@ -124,17 +95,6 @@ export function ViewUser(props) {
   const { errors: detailFormErrors, isValid: isDetailValid } =
     userDetailFormState;
 
-  const getIsValid = () => {
-    let isValid = isUserDetailValid;
-    let internalIsPasswordValid = true;
-    const passwordForm = passwordGetValues();
-
-    if (passwordForm.password.length > 0) {
-      internalIsPasswordValid = isPasswordValid;
-    }
-
-    return isValid && internalIsPasswordValid ? true : false;
-  };
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
@@ -233,7 +193,7 @@ export function ViewUser(props) {
                     {userData && userData?.userById.roles.map((i: any, index: number) => {
                       return <div
                         key={i.id}
-                        className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-6/12 flex justify-center flex-row"
+                        className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-full flex justify-center flex-row"
                       >
                         <p className='text-16'> {i.name}</p>
                       </div>
@@ -297,8 +257,8 @@ export function ViewUser(props) {
                   type="filled"
                   isLoading={loading}
                   color="secondary"
-                  disabled={!isPasswordValid}
-                  onClick={onSave}
+                   disabled={!isUserDetailValid}
+                  onClick={handleSubmit(onSave)}
                 >
                   <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
                   <Typography
