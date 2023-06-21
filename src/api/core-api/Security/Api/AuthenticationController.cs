@@ -61,7 +61,7 @@ namespace ECDLink.Security.Api
 
             if (user == null)
             {
-                return Unauthorized(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
+                return BadRequest(new { Error = "Some of the information you have entered is incorrect. Please contact the SmartStart call centre to find out more: 0800 014 817" });
             }
 
 
