@@ -169,7 +169,6 @@ export const Business: React.FC = () => {
         displayHelp={displayHelp}
         onHelp={() => displayTutorial()}
         displayOffline={!isOnline}
-        renderOverflow
       >
         <TabList
           className="bg-uiBg"
