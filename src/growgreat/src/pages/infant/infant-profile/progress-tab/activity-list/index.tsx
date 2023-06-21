@@ -349,9 +349,9 @@ export const ActivityList: React.FC = () => {
       const completedActivities = visibleActivities.filter((item) =>
         completedVisits?.includes(item.title)
       );
-      const uncompletedActivities = visibleActivities; /* .filter(
+      const uncompletedActivities = visibleActivities.filter(
         (item) => !completedVisits?.includes(item.title)
-      ); */
+      );
 
       const completedForms = completedActivities.map(
         (item): MenuListDataItem => ({
