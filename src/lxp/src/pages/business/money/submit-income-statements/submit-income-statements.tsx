@@ -545,7 +545,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div className="flex flex-col justify-center p-4">
+      <div className="pb-180 flex flex-col justify-center p-4">
         {isOnline && (
           <div
             className={
@@ -578,41 +578,38 @@ export const SubmitIncomeStatements: React.FC = () => {
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderAccordinglyWalkthroughOrNot}
         {balanceNotifications}
-        <div className="mt-2 flex flex-col justify-center">
-          <Button
-            shape="normal"
-            color="primary"
-            type="filled"
-            icon="DocumentSearchIcon"
-            onClick={() =>
-              history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)
-            }
-            className={`mt-6 mb-8 rounded-2xl ${
-              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-            }`}
-            id="seeAllStatements"
-          >
-            <Typography type="help" color="white" text="See all statements" />
-          </Button>
 
-          <FADButton
-            title={'Add income or expense'}
-            icon={'PlusIcon'}
-            iconDirection={'left'}
-            textToggle={true}
-            type={'filled'}
-            color={'primary'}
-            shape={'round'}
-            className={`right-0 z-10 m-3 px-3.5 py-2.5 ${
-              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-            }`}
-            click={() => {
-              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
-              nextStep();
-            }}
-            id="startStatements"
-          />
-        </div>
+        <Button
+          shape="normal"
+          color="primary"
+          type="filled"
+          icon="DocumentSearchIcon"
+          onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
+          className={`mt-6 mb-8 rounded-2xl ${
+            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+          }`}
+          id="seeAllStatements"
+        >
+          <Typography type="help" color="white" text="See all statements" />
+        </Button>
+
+        <FADButton
+          title={'Add income or expense'}
+          icon={'PlusIcon'}
+          iconDirection={'left'}
+          textToggle={true}
+          type={'filled'}
+          color={'primary'}
+          shape={'round'}
+          className={`absolute bottom-14 right-0 z-10 m-3 px-3.5 py-2.5 ${
+            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+          }`}
+          click={() => {
+            history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+            nextStep();
+          }}
+          id="startStatements"
+        />
       </div>
     </>
   );
