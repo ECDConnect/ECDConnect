@@ -29,7 +29,6 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
   useEffect(() => {
     if (user) {
       setValue('email', user.email, { shouldValidate: true });
-      console.log(user.email)
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);

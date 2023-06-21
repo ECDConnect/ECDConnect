@@ -1,13 +1,9 @@
 import { useMutation, useQuery } from '@apollo/client';
-import {
-  initialPasswordValue,
-  initialUserDetailsValues,
-  NOTIFICATION,
-  passwordSchema,
-  RoleDto,
-  useNotifications,
-  userSchema,
-} from '@ecdlink/core';
+import { useEffect, useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { yupResolver } from '@hookform/resolvers/yup';
+import * as yup from 'yup';
+
 import {
   AddUsersToRole,
   CreateUser,
@@ -15,21 +11,39 @@ import {
   SendInviteToApplication,
   UserModelInput,
 } from '@ecdlink/graphql';
-import { yupResolver } from '@hookform/resolvers/yup';
-import { useEffect, useState } from 'react';
-import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../utils/uuid.utils';
+
 import UserDetailsForm from '../user-details-form/user-details-form';
 import { UserPanelCreateProps } from '../users';
 import { Alert, Button, Typography } from '@ecdlink/ui';
-import UserPanelSave from '../user-panel-save/user-panel-save';
 import { SaveIcon } from '@heroicons/react/solid';
+import FormField from '../../../../components/form-field/form-field';
+import { NOTIFICATION, RoleDto, useNotifications } from '@ecdlink/core';
+
+const validationSchema = yup.object().shape({
+  firstName: yup.string().required('First name is required'),
+  surname: yup.string().required('Surname is required'),
+  email: yup
+    .string()
+    .email('Invalid email address')
+    .required('Email is required'),
+});
 
 export default function UserPanelCreate(props: UserPanelCreateProps) {
+  const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [filteredRoles, setFilteredRoles] = useState<RoleDto[]>([]);
+  const { register, handleSubmit, formState, setValue, getValues } = useForm({
+    resolver: yupResolver(validationSchema),
+    defaultValues: {
+      firstName: '',
+      surname: '',
+      email: '',
+    },
+    mode: 'onBlur',
+  });
+  const { errors, isValid } = formState;
+
   const { setNotification } = useNotifications();
-  const emitCloseDialog = (value: boolean) => {
-    props.closeDialog(value);
-  };
 
   const { data: roleData } = useQuery(RoleList, {
     fetchPolicy: 'cache-and-network',
@@ -38,114 +52,90 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const [createUser] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
-  const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
-  const [filteredRoles, setFilteredRoles] = useState<RoleDto[]>([]);
-
   useEffect(() => {
     if (roleData && roleData.roles) {
       const tempRoles = roleData.roles.filter(
         (x: RoleDto) =>
-          x.name !== 'Practitioner' &&
-          x.name !== 'Coach' &&
-          x.name !== 'Child' &&
-          x.name !== 'Principal' &&
-          x.name !== 'Franchisor'
+          !['Practitioner', 'Coach', 'Child', 'Principal', 'Franchisor'].includes(x.name)
       );
 
       setFilteredRoles(tempRoles);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [roleData]);
 
-  const {
-    register: userDetailRegister,
-    setValue: userDetailSetValue,
-    formState: userDetailFormState,
-    getValues: userDetailGetValues,
-    control,
-  } = useForm({
-    resolver: yupResolver(userSchema),
-    defaultValues: initialUserDetailsValues,
-    mode: 'onBlur',
-  });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
+  const emitCloseDialog = (value: boolean) => {
+    props.closeDialog(value);
+  };
 
-  const onSave = async () => {
-    await saveUser();
+  const onSave = async (formData: any) => {
+    await saveUser(formData);
     emitCloseDialog(true);
   };
 
-
-  const saveUser = async () => {
-    const userDetailForm = userDetailGetValues();
+  const saveUser = async (formData: any) => {
     const userInputModel: UserModelInput = {
       id: newGuid(),
-      firstName: userDetailForm.firstName,
-      surname: userDetailForm.surname,
-      email: userDetailForm.email,
+      firstName: formData.firstName,
+      surname: formData.surname,
+      email: formData.email,
       dateOfBirth: new Date(),
       isSouthAfricanCitizen: true,
-      verifiedByHomeAffairs: true
-      
+      verifiedByHomeAffairs: true,
     };
 
-    await createUser({
-      variables: {
-        input: { ...userInputModel },
-        createAdmin: true,
-      },
-    })
-      .then(async (response) => {
-        setNotification({
-          title: 'Successfully Created User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-        const userId = response.data.addUser.id;
-        await sendInviteToApplication({
-          variables: {
-            userId: userId,
-          },
-        });
-        setNotification({
-          title: 'Successfully User an Invite!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-        await saveRoles(userId);
-      })
-      .catch((error) => {
-        console.log(error);
+    try {
+      const response = await createUser({
+        variables: {
+          input: { ...userInputModel },
+          createAdmin: true,
+        },
       });
+
+      setNotification({
+        title: 'Successfully Created User!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+
+      const userId = response.data.addUser.id;
+      await sendInviteToApplication({
+        variables: {
+          userId: userId,
+        },
+      });
+
+      setNotification({
+        title: 'Successfully Sent User an Invite!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+
+      await saveRoles(userId);
+    } catch (error) {
+      console.log(error);
+    }
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = ["Administrator"];
+    const rolesToAdd: string[] = ['Administrator'];
     selectedUserRoles.forEach((x) => {
       rolesToAdd.push(x.name);
     });
 
-    await addRolesToUser({
-      variables: {
-        userId: userId,
-        roleNames: rolesToAdd,
-      },
-    })
-      .then((response: any) => {
-        setNotification({
-          title: 'Successfully Added roles to User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-      })
-      .catch((error) => {
-        console.log(error);
+    try {
+      await addRolesToUser({
+        variables: {
+          userId: userId,
+          roleNames: rolesToAdd,
+        },
       });
 
-
+      setNotification({
+        title: 'Successfully Added roles to User!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    } catch (error) {
+      console.log(error);
+    }
   };
-  const userDetailForm = userDetailGetValues();
-  console.log(userDetailForm);
 
   const getComponent = () => {
     return (
@@ -157,64 +147,72 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
               Step 1 of 1
             </label>
           </div>
-          <UserDetailsForm
-            formKey={`createUserDetails-${new Date().getTime()}`}
-            register={userDetailRegister}
-            errors={userDetailFormErrors}
-            setValue={userDetailSetValue}
-            control={control}
-          />
+          <form
+            key={`${new Date()}`}
+            className="space-y-8 divide-y divide-gray-200"
+            onSubmit={handleSubmit(onSave)}
+          >
+            <div className="space-y-0">
+              <div className="grid grid-cols-1">
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label="First name *"
+                    nameProp="firstName"
+                    register={register}
+                    error={errors.firstName?.message}
+                    placeholder="First name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label="Surname *"
+                    nameProp="surname"
+                    register={register}
+                    error={errors.surname?.message}
+                    placeholder="Surname/family name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label="Work email address *"
+                    nameProp="email"
+                    register={register}
+                    error={errors.email?.message}
+                    placeholder="e.g name@email.com"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
         </div>
 
-        {/* <div className="mt-0 rounded-lg  px-4 py-0">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Roles
-            </h3>
-            <p className="text-Light text-md font-medium leading-6">
-              Please select one administrator type. Once the user has been
-              added, you can add additional roles.
-            </p>
-          </div>
-          <UserRoles
-            roleList={filteredRoles ? filteredRoles : []}
-            roles={selectedUserRoles}
-            onUserRoleChange={(values) => setUserRoles(values)}
-          />
-        </div> */}
         <div className="mt-0 rounded-lg  px-4 py-0">
           <Alert
-            className={'mt-5 mb-3'}
-            message={
-              'An invitation will be sent to the new user when you click add.'
-            }
-            type={'info'}
+            className="mt-5 mb-3"
+            message="An invitation will be sent to the new user when you click add."
+            type="info"
           />
-             <Button
-                    className={'mt-3  rounded mr-6 w-full'}
-                    type="filled"
-                    // isLoading={isLoading}
-                    color="secondary"
-                    // disabled={!isValid}
-                    onClick={onSave}
-                  >
-                    <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Send Invitation'}
-                    ></Typography>
-                  </Button>
+          <Button
+            className="mt-3 rounded mr-6 w-full"
+            type="filled"
+            color="secondary"
+            disabled={!isValid}
+            onClick={handleSubmit(onSave)}
+          >
+            <SaveIcon color="white" className="w-6 h-6 mr-6" />
+            <Typography
+              type="help"
+              color="white"
+              text="Send Invitation"
+            ></Typography>
+          </Button>
         </div>
-      
       </>
     );
   };
 
-
   return (
     <article>
-     
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
     </article>
   );
