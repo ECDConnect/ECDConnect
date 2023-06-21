@@ -30,6 +30,7 @@ import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
+import Tool_R4c_form from '@/assets/tool_R4c_form.pdf';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -101,8 +102,12 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       answer: '',
     },
     {
+      question: 'Take a photo of a certified copy of the Title Deeds',
+      answer: '',
+    },
+    {
       question:
-        'Take a photo of the filled and signed R4b form - Confirmation of Lease.',
+        'Take a photo of the filled and signed R4c Affidavit - Property Ownership',
       answer: '',
     },
   ]);
@@ -214,6 +219,15 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       );
     }
   }, []);
+
+  const onDownloadImage = () => {
+    const pdfUrl = Tool_R4c_form;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'r4b_form.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
 
   return (
     <>
@@ -502,23 +516,41 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
             )}
 
             {unproclaimedLand === true && (
-              <Alert
-                className="mb-4"
-                type="info"
-                title={`Please get a signed, stamped copy of an R4c form instead.`}
-                list={[
-                  'This form can be stamped by any commissioner of oaths. This could include: police officers, South African Post Office workers, lawyers, or accountants for example.',
-                ]}
-                button={
-                  <Button
-                    text="Download the R4c form"
-                    icon="DownloadIcon"
-                    type={'filled'}
-                    color={'primary'}
-                    textColor={'white'}
-                  />
-                }
-              />
+              <>
+                <Alert
+                  className="mb-4"
+                  type="info"
+                  title={`Please get a signed, stamped copy of an R4c form instead.`}
+                  list={[
+                    'This form can be stamped by any commissioner of oaths. This could include: police officers, South African Post Office workers, lawyers, or accountants for example.',
+                  ]}
+                  button={
+                    <Button
+                      onClick={onDownloadImage}
+                      text="Download the R4c form"
+                      icon="DownloadIcon"
+                      type={'filled'}
+                      color={'primary'}
+                      textColor={'white'}
+                    />
+                  }
+                />
+                <ImageInput<ProgrammeDetailsModel>
+                  acceptedFormats={acceptedFormats}
+                  label={questions?.[8].question}
+                  nameProp="r4bPhoto"
+                  icon="CameraIcon"
+                  className={'py-4'}
+                  currentImageString={r4bPhotoUrl}
+                  register={programmeFormRegister}
+                  overrideOnClick={() => setPhotoActionBarVisible(true)}
+                  onValueChange={(imageString: string) => {
+                    setProgrammeFormValue('r4bPhoto', imageString);
+                    triggerR4bForm();
+                  }}
+                  disabled={Boolean(checkedquestion(questions?.[8].question))}
+                ></ImageInput>
+              </>
             )}
             <div>
               <div>
