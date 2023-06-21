@@ -3,7 +3,7 @@ import { Button, DialogPosition, Dropdown, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon } from '@heroicons/react/solid';
+import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
@@ -166,9 +166,17 @@ export function ViewUser(props) {
   // console.log(isValid);
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
-      <Breadcrumb
-
-      />
+      <div className='justify-self col-end-3 '>
+        <button
+          onClick={() => history.goBack()}
+          type="button"
+          className="cursor text-secondary outline-none inline-flex w-full items-center border border-transparent px-4 py-2 text-14 font-medium "
+        >
+          <ArrowLeftIcon className="text-secondary h-4 w-4 mr-1"> </ArrowLeftIcon>
+          Back 
+          {/* <span className="text-black pl-2"> / View User</span> */}
+        </button>
+      </div>
 
 
 
@@ -193,7 +201,7 @@ export function ViewUser(props) {
                     {userData && userData?.userById.roles.map((i: any, index: number) => {
                       return <div
                         key={i.id}
-                        className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white w-full flex justify-center flex-row"
+                        className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white  flex justify-center flex-row"
                       >
                         <p className='text-16'> {i.name}</p>
                       </div>
@@ -257,7 +265,7 @@ export function ViewUser(props) {
                   type="filled"
                   isLoading={loading}
                   color="secondary"
-                   disabled={!isUserDetailValid}
+                  disabled={!isUserDetailValid}
                   onClick={handleSubmit(onSave)}
                 >
                   <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
