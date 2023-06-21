@@ -76,7 +76,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     emitCloseDialog(true);
   };
 
-  console.log(">", isUserDetailValid)
 
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
@@ -212,10 +211,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     );
   };
 
-  console.log(userDetailForm.email)
-  function getIsValid() {
-    throw new Error('Function not implemented.');
-  }
 
   return (
     <article>

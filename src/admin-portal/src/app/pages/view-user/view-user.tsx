@@ -24,20 +24,21 @@ import AlertModal from '../../components/dialog-alert/dialog-alert';
 import { DeleteUser, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
+import { useUser } from '../../hooks/useUser';
 
 export function ViewUser(props) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
-  const [updateUser] = useMutation(UpdateUser);
+  const [updateUser, { loading }] = useMutation(UpdateUser);
   let userId = localStorage.getItem("selectedUser");
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
+  const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
       userId: '',
     },
@@ -48,44 +49,45 @@ export function ViewUser(props) {
     getUserById({ variables: { userId: userId } });
   }, [userId])
 
+  const { hasPermission } = useUser();
 
   const { setNotification } = useNotifications();
   const dialog = useDialog();
 
-  const deleteUserAndRefresh = async () => {
-    dialog({
-      blocking: true,
-      position: DialogPosition.Middle,
-      render: (onSubmit: any, onCancel: any) => (
-        <AlertModal
-          title="Deactivate Administrator"
-          message={`You are about to deactivate a user. Would you like to go ahead`}
-          onCancel={onCancel}
-          onSubmit={() => {
-            onSubmit();
+  const deleteUserAndRefresh = () => {
+    console.log("test")
+    // dialog({
+    //   blocking: true,
+    //   position: DialogPosition.Middle,
+    //   render: (onSubmit: any, onCancel: any) => (
+    //     <AlertModal
+    //       title="Deactivate Administrator"
+    //       message={`You are about to deactivate a user. Would you like to go ahead`}
+    //       onCancel={onCancel}
+    //       onSubmit={() => {
+    //         onSubmit();
+    //         deleteUser({
+    //           variables: {
+    //             id: userId,
+    //           },
+    //         })
+    //           .then((response: any) => {
+    //             if (response.data.deleteUser) {
+    //               refetch();
 
-            deleteUser({
-              variables: {
-                id: userId,
-              },
-            })
-              .then((response: any) => {
-                if (response.data.deleteUser) {
-                  // refetch();
-
-                  setNotification({
-                    title: 'Successfully Deactivated User!',
-                    variant: NOTIFICATION.SUCCESS,
-                  });
-                }
-              })
-              .catch((error) => {
-                console.log(error);
-              });
-          }}
-        />
-      ),
-    });
+    //               setNotification({
+    //                 title: 'Successfully Deactivated User!',
+    //                 variant: NOTIFICATION.SUCCESS,
+    //               });
+    //             }
+    //           })
+    //           .catch((error) => {
+    //             console.log(error);
+    //           });
+    //       }}
+    //     />
+    //   ),
+    // });
   };
 
   const togglePasswordVisibility = () => {
@@ -263,7 +265,7 @@ export function ViewUser(props) {
                         label={'ID number *'}
                         nameProp={'idNumber'}
                         register={userDetailRegister}
-                        error={detailFormErrors.firstName?.message}
+                        error={detailFormErrors.idNumber?.message}
                         defaultValue={userData?.userById?.idNumber}
 
                       />
@@ -273,7 +275,7 @@ export function ViewUser(props) {
                         label={'Cellphone number *'}
                         nameProp={'phoneNumber'}
                         register={userDetailRegister}
-                        error={detailFormErrors.surname?.message}
+                        error={detailFormErrors.phoneNumber?.message}
                         defaultValue={userData?.userById?.phoneNumber}
                       />
                     </div>
@@ -290,12 +292,12 @@ export function ViewUser(props) {
                     </div>
                   </div>
                 </div>
-                <Button
+                {<Button
                   className={'mt-3 w-4/12 rounded mr-6'}
                   type="filled"
-                  // isLoading={isLoading}
+                  isLoading={loading}
                   color="secondary"
-                  // disabled={!isValid}
+                  disabled={!isPasswordValid}
                   onClick={onSave}
                 >
                   <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
@@ -304,7 +306,7 @@ export function ViewUser(props) {
                     color="white"
                     text={'Save Changes'}
                   ></Typography>
-                </Button>
+                </Button>}
               </form> :
                 <div className='flex flex-row justify-start pt-4 text-current'>
                   <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
@@ -443,12 +445,49 @@ export function ViewUser(props) {
         }
         <div className="pl-4 flex flex-row w-6/12">
 
-          <Button
-            className={'mt-3 w-4/12 rounded'}
+          {<Button
+            className={'mt-3 w-4/12 rounded-md'}
             type="outlined"
             // isLoading={isLoading}
             color="tertiary"
-            onClick={() => deleteUserAndRefresh}
+            onClick={
+              () => {
+                dialog({
+                  blocking: true,
+                  position: DialogPosition.Middle,
+                  render: (onSubmit: any, onCancel: any) => (
+                    <AlertModal
+                      title="Deactivate Administrator"
+                      message={`You are about to deactivate a user. Would you like to go ahead`}
+                      onCancel={onCancel}
+                      onSubmit={() => {
+                        onSubmit();
+                        deleteUser({
+                          variables: {
+                            id: userId,
+                          },
+                        })
+                          .then((response: any) => {
+                            if (response.data.deleteUser) {
+                              refetch();
+
+                              setNotification({
+                                title: 'Successfully Deactivated User!',
+                                variant: NOTIFICATION.SUCCESS,
+                              });
+                            }
+                          })
+                          .catch((error) => {
+                            console.log(error);
+                          });
+                      }}
+                    />
+                  ),
+                });
+              }
+
+
+            }
           >
             <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
             <Typography
@@ -456,11 +495,11 @@ export function ViewUser(props) {
               color="tertiary"
               text={'Deactivate User'}
             ></Typography>
-          </Button>
+          </Button>}
 
         </div>
       </div>
-    </div>
+    </div >
 
   );
 }
