@@ -66,13 +66,14 @@ namespace EcdLink.Api.CoreApi
 
             // We are explicitly setting these because of CORS issues on .datafree.co
             var allowedDomains = new[] { "https://ecdconnect.co.za",
-                "https://ecdconnect-co-za-fundasmartstart.datafree.co",
                 "https://*.ecdconnect.co.za",
                 "https://*.ecdlink.co.za",
                 "https://*.azurewebsites.net",
                 "http://localhost:3001",
                 "http://localhost:3000" ,
-                "https://smartstart-ecdconnect-co-za-funda.datafree.co"};
+                "https://*.datafree.co",
+                "https://*.sbox.datafree.co",
+            };
 
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
                           .AllowAnyMethod()
