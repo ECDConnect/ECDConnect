@@ -39,7 +39,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       surname: '',
       email: '',
     },
-    mode: 'onChange'
+    mode: 'onChange',
   });
   const { errors, isValid } = formState;
 
@@ -56,7 +56,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     if (roleData && roleData.roles) {
       const tempRoles = roleData.roles.filter(
         (x: RoleDto) =>
-          !['Practitioner', 'Coach', 'Child', 'Principal', 'Franchisor'].includes(x.name)
+          ![
+            'Practitioner',
+            'Coach',
+            'Child',
+            'Principal',
+            'Franchisor',
+          ].includes(x.name)
       );
 
       setFilteredRoles(tempRoles);
@@ -97,18 +103,17 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       });
 
       const userId = response.data.addUser.id;
-      // await sendInviteToApplication({
-      //   variables: {
-      //     userId: userId,
-      //   },
-      // }).then(()=>{
-      //   setNotification({
-      //     title: 'Successfully Sent User an Invite!',
-      //     variant: NOTIFICATION.SUCCESS,
-      //   });
-      // });
-
-      await saveRoles(userId);
+      await saveRoles(userId).then(async () => {
+        await sendInviteToApplication({
+          variables: {
+            userId: userId,
+          },
+        });
+        setNotification({
+          title: 'Successfully Sent User an Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      });
     } catch (error) {
       console.log(error);
     }
@@ -193,13 +198,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             type="info"
           />
           <Button
-            className="mt-3 rounded mr-6 w-full"
+            className="mt-3 mr-6 w-full rounded"
             type="filled"
             color="secondary"
             disabled={!isValid}
             onClick={handleSubmit(onSave)}
           >
-            <SaveIcon color="white" className="w-6 h-6 mr-6" />
+            <SaveIcon color="white" className="mr-6 h-6 w-6" />
             <Typography
               type="help"
               color="white"

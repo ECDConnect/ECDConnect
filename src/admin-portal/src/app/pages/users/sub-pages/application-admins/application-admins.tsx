@@ -23,11 +23,11 @@ export default function ApplicationAdmins() {
         pageNumber: 1,
         pageSize: 20,
         filterBy: [
-          { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+          { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
         ],
-        sortBy: [{ fieldName: "FullName", descending: true }]
-      }
-    }
+        sortBy: [{ fieldName: 'FullName', descending: true }],
+      },
+    },
   });
   const { hasPermission } = useUser();
 
@@ -41,19 +41,21 @@ export default function ApplicationAdmins() {
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
-
-
   useEffect(() => {
     if (data && data.users) {
       const copyItems = data.users;
-      const modifiedData = copyItems.map((obj: { [x: string]: any; __typename: any; roles: any; }) => {
-        const { "__typename": _, roles, ...rest } = obj;
-        const modifiedRoles = roles.map((role: { [x: string]: any; __typename: any; }) => {
-          const { "__typename": __, ...roleRest } = role;
-          return roleRest;
-        });
-        return { ...rest, roles: modifiedRoles };
-      });
+      const modifiedData = copyItems.map(
+        (obj: { [x: string]: any; __typename: any; roles: any }) => {
+          const { __typename: _, roles, ...rest } = obj;
+          const modifiedRoles = roles.map(
+            (role: { [x: string]: any; __typename: any }) => {
+              const { __typename: __, ...roleRest } = role;
+              return roleRest;
+            }
+          );
+          return { ...rest, roles: modifiedRoles };
+        }
+      );
       const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
       setTableData(finalTableData);
     }
@@ -61,11 +63,13 @@ export default function ApplicationAdmins() {
 
   useEffect(() => {
     if (!data?.users) return;
-    let userStatus = statusFilter === 'active' ? true : false
+    let userStatus = statusFilter === 'active' ? true : false;
 
     let allUsers: UserDto[] = [...data.users];
     setTableData(
-      allUsers.filter((v) => v.isActive === (statusFilter === '' ? true : userStatus)).map(mapUserTableItem)
+      allUsers
+        .filter((v) => v.isActive === (statusFilter === '' ? true : userStatus))
+        .map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
@@ -108,7 +112,7 @@ export default function ApplicationAdmins() {
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-8/12 sm:flex  sm:justify-around">
-              <div className="text-body w-8/12 sm:flex flex-col sm:justify-around">
+              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -122,7 +126,7 @@ export default function ApplicationAdmins() {
                   />
                 </div>
                 {showFilter && (
-                  <div className="flex items-center mt-4 sm:mt-6 flex-row justify-between">
+                  <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
                     {/* <div>
                       <Dropdown
                         fillType="filled"
@@ -139,22 +143,31 @@ export default function ApplicationAdmins() {
                     </div> */}
 
                     <div>
-
                       <div className="relative inline-block text-left">
                         <div>
                           <button
                             type="button"
-                            onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                            className={`inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-normal border-2 border-secondary ${!showDropDownFilter ? 'text-white bg-secondary' : 'text-secondary bg-white border-2 border-secondary'
-                              } hover:bg-white hover:text-secondary `}
+                            onClick={() =>
+                              setShowDropDownFilter(!showDropDownFilter)
+                            }
+                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                              !showDropDownFilter
+                                ? 'bg-secondary text-white'
+                                : 'text-secondary border-secondary border-2 bg-white'
+                            } hover:text-secondary hover:bg-white `}
                             id="menu-button"
                             aria-expanded={showDropDownFilter}
                             aria-haspopup={showDropDownFilter}
                           >
-                            {statusFilter === '' ? "Filter by status" : statusFilter}
+                            {statusFilter === ''
+                              ? 'Filter by status'
+                              : statusFilter}
                             <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter ? 'text-white hover:text-secondary' : 'text-secondary hover:text-white'
-                                }`}
+                              className={`-mr-1 h-5 w-5 hover:text-white ${
+                                !showDropDownFilter
+                                  ? 'hover:text-secondary text-white'
+                                  : 'text-secondary hover:text-white'
+                              }`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                               aria-hidden="true"
@@ -168,44 +181,83 @@ export default function ApplicationAdmins() {
                           </button>
                         </div>
                         {/*  */}
-                        {showDropDownFilter && <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="horizontal" aria-labelledby="menu-button" >
-                          <div className="py-1" role="none">
-                            {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                            <a onClick={() => { setStatusFilter('active'); setShowDropDownFilter(!showDropDownFilter); }} className=" cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-0">Active</a>
-                            <a onClick={() => { setStatusFilter('inactive'); setShowDropDownFilter(!showDropDownFilter) }} className="cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-1">Inactive</a>
-
+                        {showDropDownFilter && (
+                          <div
+                            className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+                            role="menu"
+                            aria-orientation="horizontal"
+                            aria-labelledby="menu-button"
+                          >
+                            <div className="py-1" role="none">
+                              {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
+                              <a
+                                onClick={() => {
+                                  setStatusFilter('active');
+                                  setShowDropDownFilter(!showDropDownFilter);
+                                }}
+                                className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
+                                role="menuitem"
+                                id="menu-item-0"
+                              >
+                                Active
+                              </a>
+                              <a
+                                onClick={() => {
+                                  setStatusFilter('inactive');
+                                  setShowDropDownFilter(!showDropDownFilter);
+                                }}
+                                className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
+                                role="menuitem"
+                                id="menu-item-1"
+                              >
+                                Inactive
+                              </a>
+                            </div>
                           </div>
-                        </div>}
+                        )}
                       </div>
-
                     </div>
 
-                    <div className='justify-self col-end-3 '>
+                    <div className="justify-self col-end-3 ">
                       <button
                         onClick={() => setStatusFilter('')}
                         type="button"
-                        className="text-secondary hover:bg-secondary hover:text-white outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm "
+                        className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white  "
                       >
                         Clear All
                       </button>
                     </div>
-
-
                   </div>
                 )}
               </div>
 
               <div className="mx-4 w-3/12">
                 <span className="w-full text-lg font-medium leading-6 text-gray-900">
-
-                  <button onClick={() => setShowFilter(!showFilter)} id="dropdownHoverButton"
-                    className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
-                    type="button">Filter
-                    <svg className="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                  <button
+                    onClick={() => setShowFilter(!showFilter)}
+                    id="dropdownHoverButton"
+                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    type="button"
+                  >
+                    Filter
+                    <svg
+                      className="ml-2 h-4 w-4"
+                      aria-hidden="true"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </button>
                 </span>
               </div>
-
             </div>
 
             <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
@@ -222,8 +274,6 @@ export default function ApplicationAdmins() {
             </div>
           </div>
 
-
-
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
@@ -234,10 +284,7 @@ export default function ApplicationAdmins() {
                     { field: 'isActive', use: 'Active' },
                   ]}
                   urlRow={'/view-user/'}
-
                   rows={tableData}
-
-
                   sendRow={true}
                   searchInput={searchValue}
                 />

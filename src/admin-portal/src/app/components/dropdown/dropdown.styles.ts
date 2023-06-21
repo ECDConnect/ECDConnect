@@ -1,4 +1,3 @@
-
 import { Colours, classNames } from '@ecdlink/ui';
 import { DropDownFillType } from './models/DropDownOption';
 
@@ -37,6 +36,11 @@ export const getDropDownFill = (
   switch (fillType) {
     case 'clear':
       return classNames(dropdownClearWrapper, `bg-${fillColor}`);
+    case 'outlined':
+      return classNames(
+        dropdownWrapper,
+        `border-2 bg-${fillColor} border-${fillColor} radius-lg`
+      );
     case 'filled':
     default:
       return classNames(dropdownWrapper, `bg-${fillColor}`);

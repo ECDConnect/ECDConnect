@@ -29,7 +29,14 @@ import UiTable from '../../../../components/ui-table';
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import { ChevronDownIcon, CogIcon, DownloadIcon, PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
+import {
+  ChevronDownIcon,
+  CogIcon,
+  DownloadIcon,
+  PlusIcon,
+  SearchIcon,
+  UploadIcon,
+} from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
 import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
 import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
@@ -45,10 +52,10 @@ export default function HealthCareWorkers() {
       pageNumber: 1,
       pageSize: 10,
       filterBy: [
-        { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
+        { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
       ],
-      sortBy: [{ fieldName: "FullName", descending: true }]
-    }
+      sortBy: [{ fieldName: 'FullName', descending: true }],
+    },
   });
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
@@ -108,6 +115,7 @@ export default function HealthCareWorkers() {
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
+  const [provinceFilter, setProvinceFilter] = useState('');
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -116,22 +124,22 @@ export default function HealthCareWorkers() {
 
   const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
     return {
-      key: x.id,
-      value: x.user.firstName + ' ' + x.user.surname,
+      value: x.id,
+      label: x.user.firstName + ' ' + x.user.surname,
     };
   });
 
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
-      key: x.id,
+      label: x.id,
       value: x.name,
     };
   });
-  console.log(clinics)
+  console.log(clinics);
 
   const provinces = provinceData?.GetAllProvince.map((x: any) => {
     return {
-      key: x.id,
+      label: x.description,
       value: x.description,
     };
   });
@@ -150,19 +158,24 @@ export default function HealthCareWorkers() {
 
   useEffect(() => {
     if (!data?.users) return;
-    let userStatus = statusFilter === 'active' ? true : false
-
-    let allUsers: UserDto[] = [...data.users];
+    let userStatus = statusFilter === 'active' ? true : false;
+    console.log(provinceFilter);
+    let allUsers: any[] = [...data.users];
     setTableData(
-      allUsers.filter((v) => v.isActive === (statusFilter === '' ? true : userStatus)).map(mapUserTableItem)
+      allUsers
+        .filter(
+          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
+        )
+        .filter((v) => v?.province === provinceFilter) // Apply province filter
+        .map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter]);
+  }, [statusFilter, provinceFilter]);
 
   useEffect(() => {
     if (data && data.GetAllHealthCareWorker) {
       const copyItems = data.GetAllHealthCareWorker.map(
-        (item: HealthCareWorkerDto) => (mapUserTableItem(item))
+        (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
       setTableData(copyItems);
     }
@@ -194,29 +207,6 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const displayEditUserPanel = (user: any) => {
-    panel({
-      noPadding: true,
-      title: '',
-      presentationStyle: 'overFullScreen',
-      render: (onSubmit) => (
-        <HealthCareWorkerPanelEdit
-          key={`userPanelEdit`}
-          practitioner={user}
-          closeDialog={(userCreated: boolean) => {
-            onSubmit();
-
-            if (userCreated) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-
-
   const displayPanel = () => {
     panel({
       noPadding: true,
@@ -235,7 +225,6 @@ export default function HealthCareWorkers() {
       ),
     });
   };
-
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
@@ -319,8 +308,8 @@ export default function HealthCareWorkers() {
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-8/12 sm:flex  sm:justify-around">
-              <div className="text-body w-8/12 sm:flex flex-col sm:justify-around">
+            <div className="text-body w-full sm:flex  ">
+              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -333,207 +322,259 @@ export default function HealthCareWorkers() {
                     onChange={search}
                   />
                 </div>
-                {showFilter && (
-                  <div className="flex items-center mt-4 sm:mt-6 flex-row justify-between">
-                    {/* <div>
-                    <Dropdown
-                      fillType="filled"
-                      textColor="white"
-                      fillColor="secondary"
-                      placeholder="Filter roles"
-                      labelColor="white"
-                      selectedValue={selectedRoleFilter}
-                      list={getRoleOptions(data?.users) || []}
-                      onChange={(item) => {
-                        setSelectedRoleFilter(item);
-                      }}
-                    />
-                  </div> */}
-
-                    <div>
-
-                      <div className="relative inline-block text-left">
-                        <div>
-                          <button
-                            type="button"
-                            onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                            className={`inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-normal border-2 border-secondary ${!showDropDownFilter ? 'text-white bg-secondary' : 'text-secondary bg-white border-2 border-secondary'
-                              } hover:bg-white hover:text-secondary `}
-                            id="menu-button"
-                            aria-expanded={showDropDownFilter}
-                            aria-haspopup={showDropDownFilter}
-                          >
-                            {statusFilter === '' ? "Filter by status" : statusFilter}
-                            <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter ? 'text-white hover:text-secondary' : 'text-secondary hover:text-white'
-                                }`}
-                              viewBox="0 0 20 20"
-                              fill="currentColor"
-                              aria-hidden="true"
-                            >
-                              <path
-                                fillRule="evenodd"
-                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                                clipRule="evenodd"
-                              />
-                            </svg>
-                          </button>
-                        </div>
-                        {/*  */}
-                        {showDropDownFilter && <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="horizontal" aria-labelledby="menu-button" >
-                          <div className="py-1" role="none">
-                            {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                            <a onClick={() => { setStatusFilter('active'); setShowDropDownFilter(!showDropDownFilter); }} className=" cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-0">Active</a>
-                            <a onClick={() => { setStatusFilter('inactive'); setShowDropDownFilter(!showDropDownFilter) }} className="cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-1">Inactive</a>
-
-                          </div>
-                        </div>}
-                      </div>
-
-                    </div>
-
-                    <div className='justify-self col-end-3 '>
-                      <button
-                        onClick={() => setStatusFilter('')}
-                        type="button"
-                        className="text-secondary hover:bg-secondary hover:text-white outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm "
-                      >
-                        Clear All
-                      </button>
-                    </div>
-
-
-                  </div>
-                )}
               </div>
+            </div>
 
-              <div className="mx-4 w-3/12">
-                <span className="w-full text-lg font-medium leading-6 text-gray-900">
-
-                  <button onClick={() => setShowFilter(!showFilter)} id="dropdownHoverButton"
-                    className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
-                    type="button">Filter
-                    <svg className="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4 ">
+              <div className="mx-4 ">
+                <span className=" text-lg font-medium leading-6 text-gray-900">
+                  <button
+                    onClick={() => setShowFilter(!showFilter)}
+                    id="dropdownHoverButton"
+                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+                    type="button"
+                  >
+                    Filter
+                    <svg
+                      className="ml-2 h-4 w-4"
+                      aria-hidden="true"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                      xmlns="http://www.w3.org/2000/svg"
+                    >
+                      <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M19 9l-7 7-7-7"
+                      ></path>
+                    </svg>
                   </button>
                 </span>
               </div>
 
-            </div>
+              {hasPermission(PermissionEnum.create_user) && (
+                <div className="flex flex-col ">
+                  <div className="">
+                    <Menu as="div" className=" inline-block text-right">
+                      {({ open }) => (
+                        <>
+                          <div>
+                            <Menu.Button
+                              type="button"
+                              className="bg-primary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                            >
+                              <UploadIcon
+                                className="h-5 w-5 "
+                                aria-hidden="true"
+                              />
+                              <span className="">Upload</span>
+                            </Menu.Button>
+                          </div>
 
-            <div className="mt-3 justify-end sm:mt-0 sm:ml-4">
-              <div className="mt-3 w-60">
-                {hasPermission(PermissionEnum.create_user) && (
-                  <button
-                    onClick={displayPanel}
-                    type="button"
-                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                  >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                    Add CHWs
-                  </button>
-                )}
-              </div>
+                          <Transition
+                            show={open}
+                            as={Fragment}
+                            enter="transition ease-out duration-100"
+                            enterFrom="transform opacity-0 scale-95"
+                            enterTo="transform opacity-100 scale-100"
+                            leave="transition ease-in duration-75"
+                            leaveFrom="transform opacity-100 scale-100"
+                            leaveTo="transform opacity-0 scale-95"
+                          >
+                            <Menu.Items
+                              static
+                              className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+                            >
+                              <div className="py-1">
+                                <Menu.Item>
+                                  <div
+                                    onClick={() =>
+                                      downloadContentTypeTemplate()
+                                    }
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                  >
+                                    <DownloadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Download template
+                                  </div>
+                                </Menu.Item>
+                                <Menu.Item>
+                                  <div
+                                    onClick={() => UploadContent()}
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                  >
+                                    <UploadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Upload Practitioners
+                                  </div>
+                                </Menu.Item>
+                                <Menu.Item>
+                                  <div
+                                    onClick={() => UploadContentImport()}
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                  >
+                                    <UploadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Import Users
+                                  </div>
+                                </Menu.Item>
+                                <Menu.Item>
+                                  <div
+                                    onClick={() =>
+                                      UploadContentImportChildren()
+                                    }
+                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
+                                  >
+                                    <UploadIcon
+                                      className="mr-3 h-5 w-5 text-gray-400"
+                                      aria-hidden="true"
+                                    />
+                                    Import Children Classes
+                                  </div>
+                                </Menu.Item>
+                              </div>
+                            </Menu.Items>
+                          </Transition>
+                        </>
+                      )}
+                    </Menu>
+                  </div>
+                </div>
+              )}
+            </div>
+            <div className="ml-4 w-3/12">
+              {hasPermission(PermissionEnum.create_user) && (
+                <button
+                  onClick={displayPanel}
+                  type="button"
+                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                >
+                  <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                  Add CHWs
+                </button>
+              )}
             </div>
           </div>
+          {showFilter && (
+            <div className="mb-4 flex w-full flex-row items-center">
+              <div className="relative inline-block pr-2 text-left">
+                <Dropdown
+                  showSearch
+                  fillType="outlined"
+                  textColor="white"
+                  fillColor="secondary"
+                  placeholder="Province"
+                  selectedValue={provinceFilter}
+                  list={provinces || []}
+                  onChange={(item) => setProvinceFilter(item)}
+                />
+              </div>
+              <div className="relative inline-block pr-2 text-left">
+                <Dropdown
+                  showSearch
+                  fillType="outlined"
+                  textColor="white"
+                  fillColor="secondary"
+                  placeholder="Team Leads"
+                  selectedValue={provinceFilter}
+                  list={teamLeads || []}
+                  onChange={(item) => setProvinceFilter(item)}
+                />
+              </div>
 
-
-          {/* {hasPermission(PermissionEnum.create_user) && (
-                    <div className="flex flex-col mt-3">
-                      <div className="">
-                        <Menu as="div" className=" inline-block text-right">
-                          {({ open }) => (
-                            <>
-                              <div>
-                                <Menu.Button
-                                  type="button"
-                                  className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                                >
-                                  <UploadIcon
-                                    className="h-5 w-5 "
-                                    aria-hidden="true"
-                                  />
-                                  <span className="">Upload</span>
-
-
-                                </Menu.Button>
-                              </div>
-
-                              <Transition
-                                show={open}
-                                as={Fragment}
-                                enter="transition ease-out duration-100"
-                                enterFrom="transform opacity-0 scale-95"
-                                enterTo="transform opacity-100 scale-100"
-                                leave="transition ease-in duration-75"
-                                leaveFrom="transform opacity-100 scale-100"
-                                leaveTo="transform opacity-0 scale-95"
-                              >
-                                <Menu.Items
-                                  static
-                                  className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                                >
-                                  <div className="py-1">
-                                    <Menu.Item>
-                                      <div
-                                        onClick={() =>
-                                          downloadContentTypeTemplate()
-                                        }
-                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                      >
-                                        <DownloadIcon
-                                          className="mr-3 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        Download template
-                                      </div>
-                                    </Menu.Item>
-                                    <Menu.Item>
-                                      <div
-                                        onClick={() => UploadContent()}
-                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                      >
-                                        <UploadIcon
-                                          className="mr-3 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        Upload Practitioners
-                                      </div>
-                                    </Menu.Item>
-                                    <Menu.Item>
-                                      <div
-                                        onClick={() => UploadContentImport()}
-                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                      >
-                                        <UploadIcon
-                                          className="mr-3 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        Import Users
-                                      </div>
-                                    </Menu.Item>
-                                    <Menu.Item>
-                                      <div
-                                        onClick={() =>
-                                          UploadContentImportChildren()
-                                        }
-                                        className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                      >
-                                        <UploadIcon
-                                          className="mr-3 h-5 w-5 text-gray-400"
-                                          aria-hidden="true"
-                                        />
-                                        Import Children Classes
-                                      </div>
-                                    </Menu.Item>
-                                  </div>
-                                </Menu.Items>
-                              </Transition>
-                            </>
-                          )}
-                        </Menu>
+              <div>
+                <div className="relative inline-block text-left">
+                  <div>
+                    <button
+                      type="button"
+                      onClick={() => setShowDropDownFilter(!showDropDownFilter)}
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                        !showDropDownFilter
+                          ? 'bg-secondary text-white'
+                          : 'text-secondary border-secondary border-2 bg-white'
+                      } hover:text-secondary hover:bg-white `}
+                      id="menu-button"
+                      aria-expanded={showDropDownFilter}
+                      aria-haspopup={showDropDownFilter}
+                    >
+                      {statusFilter === '' ? 'Status' : statusFilter}
+                      <svg
+                        className={`-mr-1 h-5 w-5 hover:text-white ${
+                          !showDropDownFilter
+                            ? 'hover:text-secondary text-white'
+                            : 'text-secondary hover:text-white'
+                        }`}
+                        viewBox="0 0 20 20"
+                        fill="currentColor"
+                        aria-hidden="true"
+                      >
+                        <path
+                          fillRule="evenodd"
+                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                          clipRule="evenodd"
+                        />
+                      </svg>
+                    </button>
+                  </div>
+                  {/*  */}
+                  {showDropDownFilter && (
+                    <div
+                      className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
+                      role="menu"
+                      aria-orientation="horizontal"
+                      aria-labelledby="menu-button"
+                    >
+                      <div className="py-1" role="none">
+                        {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
+                        <a
+                          onClick={() => {
+                            setStatusFilter('active');
+                            setShowDropDownFilter(!showDropDownFilter);
+                          }}
+                          className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
+                          role="menuitem"
+                          id="menu-item-0"
+                        >
+                          Active
+                        </a>
+                        <a
+                          onClick={() => {
+                            setStatusFilter('inactive');
+                            setShowDropDownFilter(!showDropDownFilter);
+                          }}
+                          className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
+                          role="menuitem"
+                          id="menu-item-1"
+                        >
+                          Inactive
+                        </a>
                       </div>
                     </div>
-                  )} */}
+                  )}
+                </div>
+              </div>
+
+              <div className="ml-60 flex">
+                <div className="">
+                  <button
+                    onClick={() => setStatusFilter('')}
+                    type="button"
+                    className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+                  >
+                    Clear All
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="-my-2 overflow-x-auto sm:-mx-6 lg:-mx-8">
             <div className="inline-block min-w-full py-2 align-middle sm:px-6 lg:px-8">
@@ -559,11 +600,8 @@ export default function HealthCareWorkers() {
           </div>
         </div>
       </div>
-
     );
   } else {
     return <ContentLoader />;
   }
 }
-
-
