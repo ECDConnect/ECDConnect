@@ -62,6 +62,11 @@ const ROUTES = {
       EDIT: '/edit',
     }),
   }),
+  TRAINEE: addPrefix('/trainee', {
+    SETUP_TRAINEE: '/setup-trainee',
+    TRAINEE_ONBOARDING: '/trainee-onboarding',
+    TRAINEE_ONBOARDING_DASHBOARD: 'trainee-onboarding-dashboard',
+  }),
   CHILD_NOTES: '/child-notes',
   CHILD_PROFILE: '/child-profile',
   CHILD_CAREGIVERS: '/child-caregivers',

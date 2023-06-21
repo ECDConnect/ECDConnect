@@ -47,6 +47,8 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -92,6 +94,16 @@ export const Dashboard: React.FC = () => {
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const uncompletedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
 
   const { userProfilePicture } = useDocuments();
 
@@ -151,7 +163,11 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+    if (
+      dashboardNotification?.isNew &&
+      practitioner?.progress! >= 2 &&
+      !practitioner?.isTrainee
+    ) {
       appDispatch(notificationActions.resetNotificationState());
     }
   }, []);
