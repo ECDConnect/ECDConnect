@@ -166,8 +166,6 @@ export function Dropdown<T>({
               leaveFrom={styles.leaveFrom}
               leaveTo={styles.leaveTo}
             >
-           { renderSearchInput }
-
               <Menu.Items static className={styles.menuItems}>
                 {options.length ? (
                   options.map((item: any, index: number) => {
@@ -190,7 +188,7 @@ export function Dropdown<T>({
                               }`}
                             >
                               <CheckCircleIcon
-                                className={`h-14 w-14 cursor-pointer text-${
+                                className={`h-22 w-22 cursor-pointer text-${
                                   item.value === selectedItem?.value
                                     ? 'blue-accent3'
                                     : 'primaryAccent2'

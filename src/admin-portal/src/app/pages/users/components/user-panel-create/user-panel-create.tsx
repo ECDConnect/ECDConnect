@@ -121,7 +121,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = [];
+    const rolesToAdd: string[] = ["Administrator"];
     selectedUserRoles.forEach((x) => {
       rolesToAdd.push(x.name);
     });

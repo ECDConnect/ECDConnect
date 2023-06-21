@@ -26,7 +26,7 @@ export default function ApplicationAdmins() {
     variables: {
       pagingInput: {
         pageNumber: 1,
-        pageSize: 10,
+        pageSize: 20,
         filterBy: [
           { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
         ],
@@ -34,7 +34,6 @@ export default function ApplicationAdmins() {
       }
     }
   });
-
 
   const { setNotification } = useNotifications();
   const { hasPermission } = useUser();
@@ -45,37 +44,18 @@ export default function ApplicationAdmins() {
   const [deleteUser] = useMutation(DeleteUser);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
-
-  const [dateFilter, setDateFilter] = useState(null);
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
+  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
-  const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
-  };
-
-  const handleStartDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setStartDate(event.target.value);
-  };
-
-  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(event.target.value);
-  };
 
 
   useEffect(() => {
     if (data && data.users) {
-      const copyItems = data.users
-        .map(mapUserTableItem)
-        .filter((user: { roles: any[] }) =>
-          user.roles.some((role) => role.name === 'Administrator')
-        );
-      const modifiedData = copyItems.map(obj => {
+      const copyItems = data.users;
+      const modifiedData = copyItems.map((obj: { [x: string]: any; __typename: any; roles: any; }) => {
         const { "__typename": _, roles, ...rest } = obj;
-        const modifiedRoles = roles.map(role => {
+        const modifiedRoles = roles.map((role: { [x: string]: any; __typename: any; }) => {
           const { "__typename": __, ...roleRest } = role;
           return roleRest;
         });
@@ -88,21 +68,16 @@ export default function ApplicationAdmins() {
 
   useEffect(() => {
     if (!data?.users) return;
+    let userStatus = statusFilter === 'active' ? true : false
 
     let allUsers: UserDto[] = [...data.users];
-    console.log(selectedRoleFilter);
-
-    if (selectedRoleFilter) {
-      allUsers = allUsers.filter((user) =>
-        user.roles.some((role) => role.name === selectedRoleFilter)
-      );
-    }
+    console.log(statusFilter);
 
     setTableData(
-      allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
+      allUsers.filter((v) => v.isActive === (statusFilter === '' ? true : userStatus)).map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoleFilter]);
+  }, [statusFilter]);
 
   const displayUserPanel = () => {
     panel({
@@ -255,20 +230,45 @@ export default function ApplicationAdmins() {
                     </div> */}
 
                     <div>
-                      <Dropdown
-                        fillType="filled"
-                        textColor="white"
-                        fillColor="secondary"
-                        placeholder="Filter by status"
-                        labelColor="white"
-                        selectedValue={'active'}
-                        list={[]}
-                        onChange={(item) => {
-                          // setStatusFilter(item);
-                        }}
-                        className='p-2'
-                      />
-                      
+
+                      <div className="relative inline-block text-left">
+                        <div>
+                          <button
+                            type="button"
+                            onClick={() => setShowDropDownFilter(!showDropDownFilter)}
+                            className={`inline-flex w-full justify-center gap-x-1.5 rounded-md px-3 py-2 text-sm font-normal border-2 border-secondary ${!showDropDownFilter ? 'text-white bg-secondary' : 'text-secondary bg-white border-2 border-secondary'
+                              } hover:bg-white hover:text-secondary `}
+                            id="menu-button"
+                            aria-expanded={showDropDownFilter}
+                            aria-haspopup={showDropDownFilter}
+                          >
+                            {statusFilter === '' ? "Filter by status" : statusFilter}
+                            <svg
+                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter ? 'text-white hover:text-secondary' : 'text-secondary hover:text-white'
+                                }`}
+                              viewBox="0 0 20 20"
+                              fill="currentColor"
+                              aria-hidden="true"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </button>
+                        </div>
+                        {/*  */}
+                        {showDropDownFilter && <div className="absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5 focus:outline-none" role="menu" aria-orientation="horizontal" aria-labelledby="menu-button" >
+                          <div className="py-1" role="none">
+                            {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
+                            <a onClick={() => { setStatusFilter('active'); setShowDropDownFilter(!showDropDownFilter); }} className=" cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-0">Active</a>
+                            <a onClick={() => { setStatusFilter('inactive'); setShowDropDownFilter(!showDropDownFilter) }} className="cursor-auto text-gray-700 block px-4 py-2 text-sm focus:bg-secondary focus:text-white" role="menuitem" id="menu-item-1">Inactive</a>
+
+                          </div>
+                        </div>}
+                      </div>
+
                     </div>
 
 
@@ -312,13 +312,6 @@ export default function ApplicationAdmins() {
                   columns={[
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'name' },
-                    {
-                      field: 'roles',
-                      use: 'admin type',
-                      type: 'array',
-                      displayProperty: 'name',
-                    },
-
                     { field: 'isActive', use: 'Active' },
                   ]}
                   urlRow={'/view-user/'}
