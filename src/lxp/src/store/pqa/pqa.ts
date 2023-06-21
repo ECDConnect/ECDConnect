@@ -1,6 +1,7 @@
 import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
+  addFollowUpVisitForPractitioner,
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
@@ -30,7 +31,12 @@ const pqaSlice = createSlice({
           string,
           {
             userId: string;
-            formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+            formType:
+              | 'pre-pqa'
+              | 'pqa'
+              | 'support-visit'
+              | 'follow-up-visit'
+              | 're-accreditation';
           }
         >
       ) => {
@@ -116,7 +122,12 @@ const pqaSlice = createSlice({
         payload: CmsVisitDataInputModelInput,
         meta: {
           userId: string;
-          formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+          formType:
+            | 'pre-pqa'
+            | 'pqa'
+            | 'support-visit'
+            | 'follow-up-visit'
+            | 're-accreditation';
         }
       ) => ({ payload, meta }),
     },
@@ -125,6 +136,7 @@ const pqaSlice = createSlice({
     setThunkActionStatus(builder, addVisitFormData);
     setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
+    setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
     setThunkActionStatus(builder, getPractitionerTimeline);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
@@ -209,6 +221,12 @@ const pqaSlice = createSlice({
     builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
+    builder.addCase(
+      addFollowUpVisitForPractitioner.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
   },
 });
 

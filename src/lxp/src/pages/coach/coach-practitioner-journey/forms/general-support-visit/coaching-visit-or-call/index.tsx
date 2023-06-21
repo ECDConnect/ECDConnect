@@ -10,7 +10,12 @@ import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
-import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
+import {
+  getCurrentPQaRatingByUserId,
+  getLastCoachAttendedVisitByUserId,
+  getPractitionerTimelineByIdSelector,
+  getVisitDataForVisitIdSelectorByUserId,
+} from '@/store/pqa/pqa.selectors';
 import { useParams } from 'react-router';
 import {
   PractitionerJourneyParams,
@@ -18,6 +23,11 @@ import {
 } from '../../../coach-practitioner-journey.types';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { currentActivityKey, visitIdKey } from '../..';
+import {
+  followUpDeadline,
+  getRatingData,
+} from '../../../timeline/pqa-site-visits-step';
+import { addDays } from 'date-fns';
 
 export const visitOrCallQuestion =
   'Did you visit the practitioner’s site, or did you have a support phone call?';
@@ -72,6 +82,12 @@ export const CoachingAndVisitOrCallStep = ({
     { text: 'No', value: 'false', disabled: isView },
   ];
 
+  const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  };
+
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
   const followUpQuestionIndex = 5;
@@ -81,7 +97,30 @@ export const CoachingAndVisitOrCallStep = ({
   const visitSection = 'Coaching visit or call';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
+  const lastAttendedVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(practitionerId)
+  );
+  const currentPqaRating = useSelector(
+    getCurrentPQaRatingByUserId(practitionerId)
+  );
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+  const pqaRating3 = timeline?.pQARating3;
 
+  // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
+  const currentFollowUpDeadline = pqaRating3?.overallRating
+    ? followUpDeadline.lastVisit
+    : followUpDeadline.default;
+  const isPQAFollowUpDeadline =
+    addDays(
+      new Date(lastAttendedVisit?.insertedDate),
+      currentFollowUpDeadline
+    ) <= new Date();
+  const isToShowFollowUpQuestion =
+    !pqaRating3?.overallRating &&
+    currentPqaRating.rating?.overallRatingColor !== 'Error';
+  console.log({ isPQAFollowUpDeadline });
   const visitId = window.sessionStorage.getItem(visitIdKey);
 
   const previousVisitAnswers = useSelector(
@@ -177,13 +216,25 @@ export const CoachingAndVisitOrCallStep = ({
         },
       ]);
 
-      if (updatedQuestions.every((item) => !!item.answer)) {
+      const questionList = isToShowFollowUpQuestion
+        ? updatedQuestions
+        : updatedQuestions.slice(0, 5);
+      const isAllCompleted =
+        questionList.every((item) => !!item.answer) && isPQAFollowUpDeadline;
+
+      if (isAllCompleted) {
         return setEnableButton?.(true);
       }
 
       setEnableButton?.(false);
     },
-    [questions, setEnableButton, setSectionQuestions]
+    [
+      isPQAFollowUpDeadline,
+      isToShowFollowUpQuestion,
+      questions,
+      setEnableButton,
+      setSectionQuestions,
+    ]
   );
 
   useEffect(() => {
@@ -196,7 +247,6 @@ export const CoachingAndVisitOrCallStep = ({
     setPreviousAnswers();
   }, [setPreviousAnswers]);
 
-  const mockedData = '10 May 2020';
   return (
     <div className="p-4">
       <Typography type="h2" text={visitSection} color="textDark" />
@@ -227,7 +277,11 @@ export const CoachingAndVisitOrCallStep = ({
             type="h4"
             text={`${firstName} ${
               smartStarter?.user?.surname ?? ''
-            } received an orange rating on ${mockedData}`}
+            } received an ${getRatingData(
+              currentPqaRating.rating?.overallRatingColor
+            ).text.toLowerCase()} on ${new Date(
+              lastAttendedVisit?.insertedDate
+            ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`}
           />
           <Divider dividerType="dashed" className="my-3" />
         </>
@@ -275,28 +329,59 @@ export const CoachingAndVisitOrCallStep = ({
       })}
       {isFollowUp && (
         <>
-          <Typography
-            type="h4"
-            text={replaceBraces(
-              questions[followUpQuestionIndex].question,
-              firstName
-            )}
-            color={isView ? 'textLight' : 'textDark'}
-            className="my-4"
-          />
-          <ButtonGroup<string>
-            color="secondary"
-            type={ButtonGroupTypes.Button}
-            options={options}
-            selectedOptions={
-              questions[followUpQuestionIndex].answer !== ''
-                ? String(questions[followUpQuestionIndex].answer)
-                : undefined
-            }
-            onOptionSelected={(value) =>
-              onOptionSelected(value, followUpQuestionIndex)
-            }
-          />
+          {isToShowFollowUpQuestion && (
+            <>
+              <Typography
+                type="h4"
+                text={replaceBraces(
+                  questions[followUpQuestionIndex].question,
+                  firstName
+                )}
+                color={isView ? 'textLight' : 'textDark'}
+                className="my-4"
+              />
+              <ButtonGroup<string>
+                color="secondary"
+                type={ButtonGroupTypes.Button}
+                options={options}
+                selectedOptions={
+                  questions[followUpQuestionIndex].answer !== ''
+                    ? String(questions[followUpQuestionIndex].answer)
+                    : undefined
+                }
+                onOptionSelected={(value) =>
+                  onOptionSelected(value, followUpQuestionIndex)
+                }
+              />
+            </>
+          )}
+          {currentPqaRating.rating?.overallRatingColor === 'Error' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`Start another First PQA visit by ${addDays(
+                new Date(lastAttendedVisit?.insertedDate),
+                currentFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
+          {pqaRating3?.overallRatingColor === 'Warning' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`This is your third follow up visit with ${firstName}.`}
+              message={`You must conduct a full PQA visit by ${addDays(
+                new Date(lastAttendedVisit?.insertedDate),
+                currentFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
         </>
       )}
     </div>

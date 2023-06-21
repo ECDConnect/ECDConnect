@@ -3,6 +3,7 @@ import { RootState, ThunkApiType } from '../types';
 import { PQAService } from '@/services/PQAService';
 import {
   CmsVisitDataInputModelInput,
+  FollowUpVisitModelInput,
   PractitionerTimeline,
   SupportVisitModelInput,
   VisitData,
@@ -13,6 +14,7 @@ export const PqaActions = {
   GET_VISIT_DATA_FOR_VISIT_ID: 'getVisitDataForVisitId',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
   ADD_SUPPORT_VISIT_FORM_DATA: 'addSupportVisitFormData',
+  ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -104,6 +106,45 @@ export const addSupportVisitFormData = createAsyncThunk<
               await new PQAService(
                 userAuth?.auth_token
               ).addSupportVisitForPractitioner(item.formData)
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addFollowUpVisitForPractitioner = createAsyncThunk<
+  any,
+  FollowUpVisitModelInput | undefined,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_FOLLOW_UP_VISIT_FORM_DATA,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa: { supportVisitFormData },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addFollowUpVisitForPractitioner(input);
+
+          return response;
+        }
+
+        if (!!supportVisitFormData?.length) {
+          const promises = supportVisitFormData?.map(
+            async (item) =>
+              await new PQAService(
+                userAuth?.auth_token
+              ).addFollowUpVisitForPractitioner(item.formData)
           );
 
           return promises?.length && Promise.all(promises);

@@ -28,6 +28,8 @@ import {
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
 import {
+  getCurrentPQaRatingByUserId,
+  getLastCoachAttendedVisitByUserId,
   getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
@@ -46,8 +48,14 @@ import {
 } from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { ExclamationIcon } from '@heroicons/react/solid';
+import {
+  followUpDeadline,
+  newFollowUpId,
+} from './timeline/pqa-site-visits-step';
+import { addDays } from 'date-fns';
 
-export const CoachPractitionerJourney: React.FC = () => {
+export const CoachPractitionerJourney = () => {
   const [showForm, setShowForm] = useState(false);
 
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
@@ -83,6 +91,27 @@ export const CoachPractitionerJourney: React.FC = () => {
   const reAccreditationFormData = useSelector(
     getReAccreditationFormDataByIdSelector(practitionerId)
   );
+  const currentPqaRating = useSelector(
+    getCurrentPQaRatingByUserId(practitionerId)
+  );
+  const lastAttendedVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(practitionerId)
+  );
+
+  const pqaRating3 = timeline?.pQARating3;
+
+  // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
+  const currentFollowUpDeadline = pqaRating3?.overallRating
+    ? followUpDeadline.lastVisit
+    : followUpDeadline.default;
+  const isPQAFollowUpDeadline =
+    addDays(
+      new Date(lastAttendedVisit?.insertedDate),
+      currentFollowUpDeadline
+    ) <= new Date();
+  const isPQAFollowUp =
+    currentPqaRating.rating?.overallRating &&
+    !lastAttendedVisit?.visitType?.name?.includes(visitTypes.pqa.thirdPQA.name);
 
   const practitionerFirstName = practitioner?.user?.firstName;
 
@@ -113,10 +142,28 @@ export const CoachPractitionerJourney: React.FC = () => {
         !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const uncompletedFollowUpVisit =
+    isPQAFollowUpDeadline && isPQAFollowUp
+      ? [
+          {
+            id: newFollowUpId,
+            attended: false,
+            visitType: {
+              description: 'Start follow-up PQA visit',
+              name: visitTypes.pqa.followUp.name,
+              order: 1,
+            },
+            // TODO add schedule
+            plannedVisitDate: new Date(),
+          } as Visit,
+        ]
+      : [];
+
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
     ...uncompletedPqaVisits,
     ...uncompletedReAccreditationVisits,
+    ...uncompletedFollowUpVisit,
   ];
 
   const currentVisit = uncompletedVisits
@@ -188,15 +235,47 @@ export const CoachPractitionerJourney: React.FC = () => {
     }
   }, [selectedForm]);
 
-  useLayoutEffect(() => {
-    getTimeline();
-  }, [getTimeline]);
+  // useLayoutEffect(() => {
+  //   getTimeline();
+  // }, [getTimeline]);
 
-  useEffect(() => {
-    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-      getTimeline();
-    }
-  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  // useEffect(() => {
+  //   if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
+  //     getTimeline();
+  //   }
+  // }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+
+  const renderAlert = () => {
+    const isRedRating =
+      currentPqaRating?.rating?.overallRatingColor === 'Error';
+    const isOrangeRating =
+      currentPqaRating?.rating?.overallRatingColor === 'Warning';
+
+    if (!isOrangeRating && !isRedRating) return;
+
+    return (
+      <Alert
+        className="mt-4"
+        type={isRedRating ? 'error' : 'warning'}
+        title={isRedRating ? 'Red PQA rating' : 'Orange PQA rating'}
+        titleColor="textDark"
+        message={new Date(lastAttendedVisit?.insertedDate).toLocaleDateString(
+          'en-ZA',
+          dateLongMonthOptions
+        )}
+        messageColor="textMid"
+        customIcon={
+          <div
+            className={`${
+              isRedRating ? 'bg-errorMain' : 'bg-alertMain'
+            } flex h-12 w-12 items-center justify-center rounded-full`}
+          >
+            <ExclamationIcon className="w-5 text-white" />
+          </div>
+        }
+      />
+    );
+  };
 
   if (
     (showForm && isView) ||
@@ -235,6 +314,7 @@ export const CoachPractitionerJourney: React.FC = () => {
               listItems={[currentVisit]}
             />
           )}
+          {renderAlert()}
           <Alert
             className="mt-4"
             type={
@@ -292,12 +372,14 @@ export const CoachPractitionerJourney: React.FC = () => {
           {!!timeline && (
             <Steps
               items={timelineSteps({
+                practitionerId,
                 timeline,
                 onView,
                 onStart,
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,
+                currentPqaRating,
               })}
               typeColor={{ completed: 'successMain' }}
             />

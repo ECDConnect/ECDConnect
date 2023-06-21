@@ -21,6 +21,23 @@ export const handleAddSupportVisit = ({ payload, state, userId }: AddState) => {
   }
 };
 
+export const handleAddFollowUpVisit = ({
+  payload,
+  state,
+  userId,
+}: AddState) => {
+  if (state?.followUpVisitFormData?.length) {
+    state.followUpVisitFormData = [
+      ...state.followUpVisitFormData,
+      { practitionerId: userId, formData: payload },
+    ];
+  } else {
+    state.followUpVisitFormData = [
+      { practitionerId: userId, formData: payload },
+    ];
+  }
+};
+
 export const handleAddReAccreditationVisit = ({
   payload,
   state,

@@ -54,6 +54,10 @@ interface SubmitProps {
   payload: CmsVisitDataInputModelInput;
 }
 
+interface ExtraVisitProps extends SubmitProps {
+  type: 'support-visit' | 'follow-up-visit';
+}
+
 interface FormProps {
   visitId?: string;
   onBack: () => void;
@@ -241,35 +245,18 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   }, [dialog]);
 
   const onSubmitSupportVisit = useCallback(
-    ({ payload, sections }: SubmitProps) => {
-      const visitOrCallSection = sections?.find((item) =>
-        item?.questions?.some(
-          (question) => question?.question === visitOrCallQuestion
-        )
-      )?.questions;
-      const visitOrCallAnswer = visitOrCallSection?.find(
-        (item) => item?.question === visitOrCallQuestion
-      )?.answer;
-
-      const supportVisitPayload: SupportVisitModelInput = {
-        practitionerId,
-        plannedVisitDate: new Date(),
-        isSupportCall: visitOrCallAnswer === callAnswer,
-        // TODO: add schedule option
-        attended: true,
-        supportData: payload,
-      };
+    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
       appDispatch(
-        pqaActions.addVisitFormData(supportVisitPayload, {
+        pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'support-visit',
         })
       );
-      appDispatch(pqaThunkActions.addSupportVisitFormData(supportVisitPayload));
+      appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
       onBack?.();
       showMessage({
         message: `${
-          visitOrCallAnswer === callAnswer ? 'Support call' : 'Support visit'
+          visitType === callAnswer ? 'Support call' : 'Support visit'
         } complete!`,
       });
       if (!isOnline) {
@@ -281,9 +268,59 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       displayOfflineWarning,
       isOnline,
       onBack,
-      showMessage,
       practitionerId,
+      showMessage,
     ]
+  );
+
+  const onSubmitFollowUpVisit = useCallback(
+    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
+      // appDispatch(
+      //   pqaActions.addVisitFormData(payload, {
+      //     userId: practitionerId,
+      //     formType: 'follow-up-visit',
+      //   })
+      // );
+      // appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.pqa.firstPQA.name
+      );
+      setCurrentActivity(visitTypes.pqa.firstPQA.name);
+    },
+    []
+  );
+
+  const handleSubmitExtraVisit = useCallback(
+    ({ payload, sections, type }: ExtraVisitProps) => {
+      const visitOrCallSection = sections?.find((item) =>
+        item?.questions?.some(
+          (question) => question?.question === visitOrCallQuestion
+        )
+      )?.questions;
+      const visitOrCallAnswer = visitOrCallSection?.find(
+        (item) => item?.question === visitOrCallQuestion
+      )?.answer;
+
+      const formattedPayload: SupportVisitModelInput = {
+        practitionerId,
+        plannedVisitDate: new Date(),
+        isSupportCall: visitOrCallAnswer === callAnswer,
+        // TODO: add schedule option
+        attended: true,
+        supportData: payload,
+      };
+
+      if (type === 'support-visit') {
+        return onSubmitSupportVisit(formattedPayload, visitOrCallAnswer);
+      }
+
+      if (type === 'follow-up-visit') {
+        return onSubmitFollowUpVisit(formattedPayload, visitOrCallAnswer);
+      }
+    },
+    [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -362,7 +399,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     };
 
     if (activityName === visitTypes.supportVisit) {
-      return onSubmitSupportVisit({ payload, sections });
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 'support-visit',
+      });
+    }
+
+    if (activityName === visitTypes.pqa.followUp.name) {
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 'follow-up-visit',
+      });
     }
 
     if (activityName.includes(visitTypes.prePqa.includes)) {
@@ -379,7 +428,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     onSubmitPqa,
     onSubmitPrePqa,
     onSubmitReAccreditation,
-    onSubmitSupportVisit,
+    handleSubmitExtraVisit,
     practitionerId,
     sectionQuestions,
     visitId,
@@ -418,7 +467,16 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
-    if (visitName === visitTypes.supportVisit) {
+    if (
+      visitName === visitTypes.supportVisit ||
+      visitName.includes(visitTypes.pqa.followUp.name)
+    ) {
+      if (activityName === visitTypes.supportVisit) {
+        setTitle(visitTypes.supportVisit);
+      } else {
+        setTitle(visitTypes.pqa.followUp.description);
+      }
+
       return generalSupportVisit;
     }
 
@@ -506,6 +564,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           submitButton: {
             text: 'Remove SmartStarter',
             icon: 'TrashIcon',
+          },
+        })}
+        // TODO: add schedule integration
+        {...(visitName === visitTypes.pqa.followUp.name && {
+          submitButton: {
+            text: 'Start your next visit',
+            icon: 'ArrowCircleRightIcon',
           },
         })}
       />
