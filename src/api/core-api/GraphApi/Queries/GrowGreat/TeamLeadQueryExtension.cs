@@ -40,12 +40,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
           [Service] IFileGenerationService fileService,
           IGenericRepositoryFactory repoFactory)
         {
-            var languageRepo = repoFactory.CreateRepository<Language>();
-            var languages = languageRepo.GetAll().ToList();
-
-            var languageList = new Dictionary<string, string>();
-            languages.ForEach(x => languageList.Add(x.Locale, x.Description));
-
             var fieldDefinitionList = new List<List<string>>
             {
                 new List<string> { "Column", "Type Description"},
