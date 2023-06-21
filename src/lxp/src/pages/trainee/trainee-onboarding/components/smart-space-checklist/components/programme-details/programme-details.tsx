@@ -290,8 +290,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               underline={true}
               onClick={() => {
                 displayArticle(
-                  ContentConsentTypeEnum.TermsAndConditions,
-                  'Terms & Conditions'
+                  ContentConsentTypeEnum.ChildProtection,
+                  'Child Protection'
                 );
               }}
             />
