@@ -160,21 +160,24 @@ export default function UiTable({
 
     if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="ml-5 flex">
+        <div className="ml-1 flex">
           {display_value ? (
-            <Icon
-              icon="CheckCircleIcon"
-              className="text-successMain ml-1"
-              height="20px"
-              color="transparent"
-            />
+            // <Icon
+            //   icon="CheckCircleIcon"
+            //   className="text-successMain ml-1"
+            //   height="20px"
+            //   color="transparent"
+            // />
+
+            <p className="text-successMain ">Active</p>
           ) : (
-            <Icon
-              icon="XCircleIcon"
-              className="text-errorMain ml-1"
-              height="20px"
-              color="transparent"
-            />
+            // <Icon
+            //   icon="XCircleIcon"
+            //   className="text-errorMain ml-1"
+            //   height="20px"
+            //   color="transparent"
+            // />
+            <p className="text-errorMain text-normal">Inactive</p>
           )}
         </div>
       );
@@ -184,12 +187,18 @@ export default function UiTable({
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-4 flex flex-row flex-wrap items-center">
+        <div className="ml-0 flex flex-row flex-wrap items-center">
           {display_value &&
             display_value.map((item) => (
               <div
                 key={item.id}
-                className="bg-uiMid m-1 rounded-full py-1 px-3 text-xs text-white"
+                className={
+                  `${
+                    item[column.displayProperty] === 'Administrator'
+                      ? 'bg-tertiary'
+                      : 'bg-primary'
+                  }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
+                }
               >
                 {item[column.displayProperty]}
               </div>
