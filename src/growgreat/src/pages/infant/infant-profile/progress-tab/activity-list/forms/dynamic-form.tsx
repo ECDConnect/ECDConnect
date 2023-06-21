@@ -32,6 +32,7 @@ import { useHistory } from 'react-router';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import { activitiesColours } from '../activities-list';
+import { DocumentActions } from '@/store/document/document.actions';
 
 export interface Question {
   question: string;
@@ -99,6 +100,10 @@ export const DynamicForm = ({
   const { isLoading: isLoadingReferral } = useThunkFetchCall(
     'referrals',
     ReferralActions.UPDATE_VISIT_DATA_STATUS
+  );
+  const { isLoading: isLoadingCreateDocument } = useThunkFetchCall(
+    'documents',
+    DocumentActions.CREATE_DOCUMENT
   );
 
   const wasLoading = usePrevious(isLoading);
@@ -472,8 +477,8 @@ export const DynamicForm = ({
             className="mb-4 w-full"
             text={renderButton.text}
             onClick={renderButton.action}
-            disabled={!isEnableButton || isLoading}
-            isLoading={isLoading}
+            disabled={!isEnableButton || isLoading || isLoadingCreateDocument}
+            isLoading={isLoading || isLoadingCreateDocument}
           />
         </div>
       )}
