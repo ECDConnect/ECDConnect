@@ -29,15 +29,6 @@ export const SubmitIncomeStatements: React.FC = () => {
   const offlineImg = window.localStorage.getItem(
     LocalStorageKeys.offlineStatments
   );
-  const [addButtonExpanded, setAddButtonExpanded] = useState<boolean>(true);
-
-  const handleListScroll = (event: any) => {
-    if (event?.currentTarget?.scrollTop! < 5) {
-      setAddButtonExpanded(true);
-    } else {
-      setAddButtonExpanded(false);
-    }
-  };
 
   const monthNames = balanceSheet?.map((item) => {
     return getMonthName(item?.month! - 1).substring(0, 3);
@@ -554,13 +545,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div
-        className="flex flex-col justify-center p-4"
-        style={{ height: '100%', width: '100%', overflow: 'auto' }}
-        onScroll={(scrollTop) =>
-          handleListScroll && handleListScroll(scrollTop)
-        }
-      >
+      <div className="flex flex-col justify-center p-4">
         {isOnline && (
           <div
             className={
@@ -593,31 +578,34 @@ export const SubmitIncomeStatements: React.FC = () => {
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderAccordinglyWalkthroughOrNot}
         {balanceNotifications}
-        <Button
-          shape="normal"
-          color="primary"
-          type="filled"
-          icon="DocumentSearchIcon"
-          onClick={() => history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)}
-          className={`mt-6 mb-8 rounded-2xl ${
-            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-          }`}
-          id="seeAllStatements"
-        >
-          <Typography type="help" color="white" text="See all statements" />
-        </Button>
-        <div className="h-full flex-1 bg-white px-4 pt-4">
+        <div className="mt-2 flex flex-col justify-center">
+          <Button
+            shape="normal"
+            color="primary"
+            type="filled"
+            icon="DocumentSearchIcon"
+            onClick={() =>
+              history.push(ROUTES.BUSINESS_PREVIOUS_STATEMENTS_LIST)
+            }
+            className={`mt-6 mb-8 rounded-2xl ${
+              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+            }`}
+            id="seeAllStatements"
+          >
+            <Typography type="help" color="white" text="See all statements" />
+          </Button>
+
           <FADButton
             title={'Add income or expense'}
             icon={'PlusIcon'}
             iconDirection={'left'}
-            textToggle={addButtonExpanded}
+            textToggle={true}
             type={'filled'}
             color={'primary'}
             shape={'round'}
-            className={`'m-3 absolute bottom-14 right-0 z-10 px-3.5 py-2.5 ${
+            className={`right-0 z-10 m-3 px-3.5 py-2.5 ${
               stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-            } `}
+            }`}
             click={() => {
               history.push(ROUTES.BUSINESS_ADD_AMOUNT);
               nextStep();
