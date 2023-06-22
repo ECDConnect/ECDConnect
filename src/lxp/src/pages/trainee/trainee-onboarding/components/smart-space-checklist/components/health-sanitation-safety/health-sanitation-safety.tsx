@@ -211,7 +211,7 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
                       setVisitSection(visitSection);
                     }}
                   >
-                    {renderIcon('SaveIcon', styles.icon)}
+                    {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                     <Typography
                       type={'help'}
                       text={'Save & continue'}

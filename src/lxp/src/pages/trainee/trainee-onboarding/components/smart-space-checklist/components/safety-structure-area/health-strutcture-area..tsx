@@ -210,7 +210,7 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
                       onSubmitAndContinue();
                     }}
                   >
-                    {renderIcon('SaveIcon', styles.icon)}
+                    {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                     <Typography
                       type={'help'}
                       text={'Save & continue'}
