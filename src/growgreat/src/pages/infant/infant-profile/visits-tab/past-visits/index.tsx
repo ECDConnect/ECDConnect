@@ -33,7 +33,9 @@ export const PastVisits: React.FC = () => {
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, '')
+  );
 
   const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),

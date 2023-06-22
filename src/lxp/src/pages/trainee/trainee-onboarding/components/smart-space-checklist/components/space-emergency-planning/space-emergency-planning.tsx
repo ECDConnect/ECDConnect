@@ -33,7 +33,7 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
   setVisitSection,
   onSubmit,
   setActiveStep,
-  setContinueChecklist,
+  onSubmitAndContinue,
 }) => {
   const { isOnline } = useOnlineStatus();
   const visitData = useSelector(traineeSelectors.getTraineeVisitData);
@@ -184,12 +184,11 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
                     color="primary"
                     className={styles.button}
                     onClick={() => {
-                      setContinueChecklist(true);
                       setVisitSection(visitSection);
-                      onSubmit();
+                      onSubmitAndContinue();
                     }}
                   >
-                    {renderIcon('SaveIcon', styles.icon)}
+                    {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                     <Typography
                       type={'help'}
                       text={'Save & continue'}

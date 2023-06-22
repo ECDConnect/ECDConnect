@@ -11,10 +11,11 @@ import {
   Button,
   renderIcon,
   Alert,
+  containsLowerCaseRegex,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
-import { format } from 'date-fns';
+import { differenceInDays, format } from 'date-fns';
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import OnboardingInfoPage from '../onboarding-info-page/onboarding-info-page';
@@ -24,6 +25,7 @@ import { traineeSelectors } from '@/store/trainee';
 import ROUTES from '@/routes/routes';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { CoachVisitInfo } from './components/coach-visit-info';
+import { testModeAPI } from 'react-ga';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -35,7 +37,7 @@ export const OnboardingTraineeDashboard: React.FC<
 > = ({ setNotificationStep, setIsSmartChecklist }) => {
   const { isOnline } = useOnlineStatus();
   const history = useHistory();
-  const date = format(new Date(), 'EEEE, d LLLL');
+  const today = format(new Date(), 'EEEE, d LLLL');
 
   const { width } = useWindowSize();
   const [showInfo, setShowInfo] = useState(false);
@@ -63,6 +65,13 @@ export const OnboardingTraineeDashboard: React.FC<
     // @ts-ignore
     undefined
   ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+
+  const extradataTimeValue = Object.values(uncompletedSteps?.[0].extraData!);
+
+  const checkOverdueDate = differenceInDays(
+    new Date(),
+    new Date(extradataTimeValue[0] as Date)
+  );
 
   const completedSteps = timelineSteps(
     timeline!,
@@ -97,15 +106,18 @@ export const OnboardingTraineeDashboard: React.FC<
   const notificationItem: MenuListDataItem[] = [
     {
       showIcon: true,
-      menuIcon: 'PencilAltIcon',
+      menuIcon: checkOverdueDate > 0 ? 'ExclamationIcon' : 'PencilAltIcon',
       menuIconClassName: 'border-0',
       iconColor: 'white',
       title: filteredUncompletedSteps?.[0]?.title,
       titleStyle: 'text-textDark semibold',
-      subTitle: filteredUncompletedSteps?.[0]?.subTitle,
+      subTitle:
+        checkOverdueDate > 0
+          ? `${String(checkOverdueDate)} days overdue`
+          : filteredUncompletedSteps?.[0]?.subTitle,
       subTitleStyle: 'text-textMid',
-      iconBackgroundColor: 'primary',
-      backgroundColor: 'uiBg',
+      iconBackgroundColor: checkOverdueDate > 0 ? 'alertMain' : 'primary',
+      backgroundColor: checkOverdueDate > 0 ? 'alertBg' : 'uiBg',
       onActionClick: () =>
         setNotificationStep(filteredUncompletedSteps?.[0]?.title),
     },
@@ -117,7 +129,7 @@ export const OnboardingTraineeDashboard: React.FC<
       size="medium"
       renderBorder={true}
       title={'Business'}
-      subTitle={date}
+      subTitle={today}
       color={'primary'}
       onBack={() => history.push(ROUTES.TRAINEE.SETUP_TRAINEE)}
       displayHelp={true}

@@ -25,9 +25,8 @@ import {
 } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
-  getCurrentVisitSelector,
-  getInfantById,
   getInfantCurrentVisitSelector,
+  getInfantById,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
@@ -76,9 +75,10 @@ export const VisitsTab: React.FC = () => {
 
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getInfantCurrentVisitSelector(state, '')
   );
 
+  console.log(infant?.user?.dateOfBirth);
   const { isLoading } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_VISITS
