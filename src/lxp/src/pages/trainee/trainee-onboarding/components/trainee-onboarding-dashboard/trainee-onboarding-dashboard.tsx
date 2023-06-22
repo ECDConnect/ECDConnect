@@ -100,7 +100,9 @@ export const OnboardingTraineeDashboard: React.FC<
   }, [completedFlow]);
 
   const filteredUncompletedSteps = uncompletedSteps.filter(
-    (item) => item?.title !== 'SmartSpace visit from coach'
+    (item) =>
+      item?.title !== 'SmartSpace visit from coach' &&
+      item?.title !== 'SmartSpace Licence'
   );
 
   const notificationItem: MenuListDataItem[] = [
