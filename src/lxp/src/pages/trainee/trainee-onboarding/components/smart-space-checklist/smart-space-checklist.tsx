@@ -507,22 +507,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
                   />
                 </Button>
               </div>
-              <div>
-                <Button
-                  type="outlined"
-                  color="primary"
-                  className="mt-2 mb-4 w-full"
-                  icon={isShowCompletedForms ? 'EyeOffIcon' : 'EyeIcon'}
-                  text={
-                    isShowCompletedForms
-                      ? 'Hide completed activities'
-                      : 'See completed activities'
-                  }
-                  onClick={() => {
-                    setIsShowCompletedForms((prevState) => !prevState);
-                  }}
-                />
-              </div>
             </>
           )}
           <StackedList
@@ -545,6 +529,24 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             listItems={notificationItemsLaterStage}
             type={'MenuList'}
           />
+          {notificationsCompleted?.length > 0 && (
+            <div>
+              <Button
+                type="outlined"
+                color="primary"
+                className="mt-4 mb-4 w-full"
+                icon={isShowCompletedForms ? 'EyeOffIcon' : 'EyeIcon'}
+                text={
+                  isShowCompletedForms
+                    ? 'Hide completed activities'
+                    : 'See completed activities'
+                }
+                onClick={() => {
+                  setIsShowCompletedForms((prevState) => !prevState);
+                }}
+              />
+            </div>
+          )}
           {isShowCompletedForms && (
             <StackedList
               isFullHeight={false}
