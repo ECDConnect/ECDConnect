@@ -27,7 +27,6 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   getCurrentVisitSelector,
   getInfantById,
-  getInfantCurrentVisitSelector,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';

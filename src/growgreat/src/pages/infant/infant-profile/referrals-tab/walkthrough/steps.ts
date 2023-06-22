@@ -7,6 +7,7 @@ export const referralsSteps: Step[] = [
       'After a visit, I will list all your referrals here! Once you have referred {client} on paper, tap the box.',
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-referrals-step-2',
