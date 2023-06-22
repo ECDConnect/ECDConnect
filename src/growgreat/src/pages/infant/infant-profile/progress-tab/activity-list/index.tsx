@@ -45,7 +45,11 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays, differenceInMonths } from 'date-fns';
+import {
+  differenceInDays,
+  differenceInMonths,
+  differenceInYears,
+} from 'date-fns';
 import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
@@ -226,8 +230,8 @@ export const ActivityList: React.FC = () => {
   );
 
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
-    [ageDays, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
+    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
   );
 
   const isDisplayPillar2 = [

@@ -74,18 +74,21 @@ export const getInfantPreviousVisitSelector = (
 
 export const getIsInfantFirstVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
-
-  return attendedVisitsCount === 0;
+  return attendedVisits?.length === 0;
 };
 
 export const getIsInfantSecondVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  return attendedVisitsCount === 1;
+  return attendedVisits?.length === 1;
 };
 
 export const getInfantVisitByVisitIdSelector = (
@@ -130,7 +133,10 @@ export const getCurrentVisitSelector = (
   state: RootState,
   visitId: string
 ): VisitDto | undefined => {
-  const allVisits = state.infants.visits || [];
+  const allVisits =
+    state.infants.visits?.filter(
+      (item) => item.visitType?.name !== 'additional_visits'
+    ) || [];
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
     for (var i = 0; i < allVisits.length; i++) {
