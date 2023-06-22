@@ -78,7 +78,6 @@ export const VisitsTab: React.FC = () => {
     getInfantCurrentVisitSelector(state, '')
   );
 
-  console.log(infant?.user?.dateOfBirth);
   const { isLoading } = useThunkFetchCall(
     'infants',
     InfantActions.GET_INFANT_VISITS
