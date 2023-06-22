@@ -20,7 +20,7 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { DeleteUser, GetHealthCareWorkerHighlights, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput, healthCareWorkerVisitStatus } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -50,12 +50,29 @@ export function ViewUser(props) {
     },
     fetchPolicy: 'network-only',
   });
+  const [getHealthCareWorkerHighlights, { data: healthCareWorkerHighlightsData }] = useLazyQuery(GetHealthCareWorkerHighlights, {
+    variables: {
+      userId: '',
+    },
+    fetchPolicy: 'network-only',
+  });
+
+  const [getHealthCareWorkerVisitStatus, { data: healthCareWorkerVisitStatusData }] = useLazyQuery(healthCareWorkerVisitStatus, {
+    variables: {
+      userId: '',
+    },
+    fetchPolicy: 'network-only',
+  });
+
 
   useEffect(() => {
     getUserById({ variables: { userId: userId } });
+    getHealthCareWorkerHighlights({ variables: { userId: userId } });
+    getHealthCareWorkerVisitStatus({ variables: { userId: userId } });
   }, [userId])
 
   const { hasPermission } = useUser();
+  console.log(healthCareWorkerVisitStatusData)
 
   const { setNotification } = useNotifications();
   const dialog = useDialog();
@@ -233,7 +250,7 @@ export function ViewUser(props) {
                       type="filled"
                       isLoading={loading}
                       color="tertiary"
-                      onClick={()=>{}}
+                      onClick={() => { }}
                     >
                       <Typography
                         type="help"
@@ -246,7 +263,7 @@ export function ViewUser(props) {
                       type="filled"
                       isLoading={loading}
                       color="tertiaryAccent1"
-                      onClick={()=>{}}
+                      onClick={() => { }}
                     >
                       <Typography
                         type="help"
@@ -386,7 +403,8 @@ export function ViewUser(props) {
 
                 </div>
                 <div className='flex flex-col justify-evenly pt-4 text-current'>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>visits missed</p>
+                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">{healthCareWorkerVisitStatusData?.healthCareWorkerVisitStatus.motherOverDueVisits}</span>Mother Over Due Visits</p>
+
                   <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>pregnant moms have urgent issues</p>
 
                   <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-errorMain">2</span>caregivers & children have urgent issues</p>
@@ -406,9 +424,8 @@ export function ViewUser(props) {
                   <h3 className='pb-0  text-2xl mb-2 pt-2'> Other issues</h3>
                 </div>
                 <div className='flex flex-col justify-evenly pt-4 text-current'>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">12</span>visits overdue</p>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">2</span>pregnant moms have other issues</p>
-                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">3</span>caregivers & children have other issues</p>
+                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">{healthCareWorkerVisitStatusData?.healthCareWorkerVisitStatus.childDueVisits}</span>Child Due Visits</p>
+                  <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-alertMain">{healthCareWorkerVisitStatusData?.healthCareWorkerVisitStatus.motherDueVisits}</span>Mother Due Visits</p>
                 </div>
 
                 {/* End main area */}
@@ -432,8 +449,12 @@ export function ViewUser(props) {
                 <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
               </div>
               <div className='flex flex-col justify-evenly pt-4 text-current'>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">120</span>pregnant moms are doing well & have no issues</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">2</span>children are doing well & have no issues</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekNewClients}</span>This Week New Clients</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekGrowthMonitored}</span>This Week Growth Monitored</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekFamilyVisits}</span>This Week Family Visits</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p>
+                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p>
               </div>
 
               {/* End main area */}

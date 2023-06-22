@@ -140,3 +140,25 @@ export const GetUserByToken = gql`
     }
   }
 `;
+export const GetHealthCareWorkerHighlights = gql`
+query($userId: String) {
+  healthCareWorkerHighlights(userId: $userId) {
+     totalThisWeekFamilyVisits
+     totalThisWeekGrowthMonitored
+     totalThisWeekNewClients
+     totalLastWeekFamilyVisits
+     totalLastWeekGrowthMonitored
+     totalLastWeekNewClients
+  }
+}
+`;
+export const healthCareWorkerVisitStatus = gql`
+query($userId: String) {
+  healthCareWorkerVisitStatus(userId: $userId) {
+    motherOverDueVisits
+    motherDueVisits
+    childDueVisits
+  } 
+}
+`;
+

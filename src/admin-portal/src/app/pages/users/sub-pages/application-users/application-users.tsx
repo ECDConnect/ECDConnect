@@ -198,7 +198,6 @@ export default function ApplicationUsers() {
 
               <div className="mx-4 w-3/12">
                 <span className="w-full text-lg font-medium leading-6 text-gray-900">
-
                   <button onClick={() => setShowFilter(!showFilter)} id="dropdownHoverButton"
                     className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
                     type="button">Filter
@@ -206,7 +205,6 @@ export default function ApplicationUsers() {
                   </button>
                 </span>
               </div>
-
             </div>
 
 
