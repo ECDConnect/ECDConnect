@@ -51,6 +51,7 @@ export const setStep = (
 ) => {
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
+  const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
   if (!!status) {
     return {
       title: status,
@@ -61,14 +62,15 @@ export const setStep = (
       subTitleColor: getStepType(color)?.color || '',
       completedStepIcon: status === 'Community support gained' && 'ThumbUpIcon',
       type:
-        status === 'Consolidation meeting scheduled'
+        status === 'Consolidation meeting attended'
           ? 'inProgress'
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
         color?.toLowerCase() === 'success' &&
         status !== lincenceReceveid &&
-        status !== smartSpaceLincenceReceveid
+        status !== smartSpaceLincenceReceveid &&
+        status !== consolidationMeetingScheduled
           ? true
           : false,
       actionButtonText:
