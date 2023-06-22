@@ -25,7 +25,6 @@ import { traineeSelectors } from '@/store/trainee';
 import ROUTES from '@/routes/routes';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { CoachVisitInfo } from './components/coach-visit-info';
-import { testModeAPI } from 'react-ga';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -102,7 +101,8 @@ export const OnboardingTraineeDashboard: React.FC<
   const filteredUncompletedSteps = uncompletedSteps.filter(
     (item) =>
       item?.title !== 'SmartSpace visit from coach' &&
-      item?.title !== 'SmartSpace Licence'
+      item?.title !== 'SmartSpace Licence' &&
+      item?.title !== 'Consolidation meeting scheduled'
   );
 
   const notificationItem: MenuListDataItem[] = [

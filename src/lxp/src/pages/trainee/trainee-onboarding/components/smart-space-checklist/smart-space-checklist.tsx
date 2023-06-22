@@ -69,6 +69,18 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
 
+  const completedItems = (visitSectionName: string) => {
+    const completedItems = traineeVisitData
+      ?.filter((item) => item?.visitSection === visitSectionName)
+      .filter(
+        (item) =>
+          item?.questionAnswer === 'true' ||
+          item?.questionAnswer !== '' ||
+          item?.questionAnswer === undefined
+      );
+    return completedItems?.length;
+  };
+
   useEffect(() => {
     if (activeStep) {
       const getTraineeTimeline = async () => {
@@ -257,6 +269,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.PROGRAMME_DETAILS),
     });
   } else {
+    const completedSectionItems = completedItems('Programme details');
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'DocumentTextIcon',
@@ -264,7 +277,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Programme details',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 6 completed',
+      subTitle: `${
+        completedSectionItems && completedSectionItems > 6
+          ? 6
+          : completedSectionItems
+      } of 6 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -293,6 +310,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
     });
   } else {
+    const completedSectionItems = completedItems('Health, sanitation & safety');
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'PlusCircleIcon',
@@ -300,7 +318,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Health, sanitation & safety',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 6 completed',
+      subTitle: `${completedSectionItems} of 7 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -329,6 +347,9 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
     });
   } else {
+    const completedSectionItems = completedItems(
+      'Safety - structure, space & area'
+    );
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
@@ -336,7 +357,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Safety - structure & area',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 10 completed',
+      subTitle: `${completedSectionItems} of 10 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -365,6 +386,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
     });
   } else {
+    const completedSectionItems = completedItems('Space & emergency planning');
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'ShieldExclamationIcon',
@@ -372,7 +394,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Space & emergency planning',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 4 completed',
+      subTitle: `${completedSectionItems} of 4 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -477,21 +499,37 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
           )}
           {allStepsCompleteFromDashboard && (
             <>
-              <Alert
-                title="Well done! You have completed all the required SmartSpace steps."
-                type="success"
-                className="mt-4"
-                message={`Your coach has been asked to schedule the SmartSpace check!`}
-                customIcon={
-                  <div className="rounded-full">
+              <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+                <div className="flex">
+                  <div className="flex justify-center">
                     <img
                       src={PositiveBonusEmoticon}
-                      alt="positive emoticon"
-                      className="h-6 w-6"
+                      alt="developing well"
+                      className="mt-3 ml-2 mr-2 h-12 w-16"
                     />
                   </div>
-                }
-              />
+                  <div className="ml-3">
+                    <div className="flex justify-center">
+                      <Typography
+                        type="h3"
+                        weight="bold"
+                        color={'white'}
+                        text={`Well done! You have completed all the required SmartSpace steps. `}
+                        fontSize="18"
+                        className="pt-2"
+                      />
+                    </div>
+                    <div className="mt-1 flex justify-center">
+                      <Typography
+                        type="body"
+                        color={'white'}
+                        text={`Your coach has been asked to schedule the SmartSpace check!`}
+                        fontSize="14"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
               <div>
                 <Button
                   type="filled"
@@ -534,13 +572,14 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
               <Button
                 type="outlined"
                 color="primary"
-                className="mt-4 mb-4 w-full"
+                className="mt-2 mb-4 w-full"
                 icon={isShowCompletedForms ? 'EyeOffIcon' : 'EyeIcon'}
                 text={
                   isShowCompletedForms
                     ? 'Hide completed activities'
                     : 'See completed activities'
                 }
+                textColor="primary"
                 onClick={() => {
                   setIsShowCompletedForms((prevState) => !prevState);
                 }}
