@@ -21,7 +21,7 @@ import {
   GetAllProvince,
   practitionerExcelTemplateGenerator,
 } from '@ecdlink/graphql';
-import { DialogPosition, Dropdown } from '@ecdlink/ui';
+import { DialogPosition, DropDownOption, Dropdown } from '@ecdlink/ui';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -469,12 +469,11 @@ export default function HealthCareWorkers() {
                 <Dropdown
                   showSearch
                   fillType="outlined"
-                  textColor="white"
                   fillColor="secondary"
                   placeholder="Province"
                   selectedValue={provinceFilter}
-                  list={provinces || []}
-                  onChange={(item) => setProvinceFilter(item)}
+                  list={provinces}
+                  onChange={(item)=> setProvinceFilter(item)}
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">
