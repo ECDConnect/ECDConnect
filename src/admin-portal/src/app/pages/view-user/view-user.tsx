@@ -362,8 +362,6 @@ export function ViewUser(props) {
                   ></Typography>
                 </Button>}
               </form>
-
-
             ) : (
               <div className="flex flex-row justify-start pt-4 text-current">
                 <p className="px-4 text-xl">
@@ -377,6 +375,7 @@ export function ViewUser(props) {
                   WhatsApp: {userData?.userById?.phoneNumber}
                 </p>
               </div>
+              
             )}
             {/* End main area */}
           </div>
