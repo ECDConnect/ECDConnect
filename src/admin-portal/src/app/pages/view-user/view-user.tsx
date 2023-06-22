@@ -9,6 +9,7 @@ import {
   TrashIcon,
   StarIcon,
   SaveIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
@@ -286,9 +287,9 @@ export function ViewUser(props) {
                     {<Button
                       className={' w-4/12 rounded-md mr-0'}
                       type="filled"
-                      isLoading={loading}
+                    
                       color="tertiary"
-                      onClick={()=>{}}
+                      onClick={() => { }}
                     >
                       <Typography
                         type="help"
@@ -299,9 +300,9 @@ export function ViewUser(props) {
                     {<Button
                       className={' w-4/12 rounded-md ml-2'}
                       type="filled"
-                      isLoading={loading}
+                     
                       color="tertiaryAccent1"
-                      onClick={()=>{}}
+                      onClick={() => { }}
                     >
                       <Typography
                         type="help"
@@ -359,8 +360,10 @@ export function ViewUser(props) {
                     color="white"
                     text={'Save Changes'}
                   ></Typography>
-                </Button>
+                </Button>}
               </form>
+
+
             ) : (
               <div className="flex flex-row justify-start pt-4 text-current">
                 <p className="px-4 text-xl">
