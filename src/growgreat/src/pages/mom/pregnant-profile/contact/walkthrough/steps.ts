@@ -6,6 +6,7 @@ export const contactSteps: Step[] = [
     content: 'You can see the contact numbers here.',
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-contact-step-2',

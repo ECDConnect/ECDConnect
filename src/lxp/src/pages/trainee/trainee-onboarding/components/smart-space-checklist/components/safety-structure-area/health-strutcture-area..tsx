@@ -34,7 +34,7 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
   setVisitSection,
   onSubmit,
   setActiveStep,
-  setContinueChecklist,
+  onSubmitAndContinue,
 }) => {
   const { isOnline } = useOnlineStatus();
   const visitData = useSelector(traineeSelectors.getTraineeVisitData);
@@ -206,9 +206,8 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
                     color="primary"
                     className={styles.button}
                     onClick={() => {
-                      setContinueChecklist(true);
                       setVisitSection(visitSection);
-                      onSubmit();
+                      onSubmitAndContinue();
                     }}
                   >
                     {renderIcon('SaveIcon', styles.icon)}
