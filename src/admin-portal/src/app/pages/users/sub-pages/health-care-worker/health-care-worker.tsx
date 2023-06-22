@@ -52,7 +52,7 @@ export default function HealthCareWorkers() {
       pageNumber: 1,
       pageSize: 10,
       filterBy: [
-        { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
+        // { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
       ],
       sortBy: [{ fieldName: 'FullName', descending: true }],
     },
@@ -160,17 +160,20 @@ export default function HealthCareWorkers() {
     if (!data?.users) return;
     let userStatus = statusFilter === 'active' ? true : false;
     console.log(provinceFilter);
-    let allUsers: any[] = [...data.users];
+    let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
       allUsers
         .filter(
           (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
         )
-        .filter((v) => v?.province === provinceFilter) // Apply province filter
+        // .filter((v) => v?.province === provinceFilter) // Apply province filter
+        .filter((v) => v?.teamLead?.clinic.name === clinicFilter) //Apply clinic filter
+        .filter((v) => v?.teamLeadId === teamLeadFilter) //Apply clinic filter
+
         .map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, provinceFilter]);
+  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter]);
 
   useEffect(() => {
     if (data && data.GetAllHealthCareWorker) {
