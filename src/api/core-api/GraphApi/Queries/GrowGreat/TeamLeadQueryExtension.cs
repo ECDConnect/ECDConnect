@@ -1,4 +1,5 @@
 using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Context;
@@ -9,6 +10,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +24,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class TeamLeadQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<TeamLead> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
+        [UseFiltering]
+        public IQueryable<TeamLead> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
+         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+         IGenericRepositoryFactory repoFactory,
+            PagedQueryInput pagingInput = null)
+        {
+            using var scope = dbFactory.CreateDbContext();
+            using var dbContextTransaction = scope.Database.BeginTransaction();
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId);
+            
+            return healthCareWorkerRepo.GetAll(pagingInput);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseOffsetPaging]
+        [UseFiltering]
+        public IQueryable<TeamLead> GetAllTeamLeadsOffsetPaging([Service] IHttpContextAccessor contextAccessor,
          [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          IGenericRepositoryFactory repoFactory)
         {
@@ -30,9 +49,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId);
-            List<TeamLead> teamLeads = healthCareWorkerRepo.GetAll().ToList();
 
-            return teamLeads;
+            return healthCareWorkerRepo.GetAll();
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

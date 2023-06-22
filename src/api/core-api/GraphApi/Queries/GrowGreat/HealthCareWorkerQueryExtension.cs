@@ -1,6 +1,7 @@
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Files;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.DataAccessLayer.Entities;
@@ -12,6 +13,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
+using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System.Collections.Generic;
@@ -24,13 +26,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     public class HealthCareWorkerQueryExtension
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
         public List<HealthCareWorker> GetAllHealthCareWorkers(
             [Service] IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repoFactory)
+            IGenericRepositoryFactory repoFactory,
+            PagedQueryInput pagingInput = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            List<HealthCareWorker> healthCareWorkers = healthCareWorkerRepo.GetAll().ToList();
+            List<HealthCareWorker> healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput).ToList();
 
             return healthCareWorkers;
         }
