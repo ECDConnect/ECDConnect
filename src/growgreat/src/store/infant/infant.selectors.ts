@@ -130,6 +130,9 @@ export const getCurrentVisitSelector = (
   state: RootState,
   visitId: string
 ): VisitDto | undefined => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
   const allVisits = state.infants.visits || [];
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
@@ -160,9 +163,11 @@ export const getCurrentVisitSelector = (
       // Priority 4: grab the latest uncompleted visit from the list
       const noAttended =
         allVisits?.filter(
-          (item) => !item.attended && new Date(item.orderDate) >= new Date()
+          (item) => !item.attended && new Date(item.orderDate) >= today
         ) || [];
-      return noAttended[0];
+      if (noAttended.length !== 0) {
+        return noAttended[0];
+      }
     }
   }
 };
