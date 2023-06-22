@@ -222,7 +222,7 @@ export default function ApplicationAdmins() {
                       <button
                         onClick={() => setStatusFilter('')}
                         type="button"
-                        className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium shadow-sm hover:text-white "
+                        className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white  "
                       >
                         Clear All
                       </button>

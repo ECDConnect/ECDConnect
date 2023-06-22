@@ -9,6 +9,7 @@ import {
   TrashIcon,
   StarIcon,
   SaveIcon,
+  ArrowLeftIcon,
 } from '@heroicons/react/solid';
 import Breadcrumb from '../../components/breadcrumbs';
 import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
@@ -216,7 +217,19 @@ export function ViewUser(props) {
   // console.log(isValid);
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
-      <Breadcrumb />
+      <div className="justify-self col-end-3 ">
+        <button
+          onClick={() => history.goBack()}
+          type="button"
+          className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
+        >
+          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+            {' '}
+          </ArrowLeftIcon>
+          Back
+          {/* <span className="text-black pl-2"> / View User</span> */}
+        </button>
+      </div>
 
       <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
         <div className="py-0 px-4 sm:px-6 lg:px-8">
@@ -269,6 +282,41 @@ export function ViewUser(props) {
                 className="space-y-8 divide-y divide-gray-200"
               >
                 <div className="space-y-0">
+                  <p className="text-md mt-4 py-2">
+                    Which kind of identification do you have for{' '}
+                    {userData?.userById?.firstName}?
+                  </p>
+                  <div className="flex flex-row">
+                    {
+                      <Button
+                        className={' mr-0 w-4/12 rounded-md'}
+                        type="filled"
+                        color="tertiary"
+                        onClick={() => {}}
+                      >
+                        <Typography
+                          type="help"
+                          color="white"
+                          text={'ID number'}
+                        ></Typography>
+                      </Button>
+                    }
+                    {
+                      <Button
+                        className={' ml-2 w-4/12 rounded-md'}
+                        type="filled"
+                        color="tertiaryAccent1"
+                        onClick={() => {}}
+                      >
+                        <Typography
+                          type="help"
+                          color="tertiary"
+                          text={'Passport number'}
+                        ></Typography>
+                      </Button>
+                    }
+                  </div>
+
                   <div className="grid grid-cols-1 ">
                     <div className="my-4 w-6/12 sm:col-span-3">
                       <FormField
@@ -301,23 +349,25 @@ export function ViewUser(props) {
                     </div>
                   </div>
                 </div>
-                <Button
-                  className={'mt-3 mr-6 w-4/12 rounded'}
-                  type="filled"
-                  // isLoading={isLoading}
-                  color="secondary"
-                  // disabled={!isValid}
-                  onClick={onSave}
-                >
-                  <SaveIcon color="white" className="mr-6 h-6 w-6">
-                    {' '}
-                  </SaveIcon>
-                  <Typography
-                    type="help"
-                    color="white"
-                    text={'Save Changes'}
-                  ></Typography>
-                </Button>
+                {
+                  <Button
+                    className={'mt-3 w-4/12 rounded-md '}
+                    type="filled"
+                    // isLoading={isLoading}
+                    color="secondary"
+                    // disabled={!isValid}
+                    onClick={onSave}
+                  >
+                    <SaveIcon color="white" className="mr-6 h-6 w-6">
+                      {' '}
+                    </SaveIcon>
+                    <Typography
+                      type="help"
+                      color="white"
+                      text={'Save Changes'}
+                    ></Typography>
+                  </Button>
+                }
               </form>
             ) : (
               <div className="flex flex-row justify-start pt-4 text-current">
