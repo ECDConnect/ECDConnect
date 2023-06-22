@@ -30,7 +30,8 @@ import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { SmartSpaceChecklisstStepsSteps } from '../../smart-space-checklist.types';
 import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
-import Tool_R4c_form from '@/assets/tool_R4c_form.pdf';
+import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
+import tool_R4b_form from '@/assets/tool_R4b_form.pdf';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -245,8 +246,23 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     }
   }, [ownTheProperty, setProgrammeFormValue]);
 
-  const onDownloadImage = () => {
-    const pdfUrl = Tool_R4c_form;
+  useEffect(() => {
+    if (ownTheProperty === true) {
+      setProgrammeFormValue('liveAtTheProperty', undefined);
+    }
+  }, [ownTheProperty, setProgrammeFormValue]);
+
+  const onDownloadImageR4c = () => {
+    const pdfUrl = tool_R4c_form;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'r4b_form.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const onDownloadImageR4b = () => {
+    const pdfUrl = tool_R4b_form;
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.setAttribute('download', 'r4b_form.pdf');
@@ -514,8 +530,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     ]}
                     button={
                       <Button
-                        onClick={onDownloadImage}
-                        text="Download the R4c form"
+                        onClick={onDownloadImageR4b}
+                        text="Download the R4b form"
                         icon="DownloadIcon"
                         type={'filled'}
                         color={'primary'}
@@ -553,8 +569,8 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     ]}
                     button={
                       <Button
-                        onClick={onDownloadImage}
-                        text="Download the R4c form"
+                        onClick={onDownloadImageR4b}
+                        text="Download the R4a form"
                         icon="DownloadIcon"
                         type={'filled'}
                         color={'primary'}
@@ -663,7 +679,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   ]}
                   button={
                     <Button
-                      onClick={onDownloadImage}
+                      onClick={onDownloadImageR4c}
                       text="Download the R4c form"
                       icon="DownloadIcon"
                       type={'filled'}

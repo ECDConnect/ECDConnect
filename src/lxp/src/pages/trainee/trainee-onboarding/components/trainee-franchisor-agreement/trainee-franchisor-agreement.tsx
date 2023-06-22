@@ -53,7 +53,7 @@ export const TraineeFranchisorAgreement: React.FC<
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Business'}
+      title={'Franchisee agreement'}
       subTitle={agreementStepCount}
       color={'primary'}
       onBack={history.goBack}
