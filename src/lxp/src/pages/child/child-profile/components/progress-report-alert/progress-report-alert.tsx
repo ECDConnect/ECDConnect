@@ -44,7 +44,9 @@ export const ChildProgressReportAlert: React.FC<
   ChildProgressReportAlertProps
 > = ({ child }) => {
   const history = useHistory();
-  const {  state: { run }, } = useAppContext();
+  const {
+    state: { run },
+  } = useAppContext();
 
   const childInsertedDate = child.insertedDate
     ? new Date(child.insertedDate)

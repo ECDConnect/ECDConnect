@@ -796,7 +796,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
-
         public List<PractitionerNotes> GetVisitNotesForPractitioner(string userId)
         {
             List<PractitionerNotes> vData = new List<PractitionerNotes>();

@@ -46,7 +46,7 @@ module.exports = {
       },
       boxShadow: {
         card: '0px 10px 10px rgba(39, 56, 90, 0.2)',
-        button: '0px 10px 10px -5px rgba(39, 56, 90, 0.2)'
+        button: '0px 10px 10px -5px rgba(39, 56, 90, 0.2)',
       },
       minWidth: {
         120: '120px',
@@ -60,7 +60,7 @@ module.exports = {
       },
       lineHeight: {
         1.56: '1.56',
-        snug: '1.375rem'
+        snug: '1.375rem',
       },
       colors: {
         primary: 'var(--primary)',
@@ -95,7 +95,7 @@ module.exports = {
         quatenary: '#1DBADF',
         blue: {
           accent3: '#1DBADF',
-        }
+        },
       },
       backgroundImage: (theme) => ({
         logo: "url('./assets/logo.svg')",

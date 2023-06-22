@@ -25,9 +25,8 @@ import {
 } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
-  getCurrentVisitSelector,
-  getInfantById,
   getInfantCurrentVisitSelector,
+  getInfantById,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
@@ -44,8 +43,15 @@ import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 const HEADER_HEIGHT = 64;
 
 export const filterArrayBeforeId = (arr: VisitDto[], id: string) => {
-  const index = arr.findIndex((obj) => obj.id === id);
-  return index !== -1 ? arr.slice(0, index) : [];
+  const sortedArray = arr.sort((a, b) => {
+    const dataA = Date.parse(a.orderDate);
+    const dataB = Date.parse(b.orderDate);
+
+    return dataA - dataB;
+  });
+
+  const index = sortedArray.findIndex((obj) => obj.id === id);
+  return index !== -1 ? sortedArray.slice(0, index) : [];
 };
 
 export const VisitsTab: React.FC = () => {
@@ -69,7 +75,7 @@ export const VisitsTab: React.FC = () => {
 
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getInfantCurrentVisitSelector(state, '')
   );
 
   const { isLoading } = useThunkFetchCall(

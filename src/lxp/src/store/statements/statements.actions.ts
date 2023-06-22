@@ -344,7 +344,7 @@ export const saveIncomeStatementPDF = createAsyncThunk<
 >(
   'saveIncomeStatementPDF',
 
-  async ( input , { getState, rejectWithValue }) => {
+  async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();

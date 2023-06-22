@@ -161,7 +161,7 @@ export const PractitionersList: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 onSubmit();
-                history.push(ROUTES.PRINCIPAL.ADD_PRACTITIONER);
+                history.push(ROUTES.PRINCIPAL.PRACTITIONER_LIST);
                 // onClose();
               },
               leadingIcon: 'UsersIcon',

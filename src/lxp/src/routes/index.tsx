@@ -77,6 +77,8 @@ import { PreviousStatementsList } from '@/pages/business/money/submit-income-sta
 import { MonthStatementsDetails } from '@/pages/business/money/submit-income-statements/components/submit-income-statements-list/components/month-statements-details';
 import { Community } from '@/pages/community/community';
 import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journey';
+import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
+import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
 
 const PublicRoutes: React.FC = () => {
@@ -246,6 +248,16 @@ const AuthRoutes: React.FC = () => {
         component={PrincipalPractitionerChildList}
       />
       <Route exact path={ROUTES.PRINCIPAL.NOTES} component={PrincipalNotes} />
+      <Route
+        exact
+        path={ROUTES.TRAINEE.SETUP_TRAINEE}
+        component={SetupTrainee}
+      />
+      <Route
+        exact
+        path={ROUTES.TRAINEE.TRAINEE_ONBOARDING}
+        component={TraineeOnboarding}
+      />
       <Route path={ROUTES.CALENDAR} component={Calendar} />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />

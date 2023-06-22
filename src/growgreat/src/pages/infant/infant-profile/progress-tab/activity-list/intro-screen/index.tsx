@@ -10,7 +10,7 @@ import {
 } from '../forms/components/follow-up';
 import { getAge } from '../forms/care-for-baby-steps/care-for-baby';
 import { useSelector } from 'react-redux';
-import { getCurrentVisitSelector } from '@/store/infant/infant.selectors';
+import { getInfantCurrentVisitSelector } from '@/store/infant/infant.selectors';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { useLocation } from 'react-router';
 import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
@@ -39,7 +39,7 @@ export const IntroScreen = ({
   const [, , , , , visitId] = location.pathname.split('/');
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, visitId)
+    getInfantCurrentVisitSelector(state, visitId)
   );
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
