@@ -47,7 +47,7 @@ import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
-  getCurrentVisitSelector,
+  getInfantCurrentVisitSelector,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -115,7 +115,7 @@ export const FollowUp = ({
   const [showPrintData, setShowPrintData] = useState(false);
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, visitId)
+    getInfantCurrentVisitSelector(state, visitId)
   );
 
   useEffect(() => {

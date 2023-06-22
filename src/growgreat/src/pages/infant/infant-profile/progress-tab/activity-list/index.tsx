@@ -226,8 +226,8 @@ export const ActivityList: React.FC = () => {
   );
 
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
-    [ageDays, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
+    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
   );
 
   const isDisplayPillar2 = [

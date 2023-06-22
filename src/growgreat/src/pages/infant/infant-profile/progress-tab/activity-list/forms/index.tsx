@@ -31,6 +31,8 @@ import { getReferralsForInfantSelector } from '@/store/referral/referral.selecto
 import { differenceInDays } from 'date-fns';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useParams } from 'react-router';
+import { dangerSignsQuestion } from './pillar-4-steps/danger-signs';
+import { riskOption2 } from './pillar-4-steps/danger-signs/options';
 
 interface FormProps {
   onBack: () => void;
@@ -85,6 +87,11 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     days,
   } = getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
+
+  const dangerSignsAnswer = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === dangerSignsQuestion)?.answer as string[];
+  const isSicknessAlertStep = dangerSignsAnswer?.includes(riskOption2);
 
   const isChild6Months = useMemo(
     () => !ageYears && ((ageMonths === 6 && days === 0) || ageMonths < 6),
@@ -268,7 +275,8 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
       case activitiesTypes.pillar4:
         return getPillar4Steps(
           isPillar4FollowUp,
-          !stepsRules.isChildBefore49Days
+          !stepsRules.isChildBefore49Days,
+          isSicknessAlertStep
         );
       case activitiesTypes.pillar5:
         return pillar5Steps;
@@ -276,6 +284,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
+    isSicknessAlertStep,
     activityName,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
