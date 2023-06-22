@@ -10,10 +10,6 @@ export default function UiTable({
   rows = [],
   options = {},
   urlRow,
-  sendRow,
-  editRow,
-  deleteRow,
-  viewRow,
   searchInput,
   component,
 }: UiTableProps) {
@@ -160,7 +156,7 @@ export default function UiTable({
 
     if (typeof display_value === 'boolean') {
       rowValue = (
-        <div className="ml-1 flex">
+        <div className="ml-1 flex cursor-pointer">
           {display_value ? (
             // <Icon
             //   icon="CheckCircleIcon"
@@ -181,13 +177,13 @@ export default function UiTable({
           )}
         </div>
       );
-    } else if (column.field.match(/created|createdAt|updated|updatedAt/)) {
+    } else if (column.field.match(/created|createdAt|updated|InsertedDate|updatedAt/)) {
       rowValue = (
-        <span className="overflow-ellipsis">{formatDate(display_value)}</span>
+        <span className="overflow-ellipsis cursor-pointer">{formatDate(display_value)}</span>
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-0 flex flex-row flex-wrap items-center">
+        <div className="ml-0 flex flex-row flex-wrap items-center cursor-pointer">
           {display_value &&
             display_value.map((item) => (
               <div
@@ -208,8 +204,9 @@ export default function UiTable({
     } else if (column.type === 'workflowStatus') {
       rowValue = (
         <span
+
           className={classNames(
-            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white',
+            'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white ',
             display_value && display_value[0].statusColor
           )}
         >
@@ -219,17 +216,16 @@ export default function UiTable({
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div
-            className="inline-block overflow-ellipsis"
-            onClick={() => viewSelectedRow(row)}
-          >
-            <p>{display_value}</p>
+          <div className="inline-block overflow-ellipsis " >
+            <span >{display_value}</span>
           </div>
         ) : (
+
           display_value
+
         );
     }
-    return rowValue;
+    return <div className='cursor-pointer' onClick={() => viewSelectedRow(row)} >{rowValue} </div>;
   };
 
   return (

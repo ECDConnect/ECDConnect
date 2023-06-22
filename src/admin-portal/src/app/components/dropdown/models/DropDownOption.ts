@@ -3,6 +3,6 @@ export interface DropDownOption<T> {
   value: T;
 }
 
-export type DropDownFillType = 'filled' | 'clear';
+export type DropDownFillType = 'filled' | 'clear' | 'outlined';
 
 export type DropDownSize = 'small' | 'normal';
