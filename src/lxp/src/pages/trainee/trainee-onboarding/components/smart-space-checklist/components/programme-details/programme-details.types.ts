@@ -9,6 +9,7 @@ export interface ProgrammeDetailsProps {
   setVisitSection?: any;
   onSubmit: () => void;
   setActiveStep?: any;
+  onSubmitAndContinue?: any;
 }
 
 export interface Question {

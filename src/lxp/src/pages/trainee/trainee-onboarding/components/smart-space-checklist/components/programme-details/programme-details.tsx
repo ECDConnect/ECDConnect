@@ -38,6 +38,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setVisitSection,
   onSubmit,
   setActiveStep,
+  onSubmitAndContinue,
 }) => {
   const {
     getValues: getProgrammeFormValues,
@@ -701,7 +702,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                   onClick={() => {
                     // setSectionQuestions(questions)
                     setVisitSection(visitSection);
-                    onSubmit();
+                    onSubmitAndContinue();
                   }}
                 >
                   {renderIcon('SaveIcon', styles.icon)}

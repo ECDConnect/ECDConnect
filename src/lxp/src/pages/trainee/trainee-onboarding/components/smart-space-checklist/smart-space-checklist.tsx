@@ -65,7 +65,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
-  const [continueChecklist, setContinueChecklist] = useState(false);
   const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
@@ -132,9 +131,54 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(
         visitDateInput
       );
-      if (continueChecklist) {
+      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+    }
+  };
+
+  const onSubmitAndContinue = async () => {
+    const sections = sectionQuestions?.map((item) => ({
+      ...item,
+      questions: item.questions.map((question) => ({
+        ...question,
+        answer: String(question.answer),
+      })),
+    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+    if (traineeCurrentVisit) {
+      const visitDateInput: CmsVisitDataInputModelInput = {
+        visitId: traineeCurrentVisit?.id,
+        traineeId: practitioner?.userId,
+        visitData: {
+          visitName: 'SmartSpace Checklist',
+          sections,
+        },
+      };
+
+      await new TraineeService(userAuth?.auth_token!).addVisitData(
+        visitDateInput
+      );
+
+      setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
+      return;
+    } else {
+      const visitDateInput: SsChecklistVisitModelInput = {
+        traineeId: practitioner?.userId,
+        attended: false,
+        plannedVisitDate: new Date(),
+        checklistData: {
+          traineeId: practitioner?.userId,
+          visitData: {
+            visitName: 'SmartSpace Checklist',
+            sections,
+          },
+        },
+      };
+
+      await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(
+        visitDateInput
+      );
+
+      if (activeStep < 5) {
         setActiveStep(activeStep + 1);
-        setContinueChecklist(false);
         return;
       }
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
@@ -149,6 +193,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setSectionQuestions={setSectionQuestions}
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
+            onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
           />
         );
@@ -159,8 +204,8 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setSectionQuestions={setSectionQuestions}
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
+            onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
-            setContinueChecklist={setContinueChecklist}
           />
         );
       case SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA:
@@ -169,8 +214,8 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setSectionQuestions={setSectionQuestions}
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
+            onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
-            setContinueChecklist={setContinueChecklist}
           />
         );
       case SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING:
@@ -179,8 +224,8 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
             setSectionQuestions={setSectionQuestions}
             setVisitSection={setVisitSection}
             onSubmit={onSubmit}
+            onSubmitAndContinue={onSubmitAndContinue}
             setActiveStep={setActiveStep}
-            setContinueChecklist={setContinueChecklist}
           />
         );
       default:
