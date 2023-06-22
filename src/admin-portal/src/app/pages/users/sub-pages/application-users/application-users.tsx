@@ -151,7 +151,6 @@ export default function ApplicationUsers() {
                         labelColor="white"
                         selectedValue={statusFilter}
                         list={[
-                          { label: 'All', value: '' },
                           { label: 'Active', value: 'active' },
                           { label: 'Inactive', value: 'inactive' },
                         ]}

@@ -194,15 +194,15 @@ export function Dropdown<T>({
                               onClick={() => handleMenuItemClick(item)}
                             >
                               <div
-                                className={`text-md hover:bg-red flex flex-row gap-2.5 text-${item.value === selectedItem?.value
-                                    ? 'dark bg-infoBg font-medium'
+                                className={`text-md flex flex-row gap-2.5 text-${item.value === selectedItem?.value
+                                    ? 'dark font-medium'
                                     : 'textMid font-normal'
                                   }`}
                               >
                                 <CheckCircleIcon
                                   className={`h-12 w-12 cursor-pointer text-${item.value === selectedItem?.value
-                                      ? 'successMain'
-                                      : 'successMain'
+                                      ? 'secondary opacity-100'
+                                      : 'secondary'
                                     }`}
                                 />
                                 <p>{item.label}</p>

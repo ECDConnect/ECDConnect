@@ -180,7 +180,7 @@ export default function UiTable({
           )}
         </div>
       );
-    } else if (column.field.match(/created|createdAt|updated|updatedAt/)) {
+    } else if (column.field.match(/created|createdAt|updated|InsertedDate|updatedAt/)) {
       rowValue = (
         <span className="overflow-ellipsis cursor-pointer">{formatDate(display_value)}</span>
       );
