@@ -173,7 +173,7 @@ export function ViewUser(props) {
           className="cursor text-secondary outline-none inline-flex w-full items-center border border-transparent px-4 py-2 text-14 font-medium "
         >
           <ArrowLeftIcon className="text-secondary h-4 w-4 mr-1"> </ArrowLeftIcon>
-          Back 
+          Back
           {/* <span className="text-black pl-2"> / View User</span> */}
         </button>
       </div>
@@ -226,6 +226,35 @@ export function ViewUser(props) {
             {
               editActive ? <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
                 <div className="space-y-0">
+                  <p className='text-md py-2 mt-4'>Which kind of identification do you have for {userData?.userById?.firstName}?</p>
+                  <div className="flex flex-row">
+                    {<Button
+                      className={' w-4/12 rounded-md mr-0'}
+                      type="filled"
+                      isLoading={loading}
+                      color="tertiary"
+                      onClick={()=>{}}
+                    >
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'ID number'}
+                      ></Typography>
+                    </Button>}
+                    {<Button
+                      className={' w-4/12 rounded-md ml-2'}
+                      type="filled"
+                      isLoading={loading}
+                      color="tertiaryAccent1"
+                      onClick={()=>{}}
+                    >
+                      <Typography
+                        type="help"
+                        color="tertiary"
+                        text={'Passport number'}
+                      ></Typography>
+                    </Button>}
+                  </div>
 
                   <div className="grid grid-cols-1 ">
                     <div className="my-4 sm:col-span-3 w-6/12">
@@ -261,7 +290,7 @@ export function ViewUser(props) {
                   </div>
                 </div>
                 {<Button
-                  className={'mt-3 w-4/12 rounded mr-6'}
+                  className={'mt-3 w-4/12 rounded-md '}
                   type="filled"
                   isLoading={loading}
                   color="secondary"
