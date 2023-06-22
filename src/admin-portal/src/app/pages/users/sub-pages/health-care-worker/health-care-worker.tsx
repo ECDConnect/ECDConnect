@@ -116,6 +116,7 @@ export default function HealthCareWorkers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
+  const [clinicFilter, setClinicFilter] = useState('')
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -131,16 +132,15 @@ export default function HealthCareWorkers() {
 
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
-      label: x.id,
-      value: x.name,
+      label: x.name,
+      value: x.id,
     };
   });
-  console.log(clinics);
 
   const provinces = provinceData?.GetAllProvince.map((x: any) => {
     return {
       label: x.description,
-      value: x.description,
+      value: x.id,
     };
   });
 
@@ -473,7 +473,18 @@ export default function HealthCareWorkers() {
                   placeholder="Province"
                   selectedValue={provinceFilter}
                   list={provinces}
-                  onChange={(item)=> setProvinceFilter(item)}
+                  onChange={(item) => setProvinceFilter(item)}
+                />
+              </div>
+              <div className="relative inline-block pr-2 text-left">
+                <Dropdown
+                  showSearch
+                  fillType="outlined"
+                  fillColor="secondary"
+                  placeholder="Clinic"
+                  selectedValue={clinicFilter}
+                  list={clinics}
+                  onChange={(item) => setClinicFilter(item)}
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">
@@ -483,9 +494,9 @@ export default function HealthCareWorkers() {
                   textColor="white"
                   fillColor="secondary"
                   placeholder="Team Leads"
-                  selectedValue={provinceFilter}
+                  selectedValue={teamLeadFilter}
                   list={teamLeads || []}
-                  onChange={(item) => setProvinceFilter(item)}
+                  onChange={(item) => setTeamLeadFilter(item)}
                 />
               </div>
 
@@ -495,22 +506,20 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                        !showDropDownFilter
-                          ? 'bg-secondary text-white'
-                          : 'text-secondary border-secondary border-2 bg-white'
-                      } hover:text-secondary hover:bg-white `}
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
+                        ? 'bg-secondary text-white'
+                        : 'text-secondary border-secondary border-2 bg-white'
+                        } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${
-                          !showDropDownFilter
-                            ? 'hover:text-secondary text-white'
-                            : 'text-secondary hover:text-white'
-                        }`}
+                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
+                          ? 'hover:text-secondary text-white'
+                          : 'text-secondary hover:text-white'
+                          }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"
@@ -561,7 +570,7 @@ export default function HealthCareWorkers() {
                 </div>
               </div>
 
-              <div className="ml-60 flex">
+              <div className="justify-end w-full flex">
                 <div className="">
                   <button
                     onClick={() => setStatusFilter('')}
