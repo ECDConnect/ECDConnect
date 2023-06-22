@@ -340,7 +340,7 @@ export function ViewUser(props) {
 
         </div>
 
-        {
+        {/* {
           data &&
           data.tenantContext &&
           data.tenantContext.applicationName === 'GrowGreat'
@@ -364,7 +364,7 @@ export function ViewUser(props) {
                 className='p-2'
               />
             </div>
-          </div>}
+          </div>} */}
         {
           data &&
           data.tenantContext &&
