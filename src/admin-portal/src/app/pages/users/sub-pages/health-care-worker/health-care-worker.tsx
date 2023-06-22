@@ -270,6 +270,14 @@ export default function HealthCareWorkers() {
   //   });
   // };
 
+  const clearFilters = () => {
+    setStatusFilter('');
+    setClinicFilter('');
+    setProvinceFilter('');
+    setTeamLeadFilter('');
+
+  }
+
   const UploadContentImportChildren = () => {
     panel({
       noPadding: true,
@@ -576,7 +584,7 @@ export default function HealthCareWorkers() {
               <div className="justify-end w-full flex">
                 <div className="">
                   <button
-                    onClick={() => setStatusFilter('')}
+                    onClick={clearFilters}
                     type="button"
                     className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
                   >

@@ -122,7 +122,7 @@ export default function ApplicationUsers() {
                   </span>
                   <input
                     className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                    placeholder="      Search by email or name..."
+                    placeholder="      Search by email, id number or name..."
                     onChange={search}
                   />
                 </div>
@@ -218,6 +218,7 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
+                    { field: 'idNumber', use: 'ID/Passport' },
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'Name' },
                     {
@@ -226,7 +227,7 @@ export default function ApplicationUsers() {
                       type: 'array',
                       displayProperty: 'name',
                     },
-                    { field: 'startDate', use: 'Date Invited' },
+                    { field: 'StartDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
