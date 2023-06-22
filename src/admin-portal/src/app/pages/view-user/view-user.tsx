@@ -382,6 +382,7 @@ export function ViewUser(props) {
                   WhatsApp: {userData?.userById?.phoneNumber}
                 </p>
               </div>
+              
             )}
             {/* End main area */}
           </div>
