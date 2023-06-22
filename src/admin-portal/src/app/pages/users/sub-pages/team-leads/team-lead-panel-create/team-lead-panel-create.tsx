@@ -309,7 +309,6 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
 
   return (
     <article>
-      {/* <UserPanelSave disabled={!getIsValid()} onSave={onSave} /> */}
 
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
       <Button

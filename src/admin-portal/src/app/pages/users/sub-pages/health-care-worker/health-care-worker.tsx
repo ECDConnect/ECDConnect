@@ -60,29 +60,23 @@ export default function HealthCareWorkers() {
   const [clinicFilter, setClinicFilter] = useState('')
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
-
-  let queryVariables = {
+  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
     variables: {
-      pageSize: -1,
-
-      pagingInput:{
-        filterBy: [
-          // { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
-        ],
-        sortBy: [{ fieldName: 'FullName', descending: true }],
-        where: {
-          clinic: {
-            siteAddress: {
-              province: { description: { eq: provinceFilter } }
-            }
-          }
-        }
-      },
-    
+      search: "",
+      provinceSearch: ""
     },
-  }
-  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, queryVariables);
+    fetchPolicy: 'network-only',
+  });
 
+  useEffect(() => {
+    getAllHealthCareWorkers({
+      variables: {
+        search: searchValue ,
+        provinceSearch: provinceFilter === '' ? null : provinceFilter
+      }
+    });
+
+  }, [provinceFilter, searchValue ])
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',

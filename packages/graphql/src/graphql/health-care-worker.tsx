@@ -1,19 +1,41 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-  {
-    GetAllHealthCareWorker {
-      id
-      userId
-      user {
-        firstName
-        surname
-        email
-        isActive
-        idNumber
+query ($search: String, $provinceSearch: String) {
+  GetAllHealthCareWorker(
+    where: {
+      user: {
+        or: [
+          { fullName: { contains: $search } }
+          { idNumber: { contains: $search } }
+          { email: { contains: $search } }
+        ]
+      }
+      teamLead: {
+        clinic: {
+          siteAddress: { province: { description: { eq: $provinceSearch } } }
+        }
+      }
+    }
+  ) {
+    id
+    user {
+      fullName
+      idNumber
+      phoneNumber
+      email
+    }
+    teamLead {
+      clinic {
+        siteAddress {
+          province {
+            description
+          }
+        }
       }
     }
   }
+}
 `;
 
 export const GetHealthCareWorkerByUserId = gql`
