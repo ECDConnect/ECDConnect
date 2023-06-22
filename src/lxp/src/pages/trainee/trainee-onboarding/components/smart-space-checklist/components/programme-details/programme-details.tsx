@@ -705,7 +705,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     onSubmitAndContinue();
                   }}
                 >
-                  {renderIcon('SaveIcon', styles.icon)}
+                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
                   <Typography
                     type={'help'}
                     text={'Save & continue'}
@@ -722,7 +722,10 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     !isValid ||
                     Boolean(checkedquestion(questions?.[0].question))
                   }
-                  onClick={() => {}} // Navigate to a different page if it is principle
+                  onClick={() => {
+                    setVisitSection(visitSection);
+                    onSubmit();
+                  }}
                 >
                   {renderIcon('SaveIcon', styles.icon)}
                   <Typography
