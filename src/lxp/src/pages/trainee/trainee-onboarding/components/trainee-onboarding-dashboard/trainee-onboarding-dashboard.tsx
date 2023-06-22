@@ -4,14 +4,12 @@ import {
   Divider,
   MenuListDataItem,
   StackedList,
-  StepItem,
   Steps,
   Typography,
   Dialog,
   Button,
   renderIcon,
   Alert,
-  containsLowerCaseRegex,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
@@ -63,7 +61,13 @@ export const OnboardingTraineeDashboard: React.FC<
     isOnline,
     // @ts-ignore
     undefined
-  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
+  ).filter(
+    (item) =>
+      item?.type !== 'completed' &&
+      item?.type !== 'inProgress' &&
+      item?.title !== 'SmartSpace visit from coach' &&
+      item?.title !== 'SmartSpace Licence'
+  );
 
   const extradataTimeValue = Object.values(uncompletedSteps?.[0].extraData!);
 
