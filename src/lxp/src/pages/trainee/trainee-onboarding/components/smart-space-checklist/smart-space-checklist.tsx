@@ -459,12 +459,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
           />
           {!allStepsCompleteFromDashboard && (
             <>
-              <Typography
-                className={'my-3'}
-                color={'textDark'}
-                type={'h2'}
-                text={'Complete these steps before your SmartSpace check'}
-              />
               <Alert
                 className={'mt-5 mb-3'}
                 title="Use this list to check if your venue meets the SmartStart standards."
@@ -472,6 +466,12 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
                   'As you prepare your venue, you can track your progress here.',
                 ]}
                 type={'info'}
+              />
+              <Typography
+                className={'my-4'}
+                color={'textDark'}
+                type={'h2'}
+                text={'Complete these steps before your SmartSpace check'}
               />
             </>
           )}
