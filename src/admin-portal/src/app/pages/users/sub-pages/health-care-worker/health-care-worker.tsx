@@ -46,17 +46,43 @@ export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [rawData, setRawData] = useState<any[]>([]);
 
-  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const panel = usePanel();
+  const [statusFilter, setStatusFilter] = useState('');
+  const [teamLeadFilter, setTeamLeadFilter] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [provinceFilter, setProvinceFilter] = useState('');
+  const [clinicFilter, setClinicFilter] = useState('')
+  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
+
+
+  let queryVariables = {
     variables: {
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        // { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
-      ],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
+      pageSize: -1,
+
+      pagingInput:{
+        filterBy: [
+          // { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
+        ],
+        sortBy: [{ fieldName: 'FullName', descending: true }],
+        where: {
+          clinic: {
+            siteAddress: {
+              province: { description: { eq: provinceFilter } }
+            }
+          }
+        }
+      },
+    
     },
-  });
+  }
+  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, queryVariables);
+
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -107,17 +133,6 @@ export default function HealthCareWorkers() {
     }
   }, [templateData, templateDownloaded]);
 
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-  const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('');
-  const [teamLeadFilter, setTeamLeadFilter] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('')
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -125,7 +140,7 @@ export default function HealthCareWorkers() {
 
   const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
     return {
-      value: x.id,
+      value: x.user.firstName + ' ' + x.user.surname,
       label: x.user.firstName + ' ' + x.user.surname,
     };
   });
@@ -133,14 +148,14 @@ export default function HealthCareWorkers() {
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
       label: x.name,
-      value: x.id,
+      value: x.name,
     };
   });
 
   const provinces = provinceData?.GetAllProvince.map((x: any) => {
     return {
       label: x.description,
-      value: x.id,
+      value: x.description,
     };
   });
 
@@ -156,24 +171,37 @@ export default function HealthCareWorkers() {
     };
   };
 
+  const handleFilterChange = (filter: string) => {
+    // Update the variables with new values
+    const updatedVariables = {
+      where: {
+        clinic: {
+          siteAddress: {
+            province: { description: { eq: filter } }
+          }
+        }
+      }
+    };
+
+    // Call the refetch function with updated variables
+    // refetch(updatedVariables);
+  };
+
   useEffect(() => {
     if (!data?.users) return;
+    handleFilterChange(provinceFilter ?? clinicFilter ?? teamLeadFilter)
+
     let userStatus = statusFilter === 'active' ? true : false;
-    console.log(provinceFilter);
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
       allUsers
-        .filter(
-          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
-        )
-        // .filter((v) => v?.province === provinceFilter) // Apply province filter
-        .filter((v) => v?.teamLead?.clinic.name === clinicFilter) //Apply clinic filter
-        .filter((v) => v?.teamLeadId === teamLeadFilter) //Apply clinic filter
-
+        .filter((v) => v?.isActive === (statusFilter === '' ? true : userStatus))
+        .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
+        .filter((v) => (v?.teamLead.user.firstName + '' + v?.teamLead.user.surname) === teamLeadFilter)
         .map(mapUserTableItem)
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter]);
+  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
+
 
   useEffect(() => {
     if (data && data.GetAllHealthCareWorker) {
@@ -484,7 +512,10 @@ export default function HealthCareWorkers() {
                   placeholder="Province"
                   selectedValue={provinceFilter}
                   list={provinces}
-                  onChange={(item) => setProvinceFilter(item)}
+                  onChange={(item) => {
+                    setProvinceFilter(item);
+                    refetch()
+                  }}
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">

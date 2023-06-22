@@ -432,7 +432,6 @@ export function ViewUser(props) {
               </div>
             </div>
 
-
           </div>}
         {
           data &&
@@ -449,12 +448,12 @@ export function ViewUser(props) {
                 <h3 className='pb-0  text-2xl mb-2 pt-2'> Highlights</h3>
               </div>
               <div className='flex flex-col justify-evenly pt-4 text-current'>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekNewClients}</span>This Week New Clients</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekGrowthMonitored}</span>This Week Growth Monitored</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekFamilyVisits}</span>This Week Family Visits</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p>
-                <p className='text-xl px-4py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekNewClients}</span>This Week New Clients</p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekGrowthMonitored}</span>This Week Growth Monitored</p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekFamilyVisits}</span>This Week Family Visits</p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p>
+                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p>
               </div>
 
               {/* End main area */}

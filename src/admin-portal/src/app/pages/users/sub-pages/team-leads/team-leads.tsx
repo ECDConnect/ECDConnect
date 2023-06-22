@@ -48,9 +48,6 @@ export default function TeamLeads() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
-    fetchPolicy: 'cache-and-network',
-  });
   const { data: clinicData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
@@ -59,24 +56,17 @@ export default function TeamLeads() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
-    return {
-      value: x.id,
-      label: x.user.firstName + ' ' + x.user.surname,
-    };
-  });
-
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
       label: x.name,
-      value: x.id,
+      value: x.name,
     };
   });
 
   const provinces = provinceData?.GetAllProvince.map((x: ProvinceDto) => {
     return {
       label: x.description,
-      value: x.id,
+      value: x.description,
     };
   });
 
@@ -95,8 +85,6 @@ export default function TeamLeads() {
         fullName: `${item.user?.firstName} ${item.user?.surname}`,
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
-        _view: undefined,
-        _edit: undefined,
         _url: undefined,
       }));
       setTableData(copyItems);

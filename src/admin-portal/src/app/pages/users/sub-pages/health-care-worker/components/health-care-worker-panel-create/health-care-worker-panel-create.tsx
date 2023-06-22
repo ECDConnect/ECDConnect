@@ -326,7 +326,7 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
+        {/* <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
@@ -339,7 +339,7 @@ export default function HealthCareWorkerPanelCreate(
             register={passwordRegister}
             errors={passwordFormErrors}
           />
-        </div>
+        </div> */}
       </>
     );
   };
@@ -351,7 +351,7 @@ export default function HealthCareWorkerPanelCreate(
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
-        disabled={!getIsValid()}
+        // disabled={!getIsValid()}
         onClick={onSave}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />
