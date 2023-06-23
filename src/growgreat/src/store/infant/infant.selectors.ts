@@ -47,7 +47,7 @@ export const getInfantFirstVisitSelector = (
 
 export const getInfantPreviousVisitSelector = (
   state: RootState,
-  currentPlannedVisitDate: string
+  currentOrderVisitDate: string
 ) => {
   const visits = state.infants.visits;
 
@@ -55,7 +55,10 @@ export const getInfantPreviousVisitSelector = (
 
   const filteredVisits = visits.filter((visit) => {
     const orderDate = new Date(visit.orderDate);
-    return orderDate < new Date(currentPlannedVisitDate);
+    return (
+      orderDate < new Date(currentOrderVisitDate) &&
+      visit.visitType?.name !== 'additional_visit'
+    );
   });
 
   const previousVisit = filteredVisits.reduce(
