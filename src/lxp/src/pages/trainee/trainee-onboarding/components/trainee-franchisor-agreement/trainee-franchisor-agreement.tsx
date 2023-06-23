@@ -1,7 +1,6 @@
-import { BannerWrapper, Typography } from '@ecdlink/ui';
+import { BannerWrapper } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
 import { ReadAndAcceptAgreement } from './components/read-and-accept-agreement';
 import { ProgrammeTypeAgreement } from './components/programme-type-agreement/programme-type-agreement';
 import { useSelector } from 'react-redux';
@@ -15,7 +14,6 @@ export const TraineeFranchisorAgreement: React.FC<
   TraineeFranchisorAgreementProps
 > = ({ setNotificationStep }) => {
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
   const [agreementStep, setAgreementStep] = useState('');
   const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 2');
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
@@ -56,7 +54,7 @@ export const TraineeFranchisorAgreement: React.FC<
       title={'Franchisee agreement'}
       subTitle={agreementStepCount}
       color={'primary'}
-      onBack={history.goBack}
+      onBack={setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
     >
