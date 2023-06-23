@@ -32,6 +32,7 @@ import { traineeSelectors } from '@/store/trainee';
 import { AddressMap } from '../map/map';
 import tool_R4c_form from '@/assets/tool_R4c_form.pdf';
 import tool_R4b_form from '@/assets/tool_R4b_form.pdf';
+import tool_R4a_form from '@/assets/tool_R4a_form.pdf';
 
 export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
   setSectionQuestions,
@@ -266,6 +267,15 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
     const link = document.createElement('a');
     link.href = pdfUrl;
     link.setAttribute('download', 'r4b_form.pdf');
+    document.body.appendChild(link);
+    link.click();
+  };
+
+  const onDownloadImageR4a = () => {
+    const pdfUrl = tool_R4a_form;
+    const link = document.createElement('a');
+    link.href = pdfUrl;
+    link.setAttribute('download', 'r4a_form.pdf');
     document.body.appendChild(link);
     link.click();
   };
@@ -569,7 +579,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     ]}
                     button={
                       <Button
-                        onClick={onDownloadImageR4b}
+                        onClick={onDownloadImageR4a}
                         text="Download the R4a form"
                         icon="DownloadIcon"
                         type={'filled'}
