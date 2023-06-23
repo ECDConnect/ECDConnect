@@ -440,7 +440,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 
   useEffect(() => {
     if (allStepsComplete) {
-      history.push(ROUTES?.TRAINEE?.TRAINEE_ONBOARDING);
       setNotificationStep('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
