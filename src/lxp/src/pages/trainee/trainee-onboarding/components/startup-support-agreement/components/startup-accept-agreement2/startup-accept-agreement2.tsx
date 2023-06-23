@@ -78,12 +78,13 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
             type={'h2'}
             text={'Read & accept the agreement'}
           />
-          <Typography
+          {/* TODO integration with the data coming from SL. */}
+          {/* <Typography
             className={'my-3 w-11/12'}
             color={'textDark'}
             type={'h3'}
             text={'**** Name of org/dept giving the start-up support ****'}
-          />
+          /> */}
           <Alert
             className={'mt-5 mb-3'}
             title="You need to accept both agreements below to continue"
