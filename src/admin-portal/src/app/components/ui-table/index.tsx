@@ -255,10 +255,10 @@ export default function UiTable({
           table_body: {
             main: ``,
             // table_row: 'border-none bg-secondary ',
-            table_row: 'border-none py-8 bg-infoBb',
+            table_row: 'border-none py-6 bg-infoBb',
 
             table_data:
-              'truncate w-24 px-6 pt-3 pb-3 text-sm font-medium text-gray-900 border-b border-gray-100',
+              'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,

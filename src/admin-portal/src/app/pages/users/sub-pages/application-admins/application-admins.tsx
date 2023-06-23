@@ -108,6 +108,11 @@ export default function ApplicationAdmins() {
     setSearchValue(e.target.value || ' ');
   }, 150);
 
+  useEffect(() => {
+    console.log(">>>", searchValue)
+
+  }, [searchValue])
+
   if (tableData) {
     return (
       <div>
@@ -286,7 +291,7 @@ export default function ApplicationAdmins() {
                   urlRow={'/view-user'}
                   rows={tableData}
                   sendRow={true}
-                  searchInput={searchValue}
+                  searchInput={searchValue !== '' ? searchValue : null}
                   component={'administrators'}
                 />
               </div>
