@@ -20,6 +20,7 @@ export default function ApplicationAdmins() {
   const { data, refetch, loading } = useQuery(UserList, {
     variables: {
       pagingInput: {
+
         pageNumber: 1,
         pageSize: 20,
         filterBy: [
@@ -37,9 +38,10 @@ export default function ApplicationAdmins() {
   const [deleteUser] = useMutation(DeleteUser);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
+  let userStatus = (statusFilter === 'active') ? true : false;
 
   useEffect(() => {
     if (data && data.users) {
@@ -56,19 +58,19 @@ export default function ApplicationAdmins() {
           return { ...rest, roles: modifiedRoles };
         }
       );
-      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
+      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest).filter((v: any) => v.isActive === userStatus)
+        .map(mapUserTableItem);
       setTableData(finalTableData);
     }
   }, [data]);
 
   useEffect(() => {
     if (!data?.users) return;
-    let userStatus = statusFilter === 'active' ? true : false;
 
     let allUsers: UserDto[] = [...data.users];
     setTableData(
       allUsers
-        .filter((v) => v.isActive === (statusFilter === '' ? true : userStatus))
+        .filter((v) => v.isActive === userStatus)
         .map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,11 +152,10 @@ export default function ApplicationAdmins() {
                             onClick={() =>
                               setShowDropDownFilter(!showDropDownFilter)
                             }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                              !showDropDownFilter
-                                ? 'bg-secondary text-white'
-                                : 'text-secondary border-secondary border-2 bg-white'
-                            } hover:text-secondary hover:bg-white `}
+                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
+                              ? 'bg-secondary text-white'
+                              : 'text-secondary border-secondary border-2 bg-white'
+                              } hover:text-secondary hover:bg-white `}
                             id="menu-button"
                             aria-expanded={showDropDownFilter}
                             aria-haspopup={showDropDownFilter}
@@ -163,11 +164,10 @@ export default function ApplicationAdmins() {
                               ? 'Filter by status'
                               : statusFilter}
                             <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${
-                                !showDropDownFilter
-                                  ? 'hover:text-secondary text-white'
-                                  : 'text-secondary hover:text-white'
-                              }`}
+                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
+                                ? 'hover:text-secondary text-white'
+                                : 'text-secondary hover:text-white'
+                                }`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                               aria-hidden="true"
@@ -220,7 +220,7 @@ export default function ApplicationAdmins() {
 
                     <div className="justify-self col-end-3 ">
                       <button
-                        onClick={() => setStatusFilter('')}
+                        onClick={() => setStatusFilter('active')}
                         type="button"
                         className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white  "
                       >
@@ -283,10 +283,11 @@ export default function ApplicationAdmins() {
                     { field: 'fullName', use: 'name' },
                     { field: 'isActive', use: 'Active' },
                   ]}
-                  urlRow={'/view-user/'}
+                  urlRow={'/view-user'}
                   rows={tableData}
                   sendRow={true}
                   searchInput={searchValue}
+                  component={'administrators'}
                 />
               </div>
             </div>

@@ -1,11 +1,10 @@
 import FormField from '../../components/form-field/form-field';
-import { Button, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, Button, DialogPosition, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-
 import {
   initialPasswordValue,
   initialUserDetailsValues,
@@ -30,7 +29,7 @@ const userSchema = yup.object().shape({
 });
 
 
-export function ViewUser(props) {
+export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
@@ -41,6 +40,8 @@ export function ViewUser(props) {
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
+  
+  console.log(">>>>", props.location.state)
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -64,14 +65,12 @@ export function ViewUser(props) {
 
 
   useEffect(() => {
-    getUserById({ variables: { userId: userId } });
-    getHealthCareWorkerHighlights({ variables: { userId: userId } });
-    getHealthCareWorkerVisitStatus({ variables: { userId: userId } });
+    getUserById({ variables: { userId: props.location.state.userId ?? userId } });
+    getHealthCareWorkerHighlights({ variables: { userId: props.location.state.userId ?? userId } });
+    getHealthCareWorkerVisitStatus({ variables: { userId: props.location.state.userId ?? userId  } });
   }, [userId])
 
   const { hasPermission } = useUser();
-  console.log(healthCareWorkerVisitStatusData)
-
   const { setNotification } = useNotifications();
   const dialog = useDialog();
 
@@ -232,6 +231,12 @@ export function ViewUser(props) {
             </div>
           </div>
           {/* End main area */}
+          {userData?.userById?.isActive && <Alert
+            className="mt-5 mb-3"
+            message="This user has been deactivated and cannot access AppName."
+            type="error"
+          // customIcon={<SaveIcon></SaveIcon>}
+          />}
         </div>
 
         <div className="m-10 mt-0 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-primary  border-l-8 border-2 border-primary">
@@ -468,12 +473,12 @@ export function ViewUser(props) {
             onClick={
               () => {
                 dialog({
-                  blocking: true,
+                  // blocking: true,
                   position: DialogPosition.Middle,
                   render: (onSubmit: any, onCancel: any) => (
                     <AlertModal
                       title="Deactivate Administrator"
-                      message={`You are about to deactivate a user. Would you like to go ahead`}
+                      message={`${userData?.userById?.firstName} will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
                       onCancel={onCancel}
                       onSubmit={() => {
                         onSubmit();
@@ -484,8 +489,6 @@ export function ViewUser(props) {
                         })
                           .then((response: any) => {
                             if (response.data.deleteUser) {
-                              refetch();
-
                               setNotification({
                                 title: 'Successfully Deactivated User!',
                                 variant: NOTIFICATION.SUCCESS,

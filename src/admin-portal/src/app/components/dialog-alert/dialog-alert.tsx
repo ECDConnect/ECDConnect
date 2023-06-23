@@ -23,9 +23,10 @@ const AlertModal: React.FC<AlertModalProps> = ({
       detailText={message}
       actionButtons={[
         {
+          
           text: 'Okay',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'secondary',
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
           leadingIcon: 'CheckCircleIcon',
@@ -33,9 +34,9 @@ const AlertModal: React.FC<AlertModalProps> = ({
         {
           text: 'Cancel',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'secondary',
           type: 'filled',
-          onClick: () => onCancel && onCancel(),
+          onClick: () =>  onCancel && onCancel(),
           leadingIcon: 'XCircleIcon',
         },
       ]}

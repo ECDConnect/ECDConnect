@@ -11,9 +11,11 @@ export default function UiTable({
   options = {},
   urlRow,
   searchInput,
-  component
-}: UiTableProps) {
+  component,
+
+}: UiTableProps, props) {
   const history = useHistory();
+
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -136,13 +138,17 @@ export default function UiTable({
       return 'N/A';
     }
   };
-  const viewSelectedRow = (selectedRow: any) => {
 
+
+  const viewSelectedRow = (selectedRow: any) => {
     localStorage.setItem("selectedUser", selectedRow?.userId ?? selectedRow?.id);
     console.log(component)
     history.push({
       pathname: urlRow,
-      state: component
+      state: {
+        component: component,
+        userId: selectedRow?.userId
+      }
     });
   }
 
@@ -222,7 +228,8 @@ export default function UiTable({
 
         );
     }
-    return <div className='cursor-pointer' onClick={() => viewSelectedRow(row)} >{rowValue} </div>;
+
+    return <div className={'cursor-pointer'} onClick={() => viewSelectedRow(row)} >{rowValue} </div>;
   };
 
   return (
