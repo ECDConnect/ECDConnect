@@ -542,25 +542,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 }
                 if (type == Constants.GGSettings.client_mother)
                 {
-                    if (_visit.VisitType.Name == Constants.GGSettings.visit1)
+                    if (_visit.VisitType.Name == Constants.GGSettings.visit1 && allVisits.Count > 1)
                     {
                         _visit.DueDate = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.visit2).Select(y => y.PlannedVisitDate).FirstOrDefault();
-                        _visit.DueDate = _visit.DueDate.Value.AddDays(-1).Date;
+                        _visit.DueDate = _visit?.DueDate.Value.AddDays(-1).Date;
                     } 
-                    else if (_visit.VisitType.Name == Constants.GGSettings.visit2)
+                    else if (_visit.VisitType.Name == Constants.GGSettings.visit2 && allVisits.Count > 2)
                     {
                         _visit.DueDate = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.visit3).Select(y => y.PlannedVisitDate).FirstOrDefault();
-                        _visit.DueDate = _visit.DueDate.Value.AddDays(-1).Date;
+                        _visit.DueDate = _visit?.DueDate.Value.AddDays(-1).Date;
                     }
-                    else if (_visit.VisitType.Name == Constants.GGSettings.visit3)
+                    else if (_visit.VisitType.Name == Constants.GGSettings.visit3 && allVisits.Count > 3)
                     {
                         _visit.DueDate = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.visit4).Select(y => y.PlannedVisitDate).FirstOrDefault();
-                        _visit.DueDate = _visit.DueDate.Value.AddDays(-1).Date;
+                        _visit.DueDate = _visit?.DueDate.Value.AddDays(-1).Date;
                     }
-                    else if (_visit.VisitType.Name == Constants.GGSettings.visit4)
+                    else if (_visit.VisitType.Name == Constants.GGSettings.visit4 && allVisits.Count > 3)
                     {
                         _visit.DueDate = _visit.PlannedVisitDate;
-                        _visit.DueDate = _visit.DueDate.Value.AddDays(-1).Date;
+                        _visit.DueDate = _visit?.DueDate.Value.AddDays(-1).Date;
                     }
                 }
 
