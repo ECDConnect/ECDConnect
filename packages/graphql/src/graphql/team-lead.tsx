@@ -1,19 +1,37 @@
 import { gql } from '@apollo/client';
 
 export const GetAllTeamLead = gql`
-  {
-    GetAllTeamLead {
-      id
-      userId
-      user {
-        firstName
-        surname
+query($search: String, $provinceSearch: String) {
+  GetAllTeamLead(
+     where: {
+       user: { or: [
+         { fullName: {contains: $search} }
+         { idNumber: {contains: $search} }
+         { email: {contains: $search} }
+         ]
+       }
+       clinic: {
+         siteAddress: { 
+           province: { description: { eq: $provinceSearch } } }
+       }
+     },
+  ) {
+    id
+    user {
+       fullName
+       idNumber
+        phoneNumber
         email
-        isActive
-        idNumber
+    }
+    clinic {
+      siteAddress {
+        province {
+          description
+        }
       }
     }
   }
+}
 `;
 
 export const CreateTeamLead = gql`
