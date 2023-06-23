@@ -23,7 +23,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
-import { motherSelectors, motherThunkActions } from '@/store/mother';
+import { motherThunkActions } from '@/store/mother';
 import {
   getStringFromClassNameOrId,
   useDialog,
