@@ -1,5 +1,5 @@
 import FormField from '../../components/form-field/form-field';
-import { Alert, Button, DialogPosition, Typography } from '@ecdlink/ui';
+import { Alert, Button, DialogPosition, Typography,SA_CELL_REGEX, SA_ID_REGEX } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -22,9 +22,11 @@ import UserDetailsForm from '../users/components/user-details-form/user-details-
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
 import * as yup from 'yup';
-import { SIX_DIGITS,SA_CELL_REGEX,SA_PASSPORT_REGEX,SA_ID_REGEX } from '@ecdlink/ui';
+
+import zxcvbn from 'zxcvbn-typescript';
 
 const userSchema = yup.object().shape({
+  email: yup.string().email().required('email number is required'),
   idNumber: yup.string().matches(SA_ID_REGEX, 'Id number is not valid').required('ID number is required'),
   phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid').required('Cellphone number is required'),
 });
@@ -98,6 +100,7 @@ export function ViewUser(props: any) {
     register: passwordRegister,
     formState: passwordFormState,
     getValues: passwordGetValues,
+    watch
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -112,6 +115,8 @@ export function ViewUser(props: any) {
 
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
+
+  const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
@@ -165,7 +170,6 @@ export function ViewUser(props: any) {
   };
 
   const onSave = async () => {
-    const passwordForm = passwordGetValues();
     let passwordChange = false;
     let internalIsPasswordValid = true;
     let isValid = isUserDetailValid;
@@ -180,6 +184,12 @@ export function ViewUser(props: any) {
     await saveUser(passwordChange);
     // }
   };
+
+  //check password strength
+  const password = watch('password');
+  const passwordStrength = zxcvbn(password);
+  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+
 
   // console.log(isValid);
   return (
@@ -354,6 +364,24 @@ export function ViewUser(props: any) {
                           togglePasswordVisibility={togglePasswordVisibility}
                         />
                       </div>
+                      <div className="-mx-1 flex w-6/12">
+                        {[...Array(4)].map((_, i) => (
+                          <div className="w-1/4 px-1" key={i}>
+                            <div
+                              className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                ? passwordScore <= 2
+                                  ? 'bg-red-400'
+                                  : passwordScore <= 3
+                                    ? 'bg-yellow-400'
+                                    : passwordScore <= 4
+                                      ? 'bg-green-500'
+                                      : 'bg-yellow-400'
+                                : 'bg-gray-200'
+                                }`}
+                            ></div>
+                          </div>
+                        ))}
+                      </div>
                     </div>
                   </div>
                   {<Button
@@ -372,7 +400,9 @@ export function ViewUser(props: any) {
                     ></Typography>
                   </Button>}
                 </form> :
-                  <div className='flex flex-row justify-start pt-4 text-current'>
+                  props.location.state?.component === 'administrators' ? <div className='flex flex-row justify-start pt-4 text-current'>
+                    <p className='text-xl px-4'>Email: {userData?.userById?.email}</p>
+                  </div> : <div className='flex flex-row justify-start pt-4 text-current'>
                     <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
                     <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
                     <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
@@ -510,7 +540,7 @@ export function ViewUser(props: any) {
             </div>
           </div>
         }
-        <div className="pl-4 flex flex-row w-6/12">
+        <div className="pl-4 flex flex-row w-full justify-between">
 
           {<Button
             className={'mt-3 w-4/12 rounded-md'}
@@ -561,6 +591,8 @@ export function ViewUser(props: any) {
               text={'Deactivate User'}
             ></Typography>
           </Button>}
+
+          <p className="text-gray-500 mt-3 text-sm">User added to {data?.tenantContext.applicationName}: {userData?.userById?.StartDate}</p>
 
         </div>
       </div>
