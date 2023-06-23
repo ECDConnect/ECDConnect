@@ -1191,6 +1191,7 @@ export type Club = {
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   name?: Maybe<Scalars['String']>;
+  numberOfMembers: Scalars['Int'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
 };
@@ -1201,6 +1202,7 @@ export type ClubFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   name?: InputMaybe<StringOperationFilterInput>;
+  numberOfMembers?: InputMaybe<ComparableInt32OperationFilterInput>;
   or?: InputMaybe<Array<ClubFilterInput>>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -1210,6 +1212,7 @@ export type ClubInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Name?: InputMaybe<Scalars['String']>;
+  NumberOfMembers: Scalars['Int'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
@@ -2051,6 +2054,7 @@ export type FilterByFieldInput = {
 export type FollowUpVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   followUpData?: InputMaybe<CmsVisitDataInputModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
@@ -2500,10 +2504,13 @@ export type InfographicsInput = {
 };
 
 export enum InputFilterComparer {
+  ContainedBy = 'CONTAINED_BY',
   Contains = 'CONTAINS',
   Equals = 'EQUALS',
   GreaterThan = 'GREATER_THAN',
+  GreaterThanOrEqual = 'GREATER_THAN_OR_EQUAL',
   LessThan = 'LESS_THAN',
+  LessThanOrEqual = 'LESS_THAN_OR_EQUAL',
 }
 
 export type IntegrationAudit = {
@@ -2968,6 +2975,13 @@ export type ListFilterInputTypeOfNoteFilterInput = {
   some?: InputMaybe<NoteFilterInput>;
 };
 
+export type ListFilterInputTypeOfPqaRatingChildFilterInput = {
+  all?: InputMaybe<PqaRatingChildFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<PqaRatingChildFilterInput>;
+  some?: InputMaybe<PqaRatingChildFilterInput>;
+};
+
 export type ListFilterInputTypeOfPractitionerCoachCircleFilterInput = {
   all?: InputMaybe<PractitionerCoachCircleFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -3220,6 +3234,7 @@ export type Mutation = {
   addAdditionalVisitForMother?: Maybe<Visit>;
   addClinic?: Maybe<Clinic>;
   addCoachToFranchisor?: Maybe<Coach>;
+  addCoachVisitInviteForPractitioner?: Maybe<Visit>;
   addCoachVisitInviteForTrainee?: Maybe<Visit>;
   addEventRecord?: Maybe<EventRecord>;
   addEventRecordType?: Maybe<EventRecordType>;
@@ -3233,10 +3248,10 @@ export type Mutation = {
   addPractitionerToCoach?: Maybe<Practitioner>;
   addPractitionerToPrincipal?: Maybe<Practitioner>;
   addReAccreditationFollowUpVisitForPractitioner?: Maybe<Visit>;
-  addReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
+  addSelfAssessmentForPractitioner?: Maybe<Visit>;
   addStartupSupportAgreementForTrainee?: Maybe<Visit>;
   addSupportVisitForPractitioner?: Maybe<Visit>;
   addTeamLead?: Maybe<TeamLead>;
@@ -3458,6 +3473,8 @@ export type Mutation = {
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
   integrationByFranchisees: Scalars['Boolean'];
   integrationByMappedCoach: Scalars['Boolean'];
+  integrationClubsData: Scalars['Boolean'];
+  integrationPQAData: Scalars['Boolean'];
   openAccessAddChild: Scalars['Boolean'];
   promotePractitionerToPrincipal?: Maybe<Principal>;
   reassignAbsenteeFromHistory: Scalars['Boolean'];
@@ -3629,6 +3646,10 @@ export type MutationAddCoachToFranchisorArgs = {
   franchisorId?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationAddCoachVisitInviteForPractitionerArgs = {
+  input?: InputMaybe<VisitModelInput>;
+};
+
 export type MutationAddCoachVisitInviteForTraineeArgs = {
   input?: InputMaybe<VisitModelInput>;
 };
@@ -3688,11 +3709,6 @@ export type MutationAddReAccreditationFollowUpVisitForPractitionerArgs = {
   input?: InputMaybe<FollowUpVisitModelInput>;
 };
 
-export type MutationAddReAccreditationVisitForPractitionerArgs = {
-  input?: InputMaybe<ReAccreditationVisitModelInput>;
-  visitNumber?: InputMaybe<Scalars['Int']>;
-};
-
 export type MutationAddReassignmentForPractitionerServiceArgs = {
   classroomGroup?: InputMaybe<Scalars['String']>;
   fromUserId?: InputMaybe<Scalars['String']>;
@@ -3710,6 +3726,10 @@ export type MutationAddRoleArgs = {
 
 export type MutationAddSsChecklistForTraineeArgs = {
   input?: InputMaybe<SsChecklistVisitModelInput>;
+};
+
+export type MutationAddSelfAssessmentForPractitionerArgs = {
+  input?: InputMaybe<SupportVisitModelInput>;
 };
 
 export type MutationAddStartupSupportAgreementForTraineeArgs = {
@@ -5620,11 +5640,12 @@ export type ObservationCategoryTaskSummary = {
 
 export type PqaRating = {
   __typename?: 'PQARating';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
   children?: Maybe<Array<Maybe<PqaRatingChild>>>;
   overallRating?: Maybe<Scalars['String']>;
   overallRatingColor?: Maybe<Scalars['String']>;
   overallRatingStars?: Maybe<Scalars['String']>;
-  overallScore: Scalars['Int'];
+  overallScore: Scalars['Float'];
   plannedDate?: Maybe<Scalars['DateTime']>;
   visitName?: Maybe<Scalars['String']>;
 };
@@ -5633,15 +5654,55 @@ export type PqaRatingChild = {
   __typename?: 'PQARatingChild';
   sectionRating?: Maybe<Scalars['String']>;
   sectionRatingColor?: Maybe<Scalars['String']>;
-  sectionScore: Scalars['Int'];
+  sectionScore: Scalars['Float'];
   visitSection?: Maybe<Scalars['String']>;
 };
 
+export type PqaRatingChildFilterInput = {
+  and?: InputMaybe<Array<PqaRatingChildFilterInput>>;
+  or?: InputMaybe<Array<PqaRatingChildFilterInput>>;
+  sectionRating?: InputMaybe<StringOperationFilterInput>;
+  sectionRatingColor?: InputMaybe<StringOperationFilterInput>;
+  sectionScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  visitSection?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PqaRatingChildInput = {
+  sectionRating?: InputMaybe<Scalars['String']>;
+  sectionRatingColor?: InputMaybe<Scalars['String']>;
+  sectionScore: Scalars['Float'];
+  visitSection?: InputMaybe<Scalars['String']>;
+};
+
+export type PqaRatingFilterInput = {
+  actualVisitDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  and?: InputMaybe<Array<PqaRatingFilterInput>>;
+  children?: InputMaybe<ListFilterInputTypeOfPqaRatingChildFilterInput>;
+  or?: InputMaybe<Array<PqaRatingFilterInput>>;
+  overallRating?: InputMaybe<StringOperationFilterInput>;
+  overallRatingColor?: InputMaybe<StringOperationFilterInput>;
+  overallRatingStars?: InputMaybe<StringOperationFilterInput>;
+  overallScore?: InputMaybe<ComparableDoubleOperationFilterInput>;
+  plannedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  visitName?: InputMaybe<StringOperationFilterInput>;
+};
+
+export type PqaRatingInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  children?: InputMaybe<Array<InputMaybe<PqaRatingChildInput>>>;
+  overallRating?: InputMaybe<Scalars['String']>;
+  overallRatingColor?: InputMaybe<Scalars['String']>;
+  overallRatingStars?: InputMaybe<Scalars['String']>;
+  overallScore: Scalars['Float'];
+  plannedDate?: InputMaybe<Scalars['DateTime']>;
+  visitName?: InputMaybe<Scalars['String']>;
+};
+
 export type PagedQueryInput = {
-  filterBy?: InputMaybe<Array<InputMaybe<FilterByFieldInput>>>;
+  filterBy?: InputMaybe<FilterByFieldInput>;
   pageNumber: Scalars['Int'];
   pageSize: Scalars['Int'];
-  sortBy?: InputMaybe<Array<InputMaybe<SortByFieldInput>>>;
+  sortBy?: InputMaybe<SortByFieldInput>;
 };
 
 export type Permission = {
@@ -5874,6 +5935,14 @@ export type PractitionerMetricReport = {
   statusData?: Maybe<Array<Maybe<MetricReportStatItem>>>;
 };
 
+export type PractitionerNotes = {
+  __typename?: 'PractitionerNotes';
+  actualVisitDate?: Maybe<Scalars['DateTime']>;
+  answers?: Maybe<Array<Maybe<VisitData>>>;
+  plannedVisitDate?: Maybe<Scalars['DateTime']>;
+  visitName?: Maybe<Scalars['String']>;
+};
+
 export type PractitionerReportDetails = {
   __typename?: 'PractitionerReportDetails';
   classSiteAddress?: Maybe<Scalars['String']>;
@@ -5902,6 +5971,9 @@ export type PractitionerTimeline = {
   firstAidCourseColor?: Maybe<Scalars['String']>;
   firstAidCourseStatus?: Maybe<Scalars['String']>;
   firstAidDate?: Maybe<Scalars['DateTime']>;
+  pQARating1?: Maybe<PqaRating>;
+  pQARating2?: Maybe<PqaRating>;
+  pQARating3?: Maybe<PqaRating>;
   pQASiteVisits?: Maybe<Array<Maybe<Visit>>>;
   practiceLicenseColor?: Maybe<Scalars['String']>;
   practiceLicenseDate?: Maybe<Scalars['DateTime']>;
@@ -5913,7 +5985,14 @@ export type PractitionerTimeline = {
   prePQAVisitDate2?: Maybe<Scalars['DateTime']>;
   prePQAVisitDate2Color?: Maybe<Scalars['String']>;
   prePQAVisitDate2Status?: Maybe<Scalars['String']>;
+  reAccreditationRating1?: Maybe<PqaRating>;
+  reAccreditationRating2?: Maybe<PqaRating>;
+  reAccreditationRating3?: Maybe<PqaRating>;
   reAccreditationVisits?: Maybe<Array<Maybe<Visit>>>;
+  requestedCoachVisits?: Maybe<Array<Maybe<Visit>>>;
+  selfAssessmentColor?: Maybe<Scalars['String']>;
+  selfAssessmentDate?: Maybe<Scalars['DateTime']>;
+  selfAssessmentStatus?: Maybe<Scalars['String']>;
   smartSpaceLicenseColor?: Maybe<Scalars['String']>;
   smartSpaceLicenseDate?: Maybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: Maybe<Scalars['String']>;
@@ -5940,6 +6019,9 @@ export type PractitionerTimelineFilterInput = {
   firstAidCourseStatus?: InputMaybe<StringOperationFilterInput>;
   firstAidDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   or?: InputMaybe<Array<PractitionerTimelineFilterInput>>;
+  pQARating1?: InputMaybe<PqaRatingFilterInput>;
+  pQARating2?: InputMaybe<PqaRatingFilterInput>;
+  pQARating3?: InputMaybe<PqaRatingFilterInput>;
   pQASiteVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
   practiceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   practiceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
@@ -5951,7 +6033,14 @@ export type PractitionerTimelineFilterInput = {
   prePQAVisitDate2?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   prePQAVisitDate2Color?: InputMaybe<StringOperationFilterInput>;
   prePQAVisitDate2Status?: InputMaybe<StringOperationFilterInput>;
+  reAccreditationRating1?: InputMaybe<PqaRatingFilterInput>;
+  reAccreditationRating2?: InputMaybe<PqaRatingFilterInput>;
+  reAccreditationRating3?: InputMaybe<PqaRatingFilterInput>;
   reAccreditationVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
+  requestedCoachVisits?: InputMaybe<ListFilterInputTypeOfVisitFilterInput>;
+  selfAssessmentColor?: InputMaybe<StringOperationFilterInput>;
+  selfAssessmentDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  selfAssessmentStatus?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseColor?: InputMaybe<StringOperationFilterInput>;
   smartSpaceLicenseDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   smartSpaceLicenseStatus?: InputMaybe<StringOperationFilterInput>;
@@ -5976,6 +6065,9 @@ export type PractitionerTimelineInput = {
   firstAidCourseColor?: InputMaybe<Scalars['String']>;
   firstAidCourseStatus?: InputMaybe<Scalars['String']>;
   firstAidDate?: InputMaybe<Scalars['DateTime']>;
+  pQARating1?: InputMaybe<PqaRatingInput>;
+  pQARating2?: InputMaybe<PqaRatingInput>;
+  pQARating3?: InputMaybe<PqaRatingInput>;
   pQASiteVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
   practiceLicenseColor?: InputMaybe<Scalars['String']>;
   practiceLicenseDate?: InputMaybe<Scalars['DateTime']>;
@@ -5987,7 +6079,14 @@ export type PractitionerTimelineInput = {
   prePQAVisitDate2?: InputMaybe<Scalars['DateTime']>;
   prePQAVisitDate2Color?: InputMaybe<Scalars['String']>;
   prePQAVisitDate2Status?: InputMaybe<Scalars['String']>;
+  reAccreditationRating1?: InputMaybe<PqaRatingInput>;
+  reAccreditationRating2?: InputMaybe<PqaRatingInput>;
+  reAccreditationRating3?: InputMaybe<PqaRatingInput>;
   reAccreditationVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
+  requestedCoachVisits?: InputMaybe<Array<InputMaybe<VisitInput>>>;
+  selfAssessmentColor?: InputMaybe<Scalars['String']>;
+  selfAssessmentDate?: InputMaybe<Scalars['DateTime']>;
+  selfAssessmentStatus?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseColor?: InputMaybe<Scalars['String']>;
   smartSpaceLicenseDate?: InputMaybe<Scalars['DateTime']>;
   smartSpaceLicenseStatus?: InputMaybe<Scalars['String']>;
@@ -6448,6 +6547,7 @@ export type Progress_VisitDataStatus = {
   scoreColor?: Maybe<Scalars['String']>;
   scoreComment?: Maybe<Scalars['String']>;
   visitDataStatus?: Maybe<Array<Maybe<VisitDataStatus>>>;
+  visitId?: Maybe<Scalars['String']>;
   weight?: Maybe<Scalars['String']>;
   weightColor?: Maybe<Scalars['String']>;
   weightComment?: Maybe<Scalars['String']>;
@@ -6855,6 +6955,7 @@ export type Query = {
   visitClientSummaryForMother?: Maybe<Array<Maybe<VisitDataSummary>>>;
   visitDataForVisit?: Maybe<Array<Maybe<VisitData>>>;
   visitDataForVisitId?: Maybe<Array<Maybe<VisitData>>>;
+  visitNotesForPractitioner?: Maybe<Array<Maybe<PractitionerNotes>>>;
   visitVideos: Array<Maybe<VisitVideos>>;
   yearlyClassAttendanceMetricsByUser?: Maybe<
     Array<Maybe<ClassroomMetricReport>>
@@ -6873,6 +6974,7 @@ export type QueryGetActivityByIdArgs = {
 };
 
 export type QueryGetAllAbsenteesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<AbsenteesFilterInput>;
 };
 
@@ -6882,54 +6984,67 @@ export type QueryGetAllActivityArgs = {
 };
 
 export type QueryGetAllAuditLogTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<AuditLogTypeFilterInput>;
 };
 
 export type QueryGetAllCaregiverArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CaregiverFilterInput>;
 };
 
 export type QueryGetAllChildArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ChildFilterInput>;
 };
 
 export type QueryGetAllChildProgressReportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ChildProgressReportFilterInput>;
 };
 
 export type QueryGetAllClassProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassProgrammeFilterInput>;
 };
 
 export type QueryGetAllClassReassignmentHistoryArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassReassignmentHistoryFilterInput>;
 };
 
 export type QueryGetAllClassroomArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassroomFilterInput>;
 };
 
 export type QueryGetAllClassroomGroupArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClassroomGroupFilterInput>;
 };
 
 export type QueryGetAllClinicArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClinicFilterInput>;
 };
 
 export type QueryGetAllClubArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubFilterInput>;
 };
 
 export type QueryGetAllClubMeetingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubMeetingFilterInput>;
 };
 
 export type QueryGetAllClubMeetingRegisterArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ClubMeetingRegisterFilterInput>;
 };
 
 export type QueryGetAllCoachArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CoachFilterInput>;
 };
 
@@ -6964,42 +7079,52 @@ export type QueryGetAllConsentGgArgs = {
 };
 
 export type QueryGetAllDailyProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DailyProgrammeFilterInput>;
 };
 
 export type QueryGetAllDocumentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DocumentFilterInput>;
 };
 
 export type QueryGetAllDocumentTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<DocumentTypeFilterInput>;
 };
 
 export type QueryGetAllEducationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EducationFilterInput>;
 };
 
 export type QueryGetAllEventRecordArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EventRecordFilterInput>;
 };
 
 export type QueryGetAllEventRecordTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<EventRecordTypeFilterInput>;
 };
 
 export type QueryGetAllFranchisorArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<FranchisorFilterInput>;
 };
 
 export type QueryGetAllGenderArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<GenderFilterInput>;
 };
 
 export type QueryGetAllGrantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<GrantFilterInput>;
 };
 
 export type QueryGetAllHealthCareWorkerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<HealthCareWorkerFilterInput>;
 };
 
@@ -7009,6 +7134,7 @@ export type QueryGetAllHealthPromotionArgs = {
 };
 
 export type QueryGetAllHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<HierarchyEntityFilterInput>;
 };
 
@@ -7018,6 +7144,7 @@ export type QueryGetAllIncomeStatementsArgs = {
 };
 
 export type QueryGetAllInfantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<InfantFilterInput>;
 };
 
@@ -7027,38 +7154,47 @@ export type QueryGetAllInfographicsArgs = {
 };
 
 export type QueryGetAllIntegrationAuditArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationAuditFilterInput>;
 };
 
 export type QueryGetAllIntegrationColumnMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationColumnMappingFilterInput>;
 };
 
 export type QueryGetAllIntegrationEntityMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationEntityMappingFilterInput>;
 };
 
 export type QueryGetAllIntegrationLogArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<IntegrationLogFilterInput>;
 };
 
 export type QueryGetAllLanguageArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LanguageFilterInput>;
 };
 
 export type QueryGetAllLearnerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LearnerFilterInput>;
 };
 
 export type QueryGetAllLicenseArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LicenseFilterInput>;
 };
 
 export type QueryGetAllLicenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LicenseTypeFilterInput>;
 };
 
 export type QueryGetAllMessageTemplateArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<MessageTemplateFilterInput>;
 };
 
@@ -7068,38 +7204,47 @@ export type QueryGetAllMoreInformationArgs = {
 };
 
 export type QueryGetAllMotherArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<MotherFilterInput>;
 };
 
 export type QueryGetAllNavigationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NavigationFilterInput>;
 };
 
 export type QueryGetAllNoteArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NoteFilterInput>;
 };
 
 export type QueryGetAllNoteTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<NoteTypeFilterInput>;
 };
 
 export type QueryGetAllPermissionArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PermissionFilterInput>;
 };
 
 export type QueryGetAllPractitionerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PractitionerFilterInput>;
 };
 
 export type QueryGetAllPrincipalArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PrincipalFilterInput>;
 };
 
 export type QueryGetAllProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeFilterInput>;
 };
 
 export type QueryGetAllProgrammeAttendanceReasonArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeAttendanceReasonFilterInput>;
 };
 
@@ -7119,6 +7264,7 @@ export type QueryGetAllProgrammeRoutineSubItemArgs = {
 };
 
 export type QueryGetAllProgrammeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProgrammeTypeFilterInput>;
 };
 
@@ -7143,66 +7289,82 @@ export type QueryGetAllProgressTrackingSubCategoryArgs = {
 };
 
 export type QueryGetAllProvinceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ProvinceFilterInput>;
 };
 
 export type QueryGetAllRaceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<RaceFilterInput>;
 };
 
 export type QueryGetAllReasonForLeavingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ReasonForLeavingFilterInput>;
 };
 
 export type QueryGetAllRelationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<RelationFilterInput>;
 };
 
 export type QueryGetAllServiceSchedulerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ServiceSchedulerFilterInput>;
 };
 
 export type QueryGetAllShortenUrlEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<ShortenUrlEntityFilterInput>;
 };
 
 export type QueryGetAllSiteAddressArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<SiteAddressFilterInput>;
 };
 
 export type QueryGetAllStatementsContributionTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsContributionTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsExpenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsExpenseTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsExpensesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsExpensesFilterInput>;
 };
 
 export type QueryGetAllStatementsFeeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsFeeTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeStatementArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeStatementFilterInput>;
 };
 
 export type QueryGetAllStatementsIncomeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsIncomeTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsPayTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsPayTypeFilterInput>;
 };
 
 export type QueryGetAllStatementsStartupSupportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<StatementsStartupSupportFilterInput>;
 };
 
@@ -7222,10 +7384,12 @@ export type QueryGetAllStoryBookPartsArgs = {
 };
 
 export type QueryGetAllSystemSettingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<SystemSettingFilterInput>;
 };
 
 export type QueryGetAllTeamLeadArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<TeamLeadFilterInput>;
 };
 
@@ -7240,42 +7404,52 @@ export type QueryGetAllThemeDayArgs = {
 };
 
 export type QueryGetAllTraineeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<TraineeFilterInput>;
 };
 
 export type QueryGetAllUserConsentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<UserConsentFilterInput>;
 };
 
 export type QueryGetAllUserHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<UserHierarchyEntityFilterInput>;
 };
 
 export type QueryGetAllVisitArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitFilterInput>;
 };
 
 export type QueryGetAllVisitBackReferralArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitBackReferralFilterInput>;
 };
 
 export type QueryGetAllVisitDataArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitDataFilterInput>;
 };
 
 export type QueryGetAllVisitDataStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitDataStatusFilterInput>;
 };
 
 export type QueryGetAllVisitGrowthDataDayArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitGrowthDataDayFilterInput>;
 };
 
 export type QueryGetAllVisitGrowthDataHeightArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitGrowthDataHeightFilterInput>;
 };
 
 export type QueryGetAllVisitTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<VisitTypeFilterInput>;
 };
 
@@ -7285,10 +7459,12 @@ export type QueryGetAllVisitVideosArgs = {
 };
 
 export type QueryGetAllWorkflowStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<WorkflowStatusFilterInput>;
 };
 
 export type QueryGetAllWorkflowStatusTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<WorkflowStatusTypeFilterInput>;
 };
 
@@ -8084,10 +8260,12 @@ export type QueryCoachNameByUserIdArgs = {
 
 export type QueryCompletedReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCompletedReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryCompletedVisitsForVisitIdArgs = {
@@ -8294,10 +8472,12 @@ export type QueryPrincipalByUserIdArgs = {
 
 export type QueryReferralsForInfantArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForMotherArgs = {
   id?: InputMaybe<Scalars['String']>;
+  visitId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryReferralsForVisitIdArgs = {
@@ -8375,6 +8555,10 @@ export type QueryVisitDataForVisitIdArgs = {
   visitId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryVisitNotesForPractitionerArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryVisitVideosArgs = {
   locale?: InputMaybe<Scalars['String']>;
   section?: InputMaybe<Scalars['String']>;
@@ -8410,22 +8594,6 @@ export type RaceInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
-};
-
-export type ReAccreditationVisitModelInput = {
-  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
-  attended?: InputMaybe<Scalars['Boolean']>;
-  comment?: InputMaybe<Scalars['String']>;
-  infantId?: InputMaybe<Scalars['UUID']>;
-  linkedVisitId?: InputMaybe<Scalars['UUID']>;
-  motherId?: InputMaybe<Scalars['UUID']>;
-  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
-  practitionerId?: InputMaybe<Scalars['UUID']>;
-  reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
-  risk?: InputMaybe<Scalars['String']>;
-  traineeId?: InputMaybe<Scalars['UUID']>;
-  visitType?: InputMaybe<VisitTypeInput>;
-  visitTypeId?: InputMaybe<Scalars['UUID']>;
 };
 
 export type ReasonForLeaving = {
@@ -9294,6 +9462,7 @@ export type StringOperationFilterInput = {
 export type SupportVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['UUID']>;
   isSupportCall?: InputMaybe<Scalars['Boolean']>;
@@ -9767,6 +9936,7 @@ export type Visit = {
   coach?: Maybe<Coach>;
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
+  dueDate?: Maybe<Scalars['DateTime']>;
   id: Scalars['UUID'];
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
@@ -9785,6 +9955,7 @@ export type Visit = {
   traineeId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  visitInProgress: Scalars['Boolean'];
   visitType?: Maybe<VisitType>;
   visitTypeId: Scalars['UUID'];
 };
@@ -9970,6 +10141,7 @@ export type VisitFilterInput = {
   coach?: InputMaybe<CoachFilterInput>;
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
+  dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -9989,6 +10161,7 @@ export type VisitFilterInput = {
   traineeId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  visitInProgress?: InputMaybe<BooleanOperationFilterInput>;
   visitType?: InputMaybe<VisitTypeFilterInput>;
   visitTypeId?: InputMaybe<ComparableGuidOperationFilterInput>;
 };
@@ -10091,6 +10264,7 @@ export type VisitInput = {
   Coach?: InputMaybe<CoachInput>;
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
+  DueDate?: InputMaybe<Scalars['DateTime']>;
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
@@ -10107,6 +10281,7 @@ export type VisitInput = {
   Trainee?: InputMaybe<TraineeInput>;
   TraineeId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  VisitInProgress: Scalars['Boolean'];
   VisitType?: InputMaybe<VisitTypeInput>;
   VisitTypeId: Scalars['UUID'];
 };
@@ -10118,6 +10293,7 @@ export type VisitModelInput = {
   comment?: InputMaybe<Scalars['String']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
+  isSupportCall?: InputMaybe<Scalars['Boolean']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
   mother?: InputMaybe<MotherModelInput>;
   motherId?: InputMaybe<Scalars['UUID']>;

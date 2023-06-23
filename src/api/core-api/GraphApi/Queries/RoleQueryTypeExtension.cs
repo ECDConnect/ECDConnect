@@ -38,39 +38,39 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (user != null)
             {
                 var roles = await (new ObjectTypes.ApplicationUserExtension()).GetRolesAsync(user, roleManager, userManager);
-                if (roles.Any(x => x.Name.Contains("Admin")))
+                if (roles.Any(x => x.Name.Contains(Roles.ADMINISTRATOR)))
                 {
-                    return "Admin";
+                    return Roles.ADMINISTRATOR;
                 }
-                if (roles.Any(x => x.Name.Contains("Franchisor")))
+                if (roles.Any(x => x.Name.Contains(Roles.FRANCHISOR)))
                 {
-                    return "Franchisor";
+                    return Roles.FRANCHISOR;
                 }
                 //Coach
-                if (roles.Any(x => x.Name.Contains("Coach")))
+                if (roles.Any(x => x.Name.Contains(Roles.COACH)))
                 {
-                    return "Coach";
+                    return Roles.COACH;
                 }
                 //Principal or Practitioner - Principal is just a Practitioner with IsPrincipal as true
-                if (roles.Any(x => x.Name.Contains("Principal") || x.Name.Contains("Practitioner")))
+                if (roles.Any(x => x.Name.Contains(Roles.PRINCIPAL) || x.Name.Contains(Roles.PRACTITIONER)))
                 {
                     var userData = new PractitionerQueryExtension().GetPractitionerByUserId(contextAccessor, repoFactory, userId);
                     if (userData != null)
                     {
                         if (userData.IsPrincipal.HasValue && userData.IsPrincipal == true)
                         {
-                            return "Principal";
+                            return Roles.PRINCIPAL;
                         }
                         else
                         {
-                            return "Practitioner";
+                            return Roles.PRACTITIONER;
                         }
                     }
                 }
                 //Child
-                if (roles.Any(x => x.Name.Contains("Child")))
+                if (roles.Any(x => x.Name.Contains(Roles.CHILD)))
                 {
-                    return "Child";
+                    return Roles.CHILD;
                 }
                 else return "Unsure";
             }

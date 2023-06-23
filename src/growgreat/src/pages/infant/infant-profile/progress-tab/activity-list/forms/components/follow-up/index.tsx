@@ -33,9 +33,9 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
-import PollyHappy from '@/assets/pollyHappy.svg';
-import PollyInformational from '@/assets/pollyInformational.svg';
-import PollyShock from '@/assets/pollyShock.svg';
+import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
+import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { ReactComponent as Home } from '@/assets/home.svg';
 
@@ -43,10 +43,11 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 // import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
+  getInfantCurrentVisitSelector,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -55,7 +56,7 @@ import { useAppDispatch } from '@/store';
 import { visitThunkActions } from '@/store/visit';
 import { InfoCard, Item } from './info-card';
 import { getAge } from '../../care-for-baby-steps/care-for-baby';
-import { getInfantVisitsSelector } from '@/store/infant/infant.selectors';
+import { getPreviousVisitInformationForInfant } from '@/store/visit/visit.actions';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -113,30 +114,9 @@ export const FollowUp = ({
   const introScreenRef = useRef<HTMLDivElement>(null);
   const [showPrintData, setShowPrintData] = useState(false);
 
-  const allVisits = useSelector(getInfantVisitsSelector);
-  const getCurrentVisit = () => {
-    // grab visit id from url and set current visit
-    if (visitId) {
-      for (var i = 0; i < allVisits.length; i++) {
-        if (allVisits[i].id === visitId) {
-          return allVisits[i];
-        }
-      }
-    } else {
-      // grab the latest completed visit from the list
-      const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      return lastAttended.length
-        ? lastAttended.reduce((prev, curr) =>
-            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-              ? prev
-              : curr
-          )
-        : undefined;
-    }
-  };
-  const currentVisit = getCurrentVisit();
-
-  console.log('currentVisit', currentVisit);
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, visitId)
+  );
 
   useEffect(() => {
     if (isPrint) {
@@ -163,16 +143,23 @@ export const FollowUp = ({
     getPreviousVisitInformationForInfantSelector
   );
 
-  const printData = useSelector(GetInfantSummaryByPrioritySelector);
-  // Get Printing data
   useLayoutEffect(() => {
-    if (!!currentVisit)
+    // if the previousVisit is null, lets fetch the latest
+    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: currentVisit.id,
+        })
+      );
       appDispatch(
         visitThunkActions.GetInfantSummaryByPriority({
           visitId: currentVisit?.id || '',
         })
       );
-  }, [appDispatch, currentVisit]);
+    }
+  }, [appDispatch, currentVisit, previousVisit]);
+
+  const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
   const getColorAndIcon = useCallback(
     (
@@ -322,7 +309,6 @@ export const FollowUp = ({
 
     return groupedData;
   }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
-
   if (
     !previousVisit?.visitDataStatus?.length &&
     previousVisit?.scoreComment === 'No data available for visit' &&
@@ -497,12 +483,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyHappy}
-                                className="text-successMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyHappy className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -536,12 +518,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyInformational}
-                                className="text-alertMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyInformational className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -575,12 +553,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyShock}
-                                className="text-errorMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyShock className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">

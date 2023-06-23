@@ -74,18 +74,21 @@ export const getInfantPreviousVisitSelector = (
 
 export const getIsInfantFirstVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
-
-  return attendedVisitsCount === 0;
+  return attendedVisits?.length === 0;
 };
 
 export const getIsInfantSecondVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  return attendedVisitsCount === 1;
+  return attendedVisits?.length === 1;
 };
 
 export const getInfantVisitByVisitIdSelector = (
@@ -93,25 +96,6 @@ export const getInfantVisitByVisitIdSelector = (
   visitId: string
 ): VisitDto | undefined =>
   state.infants.visits?.find((item) => item.id === visitId);
-
-export const getInfantCurrentVisitSelector = (
-  state: RootState
-): VisitDto | undefined => {
-  const visits = state.infants.visits || [];
-
-  const noAttended =
-    visits?.filter(
-      (item) => !item.attended && new Date(item.orderDate) >= new Date()
-    ) || [];
-
-  return noAttended.length
-    ? noAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    : undefined;
-};
 
 export const getAllInfantEventRecordTypesSelector = (
   state: RootState
@@ -125,3 +109,53 @@ export const getCompletedReferralsForInfantSelector = (
   state: RootState
 ): VisitDataStatus[] | undefined =>
   state.infants.completedReferralsForInfant || [];
+
+export const getInfantCurrentVisitSelector = (
+  state: RootState,
+  visitId: string
+): VisitDto | undefined => {
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const allVisits =
+    state.infants.visits?.filter(
+      (item) => item.visitType?.name !== 'additional_visits'
+    ) || [];
+
+  // Priority 1: if a visit id is available, then return visit for id
+  if (visitId && visitId !== '') {
+    for (var i = 0; i < allVisits.length; i++) {
+      if (allVisits[i].id === visitId) {
+        return allVisits[i];
+      }
+    }
+  } else {
+    // Priority 2: if there is a visit in progress, we grab the first one
+    const inProgressList =
+      allVisits?.filter((item) => item.visitInProgress) || [];
+    if (inProgressList.length !== 0) {
+      return inProgressList[0];
+    }
+
+    // Priority 3: grab the latest uncompleted visit from the list
+    const noAttended =
+      allVisits?.filter(
+        (item) => !item.attended && new Date(item.orderDate) >= today
+      ) || [];
+    if (noAttended) {
+      if (noAttended.length !== 0) {
+        return noAttended[0];
+      }
+    } else {
+      // Priority 4: grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
+      return lastAttended.length
+        ? lastAttended.reduce((prev, curr) =>
+            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+              ? prev
+              : curr
+          )
+        : undefined;
+    }
+  }
+};

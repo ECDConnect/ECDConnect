@@ -113,10 +113,6 @@ export const EditChildInformation: React.FC = () => {
     useState<boolean>(false);
   const [currentViewInformationType, setCurrentViewInformationType] =
     useState<ChildInformationViewType>();
-  const [
-    changeClassroomGroupPromptVisible,
-    setChangeClassroomGroupPromptVisible,
-  ] = useState<boolean>(false);
 
   // Data Cache
   const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
@@ -153,8 +149,9 @@ export const EditChildInformation: React.FC = () => {
 
   useEffect(() => {
     if (playgroupEdit) {
-      setChangeClassroomGroupPromptVisible(playgroupEdit);
+      openChildConfirmEditClassPrompt();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playgroupEdit]);
 
   useEffect(() => {
@@ -193,13 +190,6 @@ export const EditChildInformation: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, childCaregiver, currentChildLearnerRecord]);
 
-  useEffect(() => {
-    if (isFromEditClass) {
-      setChangeClassroomGroupPromptVisible(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
-
   const openChildConfirmEditClassPrompt = () => {
     dialog({
       position: DialogPosition.Middle,
@@ -229,6 +219,7 @@ export const EditChildInformation: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 onCancel();
+                history.push(ROUTES.CHILD_PROFILE, { childId });
               },
               leadingIcon: 'ArrowLeftIcon',
             },
@@ -367,7 +358,7 @@ export const EditChildInformation: React.FC = () => {
           actionName: 'Edit',
           actionIcon: 'PencilIcon',
           onActionClick: () => {
-            setChangeClassroomGroupPromptVisible(true);
+            openChildConfirmEditClassPrompt();
           },
         });
       }
@@ -502,7 +493,6 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const openEditField = () => {
-    setChangeClassroomGroupPromptVisible(false);
     setEditFieldVisible(true);
   };
 
@@ -862,45 +852,6 @@ export const EditChildInformation: React.FC = () => {
             </Button>
           </div>
         </div>
-      </Dialog>
-
-      <Dialog
-        className={'mb-16 px-4'}
-        stretch={true}
-        visible={changeClassroomGroupPromptVisible}
-        position={DialogPosition.Bottom}
-      >
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`${childUser?.firstName} will be moved to the new playgroup immediately`}
-          paragraphs={[
-            `Changing ${childUser?.firstName}'s' playgroup now might affect today’s attendance register.`,
-            `If you would like to add ${childUser?.firstName} starting tomorrow, please submit attendance for today before changing the playgroup.`,
-          ]}
-          actionButtons={[
-            {
-              text: 'Yes, change playgroup now',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => openChildConfirmEditClassPrompt(),
-              leadingIcon: 'PencilIcon',
-            },
-            {
-              text: 'No, do this later',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                setChangeClassroomGroupPromptVisible(false);
-                history.push(ROUTES.CHILD_PROFILE, { childId });
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
       </Dialog>
     </div>
   );

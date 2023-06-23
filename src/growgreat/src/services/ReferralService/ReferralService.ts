@@ -13,15 +13,18 @@ class Referral {
     this._accessToken = accessToken;
   }
 
-  async getReferralsForInfant(id: string): Promise<VisitDataStatus[]> {
+  async getReferralsForInfant(
+    id: string,
+    visitId: string
+  ): Promise<VisitDataStatus[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { referralsForInfant: VisitDataStatus[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetReferralsForInfant($id: String) {
-          referralsForInfant(id: $id) {
+        query GetReferralsForInfant($id: String, $visitId: String) {
+          referralsForInfant(id: $id, visitId: $visitId) {
             id
             comment
             color
@@ -43,8 +46,7 @@ class Referral {
           `,
       variables: {
         id,
-        // id: '6c2bc4ab-f06e-44d1-adee-be91dd98e1b0',
-        // test id
+        visitId,
       },
     });
 
@@ -117,15 +119,18 @@ class Referral {
     return response.data.data;
   }
 
-  async getCompletedReferralsForInfant(id: string): Promise<VisitDataStatus[]> {
+  async getCompletedReferralsForInfant(
+    id: string,
+    visitId: string
+  ): Promise<VisitDataStatus[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { completedReferralsForInfant: VisitDataStatus[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetCompletedReferralsForInfant($id: String) {
-          completedReferralsForInfant(id: $id) {
+        query GetCompletedReferralsForInfant($id: String, $visitId: String) {
+          completedReferralsForInfant(id: $id, visitId: $visitId) {
             id
             comment
             color
@@ -156,6 +161,7 @@ class Referral {
           `,
       variables: {
         id,
+        visitId,
       },
     });
 
@@ -167,15 +173,18 @@ class Referral {
     return response.data.data.completedReferralsForInfant;
   }
 
-  async getReferralsForMother(id: string): Promise<VisitDataStatus[]> {
+  async getReferralsForMother(
+    id: string,
+    visitId: string
+  ): Promise<VisitDataStatus[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { referralsForMother: VisitDataStatus[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetReferralsForMother($id: String) {
-          referralsForMother(id: $id) {
+        query GetReferralsForMother($id: String, $visitId: String) {
+          referralsForMother(id: $id, visitId: $visitId) {
             id
             comment
             color
@@ -196,6 +205,7 @@ class Referral {
           `,
       variables: {
         id,
+        visitId,
       },
     });
 
@@ -208,15 +218,18 @@ class Referral {
     return response.data.data.referralsForMother;
   }
 
-  async getCompletedReferralsForMother(id: string): Promise<VisitDataStatus[]> {
+  async getCompletedReferralsForMother(
+    id: string,
+    visitId: string
+  ): Promise<VisitDataStatus[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
       data: { completedReferralsForMother: VisitDataStatus[] };
       errors?: {};
     }>(``, {
       query: `
-        query GetCompletedReferralsForMother($id: String) {
-          completedReferralsForMother(id: $id) {
+        query GetCompletedReferralsForMother($id: String, $visitId: String) {
+          completedReferralsForMother(id: $id, visitId: $visitId) {
             id
             comment
             color
@@ -239,6 +252,7 @@ class Referral {
           `,
       variables: {
         id,
+        visitId,
       },
     });
 

@@ -71,6 +71,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             var infantUser = GetUserFromInputModel(input);
             var infant = new Infant();
 
+            // EC-797 - if this infant is not the first client, we set the tab values to true;
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count() 
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+
             // The caregiverId arriving here, could be a caregiver or mother from select box when adding an infant
             Caregiver caregiver = input.CaregiverId.HasValue ? _caregiverRepo.GetById(input.CaregiverId.Value) : null;
             Mother mother = _motherRepo.GetAll().Where(x => x.UserId.Equals(input.CaregiverId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
@@ -95,10 +99,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     WeightAtBirth = input.WeightAtBirth,
                     LengthAtBirth = input.LengthAtBirth,
                     Completed24MonthVisits = false,
-                    ClickedVisitTab = false,
-                    ClickedProgressTab = false,
-                    ClickedReferralsTab = false,
-                    ClickedContactTab = false
+                    ClickedVisitTab = totalClients != 0,
+                    ClickedProgressTab = totalClients != 0,
+                    ClickedReferralsTab = totalClients != 0,
+                    ClickedContactTab = totalClients != 0
                 };
             }
             else
@@ -120,10 +124,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
                         Completed24MonthVisits = false,
-                        ClickedVisitTab = false,
-                        ClickedProgressTab = false,
-                        ClickedReferralsTab = false,
-                        ClickedContactTab = false
+                        ClickedVisitTab = totalClients != 0,
+                        ClickedProgressTab = totalClients != 0,
+                        ClickedReferralsTab = totalClients != 0,
+                        ClickedContactTab = totalClients != 0
                     };
                 }
                 else
@@ -143,10 +147,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                         WeightAtBirth = input.WeightAtBirth,
                         LengthAtBirth = input.LengthAtBirth,
                         Completed24MonthVisits = false,
-                        ClickedVisitTab = false,
-                        ClickedProgressTab = false,
-                        ClickedReferralsTab = false,
-                        ClickedContactTab = false
+                        ClickedVisitTab = totalClients != 0,
+                        ClickedProgressTab = totalClients != 0,
+                        ClickedReferralsTab = totalClients != 0,
+                        ClickedContactTab = totalClients != 0
                     };
                 }
             }
@@ -457,7 +461,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             List<VisitType> visitTypes = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.GGSettings.client_child) && x.Name != Constants.GGSettings.additional_visits).OrderBy(x => x.Order).ToList();
 
             // Get dates for each visit
-            List<VisitModel> visits = GetVisitDates(BirthDate, visitTypes);
+            List<VisitModel> visits = GetVisitDates(BirthDate.Date.AddDays(1), visitTypes);
 
             if (visits.Count > 0)
             {   // Add visits for child

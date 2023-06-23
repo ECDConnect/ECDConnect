@@ -13,3 +13,4 @@ export * from './user-consent.dto';
 export * from './franchisor.dto';
 export * from './principal.dto';
 export * from './practitioner-colleagues.dto';
+export * from './trainee.dto';

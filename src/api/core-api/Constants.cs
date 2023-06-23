@@ -33,11 +33,18 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
+            public const string visitType_sef_assessment = "sef_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
+            public const string visitType_practitioner_visit = "practitioner_visit";
+            public const string visitType_practitioner_call = "practitioner_call";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
+
+            public const string section_discussion = "Discussion notes";
+            public const string question_next_steps = "What next steps did you agree on?";
+            public const string question_next_steps_step4 = "What next steps or plans to improve did you discuss with {client}?";
 
             // Licences
             public const string ss_starter_licence = "ss_starter_licence";
@@ -505,7 +512,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
             public const string q_weight = "Weight";
             public const string q_length = "Length";
-            public const string q_muac = "What is {client}’s MUAC today?";
+            public const string q_muac = "What is {client}ï¿½s MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
             public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";

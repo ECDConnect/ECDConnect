@@ -5,7 +5,6 @@ using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.EGraphQL.ObjectTypes.Input;
-using ECDLink.EGraphQL.ObjectTypes.Input.Enums;
 using ECDLink.Moodle.Managers;
 using ECDLink.Moodle.Models;
 using ECDLink.Security;
@@ -19,6 +18,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using ECDLink.DataAccessLayer.Helpers;
+using ECDLink.Abstractrions.GraphQL.Attributes;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -37,7 +38,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
-            PagedQueryInput? pagingInput = null)
+            ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput? pagingInput = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
@@ -45,20 +46,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
-            usersQuery = await AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
-            usersQuery = AddFiltering(pagingInput?.FilterBy, usersQuery);
-            usersQuery = AddSorting(pagingInput?.SortBy, usersQuery);
-            
+            usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
+            usersQuery = PaginationHelper.AddSorting(
+                pagingInput?.SortBy,
+                usersQuery,
+                // Set default sort by column.
+                new ECDLink.Abstractrions.GraphQL.Attributes.SortByField[] { new ECDLink.Abstractrions.GraphQL.Attributes.SortByField(nameof(ApplicationUser.FullName).ToString()) });
+
             if (pagingInput is not null)
-                usersQuery = usersQuery
-                    .Skip(pagingInput.RowOffset)
-                    .Take(pagingInput.PageSize);
+                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize, usersQuery);
 
             return usersQuery;
         }
 
-        private async Task<IQueryable<ApplicationUser>> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        // Can this become generic?
+        private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
             if (pagingInput is null)
                 return usersQuery;
@@ -71,9 +75,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             if (provinceFilters?.Any() ?? false)
             {
                 using var provinceRepo = repoFactory.CreateGenericRepository<Province>();
-                var provinceIds = await provinceRepo.GetAll()
+                var provinceIds = provinceRepo.GetAll()
                     .Where(p => provinceFilters.Contains(p.Description))
-                    .Select(p => p.Id).ToListAsync();
+                    .Select(p => p.Id).ToList();
 
                 return usersQuery
                     .Where(u => provinceIds.Contains(u.practitionerObjectData.SiteAddress.ProvinceId ?? Guid.Empty)
@@ -87,7 +91,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         // TODO: add logic to comply with, Admins can see admins, but other users can't see admins
         private async Task<IQueryable<ApplicationUser>> AddAdministratorFilter(
             UserManager<ApplicationUser> userManager,
-            PagedQueryInput pagingInput,
+            ECDLink.Abstractrions.GraphQL.Attributes.PagedQueryInput pagingInput,
             IQueryable<ApplicationUser> usersQuery)
         {
             // Just get the last "Administrator" filter element, more than one doesn't make sense.
@@ -111,83 +115,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             return usersQuery;
         }
 
-        private static IQueryable<ApplicationUser> AddFiltering(FilterByField[] inputFilter, in IQueryable<ApplicationUser> usersQuery)
-        {
-            IQueryable<ApplicationUser> newUsersQuery = usersQuery.AsQueryable();
-
-            if (inputFilter is null || !inputFilter.Any())
-                return newUsersQuery;
-
-            foreach (var filter in inputFilter)
-            {
-                // Ignore the filters added by the province and administrator filters
-                // TODO: This should be parameter.
-                if (!_customFilterTypes.Contains(filter.FieldName.ToLower()))
-                    switch (filter.FilterType)
-                    {
-                        case null:
-                        case InputFilterComparer.Equals:
-                            {
-                                if (filter.Value is null)
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<object>(u, filter.FieldName) == null);
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) == date);
-                                else if (Guid.TryParse(filter.Value, out var guid))
-                                    newUsersQuery = newUsersQuery.Where(u => guid == EF.Property<Guid?>(u, filter.FieldName));
-                                else if (int.TryParse(filter.Value, out var @int))
-                                    newUsersQuery = newUsersQuery.Where(u => @int == EF.Property<int?>(u, filter.FieldName));
-                                else
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName) == filter.Value);
-                            }
-                            break;
-                        case InputFilterComparer.Contains:
-                            newUsersQuery = newUsersQuery.Where(u => EF.Property<string>(u, filter.FieldName).Contains(filter.Value));
-                            break;
-                        case InputFilterComparer.GreaterThan:
-                            {
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) > date);
-                                else if (int.TryParse(filter.Value, out int intGt))
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) > intGt);
-                            }
-                            break;
-                        case InputFilterComparer.LessThan:
-                            {
-                                if (DateTime.TryParse(filter.Value, out var date))
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<DateTime?>(u, filter.FieldName) < date);
-                                else if (int.TryParse(filter.Value, out int intGt))
-                                    newUsersQuery = newUsersQuery.Where(u => EF.Property<int?>(u, filter.FieldName) < intGt);
-                            }
-                            break;
-                    }
-            }
-
-            return newUsersQuery;
-        }
-
-        private static IQueryable<ApplicationUser> AddSorting(SortByField[] sortBy, in IQueryable<ApplicationUser> usersQuery)
-        {
-            if (sortBy?.Any() ?? false)
-            {
-                foreach (var sort in sortBy)
-                {
-                    // TODO: Get this working with HotChocolate :(
-                    var sortByFieldName = sort?.FieldName ?? nameof(ApplicationUser.FullName);
-
-                    if (sort.Descending)
-                        return usersQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
-                    else
-                        return usersQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
-                }
-            }
-            else
-            {
-                // Add default sort.
-                return usersQuery.OrderBy(u => u.Surname).ThenBy(u => u.FirstName);
-            }
-
-            return usersQuery;
-        }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ApplicationUser> GetUserById(

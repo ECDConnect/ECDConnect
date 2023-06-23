@@ -30,7 +30,10 @@ import {
 import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
 import { ReactComponent as PollyImpressed } from '@/assets/celebrateIcon.svg';
 import { format } from 'date-fns';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getCurrentVisitSelector,
+  getMotherById,
+} from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import ROUTES from '@/routes/routes';
@@ -77,6 +80,10 @@ export const ReferralsTab: React.FC = () => {
     getMotherById(state, motherId)
   );
 
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
+
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
   const wasWalkthrough = usePrevious(isWalkthrough);
@@ -91,17 +98,27 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    appDispatch(
-      motherThunkActions.getReferralsForMother({ motherId })
-    ).unwrap();
-  }, [appDispatch, motherId]);
+    if (currentVisit) {
+      appDispatch(
+        motherThunkActions.getReferralsForMother({
+          motherId: motherId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, motherId, currentVisit]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    appDispatch(
-      motherThunkActions.getCompletedReferralsForMother({ motherId })
-    ).unwrap();
-  }, [appDispatch, motherId]);
+    if (currentVisit) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, motherId, currentVisit]);
 
   // group data under sections
   const groupedData = useMemo(() => {
@@ -206,7 +223,6 @@ export const ReferralsTab: React.FC = () => {
 
         // saving the new state for data status record
         if (newState.length > 0) {
-          // appDispatch(infantActions.addInfantCompleteReferrals(newState));
           appDispatch(
             motherThunkActions.updateVisitDataStatus({ input: newState })
           ).unwrap();
@@ -275,9 +291,14 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
-    appDispatch(
-      motherThunkActions.getCompletedReferralsForMother({ motherId })
-    ).unwrap();
+    if (currentVisit) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
 
     setIsReferralsView(false);
     if (completedreferralsForMother)
@@ -287,7 +308,7 @@ export const ReferralsTab: React.FC = () => {
           break;
         }
       }
-  }, [completedreferralsForMother, appDispatch, motherId]);
+  }, [completedreferralsForMother, appDispatch, motherId, currentVisit]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -338,7 +359,7 @@ export const ReferralsTab: React.FC = () => {
               align="left"
               weight="bold"
               color="textDark"
-              text={`Back-refferals for ${mother?.user?.firstName || ''} `}
+              text={`Back-referrals for ${mother?.user?.firstName || ''} `}
             />
             <Typography
               className="col-span-2 row-span-2"

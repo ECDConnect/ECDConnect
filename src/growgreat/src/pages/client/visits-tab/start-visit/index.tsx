@@ -4,10 +4,7 @@ import { useHistory } from 'react-router';
 import format from 'date-fns/format';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import {
-  getInfantCurrentVisitSelector,
-  getInfants,
-} from '@/store/infant/infant.selectors';
+import { getInfants } from '@/store/infant/infant.selectors';
 import { getMothers } from '@/store/mother/mother.selectors';
 import { Typography, Dropdown, BannerWrapper, Button } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
@@ -20,7 +17,6 @@ import { motherThunkActions } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { MotherActions } from '@/store/mother/mother.actions';
-import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { VisitDto } from '@ecdlink/core';
 import { VisitModelInput } from '@ecdlink/graphql';
 
@@ -38,7 +34,6 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
 
   const infants = useSelector(getInfants);
   const mothers = useSelector(getMothers);
-  const infantCurrentVisit = useSelector(getInfantCurrentVisitSelector);
 
   const { isLoading: isLoadingInfant } = useThunkFetchCall(
     'infants',
@@ -48,8 +43,6 @@ export const StartVisitFromVisitDashboard: React.FC = () => {
     'mothers',
     MotherActions.GET_MOTHER_VISITS
   );
-
-  const { errorDialog } = useRequestResponseDialog();
 
   const date = format(new Date(), 'EEEE, d LLLL');
 

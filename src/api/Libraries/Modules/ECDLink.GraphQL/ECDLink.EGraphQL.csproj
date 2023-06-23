@@ -22,4 +22,7 @@
     <ProjectReference Include="..\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
     <ProjectReference Include="..\ECDLink.Security\ECDLink.Security.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Folder Include="ObjectTypes\Input\Enums\" />
+  </ItemGroup>
 </Project>
