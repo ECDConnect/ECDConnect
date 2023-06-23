@@ -22,6 +22,8 @@ import {
   PractitionerSetupSteps,
 } from '../../setup-principal/setup-principal.types';
 import { useEffect } from 'react';
+import { practitionerSelectors } from '@/store/practitioner';
+import { traineeSelectors } from '@/store/trainee';
 
 export const AddProgrammeForm: React.FC<{
   onNext: OnNext;
@@ -37,11 +39,13 @@ export const AddProgrammeForm: React.FC<{
   onChangeIsPrincipal,
 }) => {
   const user = useSelector(userSelectors.getUser);
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const appDispatch = useAppDispatch();
   const classroom = useSelector(classroomsSelectors?.getClassroom);
   const classroomGroups = useSelector(
     classroomsSelectors?.getAllClassroomGroups
   );
+  const traineeVisitData = useSelector(traineeSelectors?.getTraineeVisitData);
 
   const {
     getValues: getProgrammeFormValues,
@@ -71,6 +75,7 @@ export const AddProgrammeForm: React.FC<{
   const programData = useSelector(staticDataSelectors.getProgrammeTypes);
 
   const isSmartLinkImported = user?.isImported;
+  const isTrainee = practitioner?.isTrainee;
 
   useEffect(() => {
     if (isSmartLinkImported) {
@@ -105,6 +110,29 @@ export const AddProgrammeForm: React.FC<{
     isSmartLinkImported,
     setProgrammeFormValue,
   ]);
+
+  useEffect(() => {
+    if (isTrainee) {
+      const programmeName =
+        traineeVisitData &&
+        traineeVisitData?.find(
+          (item) => item?.question === 'What is the name of your programme?'
+        )?.questionAnswer;
+      const programmeType =
+        traineeVisitData &&
+        traineeVisitData?.find(
+          (item) =>
+            item?.question ===
+            ' What type of programme are you running or planning to run?'
+        )?.questionAnswer;
+      if (programmeName) {
+        setProgrammeFormValue('name', programmeName);
+      }
+      if (programmeType) {
+        setProgrammeFormValue('type', programmeType);
+      }
+    }
+  }, [isTrainee, setProgrammeFormValue, traineeVisitData]);
 
   const validationForFundaAdmin =
     name !== undefined &&
