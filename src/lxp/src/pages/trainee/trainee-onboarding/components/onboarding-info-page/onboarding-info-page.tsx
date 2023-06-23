@@ -136,7 +136,7 @@ export const OnboardingInfoPage: React.FC<OnboardingInfoProps> = ({
 
   return (
     <BannerWrapper
-      onBack={history.goBack}
+      onBack={() => setShowInfo(false)}
       size={'normal'}
       renderBorder={true}
       showBackground={false}
