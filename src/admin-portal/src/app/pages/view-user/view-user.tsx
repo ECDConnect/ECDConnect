@@ -1,13 +1,11 @@
 import FormField from '../../components/form-field/form-field';
-import { Button, DialogPosition, Dropdown, Typography } from '@ecdlink/ui';
+import { Button, DialogPosition, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
-import { ArrowRightIcon, ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon } from '@heroicons/react/solid';
-import Breadcrumb from '../../components/breadcrumbs';
-import HealthCareWorkerPanelEdit from '../users/sub-pages/health-care-worker/components/health-care-worker-panel-edit/hcw-panel-edit';
+import { ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
-import debounce from 'lodash.debounce';
+
 import {
   initialPasswordValue,
   initialUserDetailsValues,
