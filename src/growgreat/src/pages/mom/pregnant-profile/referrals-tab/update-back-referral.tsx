@@ -21,7 +21,10 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { toCamelCase } from '@ecdlink/core/lib';
 import { addVisitBackReferral } from '@/store/referral/referral.actions';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getCurrentVisitSelector,
+  getMotherById,
+} from '@/store/mother/mother.selectors';
 
 export const yesNoOptions = [
   { text: 'Yes', value: true },
@@ -49,6 +52,10 @@ export const MotherBackReferralUpdate: React.FC<
 
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
+  );
+
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
   );
 
   const selectedReferral = useMemo(() => {
@@ -96,10 +103,15 @@ export const MotherBackReferralUpdate: React.FC<
   };
 
   const refreshList = useCallback(() => {
-    appDispatch(
-      motherThunkActions.getCompletedReferralsForMother({ motherId })
-    ).unwrap();
-  }, [motherId, appDispatch]);
+    if (currentVisit) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [motherId, appDispatch, currentVisit]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

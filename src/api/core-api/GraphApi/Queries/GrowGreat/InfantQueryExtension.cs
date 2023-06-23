@@ -136,15 +136,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_child);
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_child, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetCompletedReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetCompletedReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_child);
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_child, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -160,7 +160,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId)
+        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
         {
             var _visitId = new Guid(visitId);
             return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);

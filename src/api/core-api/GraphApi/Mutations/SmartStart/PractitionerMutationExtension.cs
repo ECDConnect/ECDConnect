@@ -234,15 +234,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] InvitationNotificationManager notificationManager,
          [Service] UserManager<ApplicationUser> userManager,
          [Service] ShortUrlManager shortUrlManager,
+         [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
             var messageType = "invitation";
             var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
 
+            // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
             {
+                // TODO: Make service for invitations
                 SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, httpContextAccessor, userId);
             }
 
             return false;

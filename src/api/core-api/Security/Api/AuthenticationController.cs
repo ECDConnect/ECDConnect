@@ -11,7 +11,6 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
-using NPOI.SS.Formula.Atp;
 using System;
 using System.Threading.Tasks;
 
@@ -110,8 +109,13 @@ namespace ECDLink.Security.Api
             }
 
             var user = await _securityManager.GetUserByNameAsync(model.Username);
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            if (user.TenantId.HasValue && user.TenantId.Value != tenantId)
+            {
+                return BadRequest("Could not reset password");
+            }
 
-            var result = await _securityManager.ResetPasswordAsync(user);
+            var result = await _securityManager.ForgotPasswordAsync(user);
 
             if (!result)
             {

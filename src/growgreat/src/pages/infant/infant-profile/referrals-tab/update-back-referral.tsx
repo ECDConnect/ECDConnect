@@ -16,7 +16,10 @@ import { infantSelectors, infantThunkActions } from '@/store/infant';
 import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/solid';
 import { RootState } from '@/store/types';
-import { getInfantById } from '@/store/infant/infant.selectors';
+import {
+  getInfantCurrentVisitSelector,
+  getInfantById,
+} from '@/store/infant/infant.selectors';
 import { format } from 'date-fns';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -42,6 +45,10 @@ export const InfantBackReferralUpdate: React.FC<
 
   const [, , , infantId] = location.pathname.split('/');
   const [, , , , , visitDataStatusId] = location.pathname.split('/');
+
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, '')
+  );
 
   const completedReferralsForInfant = useSelector(
     infantSelectors.getCompletedReferralsForInfantSelector
@@ -96,10 +103,15 @@ export const InfantBackReferralUpdate: React.FC<
   };
 
   const refreshList = useCallback(() => {
-    appDispatch(
-      infantThunkActions.getCompletedReferralsForInfant({ infantId })
-    ).unwrap();
-  }, [infantId, appDispatch]);
+    if (currentVisit) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: currentVisit?.id,
+        })
+      ).unwrap();
+    }
+  }, [infantId, appDispatch, currentVisit]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

@@ -119,7 +119,7 @@ namespace ECDLink.SmartStart.Services
 
         public List<ClassroomGroup> GetUserClassroomGroups(string userId)
         {
-            List<ClassroomGroup> groups = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId && x.IsActive == true).OrderBy(x => x.Id).ToList();
+            List<ClassroomGroup> groups = _classGroupRepo.GetAll().Where(x => x.UserId.ToString() == userId).OrderBy(x => x.Id).ToList();
             return groups;
         }
 

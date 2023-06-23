@@ -11,7 +11,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
-  getMotherCurrentVisitSelector,
+  getCurrentVisitSelector,
   getMotherPreviousVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
@@ -41,9 +41,9 @@ export const IntroScreen = ({
 
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
-  const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  //const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
-
+  const currentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
+  );
   const previousPlannedVisit = useSelector((state: RootState) =>
     getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
   );
@@ -85,7 +85,8 @@ export const IntroScreen = ({
             }
           : {})}
         description={`Your last home visit: ${
-          !!previousVisit?.visitDataStatus?.length
+          !!previousVisit?.visitDataStatus?.length &&
+          previousVisit?.scoreComment !== 'No data available for visit'
             ? new Date(
                 String(previousPlannedVisit?.actualVisitDate)
               ).toLocaleDateString('en-ZA', {

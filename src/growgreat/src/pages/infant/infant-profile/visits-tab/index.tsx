@@ -25,8 +25,8 @@ import {
 } from '@ecdlink/core';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
-  getInfantById,
   getInfantCurrentVisitSelector,
+  getInfantById,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
@@ -43,8 +43,15 @@ import { visitSteps as walkthroughSteps } from './walkthrough/steps';
 const HEADER_HEIGHT = 64;
 
 export const filterArrayBeforeId = (arr: VisitDto[], id: string) => {
-  const index = arr.findIndex((obj) => obj.id === id);
-  return index !== -1 ? arr.slice(0, index) : [];
+  const sortedArray = arr.sort((a, b) => {
+    const dataA = Date.parse(a.orderDate);
+    const dataB = Date.parse(b.orderDate);
+
+    return dataA - dataB;
+  });
+
+  const index = sortedArray.findIndex((obj) => obj.id === id);
+  return index !== -1 ? sortedArray.slice(0, index) : [];
 };
 
 export const VisitsTab: React.FC = () => {
@@ -67,7 +74,9 @@ export const VisitsTab: React.FC = () => {
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, '')
+  );
 
   const { isLoading } = useThunkFetchCall(
     'infants',
@@ -146,10 +155,10 @@ export const VisitsTab: React.FC = () => {
       (item) => !item.attended
     );
 
-    const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    );
+    // const visitsBeforeCurrentVisit = filterArrayBeforeId(
+    //   filteredVisits,
+    //   currentVisit?.id || ''
+    // );
 
     const isPastVisits = !!filterArrayBeforeId(
       filteredVisits,
@@ -176,7 +185,7 @@ export const VisitsTab: React.FC = () => {
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(getType(item, isMissedVisit) === 'inProgress' && {
+        ...(isMissedVisit && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit
@@ -187,7 +196,9 @@ export const VisitsTab: React.FC = () => {
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
-          history.push(`${location.pathname}/activities-form/${item.id}`),
+          history.push(`${location.pathname}/activities-form/${item.id}`, {
+            editView: true,
+          }),
       };
     });
 

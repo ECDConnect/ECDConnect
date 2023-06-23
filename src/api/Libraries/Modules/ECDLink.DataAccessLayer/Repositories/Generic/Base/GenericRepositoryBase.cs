@@ -1,9 +1,10 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
-using ECDLink.PostgresTenancy.Entities.Base;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.Tenancy.Context;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
@@ -40,9 +41,18 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             _userId = user;
         }
 
-        public virtual IQueryable<T> GetAll()
+        public virtual IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
-            return entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+            
+            if (pagingInput is not null)
+            {
+                queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
+                queryable = PaginationHelper.AddSorting(pagingInput?.SortBy, queryable);
+                queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
+            }
+
+            return queryable;
         }
 
         public virtual T GetById(Guid id)

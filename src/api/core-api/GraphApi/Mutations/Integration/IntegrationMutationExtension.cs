@@ -19,6 +19,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.IntegrationByFranchisees();
         }
+        public async Task<bool> IntegrationClubsData([Service] IIntegrationService integrationService)
+        {
+            return await integrationService.IntegrationClubsData();
+        }
+        public async Task<bool> IntegrationPQAData([Service] IIntegrationService integrationService)
+        {
+            return await integrationService.IntegrationPQAData();
+        }
 
         #endregion
     }
