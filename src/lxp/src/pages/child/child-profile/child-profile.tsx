@@ -744,9 +744,9 @@ export const ChildProfile: React.FC = () => {
             className="m-4"
             title={`${
               childUser?.firstName || 'This child'
-            } does not have a playgroup`}
+            } does not have a class`}
             list={[
-              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
+              `Add ${childUser?.firstName || 'this child'} to a class now`,
             ]}
             type="error"
             button={
@@ -762,11 +762,7 @@ export const ChildProfile: React.FC = () => {
                 }}
               >
                 {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
-                <Typography
-                  color="white"
-                  text="Add to a Playgroup"
-                  type="small"
-                />
+                <Typography color="white" text="Add to a class" type="small" />
               </Button>
             }
           />

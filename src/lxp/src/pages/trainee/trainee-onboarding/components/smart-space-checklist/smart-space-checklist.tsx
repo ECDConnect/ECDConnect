@@ -124,6 +124,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addVisitData(
         visitDateInput
       );
+
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
       return;
     } else {
@@ -143,6 +144,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(
         visitDateInput
       );
+
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
     }
   };
@@ -168,6 +170,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addVisitData(
         visitDateInput
       );
+
+      if (activeStep < 5) {
+        setActiveStep(activeStep + 1);
+        return;
+      }
 
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
       return;
@@ -433,7 +440,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 
   useEffect(() => {
     if (allStepsComplete) {
-      history.push(ROUTES?.TRAINEE?.TRAINEE_ONBOARDING);
       setNotificationStep('');
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -467,7 +473,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       title={'Business'}
       subTitle={date}
       color={'primary'}
-      onBack={history.goBack}
+      onBack={setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
     >

@@ -78,6 +78,7 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
       setRoadToHealthFormValue('roadToHealthBook', roadToHealthBook);
       setRegistrationFormPhotoUrl(roadToHealthBook);
       setHasMaternalCaseRecord(true);
+      setRegistrationFormPhotoUrl('');
     }
   }, [roadToHealthBook, setRoadToHealthFormValue]);
 
@@ -181,9 +182,10 @@ export const InfantRoadToHealth: React.FC<PregnantMaternalCaseRecordProps> = ({
                 currentImageString={registrationFormPhotoUrl}
                 overrideOnClick={() => setPhotoActionBarVisible(true)}
                 register={roadToHealthFormRegister}
-                onValueChange={(imageString: string) =>
-                  setRoadToHealthFormValue('roadToHealthBook', imageString)
-                }
+                onValueChange={(imageString: string) => {
+                  setRoadToHealthFormValue('roadToHealthBook', imageString);
+                  trigger();
+                }}
               ></ImageInput>
             </div>
             <div className="mt-2">

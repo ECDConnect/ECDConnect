@@ -73,19 +73,20 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
           startupSupportAgreementSigned ? 'pointer-events-none opacity-50' : ''
         }`}
       >
-        <div>
+        <div className="h-screen">
           <Typography
             className={'my-3'}
             color={'textDark'}
             type={'h2'}
             text={'Read & accept the agreement'}
           />
-          <Typography
+          {/* TODO integration with the data coming from SL. */}
+          {/* <Typography
             className={'my-3 w-11/12'}
             color={'textDark'}
             type={'h3'}
             text={'**** Name of org/dept giving the start-up support ****'}
-          />
+          /> */}
           <Alert
             className={'mt-5 mb-3'}
             title="You need to accept all 3 agreements below to continue"
