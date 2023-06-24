@@ -347,6 +347,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 />
               </div>
             </div>
+
             <Typography
               type={'body'}
               text={'View'}
@@ -361,82 +362,106 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               }}
             />
           </div>
+        </div>
+        <div className="mt-2 space-y-4 p-4">
+          <>
+            <FormInput<ProgrammeDetailsModel>
+              label={questions?.[1].question}
+              register={programmeFormRegister}
+              nameProp={'programmeName'}
+              placeholder={'E.g. Little Lambs Preschool'}
+              type={'text'}
+              onChange={(e) =>
+                onOptionSelected((e.target as HTMLInputElement).value, 1)
+              }
+              disabled={Boolean(checkedquestion(questions?.[1].question))}
+            ></FormInput>
 
-          <div className="mt-2 space-y-4">
-            <>
-              <FormInput<ProgrammeDetailsModel>
-                label={questions?.[1].question}
-                register={programmeFormRegister}
-                nameProp={'programmeName'}
-                placeholder={'E.g. Little Lambs Preschool'}
-                type={'text'}
-                onChange={(e) =>
-                  onOptionSelected((e.target as HTMLInputElement).value, 1)
-                }
-                disabled={Boolean(checkedquestion(questions?.[1].question))}
-              ></FormInput>
+            <div
+              className={`w-full ${
+                Boolean(checkedquestion(questions?.[2].question))
+                  ? 'pointer-events-none'
+                  : ''
+              }`}
+            >
+              <label className={styles.label}>{questions?.[2].question}</label>
+              <div className="mt-1">
+                <Controller
+                  name={'programmeType'}
+                  control={programmeFormControl}
+                  render={({ field: { onChange, value, ref } }) => (
+                    <ButtonGroup<string | string[]>
+                      inputRef={ref}
+                      options={
+                        (programData &&
+                          programData.map((x: ProgrammeTypeDto) => {
+                            return { text: x.description, value: x.id ?? '' };
+                          })) ||
+                        []
+                      }
+                      multiple={false}
+                      onOptionSelected={(e) => {
+                        setProgrammeFormValue('programmeType', e as string);
+                        onOptionSelected(e, 2);
+                      }}
+                      selectedOptions={value}
+                      color="secondary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                    />
+                  )}
+                ></Controller>
+              </div>
+            </div>
 
+            <FormInput<ProgrammeDetailsModel>
+              label={questions?.[3].question}
+              register={programmeFormRegister}
+              nameProp={'programmeAddress'}
+              placeholder={'Tap to add address'}
+              type={'text'}
+              onChange={(e) =>
+                onOptionSelected((e.target as HTMLInputElement).value, 3)
+              }
+              disabled={Boolean(checkedquestion(questions?.[3].question))}
+              suffixIcon={'LocationMarkerIcon'}
+              sufficIconColor="primary"
+              suffixIconAction={() => setShowMap(true)}
+            ></FormInput>
+
+            <div className={'w-full'}>
+              <label className={styles.label}>{questions?.[4].question}</label>
               <div
-                className={`w-full ${
-                  Boolean(checkedquestion(questions?.[2].question))
+                className={`mt-1 ${
+                  Boolean(checkedquestion(questions?.[4].question))
                     ? 'pointer-events-none'
                     : ''
                 }`}
               >
-                <label className={styles.label}>
-                  {questions?.[2].question}
-                </label>
-                <div className="mt-1">
-                  <Controller
-                    name={'programmeType'}
-                    control={programmeFormControl}
-                    render={({ field: { onChange, value, ref } }) => (
-                      <ButtonGroup<string | string[]>
-                        inputRef={ref}
-                        options={
-                          (programData &&
-                            programData.map((x: ProgrammeTypeDto) => {
-                              return { text: x.description, value: x.id ?? '' };
-                            })) ||
-                          []
-                        }
-                        multiple={false}
-                        onOptionSelected={(e) => {
-                          setProgrammeFormValue('programmeType', e as string);
-                          onOptionSelected(e, 2);
-                        }}
-                        selectedOptions={value}
-                        color="secondary"
-                        type={ButtonGroupTypes.Button}
-                        className={'w-full'}
-                      />
-                    )}
-                  ></Controller>
-                </div>
+                <ButtonGroup<boolean | undefined>
+                  options={yesNoOptions}
+                  onOptionSelected={(value: any) => {
+                    setProgrammeFormValue('ownTheProperty', value as boolean, {
+                      shouldValidate: true,
+                    });
+                    onOptionSelected(value, 4);
+                  }}
+                  selectedOptions={[getProgrammeFormValues().ownTheProperty]}
+                  color="secondary"
+                  type={ButtonGroupTypes.Button}
+                  className={'w-full'}
+                />
               </div>
+            </div>
 
-              <FormInput<ProgrammeDetailsModel>
-                label={questions?.[3].question}
-                register={programmeFormRegister}
-                nameProp={'programmeAddress'}
-                placeholder={'Tap to add address'}
-                type={'text'}
-                onChange={(e) =>
-                  onOptionSelected((e.target as HTMLInputElement).value, 3)
-                }
-                disabled={Boolean(checkedquestion(questions?.[3].question))}
-                suffixIcon={'LocationMarkerIcon'}
-                sufficIconColor="primary"
-                suffixIconAction={() => setShowMap(true)}
-              ></FormInput>
-
+            {ownTheProperty === true && (
               <div className={'w-full'}>
                 <label className={styles.label}>
-                  {questions?.[4].question}
+                  {questions?.[5].question}
                 </label>
                 <div
                   className={`mt-1 ${
-                    Boolean(checkedquestion(questions?.[4].question))
+                    Boolean(checkedquestion(questions?.[5].question))
                       ? 'pointer-events-none'
                       : ''
                   }`}
@@ -445,252 +470,71 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     options={yesNoOptions}
                     onOptionSelected={(value: any) => {
                       setProgrammeFormValue(
-                        'ownTheProperty',
+                        'haveTheTitleDeeds',
                         value as boolean,
                         {
                           shouldValidate: true,
                         }
                       );
-                      onOptionSelected(value, 4);
+                      onOptionSelected(value, 5);
                     }}
-                    selectedOptions={[getProgrammeFormValues().ownTheProperty]}
+                    selectedOptions={[
+                      getProgrammeFormValues().haveTheTitleDeeds,
+                    ]}
                     color="secondary"
                     type={ButtonGroupTypes.Button}
                     className={'w-full'}
                   />
                 </div>
               </div>
-
-              {ownTheProperty === true && (
-                <div className={'w-full'}>
-                  <label className={styles.label}>
-                    {questions?.[5].question}
-                  </label>
-                  <div
-                    className={`mt-1 ${
-                      Boolean(checkedquestion(questions?.[5].question))
-                        ? 'pointer-events-none'
-                        : ''
-                    }`}
-                  >
-                    <ButtonGroup<boolean | undefined>
-                      options={yesNoOptions}
-                      onOptionSelected={(value: any) => {
-                        setProgrammeFormValue(
-                          'haveTheTitleDeeds',
-                          value as boolean,
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        onOptionSelected(value, 5);
-                      }}
-                      selectedOptions={[
-                        getProgrammeFormValues().haveTheTitleDeeds,
-                      ]}
-                      color="secondary"
-                      type={ButtonGroupTypes.Button}
-                      className={'w-full'}
-                    />
-                  </div>
-                </div>
-              )}
-              {ownTheProperty === false && (
-                <div className={'w-full'}>
-                  <label className={styles.label}>
-                    {questions?.[9].question}
-                  </label>
-                  <div
-                    className={`mt-1 ${
-                      Boolean(checkedquestion(questions?.[9].question))
-                        ? 'pointer-events-none'
-                        : ''
-                    }`}
-                  >
-                    <ButtonGroup<boolean | undefined>
-                      options={yesNoOptions}
-                      onOptionSelected={(value: any) => {
-                        setProgrammeFormValue(
-                          'liveAtTheProperty',
-                          value as boolean,
-                          {
-                            shouldValidate: true,
-                          }
-                        );
-                        onOptionSelected(value, 9);
-                      }}
-                      selectedOptions={[
-                        getProgrammeFormValues().liveAtTheProperty,
-                      ]}
-                      color="secondary"
-                      type={ButtonGroupTypes.Button}
-                      className={'w-full'}
-                    />
-                  </div>
-                </div>
-              )}
-              {liveAtTheProperty === true && (
-                <>
-                  <Alert
-                    className="mb-4"
-                    type="info"
-                    title={`The owner or landlord of the property will need to fill in the “confirmation of lease” with you (form R4b).`}
-                    list={[
-                      'Fill in the form with your landlord and upload a picture of it below.',
-                    ]}
-                    button={
-                      <Button
-                        onClick={onDownloadImageR4b}
-                        text="Download the R4b form"
-                        icon="DownloadIcon"
-                        type={'filled'}
-                        color={'primary'}
-                        textColor={'white'}
-                      />
-                    }
-                  />
-                  <ImageInput<ProgrammeDetailsModel>
-                    acceptedFormats={acceptedFormats}
-                    label={questions?.[11].question}
-                    nameProp="r4bPhoto"
-                    icon="CameraIcon"
-                    className={'py-4'}
-                    currentImageString={r4bPhotoUrl}
-                    register={programmeFormRegister}
-                    overrideOnClick={() => setPhotoActionBarVisible(true)}
-                    onValueChange={(imageString: string) => {
-                      setProgrammeFormValue('r4bPhoto', imageString);
-                      triggerR4bForm();
-                    }}
-                    disabled={Boolean(
-                      checkedquestion(questions?.[11].question)
-                    )}
-                  ></ImageInput>
-                </>
-              )}
-              {liveAtTheProperty === false && (
-                <>
-                  <Alert
-                    className="mb-4"
-                    type="info"
-                    title={`The owner or landlord of the property will need to fill in the “Agreement for premises to be used for early learning programme” with you (form 4a).`}
-                    list={[
-                      'Fill in the form with your landlord and upload a picture of it below.',
-                    ]}
-                    button={
-                      <Button
-                        onClick={onDownloadImageR4a}
-                        text="Download the R4a form"
-                        icon="DownloadIcon"
-                        type={'filled'}
-                        color={'primary'}
-                        textColor={'white'}
-                      />
-                    }
-                  />
-                  <ImageInput<ProgrammeDetailsModel>
-                    acceptedFormats={acceptedFormats}
-                    label={questions?.[10].question}
-                    nameProp="r4bPhoto"
-                    icon="CameraIcon"
-                    className={'py-4'}
-                    currentImageString={r4bPhotoUrl}
-                    register={programmeFormRegister}
-                    overrideOnClick={() => setPhotoActionBarVisible(true)}
-                    onValueChange={(imageString: string) => {
-                      setProgrammeFormValue('r4bPhoto', imageString);
-                      triggerR4bForm();
-                    }}
-                    disabled={Boolean(
-                      checkedquestion(questions?.[10].question)
-                    )}
-                  ></ImageInput>
-                </>
-              )}
-            </>
-            {haveTheTitleDeeds === false && ownTheProperty === true && (
+            )}
+            {ownTheProperty === false && (
               <div className={'w-full'}>
                 <label className={styles.label}>
-                  {questions?.[6].question}
+                  {questions?.[9].question}
                 </label>
                 <div
                   className={`mt-1 ${
-                    Boolean(checkedquestion(questions?.[6].question))
+                    Boolean(checkedquestion(questions?.[9].question))
                       ? 'pointer-events-none'
                       : ''
                   }`}
                 >
-                  <Controller
-                    name="unproclaimedLand"
-                    control={programmeFormControl}
-                    render={({ field: { onChange, value, ref } }) => (
-                      <ButtonGroup<boolean>
-                        inputRef={ref}
-                        options={yesNoOptions}
-                        onOptionSelected={(value: any) => {
-                          setProgrammeFormValue(
-                            'unproclaimedLand',
-                            value as boolean,
-                            {
-                              shouldValidate: true,
-                            }
-                          );
-                          onOptionSelected(value, 6);
-                        }}
-                        selectedOptions={value}
-                        color="secondary"
-                        type={ButtonGroupTypes.Button}
-                        className={'w-full'}
-                      />
-                    )}
+                  <ButtonGroup<boolean | undefined>
+                    options={yesNoOptions}
+                    onOptionSelected={(value: any) => {
+                      setProgrammeFormValue(
+                        'liveAtTheProperty',
+                        value as boolean,
+                        {
+                          shouldValidate: true,
+                        }
+                      );
+                      onOptionSelected(value, 9);
+                    }}
+                    selectedOptions={[
+                      getProgrammeFormValues().liveAtTheProperty,
+                    ]}
+                    color="secondary"
+                    type={ButtonGroupTypes.Button}
+                    className={'w-full'}
                   />
                 </div>
               </div>
             )}
-
-            {haveTheTitleDeeds === true && (
-              <ImageInput<ProgrammeDetailsModel>
-                acceptedFormats={acceptedFormats}
-                label={questions?.[7].question}
-                nameProp="r4bPhoto"
-                icon="CameraIcon"
-                className={'py-4'}
-                currentImageString={r4bPhotoUrl}
-                register={programmeFormRegister}
-                overrideOnClick={() => setPhotoActionBarVisible(true)}
-                onValueChange={(imageString: string) => {
-                  setProgrammeFormValue('r4bPhoto', imageString);
-                  triggerR4bForm();
-                }}
-                disabled={Boolean(checkedquestion(questions?.[7].question))}
-              ></ImageInput>
-            )}
-
-            {unproclaimedLand === false && (
-              <Alert
-                className="mb-4"
-                type="warning"
-                title={`Apply to your municipality for a copy of the title deeds.`}
-                list={[
-                  'You will need to get a copy of the title deeds in order to complete this section.',
-                  'Once you have the title deeds, answer “Yes” to the Title Deeds question above and add a photo of the document.',
-                ]}
-              />
-            )}
-
-            {unproclaimedLand === true && (
+            {liveAtTheProperty === true && (
               <>
                 <Alert
                   className="mb-4"
                   type="info"
-                  title={`Please get a signed, stamped copy of an R4c form instead.`}
+                  title={`The owner or landlord of the property will need to fill in the “confirmation of lease” with you (form R4b).`}
                   list={[
-                    'This form can be stamped by any commissioner of oaths. This could include: police officers, South African Post Office workers, lawyers, or accountants for example.',
+                    'Fill in the form with your landlord and upload a picture of it below.',
                   ]}
                   button={
                     <Button
-                      onClick={onDownloadImageR4c}
-                      text="Download the R4c form"
+                      onClick={onDownloadImageR4b}
+                      text="Download the R4b form"
                       icon="DownloadIcon"
                       type={'filled'}
                       color={'primary'}
@@ -700,7 +544,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                 />
                 <ImageInput<ProgrammeDetailsModel>
                   acceptedFormats={acceptedFormats}
-                  label={questions?.[8].question}
+                  label={questions?.[11].question}
                   nameProp="r4bPhoto"
                   icon="CameraIcon"
                   className={'py-4'}
@@ -711,56 +555,196 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
                     setProgrammeFormValue('r4bPhoto', imageString);
                     triggerR4bForm();
                   }}
-                  disabled={Boolean(checkedquestion(questions?.[8].question))}
+                  disabled={Boolean(checkedquestion(questions?.[11].question))}
                 ></ImageInput>
               </>
             )}
-            <div>
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className={styles.button}
-                  disabled={
-                    !isValid ||
-                    Boolean(checkedquestion(questions?.[0].question))
+            {liveAtTheProperty === false && (
+              <>
+                <Alert
+                  className="mb-4"
+                  type="info"
+                  title={`The owner or landlord of the property will need to fill in the “Agreement for premises to be used for early learning programme” with you (form 4a).`}
+                  list={[
+                    'Fill in the form with your landlord and upload a picture of it below.',
+                  ]}
+                  button={
+                    <Button
+                      onClick={onDownloadImageR4a}
+                      text="Download the R4a form"
+                      icon="DownloadIcon"
+                      type={'filled'}
+                      color={'primary'}
+                      textColor={'white'}
+                    />
                   }
-                  onClick={() => {
-                    // setSectionQuestions(questions)
-                    setVisitSection(visitSection);
-                    onSubmitAndContinue();
+                />
+                <ImageInput<ProgrammeDetailsModel>
+                  acceptedFormats={acceptedFormats}
+                  label={questions?.[10].question}
+                  nameProp="r4bPhoto"
+                  icon="CameraIcon"
+                  className={'py-4'}
+                  currentImageString={r4bPhotoUrl}
+                  register={programmeFormRegister}
+                  overrideOnClick={() => setPhotoActionBarVisible(true)}
+                  onValueChange={(imageString: string) => {
+                    setProgrammeFormValue('r4bPhoto', imageString);
+                    triggerR4bForm();
                   }}
-                >
-                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                  <Typography
-                    type={'help'}
-                    text={'Save & continue'}
-                    color={'white'}
-                  />
-                </Button>
+                  disabled={Boolean(checkedquestion(questions?.[10].question))}
+                ></ImageInput>
+              </>
+            )}
+          </>
+          {haveTheTitleDeeds === false && ownTheProperty === true && (
+            <div className={'w-full'}>
+              <label className={styles.label}>{questions?.[6].question}</label>
+              <div
+                className={`mt-1 ${
+                  Boolean(checkedquestion(questions?.[6].question))
+                    ? 'pointer-events-none'
+                    : ''
+                }`}
+              >
+                <Controller
+                  name="unproclaimedLand"
+                  control={programmeFormControl}
+                  render={({ field: { onChange, value, ref } }) => (
+                    <ButtonGroup<boolean>
+                      inputRef={ref}
+                      options={yesNoOptions}
+                      onOptionSelected={(value: any) => {
+                        setProgrammeFormValue(
+                          'unproclaimedLand',
+                          value as boolean,
+                          {
+                            shouldValidate: true,
+                          }
+                        );
+                        onOptionSelected(value, 6);
+                      }}
+                      selectedOptions={value}
+                      color="secondary"
+                      type={ButtonGroupTypes.Button}
+                      className={'w-full'}
+                    />
+                  )}
+                />
               </div>
-              <div>
-                <Button
-                  type="outlined"
-                  color="primary"
-                  className={styles.button}
-                  disabled={
-                    !isValid ||
-                    Boolean(checkedquestion(questions?.[0].question))
-                  }
-                  onClick={() => {
-                    setVisitSection(visitSection);
-                    onSubmit();
-                  }}
-                >
-                  {renderIcon('SaveIcon', styles.icon)}
-                  <Typography
-                    type={'help'}
-                    text={'Save & exit'}
+            </div>
+          )}
+
+          {haveTheTitleDeeds === true && (
+            <ImageInput<ProgrammeDetailsModel>
+              acceptedFormats={acceptedFormats}
+              label={questions?.[7].question}
+              nameProp="r4bPhoto"
+              icon="CameraIcon"
+              className={'py-4'}
+              currentImageString={r4bPhotoUrl}
+              register={programmeFormRegister}
+              overrideOnClick={() => setPhotoActionBarVisible(true)}
+              onValueChange={(imageString: string) => {
+                setProgrammeFormValue('r4bPhoto', imageString);
+                triggerR4bForm();
+              }}
+              disabled={Boolean(checkedquestion(questions?.[7].question))}
+            ></ImageInput>
+          )}
+
+          {unproclaimedLand === false && (
+            <Alert
+              className="mb-4"
+              type="warning"
+              title={`Apply to your municipality for a copy of the title deeds.`}
+              list={[
+                'You will need to get a copy of the title deeds in order to complete this section.',
+                'Once you have the title deeds, answer “Yes” to the Title Deeds question above and add a photo of the document.',
+              ]}
+            />
+          )}
+
+          {unproclaimedLand === true && (
+            <>
+              <Alert
+                className="mb-4"
+                type="info"
+                title={`Please get a signed, stamped copy of an R4c form instead.`}
+                list={[
+                  'This form can be stamped by any commissioner of oaths. This could include: police officers, South African Post Office workers, lawyers, or accountants for example.',
+                ]}
+                button={
+                  <Button
+                    onClick={onDownloadImageR4c}
+                    text="Download the R4c form"
+                    icon="DownloadIcon"
+                    type={'filled'}
                     color={'primary'}
+                    textColor={'white'}
                   />
-                </Button>
-              </div>
+                }
+              />
+              <ImageInput<ProgrammeDetailsModel>
+                acceptedFormats={acceptedFormats}
+                label={questions?.[8].question}
+                nameProp="r4bPhoto"
+                icon="CameraIcon"
+                className={'py-4'}
+                currentImageString={r4bPhotoUrl}
+                register={programmeFormRegister}
+                overrideOnClick={() => setPhotoActionBarVisible(true)}
+                onValueChange={(imageString: string) => {
+                  setProgrammeFormValue('r4bPhoto', imageString);
+                  triggerR4bForm();
+                }}
+                disabled={Boolean(checkedquestion(questions?.[8].question))}
+              ></ImageInput>
+            </>
+          )}
+          <div>
+            <div>
+              <Button
+                type="filled"
+                color="primary"
+                className={styles.button}
+                disabled={
+                  !isValid || Boolean(checkedquestion(questions?.[0].question))
+                }
+                onClick={() => {
+                  // setSectionQuestions(questions)
+                  setVisitSection(visitSection);
+                  onSubmitAndContinue();
+                }}
+              >
+                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+                <Typography
+                  type={'help'}
+                  text={'Save & continue'}
+                  color={'white'}
+                />
+              </Button>
+            </div>
+            <div>
+              <Button
+                type="outlined"
+                color="primary"
+                className={styles.button}
+                disabled={
+                  !isValid || Boolean(checkedquestion(questions?.[0].question))
+                }
+                onClick={() => {
+                  setVisitSection(visitSection);
+                  onSubmit();
+                }}
+              >
+                {renderIcon('SaveIcon', styles.icon)}
+                <Typography
+                  type={'help'}
+                  text={'Save & exit'}
+                  color={'primary'}
+                />
+              </Button>
             </div>
           </div>
         </div>
@@ -777,7 +761,10 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
       <Dialog visible={showMap} position={DialogPosition.Bottom} stretch>
         <AddressMap
           onClose={() => setShowMap?.(false)}
-          onSubmit={(address) => onOptionSelected(address, 3)}
+          onSubmit={(address) => {
+            setProgrammeFormValue('programmeAddress', address);
+            onOptionSelected(address, 3);
+          }}
         />
       </Dialog>
       <Dialog
