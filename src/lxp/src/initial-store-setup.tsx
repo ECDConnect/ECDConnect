@@ -119,17 +119,15 @@ const InitialStoreSetup: React.FC = ({ children }) => {
             })
           ).unwrap())();
 
-        if (traineeCurrentVisit) {
-          (async () =>
-            await appDispatch(
-              traineeThunkActions.getTraineeVisitData({
-                visitId: traineeCurrentVisit?.id,
-              })
-            ).unwrap())();
-        }
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeVisitData({
+              visitId: traineeCurrentVisit?.id,
+            })
+          ).unwrap())();
       }
     }
-  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit]);
+  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
 
   useEffect(() => {
     if (userData) {
