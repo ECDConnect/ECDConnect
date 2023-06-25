@@ -90,6 +90,8 @@ export const Dashboard: React.FC = () => {
   );
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
+  const isRegistered = practitioner?.isRegistered;
+  const isProgress = practitioner?.progress;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -521,8 +523,11 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
-      (classroomGroup && classroomGroup.length > 0)
+      ((classroom && classroom.id) ||
+        (classroomGroup && classroomGroup.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
