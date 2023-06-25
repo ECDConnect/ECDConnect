@@ -14,5 +14,6 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationStatementsData();
         Task<bool> IntegrationAttendanceData();
         Task<bool> IntegrationUpdates();
+        Task<bool> IntegrationByTrainees();
     }
 }

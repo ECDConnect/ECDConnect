@@ -312,4 +312,16 @@ CREATE TABLE public."SmartSpaceVisit" (
 
 
 ALTER TABLE public."ClubMeeting" ADD "Name" text NULL;
+
+ALTER TABLE public."Trainee" ADD "HomeAddressLine1" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine2" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine3" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressPostalCode" text NULL;
+ALTER TABLE public."Trainee" ADD "PreferredCommunicationLanguage" text NULL;
+ALTER TABLE public."Trainee" ADD "FranchiseeAgreementAcceptedDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "SmartSpaceLicenceDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "StarterLicenceDate" timestamp NULL;
+
+
+select * from "IntegrationColumnMapping" icm where "LocalColumn" in ('AttendedBusinessSkills','AttendedChildProgress');
 	 */

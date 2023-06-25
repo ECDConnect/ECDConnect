@@ -39,6 +39,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.IntegrationUpdates();
         }
+        public async Task<bool> IntegrationByTrainees([Service] IIntegrationService integrationService)
+        {
+            return await integrationService.IntegrationByTrainees();
+        }
+        
 
         #endregion
     }
