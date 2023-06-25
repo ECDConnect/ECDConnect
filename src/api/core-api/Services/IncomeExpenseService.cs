@@ -3,6 +3,7 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -19,6 +20,7 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private readonly HierarchyEngine _hierarchyEngine;
         private readonly ISystemSetting<IncomeStatementSubmitStartOptions> _submitStartDate;
         private readonly ISystemSetting<IncomeStatementSubmitEndOptions> _submitEndDate;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
@@ -31,11 +33,13 @@ namespace ECDLink.Core.Services
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory, 
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
+            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
+            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate,
+            HierarchyEngine hierarchyEngine)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
-            _applicationUserId = "c41d21b2-8908-47a9-94ef-bc6f4ccbe484"; // _contextAccessor.HttpContext.GetUser().Id;
+            _applicationUserId = hierarchyEngine.GetAdminUserId();
             _submitStartDate = submitStartDate;
             _submitEndDate = submitEndDate;
 

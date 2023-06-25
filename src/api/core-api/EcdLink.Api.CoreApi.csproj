@@ -52,7 +52,6 @@
   </ItemGroup>
   
   <ItemGroup>
-    <Folder Include="Managers\NewFolder\" />
     <Folder Include="Middleware\" />
   </ItemGroup>
   <ProjectExtensions><VisualStudio><UserProperties appsettings_1development_1json__JsonSchema="https://download.stackhawk.com/hawk/jsonconfig/hawkconfig.json" /></VisualStudio></ProjectExtensions>

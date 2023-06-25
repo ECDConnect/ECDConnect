@@ -150,7 +150,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
-            
+            services.AddTransient<IntegrationHelperManager>();
+
 
             ConfigureJobs(services);
             
