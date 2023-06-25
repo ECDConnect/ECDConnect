@@ -1,6 +1,7 @@
 import {
   Colours,
   Divider,
+  LoadingSpinner,
   ProgressBar,
   Typography,
   renderIcon,
@@ -11,9 +12,11 @@ import {
 } from '@/store/visit/visit.selectors';
 import {
   InfantDto,
+  VisitDto,
   captureAndDownloadComponent,
   getStringFromClassNameOrId,
   toCamelCase,
+  usePrevious,
 } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import {
@@ -33,9 +36,9 @@ import P2 from '@/assets/pillar/p2.svg';
 import P3 from '@/assets/pillar/p3.svg';
 import P4 from '@/assets/pillar/p4.svg';
 import P5 from '@/assets/pillar/p5.svg';
-import PollyHappy from '@/assets/pollyHappy.svg';
-import PollyInformational from '@/assets/pollyInformational.svg';
-import PollyShock from '@/assets/pollyShock.svg';
+import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
+import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { ReactComponent as Home } from '@/assets/home.svg';
 
@@ -47,7 +50,7 @@ import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
-  getCurrentVisitSelector,
+  getInfantCurrentVisitSelector,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -87,6 +90,7 @@ interface FollowUpComponentProps {
   infant: InfantDto;
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: any;
+  isFromProgressTab?: boolean;
 }
 
 interface Status {
@@ -102,6 +106,7 @@ export const FollowUp = ({
   infant,
   walkthroughData,
   isPrint,
+  isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const appDispatch = useAppDispatch();
@@ -115,8 +120,13 @@ export const FollowUp = ({
   const [showPrintData, setShowPrintData] = useState(false);
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, visitId)
+    getInfantCurrentVisitSelector(state, visitId)
   );
+  const previousVisit = useSelector(
+    (state: RootState) =>
+      currentVisit?.orderDate &&
+      getInfantPreviousVisitSelector(state, currentVisit?.orderDate)
+  ) as VisitDto | undefined;
 
   useEffect(() => {
     if (isPrint) {
@@ -139,13 +149,27 @@ export const FollowUp = ({
   const previousPlannedVisit = useSelector((state: RootState) =>
     getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
   );
-  const previousVisit = useSelector(
+  const previousVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
   useLayoutEffect(() => {
-    // if the previousVisit is null, lets fetch the latest
-    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
+    if (isFromProgressTab && previousVisit?.id) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: previousVisit?.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId: previousVisit?.id || '',
+        })
+      );
+    } else if (
+      currentVisit &&
+      previousVisitStatus?.visitId !== currentVisit?.id
+    ) {
+      // if the previousVisit is null, lets fetch the latest
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: currentVisit.id,
@@ -157,7 +181,13 @@ export const FollowUp = ({
         })
       );
     }
-  }, [appDispatch, currentVisit, previousVisit]);
+  }, [
+    appDispatch,
+    currentVisit,
+    isFromProgressTab,
+    previousVisit?.id,
+    previousVisitStatus?.visitId,
+  ]);
 
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
@@ -194,41 +224,43 @@ export const FollowUp = ({
   const { weight, length, muac, grow } = useMemo(() => {
     const weight = {
       name: 'Weight',
-      value: walkthroughData?.weightCard.value || previousVisit?.weight,
-      color: walkthroughData?.weightCard.color || previousVisit?.weightColor,
+      value: walkthroughData?.weightCard.value || previousVisitStatus?.weight,
+      color:
+        walkthroughData?.weightCard.color || previousVisitStatus?.weightColor,
       comment:
-        walkthroughData?.weightCard.comment || previousVisit?.weightComment,
+        walkthroughData?.weightCard.comment ||
+        previousVisitStatus?.weightComment,
     };
     const length = {
       name: 'Length',
-      value: previousVisit?.length,
-      color: previousVisit?.lengthColor,
-      comment: previousVisit?.lengthComment,
+      value: previousVisitStatus?.length,
+      color: previousVisitStatus?.lengthColor,
+      comment: previousVisitStatus?.lengthComment,
     };
     const muac = {
       name: 'MUAC',
-      value: previousVisit?.muac,
-      color: previousVisit?.muacColor,
-      comment: previousVisit?.muacComment,
+      value: previousVisitStatus?.muac,
+      color: previousVisitStatus?.muacColor,
+      comment: previousVisitStatus?.muacComment,
     };
     const grow = {
-      comment: previousVisit?.growComment,
-      color: previousVisit?.growCommentColor,
+      comment: previousVisitStatus?.growComment,
+      color: previousVisitStatus?.growCommentColor,
     };
 
     return { weight, length, muac, grow };
   }, [
-    previousVisit?.growComment,
-    previousVisit?.growCommentColor,
-    previousVisit?.length,
-    previousVisit?.lengthColor,
-    previousVisit?.lengthComment,
-    previousVisit?.muac,
-    previousVisit?.muacColor,
-    previousVisit?.muacComment,
-    previousVisit?.weight,
-    previousVisit?.weightColor,
-    previousVisit?.weightComment,
+    previousVisitStatus?.growComment,
+    previousVisitStatus?.growCommentColor,
+    previousVisitStatus?.length,
+    previousVisitStatus?.lengthColor,
+    previousVisitStatus?.lengthComment,
+    previousVisitStatus?.muac,
+    previousVisitStatus?.muacColor,
+    previousVisitStatus?.muacComment,
+    previousVisitStatus?.weight,
+    previousVisitStatus?.weightColor,
+    previousVisitStatus?.weightComment,
     walkthroughData?.weightCard.color,
     walkthroughData?.weightCard.comment,
     walkthroughData?.weightCard.value,
@@ -240,7 +272,7 @@ export const FollowUp = ({
     value: number;
     message: string;
   } => {
-    switch (previousVisit?.scoreColor) {
+    switch (previousVisitStatus?.scoreColor) {
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -270,7 +302,7 @@ export const FollowUp = ({
           value: 25,
         };
     }
-  }, [caregiverName, name, previousVisit?.scoreColor]);
+  }, [caregiverName, name, previousVisitStatus?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
@@ -294,7 +326,7 @@ export const FollowUp = ({
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
 
-    const groupedData = previousVisit?.visitDataStatus?.reduce(
+    const groupedData = previousVisitStatus?.visitDataStatus?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const color = toCamelCase(currentValue?.color || '');
         if (!color) return acc;
@@ -308,10 +340,12 @@ export const FollowUp = ({
     );
 
     return groupedData;
-  }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
+  }, [previousVisitStatus?.visitDataStatus, walkthroughData]) as
+    | Status
+    | undefined;
   if (
-    !previousVisit?.visitDataStatus?.length &&
-    previousVisit?.scoreComment === 'No data available for visit' &&
+    !previousVisitStatus?.visitDataStatus?.length &&
+    previousVisitStatus?.scoreComment === 'No data available for visit' &&
     !walkthroughData
   ) {
     return (
@@ -345,7 +379,9 @@ export const FollowUp = ({
           <ProgressBar
             className="h-2"
             label={
-              walkthroughData?.progressBar.label || previousVisit?.score || ''
+              walkthroughData?.progressBar.label ||
+              previousVisitStatus?.score ||
+              ''
             }
             subLabel="score"
             value={
@@ -483,12 +519,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyHappy}
-                                className="text-successMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyHappy className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -522,12 +554,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyInformational}
-                                className="text-alertMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyInformational className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
@@ -561,12 +589,8 @@ export const FollowUp = ({
                       <>
                         <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
                           <div className="flex flex-row ">
-                            <div className="rounded-full">
-                              <img
-                                src={PollyShock}
-                                className="text-errorMain h-10 w-10"
-                                alt=""
-                              />
+                            <div>
+                              <PollyShock className="h-10 w-10" />
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">

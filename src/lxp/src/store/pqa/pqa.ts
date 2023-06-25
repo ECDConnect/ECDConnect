@@ -11,7 +11,10 @@ import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
-import { handleAddSupportVisit } from './pqa.utils';
+import {
+  handleAddReAccreditationVisit,
+  handleAddSupportVisit,
+} from './pqa.utils';
 
 const initialState: PQAState = {};
 
@@ -25,7 +28,10 @@ const pqaSlice = createSlice({
         action: PayloadAction<
           CmsVisitDataInputModelInput,
           string,
-          { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+          {
+            userId: string;
+            formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+          }
         >
       ) => {
         const { userId, formType } = action.meta;
@@ -67,6 +73,14 @@ const pqaSlice = createSlice({
               userId,
             });
             break;
+          case 're-accreditation':
+            handleAddReAccreditationVisit({
+              payload: action.payload,
+              state,
+              visitId,
+              userId,
+            });
+            break;
           default:
             if (state?.prePqaFormData?.length) {
               if (
@@ -100,7 +114,10 @@ const pqaSlice = createSlice({
       },
       prepare: (
         payload: CmsVisitDataInputModelInput,
-        meta: { userId: string; formType: 'pre-pqa' | 'pqa' | 'support-visit' }
+        meta: {
+          userId: string;
+          formType: 'pre-pqa' | 'pqa' | 'support-visit' | 're-accreditation';
+        }
       ) => ({ payload, meta }),
     },
   },

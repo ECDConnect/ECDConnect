@@ -20,6 +20,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
@@ -41,6 +42,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<License, Guid> _licenseRepo;
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
+        private IGenericRepository<VisitType, Guid> _visitTypeRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -69,6 +71,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _licenseRepo = _repoFactory.CreateGenericRepository<License>(userContext: _applicationUserId);
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
+            _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -389,8 +392,35 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             DateTime today = DateTime.Today;
 
             // Ratings
-            timeline.PQARating = _visitDataManager.GetPractitionerPQARating(userId);
-            timeline.ReAccreditationRating = _visitDataManager.GetPractitionerReAccreditationRating(userId);
+            timeline.PQARating1 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+            timeline.PQARating2 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
+            timeline.PQARating3 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+            timeline.ReAccreditationRating1 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
+            timeline.ReAccreditationRating2 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
+            timeline.ReAccreditationRating3 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
+
+            // Re-accreditation visit
+            // deadline - First PQA green rating received date + 1 year
+            if (timeline.PQARating1?.OverallRatingColor == MetricsColorEnum.Success.ToString())
+            {
+                Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+
+                if (reVisit == null)
+                {
+                    var deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddYears(1);
+
+                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                    var visitModel = new VisitModel();
+                    visitModel.VisitType = visitType;
+                    visitModel.MotherId = null;
+                    visitModel.InfantId = null;
+                    visitModel.LinkedVisitId = null;
+                    visitModel.PractitionerId = practitioner.Id;
+                    visitModel.Attended = false;
+                    visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                    _visitManager.AddVisitForPractitioner(visitModel);
+                }
+            }
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
@@ -473,6 +503,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> pqa_visits = new List<Visit>();
             List<Visit> support_visits = new List<Visit>();
             List<Visit> reaccreditation_visits = new List<Visit>();
+            List<Visit> requested_coach_visits = new List<Visit>();
+
 
             foreach (Visit visit in visits)
             {
@@ -532,11 +564,20 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     {
                         pqa_visits.Add(visit);
                     }
+                    if (visit.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit)
+                    {
+                        requested_coach_visits.Add(visit);
+                    }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1)
                     {
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
-                        reaccreditation_visits.Add(visit);
+
+                        var months = GetMonthDifference(today, visit.PlannedVisitDate);
+                        if (months <= 3)
+                        {
+                            reaccreditation_visits.Add(visit);
+                        }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
                     {
@@ -561,10 +602,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 }
             }
 
-            timeline.PrePQASiteVisits = pre_pqa_visits;
-            timeline.PQASiteVisits = pqa_visits;
-            timeline.SupportVisits = support_visits;
-            timeline.ReAccreditationVisits = reaccreditation_visits;
+            timeline.PrePQASiteVisits = pre_pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.PQASiteVisits = pqa_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.SupportVisits = support_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.ReAccreditationVisits = reaccreditation_visits.OrderBy(x => x.PlannedVisitDate).ToList();
+            timeline.RequestedCoachVisits = requested_coach_visits.OrderBy(x => x.PlannedVisitDate).ToList();
 
             return timeline;
         }
@@ -721,7 +763,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             
 
             // ThreeChildrenRegistered
-            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
+            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
             if (allChildren.Count >= 3)
             {
                 timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
@@ -737,7 +779,48 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 timeline.SSCoachVisitColor = MetricsColorEnum.Success.ToString();
                 timeline.SSCoachVisitDate = coachVisit.PlannedVisitDate;
             }
+            // SSCoachVisit deadline date 
+            // SmartSpace visit from coach = date when steps 1 though 6 are complete + 7 days (in future, this will also link to calendar functionality)
+            List<string> sections = _visitDataManager.GetVisitStatusForSSChecklist(trainee.Id);
+            List<DateTime> dates = new List<DateTime>();
+            if (coachVisit == null)
+            { 
+                if (trainee.AttendedStartUpTraining == true)
+                {
+                    dates.Add(trainee.StartDate.Value);
+                }
+                if (timeline.StarterLicenseColor == MetricsColorEnum.Success.ToString())
+                {
+                    dates.Add(timeline.StarterLicenseDate.Value);
+                }
+                if (timeline.ConsolidationMeetingColor == MetricsColorEnum.Success.ToString())
+                {
+                    dates.Add(timeline.ConsolidationMeetingDate.Value);
+                }
+                if (timeline.CommunitySupportColor == MetricsColorEnum.Success.ToString())
+                {
+                    dates.Add(timeline.CommunitySupportDate.Value);
+                }
 
+                if (sections.Count == 4 && timeline.ThreeChildrenRegisteredColor == MetricsColorEnum.Success.ToString() && dates.Count == 4)
+                {
+                    var latestDate = dates.OrderDescending().First();
+                    latestDate = latestDate.AddDays(7);
+                    timeline.SSCoachVisitDeadlineDate = latestDate;
+
+                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
+
+                    VisitModel input = new VisitModel();
+                    input.VisitType = visitType;
+                    input.Attended = false;
+                    input.CoachId = trainee.Practitioner.Coach.Id;
+                    input.TraineeId = trainee.Id;
+                    input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
+
+                    _visitManager.AddVisitForCoach(input);
+                }
+            }
+                
 
             // SignFranchiseeAgreement
             UserConsent franchiseeAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_franchisee).FirstOrDefault();
@@ -752,18 +835,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
             if (franchiseeAgreement != null && trainee.Practitioner.IsOnStipend == true)
             {
-                // Get support agreement signature
-                UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();
-                if (supportAgreement != null)
+
+                // Get support agreement data captured
+                Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
+                if (supportVisit != null)
                 {
-                    // Get support agreement data captured
-                    Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
-                    if (supportVisit != null)
-                    {
-                        timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
-                        timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
-                        timeline.SignStartUpSupportAgreementDate = supportAgreement.InsertedDate;
-                    }
+                    timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
+                    timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
+                    timeline.SignStartUpSupportAgreementDate = supportVisit.InsertedDate;
                 }
             }
 
@@ -775,6 +854,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private string GetUserIdOrGenerateNew(string userId)
         {
             return userId ?? Guid.NewGuid().ToString();
+        }
+
+        private static int GetMonthDifference(DateTime startDate, DateTime endDate)
+        {
+            int monthsApart = 12 * (startDate.Year - endDate.Year) + startDate.Month - endDate.Month;
+            return Math.Abs(monthsApart);
         }
 
     }

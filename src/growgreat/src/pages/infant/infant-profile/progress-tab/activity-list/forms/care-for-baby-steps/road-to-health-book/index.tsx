@@ -1,8 +1,8 @@
 import { Header, Label } from '@/pages/infant/infant-profile/components';
 import Infant from '@/assets/infant.svg';
 import { DynamicFormProps } from '../../dynamic-form';
-import { useEffect, useMemo, useState } from 'react';
-import { replaceBraces } from '@ecdlink/core';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { replaceBraces, usePrevious } from '@ecdlink/core';
 import {
   Alert,
   ButtonGroup,
@@ -15,14 +15,23 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import {
-  InfantRoadToHealthModel,
-  infantRoadToHealthModelSchema,
-} from '@/schemas/infant/infant-road-to-health';
+import { InfantRoadToHealthModel } from '@/schemas/infant/infant-road-to-health';
 import { useForm, useFormState } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { PhotoPrompt } from '@/components/photo-prompt/photo-prompt';
 import { MaternalRecordExample } from '@/pages/infant/components/infant-road-to-health/maternalRecordExampleDialog';
+import { useStaticData } from '@/hooks/useStaticData';
+import { FileTypeEnum, WorkflowStatusEnum } from '@ecdlink/graphql';
+import { newGuid } from '@/utils/common/uuid.utils';
+import { documentActions, documentThunkActions } from '@/store/document';
+import { Document } from '@ecdlink/core/lib';
+import { useSelector } from 'react-redux';
+import { userSelectors } from '@/store/user';
+import { useAppDispatch } from '@/store';
+import { DocumentActions } from '@/store/document/document.actions';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
+import { infantRoadToHealthModelSchema } from './infant-road-to-health';
 
 const acceptedFormats = ['jpg', 'pdf', 'jpeg'];
 
@@ -62,51 +71,141 @@ export const RoadToHeathBookStep = ({
     useState(false);
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
+  const question1 = "Does the caregiver have {client}'s Road to Health Book?";
+
+  const previousWeight = usePrevious(weightAtBirth);
+  const previousLength = usePrevious(lengthAtBirth);
+  const previousRoadToHealthBook = usePrevious(roadToHealthBook);
+  const previousHasMaternalCaseRecord = usePrevious(hasMaternalCaseRecord);
+  const previousNotRoadToHealthBook = usePrevious(notRoadToHealthBook);
+  const { getWorkflowStatusIdByEnum, getDocumentTypeIdByEnum } =
+    useStaticData();
+
+  const user = useSelector(userSelectors.getUser);
+
+  const appDispatch = useAppDispatch();
+
+  const { isRejected, isLoading } = useThunkFetchCall(
+    'documents',
+    DocumentActions.CREATE_DOCUMENT
+  );
+
+  const wasLoading = usePrevious(isLoading);
+
+  const { errorDialog } = useRequestResponseDialog();
 
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
   ];
 
-  useEffect(() => {
-    if (setEnableButton) {
-      if (
-        (hasMaternalCaseRecord && roadToHealthBook) ||
-        (!hasMaternalCaseRecord && notRoadToHealthBook)
-      ) {
-        setSectionQuestions?.([
-          {
-            visitSection,
-            questions: [
-              {
-                question: 'Weight',
-                answer: String(weightAtBirth),
-              },
-              {
-                question: 'Length',
-                answer: String(lengthAtBirth),
-              },
-              {
-                question: 'Take a photo of page ii of the Road to Health Book.',
-                answer: roadToHealthBook,
-              },
-            ],
-          },
-        ]);
-        return setEnableButton(true);
-      }
+  const onSubmitDocument = useCallback(async () => {
+    if (infant?.user?.id) {
+      const fileName = 'roadtohealthbook.png';
+      const workflowStatusId = getWorkflowStatusIdByEnum(
+        WorkflowStatusEnum.DocumentPendingVerification
+      );
+      const documentTypeId = getDocumentTypeIdByEnum(
+        FileTypeEnum.RoadToHealthBook
+      );
+      const documentInputModel: Document = {
+        id: newGuid(),
+        userId: infant?.user.id,
+        createdUserId: user?.id ?? '',
+        workflowStatusId: workflowStatusId ?? '',
+        documentTypeId: documentTypeId ?? '',
+        name: fileName,
+        fileName: fileName,
+        file: roadToHealthBook,
+        fileType: FileTypeEnum.RoadToHealthBook,
+      };
 
-      return setEnableButton(false);
+      appDispatch(documentActions.createDocument(documentInputModel));
+      await appDispatch(
+        documentThunkActions.createDocument(documentInputModel)
+      ).unwrap();
     }
+  }, [
+    appDispatch,
+    getDocumentTypeIdByEnum,
+    getWorkflowStatusIdByEnum,
+    infant,
+    roadToHealthBook,
+    user?.id,
+  ]);
+
+  const onOptionSelected = useCallback(() => {
+    if (
+      previousLength === lengthAtBirth &&
+      previousWeight === weightAtBirth &&
+      previousRoadToHealthBook === roadToHealthBook &&
+      previousHasMaternalCaseRecord === hasMaternalCaseRecord &&
+      previousNotRoadToHealthBook === notRoadToHealthBook
+    )
+      return;
+
+    if (roadToHealthBook && previousRoadToHealthBook !== roadToHealthBook) {
+      onSubmitDocument();
+    }
+
+    setSectionQuestions?.([
+      {
+        visitSection,
+        questions: [
+          {
+            question: question1,
+            answer: String(hasMaternalCaseRecord),
+          },
+          {
+            question: 'Weight',
+            answer: String(weightAtBirth),
+          },
+          {
+            question: 'Length',
+            answer: String(lengthAtBirth),
+          },
+          {
+            question: 'Take a photo of page ii of the Road to Health Book.',
+            answer: roadToHealthBook,
+          },
+        ],
+      },
+    ]);
+
+    const withDocument =
+      !!roadToHealthBook &&
+      Number(lengthAtBirth) > 0 &&
+      Number(weightAtBirth) > 0;
+    const isAllCompleted =
+      (hasMaternalCaseRecord && withDocument) ||
+      (!hasMaternalCaseRecord && !!notRoadToHealthBook);
+
+    setEnableButton?.(isAllCompleted);
   }, [
     hasMaternalCaseRecord,
     lengthAtBirth,
     notRoadToHealthBook,
+    onSubmitDocument,
+    previousHasMaternalCaseRecord,
+    previousLength,
+    previousNotRoadToHealthBook,
+    previousRoadToHealthBook,
+    previousWeight,
     roadToHealthBook,
     setEnableButton,
     setSectionQuestions,
     weightAtBirth,
   ]);
+
+  useEffect(() => {
+    if (wasLoading && isRejected) {
+      errorDialog();
+    }
+  }, [errorDialog, isRejected, wasLoading]);
+
+  useEffect(() => {
+    onOptionSelected();
+  }, [onOptionSelected]);
 
   return (
     <>
@@ -117,12 +216,7 @@ export const RoadToHeathBookStep = ({
         subTitle={name}
       />
       <div className="flex flex-col gap-4 p-4">
-        <Label
-          text={replaceBraces(
-            "Does the caregiver have {client}'s Road to Health Book?",
-            name || ''
-          )}
-        />
+        <Label text={replaceBraces(question1, name || '')} />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}

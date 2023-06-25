@@ -301,6 +301,7 @@ export const PreschoolFees: React.FC<AddIncomeState> = ({ setType }) => {
             className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
             selected={walkthroughSetDateOrNot}
             onChange={(date: Date) => {
+              date.setTime(date.getTime() - date.getTimezoneOffset() * 60000);
               setPreschoolFeesValue('date', date ? date.toISOString() : '');
             }}
             dateFormat="EEE, dd MMM yyyy"

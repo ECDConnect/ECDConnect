@@ -20,3 +20,38 @@ export const handleAddSupportVisit = ({ payload, state, userId }: AddState) => {
     ];
   }
 };
+
+export const handleAddReAccreditationVisit = ({
+  payload,
+  state,
+  visitId,
+  userId,
+}: AddState) => {
+  if (state?.reAccreditationFormData?.length) {
+    if (
+      !state.reAccreditationFormData.some(
+        (item) => item.formData.visitId === visitId
+      )
+    ) {
+      state.reAccreditationFormData = [
+        ...state.reAccreditationFormData,
+        { practitionerId: userId, formData: payload },
+      ];
+      return;
+    }
+
+    const newState = state.reAccreditationFormData.map((item) => {
+      if (item.formData.visitId === visitId) {
+        return { ...item, formData: payload };
+      }
+
+      return item;
+    });
+
+    state.reAccreditationFormData = newState;
+  } else {
+    state.reAccreditationFormData = [
+      { practitionerId: userId, formData: payload },
+    ];
+  }
+};

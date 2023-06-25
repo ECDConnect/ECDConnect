@@ -492,11 +492,7 @@ export const CoachChildProfile: React.FC = () => {
                 }}
               >
                 {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
-                <Typography
-                  color="white"
-                  text="Add to a Playgroup"
-                  type="small"
-                />
+                <Typography color="white" text="Add to a class" type="small" />
               </Button>
             }
           />

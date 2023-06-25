@@ -30,12 +30,14 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
   const appDispatch = useAppDispatch();
   const isOnline = true;
 
-  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
-  const classroomID = classroom?.id ?? currentClassroomGroup?.classroomId;
+  const classroomGroup = classroomGroups?.find((x) => x.classroomId != null);
 
-  const hasClosedAttendanceSmartStartPointsMessage = getStorageItem<boolean>(
-    LocalStorageKeys.hasClosedAttendanceSmartStartPointsMessage
-  );
+  //we pick classroomID from classroom group when user is practitioner or if class was assigned to them
+  const classroomID =
+    classroom?.id ??
+    currentClassroomGroup?.classroomId ??
+    classroomGroup?.classroomId;
+
   const [successMessageVisible, setSuccessMessageVisible] =
     useState<boolean>(true);
   const [displaySmartStartMessage, setDisplaySmartStartMessage] =
@@ -188,8 +190,9 @@ export const AttendanceReport: React.FC<AttendanceReportProps> = ({
         title={'What can you do with SmartStart points?'}
         message={'Get R5 airtime for every 500 points you earn!'}
         visible={
-          !hasClosedAttendanceSmartStartPointsMessage ??
-          displaySmartStartMessage
+          false
+          //!hasClosedAttendanceSmartStartPointsMessage ??
+          //displaySmartStartMessage
         }
         icon={'GiftIcon'}
         className={'mt-4'}

@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -10,7 +11,6 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,6 +28,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
+        private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
 
         public MotherManager(
@@ -48,6 +49,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
+            _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
         }
 
@@ -181,6 +183,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 return null;
             }
+            // EC-797 - if this infant is not the first client, we set the tab values to true;
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
             var motherUser = GetUserFromInputModel(input);
@@ -208,10 +214,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 HealthCareWorkerId = healthCareWorkerId,
                 SiteAddress = input.SiteAddress,
                 LinkedCaregiverId = input.LinkedCaregiverId,
-                ClickedVisitTab = false,
-                ClickedProgressTab = false,
-                ClickedReferralsTab = false,
-                ClickedContactTab = false
+                ClickedVisitTab = totalClients != 0,
+                ClickedProgressTab = totalClients != 0,
+                ClickedReferralsTab = totalClients != 0,
+                ClickedContactTab = totalClients != 0
             };
         }
 

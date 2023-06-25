@@ -17,12 +17,13 @@ import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import {
+  getCurrentVisitSelector,
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
-import { motherSelectors, motherThunkActions } from '@/store/mother';
+import { motherThunkActions } from '@/store/mother';
 import {
   getStringFromClassNameOrId,
   useDialog,
@@ -56,8 +57,8 @@ export const Visits: React.FC = () => {
     getMotherById(state, motherId)
   );
 
-  const motherCurrentVisit = useSelector(
-    motherSelectors.getMotherCurrentVisitSelector
+  const motherCurrentVisit = useSelector((state: RootState) =>
+    getCurrentVisitSelector(state, '')
   );
 
   const visits = useSelector(getMotherVisits);
@@ -145,7 +146,7 @@ export const Visits: React.FC = () => {
           : `By ${date.getDate()} ${date.toLocaleString('default', {
               month: 'long',
             })} ${date.getFullYear()}`,
-        ...(getType(item, isMissedVisit) === 'inProgress' && {
+        ...(isMissedVisit && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit
@@ -159,7 +160,8 @@ export const Visits: React.FC = () => {
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
           history.push(
-            `${location.pathname}/activities-form/${currentVisit?.id}`
+            `${location.pathname}/activities-form/${currentVisit?.id}`,
+            { editView: true }
           ),
       };
     });

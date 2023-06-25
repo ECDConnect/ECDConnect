@@ -125,6 +125,40 @@ export const getAllPractitioners = createAsyncThunk<
   }
 );
 
+export const getPractitionerDisplayMetrics = createAsyncThunk<
+  PractitionerDto[],
+  {},
+  ThunkApiType<RootState>
+>(
+  'getPractitionersDisplayMetrics',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+    } = getState();
+
+    try {
+      let practitionersMessageData: PractitionerDto[] | undefined;
+
+      if (userAuth?.auth_token) {
+        practitionersMessageData = await new PractitionerService(
+          userAuth?.auth_token!
+        ).displayMetrics('practitioner');
+      } else {
+        return rejectWithValue('no access token, profile check required');
+      }
+
+      if (!practitionersMessageData) {
+        return rejectWithValue('Error getting practitioner display metrics');
+      }
+
+      return practitionersMessageData;
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
 export type UpdatePractitionerRequest = {
   id: string;
   input: any;

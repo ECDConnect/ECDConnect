@@ -185,6 +185,7 @@ class InfantService {
             actualVisitDate
             plannedVisitDate
             orderDate
+            dueDate
             attended
             visitInProgress
             risk

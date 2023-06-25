@@ -147,11 +147,13 @@ export const Practitioners: React.FC = () => {
   };
 
   useEffect(() => {
-    if (isCoach) {
-      practionersDetailsFor('coach');
-    }
-    if (!isCoach) {
-      practionersDetailsFor('practitioner');
+    if (isOnline) {
+      if (isCoach) {
+        practionersDetailsFor('coach');
+      }
+      if (!isCoach) {
+        practionersDetailsFor('practitioner');
+      }
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

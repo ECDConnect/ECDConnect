@@ -248,6 +248,7 @@ class MotherService {
               actualVisitDate
               plannedVisitDate
               orderDate
+              dueDate
               attended
               visitInProgress
               id
