@@ -102,11 +102,15 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
 
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
+    const whatsapp = () => {
+      window.open(`https://wa.me/`);
+    };
+
     dialog({
       render: (onSubmit, onCancel) => {
         return (
           <CaregiverChildRegistrationModal
-            onSubmit={onSubmit}
+            onSubmit={whatsapp}
             onCancel={onCancel}
             childDetails={{
               firstName: childUser?.firstName || '',
