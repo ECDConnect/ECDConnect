@@ -5,12 +5,9 @@ using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.AspNetCore.Http;
-using Microsoft.IdentityModel.Tokens;
 using Newtonsoft.Json;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -202,13 +199,27 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             }
         }
 
-        public async Task<List<MappedTrainee>> GetTraineesByCoach(string remoteCoachId)
+        public async Task<List<MappedTrainee>> GetTraineesByCoach(string remoteCoachId, bool traineesOnly = true)
         {
             try
             {
-                string[] columns = null;
+                string[] columns = { "Guid","FullName","FirstName","Surname","IdNumber","WhatsAppNumber","SiteArea","IsFranchisee","HasStarterLicence","HasAttendedStartupTraining","HasReceivedPlaykit","HasReceivedAdminFile","HasPassedSmartSpaceVisit","IsSmartSpaceVisitValidated", "IsOnStipend","HasGivenPhotoConsent", "StarterLicenceDate","SmartSpaceLicenceDate","HomeAddressLine1","HomeAddressLine2","HomeAddressLine3","HomeAddressPostalCode","HighestEducationLevel","PreferredCommunicationLanguage","IsAdminFileAndPlaykitValidated","StipendType" };
+                //"ConsolidationMeetingDate",
+                //"FranchiseeAgreementAcceptedDate",
+                //"HasAcceptedChildAgreement",
+                //"HasAcceptedFranchiseeAgreement",
+                //"HasPropertyTitleDeed",
+                //"LivesOnProperty",
+                //"OwnsProgrammeVenue",
+                //"IsPropertyOnUnproclaimedLand",
+                //"HasAcceptedStipendAgreement",
+                //"ConsolidationMeetingStatus";
                 List<IntegrationOptionConditionEntity> optionConditions = new List<IntegrationOptionConditionEntity>();
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Status", Operator = "Equals", Value = "Active" });
+                if (traineesOnly)
+                {
+                    optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "IsFranchisee", Operator = "Equals", Value = "False" });
+                }
                 optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "Coach", Operator = "Equals", Value = remoteCoachId });
 
                 //List<IntegrationOptionRelatedEntity> relatedConditions = new List<IntegrationOptionRelatedEntity>();
