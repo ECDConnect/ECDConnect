@@ -17,6 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Clubs
         where TKey : IEquatable<TKey>
     {
         public DateTime? MeetingDate { get; set; }
+        public string Name { get; set; }
 
         public TKey ClubId { get; set; }
         [ForeignKey(nameof(ClubId))]

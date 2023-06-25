@@ -146,8 +146,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (entity == null)
                 throw new ArgumentNullException("entity");
 
-            
-
             if (Exists(entity.Id))
             {
                 entity.UpdatedBy = _userId;
@@ -178,9 +176,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
 
                 // Publish notification with correct data.
                 _domainEventService.NotifyUpdate<T>(_userId, entity);
-
-
-
             }
             else
             {

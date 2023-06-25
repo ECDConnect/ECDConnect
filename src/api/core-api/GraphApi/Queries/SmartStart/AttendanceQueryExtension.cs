@@ -47,5 +47,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
             return attendance;
         }
+
+        public IEnumerable<Attendance> GetWeeklyAttendance(
+    [Service] AttendanceTrackingRepository trackingRepository,
+    [Service] IHttpContextAccessor httpContextAccessor,
+    string userId,
+    int year,
+    int? monthOfYear,
+    int? weekOfYear)
+        {
+            var attendance = trackingRepository.GetAllAttendancesByParentId(userId)
+              .Where(x => x.Year == year);
+
+            if (monthOfYear != null)
+            {
+                attendance = attendance.Where(x => x.MonthOfYear == monthOfYear);
+            }
+
+            if (weekOfYear != null)
+            {
+                attendance = attendance.Where(x => x.WeekOfYear == weekOfYear);
+            }
+
+            if (attendance == null)
+            {
+                return Enumerable.Empty<Attendance>().AsQueryable();
+            }
+
+            return attendance;
+        }
     }
 }

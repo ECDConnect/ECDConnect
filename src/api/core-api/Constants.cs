@@ -701,6 +701,19 @@ namespace EcdLink.Api.CoreApi
             //Note Queries
             public const string SSNote = "Note";
             public const string SLNote = "Note";
+            //Club data Queries
+            public const string SSClub = "Club";
+            public const string SLClub = "Club";
+            public const string SSClubMeeting = "ClubMeeting";
+            public const string SLClubMeeting = "ClubMeeting";
+            public const string SSClubMeetingRegister = "ClubMeetingRegister";
+            public const string SLClubMeetingRegister = "ClubMeetingRegister";
+            //PQA
+            public const string SSPQA = "PQA";
+            public const string SLPQA = "PQA";
+            //SmartSpaceVisits
+            public const string SSSmartSpaceVisit = "SmartSpaceVisit";
+            public const string SLSmartSpaceVisit = "SmartSpaceVisit";
 
             //Additional API Switches
             public const string QueryAll = "/Query";
