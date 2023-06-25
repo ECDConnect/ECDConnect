@@ -103,7 +103,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
     const whatsapp = () => {
-      window.open(`https://wa.me/`);
+      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
     };
 
     dialog({

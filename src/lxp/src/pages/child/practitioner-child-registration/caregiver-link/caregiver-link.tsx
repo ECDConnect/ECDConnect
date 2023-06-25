@@ -93,7 +93,7 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
     const whatsapp = () => {
-      window.open(`https://wa.me/`);
+      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
     };
 
     await copyToClip(caregiverChildregUrl);
