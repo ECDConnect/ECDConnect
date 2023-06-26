@@ -17,7 +17,7 @@ import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
@@ -58,7 +58,7 @@ export const Visits: React.FC = () => {
   );
 
   const motherCurrentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
 
   const visits = useSelector(getMotherVisits);

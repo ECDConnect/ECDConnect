@@ -11,7 +11,7 @@ import {
 import { useSelector } from 'react-redux';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherPreviousVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
@@ -40,7 +40,7 @@ export const IntroScreen = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
   const previousPlannedVisit = useSelector((state: RootState) =>
     getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
