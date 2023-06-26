@@ -153,7 +153,12 @@ export const FollowUp = ({
 
   useLayoutEffect(() => {
     // get data from previous visit
-    if (isFromProgressTab && previousVisit?.id && previousVisit?.attended) {
+    if (
+      isFromProgressTab &&
+      previousVisit?.id &&
+      previousVisit?.attended &&
+      !currentVisit?.visitInProgress
+    ) {
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: previousVisit?.id,
