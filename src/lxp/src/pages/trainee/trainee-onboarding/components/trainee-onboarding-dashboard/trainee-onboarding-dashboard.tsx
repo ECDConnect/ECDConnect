@@ -233,7 +233,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   false,
                   isOnline,
                   // @ts-ignore
-                  undefined
+                  undefined,
+                  nextStep?.title
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />
