@@ -43,8 +43,8 @@ query ($search: String, $provinceSearch: String, $clinicSearch: String) {
 `;
 
 export const GetHealthCareWorkerByUserId = gql`
-  query GetHealthCareWorkerByUserId($id: UUID) {
-    GetHealthCareWorkerByUserId(id: $id) {
+  query GetHealthCareWorkerByUserId($userId: UUID) {
+    GetHealthCareWorkerByUserId(userId: $userId) {
       id
       user {
         firstName

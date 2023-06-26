@@ -1,5 +1,5 @@
 import FormField from '../../components/form-field/form-field';
-import { Alert, Button, DialogPosition, Typography,SA_CELL_REGEX, SA_ID_REGEX } from '@ecdlink/ui';
+import { Alert, Button, DialogPosition, Typography, SA_CELL_REGEX, SA_ID_REGEX } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -17,7 +17,19 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
-import { DeleteUser, GetHealthCareWorkerHighlights, GetTenantContext, GetUserById, ResetUserPassword, UpdateUser, UserModelInput, healthCareWorkerVisitStatus } from '@ecdlink/graphql';
+import {
+  DeleteUser,
+  GetHealthCareWorkerByUserId,
+  CreateHealthCareWorker,
+  UpdateHealthCareWorker,
+  GetHealthCareWorkerHighlights,
+  GetTenantContext,
+  GetUserById,
+  ResetUserPassword,
+  UpdateUser,
+  UserModelInput,
+  healthCareWorkerVisitStatus
+} from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -26,9 +38,13 @@ import * as yup from 'yup';
 import zxcvbn from 'zxcvbn-typescript';
 
 const userSchema = yup.object().shape({
-  email: yup.string().email().required('email number is required'),
+  email: yup.string().email().required('email address is required'),
   idNumber: yup.string().matches(SA_ID_REGEX, 'Id number is not valid').required('ID number is required'),
   phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid').required('Cellphone number is required'),
+});
+
+const adminUserschema = yup.object().shape({
+  email: yup.string().email().required('email address is required')
 });
 
 
@@ -38,39 +54,51 @@ export function ViewUser(props: any) {
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const [updateCHW, { loading: chwLoading }] = useMutation(UpdateUser);
+
   let userId = localStorage.getItem("selectedUser");
   const [resetUserPassword] = useMutation(ResetUserPassword);
   const { data } = useQuery(GetTenantContext, {
     fetchPolicy: 'cache-and-network',
   });
 
-  console.log(">>>>", props.location.state?.component)
 
-  const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
+  const [getChwById, { data: chwData, refetch }] = useLazyQuery(GetHealthCareWorkerByUserId, {
     variables: {
       userId: '',
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
+
+  const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
+    variables: {
+      userId: '',
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
   const [getHealthCareWorkerHighlights, { data: healthCareWorkerHighlightsData }] = useLazyQuery(GetHealthCareWorkerHighlights, {
     variables: {
       userId: '',
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
 
   const [getHealthCareWorkerVisitStatus, { data: healthCareWorkerVisitStatusData }] = useLazyQuery(healthCareWorkerVisitStatus, {
     variables: {
       userId: '',
     },
-    fetchPolicy: 'network-only',
+    fetchPolicy: 'cache-and-network',
   });
+
+  //updateCHW
 
 
   useEffect(() => {
     getUserById({ variables: { userId: props.location.state.userId ?? userId } });
     getHealthCareWorkerHighlights({ variables: { userId: props.location.state.userId ?? userId } });
     getHealthCareWorkerVisitStatus({ variables: { userId: props.location.state.userId ?? userId } });
+    getChwById({ variables: { userId: props.location.state.userId ?? userId } })
   }, [userId])
 
   const { hasPermission } = useUser();
@@ -88,10 +116,9 @@ export function ViewUser(props: any) {
     setValue: userDetailSetValue,
     formState: userDetailFormState,
     getValues: userDetailGetValues,
-    control,
     handleSubmit,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(props.location.state?.component === 'administrator' ? adminUserschema : userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -113,8 +140,6 @@ export function ViewUser(props: any) {
   const { errors: detailFormErrors, isValid: isDetailValid } =
     userDetailFormState;
 
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
 
   const passwordForm = passwordGetValues();
 
@@ -140,20 +165,32 @@ export function ViewUser(props: any) {
     const userDetailForm = userDetailGetValues();
 
     const userInputModel: UserModelInput = {
-      phoneNumber: userDetailForm.phoneNumber,
-      idNumber: userDetailForm.idNumber,
+      phoneNumber: userDetailForm?.phoneNumber,
+      idNumber: userDetailForm?.idNumber,
+      email: userDetailForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null
     };
-
+    if (props.location.state?.component === 'chw') {
+      console.log(">>>>", props.location.state?.component)
+      // await updateCHW({
+      //   variables: {
+      //     id: userData?.userById.id,
+      //     input: { ...userInputModel },
+      //   },
+      // });
+      // setNotification({
+      //   title: 'Successfully Updated CHW!',
+      //   variant: NOTIFICATION.SUCCESS,
+      // });
+    }
     await updateUser({
       variables: {
         id: userData?.userById.id,
         input: { ...userInputModel },
-      },
+      }
     });
-
     setNotification({
       title: 'Successfully Updated User!',
       variant: NOTIFICATION.SUCCESS,
@@ -172,17 +209,14 @@ export function ViewUser(props: any) {
   const onSave = async () => {
     let passwordChange = false;
     let internalIsPasswordValid = true;
-    let isValid = isUserDetailValid;
 
     if (passwordForm.password.length > 0) {
       passwordChange = true;
       internalIsPasswordValid = isPasswordValid;
     }
 
-    // if (isValid && internalIsPasswordValid) {
-
     await saveUser(passwordChange);
-    // }
+
   };
 
   //check password strength
@@ -191,7 +225,6 @@ export function ViewUser(props: any) {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
 
-  // console.log(isValid);
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <div className='justify-self col-end-3 '>
@@ -224,14 +257,14 @@ export function ViewUser(props: any) {
                   className="h-40 w-40 mr-6 flex-shrink-0 self-center rounded-full md:justify-self-start"
                 />
                 <div className='sm: pt-12'>
-                  <p className='text-3xl font-normal '>{userData?.userById?.firstName + ' ' + userData?.userById?.surname}</p>
+                  <p className='text-3xl font-normal text-black '>{userData?.userById?.fullName}</p>
                   <div className="flex flex-row pt-4">
                     {userData && userData?.userById.roles.map((i: any, index: number) => {
                       return <div
                         key={i.id}
                         className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white  flex justify-center flex-row"
                       >
-                        <p className='text-16'> {i.name}</p>
+                        <p className='text-16'> {i.name === 'Health Care Worker' ? 'CHW' : i.name}</p>
                       </div>
                     })}
 
@@ -257,158 +290,191 @@ export function ViewUser(props: any) {
           <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
             {/* Start main area*/}
             <h3 className='pb-2 border-b-4 border-dashed text-xl '> Personal information </h3>
-
-            {
-              editActive && props.location.state?.component === 'chw' ?
-                <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
-                  <div className="space-y-0">
-                    <p className='text-md py-2 mt-4'>Which kind of identification do you have for {userData?.userById?.firstName}?</p>
-                    <div className="flex flex-row">
-                      {<Button
-                        className={' w-4/12 rounded-md mr-0'}
-                        type="filled"
-                        isLoading={loading}
-                        color="tertiary"
-                        onClick={() => { }}
-                      >
-                        <Typography
-                          type="help"
-                          color="white"
-                          text={'ID number'}
-                        ></Typography>
-                      </Button>}
-                      {<Button
-                        className={' w-4/12 rounded-md ml-2'}
-                        type="filled"
-                        isLoading={loading}
-                        color="tertiaryAccent1"
-                        onClick={() => { }}
-                      >
-                        <Typography
-                          type="help"
+            <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
+              {
+                editActive && props.location.state?.component === 'chw' ?
+                  <>
+                    <div className="space-y-0">
+                      <p className='text-md py-2 mt-4'>Which kind of identification do you have for {userData?.userById?.firstName}?</p>
+                      <div className="flex flex-row">
+                        {<Button
+                          className={' w-4/12 rounded-md mr-0'}
+                          type="filled"
+                          isLoading={loading}
                           color="tertiary"
-                          text={'Passport number'}
-                        ></Typography>
-                      </Button>}
-                    </div>
+                          onClick={() => { }}
+                        >
+                          <Typography
+                            type="help"
+                            color="white"
+                            text={'ID number'}
+                          ></Typography>
+                        </Button>}
+                        {<Button
+                          className={' w-4/12 rounded-md ml-2'}
+                          type="filled"
+                          isLoading={loading}
+                          color="tertiaryAccent1"
+                          onClick={() => { }}
+                        >
+                          <Typography
+                            type="help"
+                            color="tertiary"
+                            text={'Passport number'}
+                          ></Typography>
+                        </Button>}
+                      </div>
 
-                    <div className="grid grid-cols-1 ">
-                      <div className="my-4 sm:col-span-3 w-6/12">
-                        <FormField
-                          label={'ID number *'}
-                          nameProp={'idNumber'}
-                          register={userDetailRegister}
-                          error={detailFormErrors.idNumber?.message}
-                          defaultValue={userData?.userById?.idNumber}
+                      <div className="grid grid-cols-1 ">
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'ID number *'}
+                            nameProp={'idNumber'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.idNumber?.message}
+                            defaultValue={userData?.userById?.idNumber}
 
-                        />
-                      </div>
-                      <div className="my-4 sm:col-span-3 w-6/12">
-                        <FormField
-                          label={'Cellphone number *'}
-                          nameProp={'phoneNumber'}
-                          register={userDetailRegister}
-                          error={detailFormErrors.phoneNumber?.message}
-                          defaultValue={userData?.userById?.phoneNumber}
-                        />
-                      </div>
-                      <div className="my-4 sm:col-span-3 w-6/12">
-                        <FormField
-                          label={'Password *'}
-                          nameProp={'password'}
-                          register={passwordRegister}
-                          type="password"
-                          error={passwordFormErrors.password?.message}
-                          showPassword={showPassword}
-                          togglePasswordVisibility={togglePasswordVisibility}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  {<Button
-                    className={'mt-3 w-4/12 rounded-md '}
-                    type="filled"
-                    isLoading={loading}
-                    color="secondary"
-                    disabled={!isUserDetailValid}
-                    onClick={handleSubmit(onSave)}
-                  >
-                    <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Save Changes'}
-                    ></Typography>
-                  </Button>}
-                </form> : (editActive && props.location.state?.component === 'administrators') ? <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
-                  <div className="space-y-0">
-                    <div className="grid grid-cols-1 ">
-
-                      <div className="my-4 sm:col-span-3 w-6/12">
-                        <FormField
-                          label={'Email *'}
-                          nameProp={'email'}
-                          register={userDetailRegister}
-                          error={detailFormErrors.email?.message}
-                          defaultValue={userData?.email?.phoneNumber}
-                        />
-                      </div>
-                      <div className="my-4 sm:col-span-3 w-6/12">
-                        <FormField
-                          label={'Password *'}
-                          nameProp={'password'}
-                          register={passwordRegister}
-                          type="password"
-                          error={passwordFormErrors.password?.message}
-                          showPassword={showPassword}
-                          togglePasswordVisibility={togglePasswordVisibility}
-                        />
-                      </div>
-                      <div className="-mx-1 flex w-6/12">
-                        {[...Array(4)].map((_, i) => (
-                          <div className="w-1/4 px-1" key={i}>
-                            <div
-                              className={`h-2 rounded-xl transition-colors ${i < passwordScore
-                                ? passwordScore <= 2
-                                  ? 'bg-red-400'
-                                  : passwordScore <= 3
-                                    ? 'bg-yellow-400'
-                                    : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                : 'bg-gray-200'
-                                }`}
-                            ></div>
+                          />
+                        </div>
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Cellphone number *'}
+                            nameProp={'phoneNumber'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.phoneNumber?.message}
+                            defaultValue={userData?.userById?.phoneNumber}
+                          />
+                        </div>
+                        {
+                          props.location.state?.component !== 'chw' &&
+                          <div className="my-4 sm:col-span-3 w-6/12">
+                            <FormField
+                              label={'Email *'}
+                              nameProp={'email'}
+                              register={userDetailRegister}
+                              error={detailFormErrors.email?.message}
+                              defaultValue={userData?.email?.phoneNumber}
+                            />
                           </div>
-                        ))}
+                        }
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Password *'}
+                            nameProp={'password'}
+                            register={passwordRegister}
+                            type="password"
+                            error={passwordFormErrors.password?.message}
+                            showPassword={showPassword}
+                            togglePasswordVisibility={togglePasswordVisibility}
+                          />
+                        </div>
+                        <div className="-mx-1 flex w-6/12">
+                          {[...Array(4)].map((_, i) => (
+                            <div className="w-1/4 px-1" key={i}>
+                              <div
+                                className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                  ? passwordScore <= 2
+                                    ? 'bg-red-400'
+                                    : passwordScore <= 3
+                                      ? 'bg-yellow-400'
+                                      : passwordScore <= 4
+                                        ? 'bg-green-500'
+                                        : 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                                  }`}
+                              ></div>
+                            </div>
+                          ))}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                  {<Button
-                    className={'mt-3 w-4/12 rounded-md '}
-                    type="filled"
-                    isLoading={loading}
-                    color="secondary"
-                    disabled={!isUserDetailValid}
-                    onClick={handleSubmit(onSave)}
-                  >
-                    <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Save Changes'}
-                    ></Typography>
-                  </Button>}
-                </form> :
-                  props.location.state?.component === 'administrators' ? <div className='flex flex-row justify-start pt-4 text-current'>
-                    <p className='text-xl px-4'>Email: {userData?.userById?.email}</p>
-                  </div> : <div className='flex flex-row justify-start pt-4 text-current'>
-                    <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
-                    <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
-                    <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
-                  </div>
 
-            }
+                    <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      // disabled={!isDetailValid}
+                      onClick={handleSubmit(onSave)}
+                    >
+                      <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes'}
+                      ></Typography>
+                    </Button>
+
+                  </> : (editActive && props.location.state?.component === 'administrators') ? <>
+                    <div className="space-y-0">
+                      <div className="grid grid-cols-1 ">
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Email *'}
+                            nameProp={'email'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.email?.message}
+                            defaultValue={userData?.email?.phoneNumber}
+                          />
+                        </div>
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Password *'}
+                            nameProp={'password'}
+                            register={passwordRegister}
+                            type="password"
+                            error={passwordFormErrors.password?.message}
+                            showPassword={showPassword}
+                            togglePasswordVisibility={togglePasswordVisibility}
+                          />
+                        </div>
+                        <div className="-mx-1 flex w-6/12">
+                          {[...Array(4)].map((_, i) => (
+                            <div className="w-1/4 px-1" key={i}>
+                              <div
+                                className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                  ? passwordScore <= 2
+                                    ? 'bg-red-400'
+                                    : passwordScore <= 3
+                                      ? 'bg-yellow-400'
+                                      : passwordScore <= 4
+                                        ? 'bg-green-500'
+                                        : 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                                  }`}
+                              ></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      // disabled={!isDetailValid}
+                      onClick={handleSubmit(onSave)}
+                    >
+                      <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes'}
+                      ></Typography>
+                    </Button>
+
+                  </> :
+                    props.location.state?.component === 'administrators' ? <div className='flex flex-row justify-start pt-4 text-current'>
+                      <p className='text-xl px-4'>Email: {userData?.userById?.email}</p>
+                    </div> : <div className='flex flex-row justify-start pt-4 text-current'>
+                      <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
+                      <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
+                      <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
+                    </div>
+              }
+            </form>
             {/* End main area */}
           </div>
           <div className='flex justify-end p-4'>
@@ -448,7 +514,7 @@ export function ViewUser(props: any) {
         {
           data &&
           data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
+          data.tenantContext.applicationName === 'GrowGreat' && props.location.state?.component !== 'administrators'
           &&
           <div className="m-10 my-6 mt-4 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-secondary  border-l-8 border-2 border-secondary">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -459,8 +525,6 @@ export function ViewUser(props: any) {
                 <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">44</span>children</p>
                 <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">90</span>clients visited</p>
                 <p className='text-xl px-4  py-2'><span className="text-3xl  p-2">24</span>folders opened</p>
-
-
               </div>
               {/* End main area */}
             </div>
@@ -469,6 +533,7 @@ export function ViewUser(props: any) {
           data &&
           data.tenantContext &&
           data.tenantContext.applicationName === 'GrowGreat'
+          && props.location.state?.component !== 'administrators'
           &&
           <div className='flex flex-row'>
 
@@ -517,6 +582,7 @@ export function ViewUser(props: any) {
           data &&
           data.tenantContext &&
           data.tenantContext.applicationName === 'GrowGreat'
+          && props.location.state?.component !== 'administrators'
           &&
           <div className="m-10  mb-10 rounded-2xl bg-white  lg:min-w-0 lg:flex-1 border-l-successMain  border-l-8 border-2 border-successMain">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
@@ -531,9 +597,9 @@ export function ViewUser(props: any) {
                 <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekNewClients}</span>This Week New Clients</p>
                 <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekGrowthMonitored}</span>This Week Growth Monitored</p>
                 <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalThisWeekFamilyVisits}</span>This Week Family Visits</p>
-                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p>
-                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p>
-                <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p>
+                {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p> */}
+                {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p> */}
+                {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p> */}
               </div>
 
               {/* End main area */}
@@ -542,56 +608,62 @@ export function ViewUser(props: any) {
         }
         <div className="pl-4 flex flex-row w-full justify-between">
 
-          {<Button
-            className={'mt-3 w-4/12 rounded-md'}
-            type="outlined"
-            // isLoading={isLoading}
-            color="tertiary"
-            onClick={
-              () => {
-                dialog({
-                  // blocking: true,
-                  position: DialogPosition.Middle,
-                  render: (onSubmit: any, onCancel: any) => (
-                    <AlertModal
-                      title="Deactivate Administrator"
-                      message={`${userData?.userById?.firstName} will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
-                      onCancel={onCancel}
-                      onSubmit={() => {
-                        onSubmit();
-                        deleteUser({
-                          variables: {
-                            id: userId,
-                          },
-                        })
-                          .then((response: any) => {
-                            if (response.data.deleteUser) {
-                              setNotification({
-                                title: 'Successfully Deactivated User!',
-                                variant: NOTIFICATION.SUCCESS,
-                              });
-                            }
-                          })
-                          .catch((error) => {
-                            console.log(error);
-                          });
-                      }}
-                    />
-                  ),
-                });
-              }
 
-
-            }
-          >
-            <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
-            <Typography
-              type="help"
+          <div className='flex justify-end p-4'>
+            {<Button
+              className={'mt-3 w-4/12 rounded-md'}
+              type="outlined"
+              // isLoading={isLoading}
               color="tertiary"
-              text={'Deactivate User'}
-            ></Typography>
-          </Button>}
+              onClick={
+                () => {
+                  dialog({
+                    // blocking: true,
+                    position: DialogPosition.Middle,
+                    render: (onSubmit: any, onCancel: any) => (
+                      <AlertModal
+                        title="Deactivate Administrator"
+                        message={`${userData?.userById?.firstName} will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+                        onCancel={onCancel}
+                        onSubmit={() => {
+                          onSubmit();
+                          deleteUser({
+                            variables: {
+                              id: userId,
+                            },
+                          })
+                            .then((response: any) => {
+                              if (response.data.deleteUser) {
+                                setNotification({
+                                  title: 'Successfully Deactivated User!',
+                                  variant: NOTIFICATION.SUCCESS,
+                                });
+                              }
+                            })
+                            .catch((error) => {
+                              console.log(error);
+                            });
+                        }}
+                      />
+                    ),
+                  });
+                }
 
+
+              }
+            >
+              <TrashIcon color='tertiary' className='w-6 h-6 mr-6'> </TrashIcon>
+              <Typography
+                type="help"
+                color="tertiary"
+                text={'Deactivate User'}
+              ></Typography>
+            </Button>}
+            {props.location.state?.component !== 'chw' && <button onClick={() => setEditActive(!editActive)} id="dropdownHoverButton"
+              className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary w-1/ text-center focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm py-2.5 px-12 inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
+              type="button"> Resend CHW Connect invitation
+            </button>}
+          </div>
           <p className="text-gray-500 mt-3 text-sm">User added to {data?.tenantContext.applicationName}: {userData?.userById?.StartDate}</p>
 
         </div>

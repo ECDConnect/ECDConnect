@@ -23,7 +23,7 @@ export function Users() {
           href: '/users/all-roles',
         },
         {
-          name: "CHW's",
+          name: "CHWs",
           href: '/users/health-care-worker',
         },
         {
