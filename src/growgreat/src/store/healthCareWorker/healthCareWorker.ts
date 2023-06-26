@@ -4,6 +4,7 @@ import localForage from 'localforage';
 import {
   getHealthCareWorkerByUserId,
   updateHealthCareWorkerById,
+  updateHealthCareWorkerTabs,
 } from './healthCareWorker.actions';
 import { HealthCareWorkerState } from './healthCareWorker.types';
 
@@ -34,6 +35,9 @@ const healthCareWorkerSlice = createSlice({
       state.healthCareWorker = action.payload;
     });
     builder.addCase(updateHealthCareWorkerById.fulfilled, (state, action) => {
+      state.healthCareWorker = action.payload;
+    });
+    builder.addCase(updateHealthCareWorkerTabs.fulfilled, (state, action) => {
       state.healthCareWorker = action.payload;
     });
   },
