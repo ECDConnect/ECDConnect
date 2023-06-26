@@ -57,7 +57,6 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
       communitySupportGetValues().haveSupport
     );
 
-    history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
     setNotificationStep('');
   };
 
