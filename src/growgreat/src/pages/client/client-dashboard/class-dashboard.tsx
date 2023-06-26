@@ -119,20 +119,20 @@ export const ClassDashboard: React.FC = () => {
     displayExtraComponent?: boolean;
   } => {
     switch (state?.activeTabIndex ?? 0) {
-      case CLIENT_TABS.VISIT:
-        return {
-          steps: visitSteps,
-          infoPageTitle: 'Visits',
-          infoPageSection: 'visits tab',
-          hideJoyRideBorders: walkthroughStepIndex === 2,
-        };
-      case CLIENT_TABS.HIGHLIGHTS:
-        return {
-          steps: highlightSteps,
-          infoPageTitle: 'Highlights',
-          infoPageSection: 'highlights tab',
-          hideJoyRideBorders: walkthroughStepIndex === 2,
-        };
+      // case CLIENT_TABS.VISIT:
+      //   return {
+      //     steps: visitSteps,
+      //     infoPageTitle: 'Visits',
+      //     infoPageSection: 'visits tab',
+      //     hideJoyRideBorders: walkthroughStepIndex === 2,
+      //   };
+      // case CLIENT_TABS.HIGHLIGHTS:
+      //   return {
+      //     steps: highlightSteps,
+      //     infoPageTitle: 'Highlights',
+      //     infoPageSection: 'highlights tab',
+      //     hideJoyRideBorders: walkthroughStepIndex === 2,
+      //   };
       default:
         var _clientSteps = clientSteps;
         var _walkthroughStepIndex = 2;
@@ -183,18 +183,18 @@ export const ClassDashboard: React.FC = () => {
     };
 
     switch (state?.activeTabIndex) {
-      case CLIENT_TABS.VISIT:
-        input = {
-          ...input,
-          clickedDashboardVisitsTab: true,
-        };
-        break;
-      case CLIENT_TABS.HIGHLIGHTS:
-        input = {
-          ...input,
-          clickedDashboardHighlightsTab: true,
-        };
-        break;
+      // case CLIENT_TABS.VISIT:
+      //   input = {
+      //     ...input,
+      //     clickedDashboardVisitsTab: true,
+      //   };
+      //   break;
+      // case CLIENT_TABS.HIGHLIGHTS:
+      //   input = {
+      //     ...input,
+      //     clickedDashboardHighlightsTab: true,
+      //   };
+      //   break;
       default:
         input = {
           ...input,
@@ -213,22 +213,22 @@ export const ClassDashboard: React.FC = () => {
   const handleWelcomeDialog = useCallback(() => {
     const currentTab = state?.activeTabIndex ?? 0;
     if (
-      (currentTab === CLIENT_TABS.VISIT &&
-        !healthCareWorker?.clickedDashboardVisitsTab) ||
-      (currentTab === CLIENT_TABS.CLIENT &&
-        !healthCareWorker?.clickedDashboardClientsTab) ||
-      (currentTab === CLIENT_TABS.HIGHLIGHTS &&
-        !healthCareWorker?.clickedDashboardHighlightsTab)
+      // (currentTab === CLIENT_TABS.VISIT &&
+      //   !healthCareWorker?.clickedDashboardVisitsTab) ||
+      currentTab === CLIENT_TABS.CLIENT &&
+      !healthCareWorker?.clickedDashboardClientsTab
+      // (currentTab === CLIENT_TABS.HIGHLIGHTS &&
+      //   !healthCareWorker?.clickedDashboardHighlightsTab)
     ) {
       let tabName = '';
 
       switch (currentTab) {
-        case CLIENT_TABS.VISIT:
-          tabName = 'visits';
-          break;
-        case CLIENT_TABS.HIGHLIGHTS:
-          tabName = 'highlights';
-          break;
+        // case CLIENT_TABS.VISIT:
+        //   tabName = 'visits';
+        //   break;
+        // case CLIENT_TABS.HIGHLIGHTS:
+        //   tabName = 'highlights';
+        //   break;
         default:
           tabName = 'clients';
           break;
@@ -361,7 +361,7 @@ export const ClassDashboard: React.FC = () => {
         subTitle={date}
         color={'primary'}
         onBack={() => backToDashboard()}
-        displayHelp
+        displayHelp={state?.activeTabIndex === 0 ? true : false}
         onHelp={() => setIsInfoPage(true)}
         displayOffline={!isOnline}
       >
@@ -387,7 +387,6 @@ export const ClassDashboard: React.FC = () => {
           />
         ) : (
           <TabList
-            //id={getStringFromClassNameOrId(steps[0].target)}
             id="walkthrough-dashboard-client-step-1"
             className="bg-uiBg"
             tabItems={tabItems}
