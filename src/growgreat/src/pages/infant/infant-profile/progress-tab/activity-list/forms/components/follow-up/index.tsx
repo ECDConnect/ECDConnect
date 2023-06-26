@@ -216,6 +216,7 @@ export const FollowUp = ({
     []
   );
 
+  console.log({ previousVisitStatus });
   const { weight, length, muac, grow } = useMemo(() => {
     const weight = {
       name: 'Weight',
@@ -417,7 +418,7 @@ export const FollowUp = ({
             }
           />
         )}
-        {[weight, length, muac].map((item) => {
+        {[weight, length, muac].map((item, index) => {
           if (!item.value) return <Fragment key={item.name} />;
 
           return (
@@ -426,9 +427,10 @@ export const FollowUp = ({
               className="my-4"
               label={item.name}
               value={item.value || ''}
-              date={previousPlannedVisit?.plannedVisitDate || ''}
+              date={previousPlannedVisit?.orderDate || ''}
               message={item.comment || ''}
               color={item.color as CardProps['color']}
+              measure={index === 0 ? 'kg' : 'cm'}
             />
           );
         })}
