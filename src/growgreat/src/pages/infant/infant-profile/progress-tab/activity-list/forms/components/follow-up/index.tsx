@@ -216,7 +216,6 @@ export const FollowUp = ({
     []
   );
 
-  console.log({ previousVisitStatus });
   const { weight, length, muac, grow } = useMemo(() => {
     const weight = {
       name: 'Weight',
