@@ -1026,10 +1026,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // Green progress
                     comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
-
-                    // Green G4 
-                    comment = firstName + Constants.GGSettings.growing_well;
-                    AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
@@ -1044,6 +1040,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add green item to G9 client summary: ""Themba is growing well""
                 comment = firstName + Constants.GGSettings.growing_well;
                 AddVisitDataStatus(q3, comment, _green, _G9, Constants.GGSettings.growth_section, false);
+
+                // Green G4 
+                comment = firstName + Constants.GGSettings.growing_well;
+                AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
             } else {
 
                 if (wColor == _red || lColor == _red || mColor == _red) {
@@ -1312,7 +1312,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                 }
 
-                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (recordsForAge != null)
                 {
@@ -1351,7 +1351,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else
             {
                 string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
-                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
                 if (recordsForHeight != null)
                 {
