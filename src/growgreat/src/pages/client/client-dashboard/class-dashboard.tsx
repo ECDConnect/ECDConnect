@@ -40,11 +40,9 @@ import ROUTES from '@/routes/routes';
 import { Tooltip } from '@/components/walkthrough/tooltip';
 import { getJoyrideStyles } from '@/components/walkthrough/styles';
 import { clientSteps } from '../clients-tab/walkthrough/steps';
-import { highlightSteps } from '../highlights-tab/walkthrough/steps';
 import { getInfants } from '@/store/infant/infant.selectors';
 import { getMothers } from '@/store/mother/mother.selectors';
 import { multipleClientsSteps } from '../clients-tab/walkthrough/steps_multiple_clients';
-import { visitSteps } from '../visits-tab/walkthrough/steps';
 
 export const CLIENT_TABS = {
   CLIENT: 0,
