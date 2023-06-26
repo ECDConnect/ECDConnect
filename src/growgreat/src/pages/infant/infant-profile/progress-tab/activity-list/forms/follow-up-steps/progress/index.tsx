@@ -66,7 +66,7 @@ export const ProgressStep = ({ infant, setEnableButton }: DynamicFormProps) => {
         icon="ChartBarIcon"
         iconHexBackgroundColor={activitiesColours.other.primaryColor}
         title="Progress"
-        subTitle={`${caregiverName} & ${name}`}
+        subTitle={`${caregiverName ? `${caregiverName} & ` : ''}${name}`}
       />
       <div className="p-4">
         <TipCard

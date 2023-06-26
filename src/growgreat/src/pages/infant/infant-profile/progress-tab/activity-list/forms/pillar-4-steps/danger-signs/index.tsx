@@ -32,6 +32,7 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const dangerSignsQuestion = `Tick the danger signs {client} is experiencing:`;
+export const dangerSignsVisitSection = 'Danger signs';
 
 export const DangerSignsStep = ({
   infant,
@@ -59,8 +60,6 @@ export const DangerSignsStep = ({
   const answers = question.answer as string[];
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-
-  const visitSection = 'Danger signs';
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -107,7 +106,7 @@ export const DangerSignsStep = ({
         setEnableButton?.(true);
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsVisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -119,7 +118,7 @@ export const DangerSignsStep = ({
       setAnswers(updatedQuestion);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsVisitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -176,7 +175,7 @@ export const DangerSignsStep = ({
         <Translations
           toTranslate={currentOption}
           onClose={() => setIsTip && setIsTip(false)}
-          section={visitSection}
+          section={dangerSignsVisitSection}
         />
       </Dialog>
     );
@@ -186,7 +185,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         customIcon={P4}
-        title={visitSection}
+        title={dangerSignsVisitSection}
         subTitle="Check for these signs"
         iconHexBackgroundColor={activitiesColours.pillar4.primaryColor}
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
