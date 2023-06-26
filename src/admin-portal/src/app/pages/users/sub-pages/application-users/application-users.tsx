@@ -1,6 +1,11 @@
-import { useQuery } from '@apollo/client';
-import { useDialog, UserDto } from '@ecdlink/core';
-import { GetUserById, UserList } from '@ecdlink/graphql';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
+  UserDto,
+} from '@ecdlink/core';
+import { GetUserById, SendInviteToApplication, UserList } from '@ecdlink/graphql';
 import { Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -16,6 +21,22 @@ export default function ApplicationUsers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [sendInviteToApplication, {loading: invitationLoading}] = useMutation(SendInviteToApplication);
+  const { setNotification } = useNotifications();
+
+  
+
+  const resendInvitation = async (userId: string)=>{
+    await sendInviteToApplication({
+      variables: {
+        userId: userId,
+      },
+    });
+    setNotification({
+      title: 'Successfully Sent User an Invite!',
+      variant: NOTIFICATION.SUCCESS,
+    });
+  }
 
   const toggleDropdown = () => {
     setIsDropdownVisible(!isDropdownVisible);
@@ -225,7 +246,8 @@ export default function ApplicationUsers() {
                   rows={tableData}
                   searchInput={searchValue}
                   urlRow={'/view-user/'}
-                  component={'all-users'}
+                  component={'administrators'}
+
                 />
               </div>
             </div>
@@ -237,3 +259,7 @@ export default function ApplicationUsers() {
     return <ContentLoader />;
   }
 }
+function saveRoles(userId: any) {
+  throw new Error('Function not implemented.');
+}
+

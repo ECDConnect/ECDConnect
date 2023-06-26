@@ -63,7 +63,8 @@ export default function HealthCareWorkers() {
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
     variables: {
       search: "",
-      provinceSearch: ""
+      provinceSearch: "",
+      clinicSearch: ""
     },
     fetchPolicy: 'network-only',
   });
@@ -71,12 +72,14 @@ export default function HealthCareWorkers() {
   useEffect(() => {
     getAllHealthCareWorkers({
       variables: {
-        search: searchValue ,
-        provinceSearch: provinceFilter === '' ? null : provinceFilter
+        search: searchValue,
+        provinceSearch: provinceFilter,
+        clinicSearch: clinicFilter
+
       }
     });
 
-  }, [provinceFilter, searchValue ])
+  }, [provinceFilter, searchValue, clinicFilter])
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -156,7 +159,7 @@ export default function HealthCareWorkers() {
   const mapUserTableItem = (item: any) => {
     return {
       ...item,
-      fullName: `${item.user?.firstName} ${item.user?.surname}`,
+      fullName: `${item.user?.fullName}`,
       isActive: item.user?.isActive,
       idNumber: item.user?.idNumber,
       _view: undefined,
@@ -387,21 +390,19 @@ export default function HealthCareWorkers() {
               </div>
 
               {hasPermission(PermissionEnum.create_user) && (
-                <div className="flex flex-col ">
+                <div className="flex flex-col  ">
                   <div className="">
-                    <Menu as="div" className=" inline-block text-right">
+                    <Menu as="div" className=" inline-block text-right w-6/12">
                       {({ open }) => (
                         <>
                           <div>
                             <Menu.Button
                               type="button"
-                              className="bg-primary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                              className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                             >
-                              <UploadIcon
-                                className="h-5 w-5 "
-                                aria-hidden="true"
-                              />
-                              <span className="">Upload</span>
+                              <PlusIcon className="mr-4 h-4 w-4"> </PlusIcon>
+
+                              <span className="">Add CHWs</span>
                             </Menu.Button>
                           </div>
 
@@ -446,32 +447,8 @@ export default function HealthCareWorkers() {
                                     Upload Practitioners
                                   </div>
                                 </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() => UploadContentImport()}
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Import Users
-                                  </div>
-                                </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() =>
-                                      UploadContentImportChildren()
-                                    }
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Import Children Classes
-                                  </div>
-                                </Menu.Item>
+
+
                               </div>
                             </Menu.Items>
                           </Transition>
@@ -482,18 +459,7 @@ export default function HealthCareWorkers() {
                 </div>
               )}
             </div>
-            <div className="ml-4 w-3/12">
-              {hasPermission(PermissionEnum.create_user) && (
-                <button
-                  onClick={displayPanel}
-                  type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                >
-                  <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                  Add CHWs
-                </button>
-              )}
-            </div>
+         
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
@@ -639,6 +605,7 @@ export default function HealthCareWorkers() {
                   searchInput={searchValue}
                   viewRow={true}
                   urlRow={'/view-user/'}
+                  component={'chw'}
                 />
               </div>
             </div>

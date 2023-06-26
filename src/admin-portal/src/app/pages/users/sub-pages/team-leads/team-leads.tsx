@@ -34,12 +34,12 @@ export default function TeamLeads() {
 
     GetAllTeamLeads({
       variables: {
-        search: searchValue ,
-        provinceSearch: provinceFilter === '' ? null : provinceFilter
+        search: searchValue,
+        provinceSearch: provinceFilter
       }
     });
 
-  }, [provinceFilter, searchValue ])
+  }, [provinceFilter, searchValue])
 
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -78,7 +78,8 @@ export default function TeamLeads() {
     if (data && data.GetAllTeamLead) {
       const copyItems = data.GetAllTeamLead.map((item: TeamLeadDto) => ({
         ...item,
-        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        fullName: `${item.user?.fullName}`,
+
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
         _url: undefined,
