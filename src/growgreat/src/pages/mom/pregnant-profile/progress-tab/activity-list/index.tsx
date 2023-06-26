@@ -294,7 +294,11 @@ export const MomActivityList: React.FC = () => {
       );
     }
 
-    if (isStartVisit || !previousMotherVisit?.visitDataStatus?.length) {
+    if (
+      isStartVisit ||
+      !previousMotherVisit?.visitDataStatus?.length ||
+      isAllCompleted
+    ) {
       return (
         <div className="p-4">
           <Typography
