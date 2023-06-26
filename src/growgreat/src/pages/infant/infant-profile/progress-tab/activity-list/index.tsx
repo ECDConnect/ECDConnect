@@ -415,7 +415,9 @@ export const ActivityList: React.FC = () => {
     }, [completedVisits, visibleActivities]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.length === stepperCount;
+  const isAllCompleted = completedVisits?.some((item) =>
+    item?.includes('Follow')
+  );
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
@@ -487,7 +489,11 @@ export const ActivityList: React.FC = () => {
       );
     }
 
-    if (isStartVisit || !previousVisit?.visitDataStatus?.length) {
+    if (
+      isStartVisit ||
+      !previousVisit?.visitDataStatus?.length ||
+      isAllCompleted
+    ) {
       return (
         <div className="p-4">
           <Typography

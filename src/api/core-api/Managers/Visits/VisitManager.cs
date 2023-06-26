@@ -546,7 +546,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     {
                         _visit.DueDate = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.visit2).Select(y => y.PlannedVisitDate).FirstOrDefault();
                         _visit.DueDate = _visit?.DueDate.Value.AddDays(-1).Date;
-                    } 
+                    }
                     else if (_visit.VisitType.Name == Constants.GGSettings.visit2 && allVisits.Count > 2)
                     {
                         _visit.DueDate = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.visit3).Select(y => y.PlannedVisitDate).FirstOrDefault();

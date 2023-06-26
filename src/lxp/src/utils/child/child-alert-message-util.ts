@@ -38,7 +38,7 @@ export const getChildAlertModel = (
 
     if (classroomGroup?.name === NoPlaygroupClassroomType.name) {
       alert = 'error';
-      alertMessage = 'No playgroup assigned';
+      alertMessage = 'No class assigned';
 
       return { status: alert, message: alertMessage, severity: 1 };
     }
