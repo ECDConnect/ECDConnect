@@ -17,7 +17,6 @@ import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import {
-  getMotherCurrentVisitSelector,
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
@@ -25,6 +24,7 @@ import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
 import { motherThunkActions } from '@/store/mother';
 import {
+  getDateWithoutTimeZone,
   getStringFromClassNameOrId,
   useDialog,
   usePrevious,
@@ -57,10 +57,6 @@ export const Visits: React.FC = () => {
     getMotherById(state, motherId)
   );
 
-  const motherCurrentVisit = useSelector((state: RootState) =>
-    getMotherCurrentVisitSelector(state, '')
-  );
-
   const visits = useSelector(getMotherVisits);
 
   const { isLoading } = useThunkFetchCall(
@@ -81,37 +77,71 @@ export const Visits: React.FC = () => {
   );
   const wasAddingAdditionalVisit = usePrevious(isAddingAdditionalVisit);
 
+  const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
+    return visitsToSort.sort((a, b) => {
+      if (a === undefined && b === undefined) {
+        return 0;
+      }
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
+
+      return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+    });
+  }, []);
+
+  const currentDate = useMemo(() => new Date(), []);
+  currentDate?.setHours(0, 0, 0, 0);
+  const todayEndOfTheDay = new Date();
+  todayEndOfTheDay.setHours(23, 59, 59, 999);
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
   const currentVisit = useMemo((): VisitDto | undefined => {
-    const noAttended = visits.filter((item) => !item.attended) || [];
+    const noAttended =
+      visits.filter((item) => {
+        const dueDate = getDateWithoutTimeZone(item.dueDate);
+        const orderDate = getDateWithoutTimeZone(item.orderDate);
+        const isAttend = item.attended;
+
+        if (dueDate) {
+          return !isAttend && dueDate >= todayDate!;
+        }
+
+        if (orderDate) {
+          return !isAttend && orderDate >= todayDate!;
+        }
+
+        return !isAttend;
+      }) || [];
 
     return noAttended.length
       ? noAttended.reduce((prev, curr) =>
-          (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
+          new Date(prev.orderDate).getTime() <
+          new Date(curr.orderDate).getTime()
             ? prev
             : curr
         )
       : undefined;
-  }, [visits]);
+  }, [todayDate, visits]);
 
-  //const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  //const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
-
-  // EC-685 - only show start visit button if today falls between planned and due date for current visit
-  const currentDate = useMemo(() => new Date(), []);
-  currentDate?.setHours(0, 0, 0, 0);
+  // INFO: EC-685 - only show start visit button if today falls between planned and due date for current visit
   const plannedVisitDate =
     currentVisit && new Date(currentVisit?.plannedVisitDate);
   plannedVisitDate?.setHours(0, 0, 0, 0);
-  const dueDate = currentVisit && new Date(currentVisit?.dueDate);
+  const dueDate = currentVisit?.dueDate
+    ? new Date(currentVisit?.dueDate)
+    : todayEndOfTheDay;
   dueDate?.setHours(0, 0, 0, 0);
-  const isWeekDeadline =
-    plannedVisitDate &&
-    dueDate &&
-    currentDate >= plannedVisitDate &&
-    currentDate <= dueDate;
 
-  // const isWeekDeadline =
-  //   dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
+  const isFirstVisit = visits
+    .filter((item) => item.visitType?.name !== 'additional_visits')
+    .every((item) => !item.attended);
+  const isOrderVisitDate = plannedVisitDate && currentDate >= plannedVisitDate;
+  const isDueDate = dueDate && currentDate <= dueDate;
+  const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
 
   const insertedDate = useMemo(
     () => new Date(mother?.insertedDate || ''),
@@ -124,30 +154,45 @@ export const Visits: React.FC = () => {
         return 'completed';
       }
       if (
-        (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
+        (isWeekDeadline &&
+          currentVisit?.visitType?.id === item.visitType?.id) ||
         isMissedVisit
       ) {
         return 'inProgress';
       }
-
       return 'todo';
     },
     [currentVisit, isWeekDeadline]
   );
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => !item.attended);
-    const someAttendedVisit = visits.length > filteredVisits.length;
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
+      if (dueDate) {
+        return !isAttend && dueDate >= todayDate!;
+      }
 
-    const sortedVisits = filteredVisits.sort(
-      (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
-    );
+      if (orderDate) {
+        return !isAttend && orderDate >= todayDate!;
+      }
+
+      return !isAttend;
+    });
+
+    const sortedVisits = getSortedVisits(filteredVisits);
+    const isToShowPastVisits = visits.length > filteredVisits.length;
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const date = new Date(item.orderDate);
-      currentDate.setHours(0, 0, 0, 0);
-      date.setHours(0, 0, 0, 0);
-      const isMissedVisit = date < currentDate;
+      const [orderDateString] = item.orderDate.split('T');
+      const [, , day] = orderDateString.split('-');
+
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const isMissedVisit = dueDate
+        ? dueDate < todayDate!
+        : orderDate! < todayDate!;
 
       return {
         title:
@@ -156,19 +201,15 @@ export const Visits: React.FC = () => {
             : item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
-          : `By ${date.getDate()} ${date.toLocaleString('default', {
+          : `By ${day} ${orderDate?.toLocaleString('default', {
               month: 'long',
-            })} ${date.getFullYear()}`,
+            })} ${orderDate?.getFullYear()}`,
         ...(isMissedVisit && {
           subTitleColor: 'alertDark',
         }),
-        inProgressStepIcon: isMissedVisit
-          ? 'ExclamationCircleIcon'
-          : 'CalendarIcon',
+        inProgressStepIcon: 'CalendarIcon',
         type: getType(item, isMissedVisit),
-        showActionButton:
-          item?.id === motherCurrentVisit?.id ||
-          getType(item, isMissedVisit) === 'inProgress',
+        showActionButton: getType(item, isMissedVisit) === 'inProgress',
         actionButtonIcon: 'ArrowCircleRightIcon',
         actionButtonText: 'Start visit',
         actionButtonOnClick: () =>
@@ -180,14 +221,14 @@ export const Visits: React.FC = () => {
     });
 
     array.unshift({
-      title: someAttendedVisit ? 'Past visits' : 'Folder opened',
-      subTitle: someAttendedVisit
+      title: isToShowPastVisits ? 'Past visits' : 'Folder opened',
+      subTitle: isToShowPastVisits
         ? ''
         : `${insertedDate.getDate()} ${insertedDate.toLocaleString('default', {
             month: 'long',
           })} ${insertedDate.getFullYear()}`,
       type: 'completed',
-      showActionButton: someAttendedVisit,
+      showActionButton: isToShowPastVisits,
       actionButtonText: 'See info',
       actionButtonTextColor: 'secondary',
       actionButtonColor: 'secondaryAccent2',
@@ -197,13 +238,13 @@ export const Visits: React.FC = () => {
 
     return array;
   }, [
-    currentDate,
-    currentVisit?.id,
+    currentVisit,
+    getSortedVisits,
     getType,
     history,
     insertedDate,
-    location.pathname,
-    motherCurrentVisit?.id,
+    location,
+    todayDate,
     visits,
   ]);
 
