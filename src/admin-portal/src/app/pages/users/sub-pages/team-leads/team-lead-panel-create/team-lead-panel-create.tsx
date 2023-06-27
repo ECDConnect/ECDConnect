@@ -31,6 +31,8 @@ import TeamLeadForm from '../../../components/team-lead-form/team-lead-form';
 import UserDetailsForm from '../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../components/users';
+import { Button, Typography } from '@ecdlink/ui';
+import { SaveIcon } from '@heroicons/react/solid';
 
 export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
@@ -305,9 +307,22 @@ export default function TeamLeadPanelCreate(props: UserPanelCreateProps) {
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
 
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Button
+        className="mt-3 mr-6 w-full rounded"
+        type="filled"
+        color="secondary"
+        // disabled={!getIsValid()}
+        onClick={onSave}
+      >
+        <SaveIcon color="white" className="mr-6 h-6 w-6" />
+        <Typography
+          type="help"
+          color="white"
+          text="Save"
+        ></Typography>
+      </Button>
     </article>
   );
 }

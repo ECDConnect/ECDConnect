@@ -1,4 +1,4 @@
-import { useQuery } from '@apollo/client';
+import { useLazyQuery, useQuery } from '@apollo/client';
 import { ClinicDto, PermissionEnum, ProvinceDto } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
@@ -18,38 +18,34 @@ export default function TeamLeads() {
   const { hasPermission } = useUser();
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
-  const [teamLeadFilter, setTeamLeadFilter] = useState('');
+  const [clinicFilter, setClinicFilter] = useState('')
 
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-
-  const { data, refetch, loading } = useQuery(GetAllTeamLead, {
+  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        // { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
-      ],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
+      search: "",
+      provinceSearch: ""
     },
+    fetchPolicy: 'network-only',
   });
 
-  const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
-  };
+  useEffect(() => {
+
+    GetAllTeamLeads({
+      variables: {
+        search: searchValue,
+        provinceSearch: provinceFilter
+      }
+    });
+
+  }, [provinceFilter, searchValue])
+
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const { data: teamLeadData } = useQuery(GetAllTeamLead, {
-    fetchPolicy: 'cache-and-network',
-  });
   const { data: clinicData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
@@ -58,24 +54,17 @@ export default function TeamLeads() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
-    return {
-      value: x.id,
-      label: x.user.firstName + ' ' + x.user.surname,
-    };
-  });
-
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
       label: x.name,
-      value: x.id,
+      value: x.name,
     };
   });
 
   const provinces = provinceData?.GetAllProvince.map((x: ProvinceDto) => {
     return {
       label: x.description,
-      value: x.id,
+      value: x.description,
     };
   });
 
@@ -83,23 +72,22 @@ export default function TeamLeads() {
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
-    setTeamLeadFilter('');
-  };
+  }
 
   useEffect(() => {
     if (data && data.GetAllTeamLead) {
       const copyItems = data.GetAllTeamLead.map((item: TeamLeadDto) => ({
         ...item,
-        fullName: `${item.user?.firstName} ${item.user?.surname}`,
+        fullName: `${item.user?.fullName}`,
+
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
-        _view: undefined,
-        _edit: undefined,
         _url: undefined,
       }));
       setTableData(copyItems);
     }
   }, [data]);
+
 
   const displayPanel = () => {
     panel({

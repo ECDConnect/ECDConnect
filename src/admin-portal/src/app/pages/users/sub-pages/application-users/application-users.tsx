@@ -1,6 +1,11 @@
-import { useQuery } from '@apollo/client';
-import { useDialog, UserDto } from '@ecdlink/core';
-import { GetUserById, UserList } from '@ecdlink/graphql';
+import { useMutation, useQuery } from '@apollo/client';
+import {
+  NOTIFICATION,
+  useDialog,
+  useNotifications,
+  UserDto,
+} from '@ecdlink/core';
+import { GetUserById, SendInviteToApplication, UserList } from '@ecdlink/graphql';
 import { Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -16,6 +21,22 @@ export default function ApplicationUsers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
+  const [sendInviteToApplication, {loading: invitationLoading}] = useMutation(SendInviteToApplication);
+  const { setNotification } = useNotifications();
+
+  
+
+  const resendInvitation = async (userId: string)=>{
+    await sendInviteToApplication({
+      variables: {
+        userId: userId,
+      },
+    });
+    setNotification({
+      title: 'Successfully Sent User an Invite!',
+      variant: NOTIFICATION.SUCCESS,
+    });
+  }
 
   const toggleDropdown = () => {
     setIsDropdownVisible(!isDropdownVisible);
@@ -195,28 +216,10 @@ export default function ApplicationUsers() {
 
               <div className="mx-4 w-3/12">
                 <span className="w-full text-lg font-medium leading-6 text-gray-900">
-                  <button
-                    onClick={() => setShowFilter(!showFilter)}
-                    id="dropdownHoverButton"
-                    className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-                    type="button"
-                  >
-                    Filter
-                    <svg
-                      className="ml-2 h-4 w-4"
-                      aria-hidden="true"
-                      fill="none"
-                      stroke="currentColor"
-                      viewBox="0 0 24 24"
-                      xmlns="http://www.w3.org/2000/svg"
-                    >
-                      <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M19 9l-7 7-7-7"
-                      ></path>
-                    </svg>
+                  <button onClick={() => setShowFilter(!showFilter)} id="dropdownHoverButton"
+                    className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm px-4 py-2.5 text-center inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
+                    type="button">Filter
+                    <svg className="w-4 h-4 ml-2" aria-hidden="true" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
                   </button>
                 </span>
               </div>
@@ -243,7 +246,8 @@ export default function ApplicationUsers() {
                   rows={tableData}
                   searchInput={searchValue}
                   urlRow={'/view-user/'}
-                  component={'all-users'}
+                  component={'administrators'}
+
                 />
               </div>
             </div>
@@ -255,3 +259,7 @@ export default function ApplicationUsers() {
     return <ContentLoader />;
   }
 }
+function saveRoles(userId: any) {
+  throw new Error('Function not implemented.');
+}
+

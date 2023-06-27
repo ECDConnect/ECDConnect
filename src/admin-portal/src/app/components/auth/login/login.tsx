@@ -1,7 +1,6 @@
 import {
   Config,
   initialLoginValues,
-  LocalStorageKeys,
   LoginRequestModel,
   loginSchema,
   useTheme,
@@ -14,7 +13,6 @@ import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
-import zxcvbn from 'zxcvbn-typescript';
 import { ArrowRightIcon } from '@heroicons/react/solid';
 
 export default function Login() {
@@ -36,11 +34,7 @@ export default function Login() {
     setShowPassword(!showPassword);
   };
 
-  //check password strength
-  const password = watch('password');
   const formValues = getValues();
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const { errors, isValid } = formState;
 
@@ -108,30 +102,13 @@ export default function Login() {
                   togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
-              <div className="-mx-1 flex">
-                {[...Array(4)].map((_, i) => (
-                  <div className="w-1/4 px-1" key={i}>
-                    <div
-                      className={`h-2 rounded-xl transition-colors ${
-                        i < passwordScore
-                          ? passwordScore <= 2
-                            ? 'bg-red-400'
-                            : passwordScore <= 3
-                            ? 'bg-yellow-400'
-                            : passwordScore <= 4
-                            ? 'bg-green-500'
-                            : 'bg-yellow-400'
-                          : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </div>
+       
 
               <Button
                 className={' my-6 focus:outline-none inline-flex w-3/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
                 type="ghost"
                 isLoading={isLoading}
+                disabled={true}
                 color="secondary"
                 onClick={() => history.push('/forgot-password')}
               >

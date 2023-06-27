@@ -32,6 +32,8 @@ import SiteAddressForm from '../../../../components/site-address-form/site-addre
 import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
 import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../../components/users';
+import { Button, Typography } from '@ecdlink/ui';
+import { SaveIcon } from '@heroicons/react/solid';
 
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
@@ -324,7 +326,7 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
+        {/* <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
               Password
@@ -337,16 +339,28 @@ export default function HealthCareWorkerPanelCreate(
             register={passwordRegister}
             errors={passwordFormErrors}
           />
-        </div>
+        </div> */}
       </>
     );
   };
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Button
+        className="mt-3 mr-6 w-full rounded"
+        type="filled"
+        color="secondary"
+        // disabled={!getIsValid()}
+        onClick={onSave}
+      >
+        <SaveIcon color="white" className="mr-6 h-6 w-6" />
+        <Typography
+          type="help"
+          color="white"
+          text="Save"
+        ></Typography>
+      </Button>
     </article>
   );
 }

@@ -46,17 +46,40 @@ export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
   const { setNotification } = useNotifications();
   const dialog = useDialog();
+  const [tableData, setTableData] = useState<any[]>([]);
+  const [rawData, setRawData] = useState<any[]>([]);
 
-  const { data, refetch, loading } = useQuery(GetAllHealthCareWorker, {
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const panel = usePanel();
+  const [statusFilter, setStatusFilter] = useState('');
+  const [teamLeadFilter, setTeamLeadFilter] = useState('');
+  const [showFilter, setShowFilter] = useState(false);
+  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
+  const [searchValue, setSearchValue] = useState('');
+  const [provinceFilter, setProvinceFilter] = useState('');
+  const [clinicFilter, setClinicFilter] = useState('')
+  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
+
+  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
     variables: {
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        // { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
-      ],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
+      search: "",
+      provinceSearch: "",
+      clinicSearch: ""
     },
+    fetchPolicy: 'network-only',
   });
+
+  useEffect(() => {
+    getAllHealthCareWorkers({
+      variables: {
+        search: searchValue,
+        provinceSearch: provinceFilter,
+        clinicSearch: clinicFilter
+
+      }
+    });
+
+  }, [provinceFilter, searchValue, clinicFilter])
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -107,17 +130,6 @@ export default function HealthCareWorkers() {
     }
   }, [templateData, templateDownloaded]);
 
-  const [tableData, setTableData] = useState<any[]>([]);
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-  const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('');
-  const [teamLeadFilter, setTeamLeadFilter] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [searchValue, setSearchValue] = useState('');
-  const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('');
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -125,7 +137,7 @@ export default function HealthCareWorkers() {
 
   const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
     return {
-      value: x.id,
+      value: x.user.firstName + ' ' + x.user.surname,
       label: x.user.firstName + ' ' + x.user.surname,
     };
   });
@@ -133,21 +145,21 @@ export default function HealthCareWorkers() {
   const clinics = clinicData?.GetAllClinic.map((x: ClinicDto) => {
     return {
       label: x.name,
-      value: x.id,
+      value: x.name,
     };
   });
 
   const provinces = provinceData?.GetAllProvince.map((x: any) => {
     return {
       label: x.description,
-      value: x.id,
+      value: x.description,
     };
   });
 
   const mapUserTableItem = (item: any) => {
     return {
       ...item,
-      fullName: `${item.user?.firstName} ${item.user?.surname}`,
+      fullName: `${item.user?.fullName}`,
       isActive: item.user?.isActive,
       idNumber: item.user?.idNumber,
       _view: undefined,
@@ -156,24 +168,37 @@ export default function HealthCareWorkers() {
     };
   };
 
+  const handleFilterChange = (filter: string) => {
+    // Update the variables with new values
+    const updatedVariables = {
+      where: {
+        clinic: {
+          siteAddress: {
+            province: { description: { eq: filter } }
+          }
+        }
+      }
+    };
+
+    // Call the refetch function with updated variables
+    // refetch(updatedVariables);
+  };
+
   useEffect(() => {
     if (!data?.users) return;
+    handleFilterChange(provinceFilter ?? clinicFilter ?? teamLeadFilter)
+
     let userStatus = statusFilter === 'active' ? true : false;
-    console.log(provinceFilter);
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
       allUsers
-        .filter(
-          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
-        )
-        // .filter((v) => v?.province === provinceFilter) // Apply province filter
-        .filter((v) => v?.teamLead?.clinic.name === clinicFilter) //Apply clinic filter
-        .filter((v) => v?.teamLeadId === teamLeadFilter) //Apply clinic filter
-
+        .filter((v) => v?.isActive === (statusFilter === '' ? true : userStatus))
+        .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
+        .filter((v) => (v?.teamLead.user.firstName + '' + v?.teamLead.user.surname) === teamLeadFilter)
         .map(mapUserTableItem)
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter]);
+  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
+
 
   useEffect(() => {
     if (data && data.GetAllHealthCareWorker) {
@@ -365,21 +390,19 @@ export default function HealthCareWorkers() {
               </div>
 
               {hasPermission(PermissionEnum.create_user) && (
-                <div className="flex flex-col ">
+                <div className="flex flex-col  ">
                   <div className="">
-                    <Menu as="div" className=" inline-block text-right">
+                    <Menu as="div" className=" inline-block text-right w-6/12">
                       {({ open }) => (
                         <>
                           <div>
                             <Menu.Button
                               type="button"
-                              className="bg-primary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                              className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                             >
-                              <UploadIcon
-                                className="h-5 w-5 "
-                                aria-hidden="true"
-                              />
-                              <span className="">Upload</span>
+                              <PlusIcon className="mr-4 h-4 w-4"> </PlusIcon>
+
+                              <span className="">Add CHWs</span>
                             </Menu.Button>
                           </div>
 
@@ -424,32 +447,8 @@ export default function HealthCareWorkers() {
                                     Upload Practitioners
                                   </div>
                                 </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() => UploadContentImport()}
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Import Users
-                                  </div>
-                                </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() =>
-                                      UploadContentImportChildren()
-                                    }
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Import Children Classes
-                                  </div>
-                                </Menu.Item>
+
+
                               </div>
                             </Menu.Items>
                           </Transition>
@@ -460,18 +459,7 @@ export default function HealthCareWorkers() {
                 </div>
               )}
             </div>
-            <div className="ml-4 w-3/12">
-              {hasPermission(PermissionEnum.create_user) && (
-                <button
-                  onClick={displayPanel}
-                  type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                >
-                  <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                  Add CHWs
-                </button>
-              )}
-            </div>
+         
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
@@ -483,7 +471,10 @@ export default function HealthCareWorkers() {
                   placeholder="Province"
                   selectedValue={provinceFilter}
                   list={provinces}
-                  onChange={(item) => setProvinceFilter(item)}
+                  onChange={(item) => {
+                    setProvinceFilter(item);
+                    refetch()
+                  }}
                 />
               </div>
               <div className="relative inline-block pr-2 text-left">
@@ -614,6 +605,7 @@ export default function HealthCareWorkers() {
                   searchInput={searchValue}
                   viewRow={true}
                   urlRow={'/view-user/'}
+                  component={'chw'}
                 />
               </div>
             </div>
