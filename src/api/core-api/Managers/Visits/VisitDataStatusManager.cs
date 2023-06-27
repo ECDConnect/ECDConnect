@@ -122,6 +122,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var motherName = "";
                 if (infant.Mother != null) {
                     motherName = infant.Mother.User.FirstName;
+                } else
+                {
+                    motherName = infant.Caregiver.FirstName;
                 }
 
                 // add additional visit for when we need to add additional visits for the client
