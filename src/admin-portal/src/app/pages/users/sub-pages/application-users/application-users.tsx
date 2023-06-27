@@ -1,4 +1,4 @@
-import { useMutation, useQuery } from '@apollo/client';
+import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
   NOTIFICATION,
   useDialog,
@@ -50,19 +50,31 @@ export default function ApplicationUsers() {
     setEndDate(event.target.value);
   };
 
-  const { data, refetch, loading } = useQuery(UserList, {
+  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        // { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
-      ],
-      sortBy: [{ fieldName: "FullName", descending: true }]
-    }
+      textSearch: "Surname",
+      pagingInput: {
+         pageNumber: 1,
+         pageSize: 10
+      }
+    },
+    fetchPolicy: 'network-only',
   });
 
+  useEffect(() => {
 
-  console.log("users", data)
+    getAllUsers({
+      variables: {
+        textSearch: searchValue,
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: 10
+        }
+      }
+    });
+
+  }, [searchValue])
+
   const [tableData, setTableData] = useState<any[]>([]);
 
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
