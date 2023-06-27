@@ -127,8 +127,12 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
       const previousAnswer = visitData?.find(
         (obj) => obj.question === item.question
       );
+      console.log({ previousAnswer });
       if (previousAnswer) {
-        return { ...item, answer: Boolean(previousAnswer.questionAnswer) };
+        return {
+          ...item,
+          answer: previousAnswer.questionAnswer === 'true' ? true : false,
+        };
       }
       return item;
     });

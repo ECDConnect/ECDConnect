@@ -407,40 +407,17 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  const allStepsComplete = useMemo(
-    () =>
-      traineeCurrentVisit?.id &&
-      notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      !isSmartChecklist,
-    [
-      isSmartChecklist,
-      notificationItems?.length,
-      notificationItemsLaterStage?.length,
-      traineeCurrentVisit?.id,
-    ]
-  );
-
   const allStepsCompleteFromDashboard = useMemo(
     () =>
       traineeCurrentVisit?.id &&
       notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      isSmartChecklist,
+      notificationItemsLaterStage?.length === 0,
     [
-      isSmartChecklist,
       notificationItems?.length,
       notificationItemsLaterStage?.length,
       traineeCurrentVisit?.id,
     ]
   );
-
-  useEffect(() => {
-    if (allStepsComplete) {
-      setNotificationStep('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allStepsComplete, allStepsCompleteFromDashboard]);
 
   return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
     <div className="h-screen">{steps(activeStep)}</div>
