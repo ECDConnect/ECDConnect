@@ -5,6 +5,14 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
 import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps } from '../../dynamic-form';
+import { useSelector } from 'react-redux';
+import {
+  getInfantCurrentVisitSelector,
+  getInfantVisitsSelector,
+} from '@/store/infant/infant.selectors';
+import { useParams } from 'react-router';
+import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
+import { RootState } from '@/store/types';
 
 export const NextVisitStep = ({
   infant,
@@ -16,9 +24,23 @@ export const NextVisitStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  // TODO: add integration (G5.8.3)
-  // const date = 'TODO: EC-141';
-  const date = '';
+  const { visitId } = useParams<InfantProfileParams>();
+  const visits = useSelector(getInfantVisitsSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, visitId)
+  );
+  const nextVisit = visits.find(
+    (item) =>
+      item.visitType?.order === Number(currentVisit?.visitType?.order) + 1
+  );
+
+  const date = nextVisit?.dueDate
+    ? new Date(nextVisit?.dueDate).toLocaleDateString('en-ZA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -29,12 +51,14 @@ export const NextVisitStep = ({
       <Header
         icon="CalendarIcon"
         iconHexBackgroundColor={activitiesColours.other.primaryColor}
-        title="Progress"
+        title="Next visit"
       />
       <div className="p-4">
         <Alert
           type="warning"
-          title={`${caregiverName} & ${name} need an extra support visit`}
+          title={`${
+            caregiverName ? `${caregiverName} & ` : ''
+          }${name} need an extra support visit`}
           titleColor="textDark"
           message={`Book a visit before ${date}.`}
           messageColor="textMid"

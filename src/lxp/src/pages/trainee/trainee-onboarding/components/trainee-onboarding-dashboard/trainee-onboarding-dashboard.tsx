@@ -51,6 +51,7 @@ export const OnboardingTraineeDashboard: React.FC<
     if (notificationStep === 'Fill in the SmartSpace checklist') {
       setIsSmartChecklist(true);
     }
+
     setNotificationStep(notificationStep);
   };
 
@@ -109,6 +110,8 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'Consolidation meeting scheduled'
   );
 
+  const [nextStep] = filteredUncompletedSteps;
+
   const notificationItem: MenuListDataItem[] = [
     {
       showIcon: true,
@@ -124,8 +127,7 @@ export const OnboardingTraineeDashboard: React.FC<
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: checkOverdueDate > 0 ? 'alertMain' : 'primary',
       backgroundColor: checkOverdueDate > 0 ? 'alertBg' : 'uiBg',
-      onActionClick: () =>
-        setNotificationStep(filteredUncompletedSteps?.[0]?.title),
+      onActionClick: () => setNotificationStep(nextStep?.title),
     },
   ];
 
@@ -231,7 +233,8 @@ export const OnboardingTraineeDashboard: React.FC<
                   false,
                   isOnline,
                   // @ts-ignore
-                  undefined
+                  undefined,
+                  nextStep?.title
                 )}
                 typeColor={{ completed: 'successMain', todo: 'primaryAccent2' }}
               />

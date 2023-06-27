@@ -1,18 +1,7 @@
-import Article from '@/components/article/article';
 import { practitionerSelectors } from '@/store/practitioner';
-import {
-  Alert,
-  Button,
-  ButtonGroup,
-  ButtonGroupTypes,
-  Checkbox,
-  Typography,
-} from '@ecdlink/ui';
+import { Alert, Button, Checkbox, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { ContentConsentTypeEnum } from '@ecdlink/core';
-import { coachSelectors } from '@/store/coach';
-import { yesNoOptions } from './startup-accept-agreement4.types';
 import {
   SectionQuestions,
   visitSection,
@@ -32,9 +21,6 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
   onAllStepsComplete,
 }) => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const coach = useSelector(coachSelectors.getCoach);
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
 
   const [questions, setAnswers] = useState([
     {
@@ -50,6 +36,11 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
     {
       question:
         'Registered the required number of children - maximum of 6 children.',
+      answer: false,
+    },
+    {
+      question:
+        'I acknowledge that I have provided the correct cell number in the contract',
       answer: false,
     },
   ]);
@@ -68,22 +59,23 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
         return question;
       });
 
+      const updatedAnswer = updatedQuestions?.find(
+        (item) => item?.question === currentQuestion?.question
+      );
+
       setAnswers(updatedQuestions);
+      setSectionQuestions?.([
+        {
+          visitSection,
+          questions:
+            sectionQuestions && sectionQuestions?.length > 0
+              ? [...sectionQuestions?.[0]?.questions, updatedAnswer!]
+              : questions,
+        },
+      ]);
     },
     [questions]
   );
-
-  const onSubmitQuestions = () => {
-    setSectionQuestions?.([
-      {
-        visitSection,
-        questions:
-          sectionQuestions && sectionQuestions?.length > 0
-            ? [...sectionQuestions?.[0]?.questions, ...questions]
-            : questions,
-      },
-    ]);
-  };
 
   return (
     <>
@@ -102,9 +94,13 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
             text={'Payment options'}
           />
           <div className="'flex items-center' w-full flex-row justify-start">
-            <div className="flex items-start gap-2">
+            <div
+              className="flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[0].answer, 0)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 0)}
+                checked={questions?.[0].answer}
               />
               <Typography
                 text={`I, ${practitioner?.user?.fullName} (ID: ${practitioner?.user?.idNumber}; Cellphone: ${practitioner?.user?.phoneNumber})  have agreed to receive my stipend amount of R500 using FNB eWallet.`}
@@ -112,9 +108,13 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                 color="textMid"
               />
             </div>
-            <div className="mt-2 flex items-start gap-2">
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
+                checked={questions?.[1].answer}
               />
               <Typography
                 text={
@@ -125,23 +125,41 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
               />
             </div>
             <Alert
-              className={'mx-4'}
+              className={'mx-4 my-4'}
               type={'info'}
               title={
                 'Disclaimer: OrgName is not liable for money being transferred to a cell phone number that was lost/misplaced without notification.'
               }
             />
-            <div className="mt-2 flex items-start gap-2">
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[2].answer, 2)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 2)}
+                checked={questions?.[2].answer}
               />
               <Typography
                 text={`I acknowledge that I have read and accept the eWallet terms & conditions:
-                  The one time pin expires in 16 hours. Once 16 hours have passed and you haven’t used the pin, you have to dial *120*277# to get a new pin and it needs airtime.
-                  You have 6 months to withdraw the funds
-                  eWallet recipients can withdraw funds held in a Wallet from any FNB ATM or selected Spar stores
-                  FNB does not guarantee specific denominations of bank notes and will not be liable for costs associated with part withdrawals
-                  If you change your cellphone number for any reason whatsoever, FNB will not transfer the funds in the eWallet to the new cellphone number. Before you change your cellphone number, you must use up the funds in the eWallet, either withdraw the funds or use them for prepaid airtime or other available functionality.`}
+                • The one time pin expires in 16 hours. Once 16 hours have passed and you haven’t used the pin, you have to dial *120*277# to get a new pin and it needs airtime.
+                • You have 6 months to withdraw the funds
+                • eWallet recipients can withdraw funds held in a Wallet from any FNB ATM or selected Spar stores
+                • FNB does not guarantee specific denominations of bank notes and will not be liable for costs associated with part withdrawals
+                • If you change your cellphone number for any reason whatsoever, FNB will not transfer the funds in the eWallet to the new cellphone number. Before you change your cellphone number, you must use up the funds in the eWallet, either withdraw the funds or use them for prepaid airtime or other available functionality.`}
+                type="body"
+                color={'textMid'}
+              />
+            </div>
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[3].answer, 3)}
+            >
+              <Checkbox
+                onCheckboxChange={(e) => onOptionSelected(e.checked, 3)}
+                checked={questions?.[3].answer}
+              />
+              <Typography
+                text={`I acknowledge that I have provided the correct cell number in the contract, and that OrgName will not be held liable should the cell number provided be incorrect.`}
                 type="body"
                 color={'textMid'}
               />
@@ -165,7 +183,6 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
               textColor="white"
               icon="ArrowCircleRightIcon"
               onClick={() => {
-                onSubmitQuestions();
                 onAllStepsComplete();
               }}
               disabled={questions?.some((item) => item?.answer === false)}

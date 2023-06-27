@@ -131,7 +131,6 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getMoreInformation);
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
-    setThunkActionStatus(builder, getPreviousVisitInformationForInfant);
     setThunkActionStatus(builder, getVisitAnswersForInfant);
     setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
@@ -210,8 +209,6 @@ const visitSlice = createSlice({
       getPreviousVisitInformationForInfant.fulfilled,
       (state, action) => {
         state.previousVisitInformationForInfant = action.payload;
-
-        setFulfilledThunkActionStatus(state, action);
       }
     );
     builder.addCase(getGrowthDataForInfant.fulfilled, (state, action) => {

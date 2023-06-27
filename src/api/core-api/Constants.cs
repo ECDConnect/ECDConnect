@@ -583,7 +583,7 @@ namespace EcdLink.Api.CoreApi
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
-            public const string male = "Boy";
+            public const string male = "Male";
             public const string female = "Girl";
             public const string growth_section = "Growth";
             public const string breast_milk_only = "Breast milk only";

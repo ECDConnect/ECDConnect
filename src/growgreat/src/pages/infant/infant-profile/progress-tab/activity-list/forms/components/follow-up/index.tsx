@@ -1,7 +1,6 @@
 import {
   Colours,
   Divider,
-  LoadingSpinner,
   ProgressBar,
   Typography,
   renderIcon,
@@ -16,7 +15,6 @@ import {
   captureAndDownloadComponent,
   getStringFromClassNameOrId,
   toCamelCase,
-  usePrevious,
 } from '@ecdlink/core';
 import { VisitDataStatus } from '@ecdlink/graphql';
 import {
@@ -46,7 +44,7 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 // import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
-import { useLocation, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
@@ -154,7 +152,13 @@ export const FollowUp = ({
   );
 
   useLayoutEffect(() => {
-    if (isFromProgressTab && previousVisit?.id) {
+    // get data from previous visit
+    if (
+      isFromProgressTab &&
+      previousVisit?.id &&
+      previousVisit?.attended &&
+      !currentVisit?.visitInProgress
+    ) {
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: previousVisit?.id,
@@ -165,11 +169,8 @@ export const FollowUp = ({
           visitId: previousVisit?.id || '',
         })
       );
-    } else if (
-      currentVisit &&
-      previousVisitStatus?.visitId !== currentVisit?.id
-    ) {
-      // if the previousVisit is null, lets fetch the latest
+      // get data from current visit
+    } else if (currentVisit?.id) {
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: currentVisit.id,
@@ -181,13 +182,7 @@ export const FollowUp = ({
         })
       );
     }
-  }, [
-    appDispatch,
-    currentVisit,
-    isFromProgressTab,
-    previousVisit?.id,
-    previousVisitStatus?.visitId,
-  ]);
+  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
@@ -422,7 +417,7 @@ export const FollowUp = ({
             }
           />
         )}
-        {[weight, length, muac].map((item) => {
+        {[weight, length, muac].map((item, index) => {
           if (!item.value) return <Fragment key={item.name} />;
 
           return (
@@ -431,9 +426,10 @@ export const FollowUp = ({
               className="my-4"
               label={item.name}
               value={item.value || ''}
-              date={previousPlannedVisit?.plannedVisitDate || ''}
+              date={previousPlannedVisit?.orderDate || ''}
               message={item.comment || ''}
               color={item.color as CardProps['color']}
+              measure={index === 0 ? 'kg' : 'cm'}
             />
           );
         })}
@@ -524,7 +520,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-successDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -559,7 +555,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-alertDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -594,7 +590,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-errorDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -633,7 +629,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                                <p className=" font-h1 text-successDark text-sm font-semibold "></p>
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>
@@ -663,7 +659,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                                <p className=" font-h1 text-alertDark text-sm  font-semibold "></p>
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>

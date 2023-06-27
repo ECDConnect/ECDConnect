@@ -1,18 +1,14 @@
-import { BannerWrapper, Button, Typography } from '@ecdlink/ui';
+import { BannerWrapper } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useCallback, useEffect, useState } from 'react';
-import { useHistory } from 'react-router';
+import { useEffect, useState } from 'react';
 import { StartupAcceptAgreement1 } from './components/startup-accept-agreement1/startup-accept-agreement1';
 import { StartupAcceptAgreement2 } from './components/startup-accept-agreement2/startup-accept-agreement2';
 import { StartupAcceptAgreement3 } from './components/startup-accept-agreement3/startup-accept-agreement3';
 import { SectionQuestions } from '../smart-space-checklist/components/programme-details/programme-details.types';
 import { StartupAcceptAgreement4 } from './components/startup-accept-agreement4/startup-accept-agreement4';
 import {
-  CmsQuestionInput,
-  CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
   InputMaybe,
-  SsChecklistVisitModelInput,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
 import { useSelector } from 'react-redux';
@@ -20,7 +16,8 @@ import { traineeSelectors } from '@/store/trainee';
 import { practitionerSelectors } from '@/store/practitioner';
 import { TraineeService } from '@/services/TraineeService';
 import { authSelectors } from '@/store/auth';
-import ROUTES from '@/routes/routes';
+import { StartupAgreementSteps } from './startup-accept-agreement.types';
+import { ProofOfBanking } from './components/proof-of-banking/proof-of-banking';
 interface StartupSupportAgreementProps {
   setNotificationStep: any;
 }
@@ -29,10 +26,9 @@ export const StartupSupportAgreement: React.FC<
   StartupSupportAgreementProps
 > = ({ setNotificationStep }) => {
   const { isOnline } = useOnlineStatus();
-  const history = useHistory();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const [agreementStep, setAgreementStep] = useState('');
+  const [agreementStep, setAgreementStep] = useState(0);
   const [agreementStepCount, setAgreementStepCount] = useState('Step 1 of 4');
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
@@ -43,7 +39,7 @@ export const StartupSupportAgreement: React.FC<
     'Start-up support agreement signed';
 
   const onAllStepsComplete = async () => {
-    const sections = sectionQuestions?.map((item) => ({
+    const sections = sectionQuestions?.map((item, index) => ({
       ...item,
       questions: item.questions.map((question) => ({
         ...question,
@@ -52,7 +48,6 @@ export const StartupSupportAgreement: React.FC<
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const visitDateInput: SupportVisitModelInput = {
-      // visitId: traineeCurrentVisit?.id,
       traineeId: practitioner?.userId,
       plannedVisitDate: new Date(),
       attended: true,
@@ -69,13 +64,12 @@ export const StartupSupportAgreement: React.FC<
       userAuth?.auth_token!
     ).addStartupSupportAgreementForTrainee(visitDateInput);
 
-    history.push(ROUTES.TRAINEE.TRAINEE_ONBOARDING);
     setNotificationStep('');
   };
 
-  const renderStep = (step: string) => {
+  const renderStep = (step: number) => {
     switch (step) {
-      case 'StartupAcceptAgreement2':
+      case StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT2:
         return (
           <StartupAcceptAgreement2
             setAgreementStep={setAgreementStep}
@@ -83,17 +77,27 @@ export const StartupSupportAgreement: React.FC<
             sectionQuestions={sectionQuestions}
           />
         );
-      case 'StartupAcceptAgreement3':
+      case StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT3:
         return (
           <StartupAcceptAgreement3
             setAgreementStep={setAgreementStep}
             setSectionQuestions={setSectionQuestions}
             sectionQuestions={sectionQuestions}
+            onAllStepsComplete={onAllStepsComplete}
           />
         );
-      case 'StartupAcceptAgreement4':
+      case StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT4:
         return (
           <StartupAcceptAgreement4
+            setAgreementStep={setAgreementStep}
+            setSectionQuestions={setSectionQuestions}
+            sectionQuestions={sectionQuestions}
+            onAllStepsComplete={onAllStepsComplete}
+          />
+        );
+      case StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT5:
+        return (
+          <ProofOfBanking
             setAgreementStep={setAgreementStep}
             setSectionQuestions={setSectionQuestions}
             sectionQuestions={sectionQuestions}
@@ -112,16 +116,31 @@ export const StartupSupportAgreement: React.FC<
   };
 
   useEffect(() => {
-    if (agreementStep === 'StartupAcceptAgreement2') {
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT2) {
       setAgreementStepCount('Step 2 of 4');
     }
-    if (agreementStep === 'StartupAcceptAgreement3') {
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT3) {
       setAgreementStepCount('Step 3 of 4');
     }
-    if (agreementStep === 'StartupAcceptAgreement4') {
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT4) {
+      setAgreementStepCount('Step 4 of 4');
+    }
+    if (agreementStep === StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT5) {
       setAgreementStepCount('Step 4 of 4');
     }
   }, [agreementStep]);
+
+  const handleBackButton = () => {
+    if (agreementStep > 1 && agreementStep !== 4) {
+      setAgreementStep(agreementStep - 1);
+      return;
+    }
+    if (agreementStep > 1 && agreementStep === 4) {
+      setAgreementStep(agreementStep - 2);
+      return;
+    }
+    setNotificationStep('');
+  };
 
   return (
     <BannerWrapper
@@ -131,7 +150,7 @@ export const StartupSupportAgreement: React.FC<
       title={'Start-up support agreement'}
       subTitle={agreementStepCount}
       color={'primary'}
-      onBack={() => setNotificationStep('')}
+      onBack={handleBackButton}
       displayOffline={!isOnline}
       renderOverflow={true}
     >
