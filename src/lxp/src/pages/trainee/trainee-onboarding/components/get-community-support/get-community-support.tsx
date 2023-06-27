@@ -102,7 +102,10 @@ export const GetCommunitySupport: React.FC<GetCommunitySupportProps> = ({
               text={'Community support'}
             />
             <div className="'flex items-center' w-full flex-row justify-start">
-              <div className="flex items-start gap-2">
+              <div
+                className="flex items-start gap-2"
+                onClick={() => setValue('haveSupport', !haveSupport)}
+              >
                 <Checkbox<CommunitySupportModel>
                   onCheckboxChange={() => setValue('haveSupport', !haveSupport)}
                   register={communitySupportRegister}
