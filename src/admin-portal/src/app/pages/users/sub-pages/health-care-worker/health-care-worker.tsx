@@ -62,9 +62,13 @@ export default function HealthCareWorkers() {
 
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
     variables: {
-      search: "",
       provinceSearch: "",
-      clinicSearch: ""
+      clinicSearch: "",
+      textSearch: "Surname",
+      pagingInput: {
+         "pageNumber": 1,
+         "pageSize": 3
+      }
     },
     fetchPolicy: 'network-only',
   });
@@ -72,9 +76,13 @@ export default function HealthCareWorkers() {
   useEffect(() => {
     getAllHealthCareWorkers({
       variables: {
-        search: searchValue,
+        textSearch: searchValue,
         provinceSearch: provinceFilter,
-        clinicSearch: clinicFilter
+        clinicSearch: clinicFilter,
+        pagingInput: {
+          "pageNumber": 1,
+          "pageSize": 3
+       }
 
       }
     });
