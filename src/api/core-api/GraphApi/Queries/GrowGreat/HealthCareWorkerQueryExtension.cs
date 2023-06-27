@@ -16,6 +16,7 @@ using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -30,13 +31,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         public List<HealthCareWorker> GetAllHealthCareWorkers(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            PagedQueryInput pagingInput = null)
+            PagedQueryInput pagingInput = null,
+            string textSearch = null,
+            string provinceSearch = null,
+            string clinicSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
-            List<HealthCareWorker> healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput).ToList();
+            var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
 
-            return healthCareWorkers;
+            if (!string.IsNullOrWhiteSpace(textSearch))
+                healthCareWorkers = healthCareWorkers
+                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.IdNumber, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.Email, $"%{textSearch}%"));
+            if (!string.IsNullOrWhiteSpace(provinceSearch))
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            if (!string.IsNullOrWhiteSpace(clinicSearch))
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.Name, $"%{clinicSearch}%"));
+
+            return healthCareWorkers.ToList();
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

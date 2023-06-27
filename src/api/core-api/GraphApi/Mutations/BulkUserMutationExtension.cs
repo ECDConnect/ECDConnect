@@ -35,13 +35,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string file)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
-            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
 
             if (file is null || currentUserId is null)
             {
                 throw new Exception("Invalid input.");
             }
 
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
             if (!userIsAdmin)
                 throw new Exception("You do not have permission to use this function.");

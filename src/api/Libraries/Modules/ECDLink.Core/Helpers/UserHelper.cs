@@ -40,7 +40,8 @@ namespace ECDLink.Core.Helpers
                 return $"{noSpacePhoneNumber}";
             }
 
-            throw new Exception("Phone number not recognised for normalization");
+            return phoneNumber;
+            //throw new Exception("Phone number not recognised for normalization");
         }
     }
 }

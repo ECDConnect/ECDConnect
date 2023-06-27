@@ -9,5 +9,6 @@
         LessThanOrEqual,
         GreaterThanOrEqual,
         ContainedBy,
+        ILike
     }
 }

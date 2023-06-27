@@ -2,7 +2,6 @@ using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -26,32 +25,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
         public IQueryable<TeamLead> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
          IGenericRepositoryFactory repoFactory,
-            PagedQueryInput pagingInput = null)
+         PagedQueryInput pagingInput = null,
+         string textSearch = null,
+         string provinceSearch = null,
+         string clinicSearch = null)
         {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId);
-            
-            return healthCareWorkerRepo.GetAll(pagingInput);
+            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
+
+            if (!string.IsNullOrWhiteSpace(textSearch))
+                teamLeadRepo = teamLeadRepo
+                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.IdNumber, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{textSearch}%")
+                    || EF.Functions.ILike(h.User.Email, $"%{textSearch}%"));
+            if (!string.IsNullOrWhiteSpace(provinceSearch))
+                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            if (!string.IsNullOrWhiteSpace(clinicSearch))
+                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+
+            return teamLeadRepo;
         }
 
-        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        [UseOffsetPaging]
-        [UseFiltering]
-        public IQueryable<TeamLead> GetAllTeamLeadsOffsetPaging([Service] IHttpContextAccessor contextAccessor,
-         [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
-         IGenericRepositoryFactory repoFactory)
-        {
-            using var scope = dbFactory.CreateDbContext();
-            using var dbContextTransaction = scope.Database.BeginTransaction();
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var healthCareWorkerRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId);
-
-            return healthCareWorkerRepo.GetAll();
-        }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> TeamLeadTemplateGenerator(
@@ -73,23 +69,23 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var templateHeaders = new List<List<string>>()
             {
-                new List<string> { 
+                new List<string> {
                     "Type of identification",
                     "ID number",
                     "Passport",
                      "First name",
                     "Surname",
                     "Cellphone number",
-                    "Email address" 
+                    "Email address"
                 }
             };
             var templateHeaderSheet = $"Team Lead Template";
 
-            var spreadSheets = new Dictionary<string, List<List<string>>>() { 
+            var spreadSheets = new Dictionary<string, List<List<string>>>() {
                 { templateHeaderSheet, templateHeaders },
-                { fieldDefinitionSheet, fieldDefinitionList } 
+                { fieldDefinitionSheet, fieldDefinitionList }
             };
-            
+
             var fileName = templateHeaderSheet.Replace(" ", "_");
             return await fileService.DictionaryToExcelTemplate(spreadSheets, fileName);
         }
