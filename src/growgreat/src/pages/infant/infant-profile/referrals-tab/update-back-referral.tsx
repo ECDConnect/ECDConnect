@@ -17,7 +17,7 @@ import { ChangeEvent, useCallback, useEffect, useMemo, useState } from 'react';
 import { DocumentTextIcon } from '@heroicons/react/solid';
 import { RootState } from '@/store/types';
 import {
-  getCurrentVisitSelector,
+  getInfantCurrentVisitSelector,
   getInfantById,
 } from '@/store/infant/infant.selectors';
 import { format } from 'date-fns';
@@ -47,7 +47,7 @@ export const InfantBackReferralUpdate: React.FC<
   const [, , , , , visitDataStatusId] = location.pathname.split('/');
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getInfantCurrentVisitSelector(state, '')
   );
 
   const completedReferralsForInfant = useSelector(

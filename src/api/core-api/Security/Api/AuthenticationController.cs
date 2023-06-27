@@ -109,6 +109,11 @@ namespace ECDLink.Security.Api
             }
 
             var user = await _securityManager.GetUserByNameAsync(model.Username);
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            if (user.TenantId.HasValue && user.TenantId.Value != tenantId)
+            {
+                return BadRequest("Could not reset password");
+            }
 
             var result = await _securityManager.ForgotPasswordAsync(user);
 

@@ -365,6 +365,17 @@ namespace ECDLink.DataAccessLayer.Hierarchy
             return entity?.UserId;
         }
 
+        public string GetIntegrationUserId()
+        {
+            var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();
+            var entity = userHierarchyRepo.GetAll()
+                               .Where(x => x.IsActive && string.Equals(x.UserType, "Administrator") && string.Equals(x.User.UserName, "IntegrationUser"))
+                               .OrderBy(x => x.Key)
+                               .FirstOrDefault();
+
+            return entity?.UserId;
+        }
+
         public string GetSuperAdminUserId()
         {
             var userHierarchyRepo = _repoFactory.CreateRepository<UserHierarchyEntity>();

@@ -26,16 +26,16 @@ import {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as Home } from '@/assets/home.svg';
-import PollyHappy from '@/assets/pollyHappy.svg';
-import PollyInformational from '@/assets/pollyInformational.svg';
-import PollyShock from '@/assets/pollyShock.svg';
+import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
+import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
 import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import { getCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -109,17 +109,17 @@ export const FollowUp = ({
   const [, , , , , visitId] = location.pathname.split('/');
 
   // this provides the status of previous visit
-  const previousVisit = useSelector(
+  const previousVisitStatus = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  const previousVisitToSort = Object.assign({}, previousVisit);
+  const previousVisitStatusToSort = Object.assign({}, previousVisitStatus);
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, visitId)
+    getMotherCurrentVisitSelector(state, visitId)
   );
 
   useLayoutEffect(() => {
-    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
+    if (currentVisit?.id) {
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
           visitId: currentVisit.id,
@@ -131,7 +131,7 @@ export const FollowUp = ({
         })
       );
     }
-  }, [appDispatch, currentVisit, previousVisit]);
+  }, [appDispatch, currentVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -177,7 +177,7 @@ export const FollowUp = ({
     value: number;
     message: string;
   } => {
-    switch (previousVisit?.scoreColor) {
+    switch (previousVisitStatus?.scoreColor) {
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -201,7 +201,7 @@ export const FollowUp = ({
           value: 25,
         };
     }
-  }, [name, previousVisit?.scoreColor]);
+  }, [name, previousVisitStatus?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
@@ -222,7 +222,7 @@ export const FollowUp = ({
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
 
-    const sortedData = previousVisitToSort?.visitDataStatus
+    const sortedData = previousVisitStatusToSort?.visitDataStatus
       ?.slice()
       .sort(function (a, b) {
         var colorOrder = ['Success', 'Warning', 'Error'];
@@ -244,11 +244,11 @@ export const FollowUp = ({
       {}
     );
     return groupedData;
-  }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
+  }, [previousVisitStatusToSort?.visitDataStatus, walkthroughData]) as
     | Status
     | undefined;
 
-  if (!previousVisit?.visitDataStatus?.length && !walkthroughData) {
+  if (!previousVisitStatus?.visitDataStatus?.length && !walkthroughData) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
@@ -280,7 +280,9 @@ export const FollowUp = ({
           <ProgressBar
             className="h-2"
             label={
-              walkthroughData?.progressBar.label || previousVisit?.score || ''
+              walkthroughData?.progressBar.label ||
+              previousVisitStatus?.score ||
+              ''
             }
             subLabel="score"
             value={
@@ -385,16 +387,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyHappy}
-                              className="text-successMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyHappy className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-successDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -425,16 +423,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyInformational}
-                              className="text-alertMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyInformational className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-alertDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -465,16 +459,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyShock}
-                              className="text-errorMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyShock className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-errorDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -514,7 +504,7 @@ export const FollowUp = ({
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                              <p className=" font-h1 text-successDark text-sm font-semibold "></p>
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>
@@ -545,7 +535,7 @@ export const FollowUp = ({
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                              <p className=" font-h1 text-alertDark text-sm font-semibold "></p>
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>

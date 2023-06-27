@@ -226,8 +226,8 @@ export const ActivityList: React.FC = () => {
   );
 
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageDays < 5,
-    [ageDays, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
+    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
   );
 
   const isDisplayPillar2 = [
@@ -359,6 +359,7 @@ export const ActivityList: React.FC = () => {
           menuIconUrl: item?.menuIconUrl,
           menuIconClassName: 'border-0',
           title: item?.title,
+          titleStyle: 'text-textDark',
           subTitle: '',
           iconBackgroundColor: 'successMain' as Colours,
           backgroundColor: 'successBg' as Colours,
@@ -373,6 +374,7 @@ export const ActivityList: React.FC = () => {
           menuIconUrl: item?.menuIconUrl,
           menuIconClassName: 'border-0',
           title: item?.title,
+          titleStyle: 'text-textDark',
           subTitle: '',
           iconBackgroundColor: item.iconBackgroundColor as Colours,
           iconHexBackgroundColor: item.iconHexBackgroundColor,
@@ -397,7 +399,9 @@ export const ActivityList: React.FC = () => {
           menuIconClassName: 'border-0',
           iconColor: 'white',
           title: 'Follow up',
+          titleStyle: 'text-textDark',
           subTitle: 'Schedule your next visit, make referrals & save notes',
+          subTitleStyle: 'text-textDark',
           iconBackgroundColor: 'tertiary' as Colours,
           backgroundColor: 'uiBg' as Colours,
           onActionClick: () => {
@@ -411,7 +415,9 @@ export const ActivityList: React.FC = () => {
     }, [completedVisits, visibleActivities]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.length === stepperCount;
+  const isAllCompleted = completedVisits?.some((item) =>
+    item?.includes('Follow')
+  );
 
   const goBack = useCallback(() => {
     if (isStartVisit) {
@@ -453,7 +459,7 @@ export const ActivityList: React.FC = () => {
       visitThunkActions.getCompletedVisitsForVisitId({
         visitId,
       })
-    );
+    ).unwrap();
     // appDispatch(
     //   visitThunkActions.getPreviousVisitInformationForInfant({
     //     visitId,
@@ -483,7 +489,11 @@ export const ActivityList: React.FC = () => {
       );
     }
 
-    if (isStartVisit || !previousVisit?.visitDataStatus?.length) {
+    if (
+      isStartVisit ||
+      !previousVisit?.visitDataStatus?.length ||
+      isAllCompleted
+    ) {
       return (
         <div className="p-4">
           <Typography

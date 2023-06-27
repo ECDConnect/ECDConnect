@@ -392,18 +392,22 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             DateTime today = DateTime.Today;
 
             // Ratings
-            timeline.PQARating = _visitDataManager.GetPractitionerPQARating(userId);
-            timeline.ReAccreditationRating = _visitDataManager.GetPractitionerReAccreditationRating(userId);
+            timeline.PQARating1 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+            timeline.PQARating2 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
+            timeline.PQARating3 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+            timeline.ReAccreditationRating1 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
+            timeline.ReAccreditationRating2 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
+            timeline.ReAccreditationRating3 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
 
             // Re-accreditation visit
             // deadline - First PQA green rating received date + 1 year
-            if (timeline.PQARating?.OverallRatingColor == MetricsColorEnum.Success.ToString())
+            if (timeline.PQARating1?.OverallRatingColor == MetricsColorEnum.Success.ToString())
             {
                 Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
 
                 if (reVisit == null)
                 {
-                    var deadlineDate = timeline.PQARating.ActualVisitDate.Value.AddYears(1);
+                    var deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddYears(1);
 
                     VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
                     var visitModel = new VisitModel();
@@ -759,7 +763,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             
 
             // ThreeChildrenRegistered
-            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.Id.ToString());
+            var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
             if (allChildren.Count >= 3)
             {
                 timeline.ThreeChildrenRegisteredStatus = Constants.SSSettings.children_registered;
@@ -831,18 +835,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             // User should be identified as a start-up recipient in SmartLink; user has completed the franchisee agreement step.
             if (franchiseeAgreement != null && trainee.Practitioner.IsOnStipend == true)
             {
-                // Get support agreement signature
-                UserConsent supportAgreement = _userConsentRepo.GetAll().Where(x => x.UserId == userId && x.ConsentType == Constants.SSSettings.consent_type_support_agreement).FirstOrDefault();
-                if (supportAgreement != null)
+
+                // Get support agreement data captured
+                Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
+                if (supportVisit != null)
                 {
-                    // Get support agreement data captured
-                    Visit supportVisit = _visitManager.GetVisitForUserForType(trainee.Id.ToString(), Constants.SSSettings.client_trainee, Constants.SSSettings.visitType_startup_support_agreement);
-                    if (supportVisit != null)
-                    {
-                        timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
-                        timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
-                        timeline.SignStartUpSupportAgreementDate = supportAgreement.InsertedDate;
-                    }
+                    timeline.SignStartUpSupportAgreementStatus = Constants.SSSettings.support_agreement_signed;
+                    timeline.SignStartUpSupportAgreementColor = MetricsColorEnum.Success.ToString();
+                    timeline.SignStartUpSupportAgreementDate = supportVisit.InsertedDate;
                 }
             }
 

@@ -25,28 +25,16 @@ export const getMotherVisits = (state: RootState): VisitDto[] =>
   state.mothers.visits || [];
 
 export const getMotherCurrentVisitSelector = (
-  state: RootState
-): VisitDto | undefined => {
-  const visits = state.mothers.visits || [];
-  const noAttended =
-    visits?.filter(
-      (item) => !item.attended && new Date(item.orderDate) >= new Date()
-    ) || [];
-
-  return noAttended.length
-    ? noAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    : undefined;
-};
-
-export const getCurrentVisitSelector = (
   state: RootState,
   visitId: string
 ): VisitDto | undefined => {
-  const allVisits = state.mothers.visits || [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const allVisits =
+    state.mothers.visits?.filter(
+      (item) => item.visitType?.name !== 'additional_visits'
+    ) || [];
 
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
@@ -63,9 +51,18 @@ export const getCurrentVisitSelector = (
       return inProgressList[0];
     }
 
-    // Priority 3: grab the latest completed visit from the list
-    const lastAttended = allVisits?.filter((item) => item.attended) || [];
-    if (lastAttended.length !== 0) {
+    // Priority 3: grab the latest uncompleted visit from the list
+    const noAttended =
+      allVisits?.filter(
+        (item) => !item.attended && new Date(item.orderDate) >= today
+      ) || [];
+    if (noAttended) {
+      if (noAttended.length !== 0) {
+        return noAttended[0];
+      }
+    } else {
+      // Priority 4: grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
       return lastAttended.length
         ? lastAttended.reduce((prev, curr) =>
             (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
@@ -73,13 +70,6 @@ export const getCurrentVisitSelector = (
               : curr
           )
         : undefined;
-    } else {
-      // Priority 4: grab the latest uncompleted visit from the list
-      const noAttended =
-        allVisits?.filter(
-          (item) => !item.attended && new Date(item.orderDate) >= new Date()
-        ) || [];
-      return noAttended[0];
     }
   }
 };

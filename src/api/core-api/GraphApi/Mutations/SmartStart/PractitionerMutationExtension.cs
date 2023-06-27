@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
@@ -106,6 +107,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
+                    //Update RemoteEntity - Integration
+                    //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+
                     return updateResult;
                 }
                 return practitioner;

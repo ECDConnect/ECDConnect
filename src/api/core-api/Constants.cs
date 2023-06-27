@@ -583,7 +583,7 @@ namespace EcdLink.Api.CoreApi
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
-            public const string male = "Boy";
+            public const string male = "Male";
             public const string female = "Girl";
             public const string growth_section = "Growth";
             public const string breast_milk_only = "Breast milk only";
@@ -701,6 +701,19 @@ namespace EcdLink.Api.CoreApi
             //Note Queries
             public const string SSNote = "Note";
             public const string SLNote = "Note";
+            //Club data Queries
+            public const string SSClub = "Club";
+            public const string SLClub = "Club";
+            public const string SSClubMeeting = "ClubMeeting";
+            public const string SLClubMeeting = "ClubMeeting";
+            public const string SSClubMeetingRegister = "ClubMeetingRegister";
+            public const string SLClubMeetingRegister = "ClubMeetingRegister";
+            //PQA
+            public const string SSPQA = "PQA";
+            public const string SLPQA = "PQA";
+            //SmartSpaceVisits
+            public const string SSSmartSpaceVisit = "SmartSpaceVisit";
+            public const string SLSmartSpaceVisit = "SmartSpaceVisit";
 
             //Additional API Switches
             public const string QueryAll = "/Query";

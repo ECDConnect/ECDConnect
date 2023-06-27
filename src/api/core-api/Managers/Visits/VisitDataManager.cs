@@ -224,6 +224,41 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
                 return true;
         }
+
+        public Boolean EditVisitData(CMSVisitDataInputModel input)
+        {
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    VisitData existingRecord = ValidateInsertRecordWithoutAnswer(visitData);
+                    if (existingRecord != null)
+                    {
+                        visitData.Id = existingRecord.Id;
+                        _visitDataRepo.Update(visitData);
+                    } else
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
+                }
+            }
+            return true;
+        }
+
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)
@@ -784,6 +819,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             
             return false;
         }
+
+        private VisitData ValidateInsertRecordWithoutAnswer(VisitData visitData)
+        {
+            VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitData.VisitId &&
+                                                                  x.VisitName == visitData.VisitName &&
+                                                                  x.VisitSection == visitData.VisitSection &&
+                                                                  x.Question == visitData.Question).FirstOrDefault();
+            return record;
+        }
         public List<string> GetVisitStatusForSSChecklist(Guid traineeId)
         {
             List<string> vData = new List<string>();
@@ -796,7 +840,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
-
         public List<PractitionerNotes> GetVisitNotesForPractitioner(string userId)
         {
             List<PractitionerNotes> vData = new List<PractitionerNotes>();

@@ -47,8 +47,13 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { calendarThunkActions } from '@/store/calendar';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
+
+const enableCalendar = true;
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -64,6 +69,7 @@ export enum NavigationTypes {
   Logout = 'Logout',
   Practitioners = 'Practitioners',
   Business = 'Business',
+  SmartStarters = 'SmartStarters',
 }
 
 export const Dashboard: React.FC = () => {
@@ -85,10 +91,22 @@ export const Dashboard: React.FC = () => {
   );
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
+  const isRegistered = practitioner?.isRegistered;
+  const isProgress = practitioner?.progress;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const uncompletedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
 
   const { userProfilePicture } = useDocuments();
 
@@ -141,6 +159,10 @@ export const Dashboard: React.FC = () => {
     await appDispatch(
       programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
     ).unwrap();
+
+    await appDispatch(
+      calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+    ).unwrap();
   };
 
   useEffect(() => {
@@ -148,7 +170,11 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+    if (
+      dashboardNotification?.isNew &&
+      practitioner?.progress! >= 2 &&
+      !practitioner?.isTrainee
+    ) {
       appDispatch(notificationActions.resetNotificationState());
     }
   }, []);
@@ -171,58 +197,64 @@ export const Dashboard: React.FC = () => {
    * 2. Children of Practitioners
    */
   useEffect(() => {
-    if (isCoach) {
-      (async () =>
-        await appDispatch(
-          practitionerForCoachThunkActions.getPractitionersForCoach({})
-        ).unwrap())();
-
-      (async (id) =>
-        await appDispatch(
-          classroomsForCoachThunkActions.getClassroomForCoach({
-            id: userData?.id!,
-          })
-        ).unwrap())();
-
-      (async () =>
-        await appDispatch(
-          childrenThunkActions.getChildrenForCoach({})
-        ).unwrap())();
-    }
-
-    if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
-      const currentPrincipal = practitionerData?.filter(
-        (x) => x?.user?.id === userData.id
-      );
-      const _current = currentPrincipal?.at(0);
-      if (_current) {
+    if (isOnline) {
+      if (isCoach) {
         (async () =>
           await appDispatch(
-            practitionerThunkActions.getPractitionerById({
-              id: _current?.id || '',
+            practitionerForCoachThunkActions.getPractitionersForCoach({})
+          ).unwrap())();
+
+        (async (id) =>
+          await appDispatch(
+            classroomsForCoachThunkActions.getClassroomForCoach({
+              id: userData?.id!,
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            childrenThunkActions.getChildrenForCoach({})
+          ).unwrap())();
+      }
+
+      if (userData?.roles?.some((role) => role.name === 'Practitioner')) {
+        const currentPrincipal = practitionerData?.filter(
+          (x) => x?.user?.id === userData.id
+        );
+        const _current = currentPrincipal?.at(0);
+        if (_current) {
+          (async () =>
+            await appDispatch(
+              practitionerThunkActions.getPractitionerById({
+                id: _current?.id || '',
+              })
+            ).unwrap())();
+        }
       }
     }
   }, [userData]);
 
   useEffect(() => {
-    (async () =>
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap())();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      (async () =>
+        await appDispatch(
+          practitionerThunkActions.getAllPractitioners({})
+        ).unwrap())();
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }
   }, []);
 
   useEffect(() => {
-    if (practitioner?.userId && !classroom) {
-      (async () =>
-        await appDispatch(
-          classroomsThunkActions.getClassroomDetailsForPractitioner({
-            id: practitioner?.userId!,
-          })
-        ).unwrap())();
-      // eslint-disable-next-line react-hooks/exhaustive-deps
+    if (isOnline) {
+      if (practitioner?.userId && !classroom) {
+        (async () =>
+          await appDispatch(
+            classroomsThunkActions.getClassroomDetailsForPractitioner({
+              id: practitioner?.userId!,
+            })
+          ).unwrap())();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+      }
     }
   }, [practitioner?.userId]);
 
@@ -346,7 +378,7 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationTypes.Practitioners,
+      name: NavigationTypes.SmartStarters,
       icon: 'AcademicCapIcon',
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
@@ -408,31 +440,41 @@ export const Dashboard: React.FC = () => {
   }
 
   if (!isCoach) {
-    dashboardItems.push(
-      {
-        title: 'Classroom',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.classRoomIcon,
-        classNames: 'bg-uiBg',
-        onActionClick: () => {
-          goToClassroom();
-        },
+    dashboardItems.push({
+      title: 'Classroom',
+      titleIcon: 'AcademicCapIcon',
+      titleIconClassName: styles.classRoomIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToClassroom();
       },
-      {
-        title: 'Calendar',
-        titleIcon: 'CalendarIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
-        },
-      }
+    });
+    dashboardItems.push(
+      enableCalendar
+        ? {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.calendarIcon,
+            classNames: 'bg-uiBg',
+            onActionClick: () => {
+              goToCalendar();
+            },
+          }
+        : {
+            title: 'Calendar',
+            titleIcon: 'CalendarIcon',
+            titleIconClassName: styles.businessIcon,
+            onActionClick: () => ({}),
+            classNames: 'bg-uiBg',
+            chipConfig: {
+              colorPalette: {
+                backgroundColour: 'alertMain',
+                borderColour: 'alertMain',
+                textColour: 'white',
+              },
+              text: 'Coming soon',
+            },
+          }
     );
   }
 
@@ -486,13 +528,20 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
-      (classroomGroup && classroomGroup.length > 0)
+      ((classroom && classroom.id) ||
+        (classroomGroup && classroomGroup.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
       showCompleteProfileBlockingDialog();
     }
+  };
+
+  const goToCalendar = () => {
+    history.push(ROUTES.CALENDAR);
   };
 
   const goToBusiness = () => {

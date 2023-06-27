@@ -90,6 +90,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     });
 
     setChildId(result.ChildId);
+    const linkCopied = await copyToClip(caregiverChildregUrl);
+
+    const whatsapp = () => {
+      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
+    };
 
     await copyToClip(caregiverChildregUrl);
     setLoadingLink(false);
@@ -97,11 +102,11 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
       render: (onSubmit, onCancel) => {
         return (
           <CaregiverChildRegistrationModal
-            onSubmit={onSubmit}
+            onSubmit={whatsapp}
             onCancel={onCancel}
             childDetails={childDetails}
             caregiverUrl={caregiverChildregUrl}
-            couldCopyToClipboard={true}
+            couldCopyToClipboard={linkCopied}
           />
         );
       },

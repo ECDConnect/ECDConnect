@@ -1,6 +1,9 @@
 import { api } from '../axios.helper';
 import { Config, PractitionerDto, HealthCareWorkerDto } from '@ecdlink/core';
-import { MutationUpdateHealthCareWorkerArgs } from '@ecdlink/graphql';
+import {
+  HealthCareWorkerModelInput,
+  MutationUpdateHealthCareWorkerArgs,
+} from '@ecdlink/graphql';
 
 class HealthCareWorkerService {
   _accessToken: string;
@@ -45,24 +48,31 @@ class HealthCareWorkerService {
               surname
               phoneNumber
             }
-              clinic {
-                name
-                phoneNumber
-                  siteAddress {
-                      name
-                      addressLine1
-                      addressLine2
-                      addressLine3
-                      postalCode
-                      province {
-                          description
-                      }
-                  }
-              }
+            clinic {
+              name
+              phoneNumber
+                siteAddress {
+                    name
+                    addressLine1
+                    addressLine2
+                    addressLine3
+                    postalCode
+                    province {
+                        description
+                    }
+                }
+            }
           }
           id
           isRegistered
           languageId
+          clickedDashboardClientsTab
+          clickedDashboardVisitsTab
+          clickedDashboardHighlightsTab
+          clickedVisitTab
+          clickedProgressTab
+          clickedReferralsTab
+          clickedContactTab
         }
       }
       `,
@@ -230,6 +240,88 @@ class HealthCareWorkerService {
     }
 
     return response.data.data.updateHealthCareWorker;
+  }
+
+  async updateHealthCareWorkerTabs(
+    input: HealthCareWorkerModelInput,
+    userId: string
+  ): Promise<HealthCareWorkerDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateHealthCareWorkerTabs: HealthCareWorkerDto };
+    }>(``, {
+      query: `
+        mutation UpdateHealthCareWorkerTabs($input: HealthCareWorkerModelInput, $userId: String) {
+          updateHealthCareWorkerTabs(input: $input, userId: $userId) {
+            user {
+              id
+              userName
+              email
+              isSouthAfricanCitizen
+              verifiedByHomeAffairs
+              dateOfBirth
+              idNumber
+              firstName
+              surname
+              fullName
+              contactPreference
+              genderId
+              phoneNumber
+              profileImageUrl
+              emailConfirmed
+              phoneNumberConfirmed
+              twoFactorEnabled
+              isActive
+              lastSeen
+          }
+          teamLead {
+            jobTitle
+            user {
+              firstName
+              surname
+              phoneNumber
+            }
+            clinic {
+              name
+              phoneNumber
+                siteAddress {
+                    name
+                    addressLine1
+                    addressLine2
+                    addressLine3
+                    postalCode
+                    province {
+                        description
+                    }
+                }
+            }
+          }
+          id
+          isRegistered
+          languageId
+          clickedDashboardClientsTab
+          clickedDashboardVisitsTab
+          clickedDashboardHighlightsTab
+          clickedVisitTab
+          clickedProgressTab
+          clickedReferralsTab
+          clickedContactTab
+          }
+        }
+      `,
+      variables: {
+        input,
+        userId,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating health careworker failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateHealthCareWorkerTabs;
   }
 }
 

@@ -15,6 +15,7 @@ using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
@@ -199,50 +200,68 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
             [Service] VisitDataManager visitDataManager,
-            ReAccreditationVisitModel input,
-            int? visitNumber)
+            ReAccreditationVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
-            var visit_string = Constants.SSSettings.visitType_re_accreditation_1;
+            var visit_string = "";
 
-            if (visitNumber == 1)
-            {
-                visit_string = Constants.SSSettings.visitType_re_accreditation_1;
-            } else if (visitNumber == 2)
-            {
-                visit_string = Constants.SSSettings.visitType_re_accreditation_2;
-            } else if (visitNumber == 3)
-            {
-                visit_string = Constants.SSSettings.visitType_re_accreditation_3;
-
-            }
-
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == visit_string).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
-            // Add Visit
-            var visitModel = new VisitModel();
-            visitModel.VisitType = visitType;
-            visitModel.MotherId = null;
-            visitModel.InfantId = null;
-            visitModel.LinkedVisitId = null;
-            visitModel.PractitionerId = practitioner.Id;
-            visitModel.Attended = (bool)input.Attended;
-            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            if ((bool)input.Attended == true)
+            // get current visit number for accreditation.
+            List<Visit> visits = visitRepo.GetAll().Where(x => x.PractitionerId == practitioner.Id).ToList();
+
+            var firstVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+            if (firstVisit == null)
             {
-                visitModel.ActualVisitDate = DateTime.Now;
+                visit_string = Constants.SSSettings.visitType_re_accreditation_1;
+            } else
+            {
+                var secondVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2).FirstOrDefault();
+                if (secondVisit == null)
+                {
+                    visit_string = Constants.SSSettings.visitType_re_accreditation_2;
+                } else
+                {
+                    var thirdVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3).FirstOrDefault();
+                    
+                    if (thirdVisit == null)
+                    {
+                        visit_string = Constants.SSSettings.visitType_re_accreditation_3;
+                    }
+                }
             }
 
-            Visit visit = visitManager.AddVisitForPractitioner(visitModel);
-            // Add VisitData for visit
-            input.ReAccreditationData.VisitId = visit.Id.ToString();
-            input.ReAccreditationData.PractitionerId = practitioner.Id.ToString();
-            visitDataManager.AddPractitionerVisitData(input.ReAccreditationData, false);
+            if (visit_string != "")
+            {
+                VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == visit_string).FirstOrDefault();
 
-            return visit;
+                // Add Visit
+                var visitModel = new VisitModel();
+                visitModel.VisitType = visitType;
+                visitModel.MotherId = null;
+                visitModel.InfantId = null;
+                visitModel.LinkedVisitId = null;
+                visitModel.PractitionerId = practitioner.Id;
+                visitModel.Attended = (bool)input.Attended;
+                visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+                if ((bool)input.Attended == true)
+                {
+                    visitModel.ActualVisitDate = DateTime.Now;
+                }
+
+                Visit visit = visitManager.AddVisitForPractitioner(visitModel);
+                // Add VisitData for visit
+                input.ReAccreditationData.VisitId = visit.Id.ToString();
+                input.ReAccreditationData.PractitionerId = practitioner.Id.ToString();
+                visitDataManager.AddPractitionerVisitData(input.ReAccreditationData, false);
+
+                return visit;
+            }
+
+            return new Visit();
         }
 
 

@@ -17,13 +17,13 @@ import { useHistory, useLocation } from 'react-router';
 import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherById,
   getMotherVisits,
 } from '@/store/mother/mother.selectors';
 import { getPregnancyWeeks } from '@/utils/mom/pregnant.utils';
 import { useAppDispatch } from '@/store';
-import { motherSelectors, motherThunkActions } from '@/store/mother';
+import { motherThunkActions } from '@/store/mother';
 import {
   getStringFromClassNameOrId,
   useDialog,
@@ -58,7 +58,7 @@ export const Visits: React.FC = () => {
   );
 
   const motherCurrentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
 
   const visits = useSelector(getMotherVisits);
@@ -93,12 +93,25 @@ export const Visits: React.FC = () => {
       : undefined;
   }, [visits]);
 
-  const currentDate = useMemo(() => new Date(), []);
-  const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
+  //const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
+  //const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
 
+  // EC-685 - only show start visit button if today falls between planned and due date for current visit
+  const currentDate = useMemo(() => new Date(), []);
+  currentDate?.setHours(0, 0, 0, 0);
+  const plannedVisitDate =
+    currentVisit && new Date(currentVisit?.plannedVisitDate);
+  plannedVisitDate?.setHours(0, 0, 0, 0);
+  const dueDate = currentVisit && new Date(currentVisit?.dueDate);
+  dueDate?.setHours(0, 0, 0, 0);
   const isWeekDeadline =
-    dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
+    plannedVisitDate &&
+    dueDate &&
+    currentDate >= plannedVisitDate &&
+    currentDate <= dueDate;
+
+  // const isWeekDeadline =
+  //   dateToCheck && dateToCheck >= currentDate && dateToCheck <= next7Days;
 
   const insertedDate = useMemo(
     () => new Date(mother?.insertedDate || ''),

@@ -1,5 +1,5 @@
 import React from 'react';
-import { ActionModal } from '@ecdlink/ui';
+import { ActionModal, renderIcon } from '@ecdlink/ui';
 
 export type OnlineOnlyModalProps = {
   onSubmit: () => void;
@@ -12,9 +12,14 @@ const OnlineOnlyModal: React.FC<OnlineOnlyModalProps> = ({
 }) => {
   return (
     <ActionModal
-      icon={'ExclamationCircleIcon'}
+      customIcon={
+        <div className="rounded-full">
+          {renderIcon('ExclamationIcon', 'text-errorMain w-24 h-24')}
+        </div>
+      }
       iconColor="alertMain"
       iconBorderColor="alertBg"
+      iconClassName="h-24 w-24 text-errorMain"
       title={
         overrideText
           ? overrideText
