@@ -80,6 +80,7 @@ import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journ
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
+import { CalendarAddEvent } from '@/pages/calendar/calendar-add-event/calendar-add-event';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -259,6 +260,7 @@ const AuthRoutes: React.FC = () => {
         component={TraineeOnboarding}
       />
       <Route path={ROUTES.CALENDAR} component={Calendar} />
+      <Route path={ROUTES.CALENDAR_ADD_EVENT} component={CalendarAddEvent} />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route

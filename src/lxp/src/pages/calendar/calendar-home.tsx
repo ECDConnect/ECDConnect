@@ -14,7 +14,6 @@ import { createRef, useCallback, useEffect, useMemo, useState } from 'react';
 import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
 import {
   CALENDARS,
-  CalendarEvent,
   DayNameInfo,
   EventInfo,
   SelectDateTimeInfo,
@@ -26,7 +25,10 @@ import {
 import Calendar from '@toast-ui/react-calendar';
 import ToastUIReactCalendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
+import type { EventObject } from '@toast-ui/calendar';
 import UpdateEvent from './components/update-event/update-event';
+import { useSelector } from 'react-redux';
+import { calendarSelectors } from '@/store/calendar';
 
 export const CalendarHome: React.FC = () => {
   const history = useHistory();
@@ -42,31 +44,7 @@ export const CalendarHome: React.FC = () => {
   const [updateEventPopupData, setUpdateEventPopupData] =
     useState<UpdateEventPopupData>({ visible: false });
 
-  const [events, setEvents] = useState<CalendarEvent[]>([
-    {
-      id: '1',
-      calendarId: '1',
-      category: 'allday',
-      start: new Date(date.setHours(12, 0, 0, 0)).toISOString(),
-      end: new Date(date.setHours(12, 0, 0, 0)).toISOString(),
-      isAllday: true,
-      title: 'An all day event',
-      body: '',
-      backgroundColor: '#1a80b7',
-      color: '#ffffff',
-    },
-    {
-      id: '2',
-      calendarId: '1',
-      category: 'time',
-      start: new Date(date.setHours(12, 0, 0, 0)).toISOString(),
-      end: new Date(date.setHours(13, 30, 0, 0)).toISOString(),
-      title: 'Lunch',
-      body: '',
-      backgroundColor: '#1d95d5',
-      color: '#ffffff',
-    },
-  ]);
+  const events = useSelector(calendarSelectors.getCalendarEventObjects());
 
   const backToDashboard = () => {
     history.push('/');
@@ -132,21 +110,20 @@ export const CalendarHome: React.FC = () => {
     setUpdateEventPopupData({
       visible: true,
       event: {
-        id: '',
-        title: '',
-        body: '',
         start: start.toISOString(),
         end: end.toISOString(),
-        isAllday: isAllday,
+        allDay: isAllday,
       },
     });
   };
 
-  const updateEvent = (event: CalendarEvent) => {
+  const updateEvent = (event: EventObject) => {
     calendarInstance()?.clearGridSelections();
     setUpdateEventPopupData({
       visible: true,
-      event: { ...event },
+      event: {
+        id: event.id as string,
+      },
     });
   };
 
@@ -157,22 +134,22 @@ export const CalendarHome: React.FC = () => {
     });
   };
 
-  const onUpdateEvent = (isUpdate: boolean, updatedEvent: CalendarEvent) => {
+  const onUpdateEvent = (IsNew: boolean, eventId: string) => {
     setUpdateEventPopupData({
       visible: false,
     });
-    if (isUpdate) {
-      const index = events.findIndex((e) => e.id === updatedEvent.id);
-      if (index >= 0) {
-        const copy = [...events];
-        copy[index] = { ...copy[index], ...updatedEvent };
-        setEvents(copy);
-      }
-    } else {
-      const copy = [...events];
-      copy.push(updatedEvent);
-      setEvents(copy);
-    }
+    // if (isUpdate) {
+    //   const index = events.findIndex((e) => e.id === updatedEvent.id);
+    //   if (index >= 0) {
+    //     const copy = [...events];
+    //     copy[index] = { ...copy[index], ...updatedEvent };
+    //     setEvents(copy);
+    //   }
+    // } else {
+    //   const copy = [...events];
+    //   copy.push(updatedEvent);
+    //   setEvents(copy);
+    // }
   };
 
   useEffect(() => {
@@ -327,10 +304,10 @@ export const CalendarHome: React.FC = () => {
       >
         <div className={styles.dialogContent}>
           <UpdateEvent
-            event={updateEventPopupData.event as CalendarEvent}
+            event={updateEventPopupData.event}
             onBack={() => onUpdateEventBack()}
-            onUpdated={(isUpdate: boolean, event: CalendarEvent) =>
-              onUpdateEvent(isUpdate, event)
+            onUpdated={(isNew: boolean, eventId: string) =>
+              onUpdateEvent(isNew, eventId)
             }
           />
         </div>
