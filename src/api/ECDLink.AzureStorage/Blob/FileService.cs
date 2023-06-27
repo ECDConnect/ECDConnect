@@ -6,8 +6,11 @@ using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using FileSignatures;
 using FileSignatures.Formats;
+using HeyRed.Mime;
 using System;
 using System.IO;
+using System.Linq;
+using System.Net.Http;
 using System.Threading.Tasks;
 
 namespace ECDLink.AzureStorage.Blob
@@ -204,6 +207,28 @@ namespace ECDLink.AzureStorage.Blob
             }
 
             return false;
+        }
+
+        public async Task<string> GetFileAsBase64Async(string url) // return Task<string>
+        {
+            using (var client = new HttpClient())
+            {
+                var bytes = await client.GetByteArrayAsync(url); // there are other methods if you want to get involved with stream processing etc
+                var base64String = Convert.ToBase64String(bytes);
+                return base64String;
+            }
+        }
+
+        public async Task<string> GetFileExtensionFromUrl(string url)
+        {
+            url = url.Split('?')[0];
+            url = url.Split('/').Last();
+            return url.Contains('.') ? url.Substring(url.LastIndexOf('.')) : "";
+        }
+
+        public async Task<string> GetMimeType(string extension)
+        {
+           return MimeTypesMap.GetMimeType(extension);
         }
     }
 }

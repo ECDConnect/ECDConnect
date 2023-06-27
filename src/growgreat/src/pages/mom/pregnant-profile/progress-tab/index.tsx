@@ -15,7 +15,7 @@ import { useWindowSize } from '@reach/window-size';
 import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
-import { getCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
@@ -46,7 +46,7 @@ export const ProgressTab = () => {
   );
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
 
   // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);

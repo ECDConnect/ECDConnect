@@ -236,4 +236,92 @@ update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where 
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildClinicCard') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'clinicCard.png';
 	 
 ALTER TABLE public."Club" ADD "NumberOfMembers" numeric NULL;	 
+
+
+CREATE TABLE public."SL_Ingestion_User_Update" (
+	"Id" uuid NOT null 
+);
+
+
+ALTER TABLE public."IntegrationEntityMapping" ADD "LastIncomeSubmittedDate" timestamp NULL;
+ALTER TABLE public."IntegrationEntityMapping" ADD "LastAttendanceSubmittedDate" timestamp NULL;
+
+CREATE TABLE public."PQA" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"TenantId" uuid NULL,
+	"Latitude" text NULL,
+	"Longitude" text NULL,
+	"WasSuccessful" bool NULL,
+	"IsFranchiseeHittingChildren" bool NULL,
+	"IsSmartSpaceStillFine" bool NULL,
+	"IsVenueSafe" bool NULL,
+	"IsThereTooManyChildren" bool NULL,
+	"DateOfVisit" timestamp NULL,
+	"UserId" text NULL,
+	CONSTRAINT "PK_PQA" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_PQA_AspNetUsersId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+
+CREATE TABLE public."SmartSpaceVisit" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"TenantId" uuid NULL,
+	"Name" text NULL,
+	"NumberOfAssistants" numeric NULL,
+	"Capacity" numeric NULL,
+	"RequiredItemsScore" numeric NULL,
+	"UnrequiredItemsScore" numeric NULL,
+	"TotalScore" numeric NULL,
+	"Latitude" text NULL,
+	"Longitude" text NULL,
+	"OwnsProperty" bool NULL,
+	"HasAcceptedSmartSpaceAgreement" bool NULL,
+	"Q1" bool NULL,
+	"Q2" bool NULL,
+	"Q3" bool NULL,
+	"Q4" bool NULL,
+	"Q5" bool NULL,
+	"Q6" bool NULL,
+	"Q7" bool NULL,
+	"Q8" bool NULL,
+	"Q9" bool NULL,
+	"Q10" bool NULL,
+	"Q11" bool NULL,
+	"Q12" bool NULL,
+	"Q13" bool NULL,
+	"Q14" bool NULL,
+	"Q15" bool NULL,
+	"Q16" bool NULL,
+	"Q17" bool NULL,
+	"Q18" bool NULL,
+	"Q19" bool NULL,
+	"Q20" bool NULL,
+	"Q21" bool NULL,
+	"DateOfVisit" timestamp NULL,
+	"UserId" text NULL,
+	CONSTRAINT "PK_SmartSpaceVisit" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_SmartSpaceVisit_AspNetUsersId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+
+
+ALTER TABLE public."ClubMeeting" ADD "Name" text NULL;
+
+ALTER TABLE public."Trainee" ADD "HomeAddressLine1" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine2" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine3" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressPostalCode" text NULL;
+ALTER TABLE public."Trainee" ADD "PreferredCommunicationLanguage" text NULL;
+ALTER TABLE public."Trainee" ADD "FranchiseeAgreementAcceptedDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "SmartSpaceLicenceDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "StarterLicenceDate" timestamp NULL;
+
+
+select * from "IntegrationColumnMapping" icm where "LocalColumn" in ('AttendedBusinessSkills','AttendedChildProgress');
 	 */

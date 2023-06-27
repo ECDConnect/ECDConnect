@@ -1,12 +1,8 @@
-import Article from '@/components/article/article';
-import { practitionerSelectors } from '@/store/practitioner';
 import { Alert, Button, Checkbox, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { ContentConsentTypeEnum } from '@ecdlink/core';
-import { coachSelectors } from '@/store/coach';
 import {
   SectionQuestions,
+  StartupAgreementSteps,
   visitSection,
 } from '../../startup-accept-agreement.types';
 
@@ -21,9 +17,6 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
   setSectionQuestions,
   sectionQuestions,
 }) => {
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
-
   const [questions, setAnswers] = useState([
     {
       question:
@@ -99,21 +92,29 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
             }
           />
           <div className="'flex items-center' w-full flex-row justify-start">
-            <div className="flex items-start gap-2">
+            <div
+              className="flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[0].answer, 0)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 0)}
+                checked={questions?.[0].answer}
               />
               <Typography
                 text={
-                  'The contract will be for a fixed 24 month term, with a monthly value of the start-up subsidy of R 500.00 for a full day programme. I recognise that this amount will be paid monthly into my below mentioned bank account.'
+                  'The contract will be for the fixed term and amount agreed upon for a full day programme. I recognise that this amount will be paid monthly into my below mentioned bank account.'
                 }
                 type="body"
                 color={'textMid'}
               />
             </div>
-            <div className="mt-2 flex items-start gap-2">
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
+                checked={questions?.[1].answer}
               />
               <Typography
                 text={`I recognise that the payment of the monthly start up subsidy depends on the following, and failure to comply on a monthly basis will result in the non-payment of the start-up subsidy:
@@ -136,7 +137,9 @@ export const StartupAcceptAgreement2: React.FC<ReadAndAcceptAgreementProps> = ({
               icon="ArrowCircleRightIcon"
               onClick={() => {
                 onSubmitQuestions();
-                setAgreementStep('StartupAcceptAgreement3');
+                setAgreementStep(
+                  StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT3
+                );
               }}
               disabled={questions?.some((item) => item?.answer === false)}
             />

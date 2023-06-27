@@ -31,7 +31,7 @@ import { VisitDataStatus, VisitDataStatusFilterInput } from '@ecdlink/graphql';
 import { ReactComponent as PollyImpressed } from '@/assets/celebrateIcon.svg';
 import { format } from 'date-fns';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherById,
 } from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
@@ -81,7 +81,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
 
   const isWalkthrough =

@@ -54,7 +54,7 @@ export const TraineeFranchisorAgreement: React.FC<
       title={'Franchisee agreement'}
       subTitle={agreementStepCount}
       color={'primary'}
-      onBack={setNotificationStep('')}
+      onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
     >

@@ -22,7 +22,7 @@ import { toCamelCase } from '@ecdlink/core/lib';
 import { addVisitBackReferral } from '@/store/referral/referral.actions';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherById,
 } from '@/store/mother/mother.selectors';
 
@@ -55,7 +55,7 @@ export const MotherBackReferralUpdate: React.FC<
   );
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
 
   const selectedReferral = useMemo(() => {
