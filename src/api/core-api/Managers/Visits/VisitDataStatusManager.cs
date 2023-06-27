@@ -1202,18 +1202,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) {
+        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 
+        {
+            Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
+                                                          x.VisitType.Name == _additionalVisitType.Name &&
+                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null) &&
+                                                          x.Comment == comment).FirstOrDefault();
+            if (record == null)
+            {
+                VisitModel newVisit = new VisitModel();
+                newVisit.Attended = false;
+                newVisit.VisitType = _additionalVisitType;
+                newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
+                newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
+                newVisit.Risk = Constants.GGSettings.normal_risk;
+                newVisit.Comment = comment;
+                newVisit.LinkedVisitId = new Guid(_visitId);
+                newVisit.ActualVisitDate = DateTime.Now; 
+                _visitManager.AddAdditionalVisit(newVisit);
+            }
 
-            VisitModel newVisit = new VisitModel();
-            newVisit.Attended = false;
-            newVisit.VisitType = _additionalVisitType;
-            newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
-            newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
-            newVisit.Risk = Constants.GGSettings.normal_risk;
-            newVisit.Comment = comment;
-            newVisit.LinkedVisitId = new Guid(_visitId);
-            newVisit.ActualVisitDate = DateTime.Now; 
-            _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
