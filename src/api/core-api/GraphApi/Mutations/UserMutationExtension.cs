@@ -1,8 +1,10 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
+using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -143,6 +145,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ILogger<UserMutationExtension> logger,
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
+          //IntegrationHelperManager integrationHelperManager,
           string id,
           UserModel input)
         {
@@ -306,6 +309,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var updateResult = await userManager.UpdateAsync(user);
 
             DoAudit(currentUserId, repoFactory, fields, id);
+            //Update RemoteEntity - Integration
+            //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
             if (!updateResult.Succeeded)
             {

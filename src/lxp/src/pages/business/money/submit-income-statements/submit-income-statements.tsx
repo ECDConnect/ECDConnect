@@ -150,7 +150,8 @@ export const SubmitIncomeStatements: React.FC = () => {
 
     if (value > 0) return `+ R ${numberWithSpaces(String(value.toFixed(2)))}`;
 
-    if (value < 0) return `- R ${numberWithSpaces(String(value.toFixed(2)))}`;
+    if (value < 0)
+      return `- R ${numberWithSpaces(String(Math.abs(value).toFixed(2)))}`;
   };
 
   const today = new Date();
@@ -356,7 +357,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                         )}
                         type="body"
                         color={
-                          currentMonthTotalBalance! >= 0
+                          Number(currentMonthTotalBalance!) >= 0
                             ? 'successMain'
                             : 'errorMain'
                         }
@@ -510,7 +511,7 @@ export const SubmitIncomeStatements: React.FC = () => {
                       )}
                       type="body"
                       color={
-                        currentMonthTotalBalance! >= 0
+                        Number(currentMonthTotalBalance!) >= 0
                           ? 'successMain'
                           : 'errorMain'
                       }
@@ -544,7 +545,7 @@ export const SubmitIncomeStatements: React.FC = () => {
   return (
     <>
       <StatementsWrapper />
-      <div className="flex flex-col justify-center p-4">
+      <div className="pb-180 flex flex-col justify-center p-4">
         {isOnline && (
           <div
             className={
@@ -577,6 +578,7 @@ export const SubmitIncomeStatements: React.FC = () => {
         {!isOnline && <img src={offlineImg!} alt="offline img" />}
         {renderAccordinglyWalkthroughOrNot}
         {balanceNotifications}
+
         <Button
           shape="normal"
           color="primary"
@@ -590,25 +592,24 @@ export const SubmitIncomeStatements: React.FC = () => {
         >
           <Typography type="help" color="white" text="See all statements" />
         </Button>
-        <div className="flex justify-end pt-8">
-          <FADButton
-            title={'Add income or expense'}
-            icon={'PlusIcon'}
-            iconDirection={'left'}
-            textToggle={true}
-            type={'filled'}
-            color={'primary'}
-            shape={'round'}
-            className={`'m-3 py-2.5' absolute bottom-4 right-0 z-10 px-3.5 ${
-              stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
-            } `}
-            click={() => {
-              history.push(ROUTES.BUSINESS_ADD_AMOUNT);
-              nextStep();
-            }}
-            id="startStatements"
-          />
-        </div>
+
+        <FADButton
+          title={'Add income or expense'}
+          icon={'PlusIcon'}
+          iconDirection={'left'}
+          textToggle={true}
+          type={'filled'}
+          color={'primary'}
+          shape={'round'}
+          className={`absolute bottom-14 right-0 z-10 m-3 px-3.5 py-2.5 ${
+            stepIndex === 7 || stepIndex === 8 ? 'pointer-events-none' : ''
+          }`}
+          click={() => {
+            history.push(ROUTES.BUSINESS_ADD_AMOUNT);
+            nextStep();
+          }}
+          id="startStatements"
+        />
       </div>
     </>
   );

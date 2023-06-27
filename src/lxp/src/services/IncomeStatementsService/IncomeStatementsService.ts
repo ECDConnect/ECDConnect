@@ -169,7 +169,9 @@ class IncomeStatementsService {
     return response.data.data.updateStatementsIncome;
   }
 
-  async saveIncomeStatementPDF(input: IncomeStatementPDFDocInput): Promise<any> {
+  async saveIncomeStatementPDF(
+    input: IncomeStatementPDFDocInput
+  ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
@@ -180,7 +182,7 @@ class IncomeStatementsService {
         }
       `,
       variables: {
-        input
+        input,
       },
     });
 

@@ -51,7 +51,6 @@ export const getBalanceSheet = (
   state: RootState
 ): BalanceSheetDto[] | undefined => state?.statements?.balanceSheet || [];
 
-
 // Income types selectors
 export const getPreschoolFeeIncome = (state: RootState): IncomeStatementsDto =>
   state.statements?.incomeTypes?.find(
@@ -119,4 +118,3 @@ export const getSalaryExpense = (state: RootState): ExpensesStatementsDto =>
 export const getIncomeExpensesPDFreport = (
   state: RootState
 ): ReportTableDataDto[] | undefined => state?.statements?.pdfReportData || [];
-

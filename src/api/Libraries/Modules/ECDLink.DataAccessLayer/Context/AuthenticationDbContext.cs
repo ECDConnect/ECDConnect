@@ -45,6 +45,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Absentees> Absents { get; set; }
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
         public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
+        public DbSet<SL_Ingestion_User_Update> SL_Ingestion_Users_Update { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
 
         // Notes

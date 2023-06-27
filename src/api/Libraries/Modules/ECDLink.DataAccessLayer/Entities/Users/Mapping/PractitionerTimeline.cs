@@ -54,8 +54,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users.Mapping
         public virtual ICollection<Visit> RequestedCoachVisits { get; set; }
         public virtual ICollection<PractitionerCoachCircle> CoachCircles { get; set; }
         public virtual ICollection<ClubMeetingRegister> ClubMeetings { get; set; }
-        public virtual PQARating PQARating { get; set; }
-        public virtual PQARating ReAccreditationRating { get; set; }
+        public virtual PQARating PQARating1 { get; set; }
+        public virtual PQARating PQARating2 { get; set; }
+        public virtual PQARating PQARating3 { get; set; }
+        public virtual PQARating ReAccreditationRating1 { get; set; }
+        public virtual PQARating ReAccreditationRating2 { get; set; }
+        public virtual PQARating ReAccreditationRating3 { get; set; }
     }
 
     public class PQARating

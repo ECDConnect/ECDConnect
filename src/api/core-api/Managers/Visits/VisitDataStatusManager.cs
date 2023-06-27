@@ -122,6 +122,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var motherName = "";
                 if (infant.Mother != null) {
                     motherName = infant.Mother.User.FirstName;
+                } else
+                {
+                    motherName = infant.Caregiver.FirstName;
                 }
 
                 // add additional visit for when we need to add additional visits for the client
@@ -852,8 +855,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
                
-                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
                 Boolean weightIncreased = _weight > _prevWeight;
+                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
 
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
                     wIndicator = "Low birth weight";
@@ -946,7 +949,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
@@ -1026,10 +1029,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // Green progress
                     comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
-
-                    // Green G4 
-                    comment = firstName + Constants.GGSettings.growing_well;
-                    AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
@@ -1044,6 +1043,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add green item to G9 client summary: ""Themba is growing well""
                 comment = firstName + Constants.GGSettings.growing_well;
                 AddVisitDataStatus(q3, comment, _green, _G9, Constants.GGSettings.growth_section, false);
+
+                // Green G4 
+                comment = firstName + Constants.GGSettings.growing_well;
+                AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
             } else {
 
                 if (wColor == _red || lColor == _red || mColor == _red) {
@@ -1199,18 +1202,27 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) {
+        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 
+        {
+            Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
+                                                          x.VisitType.Name == _additionalVisitType.Name &&
+                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null) &&
+                                                          x.Comment == comment).FirstOrDefault();
+            if (record == null)
+            {
+                VisitModel newVisit = new VisitModel();
+                newVisit.Attended = false;
+                newVisit.VisitType = _additionalVisitType;
+                newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
+                newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
+                newVisit.Risk = Constants.GGSettings.normal_risk;
+                newVisit.Comment = comment;
+                newVisit.LinkedVisitId = new Guid(_visitId);
+                newVisit.ActualVisitDate = DateTime.Now; 
+                _visitManager.AddAdditionalVisit(newVisit);
+            }
 
-            VisitModel newVisit = new VisitModel();
-            newVisit.Attended = false;
-            newVisit.VisitType = _additionalVisitType;
-            newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
-            newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
-            newVisit.Risk = Constants.GGSettings.normal_risk;
-            newVisit.Comment = comment;
-            newVisit.LinkedVisitId = new Guid(_visitId);
-            newVisit.ActualVisitDate = DateTime.Now; 
-            _visitManager.AddAdditionalVisit(newVisit);
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
@@ -1297,75 +1309,81 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return result;
         }
-        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
+        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender, Boolean weightIncreased) {
             var indicator = "Normal";
 
             if (isWeightCalc)
             {
-                string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                var ageSection_secondary = "";
-                if (totalDaysOld < 730)
+                if (weight > 0)
                 {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
-                } else
-                {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
-                }
-
-                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForAge != null)
-                {
-                    if (weight <= recordsForAge.SD3neg)
+                    string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
+                    var ageSection_secondary = "";
+                    if (totalDaysOld < 730)
                     {
-                        indicator = "Severely underweight"; // priority 1
-                    }
-                    else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
+                    } else
                     {
-                        indicator = "Underweight"; // priority 2
-                    }
-                    else if (weight > recordsForAge.SD2neg)
-                    {
-                        indicator = "Growth faltering"; // priority 3
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                     }
 
-                    if (indicator == "Normal")  // priority 6
-                    {
-                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+                    VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
-                        if (recordsForWeight != null)
+                    if (recordsForAge != null)
+                    {
+                        if (weight <= recordsForAge.SD3neg)
                         {
-                            if (weight >= recordsForWeight.SD3)
+                            indicator = "Severely underweight"; // priority 1
+                        }
+                        else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        {
+                            indicator = "Underweight"; // priority 2
+                        }
+                        else if (weight > recordsForAge.SD2neg && weightIncreased == false)
+                        {
+                            indicator = "Growth faltering"; // priority 3
+                        }
+
+                        if (indicator == "Normal")  // priority 6
+                        {
+                            VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+
+                            if (recordsForWeight != null)
                             {
-                                indicator = "Obese"; // priority 4
-                            }
-                            else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
-                            {
-                                indicator = "Overweight"; // priority 5
+                                if (weight >= recordsForWeight.SD3)
+                                {
+                                    indicator = "Obese"; // priority 4
+                                }
+                                else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
+                                {
+                                    indicator = "Overweight"; // priority 5
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
 
             } else
             {
-                string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
-                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForHeight != null)
+                if (height > 0)
                 {
-                    if (weight <= recordsForHeight.SD3neg)
+                    string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
+                    var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+
+                    if (recordsForHeight != null)
                     {
-                        indicator = "Severely stunted"; // priority 1
-                    }
-                    else if (weight > recordsForHeight.SD3neg && weight <= recordsForHeight.SD2neg)
-                    {
-                        indicator = "Stunted"; // priority 2
-                    }
-                    else if (weight > recordsForHeight.SD2neg)
-                    {
-                        indicator = "Normal"; // priority 3
+                        if (height <= recordsForHeight.SD3neg)
+                        {
+                            indicator = "Severely stunted"; // priority 1
+                        }
+                        else if (height > recordsForHeight.SD3neg && height <= recordsForHeight.SD2neg)
+                        {
+                            indicator = "Stunted"; // priority 2
+                        }
+                        else if (height > recordsForHeight.SD2neg)
+                        {
+                            indicator = "Normal"; // priority 3
+                        }
                     }
                 }
             }

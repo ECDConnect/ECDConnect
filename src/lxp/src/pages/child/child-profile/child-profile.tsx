@@ -32,7 +32,7 @@ import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router';
 import { RemoveChildPrompt } from '../../../components/remove-child-prompt/remove-child-prompt';
-
+import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStaticData } from '@hooks/useStaticData';
 import { Age } from '@models/common/Age';
@@ -146,9 +146,18 @@ export const ChildProfile: React.FC = () => {
   const childDocuments = useSelector(
     documentSelectors.getDocumentsByUserId(child?.userId)
   );
+
+  const birthCertTypeId = getDocumentTypeIdByEnum(
+    FileTypeEnum.ChildBirthCertificate
+  );
+  const clinicCardTypeId = getDocumentTypeIdByEnum(
+    FileTypeEnum.ChildClinicCard
+  );
+
   const childBirthCertificate = childDocuments?.find(
     (x) =>
-      x.name?.includes('birthCertificate') || x.name?.includes('clinicCard')
+      x.documentTypeId === birthCertTypeId ||
+      x.documentTypeId === clinicCardTypeId
   );
 
   const childPhotoConsent = useSelector(
@@ -243,6 +252,20 @@ export const ChildProfile: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit) => {
+        return (
+          <OnlineOnlyModal
+            overrideText={'You need to go online to use this feature.'}
+            onSubmit={onSubmit}
+          ></OnlineOnlyModal>
+        );
+      },
+    });
+  };
 
   const goToChildProfileWalkhthrough = () => {
     dialog({
@@ -363,10 +386,14 @@ export const ChildProfile: React.FC = () => {
       showDivider: true,
       dividerType: 'dashed',
       onButtonClick: () => {
-        history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
-          childId: child?.id,
-          classroomGroupId: playGroup?.id,
-        });
+        if (isOnline) {
+          history.push(ROUTES.CHILD_ATTENDANCE_REPORT, {
+            childId: child?.id,
+            classroomGroupId: playGroup?.id,
+          });
+        } else {
+          showOnlineOnly();
+        }
       },
     });
 
@@ -717,9 +744,9 @@ export const ChildProfile: React.FC = () => {
             className="m-4"
             title={`${
               childUser?.firstName || 'This child'
-            } does not have a playgroup`}
+            } does not have a class`}
             list={[
-              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
+              `Add ${childUser?.firstName || 'this child'} to a class now`,
             ]}
             type="error"
             button={
@@ -735,11 +762,7 @@ export const ChildProfile: React.FC = () => {
                 }}
               >
                 {renderIcon('PlusIcon', 'w-5 h-5 text-white mr-1')}
-                <Typography
-                  color="white"
-                  text="Add to a Playgroup"
-                  type="small"
-                />
+                <Typography color="white" text="Add to a class" type="small" />
               </Button>
             }
           />

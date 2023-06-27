@@ -67,6 +67,7 @@ import {
 
 import { nutritionAnswers } from './pillar-1-steps/nutrition';
 import { Question } from './dynamic-form';
+import { SicknessAlertStep } from './pillar-4-steps/sickness-alert';
 
 export const getCareForMomSteps = (
   isChildBefore49Days: boolean,
@@ -236,11 +237,13 @@ export const pillar3Steps = (
 
 export const getPillar4Steps = (
   isFollowUp: boolean,
-  isChildBefore49Days: boolean
+  isChildBefore49Days: boolean,
+  isSicknessAlertStep: boolean
 ) => [
   ...(isFollowUp ? [FollowUpStep] : []),
   ...(isChildBefore49Days ? [SicknessStep] : []),
   ...(isChildBefore49Days ? [Pillar4DangerSignsStep] : []),
+  ...(isSicknessAlertStep ? [SicknessAlertStep] : []),
 ];
 
 export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];

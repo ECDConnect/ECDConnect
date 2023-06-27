@@ -21,7 +21,7 @@ import {
 } from 'react';
 import { useAppDispatch } from '@/store';
 import {
-  getCurrentVisitSelector,
+  getInfantCurrentVisitSelector,
   getInfantById,
 } from '@/store/infant/infant.selectors';
 import thumbsUpImage from '@/assets/thumbsUp.png';
@@ -75,7 +75,7 @@ export const ReferralsTab: React.FC = () => {
   );
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getInfantCurrentVisitSelector(state, '')
   );
 
   const isWalkthrough =
