@@ -246,8 +246,8 @@ export default function TeamLeads() {
                     ]}
                     rows={tableData}
                     urlRow={'/view-user/'}
-                    component={"Team Leads"}
                     searchInput={searchValue}
+                    component="team-leads"
                   />
                 </div>
               </div>

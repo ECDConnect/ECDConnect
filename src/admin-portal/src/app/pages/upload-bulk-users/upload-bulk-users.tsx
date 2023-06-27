@@ -48,7 +48,7 @@ const adminUserschema = yup.object().shape({
 });
 
 
-export function ViewUser(props: any) {
+export function UploadBulkUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
@@ -118,7 +118,7 @@ export function ViewUser(props: any) {
     getValues: userDetailGetValues,
     handleSubmit,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(props.location.state?.component === 'administrator' ? adminUserschema : userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -164,7 +164,6 @@ export function ViewUser(props: any) {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
 
-
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm?.phoneNumber,
       idNumber: userDetailForm?.idNumber,
@@ -173,9 +172,6 @@ export function ViewUser(props: any) {
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null
     };
-
-    console.log(">>>", userInputModel)
-
     if (props.location.state.component === 'chw') {
       // console.log(">>>>", props.location.state?.component)
       await updateCHW({
@@ -297,75 +293,70 @@ export function ViewUser(props: any) {
             <h3 className='pb-2 border-b-4 border-dashed text-xl '> Personal information </h3>
             <form key={"formKey"} className="space-y-8 divide-y divide-gray-200">
               {
-                editActive ?
+                editActive && props.location.state?.component !== 'administrators' ?
                   <>
                     <div className="space-y-0">
-                      {props.location.state?.component === 'chw' && <>
-                        <p className='text-md py-2 mt-4'>Which kind of identification do you have for {userData?.userById?.firstName}?</p>
-                        <div className="flex flex-row">
-                          {<Button
-                            className={' w-4/12 rounded-md mr-0'}
-                            type="filled"
-                            isLoading={loading}
+                      <p className='text-md py-2 mt-4'>Which kind of identification do you have for {userData?.userById?.firstName}?</p>
+                      <div className="flex flex-row">
+                        {<Button
+                          className={' w-4/12 rounded-md mr-0'}
+                          type="filled"
+                          isLoading={loading}
+                          color="tertiary"
+                          onClick={() => { }}
+                        >
+                          <Typography
+                            type="help"
+                            color="white"
+                            text={'ID number'}
+                          ></Typography>
+                        </Button>}
+                        {<Button
+                          className={' w-4/12 rounded-md ml-2'}
+                          type="filled"
+                          isLoading={loading}
+                          color="tertiaryAccent1"
+                          onClick={() => { }}
+                        >
+                          <Typography
+                            type="help"
                             color="tertiary"
-                            onClick={() => { }}
-                          >
-                            <Typography
-                              type="help"
-                              color="white"
-                              text={'ID number'}
-                            ></Typography>
-                          </Button>}
-                          {<Button
-                            className={' w-4/12 rounded-md ml-2'}
-                            type="filled"
-                            isLoading={loading}
-                            color="tertiaryAccent1"
-                            onClick={() => { }}
-                          >
-                            <Typography
-                              type="help"
-                              color="tertiary"
-                              text={'Passport number'}
-                            ></Typography>
-                          </Button>}
-                        </div>
-                      </>}
+                            text={'Passport number'}
+                          ></Typography>
+                        </Button>}
+                      </div>
 
                       <div className="grid grid-cols-1 ">
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'ID number *'}
+                            nameProp={'idNumber'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.idNumber?.message}
+                            defaultValue={userData?.userById?.idNumber}
 
+                          />
+                        </div>
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Cellphone number *'}
+                            nameProp={'phoneNumber'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.phoneNumber?.message}
+                            defaultValue={userData?.userById?.phoneNumber}
+                          />
+                        </div>
                         {
-                          props.location.state?.component !== 'chw' ?
-                            <div className="my-4 sm:col-span-3 w-6/12">
-                              <FormField
-                                label={'Email *'}
-                                nameProp={'email'}
-                                register={userDetailRegister}
-                                error={detailFormErrors.email?.message}
-                                defaultValue={userData?.email?.phoneNumber}
-                              />
-                            </div> :
-                            <>
-                              <div className="my-4 sm:col-span-3 w-6/12">
-                                <FormField
-                                  label={'ID number *'}
-                                  nameProp={'idNumber'}
-                                  register={userDetailRegister}
-                                  error={detailFormErrors.idNumber?.message}
-                                  defaultValue={userData?.userById?.idNumber}
-
-                                />
-                              </div>
-                              <div className="my-4 sm:col-span-3 w-6/12">
-                                <FormField
-                                  label={'Cellphone number *'}
-                                  nameProp={'phoneNumber'}
-                                  register={userDetailRegister}
-                                  error={detailFormErrors.phoneNumber?.message}
-                                  defaultValue={userData?.userById?.phoneNumber}
-                                />
-                              </div>
-                            </>
+                          props.location.state?.component !== 'chw' &&
+                          <div className="my-4 sm:col-span-3 w-6/12">
+                            <FormField
+                              label={'Email *'}
+                              nameProp={'email'}
+                              register={userDetailRegister}
+                              error={detailFormErrors.email?.message}
+                              defaultValue={userData?.email?.phoneNumber}
+                            />
+                          </div>
                         }
                         <div className="my-4 sm:col-span-3 w-6/12">
                           <FormField
@@ -405,7 +396,7 @@ export function ViewUser(props: any) {
                       isLoading={loading}
                       color="secondary"
                       // disabled={!isDetailValid}
-                      onClick={props.location.state.component !== 'chw' ? handleSubmit(onSave) : onSave}
+                      onClick={handleSubmit(onSave)}
                     >
                       <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
                       <Typography
@@ -415,15 +406,74 @@ export function ViewUser(props: any) {
                       ></Typography>
                     </Button>
 
+                  </> : (editActive && props.location.state?.component === 'administrators') ? <>
+                    <div className="space-y-0">
+                      <div className="grid grid-cols-1 ">
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Email *'}
+                            nameProp={'email'}
+                            register={userDetailRegister}
+                            error={detailFormErrors.email?.message}
+                            defaultValue={userData?.email?.phoneNumber}
+                          />
+                        </div>
+                        <div className="my-4 sm:col-span-3 w-6/12">
+                          <FormField
+                            label={'Password *'}
+                            nameProp={'password'}
+                            register={passwordRegister}
+                            type="password"
+                            error={passwordFormErrors.password?.message}
+                            showPassword={showPassword}
+                            togglePasswordVisibility={togglePasswordVisibility}
+                          />
+                        </div>
+                        <div className="-mx-1 flex w-6/12">
+                          {[...Array(4)].map((_, i) => (
+                            <div className="w-1/4 px-1" key={i}>
+                              <div
+                                className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                  ? passwordScore <= 2
+                                    ? 'bg-red-400'
+                                    : passwordScore <= 3
+                                      ? 'bg-yellow-400'
+                                      : passwordScore <= 4
+                                        ? 'bg-green-500'
+                                        : 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                                  }`}
+                              ></div>
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+
+                    <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      // disabled={!isDetailValid}
+                      onClick={handleSubmit(onSave)}
+                    >
+                      <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes'}
+                      ></Typography>
+                    </Button>
 
                   </> :
-                  (props.location.state?.component === 'administrators' && props.location.state?.component !== 'team-leads') ? <div className='flex flex-row justify-start pt-4 text-current'>
-                    <p className='text-xl px-4'>Email: {userData?.userById?.email}</p>
-                  </div> : <div className='flex flex-row justify-start pt-4 text-current'>
-                    <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
-                    <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
-                    <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
-                  </div>
+                    (props.location.state?.component === 'administrators' && props.location.state?.component !== 'team-leads') ? <div className='flex flex-row justify-start pt-4 text-current'>
+                      <p className='text-xl px-4'>Email: {userData?.userById?.email}</p>
+                    </div> : <div className='flex flex-row justify-start pt-4 text-current'>
+                      <p className='text-xl px-4'>ID: {userData?.userById?.idNumber}</p>
+                      <p className='text-xl px-4'> Cellphone: {userData?.userById?.phoneNumber}</p>
+                      <p className='text-xl px-4'>WhatsApp: {userData?.userById?.phoneNumber}</p>
+                    </div>
               }
             </form>
             {/* End main area */}
@@ -637,4 +687,4 @@ export function ViewUser(props: any) {
   );
 }
 
-export default ViewUser;
+export default UploadBulkUser;
