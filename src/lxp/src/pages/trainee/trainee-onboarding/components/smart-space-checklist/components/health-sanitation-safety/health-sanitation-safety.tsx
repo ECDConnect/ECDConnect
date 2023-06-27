@@ -104,7 +104,10 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
         (obj) => obj.question === item.question
       );
       if (previousAnswer) {
-        return { ...item, answer: Boolean(previousAnswer.questionAnswer) };
+        return {
+          ...item,
+          answer: previousAnswer.questionAnswer === 'true' ? true : false,
+        };
       }
       return item;
     });
