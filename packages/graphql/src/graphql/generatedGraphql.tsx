@@ -451,6 +451,86 @@ export type CmsVisitSectionInput = {
   visitSection?: InputMaybe<Scalars['String']>;
 };
 
+export type CalendarEvent = {
+  __typename?: 'CalendarEvent';
+  allDay: Scalars['Boolean'];
+  description?: Maybe<Scalars['String']>;
+  end: Scalars['DateTime'];
+  eventType?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  name?: Maybe<Scalars['String']>;
+  participants?: Maybe<Array<Maybe<CalendarEventParticipant>>>;
+  start: Scalars['DateTime'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type CalendarEventFilterInput = {
+  allDay?: InputMaybe<BooleanOperationFilterInput>;
+  and?: InputMaybe<Array<CalendarEventFilterInput>>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  end?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  eventType?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  name?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<CalendarEventFilterInput>>;
+  participants?: InputMaybe<ListFilterInputTypeOfCalendarEventParticipantFilterInput>;
+  start?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type CalendarEventInput = {
+  AllDay: Scalars['Boolean'];
+  Description?: InputMaybe<Scalars['String']>;
+  End: Scalars['DateTime'];
+  EventType?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Name?: InputMaybe<Scalars['String']>;
+  Participants?: InputMaybe<Array<InputMaybe<CalendarEventParticipantInput>>>;
+  Start: Scalars['DateTime'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type CalendarEventParticipant = {
+  __typename?: 'CalendarEventParticipant';
+  calendarEvent?: Maybe<CalendarEvent>;
+  calendarEventId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  participantUserId?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type CalendarEventParticipantFilterInput = {
+  and?: InputMaybe<Array<CalendarEventParticipantFilterInput>>;
+  calendarEvent?: InputMaybe<CalendarEventFilterInput>;
+  calendarEventId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  or?: InputMaybe<Array<CalendarEventParticipantFilterInput>>;
+  participantUserId?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type CalendarEventParticipantInput = {
+  CalendarEvent?: InputMaybe<CalendarEventInput>;
+  CalendarEventId: Scalars['UUID'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  ParticipantUserId?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
 export type CalendarEventType = {
   __typename?: 'CalendarEventType';
   colour?: Maybe<Scalars['String']>;
@@ -2027,6 +2107,7 @@ export type FileModel = {
 
 export enum FileTypeEnum {
   AttendancePdf = 'ATTENDANCE_PDF',
+  CalendarEventType = 'CALENDAR_EVENT_TYPE',
   CareGiver = 'CARE_GIVER',
   Child = 'CHILD',
   ChildBirthCertificate = 'CHILD_BIRTH_CERTIFICATE',
@@ -2954,6 +3035,13 @@ export type LicenseTypeInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ListFilterInputTypeOfCalendarEventParticipantFilterInput = {
+  all?: InputMaybe<CalendarEventParticipantFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<CalendarEventParticipantFilterInput>;
+  some?: InputMaybe<CalendarEventParticipantFilterInput>;
+};
+
 export type ListFilterInputTypeOfClassProgrammeFilterInput = {
   all?: InputMaybe<ClassProgrammeFilterInput>;
   any?: InputMaybe<Scalars['Boolean']>;
@@ -3315,6 +3403,8 @@ export type Mutation = {
   createAbsentees?: Maybe<Absentees>;
   createActivity?: Maybe<Scalars['String']>;
   createAuditLogType?: Maybe<AuditLogType>;
+  createCalendarEvent?: Maybe<CalendarEvent>;
+  createCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
   createCalendarEventType?: Maybe<Scalars['String']>;
   createCaregiver?: Maybe<Caregiver>;
   createChild?: Maybe<Child>;
@@ -3417,6 +3507,8 @@ export type Mutation = {
   deleteAbsentees?: Maybe<Scalars['Boolean']>;
   deleteActivity?: Maybe<Scalars['Boolean']>;
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
+  deleteCalendarEvent?: Maybe<Scalars['Boolean']>;
+  deleteCalendarEventParticipant?: Maybe<Scalars['Boolean']>;
   deleteCalendarEventType?: Maybe<Scalars['Boolean']>;
   deleteCaregiver?: Maybe<Scalars['Boolean']>;
   deleteChild?: Maybe<Scalars['Boolean']>;
@@ -3555,6 +3647,8 @@ export type Mutation = {
   updateAbsentees?: Maybe<Absentees>;
   updateActivity?: Maybe<Activity>;
   updateAuditLogType?: Maybe<AuditLogType>;
+  updateCalendarEvent?: Maybe<CalendarEvent>;
+  updateCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
   updateCalendarEventType?: Maybe<CalendarEventType>;
   updateCareGiverGrants: Scalars['Boolean'];
   updateCaregiver?: Maybe<Caregiver>;
@@ -3843,6 +3937,14 @@ export type MutationCreateActivityArgs = {
 
 export type MutationCreateAuditLogTypeArgs = {
   input?: InputMaybe<AuditLogTypeInput>;
+};
+
+export type MutationCreateCalendarEventArgs = {
+  input?: InputMaybe<CalendarEventInput>;
+};
+
+export type MutationCreateCalendarEventParticipantArgs = {
+  input?: InputMaybe<CalendarEventParticipantInput>;
 };
 
 export type MutationCreateCalendarEventTypeArgs = {
@@ -4301,6 +4403,14 @@ export type MutationDeleteActivityArgs = {
 };
 
 export type MutationDeleteAuditLogTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteCalendarEventArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteCalendarEventParticipantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -4887,6 +4997,16 @@ export type MutationUpdateActivityArgs = {
 export type MutationUpdateAuditLogTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<AuditLogTypeInput>;
+};
+
+export type MutationUpdateCalendarEventArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<CalendarEventInput>;
+};
+
+export type MutationUpdateCalendarEventParticipantArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<CalendarEventParticipantInput>;
 };
 
 export type MutationUpdateCalendarEventTypeArgs = {
@@ -6676,6 +6796,10 @@ export type Query = {
   GetAllAbsentees?: Maybe<Array<Maybe<Absentees>>>;
   GetAllActivity: Array<Maybe<Activity>>;
   GetAllAuditLogType?: Maybe<Array<Maybe<AuditLogType>>>;
+  GetAllCalendarEvent?: Maybe<Array<Maybe<CalendarEvent>>>;
+  GetAllCalendarEventParticipant?: Maybe<
+    Array<Maybe<CalendarEventParticipant>>
+  >;
   GetAllCalendarEventType: Array<Maybe<CalendarEventType>>;
   GetAllCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
@@ -6788,6 +6912,8 @@ export type Query = {
   GetAllWorkflowStatus?: Maybe<Array<Maybe<WorkflowStatus>>>;
   GetAllWorkflowStatusType?: Maybe<Array<Maybe<WorkflowStatusType>>>;
   GetAuditLogTypeById?: Maybe<AuditLogType>;
+  GetCalendarEventById?: Maybe<CalendarEvent>;
+  GetCalendarEventParticipantById?: Maybe<CalendarEventParticipant>;
   GetCalendarEventTypeById: Array<Maybe<CalendarEventType>>;
   GetCaregiverById?: Maybe<Caregiver>;
   GetChildById?: Maybe<Child>;
@@ -7037,6 +7163,7 @@ export type Query = {
   traineeByUserId?: Maybe<Trainee>;
   userById?: Maybe<ApplicationUser>;
   userByToken?: Maybe<UserByToken>;
+  userCalendarEvents?: Maybe<Array<Maybe<CalendarEvent>>>;
   userProgrammes?: Maybe<Array<Maybe<Programme>>>;
   users?: Maybe<Array<Maybe<ApplicationUser>>>;
   visitAnswersForInfant?: Maybe<Array<Maybe<VisitData>>>;
@@ -7077,6 +7204,16 @@ export type QueryGetAllActivityArgs = {
 export type QueryGetAllAuditLogTypeArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<AuditLogTypeFilterInput>;
+};
+
+export type QueryGetAllCalendarEventArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<CalendarEventFilterInput>;
+};
+
+export type QueryGetAllCalendarEventParticipantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<CalendarEventParticipantFilterInput>;
 };
 
 export type QueryGetAllCalendarEventTypeArgs = {
@@ -7567,6 +7704,16 @@ export type QueryGetAllWorkflowStatusTypeArgs = {
 export type QueryGetAuditLogTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<AuditLogTypeFilterInput>;
+};
+
+export type QueryGetCalendarEventByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<CalendarEventFilterInput>;
+};
+
+export type QueryGetCalendarEventParticipantByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<CalendarEventParticipantFilterInput>;
 };
 
 export type QueryGetCalendarEventTypeByIdArgs = {
@@ -8623,6 +8770,10 @@ export type QueryUserByIdArgs = {
 
 export type QueryUserByTokenArgs = {
   token?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryUserCalendarEventsArgs = {
+  start?: InputMaybe<Scalars['DateTime']>;
 };
 
 export type QueryUsersArgs = {

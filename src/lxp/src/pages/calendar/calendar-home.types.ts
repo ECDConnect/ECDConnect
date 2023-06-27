@@ -1,6 +1,5 @@
 import type { EventObject } from '@toast-ui/calendar';
-
-export interface CalendarEvent extends Partial<EventObject> {}
+import { UpdateEventEvent } from './components/update-event/update-event.types';
 
 export const CALENDARS = [
   {
@@ -47,5 +46,5 @@ export type ViewType = 'day' | 'week' | 'month';
 
 export type UpdateEventPopupData = {
   visible: boolean;
-  event?: CalendarEvent;
+  event?: UpdateEventEvent;
 };

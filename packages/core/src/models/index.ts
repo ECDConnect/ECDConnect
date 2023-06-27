@@ -11,6 +11,8 @@ export * from './entity-document-extend';
 export * from './tenant';
 // INDEX
 export * from './dto/Activity';
+export * from '../domain/calendar';
+export * from './dto/Calendar';
 export * from './dto/Classroom';
 export * from './dto/Content';
 export * from './dto/Documents';

@@ -49,10 +49,11 @@ import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { calendarThunkActions } from '@/store/calendar';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
-const enableCalendar = false;
+const enableCalendar = true;
 
 export enum NavigationTypes {
   Home = 'Home',
@@ -157,6 +158,10 @@ export const Dashboard: React.FC = () => {
 
     await appDispatch(
       programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
+    ).unwrap();
+
+    await appDispatch(
+      calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
     ).unwrap();
   };
 
