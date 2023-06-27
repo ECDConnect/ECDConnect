@@ -110,7 +110,7 @@ export const OnboardingTraineeDashboard: React.FC<
       item?.title !== 'Consolidation meeting scheduled'
   );
 
-  const [a, b, c, d, nextStep] = filteredUncompletedSteps;
+  const [nextStep] = filteredUncompletedSteps;
 
   const notificationItem: MenuListDataItem[] = [
     {
