@@ -32,7 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             PagedQueryInput pagingInput = null,
-            string textSearch = null,
+            string search = null,
             string provinceSearch = null,
             string clinicSearch = null)
         {
@@ -40,12 +40,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
             var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
 
-            if (!string.IsNullOrWhiteSpace(textSearch))
+            if (!string.IsNullOrWhiteSpace(search))
                 healthCareWorkers = healthCareWorkers
-                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.User.IdNumber, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.User.Email, $"%{textSearch}%"));
+                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.Email, $"%{search}%"));
             if (!string.IsNullOrWhiteSpace(provinceSearch))
                 healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
             if (!string.IsNullOrWhiteSpace(clinicSearch))

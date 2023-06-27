@@ -41,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             [Service] IGenericRepositoryFactory repoFactory,
             [Service] IHttpContextAccessor httpContextAccessor,
             PagedQueryInput? pagingInput = null,
-            string textSearch = null)
+            string search = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
@@ -73,12 +73,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 // Set default sort by column.
                 new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
 
-            if (!string.IsNullOrWhiteSpace(textSearch))
+            if (!string.IsNullOrWhiteSpace(search))
                 usersQuery = usersQuery
-                    .Where(h => EF.Functions.ILike(h.FullName, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.IdNumber, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.PhoneNumber, $"%{textSearch}%")
-                    || EF.Functions.ILike(h.Email, $"%{textSearch}%"));
+                    .Where(h => EF.Functions.ILike(h.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.Email, $"%{search}%"));
 
             if (pagingInput is not null)
                 usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize, usersQuery);
