@@ -23,6 +23,7 @@ export const ChildCaregiverInformation: React.FC<
   submitButtonIcon = 'SaveIcon',
   submitButtonText = 'Save',
   onSubmit,
+  canEdit = false,
 }) => {
   const {
     getValues: getCareGiverInformationFormValues,
@@ -74,6 +75,7 @@ export const ChildCaregiverInformation: React.FC<
         register={careGiverInformationFormRegister}
         nameProp={'phoneNumber'}
         placeholder={'E.g. 082 345 6789'}
+        disabled={canEdit}
       />
       <div className={'py-2'}>
         <Divider></Divider>

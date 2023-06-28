@@ -315,7 +315,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
 
-            var practitioner = await practRepo.GetByIdAsync(Guid.Parse(practitionerId));
+            var practitioner = practRepo.GetByUserId(practitionerId);
+
             // TODO: use this to apply:
             // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
             // "Note for all actions:
