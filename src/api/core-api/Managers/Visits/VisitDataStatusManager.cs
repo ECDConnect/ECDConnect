@@ -1655,7 +1655,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.ScoreColor = scoreColor;
             // EC-877: remove weigth, length and muac from list, because they are already handled above
-            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && y.VisitData.Question == Constants.GGSettings.q_length && y.VisitData.Question == Constants.GGSettings.q_muac).ToList();
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight || y.VisitData.Question == Constants.GGSettings.q_length || y.VisitData.Question == Constants.GGSettings.q_muac).ToList();
 
             return result;
         }
