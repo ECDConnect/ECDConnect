@@ -12,6 +12,8 @@ import { useCallback, useMemo, useState } from 'react';
 import { replaceBraces } from '@ecdlink/core';
 import { activitiesColours } from '../../../activities-list';
 
+export const sicknessStepQuestion = `Is {client} sick today?`;
+
 export const SicknessStep = ({
   infant,
   setSectionQuestions: setQuestions,
@@ -32,8 +34,6 @@ export const SicknessStep = ({
     { text: 'No', value: false },
   ];
 
-  const question = useMemo(() => `Is {client} sick today?`, []);
-
   const onOptionSelected = useCallback(
     (value) => {
       setAnswer(value);
@@ -42,7 +42,7 @@ export const SicknessStep = ({
           visitSection,
           questions: [
             {
-              question,
+              question: sicknessStepQuestion,
               answer: value,
             },
           ],
@@ -50,7 +50,7 @@ export const SicknessStep = ({
       ]);
       setEnableButton?.(true);
     },
-    [question, setEnableButton, setQuestions]
+    [setEnableButton, setQuestions]
   );
 
   return (
@@ -63,7 +63,7 @@ export const SicknessStep = ({
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
       />
       <div className="flex flex-col gap-4 p-4">
-        <Label text={replaceBraces(question, name || '')} />
+        <Label text={replaceBraces(sicknessStepQuestion, name || '')} />
         <ButtonGroup<boolean>
           color="secondary"
           type={ButtonGroupTypes.Button}
