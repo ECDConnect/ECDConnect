@@ -238,11 +238,12 @@ export const pillar3Steps = (
 export const getPillar4Steps = (
   isFollowUp: boolean,
   isChildBefore49Days: boolean,
-  isSicknessAlertStep: boolean
+  isSicknessAlertStep: boolean,
+  isToShowPillar4DangerSigns: boolean
 ) => [
   ...(isFollowUp ? [FollowUpStep] : []),
   ...(isChildBefore49Days ? [SicknessStep] : []),
-  ...(isChildBefore49Days ? [Pillar4DangerSignsStep] : []),
+  ...(isToShowPillar4DangerSigns ? [Pillar4DangerSignsStep] : []),
   ...(isSicknessAlertStep ? [SicknessAlertStep] : []),
 ];
 
