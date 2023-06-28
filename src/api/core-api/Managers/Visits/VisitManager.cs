@@ -6,7 +6,6 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
-using FileSignatures.Formats;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
