@@ -9,4 +9,5 @@ export interface ChildEmergencyContactFormProps
   submitButtonText?: string;
   submitButtonIcon?: string;
   variation: ChildRegistrationVariation;
+  canEdit?: boolean;
 }

@@ -52,7 +52,7 @@ export const CoachPractitionerClassroom: React.FC = () => {
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const practitionerClassroomGroups = classroomGroups.filter(
-    (item) => item.classroomId === practitionerClassroom?.id
+    (item) => item.userId === practitionerId
   );
   const childrenForPractitionerList = children?.filter((item) =>
     childrenForPractitioner?.find((item2) => item.id === item2.id)

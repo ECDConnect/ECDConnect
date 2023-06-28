@@ -22,6 +22,7 @@ export const ChildHealthInformationForm: React.FC<
   onSubmit,
   submitButtonText = 'Next',
   submitButtonIcon = 'ArrowCircleRightIcon',
+  canEdit = false,
 }) => {
   const {
     getValues: getChildHealthInformationFormValues,
@@ -44,7 +45,7 @@ export const ChildHealthInformationForm: React.FC<
   };
 
   return (
-    <div className={'bg-uiBg pt-2 pb-4 px-4 h-full'}>
+    <div className={'bg-uiBg h-full px-4 pt-2 pb-4'}>
       <Typography type={'h1'} text={childName} color={'primary'} />
       <Typography type={'h2'} text={'Health information'} color={'textMid'} />
       <div>
@@ -54,6 +55,7 @@ export const ChildHealthInformationForm: React.FC<
           register={childHealthInformationFormRegister}
           nameProp={'allergies'}
           placeholder={'E.g. peanuts'}
+          disabled={canEdit}
         />
 
         <FormInput<ChildHealthInformationFormModel>
@@ -62,6 +64,7 @@ export const ChildHealthInformationForm: React.FC<
           register={childHealthInformationFormRegister}
           nameProp={'disabilities'}
           placeholder={'E.g. blind'}
+          disabled={canEdit}
         />
 
         <FormInput<ChildHealthInformationFormModel>
@@ -71,6 +74,7 @@ export const ChildHealthInformationForm: React.FC<
           register={childHealthInformationFormRegister}
           nameProp={'healthConditions'}
           placeholder={'E.g. chronic illnesses such as diabetes or epilepsy'}
+          disabled={canEdit}
         />
 
         <div className={'py-4'}>

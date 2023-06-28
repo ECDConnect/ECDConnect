@@ -7,4 +7,5 @@ export interface ChildHealthInformationFormProps
   childName?: string;
   submitButtonText?: string;
   submitButtonIcon?: string;
+  canEdit?: boolean;
 }

@@ -28,6 +28,7 @@ export const ChildEmergencyContactForm: React.FC<
   submitButtonIcon = 'ArrowCircleRightIcon',
   onSubmit,
   variation = 'practitioner',
+  canEdit = false,
 }) => {
   const [contactAllowedCustody, setContactAllowedCustody] = useState<boolean>();
   const [displayAllowedCustodian, setDisplayAllowedCustodian] =
@@ -93,6 +94,7 @@ export const ChildEmergencyContactForm: React.FC<
         error={errors['firstname']}
         nameProp={'firstname'}
         placeholder={'First name'}
+        disabled={canEdit}
       />
       <FormInput<ChildEmergencyContactFormModel>
         label={'Surname'}
@@ -101,6 +103,7 @@ export const ChildEmergencyContactForm: React.FC<
         nameProp={'surname'}
         error={errors['surname']}
         placeholder={'Surname/family name'}
+        disabled={canEdit}
       />
       <FormInput<ChildEmergencyContactFormModel>
         label={'Cellphone number'}
@@ -109,13 +112,14 @@ export const ChildEmergencyContactForm: React.FC<
         nameProp={'phoneNumber'}
         error={errors['phoneNumber']}
         placeholder={'E.g. 012 345 6789'}
+        disabled={canEdit}
       />
       <label className={classNames(styles.label, styles.spacer)}>
         {`Is the emergency contact allowed to pick ${childDisplayName} up in ${
           variation === 'caregiver' ? 'your' : 'the caregiver’s'
         } place?`}
       </label>
-      <div className={'mt-2'}>
+      <div className={`mt-2 ${canEdit ? 'pointer-events-none' : ''}`}>
         <ButtonGroup
           options={custodyAllowedOptions}
           onOptionSelected={(value: boolean | boolean[]) => {
@@ -151,6 +155,7 @@ export const ChildEmergencyContactForm: React.FC<
             nameProp={'custodianFirstname'}
             error={errors['custodianFirstname']}
             placeholder={'First name'}
+            disabled={canEdit}
           />
           <FormInput<ChildEmergencyContactFormModel>
             label={'Surname'}
@@ -159,6 +164,7 @@ export const ChildEmergencyContactForm: React.FC<
             nameProp={'custodianSurname'}
             error={errors['custodianSurname']}
             placeholder={'Surname/family name'}
+            disabled={canEdit}
           />
           <FormInput<ChildEmergencyContactFormModel>
             label={'Cellphone number'}
@@ -167,6 +173,7 @@ export const ChildEmergencyContactForm: React.FC<
             nameProp={'custodianPhoneNumber'}
             error={errors['custodianPhoneNumber']}
             placeholder={'012 345 6789'}
+            disabled={canEdit}
           />
         </div>
       )}
