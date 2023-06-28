@@ -98,7 +98,7 @@ export const Dashboard: React.FC = () => {
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
-  const isFromTraineeFlow = location.state.isFromTraineeFlow;
+  const isFromTraineeFlow = location?.state?.isFromTraineeFlow;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
