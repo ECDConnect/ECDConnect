@@ -1631,10 +1631,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 scoreColor = _red;
             }
 
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.ScoreColor = scoreColor;
-            result.VisitDataStatus = visitDataStatus;
-
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
@@ -1655,6 +1651,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
             result.MuacComment = muacData?.Comment;
+
+            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
+            // EC-877: remove weigth, length and muac from list, because they are already handled above
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && y.VisitData.Question == Constants.GGSettings.q_length && y.VisitData.Question == Constants.GGSettings.q_muac).ToList();
 
             return result;
         }
