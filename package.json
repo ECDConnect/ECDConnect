@@ -126,6 +126,7 @@
     "react-webcam": "^7.0.1",
     "redux-persist": "^6.0.0",
     "tslib": "^2.0.0",
+    "web-vitals": "^3.3.2",
     "workbox-background-sync": "^5.1.4",
     "workbox-cacheable-response": "^5.1.4",
     "workbox-core": "^5.1.4",
