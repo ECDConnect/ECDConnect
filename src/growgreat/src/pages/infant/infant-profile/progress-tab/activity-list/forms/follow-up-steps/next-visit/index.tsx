@@ -29,13 +29,19 @@ export const NextVisitStep = ({
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, visitId)
   );
+
+  const todayEndOfTheDay = new Date();
+  todayEndOfTheDay.setHours(23, 59, 59, 999);
   const nextVisit = visits.find(
     (item) =>
       item.visitType?.order === Number(currentVisit?.visitType?.order) + 1
   );
 
-  const date = nextVisit?.dueDate
-    ? new Date(nextVisit?.dueDate).toLocaleDateString('en-ZA', {
+  const dueDate = nextVisit?.dueDate
+    ? new Date(nextVisit.dueDate)
+    : todayEndOfTheDay;
+  const date = dueDate
+    ? new Date(dueDate).toLocaleDateString('en-ZA', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',

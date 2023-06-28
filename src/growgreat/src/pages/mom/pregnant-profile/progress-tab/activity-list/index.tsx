@@ -258,7 +258,8 @@ export const MomActivityList: React.FC = () => {
     }, [visibleActivities, completedVisits]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.length === stepperCount;
+  const isAllCompleted =
+    !!currentVisit?.attended || completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
     if (isStartVisit) {

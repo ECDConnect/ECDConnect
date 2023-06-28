@@ -415,9 +415,9 @@ export const ActivityList: React.FC = () => {
     }, [completedVisits, visibleActivities]);
 
   const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.some((item) =>
-    item?.includes('Follow')
-  );
+  const isAllCompleted =
+    !!visit?.attended ||
+    completedVisits?.some((item) => item?.includes('Follow'));
 
   const goBack = useCallback(() => {
     if (isStartVisit) {

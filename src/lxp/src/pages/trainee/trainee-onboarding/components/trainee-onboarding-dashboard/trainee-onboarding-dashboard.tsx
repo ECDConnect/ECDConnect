@@ -9,7 +9,6 @@ import {
   Dialog,
   Button,
   renderIcon,
-  Alert,
 } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { useWindowSize } from '@reach/window-size';
@@ -21,8 +20,8 @@ import { timelineSteps } from './timeline-steps';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import ROUTES from '@/routes/routes';
-import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
 import { CoachVisitInfo } from './components/coach-visit-info';
+import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 
 interface OnboardingTraineeDashboardProps {
   setNotificationStep: any;
@@ -163,33 +162,56 @@ export const OnboardingTraineeDashboard: React.FC<
         />
         {completedFlow && (
           <>
-            <Alert
-              className="mt-4"
-              variant="outlined"
-              type="success"
-              title={`Well done! You have completed all the required SmartSpace steps. `}
-              message="Your coach has been asked to schedule the SmartSpace check!"
-              customIcon={<Emoji3 className="h-auto w-16" />}
-            />
+            <div className="bg-successBg grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+              <div className="flex">
+                <div className="flex justify-center">
+                  <img
+                    src={PositiveBonusEmoticon}
+                    alt="developing well"
+                    className="mt-3 ml-2 mr-2 h-12 w-16"
+                  />
+                </div>
+                <div className="ml-3">
+                  <div className="flex justify-center">
+                    <Typography
+                      type="h3"
+                      weight="bold"
+                      color={'successDark'}
+                      text={`Well done! You have your SmartSpace licence.`}
+                      fontSize="18"
+                      className="pt-2"
+                    />
+                  </div>
+                  <div className="mt-1 flex justify-center">
+                    <Typography
+                      type="body"
+                      color={'textDark'}
+                      text={`Use Funda App to set up your profile and manage your classroom.`}
+                      fontSize="14"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+            <div>
+              <Button
+                type="filled"
+                color="primary"
+                className="mt-4 mb-2 w-full"
+                onClick={() =>
+                  history.push(ROUTES.DASHBOARD, { isFromTraineeFlow: true })
+                }
+              >
+                {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+                <Typography
+                  type={'help'}
+                  text={'Complete your Funda App profile'}
+                  color={'white'}
+                />
+              </Button>
+            </div>
             <div className="mt-2 space-y-4">
               <div>
-                <div>
-                  <Button
-                    type="filled"
-                    color="primary"
-                    className={'mt-1 mb-2 w-full'}
-                    onClick={() => {
-                      setSHowCoachVisit(true);
-                    }}
-                  >
-                    {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                    <Typography
-                      type={'help'}
-                      text={'Request a visit from coach'}
-                      color={'white'}
-                    />
-                  </Button>
-                </div>
                 <div>
                   <Button
                     type="outlined"

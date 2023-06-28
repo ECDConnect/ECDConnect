@@ -20,5 +20,8 @@ export const motherContactInformationModelSchema = Yup.object().shape({
     .matches(phoneRegExp, 'Phone number is not valid')
     .min(10, 'too short')
     .max(10, 'too long'),
-  whatsapp: Yup.string(),
+  whatsapp: Yup.string()
+    .matches(phoneRegExp, 'Phone number is not valid')
+    .min(10, 'too short')
+    .max(10, 'too long'),
 });
