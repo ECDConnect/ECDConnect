@@ -568,7 +568,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 if (_visit.VisitType.Name == Constants.GGSettings.additional_visits)
                 {
-                    _visit.OrderDate = _visit.InsertedDate.Date;
+                    _visit.OrderDate = _visit.PlannedVisitDate.Date;
                 } else
                 {
                     if (_visit.DueDate == null)
