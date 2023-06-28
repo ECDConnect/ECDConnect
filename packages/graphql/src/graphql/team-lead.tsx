@@ -1,18 +1,32 @@
 import { gql } from '@apollo/client';
 
 export const GetAllTeamLead = gql`
-query ($textSearch: String, $clinicSearch: String, $provinceSearch: String) {
+query ($search: String, $clinicSearch: String, $provinceSearch: String) {
   allTeamLeads(
-    textSearch: $textSearch
+    search: $search
     clinicSearch: $clinicSearch
     provinceSearch: $provinceSearch
   ) {
     id
     user {
-      fullName
-      idNumber
-      phoneNumber
-      email
+    isActive
+    userName
+    email
+    isSouthAfricanCitizen
+    verifiedByHomeAffairs
+    dateOfBirth
+    idNumber
+    firstName
+    surname
+    fullName
+    contactPreference
+    genderId
+    phoneNumber
+    profileImageUrl
+    roles {
+      id
+      name
+    }
     }
     
       clinic {

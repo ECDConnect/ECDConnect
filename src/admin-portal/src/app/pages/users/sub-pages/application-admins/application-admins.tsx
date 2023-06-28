@@ -17,19 +17,31 @@ import UserPanelCreate from '../../components/user-panel-create/user-panel-creat
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 
 export default function ApplicationAdmins() {
-  const { data, refetch, loading } = useQuery(UserList, {
-    variables: {
-      pagingInput: {
 
-        pageNumber: 1,
-        pageSize: 20,
-        filterBy: [
-          { fieldName: 'ADMINISTRATOR', filterType: 'EQUALS', value: 'true' },
+  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
+    variables: {
+      search: "",
+      pagingInput: {
+        "pageNumber": 1,
+        "pageSize": 50,
+        "filterBy": [
+          {
+            "fieldName": "ADMINISTRATOR",
+            "filterType": "EQUALS",
+            "value": "true"
+          }
         ],
-        sortBy: [{ fieldName: 'FullName', descending: true }],
-      },
+        "sortBy": [
+          {
+            "fieldName": "FullName",
+            "descending": true
+          }
+        ]
+      }
     },
+    fetchPolicy: 'network-only',
   });
+
   const { hasPermission } = useUser();
 
   const [searchValue, setSearchValue] = useState('');
@@ -42,6 +54,35 @@ export default function ApplicationAdmins() {
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
   let userStatus = (statusFilter === 'active') ? true : false;
+
+
+  useEffect(() => {
+    getAllUsers(
+      {
+        variables:{
+          search: searchValue,
+          "pagingInput": {
+                "pageNumber": 1,
+                "pageSize": 10,
+                "filterBy": [
+                    {
+                        "fieldName": "ADMINISTRATOR",
+                        "filterType": "EQUALS",
+                        "value": "true"
+                    }
+                ],
+                "sortBy": [
+                    {
+                        "fieldName": "FullName",
+                        "descending": true
+                    }
+                ]
+          }
+        }
+      }
+    );
+  }, [searchValue])
+
 
   useEffect(() => {
     if (data && data.users) {

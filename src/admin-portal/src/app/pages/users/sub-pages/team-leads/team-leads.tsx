@@ -28,12 +28,14 @@ export default function TeamLeads() {
       clinicSearch: "",
       textSearch: "",
       pagingInput: {
-        "pageNumber": 1,
-        "pageSize": 3
+        pageNumber: 1,
+        pageSize: 30
       }
     },
     fetchPolicy: 'network-only',
   });
+
+  
 
   useEffect(() => {
 
@@ -44,7 +46,7 @@ export default function TeamLeads() {
         clinicSearch: clinicFilter,
         pagingInput: {
           "pageNumber": 1,
-          "pageSize": 3
+          "pageSize": 30
         }
       }
     });
@@ -85,11 +87,10 @@ export default function TeamLeads() {
   }
 
   useEffect(() => {
-    if (data && data.GetAllTeamLead) {
-      const copyItems = data.GetAllTeamLead.map((item: TeamLeadDto) => ({
+    if (data && data.GetAllTeamLeads) {
+      const copyItems = data.GetAllTeamLeads.map((item: TeamLeadDto) => ({
         ...item,
         fullName: `${item.user?.fullName}`,
-
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
         _url: undefined,
