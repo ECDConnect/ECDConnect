@@ -24,8 +24,13 @@ export default function TeamLeads() {
 
   const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
-      search: "",
-      provinceSearch: ""
+      provinceSearch: "",
+      clinicSearch: "",
+      textSearch: "Surname",
+      pagingInput: {
+        "pageNumber": 1,
+        "pageSize": 3
+      }
     },
     fetchPolicy: 'network-only',
   });
@@ -34,8 +39,13 @@ export default function TeamLeads() {
 
     GetAllTeamLeads({
       variables: {
-        search: searchValue,
-        provinceSearch: provinceFilter
+        textSearch: searchValue,
+        provinceSearch: provinceFilter,
+        clinicSearch: clinicFilter,
+        pagingInput: {
+          "pageNumber": 1,
+          "pageSize": 3
+        }
       }
     });
 
@@ -241,8 +251,8 @@ export default function TeamLeads() {
                     ]}
                     rows={tableData}
                     urlRow={'/view-user/'}
-                    component={'Team Leads'}
                     searchInput={searchValue}
+                    component="team-leads"
                   />
                 </div>
               </div>

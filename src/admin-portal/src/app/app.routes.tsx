@@ -39,6 +39,7 @@ import TeamLeads from './pages/users/sub-pages/team-leads/team-leads';
 import ForgotPassword from './components/auth/forgot-password/forgot-password';
 import ResetPassword from './components/auth/reset-password/reset-password';
 import ApplicationUsers from './pages/users/sub-pages/application-users/application-users';
+import UploadBulkUser from './pages/upload-bulk-users/upload-bulk-users';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -67,6 +68,8 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={`/profile`} component={Profile}></Route>
       <Route path={`/view-user`} component={ViewUser}></Route>
+      <Route path={`/upload-users`} component={UploadBulkUser}></Route>
+      {/* UploadBulkUser */}
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>

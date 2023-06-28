@@ -5,8 +5,8 @@ import {
   editProfileSchema,
 } from '../../schemas/edit-profile-request';
 import { EditProfileRequestModel } from '../../models/EditProfile';
-
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
+// import { useDocuments } from '../../../../../lxp/src/hooks/useDocuments';
+import { Alert, Button, Divider, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -25,6 +25,9 @@ export function Profile() {
     mode: 'onChange',
   });
 
+  const { errors, isValid } = formState;
+
+
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
   };
@@ -34,10 +37,23 @@ export function Profile() {
   const formValues = getValues();
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+  const [editProfilePictureVisible, setEditProfilePictureVisible] =
+    useState(false);
+  const displayProfilePicturePrompt = () => {
+    setEditProfilePictureVisible(!editProfilePictureVisible);
+  };
+  // const {
+  //   userProfilePicture,
+  //   createNewDocument,
+  //   updateDocument,
+  //   deleteDocument,
+  // } = useDocuments();
 
-  const { errors, isValid } = formState;
+  const picturePromtOnAction = async (imageBaseString: string) => {
+    setEditProfilePictureVisible(!editProfilePictureVisible);
 
-  console.log(isValid);
+ 
+  };
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -51,21 +67,13 @@ export function Profile() {
                   className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
                   style={{ width: '50rem' }}
                 >
-                  <img
-                    src="https://source.unsplash.com/75x75/?portrait"
-                    alt=""
-                    className="h-40 w-40 mr-10 flex-shrink-0 self-center rounded-full md:justify-self-start"
+                  <ProfileAvatar
+                    // dataUrl={ ?? ''}
+                    size={'header'}
+                    onPressed={displayProfilePicturePrompt}
+                    hasConsent={true}
                   />
-                  <div className="top-170 absolute left-20  flex h-8 w-8 items-center justify-center rounded-full bg-black">
-                    <svg
-                      className="h-4 w-4 fill-current text-white"
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 20 20"
-                    >
-                      <path d="M10 0c-5.522 0-10 4.478-10 10 0 5.521 4.478 10 10 10s10-4.479 10-10c0-5.522-4.478-10-10-10zm3 10h-2v3h-2v-3h-2v-2h2v-3h2v3h2v2z" />
-                    </svg>
-                    <div></div>
-                  </div>
+
                   <div className="flex w-full flex-col">
                     <div>
                       <FormField
@@ -113,17 +121,16 @@ export function Profile() {
                     {[...Array(4)].map((_, i) => (
                       <div className="w-1/4 px-1" key={i}>
                         <div
-                          className={`h-2 rounded-xl transition-colors ${
-                            i < passwordScore
+                          className={`h-2 rounded-xl transition-colors ${i < passwordScore
                               ? passwordScore <= 2
                                 ? 'bg-red-400'
                                 : passwordScore <= 3
-                                ? 'bg-yellow-400'
-                                : passwordScore <= 4
-                                ? 'bg-green-500'
-                                : 'bg-yellow-400'
+                                  ? 'bg-yellow-400'
+                                  : passwordScore <= 4
+                                    ? 'bg-green-500'
+                                    : 'bg-yellow-400'
                               : 'bg-gray-200'
-                          }`}
+                            }`}
                         ></div>
                       </div>
                     ))}
@@ -141,7 +148,7 @@ export function Profile() {
             isLoading={isLoading}
             color="secondary"
             disabled={!isValid}
-            // onClick={signIn}
+          // onClick={signIn}
           >
             <Typography
               type="help"

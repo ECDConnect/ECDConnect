@@ -1,35 +1,29 @@
 import { gql } from '@apollo/client';
 
 export const GetAllTeamLead = gql`
-query($search: String, $provinceSearch: String) {
-  GetAllTeamLead(
-     where: {
-       user: { or: [
-         { fullName: {contains: $search} }
-         { idNumber: {contains: $search} }
-         { email: {contains: $search} }
-         ]
-       }
-       clinic: {
-         siteAddress: { 
-           province: { description: { eq: $provinceSearch } } }
-       }
-     },
+query ($textSearch: String, $clinicSearch: String, $provinceSearch: String) {
+  allTeamLeads(
+    textSearch: $textSearch
+    clinicSearch: $clinicSearch
+    provinceSearch: $provinceSearch
   ) {
     id
     user {
-       fullName
-       idNumber
-        phoneNumber
-        email
+      fullName
+      idNumber
+      phoneNumber
+      email
     }
-    clinic {
-      siteAddress {
-        province {
-          description
+    
+      clinic {
+        name
+        siteAddress {
+          province {
+            description
+          }
         }
       }
-    }
+    
   }
 }
 `;
@@ -40,4 +34,42 @@ export const CreateTeamLead = gql`
       id
     }
   }
+`;
+
+export const UpdateTeamLead = gql`
+  mutation updateTeamLead($input: TeamLeadModelInput, $id: UUID) {
+    updateTeamLead(id: $id, input: $input) {
+      id
+    }
+  }
+`;
+
+export const UploadTeamLeads = gql`
+mutation ($file: String) {
+  importTeamLeads(file: $file) {
+    validationErrors {
+      row
+      errors
+      errorDescription
+    }
+    createdUsers {
+      id
+    }
+  }
+}
+`;
+
+export const TeamLeadsTemplate = gql`
+mutation ($file: String) {
+  importTeamLeads(file: $file) {
+    validationErrors {
+      row
+      errors
+      errorDescription
+    }
+    createdUsers {
+      id
+    }
+  }
+}
 `;

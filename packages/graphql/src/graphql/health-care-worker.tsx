@@ -1,25 +1,11 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-query ($search: String, $provinceSearch: String, $clinicSearch: String) {
-  GetAllHealthCareWorker(
-    where: {
-      user: {
-        or: [
-          { fullName: { contains: $search } }
-          { idNumber: { contains: $search } }
-          { email: { contains: $search } }
-        ]
-      }
-      teamLead: {
-        clinic: {
-          and: [
-          { name: { contains: $clinicSearch} }
-          { siteAddress: { province: { description: { eq: $provinceSearch } } } }
-          ]
-        }
-      }
-    }
+query ($textSearch: String, $clinicSearch: String, $provinceSearch: String) {
+  allHealthCareWorkers(
+    textSearch: $textSearch
+    clinicSearch: $clinicSearch
+    provinceSearch: $provinceSearch
   ) {
     id
     user {
@@ -83,4 +69,30 @@ export const UpdateHealthCareWorker = gql`
       id
     }
   }
+`;
+
+export const UploadHealthCareWorkers = gql`
+mutation ($file: String) {
+  importHealthCareWorkers(file: $file) {
+    validationErrors {
+      row
+      errors
+      errorDescription
+    }
+    createdUsers {
+      id
+    }
+  }
+}
+`;
+
+export const HealthCareWorkerTemplate = gql`
+query {
+  healthCareWorkerTemplateGenerator {
+    fileType
+    base64File
+    fileName
+    extension
+  }
+} 
 `;
