@@ -445,7 +445,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       size="medium"
       renderBorder={true}
       title={'SmartSpace checklist'}
-      subTitle={date}
       color={'primary'}
       onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
