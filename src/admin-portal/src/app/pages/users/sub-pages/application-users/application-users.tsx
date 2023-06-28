@@ -54,20 +54,14 @@ export default function ApplicationUsers() {
 
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
-      textSearch: "Surname",
+      textSearch: "",
       pagingInput: {
          pageNumber: 1,
          pageSize: 10
       }
     },
     fetchPolicy: 'network-only',
-      pageNumber: 1,
-      pageSize: 10,
-      filterBy: [
-        // { fieldName: "ADMINISTRATOR", filterType: "EQUALS", value: "true" }
-      ],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
-    },
+
   });
 
   useEffect(() => {
