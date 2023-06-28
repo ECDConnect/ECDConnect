@@ -6,6 +6,7 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using FileSignatures.Formats;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -565,26 +566,38 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
                     }
                 }
-
-                if (_visit.VisitType.Name == Constants.GGSettings.additional_visits)
+               
+                if (_visit.DueDate == null)
                 {
                     _visit.OrderDate = _visit.PlannedVisitDate.Date;
                 } else
                 {
-                    if (_visit.DueDate == null)
-                    {
-                        _visit.OrderDate = _visit.PlannedVisitDate.Date;
-                    } else
-                    {
-                        _visit.OrderDate = _visit.DueDate?.Date;
-                    }
+                    _visit.OrderDate = _visit.DueDate?.Date;
                 }
 
                 if (_visit.Attended == false)
                 {
                     _visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
                 }
+            }
 
+            var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.additional_visits).ToList();
+            foreach (var item in additional_visits)
+            {
+                var linkedVisit = allVisits.Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
+                if (linkedVisit != null)
+                {
+                    item.OrderDate = linkedVisit.DueDate?.Date;
+                } else
+                {
+                    if (item.PlannedVisitDate == default(DateTime))
+                    {
+                        item.OrderDate = item.InsertedDate.Date;
+                    } else
+                    {
+                        item.OrderDate = item.PlannedVisitDate.Date;
+                    }
+                }
             }
 
             return allVisits.OrderBy(x => x.OrderDate).ToList();
