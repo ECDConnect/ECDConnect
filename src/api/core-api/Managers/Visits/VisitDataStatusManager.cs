@@ -1211,6 +1211,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                                                           x.Comment == comment).FirstOrDefault();
             if (record == null)
             {
+
+                DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
+                if (nextVisitDate == default(DateTime))
+                {
+                    nextVisitDate = DateTime.Now;
+                }
+
                 VisitModel newVisit = new VisitModel();
                 newVisit.Attended = false;
                 newVisit.VisitType = _additionalVisitType;
@@ -1219,7 +1226,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Risk = Constants.GGSettings.normal_risk;
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
-                newVisit.ActualVisitDate = DateTime.Now; 
+                newVisit.ActualVisitDate = DateTime.Now;
+                newVisit.PlannedVisitDate = nextVisitDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
 
