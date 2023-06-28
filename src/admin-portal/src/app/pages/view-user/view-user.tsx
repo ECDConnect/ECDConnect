@@ -63,14 +63,14 @@ export function ViewUser(props: any) {
   });
 
 
-  const [getChwById, { data: chwData, refetch }] = useLazyQuery(GetHealthCareWorkerByUserId, {
+  const [getChwById, { data: chwData, }] = useLazyQuery(GetHealthCareWorkerByUserId, {
     variables: {
       userId: '',
     },
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getUserById, { data: userData }] = useLazyQuery(GetUserById, {
+  const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
       userId: '',
     },
@@ -429,7 +429,7 @@ export function ViewUser(props: any) {
             {/* End main area */}
           </div>
           <div className='flex justify-end p-4'>
-            <button onClick={() => setEditActive(!editActive)} id="dropdownHoverButton"
+            <button onClick={() => { setEditActive(!editActive); refetch() }} id="dropdownHoverButton"
               className="text-white bg-secondary hover:bg-gray-300 focus:border-secondary w-1/ text-center focus:ring-2 focus:outline-none focus:ring-secondary font-medium rounded-lg text-sm py-2.5 px-12 inline-flex items-center dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary"
               type="button"> {editActive ? "Done" : "Edit"}
             </button>

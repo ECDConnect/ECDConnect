@@ -21,12 +21,12 @@ export default function ApplicationUsers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [startDate, setStartDate] = useState('');
   const [endDate, setEndDate] = useState('');
-  const [sendInviteToApplication, {loading: invitationLoading}] = useMutation(SendInviteToApplication);
+  const [sendInviteToApplication, { loading: invitationLoading }] = useMutation(SendInviteToApplication);
   const { setNotification } = useNotifications();
 
-  
 
-  const resendInvitation = async (userId: string)=>{
+
+  const resendInvitation = async (userId: string) => {
     await sendInviteToApplication({
       variables: {
         userId: userId,
@@ -54,29 +54,33 @@ export default function ApplicationUsers() {
 
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
-      textSearch: "",
+      search: "",
+      filterBy: [],
+      sortBy: [{ fieldName: "FullName", descending: true }],
       pagingInput: {
-         pageNumber: 1,
-         pageSize: 10
+        pageNumber: 5,
+        pageSize: 50,
       }
     },
     fetchPolicy: 'network-only',
-
-  });
+    },
+  );
 
   useEffect(() => {
-
     getAllUsers({
       variables: {
-        textSearch: searchValue,
+        search: searchValue,
+        filterBy: [],
+        sortBy: [{ fieldName: "FullName", descending: true }],
         pagingInput: {
           pageNumber: 1,
-          pageSize: 10
+          pageSize: 10,
         }
       }
     });
 
   }, [searchValue])
+
 
   const [tableData, setTableData] = useState<any[]>([]);
 

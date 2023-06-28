@@ -64,10 +64,10 @@ export default function HealthCareWorkers() {
     variables: {
       provinceSearch: "",
       clinicSearch: "",
-      textSearch: "Surname",
+      search: "",
       pagingInput: {
-         "pageNumber": 1,
-         "pageSize": 3
+        "pageNumber": 1,
+        "pageSize": 20
       }
     },
     fetchPolicy: 'network-only',
@@ -76,14 +76,13 @@ export default function HealthCareWorkers() {
   useEffect(() => {
     getAllHealthCareWorkers({
       variables: {
-        textSearch: searchValue,
+        search: searchValue,
         provinceSearch: provinceFilter,
         clinicSearch: clinicFilter,
         pagingInput: {
           "pageNumber": 1,
-          "pageSize": 3
-       }
-
+          "pageSize": 20
+        }
       }
     });
 
@@ -176,26 +175,11 @@ export default function HealthCareWorkers() {
     };
   };
 
-  const handleFilterChange = (filter: string) => {
-    // Update the variables with new values
-    const updatedVariables = {
-      where: {
-        clinic: {
-          siteAddress: {
-            province: { description: { eq: filter } }
-          }
-        }
-      }
-    };
 
-    // Call the refetch function with updated variables
-    // refetch(updatedVariables);
-  };
 
   useEffect(() => {
     if (!data?.users) return;
-    handleFilterChange(provinceFilter ?? clinicFilter ?? teamLeadFilter)
-
+   
     let userStatus = statusFilter === 'active' ? true : false;
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
@@ -467,7 +451,7 @@ export default function HealthCareWorkers() {
                 </div>
               )}
             </div>
-         
+
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
@@ -515,22 +499,20 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                        !showDropDownFilter
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
                           ? 'bg-secondary text-white'
                           : 'text-secondary border-secondary border-2 bg-white'
-                      } hover:text-secondary hover:bg-white `}
+                        } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${
-                          !showDropDownFilter
+                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
                             ? 'hover:text-secondary text-white'
                             : 'text-secondary hover:text-white'
-                        }`}
+                          }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"

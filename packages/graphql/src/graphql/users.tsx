@@ -1,29 +1,32 @@
 import { gql } from '@apollo/client';
 
+
 export const UserList = gql`
-  query ($pagingInput: PagedQueryInput) {
-    users(pagingInput: $pagingInput) {
+query ($pagingInput: PagedQueryInput, $search: String) {
+  users(pagingInput: $pagingInput, search: $search) {
+    id
+    isActive
+    userName
+    email
+    isSouthAfricanCitizen
+    verifiedByHomeAffairs
+    dateOfBirth
+    idNumber
+    firstName
+    surname
+    fullName
+    contactPreference
+    genderId
+    phoneNumber
+    profileImageUrl
+    roles {
       id
-      isActive
-      userName
-      email
-      isSouthAfricanCitizen
-      verifiedByHomeAffairs
-      dateOfBirth
-      idNumber
-      firstName
-      surname
-      fullName
-      contactPreference
-      genderId
-      phoneNumber
-      profileImageUrl
-      roles {
-        id
-        name
-      }
+      name
+      __typename
     }
+    __typename
   }
+}
 `;
 
 export const GetUserById = gql`
