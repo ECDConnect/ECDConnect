@@ -7,7 +7,6 @@ import { activitiesColours } from '../../../activities-list';
 import { DynamicFormProps, MotherProfileParams } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
 import { motherSelectors } from '@/store/mother';
-import { format } from 'date-fns';
 import { RootState } from '@/store/types';
 import { useParams } from 'react-router';
 
@@ -23,12 +22,18 @@ export const NextVisitStep = ({
   );
   const motherVisits = useSelector(motherSelectors.getMotherVisits);
 
+  const todayEndOfTheDay = new Date();
+  todayEndOfTheDay.setHours(23, 59, 59, 999);
   const nextVisit = motherVisits.find(
     (item) =>
       item.visitType?.order === Number(currentVisit?.visitType?.order) + 1
   );
-  const date = nextVisit?.dueDate
-    ? new Date(nextVisit?.dueDate).toLocaleDateString('en-ZA', {
+
+  const dueDate = nextVisit?.dueDate
+    ? new Date(nextVisit.dueDate)
+    : todayEndOfTheDay;
+  const date = dueDate
+    ? dueDate.toLocaleDateString('en-ZA', {
         year: 'numeric',
         month: 'long',
         day: 'numeric',
@@ -51,10 +56,7 @@ export const NextVisitStep = ({
           type="warning"
           title={`${name} needs an extra support visit`}
           titleColor="textDark"
-          message={`Book a visit before ${format(
-            new Date(date),
-            'd MMM yyyy'
-          )}.`}
+          message={`Book a visit before ${date}.`}
           messageColor="textMid"
           customIcon={
             <div className="bg-tertiary h-16 w-16 rounded-full">
