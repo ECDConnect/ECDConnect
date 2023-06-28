@@ -1226,7 +1226,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Risk = Constants.GGSettings.normal_risk;
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
-                newVisit.ActualVisitDate = DateTime.Now;
                 newVisit.PlannedVisitDate = nextVisitDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
