@@ -26,7 +26,7 @@ export default function TeamLeads() {
     variables: {
       provinceSearch: "",
       clinicSearch: "",
-      textSearch: "Surname",
+      textSearch: "",
       pagingInput: {
         "pageNumber": 1,
         "pageSize": 3
