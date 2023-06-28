@@ -115,10 +115,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     () => isFirstVisit && ageDays < 7,
     [ageDays, isFirstVisit]
   );
-  const isMixedFeedingHowBreastfeedingWorks = useMemo(
-    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
-    [ageDays, isFirstVisit]
-  );
   const isMixedFeedingUnsafeFeedingPractices = useMemo(
     () => isFirstVisit && ageDays >= 14 && ageDays <= 56,
     [ageDays, isFirstVisit]
@@ -261,7 +257,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isMixedFeedingComplementaryFeedingAfter9Months,
           isMixedFeedingFistFoods,
           isMixedFeedingFoodsForm,
-          isMixedFeedingHowBreastfeedingWorks,
           isMixedFeedingUnsafeFeedingPractices,
           isShowInterventionStep: ageDays >= 7,
           isShowMuacStep: !isChild6Months,
@@ -306,7 +301,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMixedFeedingComplementaryFeedingAfter9Months,
     isMixedFeedingFistFoods,
     isMixedFeedingFoodsForm,
-    isMixedFeedingHowBreastfeedingWorks,
     isMixedFeedingUnsafeFeedingPractices,
     ageDays,
     isDietFormStep,
