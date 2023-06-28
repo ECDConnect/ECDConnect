@@ -94,9 +94,13 @@ export const HealthSanitationSafety: React.FC<HealthSanitationSafetysProps> = ({
 
   const visitSection = 'Health, sanitation & safety';
 
-  const disableSection = visitData?.some(
-    (item) => item?.visitSection === visitSection
+  const completedItems = visitData?.filter(
+    (item) =>
+      item?.questionAnswer === 'true' ||
+      (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
   );
+
+  const disableSection = completedItems?.length === 7;
 
   useEffect(() => {
     const previousData = questions.map((item) => {

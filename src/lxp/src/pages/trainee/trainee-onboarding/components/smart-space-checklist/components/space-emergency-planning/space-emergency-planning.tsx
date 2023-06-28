@@ -66,9 +66,14 @@ export const SpaceEmergencyPlanning: React.FC<HealthSanitationSafetysProps> = ({
   }, [questions]);
 
   const visitSection = 'Space & emergency planning';
-  const disableSection = visitData?.some(
-    (item) => item?.visitSection === visitSection
+
+  const completedItems = visitData?.filter(
+    (item) =>
+      item?.questionAnswer === 'true' ||
+      (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
   );
+
+  const disableSection = completedItems?.length === 4;
 
   const onOptionSelected = useCallback(
     (value, index) => {

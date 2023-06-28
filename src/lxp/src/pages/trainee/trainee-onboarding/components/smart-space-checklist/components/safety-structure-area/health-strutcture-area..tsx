@@ -93,9 +93,14 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
   }, [questions]);
 
   const visitSection = 'Safety - structure, space & area';
-  const disableSection = visitData?.some(
-    (item) => item?.visitSection === visitSection
+
+  const completedItems = visitData?.filter(
+    (item) =>
+      item?.questionAnswer === 'true' ||
+      (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
   );
+
+  const disableSection = completedItems?.length === 10;
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -127,7 +132,7 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
       const previousAnswer = visitData?.find(
         (obj) => obj.question === item.question
       );
-      console.log({ previousAnswer });
+
       if (previousAnswer) {
         return {
           ...item,
