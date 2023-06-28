@@ -1,20 +1,8 @@
-using ECDLink.DataAccessLayer.Entities.Base;
-using ECDLink.Security;
-using ECDLink.Security.Attributes;
 using System;
-using System.ComponentModel.DataAnnotations.Schema;
 
-namespace ECDLink.DataAccessLayer.Entities.SmartSpaceVisit
+namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
 {
-    [Table(nameof(SmartSpaceVisit))]
-    [EntityPermission(PermissionGroups.GENERAL)]
-    public class SmartSpaceVisit : SmartSpaceVisit<Guid>
-    {
-
-    }
-
-    public class SmartSpaceVisit<TKey> : EntityBase<TKey>
-        where TKey : IEquatable<TKey>
+    public class MappedSmartSpaceVisits : MappedBaseEntity
     {
         public string Name { get; set; }
         public int NumberOfAssistants { get; set; }
@@ -48,13 +36,8 @@ namespace ECDLink.DataAccessLayer.Entities.SmartSpaceVisit
         public bool? Q20 { get; set; }
         public bool? Q21 { get; set; }
         public DateTime? DateOfVisit { get; set; }
-        public string UserId { get; set; }
-    }
+        public MappedTrainee Trainee { get; set; }
+        public MappedCoach Coach { get; set; }
 
-    public interface SmartSpaceVisitJoin<TKey>
-    {
-        [ForeignKey(nameof(SmartSpaceVisitId))]
-        public SmartSpaceVisit SmartSpaceVisit { get; set; }
-        public TKey SmartSpaceVisitId { get; set; }
     }
 }

@@ -42,6 +42,8 @@ using ECDLink.DataAccessLayer.Entities.Clubs;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
+using ECDLink.DataAccessLayer.Entities.PQA;
 
 namespace ECDLink.Core.Services
 {
@@ -83,7 +85,8 @@ namespace ECDLink.Core.Services
         private IGenericRepository<Club, Guid> _clubRepo;
         private IGenericRepository<ClubMeeting, Guid> _clubMeetingRepo;
         private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
-        //private IGenericRepository<PQA, Guid> _pqaRepo;
+        private IGenericRepository<SmartSpaceVisit, Guid> _smartSpaceVisitRepo;
+        private IGenericRepository<PQA, Guid> _pqaRepo;
 
         private IntegrationLogManager _logManager;
         private IntegrationAPIManager _apiManager;
@@ -177,9 +180,6 @@ namespace ECDLink.Core.Services
             _workflowRepo = repositoryFactory.CreateGenericRepository<WorkflowStatus>(userContext: _uId);
             _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
 
-            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
-            _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
-            _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
             //_pqaRepo = _repositoryFactory.CreateGenericRepository<pqa>(userContext: _uId);
             _attendanceTrackingRepository = attendanceTrackingRepository;
 
@@ -191,6 +191,9 @@ namespace ECDLink.Core.Services
         {
             //Get only this years data and check if we have the lines in t he tables, insert if not, dont save to entity mapping, we are just gathering dates and using the same GUID that SL has, so we dont  have to create new ones and theirs work fine, would avoid clashes and reusability to avoid extra columns
             _mappedEntities = await this.GetMappedEntities();
+            _clubRepo = _repositoryFactory.CreateGenericRepository<Club>(userContext: _uId);
+            _clubMeetingRepo = _repositoryFactory.CreateGenericRepository<ClubMeeting>(userContext: _uId);
+            _clubMeetingRegisterRepo = _repositoryFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _uId);
 
             foreach (var coach in _mappedEntities.Where(x => x.LocalEntity.Equals(SSIntegrationSettings.SSCoach)).ToList())
             {
@@ -293,78 +296,107 @@ namespace ECDLink.Core.Services
         }
         public async Task<bool> IntegrationPQASmartSpaceVisitsData()
         {
-            //TODO
-            var practitioners = _mappedEntities.Where(x => string.Equals(x.LocalEntity, SSIntegrationSettings.SSPractitioner) && x.IsActive == true).ToList();
-            foreach (var prac in practitioners)
+            _smartSpaceVisitRepo = _repositoryFactory.CreateGenericRepository<SmartSpaceVisit>(userContext: _uId);
+            _pqaRepo = _repositoryFactory.CreateGenericRepository<PQA>(userContext: _uId);
+            var mappedPractitioners = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+
+            foreach (var prac in mappedPractitioners)
             {
                 try
                 {
                     var pqas = await _apiManager.GetPQAByFranchisee(prac.RemoteId);
-                    //existingClubMeetings = _clubMeetingRepo.GetAll(); //reload all meetings
-                    //var existingClubMeetingRegisters = _clubMeetingRegisterRepo.GetAll();
-                    //foreach (var register in clubMeetingRegister)
-                    //{
-                    //    if (register.ClubMeeting != null)
-                    //    {
-                    //        if (existingClubMeetings.Where(x => x.Id == Guid.Parse(register.ClubMeeting.Guid)).Any())
-                    //        {
-                    //            if (!existingClubMeetingRegisters.Where(x => x.Id == Guid.Parse(register.Guid)).Any())
-                    //                _clubMeetingRegisterRepo.Insert(new ClubMeetingRegister()
-                    //                {
-                    //                    Id = Guid.Parse(register.Guid), //Guid.NewGuid(),
-                    //                    IsActive = true,
-                    //                    InsertedDate = DateTime.Now,
-                    //                    Attended = register.Attended,
-                    //                    PractitionerId = Guid.Parse(prac.UserId),
-                    //                    ClubMeetingId = Guid.Parse(register.ClubMeeting.Guid),
-                    //                    TenantId = tenantId
-                    //                });
-                    //        }
-                    //    }
-                    //}
+                    var existingPQAs = _pqaRepo.GetAll().Where(x => string.Equals(x.UserId, prac.UserId)).ToList(); //reload all meetings                    
+                    foreach (var pqa in pqas)
+                    {
+                        if (existingPQAs.Where(x => x.Id == Guid.Parse(pqa.Guid)).Any())
+                        {
+                            _pqaRepo.Insert(new PQA()
+                            {
+                                Id = Guid.Parse(pqa.Guid), //Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                TenantId = tenantId,
+                                Latitude = pqa.Latitude,
+                                Longitude = pqa.Longitude,
+                                WasSuccessful = pqa.WasSuccessful,
+                                IsFranchiseeHittingChildren = pqa.IsFranchiseeHittingChildren,
+                                IsSmartSpaceStillFine = pqa.IsSmartSpaceStillFine,
+                                IsVenueSafe = pqa.IsVenueSafe,
+                                IsThereTooManyChildren = pqa.IsThereTooManyChildren,
+                                DateOfVisit = pqa.DateOfVisit,
+                                UserId = prac.UserId
+                            });
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
-                    await _logManager.IntegrationLog("IntegrationClubsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationClubsData > existingClubMeetingRegisters");
+                    await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetPQAByFranchisee");
                 }
+            }
 
+            var mappedTrainees = await GetMappedEntities(SSIntegrationSettings.SSTrainee);
+            foreach (var prac in mappedTrainees)
+            {
                 try
                 {
-                    var smartVisits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(prac.RemoteId);
-                    //existingClubMeetings = _clubMeetingRepo.GetAll(); //reload all meetings
-                    //var existingClubMeetingRegisters = _clubMeetingRegisterRepo.GetAll();
-                    //foreach (var register in clubMeetingRegister)
-                    //{
-                    //    if (register.ClubMeeting != null)
-                    //    {
-                    //        if (existingClubMeetings.Where(x => x.Id == Guid.Parse(register.ClubMeeting.Guid)).Any())
-                    //        {
-                    //            if (!existingClubMeetingRegisters.Where(x => x.Id == Guid.Parse(register.Guid)).Any())
-                    //                _clubMeetingRegisterRepo.Insert(new ClubMeetingRegister()
-                    //                {
-                    //                    Id = Guid.Parse(register.Guid), //Guid.NewGuid(),
-                    //                    IsActive = true,
-                    //                    InsertedDate = DateTime.Now,
-                    //                    Attended = register.Attended,
-                    //                    PractitionerId = Guid.Parse(prac.UserId),
-                    //                    ClubMeetingId = Guid.Parse(register.ClubMeeting.Guid),
-                    //                    TenantId = tenantId
-                    //                });
-                    //        }
-                    //    }
-                    //}
+                    var visits = await _apiManager.GetSmartSpaceVisitsByFranchiseeTrainee(prac.RemoteId);
+                    var existingVisits = _smartSpaceVisitRepo.GetAll().Where(x => string.Equals(x.UserId, prac.UserId)).ToList(); //reload all meetings                    
+                    foreach (var visit in visits)
+                    {
+                        if (existingVisits.Where(x => x.Id == Guid.Parse(visit.Guid)).Any())
+                        {
+                            _smartSpaceVisitRepo.Insert(new SmartSpaceVisit()
+                            {
+                                Id = Guid.Parse(visit.Guid), //Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                TenantId = tenantId,
+                                Latitude = visit.Latitude,
+                                Longitude = visit.Longitude,
+                                Name = visit.Name,
+                                NumberOfAssistants = visit.NumberOfAssistants,
+                                Capacity = visit.Capacity,
+                                RequiredItemsScore = visit.RequiredItemsScore,
+                                UnrequiredItemsScore = visit.UnrequiredItemsScore,
+                                TotalScore = visit.TotalScore,
+                                OwnsProperty = visit.OwnsProperty,
+                                HasAcceptedSmartSpaceAgreement = visit.HasAcceptedSmartSpaceAgreement,
+                                Q1 = visit.Q1,
+                                Q2 = visit.Q2,
+                                Q3 = visit.Q3,
+                                Q4 = visit.Q4,
+                                Q5 = visit.Q5,
+                                Q6 = visit.Q6,
+                                Q7 = visit.Q7,
+                                Q8 = visit.Q8,
+                                Q9 = visit.Q9,
+                                Q10 = visit.Q10,
+                                Q11 = visit.Q11,
+                                Q12 = visit.Q12,
+                                Q13 = visit.Q13,
+                                Q14 = visit.Q14,
+                                Q15 = visit.Q15,
+                                Q16 = visit.Q16,
+                                Q17 = visit.Q17,
+                                Q18 = visit.Q18,
+                                Q19 = visit.Q19,
+                                Q20 = visit.Q20,
+                                Q21 = visit.Q21,
+                                DateOfVisit = visit.DateOfVisit,
+                                UserId = prac.UserId
+                            });
+                        }
+                    }
                 }
                 catch (Exception e)
                 {
-                    await _logManager.IntegrationLog("IntegrationClubsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationClubsData > existingClubMeetingRegisters");
+                    await _logManager.IntegrationLog("IntegrationPQASmartSpaceVisitsData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationPQASmartSpaceVisitsData > GetSmartSpaceVisitsByFranchiseeTrainee");
                 }
-
-
             }
 
             return true;
         }
-
         public async Task<bool> IntegrationStatementsData()
         {
             bool isComplete = false;
@@ -511,11 +543,12 @@ namespace ECDLink.Core.Services
             string attendanceUrl = SSIntegrationSettings.SLChildAttendanceRegister + SSIntegrationSettings.CreateMultiple;
             var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-7))).ToList();
 
-            DateTime trackingDate = DateTime.Now.AddDays(-1).StartOfWeek(DayOfWeek.Monday);
+            DateTime trackingWeekDate = DateTime.Now.AddDays(-7).StartOfWeek(DayOfWeek.Monday);
+            DateTime followingWeekDate = DateTime.Now.StartOfWeek(DayOfWeek.Monday);
 
             foreach (var parent in attendancesDueList)
             {
-                IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, _contextAccessor, parent.UserId, trackingDate.Year, trackingDate.Month, trackingDate.GetWeekOfYear());
+                IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, _contextAccessor, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
                 if (attendanceData.Any())
                 {
                     try
@@ -526,55 +559,97 @@ namespace ECDLink.Core.Services
                         StringBuilder jsonAttendanceString = new StringBuilder();
                         jsonAttendanceString.AppendLine("[");
                         //get list of children
-                        List<string> children = attendanceData.Select(x => x.UserId).ToList();
+                        List<string> children = attendanceData.Select(x => x.UserId).Distinct().ToList();
                         foreach (var child in children)
                         {
-                            int daysAbsent = 1;
-                            int daysPresent = 4;
+                            int daysPresent = 0 ;
+                            string mondayPresent = absent;
+                            string tuesdayPresent = absent;
+                            string wednesdayPresent = absent;
+                            string thursdayPresent = absent;
+                            string fridayPresent = absent;
                             //must get mapped childrens details to get remote ID and if child has already been mapped, if not mapped, dont send 
                             var mappedChild = _mappedEntities.Where(x => string.Equals(x.UserId, child) && string.Equals(x.LocalEntity, SSIntegrationSettings.SSChild)).FirstOrDefault();
                             if (mappedChild != null) {
 
-                                var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child)).ToList();
-
+                                var childAttendances = attendanceData.Where(x => string.Equals(x.UserId, child) && x.AttendanceDate < followingWeekDate).OrderBy(x => x.AttendanceDate).ToList();
                                 foreach (var attendance in childAttendances)
                                 {
-                                    /*
-                                    [
-                                      {
-                                        "NumberOfDaysPresent": 1,
-                                        "NumberOfDaysAbsent": 4,
-                                        "StartDateOfWeek": "2023-02-06T22:00:00Z",
-                                        "Monday": "Present",
-                                        "Tuesday": "Absent",
-                                        "Wednesday": "Absent",
-                                        "Thursday": "Absent",
-                                        "Friday": "Absent",
-                                        "Franchisee": {
-                                          "Guid": "2e884385-319d-eb11-8346-00155d326100"
-                                        },
-                                        "Child": {
-                                          "Guid": "e3d2f84d-8614-ec11-834c-00155d326100"
-                                        }
-                                      }
-                                    ]
-                                     */
-
-                                    jsonAttendanceString.AppendLine("{");
-                                    jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
-                                    jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + daysAbsent + ",");
-                                    jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingDate.AddDays(-7).StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
-                                    jsonAttendanceString.AppendLine("\"Monday\":\"" + present + "\",");
-                                    jsonAttendanceString.AppendLine("\"Tuesday\":\"" + present + "\",");
-                                    jsonAttendanceString.AppendLine("\"Wednesday\":\"" + present + "\",");
-                                    jsonAttendanceString.AppendLine("\"Thursday\":\"" + present + "\",");
-                                    jsonAttendanceString.AppendLine("\"Friday\":\"" + absent + "\",");
-                                    jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
-                                    jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
-                                    jsonAttendanceString.AppendLine("},");
-
+                                    switch (attendance.AttendanceDate.ToString("dddd"))
+                                    {
+                                        case "Monday":
+                                            if (attendance.Attended)
+                                            {
+                                                mondayPresent = present;
+                                                daysPresent++;
+                                            } else
+                                            {
+                                                mondayPresent = absent;
+                                            }
+                                            break;
+                                        case "Tuesday":
+                                            if (attendance.Attended)
+                                            {
+                                                tuesdayPresent = present;
+                                                daysPresent++;
+                                            }
+                                            else
+                                            {
+                                                tuesdayPresent = absent;
+                                            }
+                                            break;
+                                        case "Wednesday":
+                                            if (attendance.Attended)
+                                            {
+                                                wednesdayPresent = present;
+                                                daysPresent++;
+                                            }
+                                            else
+                                            {
+                                                wednesdayPresent = absent;
+                                            }
+                                            break;
+                                        case "Thursday":
+                                            if (attendance.Attended)
+                                            {
+                                                thursdayPresent = present;
+                                                daysPresent++;
+                                            }
+                                            else
+                                            {
+                                                thursdayPresent = absent;
+                                            }
+                                            break;
+                                        case "Friday":
+                                            if (attendance.Attended)
+                                            {
+                                                fridayPresent = present;
+                                                daysPresent++;
+                                            }
+                                            else
+                                            {
+                                                fridayPresent = absent;
+                                            }
+                                            break;
+                                    }
                                     validAttendance = true;
                                 }
+                                /*
+[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
+ */
+
+                                jsonAttendanceString.AppendLine("{");
+                                jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
+                                jsonAttendanceString.AppendLine("\"NumberOfDaysPresent\":" + daysPresent + ",");
+                                jsonAttendanceString.AppendLine("\"NumberOfDaysAbsent\":" + (5 - daysPresent) + ",");
+                                jsonAttendanceString.AppendLine("\"Monday\":\"" + mondayPresent + "\",");
+                                jsonAttendanceString.AppendLine("\"Tuesday\":\"" + tuesdayPresent + "\",");
+                                jsonAttendanceString.AppendLine("\"Wednesday\":\"" + wednesdayPresent + "\",");
+                                jsonAttendanceString.AppendLine("\"Thursday\":\"" + thursdayPresent + "\",");
+                                jsonAttendanceString.AppendLine("\"Friday\":\"" + fridayPresent + "\",");
+                                jsonAttendanceString.AppendLine("\"Franchisee\":{\"Guid\": \"" + parent.RemoteId + "\"},");
+                                jsonAttendanceString.AppendLine("\"Child\":{\"Guid\": \"" + mappedChild.RemoteId + "\"}");
+                                jsonAttendanceString.AppendLine("},");
                             }
                         }
                         jsonAttendanceString.AppendLine("]");
@@ -611,7 +686,7 @@ namespace ECDLink.Core.Services
                     }
                     catch (Exception e)
                     {
-                        await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingDate.ToString());
+                        await _logManager.IntegrationLog("IntegrationAttendanceData Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > AttendanceTracking > " + parent.UserId + " Date: " + trackingWeekDate.ToString());
                     }
                 }
             }          
@@ -624,8 +699,8 @@ namespace ECDLink.Core.Services
             _mappedEntities = await GetMappedEntities();
             _mappedColumns = await GetMappedColumns();
             
-            List<ColumnChange> changedColumns = await _apiManager.GetColumnChangesBetweenDates(DateTime.Now.AddDays(-3), DateTime.Now);                    
-
+            List<ColumnChange> changedColumns = await _apiManager.GetColumnChangesBetweenDates(DateTime.Now.AddDays(-2), DateTime.Now);                    
+            
             if (changedColumns != null) {
                 foreach (var change in changedColumns)
                 {
@@ -917,7 +992,7 @@ namespace ECDLink.Core.Services
                 var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
 
                 //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(-3)).OrderByDescending(x => x.InsertedDate).ToList(); // && x.ChangeType.Equals("Insert")
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(-3)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
                 //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
                 if (entityType != null)
                     return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
@@ -2462,237 +2537,267 @@ namespace ECDLink.Core.Services
                     {
                         case "ApplicationUser":
                             var entityUser = await _userManager.FindByIdAsync(mappedEntity.UserId);
-                            Type userT = typeof(ApplicationUser);
-                            foreach (var prop in userT.GetProperties())
+                            if (entityUser != null)
                             {
-                                if (prop.Name == localColumnChange.LocalColumn)
+                                Type userT = typeof(ApplicationUser);
+                                foreach (var prop in userT.GetProperties())
                                 {
-                                    //if (model.LastUpdatedDateTime >= entityUser.UpdatedDate)
-                                    //{
-                                    string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
-                                    if (currentValue != model.NewData)
+                                    if (prop.Name == localColumnChange.LocalColumn)
                                     {
-                                        if (!localColumnChange.RemapToString)
-                                            //if the name is changed, remember to update the fullname as well
-                                            if (prop.Name == "FirstName" || prop.Name == "SurName")
-                                            {
-                                                prop.SetValue(entityUser, model.NewData);
-                                                entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
-                                            }
-                                            else
-                                            {
-                                                prop.SetValue(entityUser, model.NewData);
-                                            }
-                                        else
+                                        //if (model.LastUpdatedDateTime >= entityUser.UpdatedDate)
+                                        //{
+                                        string currentValue = prop.GetValue(entityUser, null) != null ? prop.GetValue(entityUser, null).ToString() : "";
+                                        if (currentValue != model.NewData)
                                         {
-                                            //TODO
-                                            string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-
-                                        }
-
-                                        updatedEntity = true;
-                                    }
-                                    //}
-                                }
-                            }
-                            if (updatedEntity)
-                            {
-                                await _userManager.UpdateAsync(entityUser);
-                            }
-
-                            break;
-                        case SSIntegrationSettings.SSCoach:
-                            var coach = _coachGenericRepo.GetByUserId(mappedEntity.UserId);
-                            Type coachT = typeof(Coach);
-                            foreach (var prop in coachT.GetProperties())
-                            {
-                                if (prop.Name == model.EntityColumn)
-                                {
-                                    if (model.LastUpdatedDateTime >= coach.UpdatedDate)
-                                    {
-                                        if (!localColumnChange.RemapToString)
-                                            prop.SetValue(coach, model.EntityColumn);
-                                        else
-                                        {
-                                            //TODO
-                                            string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-
-                                        }
-                                        updatedEntity = true;
-                                    }
-                                }
-                            }
-                            if (updatedEntity)
-                            {
-                                coach.UpdatedBy = _uId;
-                                coach.UpdatedDate = DateTime.Now;
-                                _coachGenericRepo.Update(coach);
-                            }
-                            break;
-                        case SSIntegrationSettings.SSPractitioner:
-                            var prac = _practitionerGenericRepo.GetByUserId(mappedEntity.UserId);
-                            Type practT = typeof(Practitioner);
-                            foreach (var prop in practT.GetProperties())
-                            {
-                                if (prop.Name == localColumnChange.LocalColumn)
-                                {
-                                    if (model.LastUpdatedDateTime >= prac.UpdatedDate)
-                                    {
-                                        string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
-                                        if (currentValue != model.NewData) {
                                             if (!localColumnChange.RemapToString)
-                                                prop.SetValue(prac, model.NewData);
+                                                //if the name is changed, remember to update the fullname as well
+                                                if (prop.Name == "FirstName" || prop.Name == "SurName")
+                                                {
+                                                    prop.SetValue(entityUser, model.NewData);
+                                                    entityUser.FullName = await UpdateFullName(currentValue, model.NewData, entityUser.FullName);
+                                                }
+                                                else
+                                                {
+                                                    prop.SetValue(entityUser, model.NewData);
+                                                }
                                             else
                                             {
                                                 //TODO
                                                 string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+
+                                            }
+
+                                            updatedEntity = true;
+                                        }
+                                        //}
+                                    }
+                                }
+                                if (updatedEntity)
+                                {
+                                    await _userManager.UpdateAsync(entityUser);
+                                }
+                            }
+                            break;
+                        case SSIntegrationSettings.SSCoach:
+                            var coach = _coachGenericRepo.GetByUserId(mappedEntity.UserId);
+                            if (coach != null)
+                            {
+                                Type coachT = typeof(Coach);
+                                foreach (var prop in coachT.GetProperties())
+                                {
+                                    if (prop.Name == model.EntityColumn)
+                                    {
+                                        if (model.LastUpdatedDateTime >= coach.UpdatedDate)
+                                        {
+                                            if (!localColumnChange.RemapToString)
+                                                prop.SetValue(coach, model.EntityColumn);
+                                            else
+                                            {
+                                                //TODO
+                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+
                                             }
                                             updatedEntity = true;
                                         }
                                     }
                                 }
+                                if (updatedEntity)
+                                {
+                                    coach.UpdatedBy = _uId;
+                                    coach.UpdatedDate = DateTime.Now;
+                                    _coachGenericRepo.Update(coach);
+                                }
                             }
-                            if (updatedEntity)
+                            break;
+                        case SSIntegrationSettings.SSPractitioner:
+                            var prac = _practitionerGenericRepo.GetByUserId(mappedEntity.UserId);
+                            if (prac != null)
                             {
-                                prac.UpdatedBy = _uId;
-                                prac.UpdatedDate = DateTime.Now;
-                                _practitionerGenericRepo.Update(prac);
+                                Type practT = typeof(Practitioner);
+                                foreach (var prop in practT.GetProperties())
+                                {
+                                    if (prop.Name == localColumnChange.LocalColumn)
+                                    {
+                                        if (model.LastUpdatedDateTime >= prac.UpdatedDate)
+                                        {
+                                            string currentValue = prop.GetValue(prac, null) != null ? prop.GetValue(prac, null).ToString() : "";
+                                            if (currentValue != model.NewData)
+                                            {
+                                                if (!localColumnChange.RemapToString)
+                                                    prop.SetValue(prac, model.NewData);
+                                                else
+                                                {
+                                                    //TODO
+                                                    string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                }
+                                                updatedEntity = true;
+                                            }
+                                        }
+                                    }
+                                }
+                                if (updatedEntity)
+                                {
+                                    prac.UpdatedBy = _uId;
+                                    prac.UpdatedDate = DateTime.Now;
+                                    _practitionerGenericRepo.Update(prac);
+                                }
                             }
                             break;
                         case SSIntegrationSettings.SSChild:
                             var child = _childGenericRepo.GetByUserId(mappedEntity.UserId);
                             Type childT = typeof(Child);
-                            foreach (var prop in childT.GetProperties())
+                            if (child != null)
                             {
-                                if (prop.Name == localColumnChange.LocalColumn)
+                                foreach (var prop in childT.GetProperties())
                                 {
-                                    if (model.LastUpdatedDateTime >= child.UpdatedDate)
+                                    if (prop.Name == localColumnChange.LocalColumn)
                                     {
-                                        string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+                                        if (model.LastUpdatedDateTime >= child.UpdatedDate)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(child, model.NewData);
-                                            else
+                                            string currentValue = prop.GetValue(child, null) != null ? prop.GetValue(child, null).ToString() : "";
+                                            if (currentValue != model.NewData)
                                             {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                if (!localColumnChange.RemapToString)
+                                                    prop.SetValue(child, model.NewData);
+                                                else
+                                                {
+                                                    //TODO
+                                                    string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                }
+                                                updatedEntity = true;
                                             }
-                                            updatedEntity = true;
                                         }
                                     }
                                 }
-                            }
-                            if (updatedEntity)
-                            {
-                                child.UpdatedBy = _uId;
-                                child.UpdatedDate = DateTime.Now;
-                                _childGenericRepo.Update(child);
+                                if (updatedEntity)
+                                {
+                                    child.UpdatedBy = _uId;
+                                    child.UpdatedDate = DateTime.Now;
+                                    _childGenericRepo.Update(child);
+                                }
                             }
                             break;
                         case SSIntegrationSettings.SSCaregiver:
                             var caregiver = _caregiverRepo.GetById(Guid.Parse(mappedEntity.LocalId));
-                            Type careT = typeof(Caregiver);
-                            foreach (var prop in careT.GetProperties())
+                            if (caregiver == null)
                             {
-                                if (prop.Name == localColumnChange.LocalColumn)
+                                //it depends on teh entity grouping for child, it may be that the child needs updating but the record of the caregiver - like emergency contact number, so get child and reload its caregiver
+                                var cgchild = _childGenericRepo.GetByUserId(mappedEntity.UserId);
+                                if (cgchild != null) {
+                                    if (cgchild.Caregiver != null)
+                                        caregiver = cgchild.Caregiver;
+                                }
+                            }
+                            if (caregiver != null)
+                            {
+                                Type careT = typeof(Caregiver);
+                                foreach (var prop in careT.GetProperties())
                                 {
-                                    if (model.LastUpdatedDateTime >= caregiver.UpdatedDate)
+                                    if (prop.Name == localColumnChange.LocalColumn)
                                     {
-                                        string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+                                        if (model.LastUpdatedDateTime >= caregiver.UpdatedDate)
                                         {
-                                            if (!localColumnChange.RemapToString)
+                                            string currentValue = prop.GetValue(caregiver, null) != null ? prop.GetValue(caregiver, null).ToString() : "";
+                                            if (currentValue != model.NewData)
                                             {
-                                                if (prop.Name == "FirstName" || prop.Name == "SurName")
+                                                if (!localColumnChange.RemapToString)
                                                 {
-                                                    prop.SetValue(caregiver, model.NewData);
-                                                    caregiver.FullName = await UpdateFullName(currentValue, model.NewData, caregiver.FullName);
+                                                    if (prop.Name == "FirstName" || prop.Name == "SurName")
+                                                    {
+                                                        prop.SetValue(caregiver, model.NewData);
+                                                        caregiver.FullName = await UpdateFullName(currentValue, model.NewData, caregiver.FullName);
+                                                    }
+                                                    else
+                                                    {
+
+                                                        prop.SetValue(caregiver, model.NewData);
+                                                    }
                                                 }
                                                 else
                                                 {
-
-                                                    prop.SetValue(caregiver, model.NewData);
+                                                    //TODO
+                                                    string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
                                                 }
+                                                updatedEntity = true;
                                             }
-                                            else
-                                            {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-                                            }
-                                            updatedEntity = true;
                                         }
                                     }
                                 }
-                            }
-                            if (updatedEntity)
-                            {
-                                caregiver.UpdatedBy = _uId;
-                                caregiver.UpdatedDate = DateTime.Now;
-                                _caregiverRepo.Update(caregiver);
+                                if (updatedEntity)
+                                {
+                                    caregiver.UpdatedBy = _uId;
+                                    caregiver.UpdatedDate = DateTime.Now;
+                                    _caregiverRepo.Update(caregiver);
+                                }
                             }
                             break;
                         case SSIntegrationSettings.SSAddress:
                             //TODO:
                             var address = _siteAddressRepo.GetById(Guid.Parse(mappedEntity.LocalId));
-                            Type addressT = typeof(SiteAddress);
-                            foreach (var prop in addressT.GetProperties())
+                            if (address != null)
                             {
-                                if (prop.Name == localColumnChange.LocalColumn)
+                                Type addressT = typeof(SiteAddress);
+                                foreach (var prop in addressT.GetProperties())
                                 {
-                                    if (model.LastUpdatedDateTime >= address.UpdatedDate)
+                                    if (prop.Name == localColumnChange.LocalColumn)
                                     {
-                                        string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+                                        if (model.LastUpdatedDateTime >= address.UpdatedDate)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(address, model.NewData);
-                                            else
+                                            string currentValue = prop.GetValue(address, null) != null ? prop.GetValue(address, null).ToString() : "";
+                                            if (currentValue != model.NewData)
                                             {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                if (!localColumnChange.RemapToString)
+                                                    prop.SetValue(address, model.NewData);
+                                                else
+                                                {
+                                                    //TODO
+                                                    string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                }
+                                                updatedEntity = true;
                                             }
-                                            updatedEntity = true;
                                         }
                                     }
                                 }
-                            }
-                            if (updatedEntity)
-                            {
-                                address.UpdatedBy = _uId;
-                                address.UpdatedDate = DateTime.Now;
-                                _siteAddressRepo.Update(address);
+                                if (updatedEntity)
+                                {
+                                    address.UpdatedBy = _uId;
+                                    address.UpdatedDate = DateTime.Now;
+                                    _siteAddressRepo.Update(address);
+                                }
                             }
                             break;
                         case SSIntegrationSettings.SSDocument:
                             var doc = _docRepo.GetById(Guid.Parse(mappedEntity.LocalId));
-                            Type docT = typeof(Document);
-                            foreach (var prop in docT.GetProperties())
+                            if (doc != null)
                             {
-                                if (prop.Name == localColumnChange.LocalColumn)
+                                Type docT = typeof(Document);
+                                foreach (var prop in docT.GetProperties())
                                 {
-                                    if (model.LastUpdatedDateTime >= doc.UpdatedDate)
+                                    if (prop.Name == localColumnChange.LocalColumn)
                                     {
-                                        string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
-                                        if (currentValue != model.NewData)
+                                        if (model.LastUpdatedDateTime >= doc.UpdatedDate)
                                         {
-                                            if (!localColumnChange.RemapToString)
-                                                prop.SetValue(doc, model.NewData);
-                                            else
+                                            string currentValue = prop.GetValue(doc, null) != null ? prop.GetValue(doc, null).ToString() : "";
+                                            if (currentValue != model.NewData)
                                             {
-                                                //TODO
-                                                string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                if (!localColumnChange.RemapToString)
+                                                    prop.SetValue(doc, model.NewData);
+                                                else
+                                                {
+                                                    //TODO
+                                                    string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
+                                                }
+                                                updatedEntity = true;
                                             }
-                                            updatedEntity = true;
                                         }
                                     }
                                 }
-                            }
-                            if (updatedEntity)
-                            {
-                                doc.UpdatedBy = _uId;
-                                doc.UpdatedDate = DateTime.Now;
-                                _docRepo.Update(doc);
+                                if (updatedEntity)
+                                {
+                                    doc.UpdatedBy = _uId;
+                                    doc.UpdatedDate = DateTime.Now;
+                                    _docRepo.Update(doc);
+                                }
                             }
                             break;
                         //case SSIntegrationSettings.SSClassroom:
@@ -2762,20 +2867,8 @@ namespace ECDLink.Core.Services
                                          on entity.UserId equals audit.RelatedId
                                          select new { entity, audit }).ToList();
 
-                //changes related to related entities made to by this user
-                var changedRelatedList = (from entity in _mappedEntities
-                                        join audit in _audits
-                                        on entity.LocalId equals audit.RelatedId
-                                        select new { entity, audit }).ToList();
-
                 if (changedUsersList.Any())
                     changedEntityList.AddRange(changedUsersList);
-
-
-                if (changedRelatedList.Any())
-                    changedEntityList.AddRange(changedRelatedList);
-
-                //var entityIdList = updates.Where(x => x.Entity.Equals(updatedEntityType)).Select(y => y.RelatedId).Distinct().ToList();
 
                 if (changedEntityList.Any())
                 {
@@ -2799,8 +2892,8 @@ namespace ECDLink.Core.Services
                                 //get all changes for this entity and group and build JSON
                                 var associatedChanges = (localEntity == SSIntegrationSettings.SSPractitioner || localEntity == SSIntegrationSettings.SSChild ||
                                                         localEntity == SSIntegrationSettings.SSCoach || localEntity == SSIntegrationSettings.SSFranchisor ?
-                                                            changedEntityList.Where(x => (x.audit.Entity.Equals(localEntity) || x.audit.Entity.Equals("ApplicationUser"))).OrderByDescending(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList() :
-                                                            changedEntityList.Where(x => x.audit.Entity.Equals(localEntity)).OrderByDescending(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList());
+                                                            changedEntityList.Where(x => (string.Equals(x.audit.Entity, localEntity) || string.Equals(x.audit.Entity,"ApplicationUser")) && string.Equals(x.audit.RelatedId, entityToUpdate.audit.RelatedId)).OrderBy(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList() :
+                                                            changedEntityList.Where(x => string.Equals(x.audit.Entity,localEntity) && string.Equals(x.audit.RelatedId, entityToUpdate.audit.RelatedId)).OrderBy(y => y.audit.InsertedDate).DistinctBy(y => y.audit.Property).ToList());
                                 //var allChanges = updates.Where(x => x.Entity.Equals(updatedEntityType) && x.RelatedId.Equals(entityToUpdate)).OrderByDescending(y => y.InsertedDate).DistinctBy(y => y.Property).ToList();
                                 //var associatedChanges = null;
                                 //if (localEntity == SSIntegrationSettings.SSPractitioner || localEntity == SSIntegrationSettings.SSChild || localEntity == SSIntegrationSettings.SSCoach || localEntity == SSIntegrationSettings.SSFranchisor)
@@ -2884,6 +2977,7 @@ namespace ECDLink.Core.Services
                             jsonString.AppendLine("]");
                             try
                             {
+
                                 if (validUpdate)
                                 {
                                     //now send to API call <entity type>/Multiple
