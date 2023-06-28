@@ -103,7 +103,11 @@ export const StartupAcceptAgreement4: React.FC<ReadAndAcceptAgreementProps> = ({
                 checked={questions?.[0].answer}
               />
               <Typography
-                text={`I, ${practitioner?.user?.fullName} (ID: ${practitioner?.user?.idNumber}; Cellphone: ${practitioner?.user?.phoneNumber})  have agreed to receive my stipend amount of R500 using FNB eWallet.`}
+                text={`I, ${practitioner?.user?.fullName} (ID: ${
+                  practitioner?.user?.idNumber || '0000000000'
+                }; Cellphone: ${
+                  practitioner?.user?.phoneNumber || '000000000'
+                })  have agreed to receive my stipend amount of R500 using FNB eWallet.`}
                 type="body"
                 color="textMid"
               />
