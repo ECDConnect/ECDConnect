@@ -56,12 +56,15 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
             }
           />
           <div className="'flex items-center' w-full flex-row justify-start">
-            <div className="flex items-start gap-2">
+            <div
+              className="flex items-start gap-2"
+              onClick={() => setBecomeSmartStartuser(!becomeSmartStartuser)}
+            >
               <Checkbox
                 checked={
                   franchisorAgreementSigned
                     ? franchisorAgreementSigned
-                    : undefined
+                    : undefined || becomeSmartStartuser
                 }
                 onCheckboxChange={() =>
                   setBecomeSmartStartuser(!becomeSmartStartuser)
@@ -78,7 +81,7 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
                 checked={
                   franchisorAgreementSigned
                     ? franchisorAgreementSigned
-                    : undefined
+                    : undefined || acceptTerms
                 }
                 onCheckboxChange={() => setAcceptTerms(!acceptTerms)}
               />
@@ -88,6 +91,7 @@ export const ReadAndAcceptAgreement: React.FC<ReadAndAcceptAgreementProps> = ({
                   type="help"
                   color={'textMid'}
                   className="whitespace-nowrap"
+                  onClick={() => setAcceptTerms(!acceptTerms)}
                 />
                 &nbsp;
                 <Typography

@@ -4,10 +4,11 @@ import { Header } from '@/pages/infant/infant-profile/components';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
 import { activitiesColours } from '../../../activities-list';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps, MotherProfileParams } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
 import { motherSelectors } from '@/store/mother';
-import { format } from 'date-fns';
+import { RootState } from '@/store/types';
+import { useParams } from 'react-router';
 
 export const NextVisitStep = ({
   mother,
@@ -15,17 +16,29 @@ export const NextVisitStep = ({
 }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
-  const currentVisit = useSelector(
-    motherSelectors.getMotherCurrentVisitSelector
+  const { visitId } = useParams<MotherProfileParams>();
+  const currentVisit = useSelector((state: RootState) =>
+    motherSelectors.getMotherCurrentVisitSelector(state, visitId)
   );
-  const currentVisitId = currentVisit?.id;
   const motherVisits = useSelector(motherSelectors.getMotherVisits);
-  const motherVisitsId = motherVisits?.map((item) => item?.id);
 
-  const currentVisitIndex = motherVisitsId?.indexOf(currentVisitId!);
+  const todayEndOfTheDay = new Date();
+  todayEndOfTheDay.setHours(23, 59, 59, 999);
+  const nextVisit = motherVisits.find(
+    (item) =>
+      item.visitType?.order === Number(currentVisit?.visitType?.order) + 1
+  );
 
-  const nextVisitIndex = currentVisitIndex + 1;
-  const date = motherVisits[nextVisitIndex]?.plannedVisitDate;
+  const dueDate = nextVisit?.dueDate
+    ? new Date(nextVisit.dueDate)
+    : todayEndOfTheDay;
+  const date = dueDate
+    ? dueDate.toLocaleDateString('en-ZA', {
+        year: 'numeric',
+        month: 'long',
+        day: 'numeric',
+      })
+    : '';
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -36,17 +49,14 @@ export const NextVisitStep = ({
       <Header
         icon="CalendarIcon"
         iconHexBackgroundColor={activitiesColours.other.primaryColor}
-        title="Progress"
+        title="Next visit"
       />
       <div className="p-4">
         <Alert
           type="warning"
           title={`${name} needs an extra support visit`}
           titleColor="textDark"
-          message={`Book a visit before ${format(
-            new Date(date),
-            'd MMM yyyy'
-          )}.`}
+          message={`Book a visit before ${date}.`}
           messageColor="textMid"
           customIcon={
             <div className="bg-tertiary h-16 w-16 rounded-full">

@@ -15,7 +15,6 @@ import {
 import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
 import {
   CmsVisitDataInputModelInput,
@@ -33,7 +32,6 @@ import { HealthStructureArea } from './components/safety-structure-area/health-s
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useAppDispatch } from '@/store';
-import ROUTES from '@/routes/routes';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 import { CoachVisitInfo } from '../trainee-onboarding-dashboard/components/coach-visit-info';
 
@@ -48,7 +46,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const history = useHistory();
   const date = format(new Date(), 'EEEE, d LLLL');
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [sectionQuestions, setSectionQuestions] =
@@ -410,40 +407,17 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  const allStepsComplete = useMemo(
-    () =>
-      traineeCurrentVisit?.id &&
-      notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      !isSmartChecklist,
-    [
-      isSmartChecklist,
-      notificationItems?.length,
-      notificationItemsLaterStage?.length,
-      traineeCurrentVisit?.id,
-    ]
-  );
-
   const allStepsCompleteFromDashboard = useMemo(
     () =>
       traineeCurrentVisit?.id &&
       notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      isSmartChecklist,
+      notificationItemsLaterStage?.length === 0,
     [
-      isSmartChecklist,
       notificationItems?.length,
       notificationItemsLaterStage?.length,
       traineeCurrentVisit?.id,
     ]
   );
-
-  useEffect(() => {
-    if (allStepsComplete) {
-      setNotificationStep('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allStepsComplete]);
 
   return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
     <div className="h-screen">{steps(activeStep)}</div>
@@ -473,7 +447,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       title={'Business'}
       subTitle={date}
       color={'primary'}
-      onBack={setNotificationStep('')}
+      onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
     >

@@ -100,15 +100,28 @@ export const VisitsTab: React.FC = () => {
     }),
     [infant?.caregiver?.firstName, infant?.user?.firstName]
   );
-  const currentDate = useMemo(() => new Date(), []);
   //const next7Days = new Date(new Date().setDate(currentDate.getDate() + 7));
-  const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
+  // const dateToCheck = currentVisit && new Date(currentVisit?.orderDate);
+  // Remove next7Days check according to ticket EC-331 - confirmed with Kim
+  // const isWeekDeadline = dateToCheck && dateToCheck >= currentDate; // && dateToCheck <= next7Days;
+
+  // EC-685 - only show start visit button if today falls between planned and due date for current visit
+  const currentDate = useMemo(() => new Date(), []);
+  currentDate?.setHours(0, 0, 0, 0);
+  const plannedVisitDate =
+    currentVisit && new Date(currentVisit?.plannedVisitDate);
+  plannedVisitDate?.setHours(0, 0, 0, 0);
+  const dueDate = currentVisit && new Date(currentVisit?.dueDate);
+  dueDate?.setHours(0, 0, 0, 0);
+  const isWeekDeadline =
+    plannedVisitDate &&
+    dueDate &&
+    currentDate >= plannedVisitDate &&
+    currentDate <= dueDate;
+
   const infantAgeDays = infant?.user?.dateOfBirth
     ? differenceInDays(currentDate, new Date(infant?.user?.dateOfBirth))
     : 0;
-
-  // Remove next7Days check according to ticket EC-331 - confirmed with Kim
-  const isWeekDeadline = dateToCheck && dateToCheck >= currentDate; // && dateToCheck <= next7Days;
 
   const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),

@@ -1,20 +1,9 @@
-import Article from '@/components/article/article';
-import { practitionerSelectors } from '@/store/practitioner';
-import {
-  Alert,
-  Button,
-  ButtonGroup,
-  ButtonGroupTypes,
-  Checkbox,
-  Typography,
-} from '@ecdlink/ui';
+import { Button, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
 import { useCallback, useState } from 'react';
-import { useSelector } from 'react-redux';
-import { ContentConsentTypeEnum } from '@ecdlink/core';
-import { coachSelectors } from '@/store/coach';
 import { startupAgreementPaymentOptions } from './startup-accept-agreement3.types';
 import {
   SectionQuestions,
+  StartupAgreementSteps,
   visitSection,
 } from '../../startup-accept-agreement.types';
 
@@ -22,19 +11,19 @@ interface ReadAndAcceptAgreementProps {
   setAgreementStep: any;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   sectionQuestions?: SectionQuestions[];
+  onAllStepsComplete?: any;
+  setShowProofOfBanking?: any;
 }
 
 export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
   setAgreementStep,
   setSectionQuestions,
   sectionQuestions,
+  onAllStepsComplete,
 }) => {
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
-
   const [questions, setAnswers] = useState([
     {
-      question: 'Have set up my own enterprise',
+      question: 'How would you like to receive your start-up support?',
       answer: '',
     },
   ]);
@@ -52,7 +41,6 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
         }
         return question;
       });
-
       setAnswers(updatedQuestions);
     },
     [questions]
@@ -68,6 +56,20 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
             : questions,
       },
     ]);
+  };
+
+  const handleSubmitStep = () => {
+    if (questions?.[0].answer !== 'bankAccount') {
+      onSubmitQuestions();
+      setAgreementStep(StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT4);
+      return;
+    } else {
+      if (questions?.[0].answer === 'bankAccount') {
+        onSubmitQuestions();
+        setAgreementStep(StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT5);
+        return;
+      }
+    }
   };
 
   return (
@@ -92,7 +94,7 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
                 'font-body text-textMid mb-2 block text-base font-semibold leading-snug'
               }
             >
-              How would you like to receive your start-up support?
+              {questions?.[0].question}
             </label>
             <label
               className={
@@ -123,8 +125,7 @@ export const StartupAcceptAgreement3: React.FC<ReadAndAcceptAgreementProps> = ({
               textColor="white"
               icon="ArrowCircleRightIcon"
               onClick={() => {
-                onSubmitQuestions();
-                setAgreementStep('StartupAcceptAgreement4');
+                handleSubmitStep();
               }}
               disabled={questions?.some((item) => item?.answer === '')}
             />

@@ -314,7 +314,20 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
           />
           <div className="flex items-center">
             <div className="'flex items-center' w-full flex-row justify-start">
-              <div className="flex items-start gap-2">
+              <div
+                className="flex items-start gap-2"
+                onClick={() => {
+                  setProgrammeFormValue(
+                    'haveReadTheSmartStarterInformation',
+                    !getProgrammeFormValues().haveReadTheSmartStarterInformation
+                  );
+                  onOptionSelected(
+                    !getProgrammeFormValues()
+                      .haveReadTheSmartStarterInformation,
+                    0
+                  );
+                }}
+              >
                 <Checkbox<ProgrammeDetailsModel>
                   checked={
                     Boolean(

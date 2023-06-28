@@ -1,4 +1,5 @@
 export * from './attendance';
+export * from './calendar';
 export * from './care-giver';
 export * from './child';
 export * from './class-programme';

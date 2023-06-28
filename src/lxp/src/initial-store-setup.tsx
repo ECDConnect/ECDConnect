@@ -55,6 +55,7 @@ import {
   traineeSelectors,
   traineeThunkActions,
 } from './store/trainee';
+import { calendarThunkActions } from './store/calendar';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -296,6 +297,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(
       progressTrackingThunkActions.getProgressTrackingLevels({
+        locale: 'en-za',
+      })
+    ).unwrap();
+
+    // CALENDAR
+    await appDispatch(
+      calendarThunkActions.getCalendarEventTypes({
         locale: 'en-za',
       })
     ).unwrap();

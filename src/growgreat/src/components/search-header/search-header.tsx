@@ -26,6 +26,7 @@ type SearchHeaderProps<T> = {
   heading?: string;
   children: ReactNode;
   className?: string;
+  id?: string;
 };
 
 export const SearchHeader = <T extends {}>({
@@ -39,6 +40,7 @@ export const SearchHeader = <T extends {}>({
   className,
   heading,
   onBack,
+  id,
 }: SearchHeaderProps<T>) => {
   return (
     <>
@@ -46,7 +48,11 @@ export const SearchHeader = <T extends {}>({
         as="div"
         className={classNames(styles.quickSearchWrapper, className)}
       >
-        <div className={styles.searchIconWrapper} onClick={onSearchButtonClick}>
+        <div
+          className={styles.searchIconWrapper}
+          onClick={onSearchButtonClick}
+          id={id}
+        >
           <SearchIcon className={styles.searchIcon} />
         </div>
         {children}
