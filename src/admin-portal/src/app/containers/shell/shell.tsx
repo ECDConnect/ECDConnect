@@ -193,7 +193,7 @@ export default function Shell() {
                 </div>
               </Transition.Child>
               <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
-                <img className="h-100 mb-4" src={logo} alt="Login Logo" />
+                <img className="h-100 mb-8" src={logo} alt="Login Logo" />
 
                 <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
               </div>
@@ -220,7 +220,7 @@ export default function Shell() {
               <div>
 
               </div>
-              <img className="h-100 mb-4" src={logo} alt="Login Logo" />
+              <img className="h-100 mb-8" src={logo} alt="Login Logo" />
 
               <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
             </div>
