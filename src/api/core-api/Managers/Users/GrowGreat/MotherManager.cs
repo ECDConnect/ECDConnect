@@ -13,6 +13,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
@@ -70,11 +71,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 _infantManager.UpdateInfantCaregiverToMother(input.LinkedInfantId, mother.Id);
             }
 
-            if (createdMom != null)
+            if (createdMom != null && input.ExpectedDateOfDelivery != null)
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
             return createdMom;
+        }
+
+        public Mother UpdateMotherDeliveryDate(string id, DateTime? expectedDateOfDelivery)
+        {
+            if (expectedDateOfDelivery != null || expectedDateOfDelivery != default(DateTime))
+            {
+                var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
+                AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
+                return _motherRepo.Update(entityToUpdate);
+            }
+            return null;
         }
 
         public Mother UpdateMother(string id, MotherModel input)
