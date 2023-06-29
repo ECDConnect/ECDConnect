@@ -49,8 +49,6 @@ import { RootState } from '@/store/types';
 import {
   getInfantCurrentVisitSelector,
   getInfantNearestPreviousVisitByOrderDate,
-  getInfantPreviousVisitSelector,
-  getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
@@ -125,6 +123,11 @@ export const FollowUp = ({
     getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
+  const followUpDate =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate;
+
   useEffect(() => {
     if (isPrint) {
       setShowPrintData(true);
@@ -140,12 +143,6 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  const visit = useSelector((state: RootState) =>
-    getInfantVisitByVisitIdSelector(state, visitId)
-  );
-  const previousPlannedVisit = useSelector((state: RootState) =>
-    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
-  );
   const previousVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -425,7 +422,7 @@ export const FollowUp = ({
               className="my-4"
               label={item.name}
               value={item.value || ''}
-              date={previousPlannedVisit?.orderDate || ''}
+              date={followUpDate || ''}
               message={item.comment || ''}
               color={item.color as CardProps['color']}
               measure={index === 0 ? 'kg' : 'cm'}
