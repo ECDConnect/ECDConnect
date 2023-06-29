@@ -40,7 +40,6 @@ import {
   UploadIcon,
 } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadAllChildrenTemplate from './components/upload-import-template-children/upload-import-template-children';
 import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import { Menu, Transition } from '@headlessui/react';
 
