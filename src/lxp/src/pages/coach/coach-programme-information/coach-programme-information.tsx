@@ -1,5 +1,5 @@
 import { useHistory, useLocation } from 'react-router';
-import { useTheme } from '@ecdlink/core';
+import { useTheme, useDialog } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -9,6 +9,7 @@ import {
   StatusChip,
   Typography,
   StackedList,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { PractitionerColleagues } from '@ecdlink/graphql';
 import { getLogo, LogoSvgs } from '@utils/common/svg.utils';
@@ -25,10 +26,14 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@store/auth';
 import { getClassroomGroupSchoolDays } from '@/utils/classroom/attendance/track-attendance-utils';
 import { userSelectors } from '@store/user';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { classroomsSelectors } from '@/store/classroom';
+import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
 
 export const CoachProgrammeInformation: React.FC = () => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const userData = useSelector(userSelectors.getUser);
   const isCoach = userData?.roles?.some((role) => role.name === 'Coach');
   const location = useLocation<PractitionerProfileRouteState>();
@@ -38,6 +43,21 @@ export const CoachProgrammeInformation: React.FC = () => {
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<any>();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const practitionerClassroom = coachClassrooms?.find(
+    (item) => item.userId === practitionerId
+  );
+  const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
+  const practitionerClassroomGroups = classroomGroups.filter(
+    (item) => item.classroomId === practitionerClassroom?.id
+  );
+  const practitionersOnSite = practitioners?.filter((el) => {
+    return practitionerClassroomGroups.some((f) => {
+      return f.userId === el.userId;
+    });
+  });
 
   const weekday = [
     'Sunday',
@@ -54,7 +74,7 @@ export const CoachProgrammeInformation: React.FC = () => {
   );
   const isPrincipal = practitioner?.isPrincipal === true;
 
-  const practitionersForCoachListItems = practitioners?.map((item) => {
+  const practitionersForCoachListItems = practitionersOnSite?.map((item) => {
     const titleStyle = 'text-textMid';
     const [userRole] = item?.user?.roles || [];
 
@@ -134,6 +154,25 @@ export const CoachProgrammeInformation: React.FC = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
+
+  useEffect(() => {
+    if (!isOnline) {
+      showOnlineOnly();
+      history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+        practitionerId,
+      });
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
+  };
 
   return (
     <div className={styles.contentWrapper}>
