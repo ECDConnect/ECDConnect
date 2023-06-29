@@ -337,7 +337,7 @@ export default function HealthCareWorkers() {
                     type="button"
                     className="ml-2 bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
-                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
                     Bulk Upload
                   </button>
                 )}

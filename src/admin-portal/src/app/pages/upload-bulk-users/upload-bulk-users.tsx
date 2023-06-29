@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
 import { useEffect, useState } from 'react';
 import { b64toBlob } from '@ecdlink/core';
-import { ArrowLeftIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, DownloadIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
 export interface UploadAllTemplateProps {
@@ -98,51 +98,76 @@ export default function UploadBulkUser({
           {/* <span className="text-black pl-2"> / View User</span> */}
         </button>
       </div>
-      <form
-        onSubmit={handleSubmit(onSubmit)}
-        className="space-y-8 divide-y divide-gray-200"
-      >
-        <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-          <div className="ml-4 mt-2"></div>
-          <div className="ml-4 mt-2 flex-shrink-0">
-            <button
-              onClick={() => closeDialog(false)}
-              type="button"
-              className="bg-uiMid hover:bg-primary focus:outline-none mr-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-            >
-              Upload
-            </button>
-            <button
-              onClick={() => {
-                downloadContentTypeTemplate()
-              }}
-              type="submit"
-              className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-            >
-              download
-            </button>
-          </div>
+      <div className="flex flex-col pt-6">
+        <h1 className='text-xl'>
+          Step 1: Download the template
+        </h1>
+   
+        <p className='text-normal'>
+          Download the Excel template below and make sure all required fields are included. It includes instructions for each field. To avoid upload errors, do not modify the headers.
+        </p>
+        <div className='w-4/12 pt-4'>
+          <button
+            onClick={() => {
+              downloadContentTypeTemplate()
+            }}
+            type="submit"
+            className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+          >
+            <DownloadIcon className="mr-4 h-5 w-5"> </DownloadIcon>
+
+            Download the template
+          </button>
         </div>
 
-        <div className="pt-4 pb-8">
-          <div className="sm:col-span-12">
-            <FormFileInput
-              acceptedFormats={acceptedFormats}
-              label={'Template Upload'}
-              nameProp={'templateFile'}
-              returnFullUrl={false}
-              setValue={setValue}
-              isImage={false}
-            />
-          </div>
+      </div>
+
+      <div className='my-12'>
+        <h1 className='text-xl'>
+          Step 2: Upload excel file
+        </h1>
+      </div>
+
+      <div className="flex flex-row">
+        <div className='bg-white rounded-md w-6/12 p-16'>
+          <form
+            onSubmit={handleSubmit(onSubmit)}
+            className=" "
+          >
+
+
+            <div className="pt-4 pb-8">
+              <div className="sm:col-span-12">
+                <FormFileInput
+                  acceptedFormats={acceptedFormats}
+                  label={'Template Upload'}
+                  nameProp={'templateFile'}
+                  returnFullUrl={false}
+                  setValue={setValue}
+                  isImage={false}
+                />
+              </div>
+            </div>
+            <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
+              <div className="ml-4 mt-2"></div>
+              <div className="ml-4 mt-2 flex-shrink-0">
+
+                <button
+                  type="submit"
+                  className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                >
+                  Upload
+                </button>
+
+              </div>
+            </div>
+          </form>
         </div>
-      </form>
+        <div>
+
+        </div>
+      </div>
+
     </div>
   );
 }
