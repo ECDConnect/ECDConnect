@@ -35,7 +35,10 @@ import P5 from '@/assets/pillar/p5.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
+import {
+  getMotherCurrentVisitSelector,
+  getMotherNearestPreviousVisitByOrderDate,
+} from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
 import {
@@ -67,6 +70,7 @@ interface FollowUpComponentProps {
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: boolean;
   isVisit: boolean;
+  isFromProgressTab?: boolean;
 }
 
 interface Status {
@@ -83,6 +87,7 @@ export const FollowUp = ({
   walkthroughData,
   isPrint,
   isVisit,
+  isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
@@ -118,8 +123,28 @@ export const FollowUp = ({
     getMotherCurrentVisitSelector(state, visitId)
   );
 
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
   useLayoutEffect(() => {
-    if (currentVisit?.id) {
+    if (
+      isFromProgressTab &&
+      previousVisit?.id &&
+      previousVisit?.attended &&
+      !currentVisit?.visitInProgress
+    ) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: previousVisit.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: previousVisit.id,
+        })
+      );
+    } else if (currentVisit?.id) {
       appDispatch(
         visitThunkActions.getPreviousVisitInformationForMother({
           visitId: currentVisit.id,
@@ -131,7 +156,7 @@ export const FollowUp = ({
         })
       );
     }
-  }, [appDispatch, currentVisit]);
+  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
