@@ -20,8 +20,9 @@ import {
   GetAllClinic,
   GetAllProvince,
   practitionerExcelTemplateGenerator,
+  HealthCareWorkerTemplate,
 } from '@ecdlink/graphql';
-import { DialogPosition, DropDownOption, Dropdown } from '@ecdlink/ui';
+import { Button, DialogPosition, DropDownOption, Dropdown, Typography } from '@ecdlink/ui';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -34,12 +35,13 @@ import {
   CogIcon,
   DownloadIcon,
   PlusIcon,
+  SaveIcon,
   SearchIcon,
   UploadIcon,
 } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
-import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
+import UploadAllChildrenTemplate from './components/upload-import-template-children/upload-import-template-children';
+import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import { Menu, Transition } from '@headlessui/react';
 
 export default function HealthCareWorkers() {
@@ -99,8 +101,8 @@ export default function HealthCareWorkers() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getPractitionerExcelTemplateGenerator, { data: templateData }] =
-    useLazyQuery(practitionerExcelTemplateGenerator, {
+  const [getExcelTemplateGenerator, { data: templateData }] =
+    useLazyQuery(HealthCareWorkerTemplate, {
       fetchPolicy: 'cache-and-network',
     });
 
@@ -144,7 +146,7 @@ export default function HealthCareWorkers() {
 
   const teamLeads = teamLeadData?.allTeamLeads.map((x: TeamLeadDto) => {
     return {
-      value: x.user.fullName ,
+      value: x.user.fullName,
       label: x.user.fullName,
     };
   });
@@ -179,7 +181,7 @@ export default function HealthCareWorkers() {
 
   useEffect(() => {
     if (!data?.users) return;
-   
+
     let userStatus = statusFilter === 'active' ? true : false;
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
@@ -248,7 +250,7 @@ export default function HealthCareWorkers() {
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
-    await getPractitionerExcelTemplateGenerator();
+    await getExcelTemplateGenerator();
   };
 
   const UploadContent = () => {
@@ -319,8 +321,8 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4 ">
-              <div className="mx-4 ">
+            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4  w-5/12">
+              <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
@@ -348,10 +350,12 @@ export default function HealthCareWorkers() {
                 </span>
               </div>
 
+
+
               {hasPermission(PermissionEnum.create_user) && (
-                <div className="flex flex-col  ">
+                <div className="">
                   <div className="">
-                    <Menu as="div" className=" inline-block text-right w-6/12">
+                    <Menu as="div" className=" inline-block">
                       {({ open }) => (
                         <>
                           <div>
@@ -359,9 +363,7 @@ export default function HealthCareWorkers() {
                               type="button"
                               className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                             >
-                              <PlusIcon className="mr-4 h-4 w-4"> </PlusIcon>
-
-                              <span className="">Add CHWs</span>
+                              <span className="">Bulk Upload</span>
                             </Menu.Button>
                           </div>
 
@@ -417,6 +419,25 @@ export default function HealthCareWorkers() {
                   </div>
                 </div>
               )}
+              <div className="pl-2">
+
+                <Button
+                  className={' rounded-md px-4 '}
+                  type="filled"
+                  // isLoading={chwLoading}
+                  color="secondary"
+                  // disabled={!isDetailValid}
+                  onClick={displayPanel}
+                >
+                  <PlusIcon color='white' className='w-4 h-4'> </PlusIcon>
+                  <Typography
+                  className='py-0'
+                    type="help"
+                    color="white"
+                    text={'Add CHW'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
 
           </div>
@@ -467,8 +488,8 @@ export default function HealthCareWorkers() {
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
                       className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                          ? 'bg-secondary text-white'
-                          : 'text-secondary border-secondary border-2 bg-white'
+                        ? 'bg-secondary text-white'
+                        : 'text-secondary border-secondary border-2 bg-white'
                         } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
@@ -477,8 +498,8 @@ export default function HealthCareWorkers() {
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
                         className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                            ? 'hover:text-secondary text-white'
-                            : 'text-secondary hover:text-white'
+                          ? 'hover:text-secondary text-white'
+                          : 'text-secondary hover:text-white'
                           }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"

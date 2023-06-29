@@ -30,7 +30,9 @@ import {
   UpdateUser,
   UserModelInput,
   healthCareWorkerVisitStatus,
-  SendInviteToApplication
+  SendInviteToApplication,
+  HealthCareWorkerModelInput,
+  HealthCareWorkerInput
 } from '@ecdlink/graphql';
 import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -218,17 +220,18 @@ export function ViewUser(props: any) {
     const userDetailForm = userDetailGetValues();
 
 
-    const userInputModel: UserModelInput = {
-      phoneNumber: userDetailForm?.phoneNumber,
-      idNumber: userDetailForm?.idNumber,
-      email: userDetailForm?.email,
-      dateOfBirth: null,
-      isSouthAfricanCitizen: null,
-      verifiedByHomeAffairs: null
-    };
-
     if (props.location.state.component === 'chw' && chwData) {
-      console.log(">>>>", props.location.state.component)
+      const userInputModel = {
+        User: {
+          phoneNumber: userDetailForm?.phoneNumber,
+          idNumber: userDetailForm?.idNumber,
+          email: userDetailForm?.email,
+          dateOfBirth: null,
+          isSouthAfricanCitizen: null,
+          verifiedByHomeAffairs: null
+        }
+      };
+
       await updateCHW({
         variables: {
           id: chwData?.GetHealthCareWorkerById.id,
@@ -240,7 +243,14 @@ export function ViewUser(props: any) {
         variant: NOTIFICATION.SUCCESS,
       });
     } else {
-      console.log(">>>", userInputModel)
+      const userInputModel: UserModelInput = {
+        phoneNumber: userDetailForm?.phoneNumber,
+        idNumber: userDetailForm?.idNumber,
+        email: userDetailForm?.email,
+        dateOfBirth: null,
+        isSouthAfricanCitizen: null,
+        verifiedByHomeAffairs: null
+      };
       await updateUser({
         variables: {
           id: userData?.userById.id,

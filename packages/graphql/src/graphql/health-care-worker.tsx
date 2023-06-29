@@ -102,7 +102,7 @@ export const CreateHealthCareWorker = gql`
 `;
 
 export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: PractitionerInput, $id: UUID) {
+  mutation updateHealthCareWorker($input: HealthCareWorkerInput, $id: UUID) {
     updateHealthCareWorker(id: $id, input: $input) {
       id
     }
