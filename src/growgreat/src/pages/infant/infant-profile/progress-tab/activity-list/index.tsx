@@ -51,7 +51,7 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays, differenceInMonths } from 'date-fns';
+import { differenceInDays } from 'date-fns';
 import { getAgeInYearsMonthsAndDays, usePrevious } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
@@ -124,7 +124,6 @@ export const ActivityList: React.FC = () => {
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
   const { months: ageMonths, years: ageYears } =
     getAgeInYearsMonthsAndDays(dateOfBirth);
-  const fullAgeInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
 
@@ -190,9 +189,12 @@ export const ActivityList: React.FC = () => {
     activitiesTypes.pillar2
   );
 
+  // INFO: 14 weeks -> 98 days
   const isDevelopmentalScreeningWeeks = useMemo(
-    () => isFirstVisit && ageMonths >= 14 && fullAgeInMonths < 21,
-    [ageMonths, fullAgeInMonths, isFirstVisit]
+    () =>
+      isFirstVisit &&
+      ((ageDays >= 98 && ageMonths < 5) || (ageMonths >= 6 && ageMonths < 21)),
+    [ageDays, ageMonths, isFirstVisit]
   );
 
   const isDangerSignsFollowUpForMom = getIsFollowUp(
