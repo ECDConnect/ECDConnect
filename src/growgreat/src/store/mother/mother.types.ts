@@ -1,8 +1,4 @@
-import {
-  EventRecordType,
-  VisitBackReferral,
-  VisitDataStatus,
-} from '@ecdlink/graphql';
+import { EventRecordType, Scalars, VisitDataStatus } from '@ecdlink/graphql';
 import { MotherDto, VisitDto } from '@ecdlink/core';
 
 export interface MotherState {
@@ -13,4 +9,9 @@ export interface MotherState {
   eventRecordTypes?: EventRecordType[];
   referralsForMother?: VisitDataStatus[];
   completedReferralsForMother?: VisitDataStatus[];
+}
+
+export interface UpdateMotherDeliveryDateProps {
+  id: string;
+  expectedDateOfDelivery: Scalars['DateTime'];
 }
