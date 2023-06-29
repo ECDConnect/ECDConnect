@@ -35,7 +35,7 @@ export default function TeamLeads() {
     fetchPolicy: 'network-only',
   });
 
-  
+
 
   useEffect(() => {
 
@@ -51,7 +51,7 @@ export default function TeamLeads() {
       }
     });
 
-  }, [provinceFilter, searchValue,clinicFilter])
+  }, [provinceFilter, searchValue, clinicFilter])
 
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {

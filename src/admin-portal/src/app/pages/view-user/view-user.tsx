@@ -62,7 +62,7 @@ export function ViewUser(props: any) {
   });
 
 
-  const [getChwById, { data: chwData, }] = useLazyQuery(GetHealthCareWorkerByUserId, {
+  const [getChwById, { data: chwData, refetch: refetchCHW }] = useLazyQuery(GetHealthCareWorkerByUserId, {
     variables: {
       userId: '',
     },
@@ -219,38 +219,30 @@ export function ViewUser(props: any) {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
 
+    const userInputModel: UserModelInput = {
+      phoneNumber: userDetailForm?.phoneNumber,
+      idNumber: userDetailForm?.idNumber,
+      email: userDetailForm?.email,
+      dateOfBirth: null,
+      isSouthAfricanCitizen: null,
+      verifiedByHomeAffairs: null
+    };
 
     if (props.location.state.component === 'chw' && chwData) {
-      const userInputModel = {
-        User: {
-          phoneNumber: userDetailForm?.phoneNumber,
-          idNumber: userDetailForm?.idNumber,
-          email: userDetailForm?.email,
-          dateOfBirth: null,
-          isSouthAfricanCitizen: null,
-          verifiedByHomeAffairs: null
-        }
-      };
 
       await updateCHW({
         variables: {
-          id: chwData?.GetHealthCareWorkerById.id,
+          id: chwData?.GetHealthCareWorkerById?.user.id,
           input: { ...userInputModel },
         },
       });
+      refetchCHW()
       setNotification({
         title: 'Successfully Updated CHW!',
         variant: NOTIFICATION.SUCCESS,
       });
     } else {
-      const userInputModel: UserModelInput = {
-        phoneNumber: userDetailForm?.phoneNumber,
-        idNumber: userDetailForm?.idNumber,
-        email: userDetailForm?.email,
-        dateOfBirth: null,
-        isSouthAfricanCitizen: null,
-        verifiedByHomeAffairs: null
-      };
+
       await updateUser({
         variables: {
           id: userData?.userById.id,

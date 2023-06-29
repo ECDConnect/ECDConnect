@@ -19,7 +19,6 @@ import {
   GetAllTeamLead,
   GetAllClinic,
   GetAllProvince,
-  practitionerExcelTemplateGenerator,
   HealthCareWorkerTemplate,
 } from '@ecdlink/graphql';
 import { Button, DialogPosition, DropDownOption, Dropdown, Typography } from '@ecdlink/ui';
@@ -110,16 +109,18 @@ export default function HealthCareWorkers() {
   useEffect(() => {
     if (
       templateData &&
-      templateData.practitionerExcelTemplateGenerator &&
+      templateData.healthCareWorkerTemplateGenerator &&
       !templateDownloaded
     ) {
       const b64Data =
-        templateData.practitionerExcelTemplateGenerator.base64File;
+        templateData.healthCareWorkerTemplateGenerator.base64File;
+
+        console.log(">>>", b64Data)
       const contentType =
-        templateData.practitionerExcelTemplateGenerator.fileType;
-      const fileName = templateData.practitionerExcelTemplateGenerator.fileName;
+        templateData.healthCareWorkerTemplateGenerator.fileType;
+      const fileName = templateData.healthCareWorkerTemplateGenerator.fileName;
       const extension =
-        templateData.practitionerExcelTemplateGenerator.extension;
+        templateData.healthCareWorkerTemplateGenerator.extension;
       const blob = b64toBlob(b64Data, contentType);
 
       const link = document.createElement('a');

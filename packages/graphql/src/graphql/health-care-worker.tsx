@@ -102,11 +102,12 @@ export const CreateHealthCareWorker = gql`
 `;
 
 export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: HealthCareWorkerInput, $id: UUID) {
-    updateHealthCareWorker(id: $id, input: $input) {
-      id
-    }
+mutation updateHealthCareWorker($input: UserModelInput, $id: String) { 
+  updateUser(id: $id, input: $input) {    
+      id    
+      __typename  
   }
+}
 `;
 
 export const UploadHealthCareWorkers = gql`
