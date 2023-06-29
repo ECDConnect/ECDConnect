@@ -45,18 +45,13 @@ const userSchema = yup.object().shape({
   phoneNumber: yup.string().matches(SA_CELL_REGEX, 'Phone number is not valid').required('Cellphone number is required'),
 });
 
-const adminUserschema = yup.object().shape({
-  email: yup.string().email().required('email address is required')
-});
-
-
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [updateCHW, { loading: chwLoading }] = useMutation(UpdateUser);
+  const [updateCHW, { loading: chwLoading }] = useMutation(UpdateHealthCareWorker);
 
   let userId = localStorage.getItem("selectedUser");
   const [resetUserPassword] = useMutation(ResetUserPassword);
@@ -92,8 +87,6 @@ export function ViewUser(props: any) {
     },
     fetchPolicy: 'cache-and-network',
   });
-
-  //updateCHW
 
 
   useEffect(() => {
@@ -234,13 +227,11 @@ export function ViewUser(props: any) {
       verifiedByHomeAffairs: null
     };
 
-    console.log(">>>", userInputModel)
-
-    if (props.location.state.component === 'chw') {
-      // console.log(">>>>", props.location.state?.component)
+    if (props.location.state.component === 'chw' && chwData) {
+      console.log(">>>>", props.location.state.component)
       await updateCHW({
         variables: {
-          id: chwData.GetHealthCareWorkerById.id,
+          id: chwData?.GetHealthCareWorkerById.id,
           input: { ...userInputModel },
         },
       });
@@ -249,6 +240,7 @@ export function ViewUser(props: any) {
         variant: NOTIFICATION.SUCCESS,
       });
     } else {
+      console.log(">>>", userInputModel)
       await updateUser({
         variables: {
           id: userData?.userById.id,
@@ -328,7 +320,7 @@ export function ViewUser(props: any) {
                   <div className='sm: pt-12'>
                     <p className='text-3xl font-normal text-black '>{chwData?.GetHealthCareWorkerById.user?.fullName}</p>
                     <div className="flex flex-row pt-4">
-                      {userData && userData?.userById.roles.map((i: any, index: number) => {
+                      {chwData && chwData?.GetHealthCareWorkerById?.user?.roles.map((i: any, index: number) => {
                         return <div
                           key={i.id}
                           className="bg-primary m-1 rounded-full py-1 my-2 px-3 text-xs text-white  flex justify-center flex-row"
@@ -338,7 +330,7 @@ export function ViewUser(props: any) {
                       })}
 
                     </div>
-                    <p>{userData?.firstName}</p>
+                    {/* <p>{userData?.firstName}</p> */}
                   </div>
 
 
@@ -465,7 +457,7 @@ export function ViewUser(props: any) {
                       <Button
                         className={'mt-3 w-4/12 rounded-md '}
                         type="filled"
-                        isLoading={loading}
+                        isLoading={chwLoading}
                         color="secondary"
                         // disabled={!isDetailValid}
                         onClick={handleSubmit(onSave)}
@@ -691,7 +683,7 @@ export function ViewUser(props: any) {
                       })}
 
                     </div>
-                    <p>{userData?.firstName}</p>
+                    {/* <p>{userData?.firstName}</p> */}
                   </div>
 
 
@@ -769,7 +761,7 @@ export function ViewUser(props: any) {
                         type="filled"
                         isLoading={loading}
                         color="secondary"
-                        // disabled={!isDetailValid}
+                        disabled={!isDetailValid}
                         onClick={props.location.state.component !== 'chw' ? handleSubmit(onSave) : onSave}
                       >
                         <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
