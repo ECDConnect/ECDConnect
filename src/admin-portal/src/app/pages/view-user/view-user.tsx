@@ -763,7 +763,7 @@ export function ViewUser(props: any) {
                         type="filled"
                         isLoading={loading}
                         color="secondary"
-                        disabled={!isDetailValid}
+                        // disabled={!isDetailValid}
                         onClick={props.location.state.component !== 'chw' ? handleSubmit(onSave) : onSave}
                       >
                         <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>
