@@ -391,17 +391,6 @@ export function ViewUser(props: any) {
                         </>}
 
                         <div className="grid grid-cols-1 ">
-
-
-                          <div className="my-4 sm:col-span-3 w-6/12">
-                            <FormField
-                              label={'Email *'}
-                              nameProp={'email'}
-                              register={userDetailRegister}
-                              error={detailFormErrors.email?.message}
-                              defaultValue={chwData?.GetHealthCareWorkerById.user?.phoneNumber}
-                            />
-                          </div>
                           <>
                             <div className="my-4 sm:col-span-3 w-6/12">
                               <FormField
