@@ -99,7 +99,7 @@ export default function ApplicationUsers() {
       });
       const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
       setTableData(finalTableData);
-      console.log('>>', finalTableData);
+   
     }
   }, [data]);
 
