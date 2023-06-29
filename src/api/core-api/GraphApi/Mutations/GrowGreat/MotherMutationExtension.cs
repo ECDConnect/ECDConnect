@@ -7,6 +7,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using HotChocolate;
 using HotChocolate.Types;
+using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 {
@@ -34,6 +35,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
         public Mother UpdateMotherAddress([Service] MotherManager motherManager, string id, MotherModel input)
         {
             return motherManager.UpdateMotherAddress(id, input);
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public Mother UpdateMotherDeliveryDate([Service] MotherManager motherManager, string id, DateTime? expectedDateOfDelivery)
+        {
+            return motherManager.UpdateMotherDeliveryDate(id, expectedDateOfDelivery);
         }
     }
 }

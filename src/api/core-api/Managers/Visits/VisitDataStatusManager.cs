@@ -869,7 +869,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _red;
 
                         // Red progress
-                        comment = Constants.GGSettings.severely_underweight + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.severely_underweight;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -882,7 +882,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -895,7 +895,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = Constants.GGSettings.growth_faltering + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.growth_faltering;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -908,7 +908,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -921,7 +921,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -934,7 +934,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _green;
 
                         // Green progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
@@ -955,7 +955,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + _height;
+                    comment = lIndicator;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -996,7 +996,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + questionAnswer;
+                    comment = mIndicator;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1012,7 +1012,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
+                    comment = Constants.GGSettings.severely_stunted;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1226,7 +1226,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Risk = Constants.GGSettings.normal_risk;
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
-                newVisit.ActualVisitDate = DateTime.Now;
                 newVisit.PlannedVisitDate = nextVisitDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
@@ -1631,10 +1630,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 scoreColor = _red;
             }
 
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.ScoreColor = scoreColor;
-            result.VisitDataStatus = visitDataStatus;
-
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
@@ -1655,6 +1650,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
             result.MuacComment = muacData?.Comment;
+
+            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
+            // EC-877: remove weigth, length and muac from list, because they are already handled above
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight || y.VisitData.Question == Constants.GGSettings.q_length || y.VisitData.Question == Constants.GGSettings.q_muac).ToList();
 
             return result;
         }

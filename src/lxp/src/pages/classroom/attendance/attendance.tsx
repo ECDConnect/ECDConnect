@@ -83,18 +83,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
 
-  const { errorDialog } = useRequestResponseDialog();
-
   const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
     'attendanceData',
     'getAttendance'
   );
-
-  useEffect(() => {
-    if (isAttendnaceRejected) {
-      errorDialog();
-    }
-  }, [errorDialog, isAttendnaceRejected]);
 
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
