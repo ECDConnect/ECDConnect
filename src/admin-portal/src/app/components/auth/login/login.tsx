@@ -75,8 +75,8 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">
-            Log in to Funda App
+          <h2 className="font-h1 textLight mt-6 text-2xl text-bold">
+            Log In
           </h2>
         </div>
         <div className="mt-8">
@@ -105,10 +105,8 @@ export default function Login() {
        
 
               <Button
-                className={' my-6 focus:outline-none inline-flex w-3/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
+                className={' my-6 focus:outline-none inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
                 type="ghost"
-                isLoading={isLoading}
-                disabled={true}
                 color="secondary"
                 onClick={() => history.push('/forgot-password')}
               >
@@ -116,6 +114,7 @@ export default function Login() {
                   type="help"
                   color="secondary"
                   text={' Forgot password?'}
+                  className='text-align-start'
                 ></Typography>
                 <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
               </Button>
