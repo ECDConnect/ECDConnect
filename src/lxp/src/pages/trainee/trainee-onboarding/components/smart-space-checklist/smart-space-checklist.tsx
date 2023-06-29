@@ -12,7 +12,6 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
@@ -108,39 +107,56 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   }, [activeStep, appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
   const handleSuccessAlertMessage = useMemo(() => {
-    if (!availableForCoachVisit) {
+    if (availableForCoachVisit) {
       return (
-        <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
-          <div className="flex">
-            <div className="flex justify-center">
-              <img
-                src={PositiveBonusEmoticon}
-                alt="developing well"
-                className="mt-3 ml-2 mr-2 h-12 w-16"
-              />
-            </div>
-            <div className="ml-3">
+        <>
+          <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+            <div className="flex">
               <div className="flex justify-center">
-                <Typography
-                  type="h3"
-                  weight="bold"
-                  color={'white'}
-                  text={`Well done! You have completed all the required SmartSpace steps. `}
-                  fontSize="18"
-                  className="pt-2"
+                <img
+                  src={PositiveBonusEmoticon}
+                  alt="developing well"
+                  className="mt-3 ml-2 mr-2 h-12 w-16"
                 />
               </div>
-              <div className="mt-1 flex justify-center">
-                <Typography
-                  type="body"
-                  color={'white'}
-                  text={`Your coach has been asked to schedule the SmartSpace check!`}
-                  fontSize="14"
-                />
+              <div className="ml-3">
+                <div className="flex justify-center">
+                  <Typography
+                    type="h3"
+                    weight="bold"
+                    color={'white'}
+                    text={`Well done! You have completed all the required SmartSpace steps. `}
+                    fontSize="18"
+                    className="pt-2"
+                  />
+                </div>
+                <div className="mt-1 flex justify-center">
+                  <Typography
+                    type="body"
+                    color={'white'}
+                    text={`Your coach has been asked to schedule the SmartSpace check!`}
+                    fontSize="14"
+                  />
+                </div>
               </div>
             </div>
           </div>
-        </div>
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-4 mb-2 w-full"
+              onClick={() => setSHowCoachVisit(true)}
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Request a visit from coach'}
+                color={'white'}
+              />
+            </Button>
+          </div>
+        </>
       );
     } else {
       return (
@@ -554,26 +570,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
               />
             </>
           )}
-          {allStepsCompleteFromDashboard && (
-            <>
-              {handleSuccessAlertMessage}
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className="mt-4 mb-2 w-full"
-                  onClick={() => setSHowCoachVisit(true)}
-                >
-                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                  <Typography
-                    type={'help'}
-                    text={'Request a visit from coach'}
-                    color={'white'}
-                  />
-                </Button>
-              </div>
-            </>
-          )}
+          {allStepsCompleteFromDashboard && <>{handleSuccessAlertMessage}</>}
           <StackedList
             isFullHeight={false}
             className={'flex flex-col gap-2'}
