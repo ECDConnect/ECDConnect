@@ -3,7 +3,7 @@ import { DesktopComputerIcon, PhotographIcon, UploadIcon } from '@heroicons/reac
 import { useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
-import { LoadingSpinner } from '@ecdlink/ui';
+import { Alert, LoadingSpinner } from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
 
 export interface FileModel {
@@ -201,6 +201,7 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
             ? ''
             : classNames(getContainerStyle(), containerBaseStyle)
         }
+
         onClick={() => {
           handleClick();
         }}
@@ -290,6 +291,14 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
         )}
       </label>
       {fileName && <p className="pb-4">{fileName}</p>}
+
+      {
+        contentUrl && !fileName && <Alert
+          className="mt-5 mb-3"
+          message="Wrong file type. Please try again."
+          type="error"
+        />
+      }
 
       <input
         accept={acceptedFormats.toString()}

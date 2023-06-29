@@ -28,7 +28,7 @@ export default function UploadBulkUser({
 
 
   const [allImport] = useMutation(importAll);
-  const [importPractitioners] = useMutation(UploadHealthCareWorkers);
+  const [importPractitioners, loading] = useMutation(UploadHealthCareWorkers);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
@@ -39,9 +39,11 @@ export default function UploadBulkUser({
           file: model.templateFile?.file,
 
         },
+      }).then((res)=>{
+        console.log(res)
+
       });
 
-      closeDialog(true);
     }
   };
 
@@ -53,8 +55,6 @@ export default function UploadBulkUser({
     ) {
       const b64Data =
         templateData.healthCareWorkerTemplateGenerator.base64File;
-
-      console.log(">>>", b64Data)
       const contentType =
         templateData.healthCareWorkerTemplateGenerator.fileType;
       const fileName = templateData.healthCareWorkerTemplateGenerator.fileName;
