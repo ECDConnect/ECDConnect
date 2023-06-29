@@ -11,7 +11,6 @@ import {
 } from '@/store/visit/visit.selectors';
 import {
   InfantDto,
-  VisitDto,
   captureAndDownloadComponent,
   getStringFromClassNameOrId,
   toCamelCase,
@@ -49,6 +48,7 @@ import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profil
 import { RootState } from '@/store/types';
 import {
   getInfantCurrentVisitSelector,
+  getInfantNearestPreviousVisitByOrderDate,
   getInfantPreviousVisitSelector,
   getInfantVisitByVisitIdSelector,
 } from '@/store/infant/infant.selectors';
@@ -120,11 +120,10 @@ export const FollowUp = ({
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, visitId)
   );
-  const previousVisit = useSelector(
-    (state: RootState) =>
-      currentVisit?.orderDate &&
-      getInfantPreviousVisitSelector(state, currentVisit?.orderDate)
-  ) as VisitDto | undefined;
+
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
 
   useEffect(() => {
     if (isPrint) {

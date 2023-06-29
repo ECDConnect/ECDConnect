@@ -80,12 +80,12 @@ export const getCareForMomSteps = (
   CareForMomStep,
   ...(isShowClinicCheckUps ? [ClinicCheckupStep] : []),
   ...(isDangerSignsFollowUp ? [DangerSignsFollowUpStep] : []),
-  ...(isChildBefore49Days ? [DangerSignsStep] : []),
-  ...(isChildBefore49Days ? [SelfCareStep] : []),
+  ...(true ? [DangerSignsStep] : []),
+  ...(true ? [SelfCareStep] : []),
   ...(isSelfCareAndSupport ? [SelfCareAndSupportStep] : []),
-  ...(isMaternalDistress ? [MaternalDistressStep] : []),
+  ...(true ? [MaternalDistressStep] : []),
   ...(isMaternalDistressFollowUp ? [MaternalDistressFollowUpStep] : []),
-  ...(isMaternalDistressScreening ? [MaternalDistressScreeningStep] : []),
+  ...(true ? [MaternalDistressScreeningStep] : []),
 ];
 
 export const careForBabySteps = (
