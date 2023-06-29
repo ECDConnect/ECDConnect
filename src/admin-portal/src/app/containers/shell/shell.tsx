@@ -22,6 +22,9 @@ import InformationPanel from '../../components/information-panel/information-pan
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
+import logo from '../../../assets/Logo-ECDConnect-white.svg';
+
+
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -168,7 +171,7 @@ export default function Shell() {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="bg-primary relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4">
+            <div className="darkBackground relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -189,12 +192,10 @@ export default function Shell() {
                   </button>
                 </div>
               </Transition.Child>
-              <div className="flex flex-shrink-0 items-center justify-center px-4">
-                <img
-                  className="h-20 w-auto"
-                  src={getLogoUrl()}
-                  alt="Workflow"
-                />
+              <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
+                <img className="h-100 mb-4" src={logo} alt="Login Logo" />
+
+                <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
               </div>
               <div className="mt-5 h-0 flex-1 overflow-y-auto">
                 <nav className="space-y-1 px-2">
@@ -215,8 +216,13 @@ export default function Shell() {
       <div className="darkBackground hidden md:flex md:flex-shrink-0">
         <div className="flex w-64 flex-col">
           <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
-            <div className="flex flex-shrink-0 items-center justify-center px-4">
-              <img className="h-20 w-auto" src={getLogoUrl()} alt="Workflow" />
+            <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
+              <div>
+
+              </div>
+              <img className="h-100 mb-4" src={logo} alt="Login Logo" />
+
+              <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">

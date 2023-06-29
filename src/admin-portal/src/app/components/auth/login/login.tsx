@@ -102,7 +102,6 @@ export default function Login() {
                   togglePasswordVisibility={togglePasswordVisibility}
                 />
               </div>
-       
 
               <Button
                 className={' my-6 focus:outline-none inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
