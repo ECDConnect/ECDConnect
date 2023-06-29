@@ -542,6 +542,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName !== 'ID document' &&
@@ -577,6 +578,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName !== 'ID document' &&
@@ -612,6 +614,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
 
@@ -643,6 +646,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName === 'ID document' &&
