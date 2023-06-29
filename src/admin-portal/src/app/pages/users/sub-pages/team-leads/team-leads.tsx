@@ -51,7 +51,7 @@ export default function TeamLeads() {
       }
     });
 
-  }, [provinceFilter, searchValue])
+  }, [provinceFilter, searchValue,clinicFilter])
 
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -87,8 +87,8 @@ export default function TeamLeads() {
   }
 
   useEffect(() => {
-    if (data && data.GetAllTeamLeads) {
-      const copyItems = data.GetAllTeamLeads.map((item: TeamLeadDto) => ({
+    if (data && data.allTeamLeads) {
+      const copyItems = data.allTeamLeads.map((item: TeamLeadDto) => ({
         ...item,
         fullName: `${item.user?.fullName}`,
         isActive: item.user?.isActive,

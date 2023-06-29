@@ -43,45 +43,54 @@ query ($search: String, $clinicSearch: String, $provinceSearch: String) {
 `;
 
 export const GetHealthCareWorkerByUserId = gql`
-  query GetHealthCareWorkerByUserId($userId: UUID) {
-    GetHealthCareWorkerByUserId(userId: $userId) {
+query GetHealthCareWorkerByUserId($userId: UUID) {
+  GetHealthCareWorkerById(id: $userId) {
+    id
+    user {
       id
-      user {
+      isActive
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      dateOfBirth
+      idNumber
+      firstName
+      surname
+      fullName
+      contactPreference
+      genderId
+      phoneNumber
+      profileImageUrl
+      roles {
         id
-        isActive
-        userName
-        email
-        isSouthAfricanCitizen
-        verifiedByHomeAffairs
-        dateOfBirth
-        idNumber
-        firstName
-        surname
-        fullName
-        contactPreference
-        genderId
-        phoneNumber
-        profileImageUrl
-        roles {
-          id
-          name
-        }
-      }
-      siteAddress {
-        id
-        province {
-          id
-          description
-        }
         name
-        addressLine1
-        addressLine2
-        addressLine3
-        postalCode
-        ward
+        __typename
+      }
+      __typename
+    }
+    teamLead {
+      clinic {
+        siteAddress {
+          id
+          province {
+            id
+            description
+            __typename
+          }
+          name
+          addressLine1
+          addressLine2
+          addressLine3
+          postalCode
+          ward
+          __typename
+        }
+        __typename
       }
     }
   }
+}
 `;
 
 export const CreateHealthCareWorker = gql`

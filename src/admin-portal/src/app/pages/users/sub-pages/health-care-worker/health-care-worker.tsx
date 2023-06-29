@@ -142,10 +142,10 @@ export default function HealthCareWorkers() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
+  const teamLeads = teamLeadData?.allTeamLeads.map((x: TeamLeadDto) => {
     return {
-      value: x.user.firstName + ' ' + x.user.surname,
-      label: x.user.firstName + ' ' + x.user.surname,
+      value: x.user.fullName ,
+      label: x.user.fullName,
     };
   });
 
@@ -193,8 +193,8 @@ export default function HealthCareWorkers() {
 
 
   useEffect(() => {
-    if (data && data.GetAllHealthCareWorker) {
-      const copyItems = data.GetAllHealthCareWorker.map(
+    if (data && data.allHealthCareWorkers) {
+      const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
       setTableData(copyItems);
@@ -294,41 +294,8 @@ export default function HealthCareWorkers() {
     setTeamLeadFilter('');
   };
 
-  const UploadContentImportChildren = () => {
-    panel({
-      noPadding: true,
-      title: `Import Children`,
-      render: (onSubmit: any) => (
-        <UploadAllChildrenTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
 
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
 
-  const UploadContentImport = () => {
-    panel({
-      noPadding: true,
-      title: `Import Users`,
-      render: (onSubmit: any) => (
-        <UploadAllImportTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
 
   if (tableData) {
     return (
