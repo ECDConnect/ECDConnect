@@ -135,3 +135,37 @@ export const getIsMotherFirstVisitSelector = (state: RootState): boolean => {
 
   return attendedVisitsCount === 0;
 };
+
+export function getMotherNearestPreviousVisitByOrderDate(
+  state: RootState,
+  currentVisit?: VisitDto
+): VisitDto | undefined {
+  const visits = state.mothers.visits;
+
+  if (!visits?.length || !currentVisit) return undefined;
+
+  const currentOrderDate = new Date(currentVisit?.orderDate!);
+  const previousVisits = visits.filter(
+    (item) =>
+      item.attended &&
+      item.orderDate !== null &&
+      new Date(item.orderDate) < currentOrderDate
+  );
+
+  if (previousVisits.length === 0) {
+    return undefined; // No previous date found
+  }
+
+  const nearestDateObject = previousVisits.reduce((previous, current) => {
+    if (
+      !previous ||
+      currentOrderDate.getTime() - new Date(current.orderDate).getTime() <
+        currentOrderDate.getTime() - new Date(previous.orderDate).getTime()
+    ) {
+      return current;
+    }
+    return previous;
+  });
+
+  return nearestDateObject;
+}

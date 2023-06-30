@@ -436,6 +436,7 @@ export const ProgrammeDetails: React.FC<ProgrammeDetailsProps> = ({
               onChange={(e) =>
                 onOptionSelected((e.target as HTMLInputElement).value, 3)
               }
+              onClick={() => setShowMap(true)}
               disabled={Boolean(checkedquestion(questions?.[3].question))}
               suffixIcon={'LocationMarkerIcon'}
               sufficIconColor="primary"

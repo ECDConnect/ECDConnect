@@ -23,7 +23,7 @@ import { ReactComponent as EyeIcon } from '@/assets/pillar/pillar2/eye.svg';
 import { ReactComponent as ArmIcon } from '@/assets/pillar/pillar2/arm.svg';
 import { MoreInformation } from '../../components/more-information';
 import { replaceBraces, usePrevious } from '@ecdlink/core';
-import { differenceInMonths, differenceInWeeks } from 'date-fns';
+import { differenceInMonths } from 'date-fns';
 import { useSelector } from 'react-redux';
 import { getVisitAnswersForInfantSelector } from '@/store/visit/visit.selectors';
 import { useParams } from 'react-router';
@@ -48,6 +48,7 @@ export const DevelopmentalScreeningWeeksStep = ({
 }: DynamicFormProps) => {
   const [isPreviousNotes, setIsPreviousNotes] = useState(false);
   const [sectionName, setSectionName] = useState('');
+  const [headerText, setHeaderText] = useState('');
   const [questions, setAnswers] = useState<
     {
       icon?: JSX.Element;
@@ -70,12 +71,6 @@ export const DevelopmentalScreeningWeeksStep = ({
   ];
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const weeks = useMemo(
-    () =>
-      infant?.user?.dateOfBirth &&
-      differenceInWeeks(new Date(), new Date(infant?.user?.dateOfBirth)),
-    [infant?.user?.dateOfBirth]
-  );
 
   const ageInMonths = useMemo(
     () =>
@@ -160,25 +155,31 @@ export const DevelopmentalScreeningWeeksStep = ({
 
     if (numberOfAgeInMonths >= 18) {
       setSectionName('DevelopmentalScreenEighteenMonths');
+      setHeaderText('18 month');
       return setAnswers(getQuestions('eighteenMonths'));
     }
 
     if (numberOfAgeInMonths >= 12) {
       setSectionName('DevelopmentalScreenTwelveMonths');
+      setHeaderText('12 month');
       return setAnswers(getQuestions('twelveMonths'));
     }
 
     if (numberOfAgeInMonths >= 9) {
       setSectionName('DevelopmentalScreenNineMonths');
+      setHeaderText('9 month');
       return setAnswers(getQuestions('nineMonths'));
     }
 
     if (numberOfAgeInMonths >= 6) {
       setSectionName('DevelopmentalScreenSixMonths');
+      setHeaderText('6 month');
       return setAnswers(getQuestions('sixMonths'));
     }
 
     setSectionName('DevelopmentalScreenFourteenWeeks');
+    setHeaderText('14 week');
+
     return setAnswers(getQuestions('fourteenWeeks'));
   }, [ageInMonths, getQuestions, previousAgeInMonths]);
 
@@ -265,11 +266,7 @@ export const DevelopmentalScreeningWeeksStep = ({
         title={DevelopmentalScreeningVisitSection}
         iconHexBackgroundColor={activitiesColours.pillar2.primaryColor}
         hexBackgroundColor={activitiesColours.pillar2.secondaryColor}
-        {...(weeks
-          ? {
-              subTitle: `${weeks} week${weeks > 1 && 's'}`,
-            }
-          : {})}
+        subTitle={headerText}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard
@@ -279,7 +276,7 @@ export const DevelopmentalScreeningWeeksStep = ({
         />
         <Typography
           type="h3"
-          text={`${weeks} week developmental screening`}
+          text={`${headerText} developmental screening`}
           color="textDark"
         />
         <Divider dividerType="dashed" />

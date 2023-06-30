@@ -23,6 +23,7 @@ import { useAppDispatch } from '@/store';
 import {
   getInfantCurrentVisitSelector,
   getInfantById,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import thumbsUpImage from '@/assets/thumbsUp.png';
 import { infantSelectors, infantThunkActions } from '@/store/infant';
@@ -68,6 +69,9 @@ export const ReferralsTab: React.FC = () => {
   const completedReferralsForInfant = useSelector(
     infantSelectors.getCompletedReferralsForInfantSelector
   );
+  const referralsForInfant = useSelector(
+    infantSelectors.getReferralsForInfantSelector
+  );
 
   const { id: infantId } = useParams<InfantParams>();
   const infant = useSelector((state: RootState) =>
@@ -77,6 +81,15 @@ export const ReferralsTab: React.FC = () => {
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
   );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -92,7 +105,14 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        infantThunkActions.getReferralsForInfant({
+          infantId: infantId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         infantThunkActions.getReferralsForInfant({
           infantId: infantId,
@@ -100,11 +120,24 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, infantId, currentVisit]);
+  }, [
+    appDispatch,
+    infantId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         infantThunkActions.getCompletedReferralsForInfant({
           infantId: infantId,
@@ -112,11 +145,13 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, infantId, currentVisit]);
-
-  const referralsForInfant = useSelector(
-    infantSelectors.getReferralsForInfantSelector
-  );
+  }, [
+    appDispatch,
+    infantId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
@@ -225,8 +260,6 @@ export const ReferralsTab: React.FC = () => {
     }
 
     if (isWalkthrough) return;
-
-    if (questions) return;
 
     return setAnswers(groupedData);
   }, [

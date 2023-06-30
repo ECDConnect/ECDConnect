@@ -204,6 +204,7 @@
     "react-scripts/**/chokidar/glob-parent": "^5.1.2",
     "ansi-html": "^0.0.8",
     "**/postcss-functions/postcss": "^7.0.39",
-    "@types/react": "17.0.3"
+    "@types/react": "17.0.3",
+    "@yarnpkg/parsers": "3.0.0-rc.46"
   }
 }
