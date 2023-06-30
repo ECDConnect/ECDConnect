@@ -70,7 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return true;
         }
 
-        public Boolean UpdateInfantAdditionalDueDates(
+        public Boolean UpdateMotherAdditionalDueDates(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
              [Service] InfantManager infantManager
