@@ -1,11 +1,9 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
-  initialPasswordValue,
   initialHealthCareWorkerValues,
   initialSiteAddressValues,
   initialUserDetailsValues,
   NOTIFICATION,
-  passwordSchema,
   RoleDto,
   siteAddressSchema,
   useNotifications,
@@ -19,7 +17,6 @@ import {
   HealthCareWorkerModelInput,
   RoleList,
   SendInviteToApplication,
-  SiteAddressInput,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -27,14 +24,10 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
-import PasswordForm from '../../../../components/password-form/password-form';
-import SiteAddressForm from '../../../../components/site-address-form/site-address-form';
 import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
-import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../../components/users';
 import { Button, Typography } from '@ecdlink/ui';
 import { SaveIcon } from '@heroicons/react/solid';
-import FormField from '../../../../../../components/form-field/form-field';
 
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
@@ -56,7 +49,6 @@ export default function HealthCareWorkerPanelCreate(
 
   const [createUser] = useMutation(CreateUser);
   const [createHealthCareWorker] = useMutation(CreateHealthCareWorker);
-  const [createSiteAddress] = useMutation(CreateSiteAddress);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
@@ -78,18 +70,6 @@ export default function HealthCareWorkerPanelCreate(
   const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
     userDetailFormState;
 
-  // PASSWORD FORMS
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
-  const { errors: passwordFormErrors } = passwordFormState;
-
   // HEALTH CARE WORKER FORMS
   const {
     register: healthCareWorkerRegister,
@@ -104,14 +84,7 @@ export default function HealthCareWorkerPanelCreate(
     isValid: isHealthCareWorkerValid,
   } = healthCareWorkerFormState;
 
-  // SITE ADDRESS FORMS
-  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
-    useForm({
-      resolver: yupResolver(siteAddressSchema),
-      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
-      mode: 'onBlur',
-    });
-  const { errors: siteAddressFormErrors } = healthCareWorkerFormState;
+
 
   const onSave = async () => {
     await saveUser();
@@ -148,6 +121,8 @@ export default function HealthCareWorkerPanelCreate(
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
+        await saveHealthCareWorker(userId);
+
 
       })
       .catch((error) => {
@@ -155,57 +130,22 @@ export default function HealthCareWorkerPanelCreate(
       });
   };
 
-  const saveSiteAddress = async (userId: string) => {
-    const form = siteAddressGetValues();
-    const siteAddressInputModel: SiteAddressInput = {
-      Id: undefined,
-      Name: form.name ?? '',
-      AddressLine1: form.addressLine1 ?? '',
-      AddressLine2: form.addressLine2 ?? '',
-      AddressLine3: form.addressLine3 ?? '',
-      PostalCode: form.postalCode ?? '',
-      ProvinceId: form.provinceId ?? '',
-      Ward: form.ward ?? '',
-      IsActive: true,
-    };
 
-    let siteAddressId = null;
-
-    if (form.provinceId) {
-      const returnSiteAddress = await createSiteAddress({
-        variables: {
-          input: { ...siteAddressInputModel },
-        },
-      });
-
-      if (returnSiteAddress && returnSiteAddress.data) {
-        setNotification({
-          title: 'Successfully Created Address!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
-      }
-    }
-
-    await saveHealthCareWorker(userId, siteAddressId);
-  };
 
   const saveHealthCareWorker = async (
-    userId: string,
-    siteAddressId?: string
+    userId: string
   ) => {
     const healthCareWorkerForm = healthCareWorkerGetValues();
-    const healthCareWorkeModel: HealthCareWorkerModelInput = {
+    const healthCareWorkModel: HealthCareWorkerModelInput = {
       userId: userId,
       teamLeadId: healthCareWorkerForm.teamLeadId || null,
-      languageId: healthCareWorkerForm.languageId || null,
+      languageId: null,
       isRegistered: false,
     };
 
     await createHealthCareWorker({
       variables: {
-        input: { ...healthCareWorkeModel },
+        input: { ...healthCareWorkModel },
       },
     });
 
@@ -290,12 +230,10 @@ export default function HealthCareWorkerPanelCreate(
             setValue={userDetailSetValue}
             control={control}
           />
-          <FormField
-            label={'Email *'}
-            nameProp={'email'}
-            register={userDetailRegister}
-            error={userDetailFormErrors.email?.message}
-          />
+          <div>
+
+          </div>
+
         </div>
 
         <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">

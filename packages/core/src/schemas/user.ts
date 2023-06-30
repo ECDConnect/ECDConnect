@@ -19,7 +19,7 @@ const phoneRegExp = /^((\\+[1-9]{1,4}[ \\-]*)|(\\([0-9]{2,3}\\)[ \\-]*)|([0-9]{2
 export const userSchema = Yup.object().shape({
 
   isSouthAfricanCitizen: Yup.bool(),
-  idNumber: Yup.string().matches(SA_ID_REGEX, 'Id number is not valid').required('ID Number is Required'),
+  idNumber: Yup.string().matches(SA_ID_REGEX || SA_PASSPORT_REGEX , 'Id number is not valid').required('ID Number is Required'),
   verifiedByHomeAffairs: Yup.bool(),
   dateOfBirth: Yup.date().required('Date of birth is Required'),
   genderId: Yup.string().required('Sex is Required'),

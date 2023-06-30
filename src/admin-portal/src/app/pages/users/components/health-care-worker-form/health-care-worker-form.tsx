@@ -1,5 +1,5 @@
 import { useQuery } from '@apollo/client/react/hooks/useQuery';
-import { ClinicDto, LanguageDto, TeamLeadDto } from '@ecdlink/core';
+import { LanguageDto, TeamLeadDto } from '@ecdlink/core';
 import { GetAllClinic, GetAllLanguage, GetAllTeamLead } from '@ecdlink/graphql';
 import { UseFormRegister } from 'react-hook-form';
 import FormField from '../../../../components/form-field/form-field';
@@ -24,9 +24,6 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
     fetchPolicy: 'cache-and-network',
   });
 
-  const { data: clinicData } = useQuery(GetAllClinic, {
-    fetchPolicy: 'cache-and-network',
-  });
 
   return (
     <form key={formKey} className="space-y-8 divide-y divide-gray-200">
@@ -40,35 +37,18 @@ const HealthCareWorkerForm: React.FC<HealthCareWorkerFormProps> = ({
                 register={register}
                 options={
                   teamLeadData &&
-                  teamLeadData.GetAllTeamLead &&
-                  teamLeadData.GetAllTeamLead.map((x: TeamLeadDto) => {
+                  teamLeadData.allTeamLeads &&
+                  teamLeadData.allTeamLeads.map((x: TeamLeadDto) => {
                     return {
                       key: x.id,
-                      value: x.user.firstName + ' ' + x.user.surname,
+                      value: x.user.fullName,
                     };
                   })
                 }
                 error={errors.teamLeadId?.message}
               />
             </div>
-            <div className="sm:col-span-3 w-6/12">
-              <FormSelectorField
-                label="Clinic"
-                nameProp={'clinicId'}
-                register={register}
-                options={
-                  clinicData &&
-                  clinicData.GetAllClinic &&
-                  clinicData.GetAllClinic.map((x: ClinicDto) => {
-                    return {
-                      key: x.id,
-                      value: x.name,
-                    };
-                  })
-                }
-                error={errors.teamLeadId?.message}
-              />
-            </div>
+         
           </div>
 
         </div>
