@@ -60,6 +60,7 @@ export const ClassDashboard: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<TabItem>();
   const { isOnline } = useOnlineStatus();
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
@@ -394,6 +395,12 @@ export const ClassDashboard: React.FC = () => {
       setPromptPhotoReportPermission(false);
     }
   }, [promptPhotoReportPermission]);
+
+  useEffect(() => {
+    if (isCoach) {
+      history.push(ROUTES.COACH.ROOT);
+    }
+  }, [history, isCoach]);
 
   return (
     <>

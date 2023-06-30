@@ -7,4 +7,5 @@ export interface ChildCaregiverInformationProps
   childName: string;
   submitButtonText?: string;
   submitButtonIcon?: string;
+  canEdit?: boolean;
 }

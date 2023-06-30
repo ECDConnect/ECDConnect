@@ -6,16 +6,13 @@ import { useHistory } from 'react-router-dom';
 import { ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon, PaperAirplaneIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
-  HealthCareWorkerDto,
+
   initialPasswordValue,
   initialUserDetailsValues,
   NOTIFICATION,
   passwordSchema,
-  PermissionEnum,
   useDialog,
   useNotifications,
-  usePanel,
-  UserDto,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
 import {
@@ -391,17 +388,6 @@ export function ViewUser(props: any) {
                         </>}
 
                         <div className="grid grid-cols-1 ">
-
-
-                          <div className="my-4 sm:col-span-3 w-6/12">
-                            <FormField
-                              label={'Email *'}
-                              nameProp={'email'}
-                              register={userDetailRegister}
-                              error={detailFormErrors.email?.message}
-                              defaultValue={chwData?.GetHealthCareWorkerById.user?.phoneNumber}
-                            />
-                          </div>
                           <>
                             <div className="my-4 sm:col-span-3 w-6/12">
                               <FormField
@@ -763,7 +749,7 @@ export function ViewUser(props: any) {
                         type="filled"
                         isLoading={loading}
                         color="secondary"
-                        disabled={!isDetailValid}
+                        // disabled={!isDetailValid}
                         onClick={props.location.state.component !== 'chw' ? handleSubmit(onSave) : onSave}
                       >
                         <SaveIcon color='white' className='w-6 h-6 mr-6'> </SaveIcon>

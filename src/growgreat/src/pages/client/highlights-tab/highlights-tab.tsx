@@ -19,6 +19,7 @@ import { useHistory } from 'react-router';
 import ROUTES from '@/routes/routes';
 import { visitSelectors, visitThunkActions } from '@/store/visit';
 import { useAppDispatch } from '@/store';
+import { CLIENT_TABS } from '../client-dashboard/class-dashboard';
 
 interface CardProps {
   value?: number;
@@ -260,7 +261,12 @@ export const HighlightsTab = () => {
           textColor="white"
           className="mt-4 w-full"
           iconPosition="start"
-          onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT)}
+          onClick={() =>
+            history.push(ROUTES.CLIENTS.ROOT, {
+              activeTabIndex: CLIENT_TABS.VISIT,
+            })
+          }
+          //onClick={navigate(ROUTES.CLIENTS.HIGHLIGHTS_TAB.UPCOMING_VISIT)}
         />
         {isHighlights && (
           <Button

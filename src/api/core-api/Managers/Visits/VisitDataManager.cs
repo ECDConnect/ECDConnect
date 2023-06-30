@@ -339,8 +339,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.Id.ToString() == id && x.ActualVisitDate >= monday && x.ActualVisitDate <= next7Days)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == id)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
                 select visit.InfantId
             ).Distinct().Count();
 

@@ -41,6 +41,7 @@ import {
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
 import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import { Menu, Transition } from '@headlessui/react';
+import { useHistory } from 'react-router';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -48,6 +49,7 @@ export default function HealthCareWorkers() {
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
+  const history = useHistory();
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
@@ -104,40 +106,7 @@ export default function HealthCareWorkers() {
       fetchPolicy: 'cache-and-network',
     });
 
-  const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (
-      templateData &&
-      templateData.healthCareWorkerTemplateGenerator &&
-      !templateDownloaded
-    ) {
-      const b64Data =
-        templateData.healthCareWorkerTemplateGenerator.base64File;
-
-        console.log(">>>", b64Data)
-      const contentType =
-        templateData.healthCareWorkerTemplateGenerator.fileType;
-      const fileName = templateData.healthCareWorkerTemplateGenerator.fileName;
-      const extension =
-        templateData.healthCareWorkerTemplateGenerator.extension;
-      const blob = b64toBlob(b64Data, contentType);
-
-      const link = document.createElement('a');
-
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${fileName}${extension}`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      setTemplateDownloaded(true);
-    }
-  }, [templateData, templateDownloaded]);
+ 
 
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
@@ -248,10 +217,6 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const downloadContentTypeTemplate = async () => {
-    setTemplateDownloaded(false);
-    await getExcelTemplateGenerator();
-  };
 
   const UploadContent = () => {
     panel({
@@ -305,7 +270,7 @@ export default function HealthCareWorkers() {
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-full sm:flex  ">
-              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
+              <div className="text-body w-full flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -321,7 +286,7 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4  w-5/12">
+            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4  w-10/12">
               <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
@@ -350,93 +315,32 @@ export default function HealthCareWorkers() {
                 </span>
               </div>
 
-
-
+              <div className="ml-4 w-6/12">
+             
+              </div>
+              <div className="flex flex-row w-11/12 ">
               {hasPermission(PermissionEnum.create_user) && (
-                <div className="">
-                  <div className="">
-                    <Menu as="div" className=" inline-block">
-                      {({ open }) => (
-                        <>
-                          <div>
-                            <Menu.Button
-                              type="button"
-                              className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                            >
-                              <span className="">Bulk Upload</span>
-                            </Menu.Button>
-                          </div>
-
-                          <Transition
-                            show={open}
-                            as={Fragment}
-                            enter="transition ease-out duration-100"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
-                          >
-                            <Menu.Items
-                              static
-                              className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            >
-                              <div className="py-1">
-                                <Menu.Item>
-                                  <div
-                                    onClick={() =>
-                                      downloadContentTypeTemplate()
-                                    }
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <DownloadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Download template
-                                  </div>
-                                </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() => UploadContent()}
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Upload Practitioners
-                                  </div>
-                                </Menu.Item>
-
-
-                              </div>
-                            </Menu.Items>
-                          </Transition>
-                        </>
-                      )}
-                    </Menu>
-                  </div>
-                </div>
-              )}
-              <div className="pl-2">
-
-                <Button
-                  className={' rounded-md px-4 '}
-                  type="filled"
-                  // isLoading={chwLoading}
-                  color="secondary"
-                  // disabled={!isDetailValid}
-                  onClick={displayPanel}
-                >
-                  <PlusIcon color='white' className='w-4 h-4'> </PlusIcon>
-                  <Typography
-                  className='py-0'
-                    type="help"
-                    color="white"
-                    text={'Add CHW'}
-                  ></Typography>
-                </Button>
+                  <button
+                    onClick={displayPanel}
+                    type="button"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                  >
+                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                    Add CHW
+                  </button>
+                )}
+                {hasPermission(PermissionEnum.create_user) && (
+                  <button
+                    onClick={()=>{
+                      history.push('/upload-users')
+                    }}
+                    type="button"
+                    className="ml-2 bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                  >
+                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    Bulk Upload
+                  </button>
+                )}
               </div>
             </div>
 
