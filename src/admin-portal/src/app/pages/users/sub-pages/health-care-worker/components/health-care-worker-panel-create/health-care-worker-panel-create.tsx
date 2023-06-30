@@ -99,12 +99,8 @@ export default function HealthCareWorkerPanelCreate(
       isSouthAfricanCitizen: null,
       idNumber: userDetailForm.idNumber,
       verifiedByHomeAffairs: null,
-      dateOfBirth: null,
-      genderId: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
-      contactPreference: userDetailForm.contactPreference,
-      phoneNumber: userDetailForm.phoneNumber,
       email: userDetailForm.email,
     };
 
