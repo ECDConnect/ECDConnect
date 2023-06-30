@@ -1,32 +1,31 @@
 import { gql } from '@apollo/client';
 
-
 export const UserList = gql`
-query ($pagingInput: PagedQueryInput, $search: String) {
-  users(pagingInput: $pagingInput, search: $search) {
-    id
-    isActive
-    userName
-    email
-    isSouthAfricanCitizen
-    verifiedByHomeAffairs
-    dateOfBirth
-    idNumber
-    firstName
-    surname
-    fullName
-    contactPreference
-    genderId
-    phoneNumber
-    profileImageUrl
-    roles {
+  query ($pagingInput: PagedQueryInput, $search: String) {
+    users(pagingInput: $pagingInput, search: $search) {
       id
-      name
+      isActive
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      dateOfBirth
+      idNumber
+      firstName
+      surname
+      fullName
+      contactPreference
+      genderId
+      phoneNumber
+      profileImageUrl
+      roles {
+        id
+        name
+        __typename
+      }
       __typename
     }
-    __typename
   }
-}
 `;
 
 export const GetUserById = gql`
@@ -140,24 +139,23 @@ export const GetUserByToken = gql`
   }
 `;
 export const GetHealthCareWorkerHighlights = gql`
-query($userId: String) {
-  healthCareWorkerHighlights(userId: $userId) {
-     totalThisWeekFamilyVisits
-     totalThisWeekGrowthMonitored
-     totalThisWeekNewClients
-     totalLastWeekFamilyVisits
-     totalLastWeekGrowthMonitored
-     totalLastWeekNewClients
+  query ($userId: String) {
+    healthCareWorkerHighlights(userId: $userId) {
+      totalThisWeekFamilyVisits
+      totalThisWeekGrowthMonitored
+      totalThisWeekNewClients
+      totalLastWeekFamilyVisits
+      totalLastWeekGrowthMonitored
+      totalLastWeekNewClients
+    }
   }
-}
 `;
 export const healthCareWorkerVisitStatus = gql`
-query($userId: String) {
-  healthCareWorkerVisitStatus(userId: $userId) {
-    motherOverDueVisits
-    motherDueVisits
-    childDueVisits
-  } 
-}
+  query ($userId: String) {
+    healthCareWorkerVisitStatus(userId: $userId) {
+      motherOverDueVisits
+      motherDueVisits
+      childDueVisits
+    }
+  }
 `;
-

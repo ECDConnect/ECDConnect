@@ -1,9 +1,11 @@
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
+using ECDLink.Core.Extensions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Documents;
@@ -17,6 +19,7 @@ using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -100,6 +103,49 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        public HCWSummary GetHealthCareWorkerSummaryForPeriod(
+            [Service] VisitManager visitManager,
+            [Service] InfantManager infantManager,
+            [Service] MotherManager motherManager,
+            string userId,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            DateTime today = DateTime.Today;
+
+            // Take given date or take start of this week.
+            var _startDate = startDate ?? DateTimeExtensions.StartOfWeek(startDate ?? DateTime.Today, DayOfWeek.Monday);
+            // Take given date or use end of this week.
+            var _endDate = endDate ?? _startDate.Add(TimeSpan.FromDays(7).Subtract(TimeSpan.FromMilliseconds(1)));
+
+            HCWSummary summary = new HCWSummary();
+
+            // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
+            summary.totalPregnantMoms = visitManager.GetTotalPregnantMothersWithUrgentIssues(userId); 
+            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(userId);
+            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(
+                userId,
+                new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child },
+                startDate,
+                endDate);
+            // Mothers are folders.
+            summary.totalFoldersOpened = motherManager.GetTotalNewMothersForPeriod(userId, _startDate, _endDate);
+
+            // Pregnant Mom Visits cannot be missed and will only be overdue.
+            summary.totalVisitsMissed = visitManager.GetTotalVisitsMissedForPeriod(userId, Constants.GGSettings.client_child, _startDate, _endDate);
+
+            summary.totalPregnantMomsWithUrgentIssues = visitManager.GetTotalPregnantMothersWithUrgentIssues(userId, _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithUrgentIssues = visitManager.GetTotalCaregiversAndChildrenWithUrgentIssues(userId, _startDate, _endDate);
+            
+            // Pregnant Mom Visits cannot be missed and will only be overdue.
+            summary.totalVisitsOverdue = visitManager.GetTotalVisitsMissedForPeriod(userId, Constants.GGSettings.client_mother, _startDate, _endDate);
+            summary.totalPregnantMomsWithIssues = visitManager.GetTotalPregnantMothersWithIssues(userId, _startDate, _endDate);
+            summary.totalCaregiversAndChildrenWithIssues = visitManager.GetTotalCaregiversAndChildrenWithIssues(userId, _startDate, _endDate); ;
+
+            return summary;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public List<Caregiver> GetAllCaregiversForHCW(
             [Service] CaregiverManager caregiverManager,
             [Service] InfantManager infantManager,
@@ -131,8 +177,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> HealthCareWorkerTemplateGenerator(
-          [Service] IFileGenerationService fileService,
-          IGenericRepositoryFactory repoFactory)
+          [Service] IFileGenerationService fileService)
         {
             var fieldDefinitionList = new List<List<string>>
             {

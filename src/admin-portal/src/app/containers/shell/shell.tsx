@@ -24,7 +24,6 @@ import { useUser } from '../../hooks/useUser';
 import ggLogo from '../../../assets/gg-logo.svg';
 import logo from '../../../assets/Logo-ECDConnect-white.svg';
 
-
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
 }
@@ -195,7 +194,11 @@ export default function Shell() {
               <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
                 <img className="h-100 mb-8" src={logo} alt="Login Logo" />
 
-                <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
+                <img
+                  className="h-16 w-8/12"
+                  src={getLogoUrl()}
+                  alt="Workflow"
+                />
               </div>
               <div className="mt-5 h-0 flex-1 overflow-y-auto">
                 <nav className="space-y-1 px-2">
@@ -217,9 +220,7 @@ export default function Shell() {
         <div className="flex w-64 flex-col">
           <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
             <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
-              <div>
-
-              </div>
+              <div></div>
               <img className="h-100 mb-8" src={logo} alt="Login Logo" />
 
               <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />

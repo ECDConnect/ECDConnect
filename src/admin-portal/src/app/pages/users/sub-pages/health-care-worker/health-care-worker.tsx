@@ -21,7 +21,13 @@ import {
   GetAllProvince,
   HealthCareWorkerTemplate,
 } from '@ecdlink/graphql';
-import { Button, DialogPosition, DropDownOption, Dropdown, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  DialogPosition,
+  DropDownOption,
+  Dropdown,
+  Typography,
+} from '@ecdlink/ui';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -59,21 +65,24 @@ export default function HealthCareWorkers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('')
+  const [clinicFilter, setClinicFilter] = useState('');
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
-  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
-    variables: {
-      provinceSearch: "",
-      clinicSearch: "",
-      search: "",
-      pagingInput: {
-        "pageNumber": 1,
-        "pageSize": 20
-      }
-    },
-    fetchPolicy: 'network-only',
-  });
+  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
+    GetAllHealthCareWorker,
+    {
+      variables: {
+        provinceSearch: '',
+        clinicSearch: '',
+        search: '',
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: 20,
+        },
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
 
   useEffect(() => {
     getAllHealthCareWorkers({
@@ -82,13 +91,12 @@ export default function HealthCareWorkers() {
         provinceSearch: provinceFilter,
         clinicSearch: clinicFilter,
         pagingInput: {
-          "pageNumber": 1,
-          "pageSize": 20
-        }
-      }
+          pageNumber: 1,
+          pageSize: 20,
+        },
+      },
     });
-
-  }, [provinceFilter, searchValue, clinicFilter])
+  }, [provinceFilter, searchValue, clinicFilter]);
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -101,13 +109,12 @@ export default function HealthCareWorkers() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getExcelTemplateGenerator, { data: templateData }] =
-    useLazyQuery(HealthCareWorkerTemplate, {
+  const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
+    HealthCareWorkerTemplate,
+    {
       fetchPolicy: 'cache-and-network',
-    });
-
- 
-
+    }
+  );
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -146,8 +153,6 @@ export default function HealthCareWorkers() {
     };
   };
 
-
-
   useEffect(() => {
     if (!data?.users) return;
 
@@ -155,13 +160,18 @@ export default function HealthCareWorkers() {
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
       allUsers
-        .filter((v) => v?.isActive === (statusFilter === '' ? true : userStatus))
+        .filter(
+          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
+        )
         .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
-        .filter((v) => (v?.teamLead.user.firstName + '' + v?.teamLead.user.surname) === teamLeadFilter)
+        .filter(
+          (v) =>
+            v?.teamLead.user.firstName + '' + v?.teamLead.user.surname ===
+            teamLeadFilter
+        )
         .map(mapUserTableItem)
     );
   }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
-
 
   useEffect(() => {
     if (data && data.allHealthCareWorkers) {
@@ -217,7 +227,6 @@ export default function HealthCareWorkers() {
     });
   };
 
-
   const UploadContent = () => {
     panel({
       noPadding: true,
@@ -261,9 +270,6 @@ export default function HealthCareWorkers() {
     setTeamLeadFilter('');
   };
 
-
-
-
   if (tableData) {
     return (
       <div>
@@ -286,7 +292,7 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4  w-10/12">
+            <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
               <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
@@ -315,11 +321,9 @@ export default function HealthCareWorkers() {
                 </span>
               </div>
 
-              <div className="ml-4 w-6/12">
-             
-              </div>
-              <div className="flex flex-row w-11/12 ">
-              {hasPermission(PermissionEnum.create_user) && (
+              <div className="ml-4 w-6/12"></div>
+              <div className="flex w-11/12 flex-row ">
+                {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={displayPanel}
                     type="button"
@@ -331,11 +335,11 @@ export default function HealthCareWorkers() {
                 )}
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
-                    onClick={()=>{
-                      history.push('/upload-users')
+                    onClick={() => {
+                      history.push('/upload-users');
                     }}
                     type="button"
-                    className="ml-2 bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
                   >
                     <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
                     Bulk Upload
@@ -343,7 +347,6 @@ export default function HealthCareWorkers() {
                 )}
               </div>
             </div>
-
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
@@ -357,7 +360,7 @@ export default function HealthCareWorkers() {
                   list={provinces}
                   onChange={(item) => {
                     setProvinceFilter(item);
-                    refetch()
+                    refetch();
                   }}
                 />
               </div>
@@ -391,20 +394,22 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                        ? 'bg-secondary text-white'
-                        : 'text-secondary border-secondary border-2 bg-white'
-                        } hover:text-secondary hover:bg-white `}
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                        !showDropDownFilter
+                          ? 'bg-secondary text-white'
+                          : 'text-secondary border-secondary border-2 bg-white'
+                      } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                          ? 'hover:text-secondary text-white'
-                          : 'text-secondary hover:text-white'
-                          }`}
+                        className={`-mr-1 h-5 w-5 hover:text-white ${
+                          !showDropDownFilter
+                            ? 'hover:text-secondary text-white'
+                            : 'text-secondary hover:text-white'
+                        }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"

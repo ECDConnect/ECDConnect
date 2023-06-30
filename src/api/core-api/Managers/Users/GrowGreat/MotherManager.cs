@@ -637,7 +637,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
-    
+
+        public int GetTotalNewMothersForPeriod(string id, DateTime startDate, DateTime endDate)
+        {
+
+            var a = _motherRepo.GetAll()
+                .Where(x => x.HealthCareWorker.UserId.Equals(id) 
+                && x.IsActive.Equals(true) 
+                && x.InsertedDate >= startDate
+                && x.InsertedDate <= endDate)
+                ;
+            return a.Select(x => x.Id).Distinct().Count();
+        }
+
         public Mother GetMotherForCaregiver(string caregiverId)
         {
             Mother mother = _motherRepo.GetAll().Where(x => x.LinkedCaregiverId.ToString() == caregiverId).FirstOrDefault();

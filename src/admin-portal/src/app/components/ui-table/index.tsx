@@ -5,17 +5,18 @@ import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 
-export default function UiTable({
-  columns = [],
-  rows = [],
-  options = {},
-  urlRow,
-  searchInput,
-  component,
-
-}: UiTableProps, props) {
+export default function UiTable(
+  {
+    columns = [],
+    rows = [],
+    options = {},
+    urlRow,
+    searchInput,
+    component,
+  }: UiTableProps,
+  props
+) {
   const history = useHistory();
-
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -138,16 +139,18 @@ export default function UiTable({
     }
   };
 
-
   const viewSelectedRow = (selectedRow: any) => {
-    localStorage.setItem("selectedUser", selectedRow?.userId ?? selectedRow?.id);
-    console.log(component)
+    localStorage.setItem(
+      'selectedUser',
+      selectedRow?.userId ?? selectedRow?.id
+    );
+    console.log(component);
     history.push({
       pathname: urlRow,
       state: {
         component: component,
-        userId: selectedRow?.userId
-      }
+        userId: selectedRow?.userId,
+      },
     });
   };
 
@@ -231,7 +234,11 @@ export default function UiTable({
         );
     }
 
-    return <div className={'cursor-pointer'} onClick={() => viewSelectedRow(row)} >{rowValue} </div>;
+    return (
+      <div className={'cursor-pointer'} onClick={() => viewSelectedRow(row)}>
+        {rowValue}{' '}
+      </div>
+    );
   };
 
   return (

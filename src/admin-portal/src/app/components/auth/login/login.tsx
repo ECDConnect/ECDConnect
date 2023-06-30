@@ -66,7 +66,6 @@ export default function Login() {
 
   const getLogoUrl = () => {
     return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
-
   };
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
@@ -75,9 +74,7 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl text-bold">
-            Log In
-          </h2>
+          <h2 className="font-h1 textLight text-bold mt-6 text-2xl">Log In</h2>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -104,7 +101,9 @@ export default function Login() {
               </div>
 
               <Button
-                className={' my-6 focus:outline-none inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '}
+                className={
+                  ' focus:outline-none my-6 inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm '
+                }
                 type="ghost"
                 color="secondary"
                 onClick={() => history.push('/forgot-password')}
@@ -113,7 +112,7 @@ export default function Login() {
                   type="help"
                   color="secondary"
                   text={' Forgot password?'}
-                  className='text-align-start'
+                  className="text-align-start"
                 ></Typography>
                 <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
               </Button>

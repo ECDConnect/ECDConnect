@@ -20,39 +20,34 @@ export default function TeamLeads() {
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('')
+  const [clinicFilter, setClinicFilter] = useState('');
 
   const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
-      provinceSearch: "",
-      clinicSearch: "",
-      textSearch: "",
+      provinceSearch: '',
+      clinicSearch: '',
+      textSearch: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 30
-      }
+        pageSize: 30,
+      },
     },
     fetchPolicy: 'network-only',
   });
 
-
-
   useEffect(() => {
-
     GetAllTeamLeads({
       variables: {
         textSearch: searchValue,
         provinceSearch: provinceFilter,
         clinicSearch: clinicFilter,
         pagingInput: {
-          "pageNumber": 1,
-          "pageSize": 30
-        }
-      }
+          pageNumber: 1,
+          pageSize: 30,
+        },
+      },
     });
-
-  }, [provinceFilter, searchValue, clinicFilter])
-
+  }, [provinceFilter, searchValue, clinicFilter]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -84,7 +79,7 @@ export default function TeamLeads() {
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
-  }
+  };
 
   useEffect(() => {
     if (data && data.allTeamLeads) {
@@ -98,7 +93,6 @@ export default function TeamLeads() {
       setTableData(copyItems);
     }
   }, [data]);
-
 
   const displayPanel = () => {
     panel({
@@ -141,7 +135,7 @@ export default function TeamLeads() {
               </div>
             </div>
 
-            <div className="mt-0 flex flex-row sm:mt-0 sm:ml-4 w-8/12">
+            <div className="mt-0 flex w-8/12 flex-row sm:mt-0 sm:ml-4">
               <div className="mx-4 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button

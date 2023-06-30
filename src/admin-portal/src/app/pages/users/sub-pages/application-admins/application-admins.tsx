@@ -17,27 +17,26 @@ import UserPanelCreate from '../../components/user-panel-create/user-panel-creat
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
 
 export default function ApplicationAdmins() {
-
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
-      search: "",
+      search: '',
       pagingInput: {
-        "pageNumber": 1,
-        "pageSize": 50,
-        "filterBy": [
+        pageNumber: 1,
+        pageSize: 50,
+        filterBy: [
           {
-            "fieldName": "ADMINISTRATOR",
-            "filterType": "EQUALS",
-            "value": "true"
-          }
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
         ],
-        "sortBy": [
+        sortBy: [
           {
-            "fieldName": "FullName",
-            "descending": true
-          }
-        ]
-      }
+            fieldName: 'FullName',
+            descending: true,
+          },
+        ],
+      },
     },
     fetchPolicy: 'network-only',
   });
@@ -53,36 +52,32 @@ export default function ApplicationAdmins() {
   const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-  let userStatus = (statusFilter === 'active') ? true : false;
-
+  let userStatus = statusFilter === 'active' ? true : false;
 
   useEffect(() => {
-    getAllUsers(
-      {
-        variables:{
-          search: searchValue,
-          "pagingInput": {
-                "pageNumber": 1,
-                "pageSize": 10,
-                "filterBy": [
-                    {
-                        "fieldName": "ADMINISTRATOR",
-                        "filterType": "EQUALS",
-                        "value": "true"
-                    }
-                ],
-                "sortBy": [
-                    {
-                        "fieldName": "FullName",
-                        "descending": true
-                    }
-                ]
-          }
-        }
-      }
-    );
-  }, [searchValue])
-
+    getAllUsers({
+      variables: {
+        search: searchValue,
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: 10,
+          filterBy: [
+            {
+              fieldName: 'ADMINISTRATOR',
+              filterType: 'EQUALS',
+              value: 'true',
+            },
+          ],
+          sortBy: [
+            {
+              fieldName: 'FullName',
+              descending: true,
+            },
+          ],
+        },
+      },
+    });
+  }, [searchValue]);
 
   useEffect(() => {
     if (data && data.users) {
@@ -99,7 +94,9 @@ export default function ApplicationAdmins() {
           return { ...rest, roles: modifiedRoles };
         }
       );
-      const finalTableData = modifiedData.map(({ roles, ...rest }) => rest).filter((v: any) => v.isActive === userStatus)
+      const finalTableData = modifiedData
+        .map(({ roles, ...rest }) => rest)
+        .filter((v: any) => v.isActive === userStatus)
         .map(mapUserTableItem);
       setTableData(finalTableData);
     }
@@ -110,9 +107,7 @@ export default function ApplicationAdmins() {
 
     let allUsers: UserDto[] = [...data.users];
     setTableData(
-      allUsers
-        .filter((v) => v.isActive === userStatus)
-        .map(mapUserTableItem)
+      allUsers.filter((v) => v.isActive === userStatus).map(mapUserTableItem)
     );
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [statusFilter]);
@@ -150,9 +145,8 @@ export default function ApplicationAdmins() {
   }, 150);
 
   useEffect(() => {
-    console.log(">>>", searchValue)
-
-  }, [searchValue])
+    console.log('>>>', searchValue);
+  }, [searchValue]);
 
   if (tableData) {
     return (
@@ -198,10 +192,11 @@ export default function ApplicationAdmins() {
                             onClick={() =>
                               setShowDropDownFilter(!showDropDownFilter)
                             }
-                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                              ? 'bg-secondary text-white'
-                              : 'text-secondary border-secondary border-2 bg-white'
-                              } hover:text-secondary hover:bg-white `}
+                            className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                              !showDropDownFilter
+                                ? 'bg-secondary text-white'
+                                : 'text-secondary border-secondary border-2 bg-white'
+                            } hover:text-secondary hover:bg-white `}
                             id="menu-button"
                             aria-expanded={showDropDownFilter}
                             aria-haspopup={showDropDownFilter}
@@ -210,10 +205,11 @@ export default function ApplicationAdmins() {
                               ? 'Filter by status'
                               : statusFilter}
                             <svg
-                              className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                                ? 'hover:text-secondary text-white'
-                                : 'text-secondary hover:text-white'
-                                }`}
+                              className={`-mr-1 h-5 w-5 hover:text-white ${
+                                !showDropDownFilter
+                                  ? 'hover:text-secondary text-white'
+                                  : 'text-secondary hover:text-white'
+                              }`}
                               viewBox="0 0 20 20"
                               fill="currentColor"
                               aria-hidden="true"
