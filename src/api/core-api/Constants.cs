@@ -1,8 +1,3 @@
-using iTextSharp.text;
-using NPOI.SS.Formula.Functions;
-using NPOI.SS.UserModel;
-using System;
-
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
