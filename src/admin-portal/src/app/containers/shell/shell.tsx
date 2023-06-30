@@ -316,18 +316,18 @@ export default function Shell() {
                       >
                         <span className="sr-only">Open user menu</span>
 
-                        {user.profileImageUrl ? (
+                        {user?.profileImageUrl ? (
                           <Avatar
                             size={'md'}
                             displayBorder
-                            dataUrl={`${user.profileImageUrl}`}
+                            dataUrl={`${user?.profileImageUrl}`}
                             borderColor='secondary'
                           />
                         ) :
                           <UserAvatar
                             size={'md'}
                             avatarColor={avatarColor}
-                            text={`${user.firstName[0]}${user.surname[0]}`}
+                            text={`${user?.firstName[0]}${user?.surname[0]}`}
                             displayBorder
                           />
                         }

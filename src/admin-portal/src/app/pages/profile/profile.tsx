@@ -66,6 +66,8 @@ export function Profile(props: any) {
   const saveUser = async (passwordChange: boolean, profileImage?: string) => {
 
     const userInputModel: UserModelInput = {
+      firstName:userDetailForm?.phoneNumber,
+      surname:userDetailForm?.surname,
       phoneNumber: userDetailForm?.phoneNumber,
       idNumber: userDetailForm?.idNumber,
       email: userDetailForm?.email,
@@ -74,8 +76,7 @@ export function Profile(props: any) {
       verifiedByHomeAffairs: null,
       profileImageUrl: profileImage ?? null
     };
-    console.log(userDetailForm)
-
+ 
     await updateUser({
       variables: {
         id: user.user?.id,
@@ -141,7 +142,7 @@ export function Profile(props: any) {
 
   useEffect(() => {
     if (user) {
-      setValue('firstName', (user.user?.idNumber), {
+      setValue('firstName', (user.user?.firstName), {
         shouldValidate: true,
       });
 
@@ -159,11 +160,8 @@ export function Profile(props: any) {
 
   //check password strength
   const password = watch('password');
-  const formValues = getValues();
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-  const [editProfilePictureVisible, setEditProfilePictureVisible] =
-    useState(false);
 
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
@@ -206,14 +204,12 @@ export function Profile(props: any) {
                   style={{ width: '50rem' }}
                 >
 
-
                   <ProfileAvatar
                     dataUrl={avatarFile ?? ''}
                     size={'header'}
                     onPressed={displayProfilePicturePrompt}
                     hasConsent={true}
                   />
-
 
                   <div className="flex w-full flex-col">
                     <div>
