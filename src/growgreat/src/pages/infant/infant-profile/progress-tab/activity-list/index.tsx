@@ -26,6 +26,7 @@ import ROUTES from '@/routes/routes';
 
 import {
   getInfantById,
+  getInfantNearestPreviousVisitByOrderDate,
   getInfantVisitByVisitIdSelector,
   getIsInfantFirstVisitSelector,
   getIsInfantSecondVisitSelector,
@@ -56,7 +57,10 @@ import { getAgeInYearsMonthsAndDays, usePrevious } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
 import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
-import { clinicCheckupQuestion } from './forms/care-for-mom-steps/clinic-check-ups';
+import {
+  clinicCheckupQuestion,
+  clinicCheckupSectionName,
+} from './forms/care-for-mom-steps/clinic-check-ups';
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 import { FileTypeEnum } from '@ecdlink/graphql';
 
@@ -100,8 +104,12 @@ export const ActivityList: React.FC = () => {
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
 
-  const previousVisit = useSelector(
+  const previousCurrentVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
+  );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, visit)
   );
 
   const appDispatch = useAppDispatch();
@@ -142,14 +150,14 @@ export const ActivityList: React.FC = () => {
 
   const getIsFollowUp = useCallback(
     (section: string, visitName: string) => {
-      return !!previousVisit?.visitDataStatus?.some(
+      return !!previousCurrentVisitStatus?.visitDataStatus?.some(
         (item) =>
           item?.section === section &&
           item.visitData?.visitName === visitName &&
           item.color !== 'Success'
       );
     },
-    [previousVisit?.visitDataStatus]
+    [previousCurrentVisitStatus?.visitDataStatus]
   );
 
   const isRoadToHeathBookStep = useMemo(
@@ -498,6 +506,18 @@ export const ActivityList: React.FC = () => {
     );
   }, [visitId, appDispatch]);
 
+  useLayoutEffect(() => {
+    if (previousVisit?.id) {
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.careForMom,
+          visitSection: clinicCheckupSectionName,
+        })
+      );
+    }
+  }, [previousVisit, appDispatch]);
+
   const renderContent = useMemo(() => {
     if (isLoading) {
       return (
@@ -512,7 +532,7 @@ export const ActivityList: React.FC = () => {
 
     if (
       isStartVisit ||
-      !previousVisit?.visitDataStatus?.length ||
+      !previousCurrentVisitStatus?.visitDataStatus?.length ||
       isAllCompleted
     ) {
       return (
@@ -659,7 +679,7 @@ export const ActivityList: React.FC = () => {
     isShowCompletedForms,
     isStartVisit,
     options,
-    previousVisit?.visitDataStatus?.length,
+    previousCurrentVisitStatus?.visitDataStatus?.length,
     stepperCount,
     uncompletedForms,
     user?.firstName,
