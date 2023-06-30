@@ -141,7 +141,7 @@ namespace ECDLink.SmartStart.Services
         {
             var programmeIds = learner.ClassroomGroup.ClassProgrammes.Select(x => x.Id).ToList();
 
-            return GetAttendanceRecordsForPeriod(programmeIds, userId, startMonth, endMonth);
+            return GetAttendanceRecordsForPeriod(programmeIds, learner.UserId, startMonth, endMonth);
         }
 
 
@@ -182,7 +182,7 @@ namespace ECDLink.SmartStart.Services
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
                                               && x.Year == dt.Year
-                                              && x.Attended == true);
+                                              && x.Attended == true);              
 
                         attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
 
@@ -228,7 +228,8 @@ namespace ECDLink.SmartStart.Services
                                               .Where(x => string.Equals(x.UserId, userId)
                                               && x.ClassroomProgrammeId == programme.Id
                                               && x.MonthOfYear == dt.Month
-                                              && x.Year == dt.Year);
+                                              && x.Year == dt.Year  
+                                              && x.Attended == true);
                         
                         attendance.Add(Tuple.Create(daysOfClass.Count(), (attendedClasses != null ? (daysOfClass.Count() > 0 ? attendedClasses.Count() : 0) : 0))); //limit attendance if there is no actual day of class, to not add a day that isnt allowed
                     }
