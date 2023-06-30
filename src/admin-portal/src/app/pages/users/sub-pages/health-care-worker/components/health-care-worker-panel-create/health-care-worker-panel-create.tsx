@@ -34,6 +34,7 @@ import UserPanelSave from '../../../../components/user-panel-save/user-panel-sav
 import { UserPanelCreateProps } from '../../../../components/users';
 import { Button, Typography } from '@ecdlink/ui';
 import { SaveIcon } from '@heroicons/react/solid';
+import FormField from '../../../../../../components/form-field/form-field';
 
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
@@ -119,27 +120,19 @@ export default function HealthCareWorkerPanelCreate(
 
   const saveUser = async () => {
     const userDetailForm = userDetailGetValues();
-    const passwordForm = passwordGetValues();
 
     const userInputModel: UserModelInput = {
       id: newGuid(),
-      isSouthAfricanCitizen: userDetailForm.isSouthAfricanCitizen,
+      isSouthAfricanCitizen: null,
       idNumber: userDetailForm.idNumber,
-      verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
-      dateOfBirth: userDetailForm.dateOfBirth,
-      genderId:
-        userDetailForm.genderId && userDetailForm.genderId.length
-          ? userDetailForm.genderId
-          : null,
+      verifiedByHomeAffairs: null,
+      dateOfBirth: null,
+      genderId: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       contactPreference: userDetailForm.contactPreference,
       phoneNumber: userDetailForm.phoneNumber,
       email: userDetailForm.email,
-      password:
-        passwordForm.password && passwordForm.password.length > 0
-          ? passwordForm.password
-          : null,
     };
 
     await createUser({
@@ -155,7 +148,7 @@ export default function HealthCareWorkerPanelCreate(
 
         const userId = response.data.addUser.id;
         await saveRoles(userId);
-        await saveSiteAddress(userId);
+
       })
       .catch((error) => {
         console.log(error);
@@ -297,12 +290,18 @@ export default function HealthCareWorkerPanelCreate(
             setValue={userDetailSetValue}
             control={control}
           />
+          <FormField
+            label={'Email *'}
+            nameProp={'email'}
+            register={userDetailRegister}
+            error={userDetailFormErrors.email?.message}
+          />
         </div>
 
         <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Health Care Worker Detail
+              Health Care Worker Details
             </h3>
           </div>
 
@@ -313,33 +312,6 @@ export default function HealthCareWorkerPanelCreate(
           />
         </div>
 
-        <div className=" mt-5 rounded-lg border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Address Detail
-            </h3>
-          </div>
-          <SiteAddressForm
-            formKey={`createSiteAddress-${new Date().getTime()}`}
-            register={siteAddressRegister}
-            errors={siteAddressFormErrors}
-          />
-        </div>
-
-        {/* <div className="mt-5 rounded-lg border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Password
-            </h3>
-          </div>
-
-          <PasswordForm
-            formKey={`createPassword-${new Date().getTime()}`}
-            isEdit={false}
-            register={passwordRegister}
-            errors={passwordFormErrors}
-          />
-        </div> */}
       </>
     );
   };
