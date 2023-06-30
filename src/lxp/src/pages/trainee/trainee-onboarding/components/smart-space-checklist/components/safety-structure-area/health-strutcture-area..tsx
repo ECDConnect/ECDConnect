@@ -94,11 +94,13 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
 
   const visitSection = 'Safety - structure, space & area';
 
-  const completedItems = visitData?.filter(
-    (item) =>
-      item?.questionAnswer === 'true' ||
-      (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
-  );
+  const completedItems = visitData
+    ?.filter((item) => item?.visitSection === visitSection)
+    .filter(
+      (item) =>
+        item?.questionAnswer === 'true' ||
+        (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
+    );
 
   const disableSection = completedItems?.length === 10;
 
@@ -129,14 +131,18 @@ export const HealthStructureArea: React.FC<HealthSanitationSafetysProps> = ({
 
   useEffect(() => {
     const previousData = questions.map((item) => {
-      const previousAnswer = visitData?.find(
-        (obj) => obj.question === item.question
+      const previousAnswer = visitData
+        ?.filter((item) => item?.visitSection === visitSection)
+        .filter((obj) => obj.question === item.question);
+
+      const previousHasTrueAnswer = previousAnswer?.some(
+        (item) => item?.questionAnswer === 'true'
       );
 
       if (previousAnswer) {
         return {
           ...item,
-          answer: previousAnswer.questionAnswer === 'true' ? true : false,
+          answer: previousHasTrueAnswer!,
         };
       }
       return item;

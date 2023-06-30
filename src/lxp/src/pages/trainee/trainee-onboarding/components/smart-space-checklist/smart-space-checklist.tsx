@@ -63,7 +63,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
-  console.log({ traineeVisitData });
+
   const communitySupportGained =
     traineeTimeline?.communitySupportStatus === 'Community support gained';
   const registeredThreeChildren =
@@ -442,11 +442,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
     });
   } else {
-    const completedSectionItems = completedItems(
-      'Safety - structure, space & area'
-    );
-
-    console.log({ completedSectionItems });
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
