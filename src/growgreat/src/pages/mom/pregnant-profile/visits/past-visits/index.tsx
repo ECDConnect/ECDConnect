@@ -72,7 +72,9 @@ export const PastVisits: React.FC = () => {
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),
-        showActionButton: getType() === 'completed',
+        // Change this rule to not show 'See info' for past visits until further notice 30 June 2023 (Kim)
+        //showActionButton: getType() === 'completed',
+        showActionButton: false,
         actionButtonText: 'See info',
         actionButtonTextColor: 'secondary',
         actionButtonColor: 'secondaryAccent2',
