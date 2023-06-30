@@ -51,7 +51,7 @@ export const IntroScreen = ({
   const date =
     !currentVisit?.attended && !currentVisit?.visitInProgress
       ? previousVisit?.actualVisitDate
-      : currentVisit.actualVisitDate;
+      : currentVisit.actualVisitDate || currentVisit?.insertedDate || '';
 
   return (
     <>

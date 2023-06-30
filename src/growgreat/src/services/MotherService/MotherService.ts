@@ -235,6 +235,7 @@ class MotherService {
       query: `
         mutation addAdditionalVisitForMother($input: VisitModelInput) {
           addAdditionalVisitForMother(input: $input) {
+            insertedDate
             actualVisitDate,
             plannedVisitDate,
             orderDate
@@ -278,6 +279,7 @@ class MotherService {
       query: `
         query GetMotherVisits($userId: String) {
           motherVisits(id: $userId) {
+              insertedDate
               actualVisitDate
               plannedVisitDate
               orderDate
