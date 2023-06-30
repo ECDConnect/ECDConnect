@@ -1207,15 +1207,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
                                                           x.VisitType.Name == _additionalVisitType.Name &&
                                                           x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
-                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null) &&
-                                                          x.Comment == comment).FirstOrDefault();
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
             if (record == null)
             {
 
                 DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
                 if (nextVisitDate == default(DateTime))
                 {
-                    nextVisitDate = DateTime.Now;
+                    nextVisitDate = DateTime.Now.Date;
+                }
+                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                if (nextVisitDueDate == default(DateTime))
+                {
+                    nextVisitDueDate = DateTime.Now.Date;
                 }
 
                 VisitModel newVisit = new VisitModel();
@@ -1227,6 +1231,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
                 newVisit.PlannedVisitDate = nextVisitDate;
+                newVisit.DueDate = nextVisitDueDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
 
@@ -1654,7 +1659,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.ScoreColor = scoreColor;
             // EC-877: remove weigth, length and muac from list, because they are already handled above
-            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight || y.VisitData.Question == Constants.GGSettings.q_length || y.VisitData.Question == Constants.GGSettings.q_muac).ToList();
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_length && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_muac).ToList();
 
             return result;
         }
