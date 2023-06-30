@@ -708,7 +708,7 @@ export function ViewUser(props: any) {
                               nameProp={'email'}
                               register={userDetailRegister}
                               error={detailFormErrors.email?.message}
-                              defaultValue={userData?.userById?.email?.phoneNumber}
+                              defaultValue={userData?.userById?.email}
                             />
                           </div>
 
