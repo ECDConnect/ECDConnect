@@ -481,11 +481,11 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     ).unwrap();
-    // appDispatch(
-    //   visitThunkActions.getPreviousVisitInformationForInfant({
-    //     visitId,
-    //   })
-    // );
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForInfant({
+        visitId,
+      })
+    );
   }, [visitId, appDispatch]);
 
   useLayoutEffect(() => {
@@ -525,32 +525,13 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          {!!visit?.actualVisitDate &&
-            visit?.visitType?.normalizedName === 'Additional visits' && (
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={new Date(visit?.actualVisitDate).toLocaleDateString(
-                  'en-ZA',
-                  options
-                )}
-                color="textMid"
-              />
-            )}
-          {!!visit?.plannedVisitDate &&
-            visit?.visitType?.normalizedName !== 'Additional visits' && (
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={new Date(visit?.plannedVisitDate).toLocaleDateString(
-                  'en-ZA',
-                  options
-                )}
-                color="textMid"
-              />
-            )}
+          <Typography
+            type="body"
+            align="left"
+            weight="skinny"
+            text={new Date().toLocaleDateString('en-ZA', options)}
+            color="textMid"
+          />
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />
@@ -682,7 +663,6 @@ export const ActivityList: React.FC = () => {
     stepperCount,
     uncompletedForms,
     user?.firstName,
-    visit,
     width,
   ]);
 

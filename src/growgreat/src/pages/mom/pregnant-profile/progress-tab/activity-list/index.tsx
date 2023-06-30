@@ -307,6 +307,14 @@ export const MomActivityList: React.FC = () => {
     }
   }, [appDispatch, motherId, previousSelectedOption, selectedOption, visitId]);
 
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForMother({
+        visitId,
+      })
+    );
+  }, [appDispatch, visitId]);
+
   const renderContent = useMemo(() => {
     if (isLoading) {
       return (
