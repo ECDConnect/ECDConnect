@@ -1207,8 +1207,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
                                                           x.VisitType.Name == _additionalVisitType.Name &&
                                                           x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
-                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null) &&
-                                                          x.Comment == comment).FirstOrDefault();
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
             if (record == null)
             {
 
