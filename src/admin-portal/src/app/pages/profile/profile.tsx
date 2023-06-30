@@ -1,14 +1,12 @@
 import FormField from '../../components/form-field/form-field';
 import { initialPasswordValue, initialUserDetailsValues, passwordSchema, NOTIFICATION, useNotifications, } from '@ecdlink/core';
 
-// import { useDocuments } from '../../../../../lxp/src/hooks/useDocuments';
-import { Alert, Button, Divider, ProfileAvatar, SA_ID_REGEX, SA_PASSPORT_REGEX, Typography } from '@ecdlink/ui';
+import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn-typescript';
-import { ArrowRightIcon } from '@heroicons/react/solid';
-import { GetUserById, ResetUserPassword, UpdateUser, UserModelInput } from '@ecdlink/graphql';
+import { GetUserById, ResetUserPassword, UpdateUser, UserModelInput, FileUpload, FileTypeEnum } from '@ecdlink/graphql';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -59,10 +57,13 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
+  const [fileUpload] = useMutation(FileUpload);
+
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
+  const [avatarFile, setAvatarFile] = useState(null);
 
-  const saveUser = async (passwordChange: boolean) => {
+  const saveUser = async (passwordChange: boolean, profileImage?: string) => {
 
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm?.phoneNumber,
@@ -70,7 +71,8 @@ export function Profile(props: any) {
       email: userDetailForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
-      verifiedByHomeAffairs: null
+      verifiedByHomeAffairs: null,
+      profileImageUrl: profileImage ?? null
     };
     console.log(userDetailForm)
 
@@ -104,7 +106,23 @@ export function Profile(props: any) {
       internalIsPasswordValid = isPasswordValid;
     }
 
-    await saveUser(passwordChange);
+    if (avatarFile) {
+      await fileUpload({
+        variables: {
+          file: avatarFile,
+          fileName: `${user.user?.fullName} profileImage`,
+          fileType: FileTypeEnum.ProfileImage,
+        },
+      }).then(async (result) => {
+        if (result && result.data) {
+          let profileImageUrl = result.data.fileUpload.url;
+          await saveUser(passwordChange, profileImageUrl);
+        }
+      });
+    }else{
+      await saveUser(passwordChange);
+    }
+
 
   };
 
@@ -146,20 +164,34 @@ export function Profile(props: any) {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
     useState(false);
+
+  const handleAvatarChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const dataUrl = reader.result; // The base64 data URL
+        setAvatarFile(dataUrl);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+
   const displayProfilePicturePrompt = () => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
-  };
-  // const {
-  //   userProfilePicture,
-  //   createNewDocument,
-  //   updateDocument,
-  //   deleteDocument,
-  // } = useDocuments();
+    const fileInput = document.createElement('input');
+    fileInput.type = 'file';
+    fileInput.accept = 'image/*';
+    fileInput.style.display = 'none';
 
-  const picturePromtOnAction = async (imageBaseString: string) => {
-    setEditProfilePictureVisible(!editProfilePictureVisible);
+    fileInput.addEventListener('change', handleAvatarChange);
 
+    document.body.appendChild(fileInput);
+    fileInput.click();
   };
+
+
+
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <form className="space-y-6">
@@ -173,12 +205,15 @@ export function Profile(props: any) {
                   className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
                   style={{ width: '50rem' }}
                 >
+
+
                   <ProfileAvatar
-                    // dataUrl={ ?? ''}
+                    dataUrl={avatarFile ?? ''}
                     size={'header'}
                     onPressed={displayProfilePicturePrompt}
                     hasConsent={true}
                   />
+
 
                   <div className="flex w-full flex-col">
                     <div>
