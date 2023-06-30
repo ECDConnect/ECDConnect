@@ -4,7 +4,7 @@ import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
 import { useEffect, useState } from 'react';
 import { b64toBlob } from '@ecdlink/core';
-import { ArrowLeftIcon, DownloadIcon } from '@heroicons/react/solid';
+import { ArrowLeftIcon, DownloadIcon, PaperAirplaneIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
 export interface UploadAllTemplateProps {
@@ -149,14 +149,15 @@ export default function UploadBulkUser({
               </div>
             </div>
             <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-              <div className="ml-4 mt-2"></div>
+              
               <div className="ml-4 mt-2 flex-shrink-0">
 
                 <button
                   type="submit"
-                  className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 >
-                  Upload
+                  <PaperAirplaneIcon className=" h-4 w-4 mr-1"> </PaperAirplaneIcon>
+                  Add & invite users
                 </button>
 
               </div>
