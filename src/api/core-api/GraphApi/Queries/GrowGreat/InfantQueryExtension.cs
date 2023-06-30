@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GGSettings.client_child, true);
                     if (nextVisit != "")
                     {
@@ -68,7 +68,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GGSettings.client_child, true);
                     if (nextVisit != "")
                     {
@@ -82,7 +82,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
                     if (missedVisit != "")
                     {
@@ -93,7 +93,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
                     if (missedVisit != "")
                     {
