@@ -306,7 +306,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (nextVisit != null)
             {
-                message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.DueDate.Value.Date.ToString("dd MMM yyyy");
+                if (nextVisit.DueDate == null)
+                {
+                    message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.PlannedVisitDate.Date.ToString("dd MMM yyyy");
+                }
+                else
+                {
+                    message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.DueDate.Value.Date.ToString("dd MMM yyyy");
+                }
             }
 
             return message;
@@ -345,7 +352,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (nextVisit != null)
             {
-                message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.DueDate.Value.Date.ToString("dd MMM yyyy");
+                if (nextVisit.DueDate == null)
+                {
+                    message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.PlannedVisitDate.Date.ToString("dd MMM yyyy");
+                } else
+                {
+                    message = nextVisit.VisitType.NormalizedName + " due " + nextVisit.DueDate.Value.Date.ToString("dd MMM yyyy");
+                }
             }
 
             return message;
@@ -461,7 +474,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (nextVisit != null)
             {
-                return nextVisit.DueDate.Value.Date;
+                return nextVisit.DueDate != null ? nextVisit.DueDate.Value.Date : nextVisit.PlannedVisitDate.Date;
             }
             return null;
         }
