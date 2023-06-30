@@ -228,12 +228,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (missedVisit != null)
             {
-                if (missedVisit.PlannedVisitDate != default(DateTime)) {
-                    message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.PlannedVisitDate.ToString("dd MMM yyyy");
-                }else{
-                    message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.ActualVisitDate?.ToString("dd MMM yyyy");
-                }
-             
+               message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.ActualVisitDate?.ToString("dd MMM yyyy");
             }
             return message;
         }
