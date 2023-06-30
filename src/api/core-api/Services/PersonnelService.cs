@@ -787,7 +787,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             { 
                 if (trainee.AttendedStartUpTraining == true)
                 {
-                    dates.Add(trainee.StartDate.Value);
+                    if (trainee.StartDate != null)
+                    {
+                        dates.Add(trainee.StartDate.Value);
+                    }
                 }
                 if (timeline.StarterLicenseColor == MetricsColorEnum.Success.ToString())
                 {

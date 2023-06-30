@@ -228,12 +228,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (missedVisit != null)
             {
-                if (missedVisit.PlannedVisitDate != default(DateTime)) {
-                    message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.PlannedVisitDate.ToString("dd MMM yyyy");
-                }else{
-                    message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.ActualVisitDate?.ToString("dd MMM yyyy");
-                }
-             
+               message = missedVisit.VisitType.NormalizedName + " overdue " + missedVisit.ActualVisitDate?.ToString("dd MMM yyyy");
             }
             return message;
         }
@@ -514,7 +509,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     _visit.VisitInProgress = _visitDataRepo.GetAll().Where(x => x.VisitId == _visit.Id).Count() > 0;
                 }
-                _visit.OrderDate = _visit.DueDate.Value.Date;
+                _visit.OrderDate = _visit.DueDate != null ? _visit.DueDate.Value.Date : _visit.PlannedVisitDate;
             }
 
             var additional_visits = allVisits.Where(x => x.VisitType.Name == Constants.GGSettings.additional_visits).ToList();

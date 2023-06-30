@@ -75,7 +75,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                         infants.Add(child);
                     }
                 }
-
             }
             else
             {
@@ -83,22 +82,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
                     child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
-                    var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
-                    if (missedVisit != "")
-                    {
-                        infants.Add(child);
-                    }   
+                    infants.Add(child);
                 }
 
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
                     child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
-                    var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
-                    if (missedVisit != "")
-                    {
-                        infants.Add(child);
-                    }   
+                    infants.Add(child);
                 }
             }
             return infants;

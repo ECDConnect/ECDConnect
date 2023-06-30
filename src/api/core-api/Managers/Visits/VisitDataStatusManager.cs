@@ -879,7 +879,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
+                var _prevWeight = 0.0;
+                if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+                {
+                    _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+                }
                
                 Boolean weightIncreased = _weight > _prevWeight;
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
