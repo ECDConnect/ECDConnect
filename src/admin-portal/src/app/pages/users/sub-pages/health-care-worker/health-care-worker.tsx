@@ -227,41 +227,7 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const UploadContent = () => {
-    panel({
-      noPadding: true,
-      title: `Upload Practitioners`,
-      render: (onSubmit: any) => (
-        <UploadPractitionerTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  // const UploadContentImport = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Import Users`,
-  //     render: (onSubmit: any) => (
-  //       <UploadAllImportTemplate
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
+ 
 
   const clearFilters = () => {
     setStatusFilter('');

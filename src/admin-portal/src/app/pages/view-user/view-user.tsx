@@ -24,6 +24,7 @@ import {
   initialUserDetailsValues,
   NOTIFICATION,
   passwordSchema,
+  PermissionEnum,
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
@@ -31,7 +32,6 @@ import AlertModal from '../../components/dialog-alert/dialog-alert';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  CreateHealthCareWorker,
   UpdateHealthCareWorker,
   GetHealthCareWorkerHighlights,
   GetTenantContext,
@@ -41,25 +41,27 @@ import {
   UserModelInput,
   healthCareWorkerVisitStatus,
   SendInviteToApplication,
-  HealthCareWorkerModelInput,
-  HealthCareWorkerInput,
+
 } from '@ecdlink/graphql';
-import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
 import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 
-const userSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
+const adminSchema = yup.object().shape({
+  email: yup.string().email().nullable().required('email address is required'),
+});
+
+const chwSchema = yup.object().shape({
+  email: yup.string().email().nullable().required('email address is required'),
   idNumber: yup
     .string()
-    .matches(SA_ID_REGEX, 'Id number is not valid')
+    .matches(SA_ID_REGEX, 'Id number is not valid').nullable()
     .required('ID number is required'),
   phoneNumber: yup
     .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid')
+    .matches(SA_CELL_REGEX, 'Phone number is not valid').nullable()
     .required('Cellphone number is required'),
 });
 
@@ -147,10 +149,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -182,10 +183,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData.GetHealthCareWorkerById?.user.fullName ??
-            userData.userById.fullName
-          }`}
+          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
+            userData?.userById?.fullName
+            }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -218,7 +218,19 @@ export function ViewUser(props: any) {
     getValues: userDetailGetValues,
     handleSubmit,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(chwSchema),
+    defaultValues: initialUserDetailsValues,
+    mode: 'onChange',
+  });
+
+  const {
+    register,
+    setValue: adminDetailSetValue,
+    formState: adminDetailFormState,
+    getValues: adminDetailGetValues,
+    handleSubmit: handleSubmitAdminDetails,
+  } = useForm({
+    resolver: yupResolver(adminSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -240,51 +252,66 @@ export function ViewUser(props: any) {
   const { errors: detailFormErrors, isValid: isDetailValid } =
     userDetailFormState;
 
+  const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
+    adminDetailFormState;
+
   const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
     if (
-      (userData?.userById || chwData?.GetHealthCareWorkerById.user) &&
+      (chwData?.GetHealthCareWorkerById.user) &&
       userDetailFormState
     ) {
       userDetailSetValue(
         'idNumber',
-        userData?.userById?.idNumber ??
-          chwData?.GetHealthCareWorkerById?.user.idNumber,
+        chwData?.GetHealthCareWorkerById?.user.idNumber,
         {
           shouldValidate: true,
         }
       );
 
       userDetailSetValue(
-        'email',
-        userData?.userById?.email ??
-          chwData?.GetHealthCareWorkerById?.user?.email,
-        {
-          shouldValidate: true,
-        }
-      );
-      userDetailSetValue(
         'phoneNumber',
-        userData?.userById?.phoneNumber ??
-          chwData?.GetHealthCareWorkerById?.user?.phoneNumber,
+        chwData?.GetHealthCareWorkerById?.user?.phoneNumber,
         {
           shouldValidate: true,
         }
       );
+    } else if (
+      userData &&
+      adminDetailFormState
+    ) {
+      adminDetailSetValue(
+        'email',
+        userData?.userById?.email,
+        {
+          shouldValidate: true,
+        }
+      );
+
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.userById, chwData?.GetHealthCareWorkerById]);
+  }, [chwData, userData]);
+
+
 
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const userDetailForm = userDetailGetValues();
+    const adminDataForm = adminDetailGetValues()
 
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm?.phoneNumber,
       idNumber: userDetailForm?.idNumber,
       email: userDetailForm?.email,
+      dateOfBirth: null,
+      isSouthAfricanCitizen: null,
+      verifiedByHomeAffairs: null,
+    };
+
+    const adminInputModel: UserModelInput = {
+      email: adminDataForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
@@ -306,9 +333,10 @@ export function ViewUser(props: any) {
       await updateUser({
         variables: {
           id: userData?.userById.id,
-          input: { ...userInputModel },
+          input: { ...adminInputModel },
         },
       });
+      refetch()
       setNotification({
         title: 'Successfully Updated User!',
         variant: NOTIFICATION.SUCCESS,
@@ -321,6 +349,9 @@ export function ViewUser(props: any) {
           id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
           newPassword: passwordForm.password,
         },
+      }).then(() => {
+        setEditActive(!editActive);
+        refetch();
       });
     }
   };
@@ -334,7 +365,7 @@ export function ViewUser(props: any) {
       internalIsPasswordValid = isPasswordValid;
     }
 
-    await saveUser(passwordChange);
+    await saveUser(passwordChange)
   };
 
   //check password strength
@@ -410,7 +441,7 @@ export function ViewUser(props: any) {
                 className="mt-5 mb-3"
                 message="This user has been deactivated and cannot access AppName."
                 type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
+              // customIcon={<SaveIcon></SaveIcon>}
               />
             )}
           </div>
@@ -442,7 +473,7 @@ export function ViewUser(props: any) {
                                 type="filled"
                                 isLoading={loading}
                                 color="tertiary"
-                                onClick={() => {}}
+                                onClick={() => { }}
                               >
                                 <Typography
                                   type="help"
@@ -457,7 +488,7 @@ export function ViewUser(props: any) {
                                 type="filled"
                                 isLoading={loading}
                                 color="tertiaryAccent1"
-                                onClick={() => {}}
+                                onClick={() => { }}
                               >
                                 <Typography
                                   type="help"
@@ -478,9 +509,7 @@ export function ViewUser(props: any) {
                               nameProp={'idNumber'}
                               register={userDetailRegister}
                               error={detailFormErrors.idNumber?.message}
-                              defaultValue={
-                                chwData?.GetHealthCareWorkerById.user?.idNumber
-                              }
+
                             />
                           </div>
                           <div className="my-4 w-6/12 sm:col-span-3">
@@ -489,10 +518,7 @@ export function ViewUser(props: any) {
                               nameProp={'phoneNumber'}
                               register={userDetailRegister}
                               error={detailFormErrors.phoneNumber?.message}
-                              defaultValue={
-                                chwData?.GetHealthCareWorkerById.user
-                                  ?.phoneNumber
-                              }
+
                             />
                           </div>
                         </>
@@ -512,17 +538,16 @@ export function ViewUser(props: any) {
                           {[...Array(4)].map((_, i) => (
                             <div className="w-1/4 px-1" key={i}>
                               <div
-                                className={`h-2 rounded-xl transition-colors ${
-                                  i < passwordScore
-                                    ? passwordScore <= 2
-                                      ? 'bg-red-400'
-                                      : passwordScore <= 3
+                                className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                  ? passwordScore <= 2
+                                    ? 'bg-red-400'
+                                    : passwordScore <= 3
                                       ? 'bg-yellow-400'
                                       : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                    : 'bg-gray-200'
-                                }`}
+                                        ? 'bg-green-500'
+                                        : 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                                  }`}
                               ></div>
                             </div>
                           ))}
@@ -535,7 +560,7 @@ export function ViewUser(props: any) {
                       type="filled"
                       isLoading={chwLoading}
                       color="secondary"
-                      // disabled={!isDetailValid}
+                      disabled={!isDetailValid}
                       onClick={handleSubmit(onSave)}
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
@@ -571,14 +596,13 @@ export function ViewUser(props: any) {
               <button
                 onClick={() => {
                   setEditActive(!editActive);
-                  refetch();
                 }}
                 id="dropdownHoverButton"
                 className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
                 type="button"
               >
                 {' '}
-                {editActive ? 'Done' : 'Edit'}
+                {editActive ? 'Close' : 'Edit'}
               </button>
             </div>
           </div>
@@ -770,43 +794,46 @@ export function ViewUser(props: any) {
               </div>
             </div>
           }
-          <div className="flex w-full flex-row justify-between pl-4">
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="outlined"
-                // isLoading={isLoading}
-                color="tertiary"
-                onClick={deactivateUser}
-              >
-                <TrashIcon color="tertiary" className="mr-6 h-6 w-6">
-                  {' '}
-                </TrashIcon>
-                <Typography
-                  type="help"
+          <div className="flex w-full flex-row pl-4 justify-between">
+            <div className="flex w-10/12 flex-row  pl-4">
+              {
+                hasPermission(PermissionEnum.delete_user) && <Button
+                  className={'mt-3 w-4/12 rounded-md mr-2'}
+                  type="outlined"
+                  // isLoading={isLoading}
                   color="tertiary"
-                  text={'Deactivate User'}
-                ></Typography>
-              </Button>
-            }
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="filled"
-                // isLoading={isLoading}
-                color="secondary"
-                onClick={sendInvite}
-              >
-                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                  {' '}
-                </PaperAirplaneIcon>
-                <Typography
-                  type="help"
-                  color="white"
-                  text={'Resend Invitation'}
-                ></Typography>
-              </Button>
-            }
+                  onClick={deactivateUser}
+
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
+                    {' '}
+                  </TrashIcon>
+                  <Typography
+                    type="help"
+                    color="tertiary"
+                    text={'Deactivate User'}
+                  ></Typography>
+                </Button>
+              }
+              {
+                <Button
+                  className={'mt-3 w-4/12 rounded-md'}
+                  type="filled"
+                  // isLoading={isLoading}
+                  color="secondary"
+                  onClick={sendInvite}
+                >
+                  <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
+                    {' '}
+                  </PaperAirplaneIcon>
+                  <Typography
+                    type="help"
+                    color="white"
+                    text={'Resend Invitation'}
+                  ></Typography>
+                </Button>
+              }
+            </div>
 
             <p className="mt-3 text-sm text-gray-500">
               User added to {data?.tenantContext.applicationName}:{' '}
@@ -880,7 +907,7 @@ export function ViewUser(props: any) {
                 className="mt-5 mb-3"
                 message="This user has been deactivated and cannot access AppName."
                 type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
+              // customIcon={<SaveIcon></SaveIcon>}
               />
             )}
           </div>
@@ -904,9 +931,8 @@ export function ViewUser(props: any) {
                           <FormField
                             label={'Email *'}
                             nameProp={'email'}
-                            register={userDetailRegister}
-                            error={detailFormErrors.email?.message}
-                            defaultValue={userData?.userById?.email}
+                            register={register}
+                            error={adminDetailFormErrors.email?.message}
                           />
                         </div>
 
@@ -925,17 +951,16 @@ export function ViewUser(props: any) {
                           {[...Array(4)].map((_, i) => (
                             <div className="w-1/4 px-1" key={i}>
                               <div
-                                className={`h-2 rounded-xl transition-colors ${
-                                  i < passwordScore
-                                    ? passwordScore <= 2
-                                      ? 'bg-red-400'
-                                      : passwordScore <= 3
+                                className={`h-2 rounded-xl transition-colors ${i < passwordScore
+                                  ? passwordScore <= 2
+                                    ? 'bg-red-400'
+                                    : passwordScore <= 3
                                       ? 'bg-yellow-400'
                                       : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                    : 'bg-gray-200'
-                                }`}
+                                        ? 'bg-green-500'
+                                        : 'bg-yellow-400'
+                                  : 'bg-gray-200'
+                                  }`}
                               ></div>
                             </div>
                           ))}
@@ -948,11 +973,8 @@ export function ViewUser(props: any) {
                       type="filled"
                       isLoading={loading}
                       color="secondary"
-                      // disabled={!isDetailValid}
-                      onClick={
-                        props.location.state.component !== 'chw'
-                          ? handleSubmit(onSave)
-                          : onSave
+                      disabled={!isAdminDetailValid}
+                      onClick={handleSubmitAdminDetails(onSave)
                       }
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
@@ -979,91 +1001,66 @@ export function ViewUser(props: any) {
               <button
                 onClick={() => {
                   setEditActive(!editActive);
-                  refetch();
+
                 }}
                 id="dropdownHoverButton"
                 className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
                 type="button"
               >
                 {' '}
-                {editActive ? 'Done' : 'Edit'}
+                {editActive ? 'Close' : 'Edit'}
               </button>
             </div>
           </div>
 
-          <div className="flex w-full flex-row justify-between pl-4">
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="outlined"
-                // isLoading={isLoading}
-                color="tertiary"
-                onClick={() => {
-                  dialog({
-                    // blocking: true,
-                    position: DialogPosition.Middle,
-                    render: (onSubmit: any, onCancel: any) => (
-                      <AlertModal
-                        title="Deactivate Administrator"
-                        message={`${userData?.userById?.firstName} will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
-                        onCancel={onCancel}
-                        onSubmit={() => {
-                          onSubmit();
-                          deleteUser({
-                            variables: {
-                              id: userId,
-                            },
-                          })
-                            .then((response: any) => {
-                              if (response.data.deleteUser) {
-                                setNotification({
-                                  title: 'Successfully Deactivated User!',
-                                  variant: NOTIFICATION.SUCCESS,
-                                });
-                              }
-                            })
-                            .catch((error) => {
-                              console.log(error);
-                            });
-                        }}
-                      />
-                    ),
-                  });
-                }}
-              >
-                <TrashIcon color="tertiary" className="mr-6 h-6 w-6">
-                  {' '}
-                </TrashIcon>
-                <Typography
-                  type="help"
+          <div className="flex w-full justify-between  pl-4">
+            <div className="flex w-10/12 flex-row  pl-4">
+              {
+                hasPermission(PermissionEnum.delete_user) && <Button
+                  className={'mt-3 w-4/12 rounded-md mr-2'}
+                  type="outlined"
+                  // isLoading={isLoading}
                   color="tertiary"
-                  text={'Deactivate User'}
-                ></Typography>
-              </Button>
-            }
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="filled"
-                // isLoading={isLoading}
-                color="secondary"
-                onClick={() => {}}
-              >
-                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                  {' '}
-                </PaperAirplaneIcon>
-                <Typography
-                  type="help"
-                  color="white"
-                  text={'Resend Invitation'}
-                ></Typography>
-              </Button>
-            }
+                  onClick={deactivateUser}
 
-            <p className="mt-3 text-sm text-gray-500">
-              User added to {data?.tenantContext.applicationName}:{' '}
-              {userData?.userById?.StartDate}
-            </p>
+                >
+                  <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
+                    {' '}
+                  </TrashIcon>
+                  <Typography
+                    type="help"
+                    color="tertiary"
+                    text={'Deactivate User'}
+                  ></Typography>
+                </Button>
+              }
+              {
+                <Button
+                  className={'mt-3 w-4/12 rounded-md'}
+                  type="filled"
+                  // isLoading={isLoading}
+                  color="secondary"
+                  onClick={sendInvite}
+                >
+                  <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
+                    {' '}
+                  </PaperAirplaneIcon>
+                  <Typography
+                    type="help"
+                    color="white"
+                    text={'Resend Invitation'}
+                  ></Typography>
+                </Button>
+              }
+            </div>
+
+            <div className='w-2/12'>
+              <p className="mt-3 text-sm text-gray-500 w-full">
+                User added to {data?.tenantContext.applicationName}:{' '}
+                {userData?.userById?.StartDate}
+              </p>
+            </div>
+
           </div>
         </div>
       </div>
