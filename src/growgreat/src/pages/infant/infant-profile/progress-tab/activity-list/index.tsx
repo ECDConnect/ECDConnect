@@ -1,4 +1,10 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useHistory, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -45,8 +51,8 @@ import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
 import { InfantProfileParams } from '../../infant-profile.types';
-import { differenceInDays, differenceInMonths } from 'date-fns';
-import { getAgeInYearsMonthsAndDays } from '@ecdlink/core';
+import { differenceInDays } from 'date-fns';
+import { getAgeInYearsMonthsAndDays, usePrevious } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
 import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
@@ -70,6 +76,9 @@ export const ActivityList: React.FC = () => {
   const [displayHelp, setDisplayHelp] = useState(false);
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
+  const previousSelectedOption = usePrevious(selectedOption) as
+    | string
+    | undefined;
 
   const { isOnline } = useOnlineStatus();
 
@@ -115,7 +124,6 @@ export const ActivityList: React.FC = () => {
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
   const { months: ageMonths, years: ageYears } =
     getAgeInYearsMonthsAndDays(dateOfBirth);
-  const fullAgeInMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
   const isChildAfter49Days = useMemo(() => ageDays >= 50, [ageDays]);
 
@@ -181,9 +189,12 @@ export const ActivityList: React.FC = () => {
     activitiesTypes.pillar2
   );
 
+  // INFO: 14 weeks -> 98 days
   const isDevelopmentalScreeningWeeks = useMemo(
-    () => isFirstVisit && ageMonths >= 14 && fullAgeInMonths < 21,
-    [ageMonths, fullAgeInMonths, isFirstVisit]
+    () =>
+      isFirstVisit &&
+      ((ageDays >= 98 && ageMonths < 5) || (ageMonths >= 6 && ageMonths < 21)),
+    [ageDays, ageMonths, isFirstVisit]
   );
 
   const isDangerSignsFollowUpForMom = getIsFollowUp(
@@ -414,7 +425,9 @@ export const ActivityList: React.FC = () => {
       return { uncompletedForms, completedForms, followUpForm, stepperCount };
     }, [completedVisits, visibleActivities]);
 
-  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isFollowUp =
+    completedForms.length >= visibleActivities.length &&
+    !completedVisits?.some((item) => item.includes('Follow'));
   const isAllCompleted =
     !!visit?.attended ||
     completedVisits?.some((item) => item?.includes('Follow'));
@@ -441,16 +454,24 @@ export const ActivityList: React.FC = () => {
     }
   }, [selectedOption]);
 
+  useEffect(() => {
+    if (
+      !previousSelectedOption?.includes('Follow') &&
+      selectedOption?.includes('Follow')
+    ) {
+      appDispatch(
+        referralThunkActions.getReferralsForInfant({
+          infantId: infantId,
+          visitId: visitId,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, infantId, previousSelectedOption, selectedOption, visitId]);
+
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
     appDispatch(
       visitThunkActions.getGrowthDataForInfant({ infantId })
-    ).unwrap();
-    appDispatch(
-      referralThunkActions.getReferralsForInfant({
-        infantId: infantId,
-        visitId: visitId,
-      })
     ).unwrap();
   }, [appDispatch, infantId, visitId]);
 

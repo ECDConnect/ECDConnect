@@ -11,7 +11,6 @@ import {
 } from '@/store/visit/visit.selectors';
 import {
   InfantDto,
-  VisitDto,
   captureAndDownloadComponent,
   getStringFromClassNameOrId,
   toCamelCase,
@@ -49,8 +48,7 @@ import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profil
 import { RootState } from '@/store/types';
 import {
   getInfantCurrentVisitSelector,
-  getInfantPreviousVisitSelector,
-  getInfantVisitByVisitIdSelector,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
@@ -120,11 +118,15 @@ export const FollowUp = ({
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, visitId)
   );
-  const previousVisit = useSelector(
-    (state: RootState) =>
-      currentVisit?.orderDate &&
-      getInfantPreviousVisitSelector(state, currentVisit?.orderDate)
-  ) as VisitDto | undefined;
+
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const followUpDate =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate;
 
   useEffect(() => {
     if (isPrint) {
@@ -141,12 +143,6 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  const visit = useSelector((state: RootState) =>
-    getInfantVisitByVisitIdSelector(state, visitId)
-  );
-  const previousPlannedVisit = useSelector((state: RootState) =>
-    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
-  );
   const previousVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
@@ -426,7 +422,7 @@ export const FollowUp = ({
               className="my-4"
               label={item.name}
               value={item.value || ''}
-              date={previousPlannedVisit?.orderDate || ''}
+              date={followUpDate || ''}
               message={item.comment || ''}
               color={item.color as CardProps['color']}
               measure={index === 0 ? 'kg' : 'cm'}

@@ -33,6 +33,7 @@ import { format } from 'date-fns';
 import {
   getMotherCurrentVisitSelector,
   getMotherById,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { CheckCircleIcon } from '@heroicons/react/solid';
@@ -84,6 +85,15 @@ export const ReferralsTab: React.FC = () => {
     getMotherCurrentVisitSelector(state, '')
   );
 
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
+
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
   const wasWalkthrough = usePrevious(isWalkthrough);
@@ -98,7 +108,14 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getReferralsForMother({
           motherId: motherId,
@@ -106,11 +123,24 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, motherId, currentVisit]);
+  }, [
+    appDispatch,
+    motherId,
+    currentVisit,
+    previousVisit,
+    isToGetPreviousVisitStatusData,
+  ]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getCompletedReferralsForMother({
           motherId: motherId,
@@ -118,7 +148,13 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, motherId, currentVisit]);
+  }, [
+    appDispatch,
+    motherId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // group data under sections
   const groupedData = useMemo(() => {
@@ -187,8 +223,6 @@ export const ReferralsTab: React.FC = () => {
     }
 
     if (isWalkthrough) return;
-
-    if (questions) return;
 
     return setAnswers(groupedData);
   }, [

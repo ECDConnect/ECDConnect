@@ -1,4 +1,10 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useHistory, useLocation, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -43,6 +49,7 @@ import {
   getMotherById,
   getMotherLastVisitSelector,
 } from '@/store/mother/mother.selectors';
+import { usePrevious } from '@ecdlink/core';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -87,6 +94,9 @@ export const MomActivityList: React.FC = () => {
   }, [appDispatch, infantId, motherId, visitId]);
 
   const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+  const previousSelectedOption = usePrevious(selectedOption) as
+    | string
+    | undefined;
 
   useLayoutEffect(() => {
     if (
@@ -257,20 +267,20 @@ export const MomActivityList: React.FC = () => {
       return { uncompletedForms, completedForms, followUpForm, stepperCount };
     }, [visibleActivities, completedVisits]);
 
-  const isFollowUp = completedVisits?.length === stepperCount - 1;
+  const isFollowUp =
+    completedForms.length >= visibleActivities.length &&
+    !completedVisits?.some((item) => item.includes('Follow'));
   const isAllCompleted =
     !!currentVisit?.attended || completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
-    if (isStartVisit) {
-      return setIsStartVisit(false);
-    }
     history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);
-  }, [history, isStartVisit, motherId]);
+  }, [history, motherId]);
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     setShowForm(false);
+    setIsStartVisit(true);
   };
 
   const onHelp = () => {
@@ -282,6 +292,20 @@ export const MomActivityList: React.FC = () => {
       setShowForm(true);
     }
   }, [selectedOption]);
+
+  useEffect(() => {
+    if (
+      !previousSelectedOption?.includes('Follow') &&
+      selectedOption?.includes('Follow')
+    ) {
+      appDispatch(
+        motherThunkActions.getReferralsForMother({
+          motherId: motherId,
+          visitId: visitId,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, motherId, previousSelectedOption, selectedOption, visitId]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
