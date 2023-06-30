@@ -9,6 +9,7 @@ using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using FileSignatures.Formats;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
@@ -282,6 +283,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit.Attended = false;
                     _visitManager.AddVisit(visit);
                 }
+                UpdateDueDates(motherId.ToString());
             }
         }
 
@@ -418,6 +420,39 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             return dateList;
+        }
+
+        public Boolean UpdateDueDates(string motherId)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            List<Visit> visitList = visitRepo.GetAll().Where(x => x.MotherId.ToString() == motherId).ToList();
+
+            foreach (var _visit in visitList)
+            {
+                if (_visit.VisitType.Name == Constants.GGSettings.visit1)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit2).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit2)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit3).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit3)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit4).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit4)
+                {
+                    _visit.DueDate = _visit.PlannedVisitDate;
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                }
+                visitRepo.Update(_visit);
+            }
+            return true;
         }
 
         public DisplaySet GetStatusInfo(Mother mother, Boolean withinWeek)
