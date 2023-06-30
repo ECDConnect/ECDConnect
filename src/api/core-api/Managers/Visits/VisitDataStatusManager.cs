@@ -12,6 +12,7 @@ using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
+using static iTextSharp.text.pdf.AcroFields;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
 {
@@ -402,10 +403,36 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
                 }
-                else if (vData.Question == Constants.GGSettings.q_hearing ||
-                            vData.Question == Constants.GGSettings.q_seeing ||
-                            vData.Question == Constants.GGSettings.q_brain ||
-                            vData.Question == Constants.GGSettings.q_moving) {
+                else if (vData.Question == Constants.GGSettings.q_hearing1 ||
+                        vData.Question == Constants.GGSettings.q_hearing2 ||
+                        vData.Question == Constants.GGSettings.q_hearing3 ||
+                        vData.Question == Constants.GGSettings.q_hearing4 ||
+                        vData.Question == Constants.GGSettings.q_hearing5 ||
+                        vData.Question == Constants.GGSettings.q_hearing6 ||
+                        vData.Question == Constants.GGSettings.q_hearing7 ||
+                        vData.Question == Constants.GGSettings.q_hearing8 ||
+                        vData.Question == Constants.GGSettings.q_hearing9 ||
+                        vData.Question == Constants.GGSettings.q_seeing1 ||
+                        vData.Question == Constants.GGSettings.q_seeing2 ||
+                        vData.Question == Constants.GGSettings.q_seeing3 ||
+                        vData.Question == Constants.GGSettings.q_seeing4 ||
+                        vData.Question == Constants.GGSettings.q_seeing5 ||
+                        vData.Question == Constants.GGSettings.q_seeing6 ||
+                        vData.Question == Constants.GGSettings.q_seeing7 ||
+                        vData.Question == Constants.GGSettings.q_brain1 ||
+                        vData.Question == Constants.GGSettings.q_brain2 ||
+                        vData.Question == Constants.GGSettings.q_brain3 ||
+                        vData.Question == Constants.GGSettings.q_brain4 ||
+                        vData.Question == Constants.GGSettings.q_brain5 ||
+                        vData.Question == Constants.GGSettings.q_brain6 ||
+                        vData.Question == Constants.GGSettings.q_brain7 ||
+                        vData.Question == Constants.GGSettings.q_moving1 ||
+                        vData.Question == Constants.GGSettings.q_moving2 ||
+                        vData.Question == Constants.GGSettings.q_moving3 ||
+                        vData.Question == Constants.GGSettings.q_moving4 ||
+                        vData.Question == Constants.GGSettings.q_moving5 ||
+                        vData.Question == Constants.GGSettings.q_moving6 ||
+                        vData.Question == Constants.GGSettings.q_moving7) {
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         developmentScreening.Add(vData);
                     }
@@ -1117,20 +1144,63 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
             var names = "";
             var comment = "";
+            string _hearing = "<li>Hearing</li>";
+            string _seeing = "<li>Seeing</li>";
+            string _brain = "<li>Brain</li>";
+            string _moving = "<li>Moving</li>";
 
             foreach (var item in developmentScreening)
             {
-                if (item.Question == Constants.GGSettings.q_hearing) {
-                    names = names + "<li>Hearing</li>";
+                if (item.Question == Constants.GGSettings.q_hearing1 ||
+                    item.Question == Constants.GGSettings.q_hearing2 ||
+                    item.Question == Constants.GGSettings.q_hearing3 ||
+                    item.Question == Constants.GGSettings.q_hearing4 ||
+                    item.Question == Constants.GGSettings.q_hearing5 ||
+                    item.Question == Constants.GGSettings.q_hearing6 ||
+                    item.Question == Constants.GGSettings.q_hearing7 ||
+                    item.Question == Constants.GGSettings.q_hearing8 ||
+                    item.Question == Constants.GGSettings.q_hearing9)
+                {
+                    if (names.IndexOf(_hearing) == -1)
+                    {
+                        names += _hearing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_seeing) {
-                    names = names + "<li>Seeing</li>";
+                if (item.Question == Constants.GGSettings.q_seeing1 ||
+                    item.Question == Constants.GGSettings.q_seeing2 ||
+                    item.Question == Constants.GGSettings.q_seeing3 ||
+                    item.Question == Constants.GGSettings.q_seeing4 ||
+                    item.Question == Constants.GGSettings.q_seeing5 ||
+                    item.Question == Constants.GGSettings.q_seeing6 ||
+                    item.Question == Constants.GGSettings.q_seeing7) {
+                    if (names.IndexOf(_seeing) == -1)
+                    {
+                        names += _seeing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_brain) {
-                    names = names + "<li>Brain</li>";
+                if (item.Question == Constants.GGSettings.q_brain1 ||
+                    item.Question == Constants.GGSettings.q_brain2 ||
+                    item.Question == Constants.GGSettings.q_brain3 ||
+                    item.Question == Constants.GGSettings.q_brain4 ||
+                    item.Question == Constants.GGSettings.q_brain5 ||
+                    item.Question == Constants.GGSettings.q_brain6 ||
+                    item.Question == Constants.GGSettings.q_brain7) {
+                    if (names.IndexOf(_brain) == -1)
+                    {
+                        names += _brain;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_moving) {
-                    names = names + "<li>Moving</li>";
+                if (item.Question == Constants.GGSettings.q_moving1 ||
+                    item.Question == Constants.GGSettings.q_moving2 ||
+                    item.Question == Constants.GGSettings.q_moving3 ||
+                    item.Question == Constants.GGSettings.q_moving4 ||
+                    item.Question == Constants.GGSettings.q_moving5 ||
+                    item.Question == Constants.GGSettings.q_moving6 ||
+                    item.Question == Constants.GGSettings.q_moving7) {
+                    if (names.IndexOf(_moving) == -1)
+                    {
+                        names += _moving;
+                    }
                 }
             }
 
