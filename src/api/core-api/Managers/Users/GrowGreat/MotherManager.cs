@@ -434,23 +434,26 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 {
                     _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit2).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
                 }
                 else if (_visit.VisitType.Name == Constants.GGSettings.visit2)
                 {
                     _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit3).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
                 }
                 else if (_visit.VisitType.Name == Constants.GGSettings.visit3)
                 {
                     _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit4).Select(y => y.PlannedVisitDate).FirstOrDefault();
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
                 }
                 else if (_visit.VisitType.Name == Constants.GGSettings.visit4)
                 {
                     _visit.DueDate = _visit.PlannedVisitDate;
                     _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
                 }
-                visitRepo.Update(_visit);
             }
             return true;
         }
