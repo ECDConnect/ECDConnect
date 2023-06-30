@@ -69,5 +69,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
 
             return true;
         }
+
+        public Boolean UpdateMotherAdditionalDueDates(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+             [Service] InfantManager infantManager
+          )
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            var visitTypeID = "7ec10a6e-917b-11ed-a1eb-0242ac1200022";
+
+            List<Visit> visits = visitRepo.GetAll().Where(x => x.MotherId != null && x.VisitTypeId.ToString() == visitTypeID && x.DueDate == null && x.LinkedVisitId != null).OrderBy(x => x.MotherId).ToList();
+
+            foreach (var item in visits)
+            {
+                var linkedVisit = visitRepo.GetAll().Where(x => x.Id == item.LinkedVisitId).FirstOrDefault();
+                if (linkedVisit != null)
+                {
+                    item.PlannedVisitDate = linkedVisit.PlannedVisitDate;
+                    item.DueDate = linkedVisit.DueDate;
+                    visitRepo.Update(item);
+                }
+            }
+
+            return true;
+        }
     }
 }
