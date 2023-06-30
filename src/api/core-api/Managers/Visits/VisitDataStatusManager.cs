@@ -1215,7 +1215,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
                 if (nextVisitDate == default(DateTime))
                 {
-                    nextVisitDate = DateTime.Now;
+                    nextVisitDate = DateTime.Now.Date;
+                }
+                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                if (nextVisitDueDate == default(DateTime))
+                {
+                    nextVisitDueDate = DateTime.Now.Date;
                 }
 
                 VisitModel newVisit = new VisitModel();
@@ -1227,6 +1232,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
                 newVisit.PlannedVisitDate = nextVisitDate;
+                newVisit.DueDate = nextVisitDueDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
 
