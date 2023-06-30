@@ -486,8 +486,6 @@ export const WeightAndLengthResultStep = ({
         return result;
       })[0];
 
-      console.log({ formattedResult });
-
       return formattedResult;
     },
     []
@@ -603,7 +601,7 @@ export const WeightAndLengthResultStep = ({
     if (ageYears < 2) {
       const weightChartData = getChartData(ageMonths, weightPerMonth);
       const lengthChartData = getChartData(ageMonths, lengthPerMonth);
-      console.log({ weightPerMonth, lengthPerMonth });
+
       setWeightResult(
         fillInMissingNumbers(
           getWeightOrLengthResult(
@@ -669,7 +667,6 @@ export const WeightAndLengthResultStep = ({
     groupedGrowthData?.weight,
     infant?.user?.dateOfBirth,
   ]);
-  console.log({ lengthOrHeightResult, weightResult });
 
   useEffect(() => {
     setGrowthMonitoring?.({
