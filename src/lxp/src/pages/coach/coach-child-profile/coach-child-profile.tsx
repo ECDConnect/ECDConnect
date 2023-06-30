@@ -38,10 +38,6 @@ import { childrenActions, childrenSelectors } from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
 import {
-  getAge,
-  getChildAttendancePercentageAtPlaygroup,
-} from '@utils/child/child-profile-utils';
-import {
   getColor,
   getShape,
 } from '@utils/classroom/attendance/track-attendance-utils';
@@ -56,7 +52,6 @@ import { contentReportSelectors } from '@store/content/report';
 import { analyticsActions } from '@store/analytics';
 import ROUTES from '@routes/routes';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { CoachChildProgressReportAlert } from './components/coach-progress-report-alert/coach-progress-report-alert';
 
 export const CoachChildProfile: React.FC = () => {
   const currentDate = new Date();
@@ -86,12 +81,9 @@ export const CoachChildProfile: React.FC = () => {
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
 
-  const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
   const childUser = useSelector(
     childrenSelectors.getChildUserById(child?.userId)
   );
-  const attendanceData = useSelector(attendanceSelectors.getAttendance);
-  const authUser = useSelector(authSelectors.getAuthUser);
   const childDocuments = useSelector(
     documentSelectors.getDocumentsByUserId(child?.userId)
   );
@@ -114,15 +106,6 @@ export const CoachChildProfile: React.FC = () => {
 
   const allCompletedReports = useSelector(
     contentReportSelectors.getChildLatestCompletedReports(child?.id)
-  );
-
-  const caregiverHasBeenContacted = useSelector(
-    caregiverSelectors.findCaregiverContactHistoryLog(
-      child?.caregiverId,
-      child?.id,
-      CaregiverContactReason.WeeklyAttendance,
-      getWeek(currentDate)
-    )
   );
 
   const [editProfilePictureVisible, setEditProfilePictureVisible] =
@@ -229,41 +212,6 @@ export const CoachChildProfile: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    const childBirthDate = childUser?.dateOfBirth
-      ? new Date(childUser?.dateOfBirth)
-      : currentDate;
-
-    const ageOfChild = getAge(childBirthDate);
-    setChildAge(ageOfChild);
-
-    new AttendanceService(authUser?.auth_token ?? '')
-      .getChildAttendanceRecords(
-        child?.userId ?? '',
-        playGroup?.id ?? '',
-        startOfISOWeekYear(new Date()),
-        currentDate
-      )
-      .then((data) => {
-        setAttendanceReport(data);
-      });
-
-    const applicableNotifications: ListItemProps[] = [];
-
-    const attendanceNotification = getAttendanceNotification(
-      child?.userId || '',
-      attendanceData || [],
-      playGroup?.id || ''
-    );
-
-    if (attendanceNotification) {
-      applicableNotifications.push(attendanceNotification);
-    }
-
-    setNotifications([...applicableNotifications]);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [attendanceData, child, playGroup]);
-
-  useEffect(() => {
     if (!attendanceReport) return;
     setAttendancePercentage(attendanceReport.attendancePercentage);
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -288,48 +236,6 @@ export const CoachChildProfile: React.FC = () => {
     setProfileOptions([...profileOptions]);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [attendancePercentage]);
-
-  const getAttendanceNotification = (
-    childUserId: string,
-    attendance: AttendanceDto[],
-    classroomGroupCacheId: string
-  ): ListItemProps | undefined => {
-    const childAttendancePercentage = getChildAttendancePercentageAtPlaygroup(
-      childUserId,
-      attendance,
-      classroomGroupCacheId,
-      classProgrammes
-    );
-
-    const baseNotificationListItem: ListItemProps = {
-      key: 'message-caregiver',
-      showIcon: true,
-      showSubTitleShape: true,
-      showChevronIcon: false,
-      backgroundColor: 'uiBg',
-      withPaddingX: true,
-      withPaddingY: true,
-      title: `${childAttendancePercentage.percentage}% attendance rate`,
-      subTitleColor: 'errorMain',
-      subTitleShape: 'square',
-      iconName: 'HandIcon',
-      iconColor: 'white',
-      iconBackgroundColor: 'errorMain',
-    };
-
-    // Check when the child was register and determine wether attendance should have been recorded
-
-    if (childAttendancePercentage.percentage < 50 && !caregiverHasBeenContacted)
-      return {
-        ...baseNotificationListItem,
-        subTitle: `Attended ${childAttendancePercentage?.daysAttended}/${childAttendancePercentage?.daysExpected} days last week`,
-        //onButtonClick: () =>
-        //contactAttendanceCaregiver(
-        //  childAttendancePercentage.daysAttended,
-        //  childAttendancePercentage.daysExpected
-        //),
-      };
-  };
 
   const viewChildProgressObservationReports = () => {
     history.push(ROUTES.COMPLETED_CHILD_PROGRESS_OBSERVATION_REPORTS, {
@@ -474,9 +380,9 @@ export const CoachChildProfile: React.FC = () => {
             className="m-4"
             title={`${
               childUser?.firstName || 'This child'
-            } does not have a playgroup`}
+            } does not have a class`}
             list={[
-              `Add ${childUser?.firstName || 'this child'} to a playgroup now`,
+              `Add ${childUser?.firstName || 'this child'} to a class now`,
             ]}
             type="error"
             button={
@@ -534,7 +440,6 @@ export const CoachChildProfile: React.FC = () => {
                 key={`child-profile-notification-${notification.key}`}
               />
             ))}
-            <CoachChildProgressReportAlert child={child} />
           </div>
         )}
         <div className={styles.profileOptionsWrapper}>

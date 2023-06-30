@@ -19,9 +19,15 @@ import {
   GetAllTeamLead,
   GetAllClinic,
   GetAllProvince,
-  practitionerExcelTemplateGenerator,
+  HealthCareWorkerTemplate,
 } from '@ecdlink/graphql';
-import { DialogPosition, DropDownOption, Dropdown } from '@ecdlink/ui';
+import {
+  Button,
+  DialogPosition,
+  DropDownOption,
+  Dropdown,
+  Typography,
+} from '@ecdlink/ui';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -34,13 +40,14 @@ import {
   CogIcon,
   DownloadIcon,
   PlusIcon,
+  SaveIcon,
   SearchIcon,
   UploadIcon,
 } from '@heroicons/react/solid';
 import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadAllChildrenTemplate from '../practitioners/components/upload-import-template-children/upload-import-template-children';
-import UploadPractitionerTemplate from '../practitioners/components/upload-template/upload-template';
+import UploadPractitionerTemplate from './components/upload-template/upload-template';
 import { Menu, Transition } from '@headlessui/react';
+import { useHistory } from 'react-router';
 
 export default function HealthCareWorkers() {
   const { hasPermission } = useUser();
@@ -48,6 +55,7 @@ export default function HealthCareWorkers() {
   const dialog = useDialog();
   const [tableData, setTableData] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
+  const history = useHistory();
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
@@ -57,37 +65,38 @@ export default function HealthCareWorkers() {
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('')
+  const [clinicFilter, setClinicFilter] = useState('');
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
-  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(GetAllHealthCareWorker, {
-    variables: {
-      provinceSearch: "",
-      clinicSearch: "",
-      textSearch: "Surname",
-      pagingInput: {
-         "pageNumber": 1,
-         "pageSize": 3
-      }
-    },
-    fetchPolicy: 'network-only',
-  });
+  const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
+    GetAllHealthCareWorker,
+    {
+      variables: {
+        provinceSearch: '',
+        clinicSearch: '',
+        search: '',
+        pagingInput: {
+          pageNumber: 1,
+          pageSize: 20,
+        },
+      },
+      fetchPolicy: 'network-only',
+    }
+  );
 
   useEffect(() => {
     getAllHealthCareWorkers({
       variables: {
-        textSearch: searchValue,
+        search: searchValue,
         provinceSearch: provinceFilter,
         clinicSearch: clinicFilter,
         pagingInput: {
-          "pageNumber": 1,
-          "pageSize": 3
-       }
-
-      }
+          pageNumber: 1,
+          pageSize: 20,
+        },
+      },
     });
-
-  }, [provinceFilter, searchValue, clinicFilter])
+  }, [provinceFilter, searchValue, clinicFilter]);
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -100,53 +109,21 @@ export default function HealthCareWorkers() {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [getPractitionerExcelTemplateGenerator, { data: templateData }] =
-    useLazyQuery(practitionerExcelTemplateGenerator, {
+  const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
+    HealthCareWorkerTemplate,
+    {
       fetchPolicy: 'cache-and-network',
-    });
-
-  const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
-
-  useEffect(() => {
-    if (
-      templateData &&
-      templateData.practitionerExcelTemplateGenerator &&
-      !templateDownloaded
-    ) {
-      const b64Data =
-        templateData.practitionerExcelTemplateGenerator.base64File;
-      const contentType =
-        templateData.practitionerExcelTemplateGenerator.fileType;
-      const fileName = templateData.practitionerExcelTemplateGenerator.fileName;
-      const extension =
-        templateData.practitionerExcelTemplateGenerator.extension;
-      const blob = b64toBlob(b64Data, contentType);
-
-      const link = document.createElement('a');
-
-      if (link.download !== undefined) {
-        const url = URL.createObjectURL(blob);
-        link.setAttribute('href', url);
-        link.setAttribute('download', `${fileName}${extension}`);
-        link.style.visibility = 'hidden';
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-      }
-
-      setTemplateDownloaded(true);
     }
-  }, [templateData, templateDownloaded]);
-
+  );
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const teamLeads = teamLeadData?.GetAllTeamLead.map((x: TeamLeadDto) => {
+  const teamLeads = teamLeadData?.allTeamLeads.map((x: TeamLeadDto) => {
     return {
-      value: x.user.firstName + ' ' + x.user.surname,
-      label: x.user.firstName + ' ' + x.user.surname,
+      value: x.user.fullName,
+      label: x.user.fullName,
     };
   });
 
@@ -176,41 +153,29 @@ export default function HealthCareWorkers() {
     };
   };
 
-  const handleFilterChange = (filter: string) => {
-    // Update the variables with new values
-    const updatedVariables = {
-      where: {
-        clinic: {
-          siteAddress: {
-            province: { description: { eq: filter } }
-          }
-        }
-      }
-    };
-
-    // Call the refetch function with updated variables
-    // refetch(updatedVariables);
-  };
-
   useEffect(() => {
     if (!data?.users) return;
-    handleFilterChange(provinceFilter ?? clinicFilter ?? teamLeadFilter)
 
     let userStatus = statusFilter === 'active' ? true : false;
     let allUsers: HealthCareWorkerDto[] = [...data.users];
     setTableData(
       allUsers
-        .filter((v) => v?.isActive === (statusFilter === '' ? true : userStatus))
+        .filter(
+          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
+        )
         .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
-        .filter((v) => (v?.teamLead.user.firstName + '' + v?.teamLead.user.surname) === teamLeadFilter)
+        .filter(
+          (v) =>
+            v?.teamLead.user.firstName + '' + v?.teamLead.user.surname ===
+            teamLeadFilter
+        )
         .map(mapUserTableItem)
     );
   }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
 
-
   useEffect(() => {
-    if (data && data.GetAllHealthCareWorker) {
-      const copyItems = data.GetAllHealthCareWorker.map(
+    if (data && data.allHealthCareWorkers) {
+      const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
       setTableData(copyItems);
@@ -262,11 +227,6 @@ export default function HealthCareWorkers() {
     });
   };
 
-  const downloadContentTypeTemplate = async () => {
-    setTemplateDownloaded(false);
-    await getPractitionerExcelTemplateGenerator();
-  };
-
   const UploadContent = () => {
     panel({
       noPadding: true,
@@ -310,49 +270,13 @@ export default function HealthCareWorkers() {
     setTeamLeadFilter('');
   };
 
-  const UploadContentImportChildren = () => {
-    panel({
-      noPadding: true,
-      title: `Import Children`,
-      render: (onSubmit: any) => (
-        <UploadAllChildrenTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  const UploadContentImport = () => {
-    panel({
-      noPadding: true,
-      title: `Import Users`,
-      render: (onSubmit: any) => (
-        <UploadAllImportTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
   if (tableData) {
     return (
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <div className="text-body w-full sm:flex  ">
-              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
+              <div className="text-body w-full flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -368,8 +292,8 @@ export default function HealthCareWorkers() {
               </div>
             </div>
 
-            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4 ">
-              <div className="mx-4 ">
+            <div className="mt-0  flex w-10/12 flex-row sm:mt-0  sm:ml-4">
+              <div className="pr-2 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
@@ -397,77 +321,32 @@ export default function HealthCareWorkers() {
                 </span>
               </div>
 
-              {hasPermission(PermissionEnum.create_user) && (
-                <div className="flex flex-col  ">
-                  <div className="">
-                    <Menu as="div" className=" inline-block text-right w-6/12">
-                      {({ open }) => (
-                        <>
-                          <div>
-                            <Menu.Button
-                              type="button"
-                              className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
-                            >
-                              <PlusIcon className="mr-4 h-4 w-4"> </PlusIcon>
-
-                              <span className="">Add CHWs</span>
-                            </Menu.Button>
-                          </div>
-
-                          <Transition
-                            show={open}
-                            as={Fragment}
-                            enter="transition ease-out duration-100"
-                            enterFrom="transform opacity-0 scale-95"
-                            enterTo="transform opacity-100 scale-100"
-                            leave="transition ease-in duration-75"
-                            leaveFrom="transform opacity-100 scale-100"
-                            leaveTo="transform opacity-0 scale-95"
-                          >
-                            <Menu.Items
-                              static
-                              className="focus:outline-none absolute right-0 z-50 mt-2 w-56 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                            >
-                              <div className="py-1">
-                                <Menu.Item>
-                                  <div
-                                    onClick={() =>
-                                      downloadContentTypeTemplate()
-                                    }
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <DownloadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Download template
-                                  </div>
-                                </Menu.Item>
-                                <Menu.Item>
-                                  <div
-                                    onClick={() => UploadContent()}
-                                    className="flex cursor-pointer px-4 py-2 text-sm text-gray-700"
-                                  >
-                                    <UploadIcon
-                                      className="mr-3 h-5 w-5 text-gray-400"
-                                      aria-hidden="true"
-                                    />
-                                    Upload Practitioners
-                                  </div>
-                                </Menu.Item>
-
-
-                              </div>
-                            </Menu.Items>
-                          </Transition>
-                        </>
-                      )}
-                    </Menu>
-                  </div>
-                </div>
-              )}
+              <div className="ml-4 w-6/12"></div>
+              <div className="flex w-11/12 flex-row ">
+                {hasPermission(PermissionEnum.create_user) && (
+                  <button
+                    onClick={displayPanel}
+                    type="button"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                  >
+                    <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
+                    Add CHW
+                  </button>
+                )}
+                {hasPermission(PermissionEnum.create_user) && (
+                  <button
+                    onClick={() => {
+                      history.push('/upload-users');
+                    }}
+                    type="button"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                  >
+                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    Bulk Upload
+                  </button>
+                )}
+              </div>
             </div>
-         
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">
@@ -481,7 +360,7 @@ export default function HealthCareWorkers() {
                   list={provinces}
                   onChange={(item) => {
                     setProvinceFilter(item);
-                    refetch()
+                    refetch();
                   }}
                 />
               </div>

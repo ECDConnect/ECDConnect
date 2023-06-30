@@ -1,26 +1,26 @@
 import { useMutation } from '@apollo/client';
-import { importAllChildren } from '@ecdlink/graphql';
+import { UploadHealthCareWorkers, practitionerImport } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../../components/form-file-input/form-file-input';
 
-export interface UploadAllChildrenTemplateProps {
+export interface UploadPractitionerTemplateProps {
   closeDialog: (value: boolean) => void;
 }
 
-const acceptedFormats = ['xls'];
+const acceptedFormats = ['xlsx'];
 
-export default function UploadAllChildrenTemplate({
+export default function UploadPractitionerTemplate({
   closeDialog,
-}: UploadAllChildrenTemplateProps) {
+}: UploadPractitionerTemplateProps) {
   const { setValue, handleSubmit } = useForm();
 
-  const [allChildrenImport] = useMutation(importAllChildren);
+  const [importPractitioners] = useMutation(UploadHealthCareWorkers);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      await allChildrenImport({
+      await importPractitioners({
         variables: {
           file: model.templateFile?.file,
         },
@@ -42,13 +42,13 @@ export default function UploadAllChildrenTemplate({
             <button
               onClick={() => closeDialog(false)}
               type="button"
-              className="bg-uiMid hover:bg-primary focus:outline-none mr-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="bg-uiMid hover:bg-secondary focus:outline-none mr-2 inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
             >
               Cancel
             </button>
             <button
               type="submit"
-              className="bg-primary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+              className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
             >
               Upload
             </button>

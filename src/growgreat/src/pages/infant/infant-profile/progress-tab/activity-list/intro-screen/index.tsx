@@ -10,8 +10,10 @@ import {
 } from '../forms/components/follow-up';
 import { getAge } from '../forms/care-for-baby-steps/care-for-baby';
 import { useSelector } from 'react-redux';
-import { getInfantCurrentVisitSelector } from '@/store/infant/infant.selectors';
-import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
+import {
+  getInfantCurrentVisitSelector,
+  getInfantNearestPreviousVisitByOrderDate,
+} from '@/store/infant/infant.selectors';
 import { useLocation } from 'react-router';
 import { RootState } from '@/store/types';
 
@@ -41,16 +43,15 @@ export const IntroScreen = ({
     getInfantCurrentVisitSelector(state, visitId)
   );
 
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  //const currentVisit = useSelector(getInfantCurrentVisitSelector);
-  // const previousPlannedVisit = useSelector((state: RootState) =>
-  //   getInfantPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
-  // );
-
-  // this provides the status of previous visit
-  const previousVisitStatus = useSelector(
-    getPreviousVisitInformationForInfantSelector
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
+
+  const date =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate;
+  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
 
   return (
     <>
@@ -60,17 +61,12 @@ export const IntroScreen = ({
         title={headerText ?? `Summary of your last visit with ${name}`}
         subTitle={getAge(infant?.user?.dateOfBirth as string)}
         description={`Your last home visit: ${
-          !!previousVisitStatus &&
-          previousVisitStatus?.scoreComment !== 'No data available for visit' &&
-          currentVisit
-            ? new Date(String(currentVisit?.orderDate)).toLocaleDateString(
-                'en-ZA',
-                {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric',
-                }
-              )
+          !!date
+            ? new Date(String(date)).toLocaleDateString('en-ZA', {
+                year: 'numeric',
+                month: 'long',
+                day: 'numeric',
+              })
             : 'None'
         }`}
       />

@@ -1,12 +1,13 @@
 import {
   Fragment,
   useCallback,
+  useEffect,
   useLayoutEffect,
   useMemo,
   useState,
 } from 'react';
 import { Alert, CheckboxChange, CheckboxGroup, Typography } from '@ecdlink/ui';
-import { toCamelCase } from '@ecdlink/core';
+import { toCamelCase, usePrevious } from '@ecdlink/core';
 import { Header } from '@/pages/infant/infant-profile/components';
 import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 
@@ -51,6 +52,10 @@ export const ReferralsStep = ({
 
     return groupedData;
   }, [referrals]) as GroupedData;
+
+  const previousGroupedData = usePrevious(groupedData) as
+    | GroupedData
+    | undefined;
 
   const sections =
     groupedData &&
@@ -108,6 +113,12 @@ export const ReferralsStep = ({
     },
     [onOptionSelected, questions]
   );
+
+  useEffect(() => {
+    if (previousGroupedData === undefined && groupedData !== undefined) {
+      return setAnswers(groupedData);
+    }
+  }, [groupedData, previousGroupedData]);
 
   useLayoutEffect(() => {
     setEnableButton?.(true);

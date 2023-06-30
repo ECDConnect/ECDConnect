@@ -36,6 +36,7 @@ import { ChildAttendanceReportState } from './child-attendance-report.types';
 import { classroomsSelectors } from '@/store/classroom';
 import ROUTES from '@/routes/routes';
 import OnlineOnlyModal from '../../../modals/offline-sync/online-only-modal';
+import { userSelectors } from '@store/user';
 
 export const ChildAttendanceReportPage: React.FC = () => {
   const history = useHistory();
@@ -81,6 +82,8 @@ export const ChildAttendanceReportPage: React.FC = () => {
     useState<ChildGroupingAttendanceReportModel>();
 
   const authUser = useSelector(authSelectors.getAuthUser);
+  const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
 
   const getAttendanceText = (score: number): string => {
     if (score >= goodScoreThreshold) {
@@ -137,11 +140,15 @@ export const ChildAttendanceReportPage: React.FC = () => {
     <BannerWrapper
       className="h-full overflow-y-auto"
       onBack={() => {
-        childId
-          ? history.push(ROUTES.CHILD_PROFILE, { childId })
-          : childUserId
-          ? history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 })
-          : history.goBack();
+        if (isCoach) {
+          history.goBack();
+        } else {
+          childId
+            ? history.push(ROUTES.CHILD_PROFILE, { childId })
+            : childUserId
+            ? history.push(ROUTES.CLASSROOM, { activeTabIndex: 0 })
+            : history.goBack();
+        }
       }}
       size={'small'}
       title={`${childUser?.firstName}'s attendance`}

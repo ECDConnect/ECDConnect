@@ -24,6 +24,12 @@ export const alertColor = (type: string, style: AlertVariant) => {
           ? 'border-successDark bg-successBg'
           : 'border-successMain bg-successMain'
       }`;
+    case 'successLight':
+      return `text-successDark ${
+        style === 'flat'
+          ? 'border-successDark bg-successBg'
+          : 'border-successMain bg-successMain'
+      }`;
     case 'warning':
       return `text-alertDark ${
         style !== 'flat' && 'border-alertDark'
@@ -42,6 +48,8 @@ export const alertTextColor = (type: string, variant?: AlertVariant) => {
     case 'info':
       return 'infoDark';
     case 'success':
+      return variant === 'outlined' ? 'white' : 'successDark';
+    case 'successLight':
       return variant === 'outlined' ? 'white' : 'successDark';
     case 'warning':
       return 'alertDark';
@@ -62,6 +70,8 @@ const getIcon = (
 
 export const alertIconColor = (type: string, variant?: AlertVariant) => {
   switch (type) {
+    case 'successLight':
+      return variant === 'outlined' ? 'text-white' : `text-successMain `;
     case 'info':
       return ` text-infoMain`;
     case 'success':
@@ -71,7 +81,7 @@ export const alertIconColor = (type: string, variant?: AlertVariant) => {
     case 'error':
       return `text-errorMain `;
     default:
-      return `text-infoMain `;
+      return ``;
   }
 };
 
@@ -84,6 +94,8 @@ export const alertIcon = (
       return getIcon('InformationCircleIcon', 'info');
     case 'success':
       return getIcon('CheckCircleIcon', 'success', variant);
+    case 'successLight':
+      return getIcon('CheckCircleIcon', 'successMain', variant);
     case 'warning':
       return getIcon('ExclamationIcon', 'warning');
     case 'error':

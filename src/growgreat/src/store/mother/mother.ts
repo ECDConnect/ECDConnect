@@ -18,7 +18,7 @@ import {
   getCompletedReferralsForMother,
   updateMother,
 } from './mother.actions';
-import { MotherState } from './mother.types';
+import { MotherState, UpdateMotherDeliveryDateProps } from './mother.types';
 
 const initialState: MotherState = {};
 
@@ -38,6 +38,20 @@ const motherSlice = createSlice({
         for (let i = 0; i < state.mothers.length; i++) {
           if (state.mothers[i].id === action.payload.id)
             state.mothers[i] = action.payload;
+        }
+      }
+    },
+    updateMotherDeliveryDate: (
+      state,
+      action: PayloadAction<UpdateMotherDeliveryDateProps>
+    ) => {
+      if (state.mothers) {
+        for (let i = 0; i < state.mothers.length; i++) {
+          if (state.mothers[i].id === action.payload.id)
+            state.mothers[i] = {
+              ...state.mothers[i],
+              expectedDateOfDelivery: action.payload.expectedDateOfDelivery,
+            };
         }
       }
     },

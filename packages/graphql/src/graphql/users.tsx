@@ -1,8 +1,8 @@
 import { gql } from '@apollo/client';
 
 export const UserList = gql`
-  query ($pagingInput: PagedQueryInput) {
-    users(pagingInput: $pagingInput) {
+  query ($pagingInput: PagedQueryInput, $search: String) {
+    users(pagingInput: $pagingInput, search: $search) {
       id
       isActive
       userName
@@ -21,7 +21,9 @@ export const UserList = gql`
       roles {
         id
         name
+        __typename
       }
+      __typename
     }
   }
 `;
@@ -137,24 +139,23 @@ export const GetUserByToken = gql`
   }
 `;
 export const GetHealthCareWorkerHighlights = gql`
-query($userId: String) {
-  healthCareWorkerHighlights(userId: $userId) {
-     totalThisWeekFamilyVisits
-     totalThisWeekGrowthMonitored
-     totalThisWeekNewClients
-     totalLastWeekFamilyVisits
-     totalLastWeekGrowthMonitored
-     totalLastWeekNewClients
+  query ($userId: String) {
+    healthCareWorkerHighlights(userId: $userId) {
+      totalThisWeekFamilyVisits
+      totalThisWeekGrowthMonitored
+      totalThisWeekNewClients
+      totalLastWeekFamilyVisits
+      totalLastWeekGrowthMonitored
+      totalLastWeekNewClients
+    }
   }
-}
 `;
 export const healthCareWorkerVisitStatus = gql`
-query($userId: String) {
-  healthCareWorkerVisitStatus(userId: $userId) {
-    motherOverDueVisits
-    motherDueVisits
-    childDueVisits
-  } 
-}
+  query ($userId: String) {
+    healthCareWorkerVisitStatus(userId: $userId) {
+      motherOverDueVisits
+      motherDueVisits
+      childDueVisits
+    }
+  }
 `;
-

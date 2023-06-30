@@ -63,6 +63,15 @@ const UserDetailsForm: React.FC<UserDetailsFormProps> = ({
               placeholder="e.g name@email.com"
             />
           </div>
+          <div className="my-4 sm:col-span-3">
+            <FormField
+              label={'Id number / passport *'}
+              nameProp={'idNumber'}
+              register={register}
+              error={errors.idNumber?.message}
+              placeholder="e.g 6201014800088"
+            />
+          </div>
         </div>
       </div>
     </form>

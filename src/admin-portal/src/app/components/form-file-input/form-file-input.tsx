@@ -1,9 +1,13 @@
 import { getBase64TypeFromBaseString, getCompressedImage } from '@ecdlink/core';
-import { UploadIcon } from '@heroicons/react/solid';
+import {
+  DesktopComputerIcon,
+  PhotographIcon,
+  UploadIcon,
+} from '@heroicons/react/solid';
 import { useLayoutEffect, useState } from 'react';
 import { UseFormSetValue } from 'react-hook-form';
 import { classNames } from '../../pages/users/components/users';
-import { LoadingSpinner } from '@ecdlink/ui';
+import { Alert, LoadingSpinner } from '@ecdlink/ui';
 import { videoExtensions } from '../../utils/constants';
 
 export interface FileModel {
@@ -31,7 +35,7 @@ const fileContainerStyle = 'border-successMain';
 const errorContainerStyle = 'border-errorMain';
 
 const iconBaseStyle = 'mx-auto h-12 w-12';
-const iconStyle = 'text-gray-400';
+const iconStyle = 'text-tertiary';
 const fileIconStyle = 'text-successMain';
 const errorIconStyle = 'text-errorMain';
 
@@ -263,19 +267,32 @@ const FormFileInput: React.FC<FormFileInputProps> = ({
                 backgroundColor="uiMid"
               />
             ) : (
-              <UploadIcon
-                className={classNames(
-                  getIconStyle(),
-                  iconBaseStyle,
-                  file ? 'absolute' : ''
-                )}
-              />
+              <div>
+                <PhotographIcon
+                  className={classNames(getIconStyle(), iconBaseStyle, '')}
+                />
+                <div className="bg-secondary hover:bg-uiMid focus:outline-none my-4 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2">
+                  <DesktopComputerIcon className="mr-4 h-5 w-5">
+                    {' '}
+                  </DesktopComputerIcon>
+                  Browse my computer
+                </div>
+                <p className="text-md py-2 text-gray-700">or drag file here</p>
+              </div>
             )}
             {/* <span className={labelStyle}>{getLabel()}</span> */}
           </div>
         )}
       </label>
       {fileName && <p className="pb-4">{fileName}</p>}
+
+      {contentUrl && !fileName && (
+        <Alert
+          className="mt-5 mb-3"
+          message="Wrong file type. Please try again."
+          type="error"
+        />
+      )}
 
       <input
         accept={acceptedFormats.toString()}

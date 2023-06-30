@@ -1,55 +1,93 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-query ($textSearch: String, $clinicSearch: String, $provinceSearch: String) {
-  allHealthCareWorkers(
-    textSearch: $textSearch
-    clinicSearch: $clinicSearch
-    provinceSearch: $provinceSearch
-  ) {
-    id
-    user {
-      fullName
-      idNumber
-      phoneNumber
-      email
-    }
-    teamLead {
-      clinic {
-        name
-        siteAddress {
-          province {
-            description
+  query ($search: String, $clinicSearch: String, $provinceSearch: String) {
+    allHealthCareWorkers(
+      search: $search
+      clinicSearch: $clinicSearch
+      provinceSearch: $provinceSearch
+    ) {
+      id
+      user {
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        profileImageUrl
+        roles {
+          id
+          name
+        }
+      }
+      teamLead {
+        clinic {
+          name
+          siteAddress {
+            province {
+              description
+            }
           }
         }
       }
     }
   }
-}
 `;
 
 export const GetHealthCareWorkerByUserId = gql`
   query GetHealthCareWorkerByUserId($userId: UUID) {
-    GetHealthCareWorkerByUserId(userId: $userId) {
+    GetHealthCareWorkerById(id: $userId) {
       id
       user {
+        id
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
         firstName
         surname
-        email
+        fullName
+        contactPreference
+        genderId
         phoneNumber
-      }
-      siteAddress {
-        id
-        province {
+        profileImageUrl
+        roles {
           id
-          description
+          name
+          __typename
         }
-        name
-        addressLine1
-        addressLine2
-        addressLine3
-        postalCode
-        ward
+        __typename
+      }
+      teamLead {
+        clinic {
+          siteAddress {
+            id
+            province {
+              id
+              description
+              __typename
+            }
+            name
+            addressLine1
+            addressLine2
+            addressLine3
+            postalCode
+            ward
+            __typename
+          }
+          __typename
+        }
       }
     }
   }
@@ -64,35 +102,36 @@ export const CreateHealthCareWorker = gql`
 `;
 
 export const UpdateHealthCareWorker = gql`
-  mutation updateHealthCareWorker($input: PractitionerInput, $id: UUID) {
-    updateHealthCareWorker(id: $id, input: $input) {
+  mutation updateHealthCareWorker($input: UserModelInput, $id: String) {
+    updateUser(id: $id, input: $input) {
       id
+      __typename
     }
   }
 `;
 
 export const UploadHealthCareWorkers = gql`
-mutation ($file: String) {
-  importHealthCareWorkers(file: $file) {
-    validationErrors {
-      row
-      errors
-      errorDescription
-    }
-    createdUsers {
-      id
+  mutation ($file: String) {
+    importHealthCareWorkers(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers {
+        id
+      }
     }
   }
-}
 `;
 
 export const HealthCareWorkerTemplate = gql`
-query {
-  healthCareWorkerTemplateGenerator {
-    fileType
-    base64File
-    fileName
-    extension
+  query {
+    healthCareWorkerTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
   }
-} 
 `;

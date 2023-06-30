@@ -20,37 +20,34 @@ export default function TeamLeads() {
   const [showFilter, setShowFilter] = useState(false);
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
-  const [clinicFilter, setClinicFilter] = useState('')
+  const [clinicFilter, setClinicFilter] = useState('');
 
   const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
-      provinceSearch: "",
-      clinicSearch: "",
-      textSearch: "",
+      provinceSearch: '',
+      clinicSearch: '',
+      textSearch: '',
       pagingInput: {
-        "pageNumber": 1,
-        "pageSize": 3
-      }
+        pageNumber: 1,
+        pageSize: 30,
+      },
     },
     fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
-
     GetAllTeamLeads({
       variables: {
         textSearch: searchValue,
         provinceSearch: provinceFilter,
         clinicSearch: clinicFilter,
         pagingInput: {
-          "pageNumber": 1,
-          "pageSize": 3
-        }
-      }
+          pageNumber: 1,
+          pageSize: 30,
+        },
+      },
     });
-
-  }, [provinceFilter, searchValue])
-
+  }, [provinceFilter, searchValue, clinicFilter]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -82,14 +79,13 @@ export default function TeamLeads() {
     setStatusFilter('');
     setClinicFilter('');
     setProvinceFilter('');
-  }
+  };
 
   useEffect(() => {
-    if (data && data.GetAllTeamLead) {
-      const copyItems = data.GetAllTeamLead.map((item: TeamLeadDto) => ({
+    if (data && data.allTeamLeads) {
+      const copyItems = data.allTeamLeads.map((item: TeamLeadDto) => ({
         ...item,
         fullName: `${item.user?.fullName}`,
-
         isActive: item.user?.isActive,
         idNumber: item.user?.idNumber,
         _url: undefined,
@@ -97,7 +93,6 @@ export default function TeamLeads() {
       setTableData(copyItems);
     }
   }, [data]);
-
 
   const displayPanel = () => {
     panel({
@@ -123,8 +118,8 @@ export default function TeamLeads() {
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-full sm:flex  ">
-              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
+            <div className="text-body w-8/12 sm:flex  ">
+              <div className="text-body w-full flex-col sm:flex sm:justify-around">
                 <div className="relative w-full">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
@@ -140,7 +135,7 @@ export default function TeamLeads() {
               </div>
             </div>
 
-            <div className="mt-0  flex flex-row sm:mt-0 sm:ml-4 ">
+            <div className="mt-0 flex w-8/12 flex-row sm:mt-0 sm:ml-4">
               <div className="mx-4 ">
                 <span className=" text-lg font-medium leading-6 text-gray-900">
                   <button
@@ -169,7 +164,7 @@ export default function TeamLeads() {
                 </span>
               </div>
             </div>
-            <div className="ml-4 w-3/12">
+            <div className="ml-4 w-6/12">
               {hasPermission(PermissionEnum.create_user) && (
                 <button
                   onClick={displayPanel}

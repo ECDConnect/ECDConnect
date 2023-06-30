@@ -74,6 +74,7 @@ export const EditChildInformation: React.FC = () => {
   const isFromEditClass = location?.state?.isFromEditClass;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
@@ -184,7 +185,7 @@ export const EditChildInformation: React.FC = () => {
   }, [currentChild, classroomGroupLearners]);
 
   useEffect(() => {
-    if (currentChild && childCaregiver && currentChildLearnerRecord) {
+    if (currentChild) {
       setNewStackListItems(currentChild, childCaregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -246,7 +247,8 @@ export const EditChildInformation: React.FC = () => {
             <CareGiverChildInformationForm
               careGiverInformation={childCareGiverChildInformationForm}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildCareGiverChildInformationForm(form);
                 saveChildAddress(form);
@@ -259,7 +261,8 @@ export const EditChildInformation: React.FC = () => {
               childName={childUser?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildHealthInformationForm(form);
                 saveChildHealthInformation(form);
@@ -272,7 +275,8 @@ export const EditChildInformation: React.FC = () => {
               childCareGiverInformation={childCaregiverInformation}
               childName={childUser?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildCaregiverInformation(form);
                 saveChildCareGiver(form);
@@ -285,8 +289,9 @@ export const EditChildInformation: React.FC = () => {
               childEmergencyContactForm={childEmergencyContactForm}
               childName={childUser?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
               variation="practitioner"
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setchildEmergencyContactForm(form);
                 saveChildEmergencyContact(form);
@@ -350,18 +355,16 @@ export const EditChildInformation: React.FC = () => {
         switchTextStyles: true,
       });
 
-      if (isPlaygroup) {
-        list.push({
-          title: 'Playgroup',
-          subTitle: learnerClassroomGroup?.name || '',
-          switchTextStyles: true,
-          actionName: 'Edit',
-          actionIcon: 'PencilIcon',
-          onActionClick: () => {
-            openChildConfirmEditClassPrompt();
-          },
-        });
-      }
+      list.push({
+        title: 'Class',
+        subTitle: learnerClassroomGroup?.name || 'No class',
+        switchTextStyles: true,
+        actionName: isCoach ? undefined : 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          openChildConfirmEditClassPrompt();
+        },
+      });
 
       if (caregiver) {
         list.push({
