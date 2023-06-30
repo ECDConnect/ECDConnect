@@ -3,7 +3,7 @@ import { HealthCareWorkerTemplate, UploadHealthCareWorkers, importAll } from '@e
 import { useForm } from 'react-hook-form';
 import FormFileInput from '../../../../../admin-portal/src/app/components/form-file-input/form-file-input';
 import { useEffect, useState } from 'react';
-import { b64toBlob } from '@ecdlink/core';
+import { b64toBlob, useNotifications, NOTIFICATION, } from '@ecdlink/core';
 import { ArrowLeftIcon, DownloadIcon, PaperAirplaneIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
@@ -18,6 +18,7 @@ export default function UploadBulkUser({
 }: UploadAllTemplateProps) {
   const { setValue, handleSubmit } = useForm();
   const history = useHistory();
+  const { setNotification } = useNotifications();
 
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
 
@@ -39,8 +40,25 @@ export default function UploadBulkUser({
           file: model.templateFile?.file,
 
         },
-      }).then((res)=>{
+
+      }).then((res) => {
         console.log(res)
+        // setNotification({
+        //   title: 'Successfully Updated User!',
+        //   variant: NOTIFICATION.SUCCESS,
+        // });
+        if (res.data?.importHealthCareWorkers.validationErrors.length !== 0
+        ) {
+          setNotification({
+            title: 'Error uploading CHWs!',
+            variant: NOTIFICATION.ERROR,
+          });
+        } else {
+          setNotification({
+            title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+        }
 
       });
 
@@ -102,7 +120,7 @@ export default function UploadBulkUser({
         <h1 className='text-xl'>
           Step 1: Download the template
         </h1>
-   
+
         <p className='text-normal'>
           Download the Excel template below and make sure all required fields are included. It includes instructions for each field. To avoid upload errors, do not modify the headers.
         </p>
@@ -149,7 +167,7 @@ export default function UploadBulkUser({
               </div>
             </div>
             <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
-              
+
               <div className="ml-4 mt-2 flex-shrink-0">
 
                 <button

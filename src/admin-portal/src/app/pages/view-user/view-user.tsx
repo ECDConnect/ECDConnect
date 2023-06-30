@@ -6,16 +6,13 @@ import { useHistory } from 'react-router-dom';
 import { ExclamationCircleIcon, TrashIcon, StarIcon, SaveIcon, ArrowLeftIcon, PaperAirplaneIcon } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
-  HealthCareWorkerDto,
+
   initialPasswordValue,
   initialUserDetailsValues,
   NOTIFICATION,
   passwordSchema,
-  PermissionEnum,
   useDialog,
   useNotifications,
-  usePanel,
-  UserDto,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
 import {
