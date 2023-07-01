@@ -41,6 +41,7 @@ import {
   UserModelInput,
   healthCareWorkerVisitStatus,
   SendInviteToApplication,
+  GetHealthCareWorkerSummaryForPeriod,
 
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -50,24 +51,26 @@ import * as yup from 'yup';
 import zxcvbn from 'zxcvbn-typescript';
 
 const adminSchema = yup.object().shape({
-  email: yup.string().email().nullable().required('email address is required'),
+  email: yup.string().email().required('email address is required'),
 });
 
 const chwSchema = yup.object().shape({
-  email: yup.string().email().nullable().required('email address is required'),
   idNumber: yup
     .string()
-    .matches(SA_ID_REGEX, 'Id number is not valid').nullable()
+    .matches(SA_ID_REGEX, 'Id number is not valid')
     .required('ID number is required'),
   phoneNumber: yup
     .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid').nullable()
+    .matches(SA_CELL_REGEX, 'Phone number is not valid')
     .required('Cellphone number is required'),
 });
 
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [startDate, setStartDate] = useState<Date>(null);
+  const [endDate, setEndDate] = useState<Date>(null);
+
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -98,6 +101,17 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
+  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] = useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
+    variables: {
+      healthCareWorkerUserId: "",
+      startDate: null,
+      endDate: null
+    },
+    fetchPolicy: 'cache-and-network',
+  });
+
+
+
   const [
     getHealthCareWorkerHighlights,
     { data: healthCareWorkerHighlightsData },
@@ -119,6 +133,17 @@ export function ViewUser(props: any) {
   });
 
   useEffect(() => {
+    getHealthCareWorkerSummaryForPeriod({
+      variables: {
+        healthCareWorkerUserId: props.location.state.userId ?? userId,
+        "startDate":"2020-06-23T08:17:52.518Z",
+        "endDate":"2023-06-30T08:17:52.518Z"
+      }
+    })
+    console.log(summaryData)
+  }, [chwData, startDate, endDate]);
+
+  useEffect(() => {
     props.location.state?.component !== 'chw' &&
       getUserById({
         variables: { userId: props.location.state.userId ?? userId },
@@ -135,6 +160,14 @@ export function ViewUser(props: any) {
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
       });
+
+    getHealthCareWorkerSummaryForPeriod({
+      variables: {
+        healthCareWorkerUserId: "",
+        startDate: "",
+        endDate: ""
+      }
+    })
   }, [userId]);
 
   const { hasPermission } = useUser();
@@ -304,7 +337,6 @@ export function ViewUser(props: any) {
     const userInputModel: UserModelInput = {
       phoneNumber: userDetailForm?.phoneNumber,
       idNumber: userDetailForm?.idNumber,
-      email: userDetailForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,

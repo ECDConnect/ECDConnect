@@ -66,10 +66,8 @@ export function Profile(props: any) {
   const saveUser = async (passwordChange: boolean, profileImage?: string) => {
 
     const userInputModel: UserModelInput = {
-      firstName:userDetailForm?.phoneNumber,
+      firstName:userDetailForm?.firstName,
       surname:userDetailForm?.surname,
-      phoneNumber: userDetailForm?.phoneNumber,
-      idNumber: userDetailForm?.idNumber,
       email: userDetailForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,

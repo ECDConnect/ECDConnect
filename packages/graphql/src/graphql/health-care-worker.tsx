@@ -135,3 +135,21 @@ export const HealthCareWorkerTemplate = gql`
     }
   }
 `;
+
+
+export const GetHealthCareWorkerSummaryForPeriod = gql`
+query($healthCareWorkerUserId: String, $startDate: DateTime, $endDate: DateTime) {
+  healthCareWorkerSummaryForPeriod(userId: $healthCareWorkerUserId, startDate: $startDate, endDate: $endDate) {
+    totalPregnantMomsWithIssues
+    totalCaregiversAndChildrenWithIssues
+    totalPregnantMoms
+    totalChildren
+    totalClientsVisited
+    totalFoldersOpened
+    totalVisitsMissed
+    totalPregnantMomsWithUrgentIssues
+    totalCaregiversAndChildrenWithUrgentIssues
+    totalVisitsOverdue
+  }
+}
+`;
