@@ -7,8 +7,9 @@ import {
   SA_CELL_REGEX,
   SA_ID_REGEX,
   Dropdown,
+  AlertType,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import { JSXElementConstructor, ReactElement, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
@@ -53,6 +54,7 @@ import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 
+
 const adminSchema = yup.object().shape({
   email: yup.string().email().required('email address is required').nullable(),
   idNumber: yup
@@ -66,13 +68,22 @@ const adminSchema = yup.object().shape({
 });
 
 
+const showNotification = (message: string, type: AlertType, icon?: ReactElement<any, string | JSXElementConstructor<any>>) => {
+  return <Alert
+    className="mt-5 mb-3 rounded-md mx-20"
+    message={message}
+    type={type}
+    customIcon={icon}
+  />
+}
+
 
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
 
   const [startDate, setStartDate] = useState<Date>(null);
   const [endDate, setEndDate] = useState<Date>(null);
-  const [sucessNotification, setSuccess] = useState<boolean>(false);
+  const [successNotification, setSucessNotification] = useState<boolean>(false);
 
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
@@ -107,9 +118,9 @@ export function ViewUser(props: any) {
 
   const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] = useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
     variables: {
-      "healthCareWorkerUserId": "ff911f4f-bfc8-4dd1-9124-ed51e468eb06",
-      "startDate": "2020-06-23T08:17:52.518Z",
-      "endDate": "2023-06-30T08:17:52.518Z"
+      healthCareWorkerUserId: "",
+      "startDate": "",
+      "endDate": ""
     },
     fetchPolicy: 'cache-and-network',
   });
@@ -118,12 +129,9 @@ export function ViewUser(props: any) {
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
-        // healthCareWorkerUserId: props.location.state.userId ?? userId,
-        // "startDate":"2020-06-23T08:17:52.518Z",
-        // "endDate":"2023-06-30T08:17:52.518Z"
-        "healthCareWorkerUserId": "ff911f4f-bfc8-4dd1-9124-ed51e468eb06",
-        "startDate": "2020-06-23T08:17:52.518Z",
-        "endDate": "2023-06-30T08:17:52.518Z"
+        healthCareWorkerUserId: props.location.state.userId ?? userId,
+        startDate: "2020-01-01T08:17:52.518Z",
+        endDate: Date()
       }
     })
   }, [chwData, startDate, endDate]);
@@ -138,8 +146,6 @@ export function ViewUser(props: any) {
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
       });
-    console.log(">>", userData)
-
 
   }, [userId]);
 
@@ -205,6 +211,7 @@ export function ViewUser(props: any) {
                 title: 'Successfully Sent Invite!',
                 variant: NOTIFICATION.SUCCESS,
               });
+
             });
           }}
         />
@@ -283,7 +290,7 @@ export function ViewUser(props: any) {
 
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [chwData, userData]);
+  }, [userData]);
 
 
 
@@ -331,6 +338,7 @@ export function ViewUser(props: any) {
         title: 'Successfully Updated User!',
         variant: NOTIFICATION.SUCCESS,
       });
+      setSucessNotification(true)
     }
 
     if (passwordChange) {
@@ -348,13 +356,9 @@ export function ViewUser(props: any) {
 
   const onSave = async () => {
     let passwordChange = false;
-    let internalIsPasswordValid = true;
-
     if (passwordForm.password.length > 0) {
       passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
     }
-
     await saveUser(passwordChange)
   };
 
@@ -364,8 +368,6 @@ export function ViewUser(props: any) {
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
 
-  // chwData?.GetHealthCareWorkerById.user
-
   let isCHW = userData?.userById?.roles?.some(
     (role: any) => role.name === 'Health Care Worker'
   )
@@ -373,31 +375,25 @@ export function ViewUser(props: any) {
 
   console.log("chwData?.GetHealthCareWorkerById.user", isCHW);
 
-
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <div className="justify-self col-end-3 ">
         <button
           onClick={() => history.goBack()}
           type="button"
-          className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
+          className="cursor-pointer text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
         >
           <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
             {' '}
           </ArrowLeftIcon>
           Back
-          {/* <span className="text-black pl-2"> / View User</span> */}
+          <span className="text-gray-400 px-1">  / View {isCHW ? "CHW" : "User"}</span>
         </button>
       </div>
+      {
+        successNotification && showNotification("User Added Successfully! ", "success", <ThumbUpIcon className='w-10 h-10'></ThumbUpIcon>)
+      }
 
-      { (
-        <Alert
-          className="mt-5 mb-3"
-          message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
-          type="success"
-          customIcon={<ThumbUpIcon></ThumbUpIcon>}
-        />
-      )}
 
       <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
         <div className="py-0 px-4 sm:px-6 lg:px-8">
