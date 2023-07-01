@@ -6,7 +6,7 @@ import {
   useTheme,
 } from '@ecdlink/core';
 import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
-import { Button, Typography, UserAvatar } from '@ecdlink/ui';
+import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
   ArrowLeftIcon,
@@ -316,14 +316,21 @@ export default function Shell() {
                       >
                         <span className="sr-only">Open user menu</span>
 
-                        {user ? (
+                        {user?.profileImageUrl ? (
+                          <Avatar
+                            size={'md'}
+                            displayBorder
+                            dataUrl={`${user?.profileImageUrl}`}
+                            borderColor='secondary'
+                          />
+                        ) :
                           <UserAvatar
                             size={'md'}
                             avatarColor={avatarColor}
-                            text={`${user.firstName[0]}${user.surname[0]}`}
+                            text={`${user?.firstName[0]}${user?.surname[0]}`}
                             displayBorder
                           />
-                        ) : null}
+                        }
                       </Menu.Button>
                     </div>
                   </>
