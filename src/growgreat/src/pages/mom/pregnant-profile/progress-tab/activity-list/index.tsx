@@ -79,7 +79,9 @@ export const MomActivityList: React.FC = () => {
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
 
-  const currentVisit = useSelector(getMotherLastVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getMotherLastVisitSelector(state, visitId)
+  );
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();

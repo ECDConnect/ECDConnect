@@ -284,7 +284,8 @@ export const Visits: React.FC = () => {
                     (response.payload as VisitDto) || undefined;
                   if (otherVisit?.id) {
                     history.push(
-                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                      `${location.pathname}/activities-form/${otherVisit?.id}`,
+                      { editView: true }
                     );
                   }
                   onClose();

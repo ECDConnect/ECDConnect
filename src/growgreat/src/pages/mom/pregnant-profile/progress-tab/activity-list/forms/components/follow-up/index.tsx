@@ -29,9 +29,10 @@ import { ReactComponent as Home } from '@/assets/home.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
-import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall2.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import Pregnant from '@/assets/pregnant.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
@@ -238,7 +239,10 @@ export const FollowUp = ({
       case activitiesSectionTypes.nutrition:
         return { icon: P1, color: '#8CDBDF' };
       case activitiesSectionTypes.pregnancyCare:
-        return { icon: P1, color: activitiesColours.pillar1.primaryColor };
+        return {
+          icon: Pregnant,
+          color: activitiesColours.pillar1.primaryColor,
+        };
       default:
         return { icon: P5, color: activitiesColours.pillar5.primaryColor };
     }
