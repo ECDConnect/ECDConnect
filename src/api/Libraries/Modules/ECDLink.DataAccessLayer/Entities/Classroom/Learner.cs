@@ -13,7 +13,7 @@ namespace ECDLink.DataAccessLayer.Entities.Classroom
     [Table(nameof(Learner))]
     [EntityPermission(PermissionGroups.CLASSROOM)]
     [PrimaryKey(nameof(UserId), nameof(Id), nameof(ClassroomGroupId))]
-    public class Learner : EntityBase<Guid>, IUserScoped, ApplicationUserJoin, ClassroomGroupJoin<Guid>, ProgrammeAttendanceReasonJoin<Guid?>
+    public class Learner : EntityBase<Guid>, IUserScoped, ApplicationUserJoin, ClassroomGroupJoin<Guid>, ProgrammeAttendanceReasonJoin<Guid?>, ITrackableType
     {
         public string UserId { get; set; }
 

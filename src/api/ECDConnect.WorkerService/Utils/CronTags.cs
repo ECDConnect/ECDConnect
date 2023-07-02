@@ -1,4 +1,4 @@
-﻿namespace ECDLink.AutomatedServiceWorkers.Utils
+﻿namespace ECDConnect.WorkerService.Utils
 {
     public static class CronTags
     {
