@@ -131,7 +131,7 @@ export function ViewUser(props: any) {
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
         startDate: "2020-01-01T08:17:52.518Z",
-        endDate: Date()
+        endDate: new Date().toISOString()
       }
     })
   }, [chwData, startDate, endDate]);
