@@ -2464,7 +2464,7 @@ namespace ECDLink.Core.Services
                                     Practitioner parentPrac = _practitionerGenericRepo.GetByUserId(parentEntity.UserId);
                                     if (parentPrac != null)
                                     {
-                                        var entity = MapChildCaregiverOfFranchisee(child, parentPrac);
+                                        var entity = await MapChildCaregiverOfFranchisee(child, parentPrac);
                                     }
                                 }
                             }
