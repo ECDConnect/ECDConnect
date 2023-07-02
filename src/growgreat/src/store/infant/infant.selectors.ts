@@ -47,7 +47,7 @@ export const getInfantFirstVisitSelector = (
 
 export const getInfantPreviousVisitSelector = (
   state: RootState,
-  currentPlannedVisitDate: string
+  currentOrderVisitDate: string
 ) => {
   const visits = state.infants.visits;
 
@@ -55,7 +55,10 @@ export const getInfantPreviousVisitSelector = (
 
   const filteredVisits = visits.filter((visit) => {
     const orderDate = new Date(visit.orderDate);
-    return orderDate < new Date(currentPlannedVisitDate);
+    return (
+      orderDate < new Date(currentOrderVisitDate) &&
+      visit.visitType?.name !== 'additional_visit'
+    );
   });
 
   const previousVisit = filteredVisits.reduce(
@@ -159,3 +162,37 @@ export const getInfantCurrentVisitSelector = (
     }
   }
 };
+
+export function getInfantNearestPreviousVisitByOrderDate(
+  state: RootState,
+  currentVisit?: VisitDto
+): VisitDto | undefined {
+  const visits = state.infants.visits;
+
+  if (!visits?.length || !currentVisit) return undefined;
+
+  const currentOrderDate = new Date(currentVisit?.orderDate!);
+  const previousVisits = visits.filter(
+    (item) =>
+      item.attended &&
+      item.orderDate !== null &&
+      new Date(item.orderDate) < currentOrderDate
+  );
+
+  if (previousVisits.length === 0) {
+    return undefined; // No previous date found
+  }
+
+  const nearestDateObject = previousVisits.reduce((previous, current) => {
+    if (
+      !previous ||
+      currentOrderDate.getTime() - new Date(current.orderDate).getTime() <
+        currentOrderDate.getTime() - new Date(previous.orderDate).getTime()
+    ) {
+      return current;
+    }
+    return previous;
+  });
+
+  return nearestDateObject;
+}

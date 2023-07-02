@@ -33,7 +33,6 @@ import {
   UnsafeFeedingPracticesStep,
   FoodsFormStep,
   MixedBenefitsOfBreastfeedingStep,
-  MixedBreastfeedingWorksStep,
   MixedUnsafeFeedingPracticesStep,
   FirstFoodsStep,
   ComplementaryFeedingStep,
@@ -112,7 +111,6 @@ export const getPillar1Steps = ({
   isFormulaMilkUnsafeFeedingPractices,
   isMixedFeedingFoodsForm,
   isMixedFeedingBenefitsOfBreastfeeding,
-  isMixedFeedingHowBreastfeedingWorks,
   isMixedFeedingUnsafeFeedingPractices,
   isMixedFeedingFistFoods,
   isMixedFeedingComplementaryFeeding,
@@ -128,7 +126,6 @@ export const getPillar1Steps = ({
   isFormulaMilkUnsafeFeedingPractices: boolean;
   isMixedFeedingFoodsForm: boolean;
   isMixedFeedingBenefitsOfBreastfeeding: boolean;
-  isMixedFeedingHowBreastfeedingWorks: boolean;
   isMixedFeedingUnsafeFeedingPractices: boolean;
   isMixedFeedingFistFoods: boolean;
   isMixedFeedingComplementaryFeeding: boolean;
@@ -167,9 +164,6 @@ export const getPillar1Steps = ({
     ...(isMixedFeedingFoodsForm ? [FoodsFormStep] : []),
     ...(isMixedFeedingBenefitsOfBreastfeeding
       ? [MixedBenefitsOfBreastfeedingStep]
-      : []),
-    ...(isMixedFeedingHowBreastfeedingWorks
-      ? [MixedBreastfeedingWorksStep]
       : []),
     ...(isMixedFeedingUnsafeFeedingPractices
       ? [MixedUnsafeFeedingPracticesStep]
@@ -238,11 +232,12 @@ export const pillar3Steps = (
 export const getPillar4Steps = (
   isFollowUp: boolean,
   isChildBefore49Days: boolean,
-  isSicknessAlertStep: boolean
+  isSicknessAlertStep: boolean,
+  isToShowPillar4DangerSigns: boolean
 ) => [
   ...(isFollowUp ? [FollowUpStep] : []),
   ...(isChildBefore49Days ? [SicknessStep] : []),
-  ...(isChildBefore49Days ? [Pillar4DangerSignsStep] : []),
+  ...(isToShowPillar4DangerSigns ? [Pillar4DangerSignsStep] : []),
   ...(isSicknessAlertStep ? [SicknessAlertStep] : []),
 ];
 

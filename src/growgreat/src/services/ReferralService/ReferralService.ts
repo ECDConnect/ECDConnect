@@ -236,6 +236,7 @@ class Referral {
             type
             section
             isCompleted
+            backReferralCompleted
             referralDateCompleted
             insertedDate
             visitData {

@@ -122,6 +122,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var motherName = "";
                 if (infant.Mother != null) {
                     motherName = infant.Mother.User.FirstName;
+                } else
+                {
+                    motherName = infant.Caregiver.FirstName;
                 }
 
                 // add additional visit for when we need to add additional visits for the client
@@ -399,10 +402,36 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
                 }
-                else if (vData.Question == Constants.GGSettings.q_hearing ||
-                            vData.Question == Constants.GGSettings.q_seeing ||
-                            vData.Question == Constants.GGSettings.q_brain ||
-                            vData.Question == Constants.GGSettings.q_moving) {
+                else if (vData.Question == Constants.GGSettings.q_hearing1 ||
+                        vData.Question == Constants.GGSettings.q_hearing2 ||
+                        vData.Question == Constants.GGSettings.q_hearing3 ||
+                        vData.Question == Constants.GGSettings.q_hearing4 ||
+                        vData.Question == Constants.GGSettings.q_hearing5 ||
+                        vData.Question == Constants.GGSettings.q_hearing6 ||
+                        vData.Question == Constants.GGSettings.q_hearing7 ||
+                        vData.Question == Constants.GGSettings.q_hearing8 ||
+                        vData.Question == Constants.GGSettings.q_hearing9 ||
+                        vData.Question == Constants.GGSettings.q_seeing1 ||
+                        vData.Question == Constants.GGSettings.q_seeing2 ||
+                        vData.Question == Constants.GGSettings.q_seeing3 ||
+                        vData.Question == Constants.GGSettings.q_seeing4 ||
+                        vData.Question == Constants.GGSettings.q_seeing5 ||
+                        vData.Question == Constants.GGSettings.q_seeing6 ||
+                        vData.Question == Constants.GGSettings.q_seeing7 ||
+                        vData.Question == Constants.GGSettings.q_brain1 ||
+                        vData.Question == Constants.GGSettings.q_brain2 ||
+                        vData.Question == Constants.GGSettings.q_brain3 ||
+                        vData.Question == Constants.GGSettings.q_brain4 ||
+                        vData.Question == Constants.GGSettings.q_brain5 ||
+                        vData.Question == Constants.GGSettings.q_brain6 ||
+                        vData.Question == Constants.GGSettings.q_brain7 ||
+                        vData.Question == Constants.GGSettings.q_moving1 ||
+                        vData.Question == Constants.GGSettings.q_moving2 ||
+                        vData.Question == Constants.GGSettings.q_moving3 ||
+                        vData.Question == Constants.GGSettings.q_moving4 ||
+                        vData.Question == Constants.GGSettings.q_moving5 ||
+                        vData.Question == Constants.GGSettings.q_moving6 ||
+                        vData.Question == Constants.GGSettings.q_moving7) {
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         developmentScreening.Add(vData);
                     }
@@ -850,10 +879,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
+                var _prevWeight = 0.0;
+                if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+                {
+                    _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+                }
                
-                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
                 Boolean weightIncreased = _weight > _prevWeight;
+                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
 
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
                     wIndicator = "Low birth weight";
@@ -866,7 +899,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _red;
 
                         // Red progress
-                        comment = Constants.GGSettings.severely_underweight + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.severely_underweight;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -879,7 +912,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -892,7 +925,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = Constants.GGSettings.growth_faltering + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.growth_faltering;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -905,7 +938,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -918,7 +951,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -931,7 +964,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _green;
 
                         // Green progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
@@ -946,13 +979,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + _height;
+                    comment = lIndicator;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -993,7 +1026,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + questionAnswer;
+                    comment = mIndicator;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1009,7 +1042,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
+                    comment = Constants.GGSettings.severely_stunted;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1026,10 +1059,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // Green progress
                     comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
-
-                    // Green G4 
-                    comment = firstName + Constants.GGSettings.growing_well;
-                    AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
@@ -1044,6 +1073,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 // add green item to G9 client summary: ""Themba is growing well""
                 comment = firstName + Constants.GGSettings.growing_well;
                 AddVisitDataStatus(q3, comment, _green, _G9, Constants.GGSettings.growth_section, false);
+
+                // Green G4 
+                comment = firstName + Constants.GGSettings.growing_well;
+                AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
             } else {
 
                 if (wColor == _red || lColor == _red || mColor == _red) {
@@ -1114,20 +1147,63 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
             var names = "";
             var comment = "";
+            string _hearing = "<li>Hearing</li>";
+            string _seeing = "<li>Seeing</li>";
+            string _brain = "<li>Brain</li>";
+            string _moving = "<li>Moving</li>";
 
             foreach (var item in developmentScreening)
             {
-                if (item.Question == Constants.GGSettings.q_hearing) {
-                    names = names + "<li>Hearing</li>";
+                if (item.Question == Constants.GGSettings.q_hearing1 ||
+                    item.Question == Constants.GGSettings.q_hearing2 ||
+                    item.Question == Constants.GGSettings.q_hearing3 ||
+                    item.Question == Constants.GGSettings.q_hearing4 ||
+                    item.Question == Constants.GGSettings.q_hearing5 ||
+                    item.Question == Constants.GGSettings.q_hearing6 ||
+                    item.Question == Constants.GGSettings.q_hearing7 ||
+                    item.Question == Constants.GGSettings.q_hearing8 ||
+                    item.Question == Constants.GGSettings.q_hearing9)
+                {
+                    if (names.IndexOf(_hearing) == -1)
+                    {
+                        names += _hearing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_seeing) {
-                    names = names + "<li>Seeing</li>";
+                if (item.Question == Constants.GGSettings.q_seeing1 ||
+                    item.Question == Constants.GGSettings.q_seeing2 ||
+                    item.Question == Constants.GGSettings.q_seeing3 ||
+                    item.Question == Constants.GGSettings.q_seeing4 ||
+                    item.Question == Constants.GGSettings.q_seeing5 ||
+                    item.Question == Constants.GGSettings.q_seeing6 ||
+                    item.Question == Constants.GGSettings.q_seeing7) {
+                    if (names.IndexOf(_seeing) == -1)
+                    {
+                        names += _seeing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_brain) {
-                    names = names + "<li>Brain</li>";
+                if (item.Question == Constants.GGSettings.q_brain1 ||
+                    item.Question == Constants.GGSettings.q_brain2 ||
+                    item.Question == Constants.GGSettings.q_brain3 ||
+                    item.Question == Constants.GGSettings.q_brain4 ||
+                    item.Question == Constants.GGSettings.q_brain5 ||
+                    item.Question == Constants.GGSettings.q_brain6 ||
+                    item.Question == Constants.GGSettings.q_brain7) {
+                    if (names.IndexOf(_brain) == -1)
+                    {
+                        names += _brain;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_moving) {
-                    names = names + "<li>Moving</li>";
+                if (item.Question == Constants.GGSettings.q_moving1 ||
+                    item.Question == Constants.GGSettings.q_moving2 ||
+                    item.Question == Constants.GGSettings.q_moving3 ||
+                    item.Question == Constants.GGSettings.q_moving4 ||
+                    item.Question == Constants.GGSettings.q_moving5 ||
+                    item.Question == Constants.GGSettings.q_moving6 ||
+                    item.Question == Constants.GGSettings.q_moving7) {
+                    if (names.IndexOf(_moving) == -1)
+                    {
+                        names += _moving;
+                    }
                 }
             }
 
@@ -1199,18 +1275,39 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
             return true;
         }
-        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) {
+        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 
+        {
+            Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
+                                                          x.VisitType.Name == _additionalVisitType.Name &&
+                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
+            if (record == null)
+            {
 
-            VisitModel newVisit = new VisitModel();
-            newVisit.Attended = false;
-            newVisit.VisitType = _additionalVisitType;
-            newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
-            newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
-            newVisit.Risk = Constants.GGSettings.normal_risk;
-            newVisit.Comment = comment;
-            newVisit.LinkedVisitId = new Guid(_visitId);
-            newVisit.ActualVisitDate = DateTime.Now; 
-            _visitManager.AddAdditionalVisit(newVisit);
+                DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
+                if (nextVisitDate == default(DateTime))
+                {
+                    nextVisitDate = DateTime.Now.Date;
+                }
+                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                if (nextVisitDueDate == default(DateTime))
+                {
+                    nextVisitDueDate = DateTime.Now.Date;
+                }
+
+                VisitModel newVisit = new VisitModel();
+                newVisit.Attended = false;
+                newVisit.VisitType = _additionalVisitType;
+                newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
+                newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
+                newVisit.Risk = Constants.GGSettings.normal_risk;
+                newVisit.Comment = comment;
+                newVisit.LinkedVisitId = new Guid(_visitId);
+                newVisit.PlannedVisitDate = nextVisitDate;
+                newVisit.DueDate = nextVisitDueDate;
+                _visitManager.AddAdditionalVisit(newVisit);
+            }
+
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
@@ -1297,75 +1394,81 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return result;
         }
-        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
+        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender, Boolean weightIncreased) {
             var indicator = "Normal";
 
             if (isWeightCalc)
             {
-                string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                var ageSection_secondary = "";
-                if (totalDaysOld < 730)
+                if (weight > 0)
                 {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
-                } else
-                {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
-                }
-
-                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForAge != null)
-                {
-                    if (weight <= recordsForAge.SD3neg)
+                    string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
+                    var ageSection_secondary = "";
+                    if (totalDaysOld < 730)
                     {
-                        indicator = "Severely underweight"; // priority 1
-                    }
-                    else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
+                    } else
                     {
-                        indicator = "Underweight"; // priority 2
-                    }
-                    else if (weight > recordsForAge.SD2neg)
-                    {
-                        indicator = "Growth faltering"; // priority 3
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                     }
 
-                    if (indicator == "Normal")  // priority 6
-                    {
-                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+                    VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
-                        if (recordsForWeight != null)
+                    if (recordsForAge != null)
+                    {
+                        if (weight <= recordsForAge.SD3neg)
                         {
-                            if (weight >= recordsForWeight.SD3)
+                            indicator = "Severely underweight"; // priority 1
+                        }
+                        else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        {
+                            indicator = "Underweight"; // priority 2
+                        }
+                        else if (weight > recordsForAge.SD2neg && weightIncreased == false)
+                        {
+                            indicator = "Growth faltering"; // priority 3
+                        }
+
+                        if (indicator == "Normal")  // priority 6
+                        {
+                            VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+
+                            if (recordsForWeight != null)
                             {
-                                indicator = "Obese"; // priority 4
-                            }
-                            else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
-                            {
-                                indicator = "Overweight"; // priority 5
+                                if (weight >= recordsForWeight.SD3)
+                                {
+                                    indicator = "Obese"; // priority 4
+                                }
+                                else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
+                                {
+                                    indicator = "Overweight"; // priority 5
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
 
             } else
             {
-                string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
-                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForHeight != null)
+                if (height > 0)
                 {
-                    if (weight <= recordsForHeight.SD3neg)
+                    string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
+                    var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+
+                    if (recordsForHeight != null)
                     {
-                        indicator = "Severely stunted"; // priority 1
-                    }
-                    else if (weight > recordsForHeight.SD3neg && weight <= recordsForHeight.SD2neg)
-                    {
-                        indicator = "Stunted"; // priority 2
-                    }
-                    else if (weight > recordsForHeight.SD2neg)
-                    {
-                        indicator = "Normal"; // priority 3
+                        if (height <= recordsForHeight.SD3neg)
+                        {
+                            indicator = "Severely stunted"; // priority 1
+                        }
+                        else if (height > recordsForHeight.SD3neg && height <= recordsForHeight.SD2neg)
+                        {
+                            indicator = "Stunted"; // priority 2
+                        }
+                        else if (height > recordsForHeight.SD2neg)
+                        {
+                            indicator = "Normal"; // priority 3
+                        }
                     }
                 }
             }
@@ -1605,10 +1708,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 scoreColor = _red;
             }
 
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.ScoreColor = scoreColor;
-            result.VisitDataStatus = visitDataStatus;
-
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
@@ -1629,6 +1728,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
             result.MuacComment = muacData?.Comment;
+
+            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
+            // EC-877: remove weigth, length and muac from list, because they are already handled above
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_length && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_muac).ToList();
 
             return result;
         }

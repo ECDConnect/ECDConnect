@@ -45,12 +45,7 @@ export const ClassProgrammeAttendanceList: React.FC<
 
       const childUser = childUsers?.find((y) => y.id === learner.userId);
 
-      if (
-        child &&
-        child?.caregiverId &&
-        childUser?.firstName &&
-        childUser?.surname
-      ) {
+      if (child && childUser?.firstName && childUser?.surname) {
         filteredLearners.push(learner);
       }
     }

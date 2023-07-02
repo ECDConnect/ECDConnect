@@ -1,5 +1,5 @@
 import { getInfantById } from '@/store/infant/infant.selectors';
-import { Button, LoadingSpinner } from '@ecdlink/ui';
+import { Button } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import { useHistory, useLocation, useParams } from 'react-router';
 import { IntroScreen } from './activity-list/intro-screen';
@@ -8,8 +8,6 @@ import { InfantProfileParams } from '../infant-profile.types';
 import { RootState } from '@/store/types';
 import { getPreviousVisitInformationForInfantSelector } from '@/store/visit/visit.selectors';
 import { useAppDispatch } from '@/store';
-import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
-import { VisitActions } from '@/store/visit/visit.actions';
 import { useWindowSize } from '@reach/window-size';
 import { INFANT_PROFILE_TABS } from '..';
 import { activitiesTypes } from './activity-list/activities-list';
@@ -32,21 +30,12 @@ export const ProgressTab = () => {
   const history = useHistory();
   const location = useLocation();
 
-  const { isLoading } = useThunkFetchCall(
-    'visits',
-    VisitActions.GET_PREVIOUS_VISIT_INFORMATION_FOR_INFANT
-  );
-
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
-  const previousVisit = useSelector(
+  const previousVisitData = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
-  // const currentVisit = useSelector(getInfantCurrentVisitSelector);
-  // const previousCurrentVisit = usePrevious(currentVisit) as
-  //   | VisitDto
-  //   | undefined;
 
   const infantName = useMemo(
     () => infant?.user?.firstName || '',
@@ -101,17 +90,6 @@ export const ProgressTab = () => {
     });
   }, [history, location.pathname]);
 
-  if (isLoading) {
-    return (
-      <LoadingSpinner
-        className="pt-20"
-        size="medium"
-        spinnerColor={'primary'}
-        backgroundColor={'uiLight'}
-      />
-    );
-  }
-
   return (
     <div
       className="pt-14"
@@ -129,10 +107,11 @@ export const ProgressTab = () => {
             !!caregiverName ? caregiverName + ' &' : ''
           } ${infantName}`}
           isPrint={isPrint}
+          isFromProgressTab
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">
-        {!!previousVisit?.visitDataStatus?.length ? (
+        {!!previousVisitData?.visitDataStatus?.length ? (
           <>
             <Button
               className="mt-auto"

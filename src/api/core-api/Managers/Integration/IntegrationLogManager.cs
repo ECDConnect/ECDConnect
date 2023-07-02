@@ -6,6 +6,8 @@ using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Managers.Integration
@@ -16,6 +18,9 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
         private IGenericRepositoryFactory _repositoryFactory;
         private string _uId;
         private IGenericRepository<IntegrationLog, Guid> _logRepo;
+        private IGenericRepository<IntegrationEntityMapping, Guid> _mapperRepo;
+        private IGenericRepository<IntegrationAudit, Guid> _auditRepo;
+
         public Guid tenantId = TenantExecutionContext.Tenant.Id;
 
         public IntegrationLogManager(
@@ -25,13 +30,15 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _logRepo = _repositoryFactory.CreateGenericRepository<IntegrationLog>(userContext: _uId);
+            _mapperRepo = _repositoryFactory.CreateGenericRepository<IntegrationEntityMapping>(userContext: _uId);
+            _auditRepo = _repositoryFactory.CreateGenericRepository<IntegrationAudit>(userContext: _uId);
         }
 
         #region Logging
 
         public async Task<bool> IntegrationLog(string log, string logNotes = null, string relatedId = null, LogRelatedType logRelatedType = LogRelatedType.Error, string relatedArea = "IntegrationService")
         {
-            logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea + " " + logNotes: "";
+            logNotes = logRelatedType == LogRelatedType.Error ? "Error In: " + relatedArea + " " + logNotes: logNotes;
             _logRepo.Insert(new IntegrationLog()
             {
                 IsActive = true,
@@ -45,6 +52,36 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             });
 
             return true;
+        }
+
+        public async Task<bool> IntegrationEntity(IntegrationEntityMapping entity)
+        {
+            _mapperRepo.Insert(entity);
+
+            return true;
+        }
+
+        public async Task<bool> UpdateAuditSubmitted(List<IntegrationAudit> completedAudits)
+        {
+            if (!completedAudits.Any())
+                return false;
+            else
+            {
+                foreach (var audit in completedAudits)
+                {
+                    var auditRow = _auditRepo.GetById(audit.Id);
+                    if (auditRow != null)
+                    {
+                        auditRow.UpdatedDate = DateTime.Now;
+                        auditRow.UpdatedBy = _uId;
+                        auditRow.Submitted = DateTime.Now;
+
+                        _auditRepo.Update(auditRow);
+                    }
+                }
+
+                return true;
+            }
         }
 
         #endregion

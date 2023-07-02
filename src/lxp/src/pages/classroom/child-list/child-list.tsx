@@ -172,11 +172,11 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
 
   useEffect(() => {
     if (!isPrincipal) {
-      if (classroomGroupLearners && children && pendingStatusId) {
+      if (principalLearners && children && pendingStatusId) {
         const childListItem: UserAlertListDataItem[] = [];
 
         for (const child of children) {
-          const learner = classroomGroupLearners.find(
+          const learner = principalLearners.find(
             (x) => x.userId === child.userId && x.stoppedAttendance == null
           );
           childListItem.push(mapUserListDataItem(child, learner));
@@ -223,6 +223,35 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
     const selectedClassrooms = value.map((x) => x.value);
     if (!isPrincipal) {
       const childListItem: UserAlertListDataItem[] = [];
+      if (principalChildren && principalLearners) {
+        if (value && value.length > 0) {
+          for (const child of principalChildren) {
+            const learner = principalLearners.find(
+              (x) =>
+                x.userId === child.userId &&
+                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
+                x.stoppedAttendance == null &&
+                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        } else {
+          for (const child of principalChildren) {
+            const learner = principalLearners.find(
+              (x) => x.userId === child.userId && x.stoppedAttendance == null
+            );
+            if (learner) {
+              childListItem.push(mapUserListDataItem(child, learner));
+            }
+          }
+        }
+      }
+      setChildUserListData(childListItem || []);
+      setActiveSort([]);
+    } else {
+      const childListItem: UserAlertListDataItem[] = [];
       if (children && classroomGroupLearners) {
         if (value && value.length > 0) {
           for (const child of children) {
@@ -250,35 +279,6 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       }
       setChildUserListData(childListItem || []);
       setActiveSort([]);
-    } else {
-      const childListItem: UserAlertListDataItem[] = [];
-      if (principalChildren && classroomGroupLearners) {
-        if (value && value.length > 0) {
-          for (const child of principalChildren) {
-            const learner = classroomGroupLearners.find(
-              (x) =>
-                x.userId === child.userId &&
-                /* ensures only children in a playgroup are shown and not those who stopped attending or changed playgroups */
-                x.stoppedAttendance == null &&
-                selectedClassrooms.some((sc) => sc === x.classroomGroupId)
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        } else {
-          for (const child of principalChildren) {
-            const learner = classroomGroupLearners.find(
-              (x) => x.userId === child.userId && x.stoppedAttendance == null
-            );
-            if (learner) {
-              childListItem.push(mapUserListDataItem(child, learner));
-            }
-          }
-        }
-      }
-      setChildUserListData(childListItem || []);
-      setActiveSort([]);
     }
   };
 
@@ -287,7 +287,7 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
       (children && classroomGroupLearners) ||
       (childrenForPrincipal && classroomGroupLearners)
     ) {
-      const filteredChildren = isPrincipal
+      const filteredChildren = !isPrincipal
         ? childrenForPrincipal?.filter((child) =>
             childUserListData?.some((x) => x.id === child.id)
           )
