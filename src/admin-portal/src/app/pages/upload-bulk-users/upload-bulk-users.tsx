@@ -175,8 +175,8 @@ export default function UploadBulkUser(props: any) {
           {/* <span className="text-black pl-2"> / View User</span> */}
         </button>
       </div>
-      <div className="flex flex-col pt-6">
-        <h1 className="text-xl">Step 1: Download the template</h1>
+      <div className="flex flex-col pt-10">
+        <h1 className="text-xl">Step 1: Download the {props.location.state?.component === 'team-leads' ? "Team Leads": "CHWs"} template</h1>
 
         <p className="text-normal">
           Download the Excel template below and make sure all required fields
