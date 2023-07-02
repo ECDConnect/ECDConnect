@@ -56,7 +56,6 @@ import zxcvbn from 'zxcvbn-typescript';
 
 
 const chwSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
   idNumber: yup
     .string()
     .matches(SA_ID_REGEX, 'Id number is not valid')
@@ -364,7 +363,7 @@ export function ViewUser(props: any) {
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+          id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
@@ -559,7 +558,7 @@ export function ViewUser(props: any) {
                       <Typography
                         type="help"
                         color="white"
-                        text={'Save Changes2'}
+                        text={'Save Changes'}
                       ></Typography>
                     </Button> : <Button
                       className={'mt-3 w-4/12 rounded-md '}
@@ -602,9 +601,7 @@ export function ViewUser(props: any) {
                     Email: {userData?.userById?.email}
                   </p>
                 </div>
-                // {
-                //   // || isCHW 
-                // }
+          
               )}
             </form>
             {/* End main area */}
