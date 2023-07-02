@@ -9,10 +9,9 @@ import {
   FollowUpWalkthroughData,
 } from '../forms/components/follow-up';
 import { useSelector } from 'react-redux';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
   getMotherCurrentVisitSelector,
-  getMotherPreviousVisitSelector,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 
@@ -22,6 +21,7 @@ interface IntroScreenProps {
   headerText?: string;
   onStartVisit?: () => void;
   isPrint?: boolean;
+  isFromProgressTab?: boolean;
 }
 
 export const IntroScreen = ({
@@ -30,6 +30,7 @@ export const IntroScreen = ({
   walkthroughData,
   onStartVisit,
   isPrint,
+  isFromProgressTab,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
@@ -42,12 +43,15 @@ export const IntroScreen = ({
   const currentVisit = useSelector((state: RootState) =>
     getMotherCurrentVisitSelector(state, '')
   );
-  const previousPlannedVisit = useSelector((state: RootState) =>
-    getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
+
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
   );
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForMotherSelector
-  );
+
+  const date =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate || currentVisit?.insertedDate || '';
 
   return (
     <>
@@ -63,11 +67,8 @@ export const IntroScreen = ({
             }
           : {})}
         description={`Your last home visit: ${
-          !!previousVisit?.visitDataStatus?.length &&
-          previousVisit?.scoreComment !== 'No data available for visit'
-            ? new Date(
-                String(previousPlannedVisit?.actualVisitDate)
-              ).toLocaleDateString('en-ZA', {
+          date
+            ? new Date(String(date)).toLocaleDateString('en-ZA', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -81,6 +82,7 @@ export const IntroScreen = ({
           walkthroughData={walkthroughData}
           isPrint={isPrint}
           isVisit={false}
+          isFromProgressTab={isFromProgressTab}
         />
         {!!onStartVisit && (
           <Button

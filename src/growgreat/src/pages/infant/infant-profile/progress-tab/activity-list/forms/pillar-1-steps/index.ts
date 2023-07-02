@@ -15,7 +15,6 @@ export { BreastfeedingWorksStep } from './nutrition/formula-milk-only-flow/breas
 export { UnsafeFeedingPracticesStep } from './nutrition/formula-milk-only-flow/unsafe-feeding-practices';
 export { FoodsFormStep } from './nutrition/mixed-feeding-flow/foods-form';
 export { MixedBenefitsOfBreastfeedingStep } from './nutrition/mixed-feeding-flow/benefits-of-breastfeeding';
-export { MixedBreastfeedingWorksStep } from './nutrition/mixed-feeding-flow/breastfeeding-works';
 export { MixedUnsafeFeedingPracticesStep } from './nutrition/mixed-feeding-flow/unsafe-feeding-practices';
 export { FirstFoodsStep } from './nutrition/mixed-feeding-flow/first-food';
 export { ComplementaryFeedingStep } from './nutrition/mixed-feeding-flow/complementary-feeding';

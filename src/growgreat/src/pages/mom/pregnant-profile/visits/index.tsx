@@ -185,10 +185,12 @@ export const Visits: React.FC = () => {
     const isToShowPastVisits = visits.length > filteredVisits.length;
 
     const array: StepItem[] = sortedVisits.map((item) => {
-      const [orderDateString] = item.orderDate.split('T');
-      const [, , day] = orderDateString.split('-');
+      const orderDateString = item?.orderDate
+        ? item?.orderDate?.split('T')?.[0]
+        : item?.plannedVisitDate?.split('T')?.[0];
+      const day = orderDateString?.split('-')?.[2];
 
-      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const orderDate = getDateWithoutTimeZone(orderDateString);
       const dueDate = getDateWithoutTimeZone(item.dueDate);
       const isMissedVisit = dueDate
         ? dueDate < todayDate!
@@ -282,7 +284,8 @@ export const Visits: React.FC = () => {
                     (response.payload as VisitDto) || undefined;
                   if (otherVisit?.id) {
                     history.push(
-                      `${location.pathname}/activities-form/${otherVisit?.id}`
+                      `${location.pathname}/activities-form/${otherVisit?.id}`,
+                      { editView: true }
                     );
                   }
                   onClose();

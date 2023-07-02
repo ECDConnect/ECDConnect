@@ -26,7 +26,7 @@ import { PregnantProfileRouteState } from './index.types';
 import { ProgressTab } from './progress-tab';
 import { Contact } from './contact';
 import { useAppDispatch } from '@/store';
-import { motherThunkActions } from '@/store/mother';
+import { motherActions, motherThunkActions } from '@/store/mother';
 import { Visits } from './visits';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import Joyride, { Step } from 'react-joyride';
@@ -59,7 +59,7 @@ import {
 } from '@/store/document';
 import { Header } from './components';
 import Pregnant from '@/assets/pregnant.svg';
-import { add } from 'date-fns';
+import { add, format } from 'date-fns';
 import { useWindowSize } from '@reach/window-size';
 import { PregnantMaternalCaseRecord } from '../components/pregnant-maternal-record/pregnant-maternal-record';
 import { useStaticData } from '@/hooks/useStaticData';
@@ -68,6 +68,7 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { userSelectors } from '@/store/user';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { DocumentActions } from '@/store/document/document.actions';
+import { PregnantMaternalCaseRecordModel } from '@/schemas/pregnant/pregnant-maternal-case-record';
 
 const HEADER_HEIGHT = 148;
 
@@ -352,7 +353,7 @@ export const PregnantProfile: React.FC = () => {
   }, [history, isAddMaternalCaseRecord, isInfoPage]);
 
   const onSubmit = useCallback(
-    async (data) => {
+    async (data: PregnantMaternalCaseRecordModel) => {
       const fileName = 'maternalcaserecord.png';
       const workflowStatusId = getWorkflowStatusIdByEnum(
         WorkflowStatusEnum.DocumentPendingVerification
@@ -373,6 +374,15 @@ export const PregnantProfile: React.FC = () => {
         fileType: FileTypeEnum.MaternalCaseRecord,
       };
 
+      const deliveryDatePayload = {
+        id: motherId,
+        expectedDateOfDelivery: format(data?.deliveryDate!, 'yyyy-MM-dd'),
+      };
+
+      appDispatch(motherActions.updateMotherDeliveryDate(deliveryDatePayload));
+      await appDispatch(
+        motherThunkActions.updateMotherDeliveryDate(deliveryDatePayload)
+      );
       appDispatch(documentActions.createDocument(documentInputModel));
       await appDispatch(
         documentThunkActions.createDocument(documentInputModel)

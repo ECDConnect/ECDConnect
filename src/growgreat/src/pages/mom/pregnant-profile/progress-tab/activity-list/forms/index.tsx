@@ -18,7 +18,7 @@ import {
 } from './steps';
 import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
-import { getReferralsForMothertSelector } from '@/store/referral/referral.selectors';
+import { getReferralsForMotherSelector } from '@/store/mother/mother.selectors';
 import {
   getIsMotherFirstVisitSelector,
   getMotherById,
@@ -44,7 +44,7 @@ export const Form = ({ onBack }: FormProps) => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  const referralsForMother = useSelector(getReferralsForMothertSelector);
+  const referralsForMother = useSelector(getReferralsForMotherSelector);
 
   const { isOnline } = useOnlineStatus();
 

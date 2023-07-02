@@ -7,6 +7,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public DateTime PlannedVisitDate { get; set; }
         public DateTime ActualVisitDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
         public Guid? MotherId { get; set; }
@@ -27,6 +28,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public DateTime? PlannedVisitDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
         public string? Risk { get; set; }  // high or normal
@@ -82,6 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public DateTime? PlannedVisitDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
+
         public Guid? VisitTypeId { get; set; }
         public VisitType VisitType { get; set; }
         public string? Risk { get; set; }  // high or normal

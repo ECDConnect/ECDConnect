@@ -12,7 +12,6 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
@@ -46,7 +45,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const date = format(new Date(), 'EEEE, d LLLL');
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
@@ -65,6 +63,13 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
+  const communitySupportGained =
+    traineeTimeline?.communitySupportStatus === 'Community support gained';
+  const registeredThreeChildren =
+    traineeTimeline?.threeChildrenRegisteredStatus ===
+    '3 or more children registered';
+  const availableForCoachVisit =
+    communitySupportGained && registeredThreeChildren;
 
   const completedItems = (visitSectionName: string) => {
     const completedItems = traineeVisitData
@@ -100,6 +105,95 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       getVisitData();
     }
   }, [activeStep, appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
+
+  const handleSuccessAlertMessage = useMemo(() => {
+    if (availableForCoachVisit) {
+      return (
+        <>
+          <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+            <div className="flex">
+              <div className="flex justify-center">
+                <img
+                  src={PositiveBonusEmoticon}
+                  alt="developing well"
+                  className="mt-3 ml-2 mr-2 h-12 w-16"
+                />
+              </div>
+              <div className="ml-3">
+                <div className="flex justify-center">
+                  <Typography
+                    type="h3"
+                    weight="bold"
+                    color={'white'}
+                    text={`Well done! You have completed all the required SmartSpace steps. `}
+                    fontSize="18"
+                    className="pt-2"
+                  />
+                </div>
+                <div className="mt-1 flex justify-center">
+                  <Typography
+                    type="body"
+                    color={'white'}
+                    text={`Your coach has been asked to schedule the SmartSpace check!`}
+                    fontSize="14"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-4 mb-2 w-full"
+              onClick={() => setSHowCoachVisit(true)}
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Request a visit from coach'}
+                color={'white'}
+              />
+            </Button>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+          <div className="flex">
+            <div className="flex justify-center">
+              <img
+                src={PositiveBonusEmoticon}
+                alt="developing well"
+                className="mt-3 ml-2 mr-2 h-12 w-16"
+              />
+            </div>
+            <div className="ml-3">
+              <div className="flex justify-center">
+                <Typography
+                  type="h3"
+                  weight="bold"
+                  color={'white'}
+                  text={`Well done! You have completed all the required SmartSpace steps.`}
+                  fontSize="18"
+                  className="pt-2"
+                />
+              </div>
+              <div className="mt-1 flex justify-center">
+                <Typography
+                  type="body"
+                  color={'white'}
+                  text={`Register 3 children and gain community support so your coach can schedule the SmartSpace check.`}
+                  fontSize="14"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }, [availableForCoachVisit]);
 
   const onSubmit = async () => {
     const sections = sectionQuestions?.map((item) => ({
@@ -444,8 +538,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Business'}
-      subTitle={date}
+      title={'SmartSpace checklist'}
       color={'primary'}
       onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
@@ -477,56 +570,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
               />
             </>
           )}
-          {allStepsCompleteFromDashboard && (
-            <>
-              <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
-                <div className="flex">
-                  <div className="flex justify-center">
-                    <img
-                      src={PositiveBonusEmoticon}
-                      alt="developing well"
-                      className="mt-3 ml-2 mr-2 h-12 w-16"
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <div className="flex justify-center">
-                      <Typography
-                        type="h3"
-                        weight="bold"
-                        color={'white'}
-                        text={`Well done! You have completed all the required SmartSpace steps. `}
-                        fontSize="18"
-                        className="pt-2"
-                      />
-                    </div>
-                    <div className="mt-1 flex justify-center">
-                      <Typography
-                        type="body"
-                        color={'white'}
-                        text={`Your coach has been asked to schedule the SmartSpace check!`}
-                        fontSize="14"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className="mt-4 mb-2 w-full"
-                  onClick={() => setSHowCoachVisit(true)}
-                >
-                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                  <Typography
-                    type={'help'}
-                    text={'Request a visit from coach'}
-                    color={'white'}
-                  />
-                </Button>
-              </div>
-            </>
-          )}
+          {allStepsCompleteFromDashboard && <>{handleSuccessAlertMessage}</>}
           <StackedList
             isFullHeight={false}
             className={'flex flex-col gap-2'}

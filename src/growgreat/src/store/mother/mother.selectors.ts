@@ -38,9 +38,10 @@ export const getMotherCurrentVisitSelector = (
 
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
-    for (var i = 0; i < allVisits.length; i++) {
-      if (allVisits[i].id === visitId) {
-        return allVisits[i];
+    const visits = state.mothers.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
       }
     }
   } else {
@@ -75,18 +76,28 @@ export const getMotherCurrentVisitSelector = (
 };
 
 export const getMotherLastVisitSelector = (
-  state: RootState
+  state: RootState,
+  visitId?: string
 ): VisitDto | undefined => {
   const visits = state.mothers.visits || [];
   const lastAttended = visits?.filter((item) => item.attended) || [];
 
-  return lastAttended.length
-    ? lastAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    : undefined;
+  if (visitId && visitId !== '') {
+    const visits = state.mothers.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
+      }
+    }
+  } else {
+    return lastAttended.length
+      ? lastAttended.reduce((prev, curr) =>
+          (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+            ? prev
+            : curr
+        )
+      : undefined;
+  }
 };
 
 export const getMotherPreviousVisitSelector = (
@@ -135,3 +146,39 @@ export const getIsMotherFirstVisitSelector = (state: RootState): boolean => {
 
   return attendedVisitsCount === 0;
 };
+
+export function getMotherNearestPreviousVisitByOrderDate(
+  state: RootState,
+  currentVisit?: VisitDto
+): VisitDto | undefined {
+  const visits = state.mothers.visits;
+
+  if (!visits?.length) return undefined;
+
+  const currentOrderDate = currentVisit
+    ? new Date(currentVisit?.orderDate!)
+    : new Date();
+  const previousVisits = visits.filter(
+    (item) =>
+      item.attended &&
+      item.orderDate !== null &&
+      new Date(item.orderDate) < currentOrderDate
+  );
+
+  if (previousVisits.length === 0) {
+    return undefined; // No previous date found
+  }
+
+  const nearestDateObject = previousVisits.reduce((previous, current) => {
+    if (
+      !previous ||
+      currentOrderDate.getTime() - new Date(current.orderDate).getTime() <
+        currentOrderDate.getTime() - new Date(previous.orderDate).getTime()
+    ) {
+      return current;
+    }
+    return previous;
+  });
+
+  return nearestDateObject;
+}

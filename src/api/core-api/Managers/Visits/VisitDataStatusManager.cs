@@ -402,10 +402,36 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
                 }
-                else if (vData.Question == Constants.GGSettings.q_hearing ||
-                            vData.Question == Constants.GGSettings.q_seeing ||
-                            vData.Question == Constants.GGSettings.q_brain ||
-                            vData.Question == Constants.GGSettings.q_moving) {
+                else if (vData.Question == Constants.GGSettings.q_hearing1 ||
+                        vData.Question == Constants.GGSettings.q_hearing2 ||
+                        vData.Question == Constants.GGSettings.q_hearing3 ||
+                        vData.Question == Constants.GGSettings.q_hearing4 ||
+                        vData.Question == Constants.GGSettings.q_hearing5 ||
+                        vData.Question == Constants.GGSettings.q_hearing6 ||
+                        vData.Question == Constants.GGSettings.q_hearing7 ||
+                        vData.Question == Constants.GGSettings.q_hearing8 ||
+                        vData.Question == Constants.GGSettings.q_hearing9 ||
+                        vData.Question == Constants.GGSettings.q_seeing1 ||
+                        vData.Question == Constants.GGSettings.q_seeing2 ||
+                        vData.Question == Constants.GGSettings.q_seeing3 ||
+                        vData.Question == Constants.GGSettings.q_seeing4 ||
+                        vData.Question == Constants.GGSettings.q_seeing5 ||
+                        vData.Question == Constants.GGSettings.q_seeing6 ||
+                        vData.Question == Constants.GGSettings.q_seeing7 ||
+                        vData.Question == Constants.GGSettings.q_brain1 ||
+                        vData.Question == Constants.GGSettings.q_brain2 ||
+                        vData.Question == Constants.GGSettings.q_brain3 ||
+                        vData.Question == Constants.GGSettings.q_brain4 ||
+                        vData.Question == Constants.GGSettings.q_brain5 ||
+                        vData.Question == Constants.GGSettings.q_brain6 ||
+                        vData.Question == Constants.GGSettings.q_brain7 ||
+                        vData.Question == Constants.GGSettings.q_moving1 ||
+                        vData.Question == Constants.GGSettings.q_moving2 ||
+                        vData.Question == Constants.GGSettings.q_moving3 ||
+                        vData.Question == Constants.GGSettings.q_moving4 ||
+                        vData.Question == Constants.GGSettings.q_moving5 ||
+                        vData.Question == Constants.GGSettings.q_moving6 ||
+                        vData.Question == Constants.GGSettings.q_moving7) {
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         developmentScreening.Add(vData);
                     }
@@ -853,7 +879,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
+                var _prevWeight = 0.0;
+                if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+                {
+                    _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+                }
                
                 Boolean weightIncreased = _weight > _prevWeight;
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
@@ -869,7 +899,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _red;
 
                         // Red progress
-                        comment = Constants.GGSettings.severely_underweight + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.severely_underweight;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -882,7 +912,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -895,7 +925,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = Constants.GGSettings.growth_faltering + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.growth_faltering;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -908,7 +938,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -921,7 +951,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -934,7 +964,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _green;
 
                         // Green progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
@@ -955,7 +985,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + _height;
+                    comment = lIndicator;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -996,7 +1026,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + questionAnswer;
+                    comment = mIndicator;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1012,7 +1042,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
+                    comment = Constants.GGSettings.severely_stunted;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1117,20 +1147,63 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
             var names = "";
             var comment = "";
+            string _hearing = "<li>Hearing</li>";
+            string _seeing = "<li>Seeing</li>";
+            string _brain = "<li>Brain</li>";
+            string _moving = "<li>Moving</li>";
 
             foreach (var item in developmentScreening)
             {
-                if (item.Question == Constants.GGSettings.q_hearing) {
-                    names = names + "<li>Hearing</li>";
+                if (item.Question == Constants.GGSettings.q_hearing1 ||
+                    item.Question == Constants.GGSettings.q_hearing2 ||
+                    item.Question == Constants.GGSettings.q_hearing3 ||
+                    item.Question == Constants.GGSettings.q_hearing4 ||
+                    item.Question == Constants.GGSettings.q_hearing5 ||
+                    item.Question == Constants.GGSettings.q_hearing6 ||
+                    item.Question == Constants.GGSettings.q_hearing7 ||
+                    item.Question == Constants.GGSettings.q_hearing8 ||
+                    item.Question == Constants.GGSettings.q_hearing9)
+                {
+                    if (names.IndexOf(_hearing) == -1)
+                    {
+                        names += _hearing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_seeing) {
-                    names = names + "<li>Seeing</li>";
+                if (item.Question == Constants.GGSettings.q_seeing1 ||
+                    item.Question == Constants.GGSettings.q_seeing2 ||
+                    item.Question == Constants.GGSettings.q_seeing3 ||
+                    item.Question == Constants.GGSettings.q_seeing4 ||
+                    item.Question == Constants.GGSettings.q_seeing5 ||
+                    item.Question == Constants.GGSettings.q_seeing6 ||
+                    item.Question == Constants.GGSettings.q_seeing7) {
+                    if (names.IndexOf(_seeing) == -1)
+                    {
+                        names += _seeing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_brain) {
-                    names = names + "<li>Brain</li>";
+                if (item.Question == Constants.GGSettings.q_brain1 ||
+                    item.Question == Constants.GGSettings.q_brain2 ||
+                    item.Question == Constants.GGSettings.q_brain3 ||
+                    item.Question == Constants.GGSettings.q_brain4 ||
+                    item.Question == Constants.GGSettings.q_brain5 ||
+                    item.Question == Constants.GGSettings.q_brain6 ||
+                    item.Question == Constants.GGSettings.q_brain7) {
+                    if (names.IndexOf(_brain) == -1)
+                    {
+                        names += _brain;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_moving) {
-                    names = names + "<li>Moving</li>";
+                if (item.Question == Constants.GGSettings.q_moving1 ||
+                    item.Question == Constants.GGSettings.q_moving2 ||
+                    item.Question == Constants.GGSettings.q_moving3 ||
+                    item.Question == Constants.GGSettings.q_moving4 ||
+                    item.Question == Constants.GGSettings.q_moving5 ||
+                    item.Question == Constants.GGSettings.q_moving6 ||
+                    item.Question == Constants.GGSettings.q_moving7) {
+                    if (names.IndexOf(_moving) == -1)
+                    {
+                        names += _moving;
+                    }
                 }
             }
 
@@ -1207,15 +1280,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
                                                           x.VisitType.Name == _additionalVisitType.Name &&
                                                           x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
-                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null) &&
-                                                          x.Comment == comment).FirstOrDefault();
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
             if (record == null)
             {
 
                 DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
                 if (nextVisitDate == default(DateTime))
                 {
-                    nextVisitDate = DateTime.Now;
+                    nextVisitDate = DateTime.Now.Date;
+                }
+                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                if (nextVisitDueDate == default(DateTime))
+                {
+                    nextVisitDueDate = DateTime.Now.Date;
                 }
 
                 VisitModel newVisit = new VisitModel();
@@ -1226,8 +1303,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 newVisit.Risk = Constants.GGSettings.normal_risk;
                 newVisit.Comment = comment;
                 newVisit.LinkedVisitId = new Guid(_visitId);
-                newVisit.ActualVisitDate = DateTime.Now;
                 newVisit.PlannedVisitDate = nextVisitDate;
+                newVisit.DueDate = nextVisitDueDate;
                 _visitManager.AddAdditionalVisit(newVisit);
             }
 
@@ -1631,10 +1708,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 scoreColor = _red;
             }
 
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.ScoreColor = scoreColor;
-            result.VisitDataStatus = visitDataStatus;
-
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
@@ -1655,6 +1728,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
             result.MuacComment = muacData?.Comment;
+
+            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
+            // EC-877: remove weigth, length and muac from list, because they are already handled above
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_length && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_muac).ToList();
 
             return result;
         }
