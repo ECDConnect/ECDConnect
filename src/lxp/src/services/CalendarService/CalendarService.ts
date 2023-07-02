@@ -74,25 +74,24 @@ class CalendarService {
     id: string
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = { data: { data: { updateCalendarEvent: { id: id } } } };
-    // const response = await apiInstance.post<any>(``, {
-    //   query: `
-    //     mutation updateCalendarEvent($input: ChildProgressReportInput, $id: UUID!) {
-    //       updateCalendarEvent(input: $input, id: $id) {
-    //         id
-    //       }
-    //     }
-    //   `,
-    //   variables: {
-    //     input: input,
-    //     id: id,
-    //   },
-    // });
-    // if (response.status !== 200) {
-    //   throw new Error(
-    //     'Updating calendar event failed - Server connection error'
-    //   );
-    // }
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateCalendarEvent($input: CalendarEventInput, $id: UUID!) {
+          updateCalendarEvent(input: $input, id: $id) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: input,
+        id: id,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating calendar event failed - Server connection error'
+      );
+    }
 
     return response.data.data.updateCalendarEvent;
   }

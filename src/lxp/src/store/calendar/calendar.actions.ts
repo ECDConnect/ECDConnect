@@ -2,7 +2,7 @@ import { createAsyncThunk } from '@reduxjs/toolkit';
 import { CalendarService } from '@services/CalendarService';
 import { RootState, ThunkApiType } from '../types';
 import { CalendarEventModel, CalendarEventTypeDto } from '@ecdlink/core';
-import { CalendarEvent, CalendarEventInput } from '@ecdlink/graphql';
+import { CalendarEventInput } from '@ecdlink/graphql';
 import { calendarConvert } from './calendar.util';
 
 export const upsertCalendar = createAsyncThunk<
@@ -106,11 +106,14 @@ export const updateCalendarEvent = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
-        const content = await new CalendarService(
+        /*const content =*/ await new CalendarService(
           userAuth?.auth_token
         ).updateCalendarEvent(input, input?.Id || '');
 
-        return calendarConvert.CalendarEventInput.CalendarEventModel(input);
+        const model =
+          calendarConvert.CalendarEventInput.CalendarEventModel(input);
+        model.__changed = false;
+        return model;
       } else {
         return rejectWithValue('no access token');
       }

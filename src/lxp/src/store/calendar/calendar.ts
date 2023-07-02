@@ -1,9 +1,7 @@
-import { CalendarEventModel } from '@ecdlink/core';
-import { createSlice, Draft, PayloadAction } from '@reduxjs/toolkit';
+import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import { getCalendarEventTypes, updateCalendarEvent } from './calendar.actions';
 import { CalendarState } from './calendar.types';
-import { CalendarEvent } from '@ecdlink/graphql';
 
 const initialState: CalendarState = {
   events: [],

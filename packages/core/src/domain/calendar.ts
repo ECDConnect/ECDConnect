@@ -13,4 +13,5 @@ export interface CalendarEventModel {
   name: string;
   start: string;
   participants: CalendarEventParticipantModel[];
+  action: any;
 }
