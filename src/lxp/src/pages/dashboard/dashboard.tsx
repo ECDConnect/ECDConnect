@@ -53,8 +53,6 @@ import { calendarThunkActions } from '@/store/calendar';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
-const enableCalendar = true;
-
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
@@ -453,6 +451,15 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
@@ -465,33 +472,15 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    dashboardItems.push(
-      enableCalendar
-        ? {
-            title: 'Calendar',
-            titleIcon: 'CalendarIcon',
-            titleIconClassName: styles.calendarIcon,
-            classNames: 'bg-uiBg',
-            onActionClick: () => {
-              goToCalendar();
-            },
-          }
-        : {
-            title: 'Calendar',
-            titleIcon: 'CalendarIcon',
-            titleIconClassName: styles.businessIcon,
-            onActionClick: () => ({}),
-            classNames: 'bg-uiBg',
-            chipConfig: {
-              colorPalette: {
-                backgroundColour: 'alertMain',
-                borderColour: 'alertMain',
-                textColour: 'white',
-              },
-              text: 'Coming soon',
-            },
-          }
-    );
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (isPrincipal || isFundaAppAdmin || isTrainee) {

@@ -20,7 +20,7 @@ export const getTraineeById = createAsyncThunk<
       let practitioner: TraineeDto | undefined;
 
       if (userId === null || userId.trim() === '') {
-        return rejectWithValue('no practitioner id supplied');
+        return rejectWithValue('no trainee practitioner id supplied');
       }
 
       if (userAuth?.auth_token) {
@@ -31,9 +31,9 @@ export const getTraineeById = createAsyncThunk<
         return rejectWithValue('no access token, profile check required');
       }
 
-      if (!practitioner) {
-        return rejectWithValue('Error getting practitioner');
-      }
+      // if (!practitioner) {
+      //   return rejectWithValue('Error getting trainee practitioner');
+      // }
 
       return practitioner;
     } catch (err) {

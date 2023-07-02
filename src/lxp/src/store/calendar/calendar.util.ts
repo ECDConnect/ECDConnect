@@ -8,6 +8,7 @@ export const calendarConvert = {
       return {
         __changed: false,
         id: input.Id,
+        action: !!input.Action ? JSON.parse(input.Action) : undefined,
         allDay: input.AllDay,
         description: input.Description || '',
         end: input.End,
@@ -47,6 +48,7 @@ export const calendarConvert = {
 
     CalendarEventInput: (input: CalendarEventModel): CalendarEventInput => {
       return {
+        Action: !!input.action ? JSON.stringify(input.action) : null,
         AllDay: input.allDay,
         Description: input.description,
         End: input.end,

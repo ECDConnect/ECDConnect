@@ -1,10 +1,12 @@
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { getPractitionerByUserId } from '@/store/practitioner/practitioner.selectors';
 import {
+  ActionModal,
   Alert,
   AlertType,
   BannerWrapper,
   Button,
+  DialogPosition,
   LoadingSpinner,
   MenuListDataItem,
   StackedList,
@@ -12,9 +14,10 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { useHistory, useParams } from 'react-router';
+import { useHistory, useLocation, useParams } from 'react-router';
 import { ReactComponent as BalloonsIcon } from '@/assets/balloons.svg';
 import {
+  CoachPractitionerJourneyPageState,
   PractitionerJourneyParams,
   generalSupportVisitTypes,
   visitTypes,
@@ -40,15 +43,22 @@ import {
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
+  CalendarEventModel,
   getFormattedDateInYearsMonthsAndDays,
   parseBool,
+  useDialog,
   usePrevious,
 } from '@ecdlink/core';
 import { Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
+import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
+import { calendarSelectors } from '@/store/calendar';
 
 export const CoachPractitionerJourney: React.FC = () => {
   const [showForm, setShowForm] = useState(false);
+  const { state: routeState } =
+    useLocation<CoachPractitionerJourneyPageState>();
 
   const selectedForm = window.sessionStorage.getItem(currentActivityKey);
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
@@ -59,6 +69,8 @@ export const CoachPractitionerJourney: React.FC = () => {
 
   const history = useHistory();
   const appDispatch = useAppDispatch();
+  const dialog = useDialog();
+  const calendarAddEvent = useCalendarAddEvent();
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -84,6 +96,12 @@ export const CoachPractitionerJourney: React.FC = () => {
     getReAccreditationFormDataByIdSelector(practitionerId)
   );
 
+  const practitionerEvents = useSelector(
+    calendarSelectors.findCalendarEvents({
+      participantUserId: practitionerId,
+    })
+  );
+
   const practitionerFirstName = practitioner?.user?.firstName;
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -95,6 +113,107 @@ export const CoachPractitionerJourney: React.FC = () => {
   const onStart = (visitName?: string) => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
+  };
+
+  const onSchedule = (visit: Visit, visitEventId?: string) => {
+    const today = new Date();
+    const event: CalendarAddEventInfo = !!visitEventId
+      ? {
+          id: visitEventId,
+        }
+      : {
+          id: '',
+          eventType: 'First PQA',
+          allDay: false,
+          start: new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+            today.getHours() + 1,
+            0,
+            0,
+            0
+          ).toISOString(),
+          end: new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate(),
+            today.getHours() + 1,
+            30,
+            0,
+            0
+          ).toISOString(),
+          minDate: new Date(
+            today.getFullYear(),
+            today.getMonth(),
+            today.getDate()
+          ).toISOString(),
+          maxDate: new Date(visit.plannedVisitDate).toISOString(),
+          name: '',
+          description: '',
+          participantUserIds: [practitionerId],
+          action: {
+            buttonName: 'Start visit',
+            buttonIcon: 'ArrowCircleRightIcon',
+            url: history.location.pathname,
+            state: {
+              action: 'onStart',
+              actionParams: {
+                visitName: visit.visitType?.name || '',
+              },
+            },
+          },
+        };
+
+    calendarAddEvent({
+      event,
+      onUpdated: (isNew: boolean, event: CalendarEventModel) => {
+        //TODO Update visit.plannedVisitDate to event.start
+      },
+      onCancel: () => {},
+    });
+  };
+
+  const onScheduleOrStart = (visit: Visit, visitEventId?: string) => {
+    dialog({
+      position: DialogPosition.Middle,
+      render: (onSubmit, onCancel) => (
+        <ActionModal
+          className="bg-white"
+          icon={'QuestionMarkCircleIcon'}
+          iconColor="white"
+          iconBorderColor="infoMain"
+          importantText={`Would you like to schedule or start the first PQA visit?`}
+          detailText={
+            'Tap schedule to go to the calendar or, if you are starting the first PQA visit now, tap start.'
+          }
+          actionButtons={[
+            {
+              text: 'Schedule in calendar',
+              textColour: 'white',
+              colour: 'primary',
+              type: 'filled',
+              onClick: () => {
+                onSubmit();
+                onSchedule(visit, visitEventId);
+              },
+              leadingIcon: 'CalendarIcon',
+            },
+            {
+              text: 'Start visit now',
+              textColour: 'primary',
+              colour: 'primary',
+              type: 'outlined',
+              onClick: () => {
+                onSubmit();
+                onStart(visit.visitType?.name || '');
+              },
+              leadingIcon: 'ArrowCircleRightIcon',
+            },
+          ]}
+        />
+      ),
+    });
   };
 
   const uncompletedPrePqaVisits =
@@ -198,6 +317,13 @@ export const CoachPractitionerJourney: React.FC = () => {
     }
   }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
+  useEffect(() => {
+    if (routeState.action === 'onStart') {
+      if (routeState?.actionParams?.visitName !== undefined)
+        onStart(routeState?.actionParams?.visitName);
+    }
+  }, []);
+
   if (
     (showForm && isView) ||
     (showForm && currentVisit?.extraData?.visitId) ||
@@ -292,8 +418,10 @@ export const CoachPractitionerJourney: React.FC = () => {
             <Steps
               items={timelineSteps({
                 timeline,
+                practitionerEvents,
                 onView,
                 onStart,
+                onScheduleOrStart,
                 isLoading,
                 isOnline,
                 visits: uncompletedVisits,

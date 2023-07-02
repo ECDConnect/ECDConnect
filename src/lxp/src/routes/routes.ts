@@ -31,7 +31,6 @@ const ROUTES = {
   BUSINESS_PREVIOUS_STATEMENTS_LIST: '/business-previous-statements-list',
   BUSINESS_MONTH_STATEMENTS_DETAILS: '/month-statements-details',
   CALENDAR: '/calendar',
-  CALENDAR_ADD_EVENT: '/calendar/add-event',
   CLASSROOM: '/classroom',
   TRAINING: '/training',
   COMMUNITY: '/community',
