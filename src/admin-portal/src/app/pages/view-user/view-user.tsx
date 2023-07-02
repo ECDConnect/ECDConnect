@@ -55,16 +55,20 @@ import * as yup from 'yup';
 import zxcvbn from 'zxcvbn-typescript';
 
 
-const adminSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required').nullable(),
+const chwSchema = yup.object().shape({
+  email: yup.string().email().required('email address is required'),
   idNumber: yup
     .string()
-    .matches(SA_ID_REGEX, 'Id number is not valid').nullable()
+    .matches(SA_ID_REGEX, 'Id number is not valid')
     .required('ID number is required'),
   phoneNumber: yup
     .string()
-    .matches(SA_CELL_REGEX, 'Phone number is not valid').nullable()
+    .matches(SA_CELL_REGEX, 'Phone number is not valid')
     .required('Cellphone number is required'),
+});
+
+const adminSchema = yup.object().shape({
+  email: yup.string().email().required('email address is required'),
 });
 
 
@@ -226,6 +230,10 @@ export function ViewUser(props: any) {
   const [editActive, setEditActive] = useState<boolean>(false);
 
 
+  let isCHW = userData?.userById?.roles?.some(
+    (role: any) => role.name === 'Health Care Worker'
+  )
+
   const {
     register,
     setValue: adminDetailSetValue,
@@ -234,6 +242,18 @@ export function ViewUser(props: any) {
     handleSubmit: handleSubmitAdminDetails,
   } = useForm({
     resolver: yupResolver(adminSchema),
+    defaultValues: initialUserDetailsValues,
+    mode: 'onChange',
+  });
+
+  const {
+    register: registerCHW,
+    setValue: chwDetailSetValue,
+    formState: chwDetailFormState,
+    getValues: chwDetailGetValues,
+    handleSubmit: handleSubmitChwDetails,
+  } = useForm({
+    resolver: yupResolver(chwSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -256,39 +276,38 @@ export function ViewUser(props: any) {
   const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
     adminDetailFormState;
 
+
+  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } = chwDetailFormState;
   const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (
-      userData &&
-      adminDetailFormState
-    ) {
-      adminDetailSetValue(
-        'email',
-        userData?.userById?.email,
-        {
-          shouldValidate: true,
-        }
-      );
 
-      adminDetailSetValue(
-        'idNumber',
-        userData?.userById?.idNumber,
-        {
-          shouldValidate: true,
-        }
-      );
+    adminDetailSetValue(
+      'email',
+      userData?.userById?.email,
+      {
+        shouldValidate: true,
+      }
+    );
 
-      adminDetailSetValue(
-        'phoneNumber',
-        userData?.userById?.phoneNumber,
-        {
-          shouldValidate: true,
-        }
-      );
+    chwDetailSetValue(
+      'idNumber',
+      userData?.userById?.idNumber,
+      {
+        shouldValidate: true,
+      }
+    );
 
-    }
+    chwDetailSetValue(
+      'phoneNumber',
+      userData?.userById?.phoneNumber,
+      {
+        shouldValidate: true,
+      }
+    );
+
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData]);
 
@@ -297,10 +316,11 @@ export function ViewUser(props: any) {
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
     const adminDataForm = adminDetailGetValues()
+    const chwDataForm = chwDetailGetValues()
 
     const chwInputModel: UserModelInput = {
-      phoneNumber: adminDataForm?.phoneNumber,
-      idNumber: adminDataForm?.idNumber,
+      phoneNumber: chwDataForm?.phoneNumber,
+      idNumber: chwDataForm?.idNumber,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
@@ -367,10 +387,6 @@ export function ViewUser(props: any) {
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-
-  let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Health Care Worker'
-  )
 
 
   console.log("chwData?.GetHealthCareWorkerById.user", isCHW);
@@ -466,14 +482,14 @@ export function ViewUser(props: any) {
                     <div className="grid grid-cols-1 ">
 
                       {
-                        isCHW ?
+                        (isCHW || props.location.state?.component === 'chw') ?
                           <>
                             <div className="my-4 w-6/12 sm:col-span-3">
                               <FormField
                                 label={'ID number *'}
                                 nameProp={'idNumber'}
-                                register={register}
-                                error={adminDetailFormErrors.idNumber?.message}
+                                register={registerCHW}
+                                error={chwDetailFormErrors.idNumber?.message}
 
                               />
                             </div>
@@ -481,8 +497,8 @@ export function ViewUser(props: any) {
                               <FormField
                                 label={'Cellphone number *'}
                                 nameProp={'phoneNumber'}
-                                register={register}
-                                error={adminDetailFormErrors.phoneNumber?.message}
+                                register={registerCHW}
+                                error={chwDetailFormErrors.phoneNumber?.message}
 
                               />
                             </div>
@@ -495,7 +511,6 @@ export function ViewUser(props: any) {
                             />
                           </div>
                       }
-
 
                       <div className="my-4 w-6/12 sm:col-span-3">
                         <FormField
@@ -528,32 +543,48 @@ export function ViewUser(props: any) {
                       </div>
                     </div>
                   </div>
+                  {
+                    (isCHW || props.location.state?.component === 'chw') ? <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      disabled={!isChwDetailValid}
+                      onClick={handleSubmitChwDetails(onSave)
+                      }
+                    >
+                      <SaveIcon color="white" className="mr-6 h-6 w-6">
+                        {' '}
+                      </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes2'}
+                      ></Typography>
+                    </Button> : <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      disabled={!isAdminDetailValid}
+                      onClick={handleSubmitAdminDetails(onSave)
+                      }
+                    >
+                      <SaveIcon color="white" className="mr-6 h-6 w-6">
+                        {' '}
+                      </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes'}
+                      ></Typography>
+                    </Button>}
 
-                  <Button
-                    className={'mt-3 w-4/12 rounded-md '}
-                    type="filled"
-                    isLoading={loading}
-                    color="secondary"
-                    disabled={!isAdminDetailValid}
-                    onClick={handleSubmitAdminDetails(onSave)
-                    }
-                  >
-                    <SaveIcon color="white" className="mr-6 h-6 w-6">
-                      {' '}
-                    </SaveIcon>
-                    <Typography
-                      type="help"
-                      color="white"
-                      text={'Save Changes'}
-                    ></Typography>
-                  </Button>
+
                 </>
               ) : (
-                !isCHW ? <div className="flex flex-row justify-start pt-4 text-current">
-                  <p className="px-4 text-xl">
-                    Email: {userData?.userById?.email}
-                  </p>
-                </div> : <div className="flex flex-row justify-start pt-4 text-current">
+                (isCHW || props.location.state?.component === 'chw') ? <div className="flex flex-row justify-start pt-4 text-current">
+
                   <p className="px-4 text-xl">
                     ID: {userData?.userById?.idNumber}
                   </p>
@@ -566,6 +597,10 @@ export function ViewUser(props: any) {
                     WhatsApp:{' '}
                     {userData?.userById?.whatsappNumber}
                   </p>}
+                </div> : <div className="flex flex-row justify-start pt-4 text-current">
+                  <p className="px-4 text-xl">
+                    Email: {userData?.userById?.email}
+                  </p>
                 </div>
                 // {
                 //   // || isCHW 

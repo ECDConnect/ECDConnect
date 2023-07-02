@@ -183,7 +183,12 @@ export default function TeamLeads() {
             {hasPermission(PermissionEnum.create_user) && (
               <button
                 onClick={() => {
-                  history.push('/upload-users');
+                  history.push({
+                    pathname: "/upload-users",
+                    state:{
+                      component: "team-leads"
+                    }
+                  });
                 }}
                 type="button"
                 className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"

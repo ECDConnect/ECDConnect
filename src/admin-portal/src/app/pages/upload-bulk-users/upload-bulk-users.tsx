@@ -1,7 +1,9 @@
 import { useLazyQuery, useMutation } from '@apollo/client';
 import {
   HealthCareWorkerTemplate,
+  TeamLeadsTemplate,
   UploadHealthCareWorkers,
+  UploadTeamLeads,
   importAll,
 } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
@@ -16,19 +18,13 @@ import {
 import { useHistory } from 'react-router';
 import { Alert } from '@ecdlink/ui';
 
-export interface UploadAllTemplateProps {
-  closeDialog: (value: boolean) => void;
-}
-
 const acceptedFormats = ['xls', 'xlsx'];
 
-export default function UploadBulkUser({
-  closeDialog,
-}: UploadAllTemplateProps) {
+export default function UploadBulkUser(props: any) {
   const { setValue, handleSubmit } = useForm();
   const history = useHistory();
   const { setNotification } = useNotifications();
-
+  // props.location.state?.component === 'team-leads'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
 
   const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
@@ -38,7 +34,14 @@ export default function UploadBulkUser({
     }
   );
 
-  const [allImport] = useMutation(importAll);
+  const [getTeamLeadsExcelTemplateGenerator, { data: teamLeadsTemplateData }] = useLazyQuery(
+    TeamLeadsTemplate,
+    {
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
+  const [importTeamLeads] = useMutation(UploadTeamLeads);
   const [importPractitioners, loading] = useMutation(UploadHealthCareWorkers);
 
   const onSubmit = async (values: any) => {
@@ -102,7 +105,11 @@ export default function UploadBulkUser({
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
-    await getExcelTemplateGenerator();
+    if (props.location.state?.component === 'team-leads') {
+      await getTeamLeadsExcelTemplateGenerator();
+    } else {
+      await getExcelTemplateGenerator();
+    }
   };
 
   return (
@@ -176,7 +183,7 @@ export default function UploadBulkUser({
             </div>
           </form>
 
-      {/* { (
+          {/* { (
         <Alert
           className="mt-5 mb-3 rounded-md"
           message={`Error`}
