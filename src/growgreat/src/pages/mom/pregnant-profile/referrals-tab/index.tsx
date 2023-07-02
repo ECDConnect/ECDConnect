@@ -33,8 +33,10 @@ import { format } from 'date-fns';
 import {
   getMotherCurrentVisitSelector,
   getMotherById,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
+import { getReferralsForMotherSelector } from '@/store/mother/mother.selectors';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import ROUTES from '@/routes/routes';
 import { useWalkthrough } from '@/context/walkthroughContext';
@@ -58,9 +60,8 @@ export const ReferralsTab: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
   const appDispatch = useAppDispatch();
-  const referralsForMother = useSelector(
-    motherSelectors.getReferralsForMotherSelector
-  );
+  const referralsForMother = useSelector(getReferralsForMotherSelector);
+
   const completedreferralsForMother = useSelector(
     motherSelectors.getCompletedReferralsForMotherSelector
   );
@@ -84,6 +85,15 @@ export const ReferralsTab: React.FC = () => {
     getMotherCurrentVisitSelector(state, '')
   );
 
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
+
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
   const wasWalkthrough = usePrevious(isWalkthrough);
@@ -98,7 +108,14 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getReferralsForMother({
           motherId: motherId,
@@ -106,11 +123,24 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, motherId, currentVisit]);
+  }, [
+    appDispatch,
+    motherId,
+    currentVisit,
+    previousVisit,
+    isToGetPreviousVisitStatusData,
+  ]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getCompletedReferralsForMother({
           motherId: motherId,
@@ -118,7 +148,13 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, motherId, currentVisit]);
+  }, [
+    appDispatch,
+    motherId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // group data under sections
   const groupedData = useMemo(() => {
@@ -136,6 +172,10 @@ export const ReferralsTab: React.FC = () => {
     );
     return groupedData;
   }, [referralsForMother]) as GroupedData;
+
+  const previousGroupedData = usePrevious(groupedData) as
+    | GroupedData
+    | undefined;
 
   const walkthroughData = {
     sections: [
@@ -187,17 +227,13 @@ export const ReferralsTab: React.FC = () => {
     }
 
     if (isWalkthrough) return;
+  }, [isWalkthrough, walkthroughData.questions, wasWalkthrough]);
 
-    if (questions) return;
-
-    return setAnswers(groupedData);
-  }, [
-    groupedData,
-    isWalkthrough,
-    questions,
-    walkthroughData.questions,
-    wasWalkthrough,
-  ]);
+  useEffect(() => {
+    if (previousGroupedData === undefined && groupedData !== undefined) {
+      return setAnswers(groupedData);
+    }
+  }, [groupedData, previousGroupedData]);
 
   const handleSetReferrals = useCallback(
     (value: VisitDataStatusFilterInput[]) => {
@@ -291,7 +327,14 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getCompletedReferralsForMother({
           motherId: motherId,
@@ -308,7 +351,14 @@ export const ReferralsTab: React.FC = () => {
           break;
         }
       }
-  }, [completedreferralsForMother, appDispatch, motherId, currentVisit]);
+  }, [
+    isToGetPreviousVisitStatusData,
+    currentVisit,
+    completedreferralsForMother,
+    appDispatch,
+    motherId,
+    previousVisit?.id,
+  ]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -542,9 +592,16 @@ export const ReferralsTab: React.FC = () => {
                 dividerType="dashed"
               />
               {/* Complted back referrals */}
-              {item.backReferralCompleted && (
+              {item.backReferralCompleted && isShowCompletedItems && (
                 <div className="my-4 flex items-center gap-3">
-                  <div className="flex flex-col">
+                  <div
+                    className="flex flex-col"
+                    style={
+                      isWalkthrough && walkthroughState?.stepIndex !== 2
+                        ? { visibility: 'hidden' }
+                        : {}
+                    }
+                  >
                     <Typography
                       type="markdown"
                       align="left"
@@ -557,7 +614,7 @@ export const ReferralsTab: React.FC = () => {
                       type="body"
                       align="left"
                       weight="skinny"
-                      text={`Reffered on ${format(
+                      text={`Referred on ${format(
                         new Date(item.insertedDate),
                         'dd MMM yyyy'
                       )}`}
@@ -577,20 +634,25 @@ export const ReferralsTab: React.FC = () => {
               /> */}
             </div>
           ))}
-          {!isWalkthrough && showCompletedButton && (
-            <Button
-              type="outlined"
-              color="primary"
-              textColor="primary"
-              icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
-              text={
-                isShowCompletedItems
-                  ? 'Hide completed back-referrals'
-                  : 'See completed back-referrals'
-              }
-              onClick={() => setIsShowCompletedItems((prevState) => !prevState)}
-            />
-          )}
+          {!isWalkthrough &&
+            completedreferralsForMother &&
+            completedreferralsForMother?.length > 1 &&
+            showCompletedButton && (
+              <Button
+                type="outlined"
+                color="primary"
+                textColor="primary"
+                icon={isShowCompletedItems ? 'EyeOffIcon' : 'EyeIcon'}
+                text={
+                  isShowCompletedItems
+                    ? 'Hide completed back-referrals'
+                    : 'See completed back-referrals'
+                }
+                onClick={() =>
+                  setIsShowCompletedItems((prevState) => !prevState)
+                }
+              />
+            )}
 
           {/* Show referral button here when there are no back-referral   */}
           <Button
@@ -663,7 +725,7 @@ export const ReferralsTab: React.FC = () => {
               <Typography
                 type="h3"
                 color={'textDark'}
-                text={`All back-referrals are complted for ${
+                text={`All back-referrals are completed for ${
                   mother?.user?.firstName || ''
                 }! `}
                 className="pt-2"
@@ -674,7 +736,7 @@ export const ReferralsTab: React.FC = () => {
               type="body"
               align="center"
               weight="skinny"
-              text="You can see your complted back-referrals here."
+              text="You can see your completed back-referrals here."
               color="textMid"
             />
           </div>

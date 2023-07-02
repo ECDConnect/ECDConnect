@@ -98,7 +98,8 @@ export const Dashboard: React.FC = () => {
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
   const isRegistered = practitioner?.isRegistered;
   const isProgress = practitioner?.progress;
-  const isFromTraineeFlow = location.state.isFromTraineeFlow;
+  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
+  const isTrainee = practitioner?.isTrainee;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
@@ -350,13 +351,6 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
-      name: NavigationTypes.Training,
-      href: ROUTES.TRAINING,
-      icon: 'BellIcon',
-      current: false,
-      showDivider: true,
-    },
-    {
       name: NavigationTypes.Community,
       href: ROUTES.COMMUNITY,
       icon: 'BookOpenIcon',
@@ -372,7 +366,17 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (!isTrainee) {
+    navigation?.splice(4, 0, {
+      name: NavigationTypes.Training,
+      href: ROUTES.TRAINING,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+    });
+  }
+
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -490,7 +494,7 @@ export const Dashboard: React.FC = () => {
     );
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -559,6 +563,11 @@ export const Dashboard: React.FC = () => {
   const goToBusiness = () => {
     if (isPrincipal || isFundaAppAdmin) {
       history.push(ROUTES.BUSINESS);
+      return;
+    }
+    if (isTrainee) {
+      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+      return;
     }
   };
 

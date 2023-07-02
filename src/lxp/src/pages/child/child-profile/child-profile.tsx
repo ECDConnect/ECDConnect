@@ -132,6 +132,7 @@ export const ChildProfile: React.FC = () => {
     classroomsSelectors.getLearnerClassGroupId(child?.userId)
   );
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const playGroup = useSelector(
     classroomsSelectors.getClassroomGroupById(classGroupId)
   );
@@ -704,7 +705,11 @@ export const ChildProfile: React.FC = () => {
           if (isPrincipal && practitioners?.length! > 1) {
             history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
           } else {
-            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+            if (isCoach) {
+              history.goBack();
+            } else {
+              history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+            }
           }
         }}
         displayOffline={!isOnline}

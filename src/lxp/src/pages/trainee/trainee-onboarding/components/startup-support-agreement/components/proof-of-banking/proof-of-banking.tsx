@@ -98,7 +98,7 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
 
   return (
     <>
-      <BannerWrapper
+      {/* <BannerWrapper
         showBackground={false}
         size="medium"
         renderBorder={true}
@@ -108,71 +108,71 @@ export const ProofOfBanking: React.FC<ReadAndAcceptAgreementProps> = ({
         onBack={() => setShowProofOfBanking(false)}
         displayOffline={!isOnline}
         renderOverflow={true}
-      >
-        <div className="flex flex-col justify-around p-4">
-          <div>
-            <Typography
-              className={'my-3'}
-              color={'textDark'}
-              type={'h2'}
-              text={'Proof of banking'}
+      > */}
+      <div className="flex flex-col justify-around p-4">
+        <div>
+          <Typography
+            className={'my-3'}
+            color={'textDark'}
+            type={'h2'}
+            text={'Proof of banking'}
+          />
+          <div className="'flex items-center' w-full flex-row justify-start">
+            <ImageInput
+              acceptedFormats={acceptedFormats}
+              label={questions?.[0].question}
+              nameProp="r4bPhoto"
+              icon="CameraIcon"
+              className={'py-4'}
+              currentImageString={r4bPhotoUrl}
+              register={programmeFormRegister}
+              overrideOnClick={() => setPhotoActionBarVisible(true)}
+              onValueChange={(imageString: string) => {}}
+            ></ImageInput>
+          </div>
+          {!questions?.some((item) => item?.answer === '') && (
+            <Alert
+              className="my-4"
+              variant="flat"
+              type="successLight"
+              title={`All steps complete - your signature has been added.`}
             />
-            <div className="'flex items-center' w-full flex-row justify-start">
-              <ImageInput
-                acceptedFormats={acceptedFormats}
-                label={questions?.[0].question}
-                nameProp="r4bPhoto"
-                icon="CameraIcon"
-                className={'py-4'}
-                currentImageString={r4bPhotoUrl}
-                register={programmeFormRegister}
-                overrideOnClick={() => setPhotoActionBarVisible(true)}
-                onValueChange={(imageString: string) => {}}
-              ></ImageInput>
-            </div>
-            {!questions?.some((item) => item?.answer === '') && (
-              <Alert
-                className="my-4"
-                variant="outlined"
-                type="success"
-                title={`All steps complete - your signature has been added.`}
-              />
-            )}
-            <div className="mt-4 mb-16 h-full w-full">
-              <Button
-                size="normal"
-                className="mb-4 w-full"
-                type="filled"
-                color="primary"
-                text="Save"
-                textColor="white"
-                icon="ArrowCircleRightIcon"
-                onClick={() => {
-                  onAllStepsComplete();
-                }}
-                disabled={questions?.some((item) => item?.answer === '')}
-              />
-            </div>
+          )}
+          <div className="mt-4 mb-16 h-full w-full">
+            <Button
+              size="normal"
+              className="mb-4 w-full"
+              type="filled"
+              color="primary"
+              text="Save"
+              textColor="white"
+              icon="ArrowCircleRightIcon"
+              onClick={() => {
+                onAllStepsComplete();
+              }}
+              disabled={questions?.some((item) => item?.answer === '')}
+            />
           </div>
         </div>
-        <Dialog
-          visible={photoActionBarVisible}
-          position={DialogPosition.Bottom}
-          stretch
-        >
-          <div className={`p-4`}>
-            <PhotoPrompt
-              title={'R4b photo'}
-              onClose={() => setPhotoActionBarVisible(false)}
-              onAction={(imageUrl: string) => {
-                setPhotoUrl(imageUrl);
-                onOptionSelected(imageUrl, 0);
-              }}
-              onDelete={() => deleteBirthDocumentPhoto()}
-            ></PhotoPrompt>
-          </div>
-        </Dialog>
-      </BannerWrapper>
+      </div>
+      <Dialog
+        visible={photoActionBarVisible}
+        position={DialogPosition.Bottom}
+        stretch
+      >
+        <div className={`p-4`}>
+          <PhotoPrompt
+            title={'Proof of banking'}
+            onClose={() => setPhotoActionBarVisible(false)}
+            onAction={(imageUrl: string) => {
+              setPhotoUrl(imageUrl);
+              onOptionSelected(imageUrl, 0);
+            }}
+            onDelete={() => deleteBirthDocumentPhoto()}
+          ></PhotoPrompt>
+        </div>
+      </Dialog>
+      {/* </BannerWrapper> */}
     </>
   );
 };

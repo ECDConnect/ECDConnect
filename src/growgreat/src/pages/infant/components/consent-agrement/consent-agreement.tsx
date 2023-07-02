@@ -77,7 +77,6 @@ export const ConsentAgreement: React.FC<EditConsentAgreementProps> = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           className={'mt-2 w-full'}
-          selectedOptions={multipleChildren}
         />
       </div>
       {multipleChildren && (

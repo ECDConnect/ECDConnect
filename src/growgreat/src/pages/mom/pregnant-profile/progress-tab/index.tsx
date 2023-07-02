@@ -15,7 +15,6 @@ import { useWindowSize } from '@reach/window-size';
 import { activitiesTypes } from './activity-list/activities-list';
 import { FollowUpWalkthroughData } from './activity-list/forms/components/follow-up';
 import { useWalkthrough } from '@/context/walkthroughContext';
-import { getMotherCurrentVisitSelector } from '@/store/mother/mother.selectors';
 
 const HEADER_HEIGHT = { filled: 470, empty: 540 };
 
@@ -45,12 +44,6 @@ export const ProgressTab = () => {
     getPreviousVisitInformationForMotherSelector
   );
 
-  const currentVisit = useSelector((state: RootState) =>
-    getMotherCurrentVisitSelector(state, '')
-  );
-
-  // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
-
   const walkthroughData: FollowUpWalkthroughData = {
     progressBar: {
       message: `${mother?.user?.firstName} is doing well!`,
@@ -78,26 +71,7 @@ export const ProgressTab = () => {
       window.sessionStorage.clear();
       return;
     }
-
-    // if (
-    //   (!previousCurrentVisit ||
-    //     (!!previousCurrentVisit &&
-    //       previousCurrentVisit?.id !== currentVisit?.id)) &&
-    //   !!currentVisit
-    // )
-    //   appDispatch(
-    //     visitThunkActions.getPreviousVisitInformationForMother({
-    //       visitId: currentVisit?.id,
-    //     })
-    //   );
-  }, [
-    appDispatch,
-    //currentVisit,
-    //currentVisit?.id,
-    isWalkthroughSession,
-    //mother?.id,
-    //previousCurrentVisit,
-  ]);
+  }, [appDispatch, isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -139,6 +113,7 @@ export const ProgressTab = () => {
           }
           headerText={mother?.user?.firstName}
           isPrint={isPrint}
+          isFromProgressTab
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">
