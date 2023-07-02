@@ -14,6 +14,7 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
+import { Alert } from '@ecdlink/ui';
 
 export interface UploadAllTemplateProps {
   closeDialog: (value: boolean) => void;
@@ -174,6 +175,15 @@ export default function UploadBulkUser({
               </div>
             </div>
           </form>
+
+      {/* { (
+        <Alert
+          className="mt-5 mb-3 rounded-md"
+          message={`Error`}
+          type="error"
+        
+        />
+      )} */}
         </div>
         <div></div>
       </div>
