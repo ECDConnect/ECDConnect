@@ -162,7 +162,9 @@ export const CalendarSearchParticipant: React.FC<
         onBack={onSearchDone}
         onSearchButtonClick={onSearch}
         onClickItem={onPractitionerAdd}
-      ></SearchHeader>
+      >
+        <div></div>
+      </SearchHeader>
       <div className="flex justify-center">
         <div className="w-11/12">
           <StackedList
