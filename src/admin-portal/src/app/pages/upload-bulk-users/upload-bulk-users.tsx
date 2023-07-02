@@ -13,6 +13,7 @@ import { b64toBlob, useNotifications, NOTIFICATION } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
   DownloadIcon,
+  LockClosedIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
@@ -26,6 +27,8 @@ export default function UploadBulkUser(props: any) {
   const { setNotification } = useNotifications();
   // props.location.state?.component === 'team-leads'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
+  const [docErrors, setDocErrors] = useState([]);
+
 
   const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
     HealthCareWorkerTemplate,
@@ -48,30 +51,74 @@ export default function UploadBulkUser(props: any) {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      await importPractitioners({
-        variables: {
-          file: model.templateFile?.file,
-        },
-      }).then((res) => {
-        console.log(res);
-        // setNotification({
-        //   title: 'Successfully Updated User!',
-        //   variant: NOTIFICATION.SUCCESS,
-        // });
-        if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
-          setNotification({
-            title: 'Error uploading CHWs!',
-            variant: NOTIFICATION.ERROR,
-          });
-        } else {
-          setNotification({
-            title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-        }
-      });
+      if (props.location.state?.component === 'team-leads') {
+        await importTeamLeads({
+          variables: {
+            file: model.templateFile?.file,
+          },
+        }).then((res) => {
+          if (res.data?.importTeamLeads.validationErrors.length !== 0) {
+
+            setDocErrors(res.data?.importTeamLeads.validationErrors)
+          } else {
+            setNotification({
+              title: `Successfully Uploaded ${res.data?.importTeamLeads.createdUsers} team leads!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        });
+      } else {
+        await importPractitioners({
+          variables: {
+            file: model.templateFile?.file,
+          },
+        }).then((res) => {
+
+          if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
+
+            setDocErrors(res.data?.importTeamLeads.validationErrors)
+
+          } else {
+            setNotification({
+              title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        });
+      }
+
     }
   };
+
+  useEffect(() => {
+    if (
+      teamLeadsTemplateData &&
+      teamLeadsTemplateData.teamLeadTemplateGenerator &&
+      !templateDownloaded && props.location.state?.component === 'team-leads'
+    ) {
+      const b64Data = teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
+      const contentType =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.fileType;
+      const fileName = teamLeadsTemplateData.teamLeadTemplateGenerator.fileName;
+      const extension =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.extension;
+      const blob = b64toBlob(b64Data, contentType);
+
+      const link = document.createElement('a');
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${fileName}${extension}`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      setTemplateDownloaded(true);
+    }
+  }, [teamLeadsTemplateData, templateDownloaded]);
 
   useEffect(() => {
     if (
@@ -107,6 +154,7 @@ export default function UploadBulkUser(props: any) {
     setTemplateDownloaded(false);
     if (props.location.state?.component === 'team-leads') {
       await getTeamLeadsExcelTemplateGenerator();
+
     } else {
       await getExcelTemplateGenerator();
     }
@@ -183,14 +231,17 @@ export default function UploadBulkUser(props: any) {
             </div>
           </form>
 
-          {/* { (
-        <Alert
-          className="mt-5 mb-3 rounded-md"
-          message={`Error`}
-          type="error"
-        
-        />
-      )} */}
+          {docErrors.length > 0 ? (
+            <Alert
+              className="mt-5 mb-3 rounded-md"
+              message={`Error`}
+              type="error"
+              list={
+                docErrors.map(error => error.errorDescription)
+              }
+              listColor='errorMain'
+            />
+          ) : null}
         </div>
         <div></div>
       </div>
