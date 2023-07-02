@@ -23,6 +23,7 @@ import { useAppDispatch } from '@/store';
 import {
   getInfantCurrentVisitSelector,
   getInfantById,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import thumbsUpImage from '@/assets/thumbsUp.png';
 import { infantSelectors, infantThunkActions } from '@/store/infant';
@@ -68,6 +69,9 @@ export const ReferralsTab: React.FC = () => {
   const completedReferralsForInfant = useSelector(
     infantSelectors.getCompletedReferralsForInfantSelector
   );
+  const referralsForInfant = useSelector(
+    infantSelectors.getReferralsForInfantSelector
+  );
 
   const { id: infantId } = useParams<InfantParams>();
   const infant = useSelector((state: RootState) =>
@@ -77,6 +81,15 @@ export const ReferralsTab: React.FC = () => {
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
   );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
 
   const isWalkthrough =
     isWalkthroughSession && walkthroughState?.stepIndex !== 4;
@@ -92,7 +105,14 @@ export const ReferralsTab: React.FC = () => {
 
   // Getting referrals for approval
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        infantThunkActions.getReferralsForInfant({
+          infantId: infantId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         infantThunkActions.getReferralsForInfant({
           infantId: infantId,
@@ -100,11 +120,24 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, infantId, currentVisit]);
+  }, [
+    appDispatch,
+    infantId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // Getting referrals already approved
   useLayoutEffect(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         infantThunkActions.getCompletedReferralsForInfant({
           infantId: infantId,
@@ -112,11 +145,13 @@ export const ReferralsTab: React.FC = () => {
         })
       ).unwrap();
     }
-  }, [appDispatch, infantId, currentVisit]);
-
-  const referralsForInfant = useSelector(
-    infantSelectors.getReferralsForInfantSelector
-  );
+  }, [
+    appDispatch,
+    infantId,
+    currentVisit,
+    isToGetPreviousVisitStatusData,
+    previousVisit,
+  ]);
 
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
@@ -175,6 +210,10 @@ export const ReferralsTab: React.FC = () => {
     return groupedData;
   }, [referralsForInfant]) as GroupedData;
 
+  const previousGroupedData = usePrevious(groupedData) as
+    | GroupedData
+    | undefined;
+
   const walkthroughData = {
     sections: [
       {
@@ -225,10 +264,6 @@ export const ReferralsTab: React.FC = () => {
     }
 
     if (isWalkthrough) return;
-
-    if (questions) return;
-
-    return setAnswers(groupedData);
   }, [
     groupedData,
     questions,
@@ -236,6 +271,12 @@ export const ReferralsTab: React.FC = () => {
     walkthroughData.questions,
     wasWalkthrough,
   ]);
+
+  useEffect(() => {
+    if (previousGroupedData === undefined && groupedData !== undefined) {
+      return setAnswers(groupedData);
+    }
+  }, [groupedData, previousGroupedData]);
 
   const onOptionSelected = useCallback(
     (value, index) => {
@@ -294,7 +335,14 @@ export const ReferralsTab: React.FC = () => {
   }, [onOptionSelected, sections, questions]);
 
   const onShowBackReferrals = useCallback(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        infantThunkActions.getCompletedReferralsForInfant({
+          infantId: infantId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         infantThunkActions.getCompletedReferralsForInfant({
           infantId: infantId,
@@ -312,7 +360,14 @@ export const ReferralsTab: React.FC = () => {
         }
       }
     }
-  }, [appDispatch, infantId, completedReferralsForInfant, currentVisit]);
+  }, [
+    isToGetPreviousVisitStatusData,
+    currentVisit,
+    completedReferralsForInfant,
+    appDispatch,
+    infantId,
+    previousVisit?.id,
+  ]);
 
   const onShowReferrals = useCallback(() => {
     setIsReferralsView(true);
@@ -551,7 +606,7 @@ export const ReferralsTab: React.FC = () => {
                 </>
               )}
               {/* Complted back referrals */}
-              {item.backReferralCompleted && (
+              {item.backReferralCompleted && isShowCompletedItems && (
                 <div className="my-4 flex items-center gap-3">
                   <div className="flex w-full flex-col">
                     <Typography
@@ -567,7 +622,7 @@ export const ReferralsTab: React.FC = () => {
                       type="body"
                       align="left"
                       weight="skinny"
-                      text={`Reffered on ${format(
+                      text={`Referred on ${format(
                         new Date(item.insertedDate),
                         'dd MMM yyyy'
                       )}`}
@@ -676,7 +731,7 @@ export const ReferralsTab: React.FC = () => {
               <Typography
                 type="h3"
                 color={'textDark'}
-                text={`All back-referrals are complted for ${
+                text={`All back-referrals are completed for ${
                   infant?.user?.firstName || ''
                 }! `}
                 className="pt-2"
@@ -687,7 +742,7 @@ export const ReferralsTab: React.FC = () => {
               type="body"
               align="center"
               weight="skinny"
-              text="You can see your complted back-referrals here."
+              text="You can see your completed back-referrals here."
               color="textMid"
             />
           </div>

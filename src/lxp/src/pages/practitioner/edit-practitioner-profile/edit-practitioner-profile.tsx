@@ -84,6 +84,13 @@ export const EditPractitionerProfile: React.FC = () => {
           await new PractitionerService(
             userAuth.auth_token
           ).UpdatePractitionerRegistered(user.id, true);
+
+          await appDispatch(
+            practitionerThunkActions.updatePractitionerProgress({
+              practitionerId: user.id,
+              progress: 2.0,
+            })
+          );
         }
         appDispatch(notificationActions.resetNotificationState());
         appDispatch(practitionerThunkActions.getAllPractitioners({}));

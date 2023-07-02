@@ -34,6 +34,14 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public Guid? TeamLeadId { get; set; }
 
         public bool IsRegistered { get; set; }
+        public Boolean? ClickedVisitTab { get; set; }
+        public Boolean? ClickedProgressTab { get; set; }
+        public Boolean? ClickedReferralsTab { get; set; }
+        public Boolean? ClickedContactTab { get; set; }
+        public Boolean? ClickedDashboardClientsTab { get; set; }
+        public Boolean? ClickedDashboardVisitsTab { get; set; }
+        public Boolean? ClickedDashboardHighlightsTab { get; set; }
+
     }
 
     public interface HealthCareWorkerJoin<TKey>

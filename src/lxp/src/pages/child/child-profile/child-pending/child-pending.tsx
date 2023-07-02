@@ -23,6 +23,7 @@ import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@store/user';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -39,6 +40,8 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const dispatch = useAppDispatch();
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
+  const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
 
   const practitioners = useSelector(
     practitionerSelectors.getPractitioners
@@ -103,7 +106,7 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
     const whatsapp = () => {
-      window.open(`whatsapp://`);
+      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
     };
 
     dialog({
@@ -131,7 +134,11 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
         if (isPrincipal && practitioners?.length! > 1) {
           history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
         } else {
-          history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+          if (isCoach) {
+            history.goBack();
+          } else {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+          }
         }
       }}
       color="primary"

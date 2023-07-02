@@ -12,10 +12,8 @@ import {
   Typography,
   renderIcon,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
 import { useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router';
 import { ProgrammeDetails } from './components/programme-details/programme-details';
 import {
   CmsVisitDataInputModelInput,
@@ -33,7 +31,6 @@ import { HealthStructureArea } from './components/safety-structure-area/health-s
 import { SpaceEmergencyPlanning } from './components/space-emergency-planning/space-emergency-planning';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { useAppDispatch } from '@/store';
-import ROUTES from '@/routes/routes';
 import PositiveBonusEmoticon from '../../../../../assets/positive-bonus-emoticon.png';
 import { CoachVisitInfo } from '../trainee-onboarding-dashboard/components/coach-visit-info';
 
@@ -48,8 +45,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const appDispatch = useAppDispatch();
-  const history = useHistory();
-  const date = format(new Date(), 'EEEE, d LLLL');
   const userAuth = useSelector(authSelectors.getAuthUser);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
@@ -68,6 +63,13 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
+  const communitySupportGained =
+    traineeTimeline?.communitySupportStatus === 'Community support gained';
+  const registeredThreeChildren =
+    traineeTimeline?.threeChildrenRegisteredStatus ===
+    '3 or more children registered';
+  const availableForCoachVisit =
+    communitySupportGained && registeredThreeChildren;
 
   const completedItems = (visitSectionName: string) => {
     const completedItems = traineeVisitData
@@ -104,6 +106,95 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     }
   }, [activeStep, appDispatch, practitioner?.userId, traineeCurrentVisit?.id]);
 
+  const handleSuccessAlertMessage = useMemo(() => {
+    if (availableForCoachVisit) {
+      return (
+        <>
+          <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+            <div className="flex">
+              <div className="flex justify-center">
+                <img
+                  src={PositiveBonusEmoticon}
+                  alt="developing well"
+                  className="mt-3 ml-2 mr-2 h-12 w-16"
+                />
+              </div>
+              <div className="ml-3">
+                <div className="flex justify-center">
+                  <Typography
+                    type="h3"
+                    weight="bold"
+                    color={'white'}
+                    text={`Well done! You have completed all the required SmartSpace steps. `}
+                    fontSize="18"
+                    className="pt-2"
+                  />
+                </div>
+                <div className="mt-1 flex justify-center">
+                  <Typography
+                    type="body"
+                    color={'white'}
+                    text={`Your coach has been asked to schedule the SmartSpace check!`}
+                    fontSize="14"
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <Button
+              type="filled"
+              color="primary"
+              className="mt-4 mb-2 w-full"
+              onClick={() => setSHowCoachVisit(true)}
+            >
+              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Request a visit from coach'}
+                color={'white'}
+              />
+            </Button>
+          </div>
+        </>
+      );
+    } else {
+      return (
+        <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
+          <div className="flex">
+            <div className="flex justify-center">
+              <img
+                src={PositiveBonusEmoticon}
+                alt="developing well"
+                className="mt-3 ml-2 mr-2 h-12 w-16"
+              />
+            </div>
+            <div className="ml-3">
+              <div className="flex justify-center">
+                <Typography
+                  type="h3"
+                  weight="bold"
+                  color={'white'}
+                  text={`Well done! You have completed all the required SmartSpace steps.`}
+                  fontSize="18"
+                  className="pt-2"
+                />
+              </div>
+              <div className="mt-1 flex justify-center">
+                <Typography
+                  type="body"
+                  color={'white'}
+                  text={`Register 3 children and gain community support so your coach can schedule the SmartSpace check.`}
+                  fontSize="14"
+                />
+              </div>
+            </div>
+          </div>
+        </div>
+      );
+    }
+  }, [availableForCoachVisit]);
+
   const onSubmit = async () => {
     const sections = sectionQuestions?.map((item) => ({
       ...item,
@@ -124,6 +215,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addVisitData(
         visitDateInput
       );
+
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
       return;
     } else {
@@ -143,6 +235,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addSSChecklistForTrainee(
         visitDateInput
       );
+
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
     }
   };
@@ -168,6 +261,11 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       await new TraineeService(userAuth?.auth_token!).addVisitData(
         visitDateInput
       );
+
+      if (activeStep < 5) {
+        setActiveStep(activeStep + 1);
+        return;
+      }
 
       setActiveStep(SmartSpaceChecklisstStepsSteps.INITIAL);
       return;
@@ -403,41 +501,17 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  const allStepsComplete = useMemo(
-    () =>
-      traineeCurrentVisit?.id &&
-      notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      !isSmartChecklist,
-    [
-      isSmartChecklist,
-      notificationItems?.length,
-      notificationItemsLaterStage?.length,
-      traineeCurrentVisit?.id,
-    ]
-  );
-
   const allStepsCompleteFromDashboard = useMemo(
     () =>
       traineeCurrentVisit?.id &&
       notificationItems?.length === 0 &&
-      notificationItemsLaterStage?.length === 0 &&
-      isSmartChecklist,
+      notificationItemsLaterStage?.length === 0,
     [
-      isSmartChecklist,
       notificationItems?.length,
       notificationItemsLaterStage?.length,
       traineeCurrentVisit?.id,
     ]
   );
-
-  useEffect(() => {
-    if (allStepsComplete) {
-      history.push(ROUTES?.TRAINEE?.TRAINEE_ONBOARDING);
-      setNotificationStep('');
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [allStepsComplete]);
 
   return activeStep !== SmartSpaceChecklisstStepsSteps.INITIAL ? (
     <div className="h-screen">{steps(activeStep)}</div>
@@ -464,10 +538,9 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       showBackground={false}
       size="medium"
       renderBorder={true}
-      title={'Business'}
-      subTitle={date}
+      title={'SmartSpace checklist'}
       color={'primary'}
-      onBack={history.goBack}
+      onBack={() => setNotificationStep('')}
       displayOffline={!isOnline}
       renderOverflow={true}
     >
@@ -497,56 +570,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
               />
             </>
           )}
-          {allStepsCompleteFromDashboard && (
-            <>
-              <div className="bg-successMain grid grid-cols-1 justify-center gap-4 rounded-2xl p-4">
-                <div className="flex">
-                  <div className="flex justify-center">
-                    <img
-                      src={PositiveBonusEmoticon}
-                      alt="developing well"
-                      className="mt-3 ml-2 mr-2 h-12 w-16"
-                    />
-                  </div>
-                  <div className="ml-3">
-                    <div className="flex justify-center">
-                      <Typography
-                        type="h3"
-                        weight="bold"
-                        color={'white'}
-                        text={`Well done! You have completed all the required SmartSpace steps. `}
-                        fontSize="18"
-                        className="pt-2"
-                      />
-                    </div>
-                    <div className="mt-1 flex justify-center">
-                      <Typography
-                        type="body"
-                        color={'white'}
-                        text={`Your coach has been asked to schedule the SmartSpace check!`}
-                        fontSize="14"
-                      />
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <div>
-                <Button
-                  type="filled"
-                  color="primary"
-                  className="mt-4 mb-2 w-full"
-                  onClick={() => setSHowCoachVisit(true)}
-                >
-                  {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-                  <Typography
-                    type={'help'}
-                    text={'Request a visit from coach'}
-                    color={'white'}
-                  />
-                </Button>
-              </div>
-            </>
-          )}
+          {allStepsCompleteFromDashboard && <>{handleSuccessAlertMessage}</>}
           <StackedList
             isFullHeight={false}
             className={'flex flex-col gap-2'}

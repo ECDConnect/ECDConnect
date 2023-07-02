@@ -9,10 +9,9 @@ import {
   FollowUpWalkthroughData,
 } from '../forms/components/follow-up';
 import { useSelector } from 'react-redux';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
 import {
-  getCurrentVisitSelector,
-  getMotherPreviousVisitSelector,
+  getMotherCurrentVisitSelector,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
@@ -23,6 +22,7 @@ interface IntroScreenProps {
   headerText?: string;
   onStartVisit?: () => void;
   isPrint?: boolean;
+  isFromProgressTab?: boolean;
 }
 
 export const IntroScreen = ({
@@ -31,6 +31,7 @@ export const IntroScreen = ({
   walkthroughData,
   onStartVisit,
   isPrint,
+  isFromProgressTab,
 }: IntroScreenProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
@@ -42,34 +43,17 @@ export const IntroScreen = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
-  );
-  const previousPlannedVisit = useSelector((state: RootState) =>
-    getMotherPreviousVisitSelector(state, currentVisit?.plannedVisitDate || '')
-  );
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForMotherSelector
+    getMotherCurrentVisitSelector(state, '')
   );
 
-  // useLayoutEffect(() => {
-  //   if (
-  //     (!previousCurrentVisit ||
-  //       (!!previousCurrentVisit &&
-  //         previousCurrentVisit?.id !== currentVisit?.id)) &&
-  //     !!currentVisit
-  //   )
-  //     appDispatch(
-  //       visitThunkActions.getPreviousVisitInformationForMother({
-  //         visitId: currentVisit?.id,
-  //       })
-  //     );
-  // }, [
-  //   appDispatch,
-  //   currentVisit,
-  //   currentVisit?.id,
-  //   mother?.id,
-  //   previousCurrentVisit,
-  // ]);
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const date =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate || currentVisit?.insertedDate || '';
 
   return (
     <>
@@ -85,11 +69,8 @@ export const IntroScreen = ({
             }
           : {})}
         description={`Your last home visit: ${
-          !!previousVisit?.visitDataStatus?.length &&
-          previousVisit?.scoreComment !== 'No data available for visit'
-            ? new Date(
-                String(previousPlannedVisit?.actualVisitDate)
-              ).toLocaleDateString('en-ZA', {
+          date
+            ? new Date(String(date)).toLocaleDateString('en-ZA', {
                 year: 'numeric',
                 month: 'long',
                 day: 'numeric',
@@ -103,6 +84,7 @@ export const IntroScreen = ({
           walkthroughData={walkthroughData}
           isPrint={isPrint}
           isVisit={false}
+          isFromProgressTab={isFromProgressTab}
         />
         {!!onStartVisit && (
           <Button

@@ -43,13 +43,12 @@ import { activitiesColours, activitiesTypes } from '../../../activities-list';
 // import { InfoCard, Item } from './info-card';
 import { Card, CardProps } from './card';
 import { GrowthCard } from './growth-card';
-import { useLocation, useParams } from 'react-router';
+import { useParams } from 'react-router';
 import { InfantProfileParams } from '@/pages/infant/infant-profile/infant-profile.types';
 import { RootState } from '@/store/types';
 import {
   getInfantCurrentVisitSelector,
-  getInfantPreviousVisitSelector,
-  getInfantVisitByVisitIdSelector,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
@@ -87,6 +86,7 @@ interface FollowUpComponentProps {
   infant: InfantDto;
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: any;
+  isFromProgressTab?: boolean;
 }
 
 interface Status {
@@ -102,6 +102,7 @@ export const FollowUp = ({
   infant,
   walkthroughData,
   isPrint,
+  isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
   const appDispatch = useAppDispatch();
@@ -118,6 +119,15 @@ export const FollowUp = ({
     getInfantCurrentVisitSelector(state, visitId)
   );
 
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const followUpDate =
+    !currentVisit?.attended && !currentVisit?.visitInProgress
+      ? previousVisit?.actualVisitDate
+      : currentVisit.actualVisitDate;
+
   useEffect(() => {
     if (isPrint) {
       setShowPrintData(true);
@@ -133,19 +143,30 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  const visit = useSelector((state: RootState) =>
-    getInfantVisitByVisitIdSelector(state, visitId)
-  );
-  const previousPlannedVisit = useSelector((state: RootState) =>
-    getInfantPreviousVisitSelector(state, visit?.plannedVisitDate || '')
-  );
-  const previousVisit = useSelector(
+  const previousVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
   useLayoutEffect(() => {
-    // if the previousVisit is null, lets fetch the latest
-    if (currentVisit && previousVisit?.visitId !== currentVisit?.id) {
+    // get data from previous visit
+    if (
+      isFromProgressTab &&
+      previousVisit?.id &&
+      previousVisit?.attended &&
+      !currentVisit?.visitInProgress
+    ) {
+      appDispatch(
+        getPreviousVisitInformationForInfant({
+          visitId: previousVisit?.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetInfantSummaryByPriority({
+          visitId: previousVisit?.id || '',
+        })
+      );
+      // get data from current visit
+    } else if (currentVisit?.id) {
       appDispatch(
         getPreviousVisitInformationForInfant({
           visitId: currentVisit.id,
@@ -157,7 +178,7 @@ export const FollowUp = ({
         })
       );
     }
-  }, [appDispatch, currentVisit, previousVisit]);
+  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const printData = useSelector(GetInfantSummaryByPrioritySelector);
 
@@ -194,41 +215,43 @@ export const FollowUp = ({
   const { weight, length, muac, grow } = useMemo(() => {
     const weight = {
       name: 'Weight',
-      value: walkthroughData?.weightCard.value || previousVisit?.weight,
-      color: walkthroughData?.weightCard.color || previousVisit?.weightColor,
+      value: walkthroughData?.weightCard.value || previousVisitStatus?.weight,
+      color:
+        walkthroughData?.weightCard.color || previousVisitStatus?.weightColor,
       comment:
-        walkthroughData?.weightCard.comment || previousVisit?.weightComment,
+        walkthroughData?.weightCard.comment ||
+        previousVisitStatus?.weightComment,
     };
     const length = {
       name: 'Length',
-      value: previousVisit?.length,
-      color: previousVisit?.lengthColor,
-      comment: previousVisit?.lengthComment,
+      value: previousVisitStatus?.length,
+      color: previousVisitStatus?.lengthColor,
+      comment: previousVisitStatus?.lengthComment,
     };
     const muac = {
       name: 'MUAC',
-      value: previousVisit?.muac,
-      color: previousVisit?.muacColor,
-      comment: previousVisit?.muacComment,
+      value: previousVisitStatus?.muac,
+      color: previousVisitStatus?.muacColor,
+      comment: previousVisitStatus?.muacComment,
     };
     const grow = {
-      comment: previousVisit?.growComment,
-      color: previousVisit?.growCommentColor,
+      comment: previousVisitStatus?.growComment,
+      color: previousVisitStatus?.growCommentColor,
     };
 
     return { weight, length, muac, grow };
   }, [
-    previousVisit?.growComment,
-    previousVisit?.growCommentColor,
-    previousVisit?.length,
-    previousVisit?.lengthColor,
-    previousVisit?.lengthComment,
-    previousVisit?.muac,
-    previousVisit?.muacColor,
-    previousVisit?.muacComment,
-    previousVisit?.weight,
-    previousVisit?.weightColor,
-    previousVisit?.weightComment,
+    previousVisitStatus?.growComment,
+    previousVisitStatus?.growCommentColor,
+    previousVisitStatus?.length,
+    previousVisitStatus?.lengthColor,
+    previousVisitStatus?.lengthComment,
+    previousVisitStatus?.muac,
+    previousVisitStatus?.muacColor,
+    previousVisitStatus?.muacComment,
+    previousVisitStatus?.weight,
+    previousVisitStatus?.weightColor,
+    previousVisitStatus?.weightComment,
     walkthroughData?.weightCard.color,
     walkthroughData?.weightCard.comment,
     walkthroughData?.weightCard.value,
@@ -240,7 +263,7 @@ export const FollowUp = ({
     value: number;
     message: string;
   } => {
-    switch (previousVisit?.scoreColor) {
+    switch (previousVisitStatus?.scoreColor) {
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -270,7 +293,7 @@ export const FollowUp = ({
           value: 25,
         };
     }
-  }, [caregiverName, name, previousVisit?.scoreColor]);
+  }, [caregiverName, name, previousVisitStatus?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
@@ -294,7 +317,7 @@ export const FollowUp = ({
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
 
-    const groupedData = previousVisit?.visitDataStatus?.reduce(
+    const groupedData = previousVisitStatus?.visitDataStatus?.reduce(
       (acc: { [key: string]: any }, currentValue) => {
         const color = toCamelCase(currentValue?.color || '');
         if (!color) return acc;
@@ -308,10 +331,12 @@ export const FollowUp = ({
     );
 
     return groupedData;
-  }, [previousVisit?.visitDataStatus, walkthroughData]) as Status | undefined;
+  }, [previousVisitStatus?.visitDataStatus, walkthroughData]) as
+    | Status
+    | undefined;
   if (
-    !previousVisit?.visitDataStatus?.length &&
-    previousVisit?.scoreComment === 'No data available for visit' &&
+    !previousVisitStatus?.visitDataStatus?.length &&
+    previousVisitStatus?.scoreComment === 'No data available for visit' &&
     !walkthroughData
   ) {
     return (
@@ -345,7 +370,9 @@ export const FollowUp = ({
           <ProgressBar
             className="h-2"
             label={
-              walkthroughData?.progressBar.label || previousVisit?.score || ''
+              walkthroughData?.progressBar.label ||
+              previousVisitStatus?.score ||
+              ''
             }
             subLabel="score"
             value={
@@ -386,7 +413,7 @@ export const FollowUp = ({
             }
           />
         )}
-        {[weight, length, muac].map((item) => {
+        {[weight, length, muac].map((item, index) => {
           if (!item.value) return <Fragment key={item.name} />;
 
           return (
@@ -395,9 +422,10 @@ export const FollowUp = ({
               className="my-4"
               label={item.name}
               value={item.value || ''}
-              date={previousPlannedVisit?.plannedVisitDate || ''}
+              date={followUpDate || ''}
               message={item.comment || ''}
               color={item.color as CardProps['color']}
+              measure={index === 0 ? 'kg' : 'cm'}
             />
           );
         })}
@@ -488,7 +516,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-successDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -510,6 +538,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName !== 'ID document' &&
@@ -523,7 +552,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-alertDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -545,6 +574,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName !== 'ID document' &&
@@ -558,7 +588,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                                <p className=" font-h1 text-errorDark text-sm font-semibold ">
                                   {visit?.areaName}
                                 </p>
                                 <div className="pt-2">
@@ -580,6 +610,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
 
@@ -597,7 +628,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                                <p className=" font-h1 text-successDark text-sm font-semibold "></p>
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>
@@ -611,6 +642,7 @@ export const FollowUp = ({
                             </div>
                           </div>
                         </div>
+                        <div className="h-1"></div>
                       </>
                     )}
                   {visit?.areaName === 'ID document' &&
@@ -627,7 +659,7 @@ export const FollowUp = ({
                             </div>
                             <div className="flex flex-col items-start justify-start ">
                               <div className="ml-3 ">
-                                <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                                <p className=" font-h1 text-alertDark text-sm  font-semibold "></p>
                                 <div className="pt-2">
                                   {documentItems?.map((item, indexb) => (
                                     <div className="flex gap-2" key={indexb}>

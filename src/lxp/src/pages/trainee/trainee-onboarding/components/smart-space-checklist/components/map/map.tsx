@@ -1,5 +1,5 @@
 import { Button, Typography, CustomGoogleMap, Address } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useEffect, useCallback, useState } from 'react';
 
 interface AddressMapProps {
   onClose: () => void;
@@ -16,6 +16,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
   onClose,
   onSubmit,
 }) => {
+  const [address, setAddress] = useState<Address[]>();
   const [formattedAddress, setFormattedAddress] = useState('');
 
   const saveAddress = () => {
@@ -23,7 +24,7 @@ export const AddressMap: React.FC<AddressMapProps> = ({
     onClose();
   };
 
-  const getAddress = useCallback((address?: Address[]) => {
+  const getAddress = useCallback(() => {
     const number = getInfo(address, 'street_number');
     const street = getInfo(address, 'route');
     const city = getInfo(address, 'administrative_area_level_2');
@@ -33,13 +34,15 @@ export const AddressMap: React.FC<AddressMapProps> = ({
         city ? city : ''
       }`
     );
-  }, []);
+  }, [address]);
+
+  useEffect(() => getAddress(), [getAddress]);
 
   return (
     <div>
       <CustomGoogleMap
         height={window.screen.height - COMPONENT_HEIGHT}
-        onChange={getAddress}
+        onChange={setAddress}
       />
       <div className="min-h-64 absolute bottom-0 w-full flex-1 rounded-t-2xl bg-white px-5">
         <Typography

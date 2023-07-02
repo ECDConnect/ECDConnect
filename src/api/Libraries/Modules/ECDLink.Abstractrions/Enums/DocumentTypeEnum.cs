@@ -53,6 +53,8 @@ namespace ECDLink.Abstractrions.Enums
         [Description("startup-support-agreement")]
         StartupSupportAgreement,
         [Description("proof-ofaccount")]
-        ProofOfAccount
+        ProofOfAccount,
+        [Description("calendar-event-type")]
+        CalendarEventType
     }
 }

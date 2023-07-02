@@ -42,6 +42,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.MotherId = mother.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
+            if (input.PlannedVisitDate != default(DateTime))
+            {
+                input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            }
 
             return visitManager.AddAdditionalVisit(input);
         }
@@ -66,6 +70,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.InfantId = infant.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
+            if (input.PlannedVisitDate != default(DateTime))
+            {
+                input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            }
 
             return visitManager.AddAdditionalVisit(input);
         }

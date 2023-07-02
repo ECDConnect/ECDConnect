@@ -7,7 +7,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import Pregnant from '@/assets/pregnant.svg';
-import { Fragment, useCallback, useEffect, useMemo, useState } from 'react';
+import { Fragment, useCallback, useMemo, useState } from 'react';
 import { Label, Header } from '@/pages/mom/pregnant-profile/components';
 import { DynamicFormProps } from '../../../dynamic-form';
 
@@ -21,14 +21,6 @@ export const MaternalDistressScreenStep = ({
 }: DynamicFormProps) => {
   const name = mother?.user?.firstName;
   const sectionQuestionsValues = sectionQuestions?.[0]?.questions;
-
-  useEffect(() => {
-    if (
-      sectionQuestionsValues?.filter((item) => item?.answer !== undefined)
-        .length === 3
-    )
-      setEnableButton?.(true);
-  }, [sectionQuestionsValues, sectionQuestionsValues?.length, setEnableButton]);
 
   const options = [
     { text: 'Yes', value: true },
@@ -111,8 +103,12 @@ export const MaternalDistressScreenStep = ({
           questions: updatedQuestions,
         },
       ]);
+
+      setEnableButton?.(
+        updatedQuestions.every((item) => item.answer !== undefined)
+      );
     },
-    [questions, setQuestions]
+    [questions, setQuestions, setEnableButton]
   );
 
   return (
@@ -133,7 +129,7 @@ export const MaternalDistressScreenStep = ({
 
         return (
           <Fragment key={item.question}>
-            <div className="p-2">
+            <div className="p-2 px-4">
               <Typography
                 type="body"
                 text={item.question}

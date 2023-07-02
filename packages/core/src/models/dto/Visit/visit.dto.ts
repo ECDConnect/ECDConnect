@@ -1,9 +1,11 @@
 export interface VisitDto {
   id: string;
+  dueDate: string;
   actualVisitDate: string;
   attended: boolean;
   visitInProgress: boolean;
   plannedVisitDate: string;
+  insertedDate?: string;
   orderDate: string;
   visitType?: {
     description?: string;

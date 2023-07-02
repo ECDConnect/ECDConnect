@@ -50,7 +50,12 @@ import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
-import { traineeActions, traineeThunkActions } from './store/trainee';
+import {
+  traineeActions,
+  traineeSelectors,
+  traineeThunkActions,
+} from './store/trainee';
+import { calendarThunkActions } from './store/calendar';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -77,6 +82,11 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
+  const traineeTimeline = useSelector(
+    traineeSelectors.getTraineeOnboardTimeline
+  );
+  const traineeVisits = traineeTimeline?.traineeVisits;
+  const traineeCurrentVisit = traineeVisits?.[0];
 
   const [otherLoading, setOtherLoading] = useState(false);
 
@@ -109,9 +119,16 @@ const InitialStoreSetup: React.FC = ({ children }) => {
               userId: practitioner?.userId ? practitioner?.userId : '',
             })
           ).unwrap())();
+
+        (async () =>
+          await appDispatch(
+            traineeThunkActions.getTraineeVisitData({
+              visitId: traineeCurrentVisit?.id,
+            })
+          ).unwrap())();
       }
     }
-  }, [appDispatch, userData, practitioner, isCoach]);
+  }, [appDispatch, userData, practitioner, isCoach, traineeCurrentVisit?.id]);
 
   useEffect(() => {
     if (userData) {
@@ -280,6 +297,13 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     ).unwrap();
     await appDispatch(
       progressTrackingThunkActions.getProgressTrackingLevels({
+        locale: 'en-za',
+      })
+    ).unwrap();
+
+    // CALENDAR
+    await appDispatch(
+      calendarThunkActions.getCalendarEventTypes({
         locale: 'en-za',
       })
     ).unwrap();

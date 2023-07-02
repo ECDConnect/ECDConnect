@@ -5,6 +5,7 @@ import { useSelector } from 'react-redux';
 import { coachSelectors } from '@/store/coach';
 import {
   SectionQuestions,
+  StartupAgreementSteps,
   visitSection,
 } from '../../startup-accept-agreement.types';
 
@@ -21,8 +22,6 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
 }) => {
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
   const coach = useSelector(coachSelectors.getCoach);
-  const [viewPermissionToShare, setViewPermissionToShare] =
-    useState<boolean>(false);
 
   const [questions, setAnswers] = useState([
     {
@@ -73,19 +72,20 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
           startupSupportAgreementSigned ? 'pointer-events-none opacity-50' : ''
         }`}
       >
-        <div>
+        <div className="h-screen">
           <Typography
             className={'my-3'}
             color={'textDark'}
             type={'h2'}
             text={'Read & accept the agreement'}
           />
-          <Typography
+          {/* TODO integration with the data coming from SL. */}
+          {/* <Typography
             className={'my-3 w-11/12'}
             color={'textDark'}
             type={'h3'}
             text={'**** Name of org/dept giving the start-up support ****'}
-          />
+          /> */}
           <Alert
             className={'mt-5 mb-3'}
             title="You need to accept all 3 agreements below to continue"
@@ -100,28 +100,42 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
             }
           />
           <div className="'flex items-center' w-full flex-row justify-start">
-            <div className="flex items-start gap-2">
+            <div
+              className="flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[0].answer, 0)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 0)}
                 checked={
                   startupSupportAgreementSigned
                     ? startupSupportAgreementSigned
-                    : undefined
+                    : undefined || questions?.[0].answer
                 }
               />
               <Typography
-                text={`I, ${practitioner?.user?.fullName} (ID: ${practitioner?.user?.idNumber}; Cellphone: ${practitioner?.user?.phoneNumber}) have set up my own enterprise, with the following site standard number: XYZ and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the next 24 months at the site, ${coach?.siteAddress?.addressLine1}, ${coach?.siteAddress?.addressLine2}, ${coach?.siteAddress?.addressLine3}.`}
+                text={`I, ${practitioner?.user?.fullName} (ID: ${
+                  practitioner?.user?.idNumber || '0000000000000'
+                }; Cellphone: ${
+                  practitioner?.user?.phoneNumber || '000000000000'
+                }) have set up my own enterprise and am committed to providing early childhood development services to a maximum of 6 children, from 8am - 6pm, Monday to Friday for the the term agreed upon at the site, ${
+                  coach?.siteAddress?.addressLine1
+                }, ${coach?.siteAddress?.addressLine2}, ${
+                  coach?.siteAddress?.addressLine3
+                }.`}
                 type="body"
                 color="textMid"
               />
             </div>
-            <div className="mt-2 flex items-start gap-2">
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[1].answer, 1)}
+            >
               <Checkbox
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 1)}
                 checked={
                   startupSupportAgreementSigned
                     ? startupSupportAgreementSigned
-                    : undefined
+                    : undefined || questions?.[1].answer
                 }
               />
               <Typography
@@ -132,12 +146,15 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
                 color={'textMid'}
               />
             </div>
-            <div className="mt-2 flex items-start gap-2">
+            <div
+              className="mt-2 flex items-start gap-2"
+              onClick={() => onOptionSelected(!questions?.[2].answer, 2)}
+            >
               <Checkbox
                 checked={
                   startupSupportAgreementSigned
                     ? startupSupportAgreementSigned
-                    : undefined
+                    : undefined || questions?.[2].answer
                 }
                 onCheckboxChange={(e) => onOptionSelected(e.checked, 2)}
               />
@@ -159,7 +176,11 @@ export const StartupAcceptAgreement1: React.FC<ReadAndAcceptAgreementProps> = ({
               text="Next"
               textColor="white"
               icon="ArrowCircleRightIcon"
-              onClick={() => setAgreementStep('StartupAcceptAgreement2')}
+              onClick={() =>
+                setAgreementStep(
+                  StartupAgreementSteps.STARTUP_ACCEPT_AGREEMENT2
+                )
+              }
               disabled={questions?.some((item) => item?.answer === false)}
             />
           </div>
