@@ -14,6 +14,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import { ArrowRightIcon } from '@heroicons/react/solid';
+import { PasswordInput } from '../../password-input/password-input';
 
 export default function Login() {
   const { login } = useAuth();
@@ -28,11 +29,6 @@ export default function Login() {
     mode: 'onChange',
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   const formValues = getValues();
 
@@ -89,14 +85,15 @@ export default function Login() {
               </div>
 
               <div className="space-y-1">
-                <FormField
-                  label={'Password *'}
+             
+              <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  sufficIconColor="black"
+                  value={formValues.password}
                   register={register}
-                  type="password"
-                  error={errors.password?.message}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
+                  strengthMeterVisible={false}
+                  className="mb-9 "
                 />
               </div>
 
@@ -112,7 +109,7 @@ export default function Login() {
                   type="help"
                   color="secondary"
                   text={' Forgot password?'}
-                  className="text-align-start"
+                  className="text-start"
                 ></Typography>
                 <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
               </Button>

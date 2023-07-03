@@ -49,6 +49,8 @@ const PublicRoutes: React.FC = () => {
       <Route exact path="/register/:resetToken" component={Register} />
       <Route exact path="/forgot-password" component={ForgotPassword} />
       <Route exact path="/reset/:resetToken/:email" component={ResetPassword} />
+      <Route path={`/ecd-terms`} component={TermsPage}></Route>
+
     </Switch>
   );
 };
@@ -70,7 +72,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/profile`} component={Profile}></Route>
       <Route path={`/view-user`} component={ViewUser}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
-      <Route path={`/ecd-terms`} component={TermsPage}></Route>
 
       {/* TermsPage */}
       <Route path={`/users`} component={Users}></Route>

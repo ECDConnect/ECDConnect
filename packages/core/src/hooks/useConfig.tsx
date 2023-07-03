@@ -40,7 +40,7 @@ function ConfigProvider({ children }: { children: ReactNode }): JSX.Element {
   };
 
   useEffect(() => {
-    getData();
+    // getData();
   }, []);
 
   const memoedValue = useMemo(
