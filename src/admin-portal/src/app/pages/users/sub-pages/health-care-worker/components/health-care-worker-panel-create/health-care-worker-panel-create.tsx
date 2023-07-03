@@ -170,10 +170,8 @@ export default function HealthCareWorkerPanelCreate(
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = [];
-    selectedUserRoles.forEach((x) => {
-      rolesToAdd.push(x.name);
-    });
+    const rolesToAdd: string[] = ['Health Care Worker'];
+  
 
     await addRolesToUser({
       variables: {
@@ -208,6 +206,11 @@ export default function HealthCareWorkerPanelCreate(
   const getComponent = () => {
     return (
       <>
+        <div className="pb-2">
+            <h1 className="text-uiMidDark text-lg font-medium leading-6">
+              User Detail
+            </h1>
+          </div>
         <div className=" border-b border-dashed border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
