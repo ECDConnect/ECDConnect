@@ -12,7 +12,7 @@ export interface ProfileAvatarProps extends ComponentBaseProps {
   size: AvatarSize;
   hasConsent: boolean;
   canChangeImage?: boolean;
-  onPressed: () => void;
+  onPressed?: () => void;
 }
 
 export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({

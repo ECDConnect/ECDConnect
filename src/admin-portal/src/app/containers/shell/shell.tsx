@@ -87,7 +87,7 @@ export default function Shell() {
   }, []);
 
   useEffect(() => {
-    if (user && navigationData && navigationData.GetAllNavigation) {
+    if (navigationData?.GetAllNavigation) {
       const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
@@ -96,6 +96,8 @@ export default function Shell() {
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
+    console.log( sorted)
+
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))

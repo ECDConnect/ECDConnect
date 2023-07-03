@@ -8,6 +8,8 @@ import {
   SA_ID_REGEX,
   Dropdown,
   AlertType,
+  Avatar,
+  ProfileAvatar,
 } from '@ecdlink/ui';
 import { JSXElementConstructor, ReactElement, useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -443,16 +445,14 @@ export function ViewUser(props: any) {
           <div className="flex">
             <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-                <img
-                  src="https://source.unsplash.com/75x75/?portrait"
-                  alt=""
-                  className="mr-6 h-40 w-40 flex-shrink-0 self-center rounded-full md:justify-self-start"
-                />
-                <div className="sm: pt-12">
+          
+                  <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl as string} onPressed={() => { }} hasConsent size='header' />
+
+                <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
                     {userData?.userById?.fullName}
                   </p>
-                  <div className="flex flex-row pt-4">
+                  <div className="flex flex-row pt-2">
                     {userData &&
                       userData?.userById?.roles?.map(
                         (i: any, index: number) => {
