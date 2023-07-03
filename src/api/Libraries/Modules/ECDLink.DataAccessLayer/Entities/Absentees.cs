@@ -1,5 +1,6 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
@@ -16,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
     }
 
     public class Absentees<TKey> : EntityBase<TKey>,
-        ApplicationUserJoin
+        ApplicationUserJoin, ITrackableType
         where TKey : IEquatable<TKey>
     {
         [ForeignKey(nameof(UserId))]
