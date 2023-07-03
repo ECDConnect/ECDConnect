@@ -85,10 +85,13 @@ const showNotification = (message: string, type: AlertType, icon?: ReactElement<
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
 
-  const [startDate, setStartDate] = useState<Date>(null);
-  const [endDate, setEndDate] = useState<Date>(null);
-  const [successNotification, setSucessNotification] = useState<boolean>(false);
 
+  const [successNotification, setSucessNotification] = useState<boolean>(false);
+  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
+
+  const handleDateChange = (range: Date[]) => {
+    setSelectedRange(range);
+  };
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -134,11 +137,11 @@ export function ViewUser(props: any) {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
-        startDate: "2020-01-01T08:17:52.518Z",
-        endDate: new Date().toISOString()
+        startDate: selectedRange[0]?.toISOString() ?? "2020-01-01T08:17:52.518Z",
+        endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString()
       }
     })
-  }, [chwData, startDate, endDate]);
+  }, [selectedRange]);
 
   useEffect(() => {
     props.location.state?.component !== 'chw' &&
@@ -602,7 +605,7 @@ export function ViewUser(props: any) {
                     Email: {userData?.userById?.email}
                   </p>
                 </div>
-          
+
               )}
             </form>
             {/* End main area */}
@@ -630,8 +633,7 @@ export function ViewUser(props: any) {
           data.tenantContext.applicationName === 'GrowGreat'
           && <div className=" flex justify-end">
             <div>
-
-            <CustomDateRangePicker />
+              <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} />
             </div>
           </div>}
         {

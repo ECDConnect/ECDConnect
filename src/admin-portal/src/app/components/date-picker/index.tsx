@@ -1,46 +1,43 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
-import DateRangePickerCalendar  from './DateRangePickerCalendar'; // Custom calendar component
+import DateRangePickerCalendar from './DateRangePickerCalendar'; // Custom calendar component
 
-function CustomDateRangePicker() {
-  const [showCalendar, setShowCalendar] = useState(false);
-  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
-  
-  const handleDateChange = (range: Date[]) => {
-    setSelectedRange(range);
-  };
 
-  const toggleCalendar = () => {
-    setShowCalendar((prevShowCalendar) => !prevShowCalendar);
-  };
+function CustomDateRangePicker(props: any
+) {
+    const [showCalendar, setShowCalendar] = useState(false);
 
-  const formatDate = (date: Date) => {
-    return format(date, 'MM/dd/yyyy');
-  };
+    const toggleCalendar = () => {
+        setShowCalendar((prevShowCalendar) => !prevShowCalendar);
+    };
 
-  return (
-    <div>
-      <button
-        className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
-        onClick={toggleCalendar}
-      >
-        {selectedRange.length > 0 ? (
-          <>
-            {formatDate(selectedRange[0])} - {formatDate(selectedRange[1])}
-          </>
-        ) : (
-          'Select Range'
-        )}
-      </button>
+    const formatDate = (date: Date) => {
+        return format(date, 'MM/dd/yyyy');
+    };
 
-      {showCalendar && (
-        <DateRangePickerCalendar
-          selectedRange={selectedRange}
-          onDateChange={handleDateChange}
-        />
-      )}
-    </div>
-  );
+    return (
+        <div>
+            <button
+                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                onClick={toggleCalendar}
+            >
+                {props.selectedRange?.length > 0 ? (
+                    <>
+                        {formatDate(props.selectedRange[0])} - {formatDate(props.selectedRange[1])}
+                    </>
+                ) : (
+                    'Filter by Date'
+                )}
+            </button>
+
+            {showCalendar && (
+                <DateRangePickerCalendar
+                    selectedRange={props.selectedRange}
+                    onDateChange={props.handleDateChange}
+                />
+            )}
+        </div>
+    );
 }
 
 export default CustomDateRangePicker;
