@@ -1,0 +1,5 @@
+{
+  "graphQlApi": "https://ecd-connect-newportal-api.azurewebsites.net/graphql/",
+  "authApi": "https://ecd-connect-newportal-api.azurewebsites.net/",
+  "themeUrl": "https://ecdconnectstoragedev.blob.core.windows.net/theme/smartstart.json"
+}
