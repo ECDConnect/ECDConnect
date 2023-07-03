@@ -77,8 +77,8 @@ const FormField: React.FC<FormFieldProps> = ({
           type === 'password'
             ? 'relative mt-1'
             : type === 'checkbox'
-            ? 'mt-2 flex'
-            : 'mt-1'
+              ? 'mt-2 flex'
+              : 'mt-1'
         }
       >
         <input
@@ -94,10 +94,15 @@ const FormField: React.FC<FormFieldProps> = ({
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
         />
-        {type === 'checkbox' && nameProp === 'terms' && (
-          <a className="text-md text-secondary mb-3 px-5" href="/terms">
-            {instructions[0] ?? ''}
-          </a>
+
+        {nameProp === 'acceptedTerms' && (
+          <div>
+            <p className='pl-4' >
+              I accept the <a className="text-md text-secondary mb-3 cursor-pointer" href="/ecd-terms">
+                terms and conditions
+              </a>
+            </p>
+          </div>
         )}
 
         {type === 'password' && (

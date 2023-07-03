@@ -99,7 +99,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
           <h2 className="font-h1 textLight mt-6 text-2xl">
-            Register for Funda App
+            Register
           </h2>
         </div>
         <div className="mt-8">
@@ -163,10 +163,11 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     nameProp={'acceptedTerms'}
                     type="checkbox"
                     register={register}
-                    instructions={['I accept the terms and conditions']}
+                    instructions={['']}
                     error={errors.acceptedTerms?.message}
                   />
                 </div>
+               
               </div>
               {displayError && (
                 <Alert
