@@ -121,13 +121,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             HCWSummary summary = new HCWSummary();
 
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
-            summary.totalPregnantMoms = visitManager.GetTotalPregnantMothersWithUrgentIssues(userId); 
-            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(userId);
-            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(
-                userId,
-                new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child },
-                startDate,
-                endDate);
+            summary.totalPregnantMoms = visitManager.GetTotalPregnantMothers(userId, _startDate, _endDate);
+            summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(userId, _startDate, _endDate);
+            
+            var mothersAdnChildren = new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child };
+            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(userId, mothersAdnChildren, startDate, endDate);
+
             // Mothers are folders.
             summary.totalFoldersOpened = motherManager.GetTotalNewMothersForPeriod(userId, _startDate, _endDate);
 
