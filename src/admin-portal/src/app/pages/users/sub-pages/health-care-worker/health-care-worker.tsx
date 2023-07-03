@@ -59,7 +59,7 @@ export default function HealthCareWorkers() {
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('active');
   const [teamLeadFilter, setTeamLeadFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -153,27 +153,9 @@ export default function HealthCareWorkers() {
     };
   };
 
-  useEffect(() => {
-    if (!data?.users) return;
-
-    let userStatus = statusFilter === 'active' ? true : false;
-    let allUsers: HealthCareWorkerDto[] = [...data.users];
-    setTableData(
-      allUsers
-        .filter(
-          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
-        )
-        .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
-        .filter(
-          (v) =>
-            v?.teamLead.user.firstName + '' + v?.teamLead.user.surname ===
-            teamLeadFilter
-        )
-        .map(mapUserTableItem)
-    );
-  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
 
   useEffect(() => {
+
     if (data && data.allHealthCareWorkers) {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
@@ -227,7 +209,7 @@ export default function HealthCareWorkers() {
     });
   };
 
- 
+
 
   const clearFilters = () => {
     setStatusFilter('');
@@ -360,22 +342,20 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                        !showDropDownFilter
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
                           ? 'bg-secondary text-white'
                           : 'text-secondary border-secondary border-2 bg-white'
-                      } hover:text-secondary hover:bg-white `}
+                        } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${
-                          !showDropDownFilter
+                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
                             ? 'hover:text-secondary text-white'
                             : 'text-secondary hover:text-white'
-                        }`}
+                          }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"
@@ -447,7 +427,7 @@ export default function HealthCareWorkers() {
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
-                    { field: 'usage', use: 'CHW Connect usage' },
+                    // { field: 'usage', use: 'CHW Connect usage' },
                     { field: 'InsertedDate', use: 'Date invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
