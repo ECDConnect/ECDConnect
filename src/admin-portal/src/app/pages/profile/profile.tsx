@@ -190,7 +190,7 @@ export function Profile(props: any) {
                 >
 
                   <ProfileAvatar
-                    dataUrl={avatarFile ?? userData.userById?.profileImageUrl}
+                    dataUrl={avatarFile ?? userData?.userById?.profileImageUrl}
                     size={'header'}
                     onPressed={displayProfilePicturePrompt}
                     hasConsent={true}
