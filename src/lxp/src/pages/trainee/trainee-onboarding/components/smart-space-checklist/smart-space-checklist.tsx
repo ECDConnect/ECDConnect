@@ -212,7 +212,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
           sections,
         },
       };
-      await new TraineeService(userAuth?.auth_token!).addVisitData(
+      await new TraineeService(userAuth?.auth_token!).editVisitData(
         visitDateInput
       );
 
@@ -258,7 +258,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         },
       };
 
-      await new TraineeService(userAuth?.auth_token!).addVisitData(
+      await new TraineeService(userAuth?.auth_token!).editVisitData(
         visitDateInput
       );
 
