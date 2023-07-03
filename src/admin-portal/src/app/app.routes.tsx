@@ -63,7 +63,7 @@ const MainRoutes: React.FC = () => {
 const AuthRoutes: React.FC = () => {
   return (
     <Switch>
-      <Route path={`/dashboard`} component={Dashboard}></Route>
+      <Route path={`/`} component={Dashboard}></Route>
       <Route path={`/settings`} component={Settings}></Route>
       <Route path={`/data`} component={StaticData}></Route>
       <Route path={`/profile`} component={Profile}></Route>
