@@ -80,11 +80,18 @@ export function Profile(props: any) {
         id: user.user?.id,
         input: { ...userInputModel },
       }
+    }).then(() => {
+      setNotification({
+        title: 'Successfully Updated User!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }).catch((error) => {
+      setNotification({
+        title: 'Failed to Update User!',
+        variant: NOTIFICATION.ERROR,
+      });
     });
-    setNotification({
-      title: 'Successfully Updated User!',
-      variant: NOTIFICATION.SUCCESS,
-    });
+
 
     if (passwordChange) {
       await resetUserPassword({

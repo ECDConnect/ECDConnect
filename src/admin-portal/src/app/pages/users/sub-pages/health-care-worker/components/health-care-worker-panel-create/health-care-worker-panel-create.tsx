@@ -122,7 +122,10 @@ export default function HealthCareWorkerPanelCreate(
         await saveHealthCareWorker(userId);
       })
       .catch((error) => {
-        console.log(error);
+        setNotification({
+          title: 'Failed to Create User!',
+          variant: NOTIFICATION.ERROR,
+        });
       });
   };
 
@@ -139,12 +142,18 @@ export default function HealthCareWorkerPanelCreate(
       variables: {
         input: { ...healthCareWorkModel },
       },
+    }).then(()=>{
+      setNotification({
+        title: 'Successfully Created Health Care Worker!',
+        variant: NOTIFICATION.SUCCESS,
+      });
+    }).catch((err)=>{
+      setNotification({
+        title: 'Failed to Create Health Care Worker!',
+        variant: NOTIFICATION.ERROR,
+      });
     });
 
-    setNotification({
-      title: 'Successfully Created Health Care Worker!',
-      variant: NOTIFICATION.SUCCESS,
-    });
 
     if (healthCareWorkerForm.sendInvite) {
       await sendInviteToApplication({

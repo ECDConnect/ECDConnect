@@ -189,7 +189,10 @@ export function ViewUser(props: any) {
                 }
               })
               .catch((error) => {
-                console.log(error);
+                setNotification({
+                  title: 'Failed to Delete User!',
+                  variant: NOTIFICATION.ERROR,
+                });
               });
           }}
         />
@@ -219,6 +222,11 @@ export function ViewUser(props: any) {
                 variant: NOTIFICATION.SUCCESS,
               });
 
+            }).catch((err) => {
+              setNotification({
+                title: 'Failed to Send Invite!',
+                variant: NOTIFICATION.ERROR,
+              });
             });
           }}
         />
@@ -342,26 +350,41 @@ export function ViewUser(props: any) {
           id: chwData?.GetHealthCareWorkerById?.user.id,
           input: { ...chwInputModel },
         },
+      }).then(() => {
+        refetchCHW();
+        refetch();
+        setNotification({
+          title: 'Successfully Updated CHW!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      }).catch((err) => {
+        setNotification({
+          title: 'Failed to update CHW!',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-      refetchCHW();
-      refetch();
-      setNotification({
-        title: 'Successfully Updated CHW!',
-        variant: NOTIFICATION.SUCCESS,
-      });
+
     } else {
       await updateUser({
         variables: {
           id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           input: { ...adminInputModel },
         },
+      }).then(() => {
+        refetch()
+        setNotification({
+          title: 'Successfully Updated User!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      }).catch((err) => {
+        setNotification({
+          title: 'Failed to update User',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-      refetch()
-      setNotification({
-        title: 'Successfully Updated User!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-      setSucessNotification(true)
+
+
+      // setSucessNotification(true)
     }
 
     if (passwordChange) {
