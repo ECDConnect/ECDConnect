@@ -23,7 +23,6 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
-import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
 import { UserPanelCreateProps } from '../../../../components/users';
 import { Button, SA_ID_REGEX, SA_PASSPORT_REGEX, Typography } from '@ecdlink/ui';
 import { SaveIcon } from '@heroicons/react/solid';

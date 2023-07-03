@@ -36,17 +36,10 @@ import UploadAllImportTemplate from './components/upload-import-template/upload-
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
 import {
-  ChevronDownIcon,
-  CogIcon,
-  DownloadIcon,
   PlusIcon,
-  SaveIcon,
   SearchIcon,
   UploadIcon,
 } from '@heroicons/react/solid';
-import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadPractitionerTemplate from './components/upload-template/upload-template';
-import { Menu, Transition } from '@headlessui/react';
 import { useHistory } from 'react-router';
 
 export default function HealthCareWorkers() {
@@ -343,8 +336,8 @@ export default function HealthCareWorkers() {
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
                       className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                          ? 'bg-secondary text-white'
-                          : 'text-secondary border-secondary border-2 bg-white'
+                        ? 'bg-secondary text-white'
+                        : 'text-secondary border-secondary border-2 bg-white'
                         } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
@@ -353,8 +346,8 @@ export default function HealthCareWorkers() {
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
                         className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                            ? 'hover:text-secondary text-white'
-                            : 'text-secondary hover:text-white'
+                          ? 'hover:text-secondary text-white'
+                          : 'text-secondary hover:text-white'
                           }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
