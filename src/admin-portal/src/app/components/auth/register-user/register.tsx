@@ -6,7 +6,7 @@ import {
   registerSchema,
   useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider, PasswordInput, Typography } from '@ecdlink/ui';
+import { Alert, Button, Divider,  Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -15,6 +15,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../password-input/password-input';
 
 interface RouteParams {
   resetToken: string;
@@ -125,11 +126,11 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                 <PasswordInput
                   label={'Password'}
                   nameProp={'password'}
-                  sufficIconColor="primary"
+                  sufficIconColor="black"
                   value={formValues.password}
                   register={register}
                   strengthMeterVisible={true}
-                  className="mb-9"
+                  className="mb-9 "
                 />
               </div>
            

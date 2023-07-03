@@ -74,9 +74,7 @@ const FormField: React.FC<FormFieldProps> = ({
       </div>
       <div
         className={
-          type === 'password'
-            ? 'relative mt-1'
-            : type === 'checkbox'
+          type === 'checkbox'
               ? 'mt-2 flex'
               : 'mt-1'
         }
@@ -85,7 +83,7 @@ const FormField: React.FC<FormFieldProps> = ({
           defaultValue={defaultValue}
           disabled={disabled}
           type={
-            type === 'password' ? (showPassword ? 'text' : 'password') : type
+             type
           }
           {...register(nameProp, {
             required: required,

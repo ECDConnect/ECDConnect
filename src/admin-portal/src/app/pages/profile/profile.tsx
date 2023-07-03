@@ -1,7 +1,7 @@
 import FormField from '../../components/form-field/form-field';
 import { initialPasswordValue, initialUserDetailsValues, passwordSchema, NOTIFICATION, useNotifications, } from '@ecdlink/core';
 
-import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
+import { Button,  ProfileAvatar, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
@@ -11,6 +11,7 @@ import { useLazyQuery, useMutation } from '@apollo/client';
 import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
+import { PasswordInput } from '../../components/password-input/password-input';
 
 export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
@@ -150,10 +151,6 @@ export function Profile(props: any) {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
 
-  //check password strength
-  const password = watch('password');
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
@@ -235,34 +232,17 @@ export function Profile(props: any) {
                   </div>
 
                   <div className="space-y-2 pt-6 pb-4">
-                    <FormField
-                      label={'Password *'}
+                    <PasswordInput
+                      label={'Password'}
                       nameProp={'password'}
+                      sufficIconColor="black"
+                      value={passwordForm.password}
                       register={passwordRegister}
-                      type="password"
-                      error={passwordFormErrors?.password?.message}
-                      showPassword={showPassword}
-                      togglePasswordVisibility={togglePasswordVisibility}
+                      strengthMeterVisible={true}
+                      className="mb-9 "
                     />
                   </div>
-                  <div className="-mx-1 flex">
-                    {[...Array(4)].map((_, i) => (
-                      <div className="w-1/4 px-1" key={i}>
-                        <div
-                          className={`h-2 rounded-xl transition-colors ${i < passwordScore
-                            ? passwordScore <= 2
-                              ? 'bg-red-400'
-                              : passwordScore <= 3
-                                ? 'bg-yellow-400'
-                                : passwordScore <= 4
-                                  ? 'bg-green-500'
-                                  : 'bg-yellow-400'
-                            : 'bg-gray-200'
-                            }`}
-                        ></div>
-                      </div>
-                    ))}
-                  </div>
+               
                 </div>
               </div>
             </div>

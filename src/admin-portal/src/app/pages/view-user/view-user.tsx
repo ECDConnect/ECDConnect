@@ -56,6 +56,7 @@ import { useUser } from '../../hooks/useUser';
 import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../components/password-input/password-input';
 
 
 const chwSchema = yup.object().shape({
@@ -445,8 +446,8 @@ export function ViewUser(props: any) {
           <div className="flex">
             <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-          
-                  <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl as string} onPressed={() => { }} hasConsent size='header' />
+
+                <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl as string} onPressed={() => { }} hasConsent size='header' />
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
@@ -538,34 +539,17 @@ export function ViewUser(props: any) {
                       }
 
                       <div className="my-4 w-6/12 sm:col-span-3">
-                        <FormField
-                          label={'Password *'}
+                        <PasswordInput
+                          label={'Password'}
                           nameProp={'password'}
+                          sufficIconColor="black"
+                          value={passwordForm.password}
                           register={passwordRegister}
-                          type="password"
-                          error={passwordFormErrors.password?.message}
-                          showPassword={showPassword}
-                          togglePasswordVisibility={togglePasswordVisibility}
+                          strengthMeterVisible={true}
+                          className="mb-9 "
                         />
                       </div>
-                      <div className="-mx-1 flex w-6/12">
-                        {[...Array(4)].map((_, i) => (
-                          <div className="w-1/4 px-1" key={i}>
-                            <div
-                              className={`h-2 rounded-xl transition-colors ${i < passwordScore
-                                ? passwordScore <= 2
-                                  ? 'bg-red-400'
-                                  : passwordScore <= 3
-                                    ? 'bg-yellow-400'
-                                    : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                : 'bg-gray-200'
-                                }`}
-                            ></div>
-                          </div>
-                        ))}
-                      </div>
+
                     </div>
                   </div>
                   {
