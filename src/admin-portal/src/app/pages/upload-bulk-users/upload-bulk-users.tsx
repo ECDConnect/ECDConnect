@@ -56,6 +56,10 @@ export default function UploadBulkUser(props: any) {
         }).then((res) => {
           if (res.data?.importTeamLeads.validationErrors.length !== 0) {
             setDocErrors(res.data?.importTeamLeads.validationErrors);
+            setNotification({
+              title: `${res.data?.importTeamLeads?.validationErrors?.errors[0]}`,
+              variant: NOTIFICATION.ERROR,
+            });
           } else {
             setNotification({
               title: `Successfully Uploaded ${res.data?.importTeamLeads.createdUsers} team leads!`,
@@ -69,8 +73,12 @@ export default function UploadBulkUser(props: any) {
             file: model.templateFile?.file,
           },
         }).then((res) => {
-          if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
-            setDocErrors(res.data?.importTeamLeads.validationErrors);
+          if (res.data?.importHealthCareWorkers?.validationErrors.length !== 0) {
+            setDocErrors(res.data?.importHealthCareWorkers.validationErrors);
+            setNotification({
+              title: `${res.data?.importHealthCareWorkers?.validationErrors?.errors[0]}`,
+              variant: NOTIFICATION.ERROR,
+            });
           } else {
             setNotification({
               title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
