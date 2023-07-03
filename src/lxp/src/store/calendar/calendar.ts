@@ -1,6 +1,10 @@
 import { createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
-import { getCalendarEventTypes, updateCalendarEvent } from './calendar.actions';
+import {
+  getCalendarEventTypes,
+  getCalendarEvents,
+  updateCalendarEvent,
+} from './calendar.actions';
 import { CalendarState } from './calendar.types';
 
 const initialState: CalendarState = {
@@ -20,6 +24,10 @@ const calendarSlice = createSlice({
   extraReducers: (builder) => {
     builder.addCase(getCalendarEventTypes.fulfilled, (state, action) => {
       state.eventTypes = action.payload;
+    });
+
+    builder.addCase(getCalendarEvents.fulfilled, (state, action) => {
+      state.events = action.payload;
     });
 
     builder.addCase(updateCalendarEvent.fulfilled, (state, action) => {
