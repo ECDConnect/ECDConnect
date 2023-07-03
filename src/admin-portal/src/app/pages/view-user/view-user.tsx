@@ -33,6 +33,7 @@ import {
 
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
+import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
@@ -629,23 +630,8 @@ export function ViewUser(props: any) {
           data.tenantContext.applicationName === 'GrowGreat'
           && <div className=" flex justify-end">
             <div>
-              <Dropdown
-                fillType="filled"
-                textColor="white"
-                fillColor="secondary"
-                placeholder="Filter "
-                labelColor="white"
-                // selectedValue={statusFilter}
-                list={[
-                  { label: 'All', value: '' },
-                  { label: 'Active', value: 'active' },
-                  { label: 'Inactive', value: 'inactive' },
-                ]}
-                onChange={(item) => {
-                  // setStatusFilter(item);
-                }}
-                className='p-2'
-              />
+
+            <CustomDateRangePicker />
             </div>
           </div>}
         {
