@@ -66,15 +66,15 @@ export function Profile(props: any) {
   const saveUser = async (passwordChange: boolean, profileImage?: string) => {
 
     const userInputModel: UserModelInput = {
-      firstName:userDetailForm?.firstName,
-      surname:userDetailForm?.surname,
+      firstName: userDetailForm?.firstName,
+      surname: userDetailForm?.surname,
       email: userDetailForm?.email,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
-      profileImageUrl: profileImage ?? null
+      profileImageUrl: profileImage ?? userData.userById?.profileImageUrl
     };
- 
+
     await updateUser({
       variables: {
         id: user.user?.id,
@@ -94,6 +94,7 @@ export function Profile(props: any) {
         },
       });
     }
+    refetch();
   };
 
   const onSave = async () => {
@@ -189,7 +190,7 @@ export function Profile(props: any) {
                 >
 
                   <ProfileAvatar
-                    dataUrl={avatarFile ?? ''}
+                    dataUrl={avatarFile ?? userData.userById?.profileImageUrl}
                     size={'header'}
                     onPressed={displayProfilePicturePrompt}
                     hasConsent={true}
