@@ -698,50 +698,37 @@ namespace ECDLink.Core.Services
             bool returnOK = false;
             _mappedEntities = await GetMappedEntities();
             _mappedColumns = await GetMappedColumns();
-            
-            List<ColumnChange> changedColumns = await _apiManager.GetColumnChangesBetweenDates(DateTime.Now.AddDays(-2), DateTime.Now);                    
+
+            RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(-7), DateTime.Now);                    
             
             if (changedColumns != null) {
-                foreach (var change in changedColumns)
+                //run all inserts
+                foreach (var change in changedColumns.Inserts)
                 {
-                    //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
-
-                    //var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
-                    ////kick off change sequence depending on type
-                    //foreach (var item in remoteColumnChanges)
-                    //{
-                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.RecordChange.RecordGuid && x.RemoteEntity.Equals(change.Entity)).FirstOrDefault();
-                    UpdateLocalEntity updateEntity = new UpdateLocalEntity()
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity == null)
                     {
-                        Guid = change.RecordChange.RecordGuid,
-                        RelatedGuid = change.RecordChange.RelatedEntityGuid,
-                        RelatedEntityType = change.RecordChange.RelatedEntityType,  //related is always the parent
-                        EntityColumn = change.Column,
-                        EntityType = change.Entity,
-                        LastUpdatedDateTime = change.DateTimeStamp,
-                        NewData = change.NewValue
-                    }; 
-
-                    switch (change.RecordChange.ChangeType)
-                    {
-                        case SLChangeType.Deactivate:
-                            //TODO: handle deactivates
-
-
-                            break;
-                        default:
-                            //check if item exists, if not create and then update
-                            if (mappedEntity == null)
-                            {
-                                mappedEntity = await UpdateInsertNewEntity(updateEntity);
-                            }
-
-                            if (change.RecordChange.ChangeType == SLChangeType.Update)
-                                await UpdateEntityColumn(updateEntity, mappedEntity);
-
-                            break;
+                        mappedEntity = await UpdateInsertNewEntity(change);
                     }
-                    //}
+                }
+                //run all deactivates
+                foreach (var change in changedColumns.Deletes)
+                {
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity == null)
+                    {
+                        //TODO
+                    }
+                }
+                _mappedEntities = await GetMappedEntities(null,true); //reload the lists to include the latest changes
+                //run all updates, that arent in the insert list either
+                foreach (var change in changedColumns.Deletes)
+                {
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity != null)
+                    {
+                        await UpdateEntityColumn(change, mappedEntity);
+                    }
                 }
             }
             
@@ -992,7 +979,7 @@ namespace ECDLink.Core.Services
                 var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
 
                 //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(-3)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(-5)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
                 //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
                 if (entityType != null)
                     return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
@@ -1006,10 +993,14 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
+        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
         {
             try
             {
+                if (getNew)
+                {
+                    return _mapperRepo.GetAll().ToList();
+                }
                 if (entityType != null)
                 {
                     if (_mappedEntities != null)
@@ -2453,13 +2444,16 @@ namespace ECDLink.Core.Services
             try
             {
                 //make sure to exclude any system related updates and do not log
-                var localColumnChange = _mappedColumns.Where(c => c.RemoteColumn.Equals(model.EntityColumn) && c.RemoteEntity.Equals(model.EntityType)).FirstOrDefault();
-                if (localColumnChange != null)
-                { //if its not mapped we arent interested in this change
-                    var pracs = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
-                    switch (localColumnChange.LocalEntity)
+                //var localColumnChange = _mappedColumns.Where(c => c.RemoteColumn.Equals(model.EntityColumn) && c.RemoteEntity.Equals(model.EntityType)).FirstOrDefault();
+                //if (localColumnChange != null)
+                //{ //if its not mapped we arent interested in this change
+                    //var pracs = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+                    switch (model.EntityType)
                     {
-                        case SSIntegrationSettings.SSChild:
+                        case SSIntegrationSettings.SLCaregiver:
+                            //caregiver is associated with a child, their details will be pulled in via a child record - so ignore
+                            break;
+                        case SSIntegrationSettings.SLChild:
                             //map child and caregiver
                             MappedChild child = await _apiManager.GetChildById(model.Guid);
                             if (child != null)
@@ -2470,12 +2464,12 @@ namespace ECDLink.Core.Services
                                     Practitioner parentPrac = _practitionerGenericRepo.GetByUserId(parentEntity.UserId);
                                     if (parentPrac != null)
                                     {
-                                        var entity = MapChildCaregiverOfFranchisee(child, parentPrac);
+                                        var entity = await MapChildCaregiverOfFranchisee(child, parentPrac);
                                     }
                                 }
                             }
                             break;
-                        case SSIntegrationSettings.SSDocument:
+                        case SSIntegrationSettings.SLDocument:
                             //TODO:
                             MappedDocument doc = await _apiManager.GetDocumentsById(model.Guid);
                             if (doc!=null)
@@ -2500,12 +2494,12 @@ namespace ECDLink.Core.Services
                                 }
                             }
                             break;
-                        case SSIntegrationSettings.SSAddress:
+                        case SSIntegrationSettings.SLAddress:
                             //TODO:
                             MappedAddress address = await _apiManager.GetAddressById(model.Guid);
 
                             break;
-                        case SSIntegrationSettings.SSTrainee:
+                        case SSIntegrationSettings.SLTrainee:
                             //TODO:
                             MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
 
@@ -2513,7 +2507,7 @@ namespace ECDLink.Core.Services
                             break;
                     }
 
-                }
+               //}
                 return newEntity;
             }
             catch (Exception e)

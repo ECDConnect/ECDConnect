@@ -1,6 +1,7 @@
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.AuditLog;
+using ECDLink.DataAccessLayer.Entities.Calendar;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Clubs;
@@ -153,6 +154,10 @@ namespace ECDLink.DataAccessLayer.Context
 
         // SmartSpaceVisit
         public DbSet<SmartSpaceVisit> SmartSpaceVisits { get; set; }
+
+        // Calendar
+        public DbSet<CalendarEvent> CalendarEvents { get; set; }
+        public DbSet<CalendarEventParticipant> CalendarEventParticipants { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

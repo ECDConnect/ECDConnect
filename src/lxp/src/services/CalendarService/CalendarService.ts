@@ -1,5 +1,5 @@
-import { CalendarEventTypeDto, Config } from '@ecdlink/core';
-import { CalendarEvent, CalendarEventInput } from '@ecdlink/graphql';
+import { CalendarEventDto, CalendarEventTypeDto, Config } from '@ecdlink/core';
+import { CalendarEventInput } from '@ecdlink/graphql';
 import { api } from '../axios.helper';
 
 class CalendarService {
@@ -35,12 +35,12 @@ class CalendarService {
     return response.data.data.GetAllCalendarEventType;
   }
 
-  async getUserCalendarEvents(start: Date): Promise<CalendarEvent[]> {
+  async getCalendarEvents(start: Date): Promise<CalendarEventDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
-        query getUserCalendarEvents($start: DateTime!) {
-          getUserCalendarEvents(start: $start) {    
+        query userCalendarEvents($start: DateTime!) {
+          userCalendarEvents(start: $start) {    
             allDay
             description
             end
@@ -49,9 +49,12 @@ class CalendarService {
             name
             participants {
               id
+              isActive
               participantUserId
             }
             start
+            action
+            isActive
           }
         }
     `,
@@ -66,7 +69,7 @@ class CalendarService {
       );
     }
 
-    return response.data.data.GetUserContentChildProgressReport;
+    return response.data.data.userCalendarEvents;
   }
 
   async updateCalendarEvent(
@@ -74,25 +77,24 @@ class CalendarService {
     id: string
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
-    const response = { data: { data: { updateCalendarEvent: { id: id } } } };
-    // const response = await apiInstance.post<any>(``, {
-    //   query: `
-    //     mutation updateCalendarEvent($input: ChildProgressReportInput, $id: UUID!) {
-    //       updateCalendarEvent(input: $input, id: $id) {
-    //         id
-    //       }
-    //     }
-    //   `,
-    //   variables: {
-    //     input: input,
-    //     id: id,
-    //   },
-    // });
-    // if (response.status !== 200) {
-    //   throw new Error(
-    //     'Updating calendar event failed - Server connection error'
-    //   );
-    // }
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateCalendarEvent($input: CalendarEventInput, $id: UUID!) {
+          updateCalendarEvent(input: $input, id: $id) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: input,
+        id: id,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating calendar event failed - Server connection error'
+      );
+    }
 
     return response.data.data.updateCalendarEvent;
   }

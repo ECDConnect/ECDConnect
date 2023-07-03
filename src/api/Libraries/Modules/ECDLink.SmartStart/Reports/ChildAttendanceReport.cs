@@ -49,17 +49,17 @@ namespace ECDLink.SmartStart.Reports
             }
 
             //retrieve only groups the user is allowed to see
-            List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId); 
+            List<ClassroomGroup> groups = _attendanceService.GetUserClassroomGroups(userId);
+            var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
 
             foreach (var classroomGroup in classroom.ClassroomGroups.Where(x => groups.Select(y => y.UserId).Contains(x.UserId)))
             {
                 var learners = _attendanceService.GetAllLearnerGroupInstances(classroomGroup.Id);
                 //get all children the user is allowed to see and run against hierarchy
                 List<Child> children = _attendanceService.GetChildrenForUser(userId);
-                var validClassDays = GetDayRangeWithoutHolidays(startMonth, endMonth);
                 if (learners.Any())
                 {
-                    foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains( x.UserId)))
+                    foreach (var learner in learners.Where(x => children.Select(y => y.UserId).Contains(x.UserId)))
                     {
                         var attendanceForPeriod = _attendanceService.GetAttendanceRecordsForPeriod(learner, userId, startMonth, endMonth);
                         var allAttendance = new List<List<Tuple<int, int>>>();
@@ -71,15 +71,12 @@ namespace ECDLink.SmartStart.Reports
                             var attendance = new List<Tuple<int, int>>();
                             foreach (var programme in learner.ClassroomGroup.ClassProgrammes)
                             {
-                                if (learner.StartedAttendance.Date >= programme.ProgrammeStartDate.Date)
+                                var daysOfClass = CalculateDaysOfClassForMonth(dt, (int)programme.MeetingDay, validClassDays, programme.ProgrammeStartDate.Date, endMonth.Date);
+                               
+                                if (daysOfClass.Count() > 0)
                                 {
-                                    var daysOfClass = attendanceForPeriod.Where(x => string.Equals(x.UserId, userId)
-                                                  && x.ClassroomProgrammeId == programme.Id
-                                                  && x.MonthOfYear == dt.Month
-                                                  && x.Year == dt.Year);
-
                                     var attendedClasses = attendanceForPeriod
-                                                            .Where(x => string.Equals(x.UserId, userId)
+                                                            .Where(x => string.Equals(x.UserId, learner.UserId)
                                                             && x.ClassroomProgrammeId == programme.Id
                                                             && x.MonthOfYear == dt.Month
                                                             && x.Year == dt.Year
@@ -89,8 +86,11 @@ namespace ECDLink.SmartStart.Reports
 
                                 }// else attendance.Add(Tuple.Create(0, 0));
                             }
-                            monthlyAttendance.Add(dt, attendance);
-                            allAttendance.Add(attendance);
+                            if (attendance.Any())
+                            {
+                                monthlyAttendance.Add(dt, attendance);
+                                allAttendance.Add(attendance);
+                            }
                         }
                         var reports = _attendanceService.GetMonthlyReport(monthlyAttendance);
                         //setting up the days allowed for attendance - not taking into account actual meeting days - but we need this for a calendar PDF
@@ -195,5 +195,5 @@ namespace ECDLink.SmartStart.Reports
         }
 
 
-        }
+    }
 }

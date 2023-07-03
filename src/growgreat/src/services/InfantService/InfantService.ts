@@ -182,6 +182,7 @@ class InfantService {
         query GetInfantVisits($userId: String) {
           infantVisits(id: $userId) {
             id
+            insertedDate
             actualVisitDate
             plannedVisitDate
             orderDate
@@ -326,6 +327,7 @@ class InfantService {
       query: `
         mutation AddAdditionalVisitForInfant($input: VisitModelInput) {
           addAdditionalVisitForInfant(input: $input) {
+            insertedDate
             actualVisitDate,
             plannedVisitDate,
             orderDate

@@ -38,9 +38,10 @@ export const getMotherCurrentVisitSelector = (
 
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
-    for (var i = 0; i < allVisits.length; i++) {
-      if (allVisits[i].id === visitId) {
-        return allVisits[i];
+    const visits = state.mothers.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
       }
     }
   } else {
@@ -75,18 +76,28 @@ export const getMotherCurrentVisitSelector = (
 };
 
 export const getMotherLastVisitSelector = (
-  state: RootState
+  state: RootState,
+  visitId?: string
 ): VisitDto | undefined => {
   const visits = state.mothers.visits || [];
   const lastAttended = visits?.filter((item) => item.attended) || [];
 
-  return lastAttended.length
-    ? lastAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    : undefined;
+  if (visitId && visitId !== '') {
+    const visits = state.mothers.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
+      }
+    }
+  } else {
+    return lastAttended.length
+      ? lastAttended.reduce((prev, curr) =>
+          (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
+            ? prev
+            : curr
+        )
+      : undefined;
+  }
 };
 
 export const getMotherPreviousVisitSelector = (
@@ -142,9 +153,11 @@ export function getMotherNearestPreviousVisitByOrderDate(
 ): VisitDto | undefined {
   const visits = state.mothers.visits;
 
-  if (!visits?.length || !currentVisit) return undefined;
+  if (!visits?.length) return undefined;
 
-  const currentOrderDate = new Date(currentVisit?.orderDate!);
+  const currentOrderDate = currentVisit
+    ? new Date(currentVisit?.orderDate!)
+    : new Date();
   const previousVisits = visits.filter(
     (item) =>
       item.attended &&

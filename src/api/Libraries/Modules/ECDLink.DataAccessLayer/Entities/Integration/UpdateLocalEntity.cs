@@ -1,4 +1,5 @@
 using System;
+using System.Collections.Generic;
 
 namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
 {
@@ -11,6 +12,15 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string EntityColumn { get; set; }
         public string NewData { get; set; }
         public DateTime LastUpdatedDateTime { get; set; }
+
+    }
+
+    public class RemoteChangesList
+    {
+        public List<UpdateLocalEntity> Inserts = new List<UpdateLocalEntity>();
+        public List<UpdateLocalEntity> Deletes = new List<UpdateLocalEntity>();
+        public List<UpdateLocalEntity> Updates = new List<UpdateLocalEntity>();
+
 
     }
 }

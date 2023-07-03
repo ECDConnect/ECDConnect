@@ -1,4 +1,4 @@
-import { getYear, getMonth, getWeek } from 'date-fns';
+import { getYear, getMonth, getWeek, subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -268,6 +268,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();
+    await appDispatch(
+      calendarThunkActions.getCalendarEvents({
+        start: subMonths(
+          new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+          1
+        ),
+      })
+    );
 
     setOtherLoading(false);
   };

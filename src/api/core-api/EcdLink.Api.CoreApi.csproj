@@ -4,6 +4,7 @@
 	<TargetFramework>net7.0</TargetFramework>
 	<!-- Nullable filters through to Entity Framework 7 and makes DB field FKs required -->
 	<Nullable>disable</Nullable>
+    <ErrorOnDuplicatePublishOutputFiles>false</ErrorOnDuplicatePublishOutputFiles>
   </PropertyGroup>
   
   <ItemGroup>

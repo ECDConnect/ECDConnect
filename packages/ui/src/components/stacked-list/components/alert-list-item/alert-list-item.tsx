@@ -8,13 +8,20 @@ import * as styles from './alert-list-item.styles';
 
 export interface AlertListItemProps {
   item: AlertListDataItem;
+  onClickItem?: (item: any) => void;
 }
 
-export const AlertListItem: React.FC<AlertListItemProps> = ({ item }) => {
+export const AlertListItem: React.FC<AlertListItemProps> = ({
+  item,
+  onClickItem,
+}) => {
   return (
     <div
       className={styles.menulistItemContainer}
-      onClick={() => item.onActionClick && item.onActionClick()}
+      onClick={() => {
+        if (!!item.onActionClick) item.onActionClick();
+        else if (!!onClickItem) onClickItem(item);
+      }}
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
@@ -41,7 +48,7 @@ export const AlertListItem: React.FC<AlertListItemProps> = ({ item }) => {
                     )}
                   ></div>
                   <Typography
-                    className="pl-1 truncate"
+                    className="truncate pl-1"
                     type="small"
                     weight="skinny"
                     color={styles.getColourByAlertSeverity(item.alertSeverity)}

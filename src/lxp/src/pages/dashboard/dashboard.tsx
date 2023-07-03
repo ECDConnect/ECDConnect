@@ -53,8 +53,6 @@ import { calendarThunkActions } from '@/store/calendar';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
-const enableCalendar = true;
-
 export enum NavigationTypes {
   Home = 'Home',
   ClientFolders = 'Classroom',
@@ -376,7 +374,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -453,6 +451,15 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
@@ -465,36 +472,18 @@ export const Dashboard: React.FC = () => {
         goToClassroom();
       },
     });
-    dashboardItems.push(
-      enableCalendar
-        ? {
-            title: 'Calendar',
-            titleIcon: 'CalendarIcon',
-            titleIconClassName: styles.calendarIcon,
-            classNames: 'bg-uiBg',
-            onActionClick: () => {
-              goToCalendar();
-            },
-          }
-        : {
-            title: 'Calendar',
-            titleIcon: 'CalendarIcon',
-            titleIconClassName: styles.businessIcon,
-            onActionClick: () => ({}),
-            classNames: 'bg-uiBg',
-            chipConfig: {
-              colorPalette: {
-                backgroundColour: 'alertMain',
-                borderColour: 'alertMain',
-                textColour: 'white',
-              },
-              text: 'Coming soon',
-            },
-          }
-    );
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
-  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -563,6 +552,11 @@ export const Dashboard: React.FC = () => {
   const goToBusiness = () => {
     if (isPrincipal || isFundaAppAdmin) {
       history.push(ROUTES.BUSINESS);
+      return;
+    }
+    if (isTrainee) {
+      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+      return;
     }
   };
 

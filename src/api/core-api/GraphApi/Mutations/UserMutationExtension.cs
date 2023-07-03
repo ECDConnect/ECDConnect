@@ -359,7 +359,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             DoAudit(currentUserId, repoFactory, auditFields, id);
             //Update RemoteEntity - Integration
-            //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+            //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
             if (!updateResult.Succeeded)
             {

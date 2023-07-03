@@ -26,6 +26,7 @@ import ROUTES from '@/routes/routes';
 
 import {
   getInfantById,
+  getInfantNearestPreviousVisitByOrderDate,
   getInfantVisitByVisitIdSelector,
   getIsInfantFirstVisitSelector,
   getIsInfantSecondVisitSelector,
@@ -56,7 +57,10 @@ import { getAgeInYearsMonthsAndDays, usePrevious } from '@ecdlink/core';
 import { documentSelectors } from '@/store/document';
 import { dangerSignsVisitSectionForBaby } from './forms/care-for-baby-steps/danger-signs';
 import { dangerSignsVisitSection } from './forms/care-for-mom-steps/danger-signs';
-import { clinicCheckupQuestion } from './forms/care-for-mom-steps/clinic-check-ups';
+import {
+  clinicCheckupQuestion,
+  clinicCheckupSectionName,
+} from './forms/care-for-mom-steps/clinic-check-ups';
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 import { FileTypeEnum } from '@ecdlink/graphql';
 
@@ -100,10 +104,13 @@ export const ActivityList: React.FC = () => {
     getCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
 
-  const previousVisit = useSelector(
+  const previousCurrentVisitStatus = useSelector(
     getPreviousVisitInformationForInfantSelector
   );
 
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, visit)
+  );
   const appDispatch = useAppDispatch();
 
   const infant = useSelector((state: RootState) =>
@@ -142,14 +149,14 @@ export const ActivityList: React.FC = () => {
 
   const getIsFollowUp = useCallback(
     (section: string, visitName: string) => {
-      return !!previousVisit?.visitDataStatus?.some(
+      return !!previousCurrentVisitStatus?.visitDataStatus?.some(
         (item) =>
           item?.section === section &&
           item.visitData?.visitName === visitName &&
           item.color !== 'Success'
       );
     },
-    [previousVisit?.visitDataStatus]
+    [previousCurrentVisitStatus?.visitDataStatus]
   );
 
   const isRoadToHeathBookStep = useMemo(
@@ -205,14 +212,17 @@ export const ActivityList: React.FC = () => {
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
   const previousClinicCheckUpAnswer = previousAnswers?.find(
-    (item) => item.question === clinicCheckupQuestion
+    (item) =>
+      item.question === clinicCheckupQuestion &&
+      item.visitId === previousVisit?.id
   )?.questionAnswer;
 
   const isShowClinicCheckUps = useMemo(
     () =>
       (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 49) ||
       (isFirstVisit && ageDays >= 49 && ageDays <= 56) ||
-      (Boolean(previousClinicCheckUpAnswer) === false && ageDays <= 56),
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 57),
     [ageDays, previousClinicCheckUpAnswer, isFirstVisit]
   );
 
@@ -231,14 +241,9 @@ export const ActivityList: React.FC = () => {
     activitiesTypes.careForMom
   );
 
-  const isMotherCaregiver = useMemo(
-    () => infant?.caregiver?.relation?.description === 'Mother',
-    [infant?.caregiver?.relation?.description]
-  );
-
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
-    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && ageDays >= 49 && ageYears < 5,
+    [ageDays, ageYears, isFirstVisit]
   );
 
   const isDisplayPillar2 = [
@@ -481,11 +486,11 @@ export const ActivityList: React.FC = () => {
         visitId,
       })
     ).unwrap();
-    // appDispatch(
-    //   visitThunkActions.getPreviousVisitInformationForInfant({
-    //     visitId,
-    //   })
-    // );
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForInfant({
+        visitId,
+      })
+    );
   }, [visitId, appDispatch]);
 
   useLayoutEffect(() => {
@@ -497,6 +502,18 @@ export const ActivityList: React.FC = () => {
       })
     );
   }, [visitId, appDispatch]);
+
+  useLayoutEffect(() => {
+    if (previousVisit?.id) {
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.careForMom,
+          visitSection: clinicCheckupSectionName,
+        })
+      );
+    }
+  }, [previousVisit, appDispatch]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -512,7 +529,7 @@ export const ActivityList: React.FC = () => {
 
     if (
       isStartVisit ||
-      !previousVisit?.visitDataStatus?.length ||
+      !previousCurrentVisitStatus?.visitDataStatus?.length ||
       isAllCompleted
     ) {
       return (
@@ -525,32 +542,13 @@ export const ActivityList: React.FC = () => {
             color="textDark"
             className="col-span-2"
           />
-          {!!visit?.actualVisitDate &&
-            visit?.visitType?.normalizedName === 'Additional visits' && (
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={new Date(visit?.actualVisitDate).toLocaleDateString(
-                  'en-ZA',
-                  options
-                )}
-                color="textMid"
-              />
-            )}
-          {!!visit?.plannedVisitDate &&
-            visit?.visitType?.normalizedName !== 'Additional visits' && (
-              <Typography
-                type="body"
-                align="left"
-                weight="skinny"
-                text={new Date(visit?.plannedVisitDate).toLocaleDateString(
-                  'en-ZA',
-                  options
-                )}
-                color="textMid"
-              />
-            )}
+          <Typography
+            type="body"
+            align="left"
+            weight="skinny"
+            text={new Date().toLocaleDateString('en-ZA', options)}
+            color="textMid"
+          />
           {isAllCompleted ? (
             <>
               <PollyImpressed className="mt-11 h-28 w-full self-center" />
@@ -678,11 +676,10 @@ export const ActivityList: React.FC = () => {
     isShowCompletedForms,
     isStartVisit,
     options,
-    previousVisit?.visitDataStatus?.length,
+    previousCurrentVisitStatus?.visitDataStatus?.length,
     stepperCount,
     uncompletedForms,
     user?.firstName,
-    visit,
     width,
   ]);
 

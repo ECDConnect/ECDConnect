@@ -276,6 +276,32 @@ class TraineeService {
     return true;
   }
 
+  async editVisitData(input: CmsVisitDataInputModelInput): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addVisitData: boolean };
+      errors?: {};
+    }>(``, {
+      query: `
+      mutation EditVisitData($input: CMSVisitDataInputModelInput) {
+        editVisitData(input: $input) {
+        }
+    }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add update community support failed - Server connection error'
+      );
+    }
+
+    return true;
+  }
+
   async addStartupSupportAgreementForTrainee(
     input: SupportVisitModelInput
   ): Promise<boolean> {
