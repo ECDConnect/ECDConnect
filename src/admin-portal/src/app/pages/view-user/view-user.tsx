@@ -347,48 +347,23 @@ export function ViewUser(props: any) {
       verifiedByHomeAffairs: null,
     };
 
-    if (isCHW) {
-      await updateCHW({
-        variables: {
-          id: chwData?.GetHealthCareWorkerById?.user.id,
-          input: { ...chwInputModel },
-        },
-      }).then(() => {
-        refetchCHW();
-        refetch();
-        setNotification({
-          title: 'Successfully Updated CHW!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      }).catch((err) => {
-        setNotification({
-          title: 'Failed to update CHW!',
-          variant: NOTIFICATION.ERROR,
-        });
+    await updateUser({
+      variables: {
+        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+        input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
+      },
+    }).then(() => {
+      refetch()
+      setNotification({
+        title: 'Successfully Updated User!',
+        variant: NOTIFICATION.SUCCESS,
       });
-
-    } else {
-      await updateUser({
-        variables: {
-          id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
-          input: { ...adminInputModel },
-        },
-      }).then(() => {
-        refetch()
-        setNotification({
-          title: 'Successfully Updated User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      }).catch((err) => {
-        setNotification({
-          title: 'Failed to update User',
-          variant: NOTIFICATION.ERROR,
-        });
+    }).catch((err) => {
+      setNotification({
+        title: 'Failed to update User',
+        variant: NOTIFICATION.ERROR,
       });
-
-
-      // setSucessNotification(true)
-    }
+    });
 
     if (passwordChange) {
       await resetUserPassword({
@@ -447,7 +422,7 @@ export function ViewUser(props: any) {
             <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
 
-                <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl as string} onPressed={() => { }} hasConsent size='header' />
+                <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl || chwData?.GetHealthCareWorkerById?.user?.profileImageUrl} onPressed={() => { }} hasConsent size='header' />
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
@@ -595,16 +570,16 @@ export function ViewUser(props: any) {
                 (isCHW || props.location.state?.component === 'chw') ? <div className="flex flex-row justify-start pt-4 text-current">
 
                   <p className="px-4 text-xl">
-                    ID: {userData?.userById?.idNumber}
+                    ID: {userData?.userById?.idNumber || chwData?.GetHealthCareWorkerById?.user?.idNumber}
                   </p>
                   <p className="px-4 text-xl">
                     {' '}
                     Cellphone:{' '}
-                    {userData?.userById?.phoneNumber}
+                    {userData?.userById?.phoneNumber || chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
                   </p>
                   {userData?.userById?.whatsappNumber && <p className="px-4 text-xl">
                     WhatsApp:{' '}
-                    {userData?.userById?.whatsappNumber}
+                    {userData?.userById?.whatsappNumber || chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
                   </p>}
                 </div> : <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
