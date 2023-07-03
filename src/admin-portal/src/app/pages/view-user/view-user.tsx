@@ -817,8 +817,8 @@ export function ViewUser(props: any) {
 
           <div className='w-2/12'>
             <p className="mt-3 text-sm text-gray-500 w-full">
-              User added to {data?.tenantContext.applicationName}:{' '}
-              {userData?.userById?.StartDate}
+              User added to {data?.tenantContext.applicationName} App:{' '}
+              {userData?.userById?.startDate}
             </p>
           </div>
 

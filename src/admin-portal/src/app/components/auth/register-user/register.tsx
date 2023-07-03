@@ -133,8 +133,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                   className="mb-9 "
                 />
               </div>
-           
-
               <Divider></Divider>
               <div className="flex">
                 <div>
