@@ -55,28 +55,55 @@ export default function ApplicationAdmins() {
   let userStatus = statusFilter === 'active' ? true : false;
 
   useEffect(() => {
-    getAllUsers({
-      variables: {
-        search: searchValue,
-        pagingInput: {
-          pageNumber: 1,
-          pageSize: 10,
-          filterBy: [
-            {
-              fieldName: 'ADMINISTRATOR',
-              filterType: 'EQUALS',
-              value: 'true',
-            },
-          ],
-          sortBy: [
-            {
-              fieldName: 'FullName',
-              descending: true,
-            },
-          ],
+    if (searchValue === '') {
+      // Perform the refetch when search value is empty
+      getAllUsers({
+        variables: {
+          search: '',
+          pagingInput: {
+            pageNumber: 1,
+            pageSize: 10,
+            filterBy: [
+              {
+                fieldName: 'ADMINISTRATOR',
+                filterType: 'EQUALS',
+                value: 'true',
+              },
+            ],
+            sortBy: [
+              {
+                fieldName: 'FullName',
+                descending: true,
+              },
+            ],
+          },
         },
-      },
-    });
+      });
+    } else {
+      // Perform the search query
+      getAllUsers({
+        variables: {
+          search: searchValue,
+          pagingInput: {
+            pageNumber: 1,
+            pageSize: 10,
+            filterBy: [
+              {
+                fieldName: 'ADMINISTRATOR',
+                filterType: 'EQUALS',
+                value: 'true',
+              },
+            ],
+            sortBy: [
+              {
+                fieldName: 'FullName',
+                descending: true,
+              },
+            ],
+          },
+        },
+      });
+    }
   }, [searchValue]);
 
   useEffect(() => {
@@ -134,19 +161,15 @@ export default function ApplicationAdmins() {
     return {
       ...user,
       fullName: `${user.firstName} ${user.surname}`,
-      _view: undefined,
-      _edit: undefined,
-      _url: undefined,
     };
   };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || ' ');
+
   }, 150);
 
-  useEffect(() => {
-    console.log('>>>', searchValue);
-  }, [searchValue]);
+
 
   if (tableData) {
     return (
@@ -328,7 +351,7 @@ export default function ApplicationAdmins() {
                   urlRow={'/view-user'}
                   rows={tableData}
                   sendRow={true}
-                  searchInput={searchValue !== '' ? searchValue : null}
+                  searchInput={searchValue}
                   component={'administrators'}
                 />
               </div>

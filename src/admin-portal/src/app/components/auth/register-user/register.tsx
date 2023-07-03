@@ -6,7 +6,7 @@ import {
   registerSchema,
   useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
+import { Alert, Button, Divider, PasswordInput, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -120,40 +120,19 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               </div>
 
               <div className="space-y-1">
-                <FormField
-                  label={'Password *'}
+
+
+                <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  sufficIconColor="primary"
+                  value={formValues.password}
                   register={register}
-                  type="password"
-                  error={errors.password?.message}
-                  instructions={[
-                    'At least 8 characters',
-                    'At least 1 number',
-                    'At least 1 capital letter',
-                  ]}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
+                  strengthMeterVisible={true}
+                  className="mb-9"
                 />
               </div>
-              <div className="-mx-1 flex">
-                {[...Array(4)].map((_, i) => (
-                  <div className="w-1/4 px-1" key={i}>
-                    <div
-                      className={`h-2 rounded-xl transition-colors ${
-                        i < passwordScore
-                          ? passwordScore <= 1
-                            ? 'bg-red-400'
-                            : passwordScore <= 2
-                            ? 'bg-yellow-400'
-                            : passwordScore <= 4
-                            ? 'bg-green-500'
-                            : 'bg-yellow-400'
-                          : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </div>
+           
 
               <Divider></Divider>
               <div className="flex">
@@ -167,7 +146,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     error={errors.acceptedTerms?.message}
                   />
                 </div>
-               
+
               </div>
               {displayError && (
                 <Alert
