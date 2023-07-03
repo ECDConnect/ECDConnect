@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { format } from 'date-fns';
 import DateRangePickerCalendar from './DateRangePickerCalendar'; // Custom calendar component
+import { ChevronDownIcon } from '@heroicons/react/solid';
 
 
 function CustomDateRangePicker(props: any
@@ -18,7 +19,7 @@ function CustomDateRangePicker(props: any
     return (
         <div>
             <button
-                className="bg-blue-500 hover:bg-blue-700 text-white font-bold py-2 px-4 rounded"
+                className="flex flex-row border-2 border-secondary hover:bg-secondary hover:text-white text-secondary font-bold py-2 px-4 rounded"
                 onClick={toggleCalendar}
             >
                 {props.selectedRange?.length > 0 ? (
@@ -28,6 +29,7 @@ function CustomDateRangePicker(props: any
                 ) : (
                     'Filter by Date'
                 )}
+               
             </button>
 
             {showCalendar && (

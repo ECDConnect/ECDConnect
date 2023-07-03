@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { DateRangePicker } from 'react-date-range';
 
 const DateRangePickerCalendar = ({ selectedRange, onDateChange }) => {
-    const renderStaticRangeLabel = (range) => null; // Return null to remove the sidebar labels
+  const renderStaticRangeLabel = (range) => null; // Return null to remove the sidebar labels
 
   const [calendarRange, setCalendarRange] = useState([
     {
@@ -21,6 +21,8 @@ const DateRangePickerCalendar = ({ selectedRange, onDateChange }) => {
   return (
     <div>
       <DateRangePicker
+        color='#1DBADF'
+        rangeColors='#1DBADF'
         ranges={calendarRange}
         onChange={handleSelect}
         months={2}
