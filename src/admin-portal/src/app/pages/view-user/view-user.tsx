@@ -6,8 +6,17 @@ import {
   Typography,
   SA_CELL_REGEX,
   SA_ID_REGEX,
+  Dropdown,
+  AlertType,
+  Avatar,
+  ProfileAvatar,
 } from '@ecdlink/ui';
-import { useEffect, useState } from 'react';
+import {
+  JSXElementConstructor,
+  ReactElement,
+  useEffect,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
@@ -17,6 +26,7 @@ import {
   SaveIcon,
   ArrowLeftIcon,
   PaperAirplaneIcon,
+  ThumbUpIcon,
 } from '@heroicons/react/solid';
 import { useLazyQuery, useMutation, useQuery } from '@apollo/client';
 import {
@@ -24,14 +34,15 @@ import {
   initialUserDetailsValues,
   NOTIFICATION,
   passwordSchema,
+  PermissionEnum,
   useDialog,
   useNotifications,
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
+import CustomDateRangePicker from '../../components/date-picker/index';
 import {
   DeleteUser,
   GetHealthCareWorkerByUserId,
-  CreateHealthCareWorker,
   UpdateHealthCareWorker,
   GetHealthCareWorkerHighlights,
   GetTenantContext,
@@ -41,18 +52,16 @@ import {
   UserModelInput,
   healthCareWorkerVisitStatus,
   SendInviteToApplication,
-  HealthCareWorkerModelInput,
-  HealthCareWorkerInput,
+  GetHealthCareWorkerSummaryForPeriod,
 } from '@ecdlink/graphql';
-import UserDetailsForm from '../users/components/user-details-form/user-details-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
 import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../components/password-input/password-input';
 
-const userSchema = yup.object().shape({
-  email: yup.string().email().required('email address is required'),
+const chwSchema = yup.object().shape({
   idNumber: yup
     .string()
     .matches(SA_ID_REGEX, 'Id number is not valid')
@@ -63,9 +72,34 @@ const userSchema = yup.object().shape({
     .required('Cellphone number is required'),
 });
 
+const adminSchema = yup.object().shape({
+  email: yup.string().email().required('email address is required'),
+});
+
+const showNotification = (
+  message: string,
+  type: AlertType,
+  icon?: ReactElement<any, string | JSXElementConstructor<any>>
+) => {
+  return (
+    <Alert
+      className="mx-20 mt-5 mb-3 rounded-md"
+      message={message}
+      type={type}
+      customIcon={icon}
+    />
+  );
+};
+
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+
+  const [successNotification, setSucessNotification] = useState<boolean>(false);
+  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
+
+  const handleDateChange = (range: Date[]) => {
+    setSelectedRange(range);
+  };
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
@@ -96,39 +130,33 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
-  const [
-    getHealthCareWorkerHighlights,
-    { data: healthCareWorkerHighlightsData },
-  ] = useLazyQuery(GetHealthCareWorkerHighlights, {
-    variables: {
-      userId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
+  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
+    useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
+      variables: {
+        healthCareWorkerUserId: '',
+        startDate: '',
+        endDate: '',
+      },
+      fetchPolicy: 'cache-and-network',
+    });
 
-  const [
-    getHealthCareWorkerVisitStatus,
-    { data: healthCareWorkerVisitStatusData },
-  ] = useLazyQuery(healthCareWorkerVisitStatus, {
-    variables: {
-      userId: '',
-    },
-    fetchPolicy: 'cache-and-network',
-  });
+  useEffect(() => {
+    getHealthCareWorkerSummaryForPeriod({
+      variables: {
+        healthCareWorkerUserId: props.location.state.userId ?? userId,
+        startDate:
+          selectedRange[0]?.toISOString() ?? '2022-01-01T08:17:52.518Z',
+        endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString(),
+      },
+    });
+  }, [selectedRange]);
 
   useEffect(() => {
     props.location.state?.component !== 'chw' &&
       getUserById({
         variables: { userId: props.location.state.userId ?? userId },
       });
-    props.location.state?.component === 'chw' &&
-      getHealthCareWorkerHighlights({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
-    props.location.state?.component === 'chw' &&
-      getHealthCareWorkerVisitStatus({
-        variables: { userId: props.location.state.userId ?? userId },
-      });
+
     props.location.state?.component === 'chw' &&
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
@@ -136,7 +164,7 @@ export function ViewUser(props: any) {
   }, [userId]);
 
   const { hasPermission } = useUser();
-  const { setNotification } = useNotifications();
+  const { setNotification, clearNotification } = useNotifications();
   const dialog = useDialog();
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
@@ -169,7 +197,10 @@ export function ViewUser(props: any) {
                 }
               })
               .catch((error) => {
-                console.log(error);
+                setNotification({
+                  title: 'Failed to Delete User!',
+                  variant: NOTIFICATION.ERROR,
+                });
               });
           }}
         />
@@ -181,10 +212,10 @@ export function ViewUser(props: any) {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="Invite Administrator"
+          title="Invite User"
           message={`You are about to send an invite to ${
-            chwData.GetHealthCareWorkerById?.user.fullName ??
-            userData.userById.fullName
+            chwData?.GetHealthCareWorkerById?.user?.fullName ??
+            userData?.userById?.fullName
           }`}
           onCancel={onCancel}
           onSubmit={() => {
@@ -195,12 +226,19 @@ export function ViewUser(props: any) {
                   userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
                 inviteToPortal: true,
               },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent Invite!',
-                variant: NOTIFICATION.SUCCESS,
+            })
+              .then(() => {
+                setNotification({
+                  title: 'Successfully Sent Invite!',
+                  variant: NOTIFICATION.SUCCESS,
+                });
+              })
+              .catch((err) => {
+                setNotification({
+                  title: 'Failed to Send Invite!',
+                  variant: NOTIFICATION.ERROR,
+                });
               });
-            });
           }}
         />
       ),
@@ -212,14 +250,31 @@ export function ViewUser(props: any) {
   };
 
   const [editActive, setEditActive] = useState<boolean>(false);
+
+  let isCHW = userData?.userById?.roles?.some(
+    (role: any) => role.name === 'Health Care Worker'
+  );
+
   const {
-    register: userDetailRegister,
-    setValue: userDetailSetValue,
-    formState: userDetailFormState,
-    getValues: userDetailGetValues,
-    handleSubmit,
+    register,
+    setValue: adminDetailSetValue,
+    formState: adminDetailFormState,
+    getValues: adminDetailGetValues,
+    handleSubmit: handleSubmitAdminDetails,
   } = useForm({
-    resolver: yupResolver(userSchema),
+    resolver: yupResolver(adminSchema),
+    defaultValues: initialUserDetailsValues,
+    mode: 'onChange',
+  });
+
+  const {
+    register: registerCHW,
+    setValue: chwDetailSetValue,
+    formState: chwDetailFormState,
+    getValues: chwDetailGetValues,
+    handleSubmit: handleSubmitChwDetails,
+  } = useForm({
+    resolver: yupResolver(chwSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
@@ -238,103 +293,89 @@ export function ViewUser(props: any) {
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
 
-  const { errors: detailFormErrors, isValid: isDetailValid } =
-    userDetailFormState;
+  const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
+    adminDetailFormState;
 
+  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } =
+    chwDetailFormState;
   const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
-    if (
-      (userData?.userById || chwData?.GetHealthCareWorkerById.user) &&
-      userDetailFormState
-    ) {
-      userDetailSetValue(
-        'idNumber',
-        userData?.userById?.idNumber ??
-          chwData?.GetHealthCareWorkerById?.user.idNumber,
-        {
-          shouldValidate: true,
-        }
-      );
+    adminDetailSetValue('email', userData?.userById?.email, {
+      shouldValidate: true,
+    });
 
-      userDetailSetValue(
-        'email',
-        userData?.userById?.email ??
-          chwData?.GetHealthCareWorkerById?.user?.email,
-        {
-          shouldValidate: true,
-        }
-      );
-      userDetailSetValue(
-        'phoneNumber',
-        userData?.userById?.phoneNumber ??
-          chwData?.GetHealthCareWorkerById?.user?.phoneNumber,
-        {
-          shouldValidate: true,
-        }
-      );
-    }
+    chwDetailSetValue('idNumber', userData?.userById?.idNumber, {
+      shouldValidate: true,
+    });
+
+    chwDetailSetValue('phoneNumber', userData?.userById?.phoneNumber, {
+      shouldValidate: true,
+    });
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData?.userById, chwData?.GetHealthCareWorkerById]);
+  }, [userData]);
 
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
-    const userDetailForm = userDetailGetValues();
+    const adminDataForm = adminDetailGetValues();
+    const chwDataForm = chwDetailGetValues();
 
-    const userInputModel: UserModelInput = {
-      phoneNumber: userDetailForm?.phoneNumber,
-      idNumber: userDetailForm?.idNumber,
-      email: userDetailForm?.email,
+    const chwInputModel: UserModelInput = {
+      phoneNumber: chwDataForm?.phoneNumber,
+      idNumber: chwDataForm?.idNumber,
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
     };
 
-    if (props.location.state.component === 'chw' && chwData) {
-      await updateCHW({
-        variables: {
-          id: chwData?.GetHealthCareWorkerById?.user.id,
-          input: { ...userInputModel },
-        },
+    const adminInputModel: UserModelInput = {
+      email: adminDataForm?.email,
+      dateOfBirth: null,
+      isSouthAfricanCitizen: null,
+      verifiedByHomeAffairs: null,
+    };
+
+    await updateUser({
+      variables: {
+        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+        input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
+      },
+    })
+      .then(() => {
+        refetch();
+        setNotification({
+          title: 'Successfully Updated User!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to update User',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-      refetchCHW();
-      setNotification({
-        title: 'Successfully Updated CHW!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    } else {
-      await updateUser({
-        variables: {
-          id: userData?.userById.id,
-          input: { ...userInputModel },
-        },
-      });
-      setNotification({
-        title: 'Successfully Updated User!',
-        variant: NOTIFICATION.SUCCESS,
-      });
-    }
 
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+          id:
+            userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           newPassword: passwordForm.password,
         },
+      }).then(() => {
+        setEditActive(!editActive);
+        refetch();
       });
     }
   };
 
   const onSave = async () => {
     let passwordChange = false;
-    let internalIsPasswordValid = true;
-
     if (passwordForm.password.length > 0) {
       passwordChange = true;
-      internalIsPasswordValid = isPasswordValid;
     }
-
     await saveUser(passwordChange);
   };
 
@@ -343,201 +384,155 @@ export function ViewUser(props: any) {
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-  console.log(chwData?.GetHealthCareWorkerById.user);
+  return (
+    <div className="bg-red flex min-w-0 flex-col xl:flex">
+      <div className="justify-self col-end-3 ">
+        <button
+          onClick={() => history.goBack()}
+          type="button"
+          className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
+        >
+          <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
+            {' '}
+          </ArrowLeftIcon>
+          Back
+          <span className="px-1 text-gray-400">
+            {' '}
+            / View {isCHW ? 'CHW' : 'User'}
+          </span>
+        </button>
+      </div>
+      {successNotification &&
+        showNotification(
+          'User Added Successfully! ',
+          'success',
+          <ThumbUpIcon className="h-10 w-10"></ThumbUpIcon>
+        )}
 
-  // chwData?.GetHealthCareWorkerById.user
+      <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
+        <div className="py-0 px-4 sm:px-6 lg:px-8">
+          {/* Start main area*/}
 
-  if (props.location.state?.component === 'chw') {
-    return (
-      <div className="bg-red flex min-w-0 flex-col xl:flex">
-        <div className="justify-self col-end-3 ">
-          <button
-            onClick={() => history.goBack()}
-            type="button"
-            className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
-          >
-            <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-              {' '}
-            </ArrowLeftIcon>
-            Back
-            {/* <span className="text-black pl-2"> / View User</span> */}
-          </button>
-        </div>
+          <div className="flex">
+            <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
+              <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
+                <ProfileAvatar
+                  canChangeImage={false}
+                  dataUrl={
+                    userData?.userById?.profileImageUrl ||
+                    chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
+                  }
+                  onPressed={() => {}}
+                  hasConsent
+                  size="header"
+                />
 
-        <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
-          <div className="py-0 px-4 sm:px-6 lg:px-8">
-            {/* Start main area*/}
-
-            <div className="flex">
-              <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-                <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-                  <img
-                    src="https://source.unsplash.com/75x75/?portrait"
-                    alt=""
-                    className="mr-6 h-40 w-40 flex-shrink-0 self-center rounded-full md:justify-self-start"
-                  />
-                  <div className="sm: pt-12">
-                    <p className="text-3xl font-normal text-black ">
-                      {chwData?.GetHealthCareWorkerById.user?.fullName}
-                    </p>
-                    <div className="flex flex-row pt-4">
-                      {chwData &&
-                        chwData?.GetHealthCareWorkerById?.user?.roles.map(
-                          (i: any, index: number) => {
-                            return (
-                              <div
-                                key={i.id}
-                                className="bg-primary m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white"
-                              >
-                                <p className="text-16">
-                                  {' '}
-                                  {i.name === 'Health Care Worker'
-                                    ? 'CHW'
-                                    : i.name}
-                                </p>
-                              </div>
-                            );
-                          }
-                        )}
-                    </div>
-                    {/* <p>{userData?.firstName}</p> */}
+                <div className="sm: pt-4 pl-8">
+                  <p className="text-3xl font-normal text-black ">
+                    {userData?.userById?.fullName}
+                  </p>
+                  <div className="flex flex-row pt-2">
+                    {userData &&
+                      userData?.userById?.roles?.map(
+                        (i: any, index: number) => {
+                          return (
+                            <div
+                              key={i.id}
+                              className="bg-primary m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white"
+                            >
+                              <p className="text-16">
+                                {' '}
+                                {i.name === 'Health Care Worker'
+                                  ? 'CHW'
+                                  : i.name}
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
                   </div>
+                  {/* <p>{userData?.firstName}</p> */}
                 </div>
               </div>
             </div>
-            {/* End main area */}
-            {!chwData?.GetHealthCareWorkerById.user?.isActive && (
-              <Alert
-                className="mt-5 mb-3"
-                message="This user has been deactivated and cannot access AppName."
-                type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
-              />
-            )}
           </div>
+          {/* End main area */}
+          {userData?.userById?.isActive && (
+            <Alert
+              className="mt-5 mb-3"
+              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
+              type="error"
+              // customIcon={<SaveIcon></SaveIcon>}
+            />
+          )}
+        </div>
 
-          <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-                {' '}
-                Personal information{' '}
-              </h3>
-              <form
-                key={'formKey'}
-                className="space-y-8 divide-y divide-gray-200"
-              >
-                {editActive ? (
-                  <>
-                    <div className="space-y-0">
-                      {props.location.state?.component === 'chw' && (
-                        <>
-                          <p className="text-md mt-4 py-2">
-                            Which kind of identification do you have for{' '}
-                            {chwData?.GetHealthCareWorkerById.user?.firstName}?
-                          </p>
-                          <div className="flex flex-row">
-                            {
-                              <Button
-                                className={' mr-0 w-4/12 rounded-md'}
-                                type="filled"
-                                isLoading={loading}
-                                color="tertiary"
-                                onClick={() => {}}
-                              >
-                                <Typography
-                                  type="help"
-                                  color="white"
-                                  text={'ID number'}
-                                ></Typography>
-                              </Button>
-                            }
-                            {
-                              <Button
-                                className={' ml-2 w-4/12 rounded-md'}
-                                type="filled"
-                                isLoading={loading}
-                                color="tertiaryAccent1"
-                                onClick={() => {}}
-                              >
-                                <Typography
-                                  type="help"
-                                  color="tertiary"
-                                  text={'Passport number'}
-                                ></Typography>
-                              </Button>
-                            }
-                          </div>
-                        </>
-                      )}
-
-                      <div className="grid grid-cols-1 ">
+        <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+          <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+            {/* Start main area*/}
+            <h3 className="border-b-4 border-dashed pb-2 text-xl ">
+              {' '}
+              Personal information{' '}
+            </h3>
+            <form
+              key={'formKey'}
+              className="space-y-8 divide-y divide-gray-200"
+            >
+              {editActive ? (
+                <>
+                  <div className="space-y-0">
+                    <div className="grid grid-cols-1 ">
+                      {isCHW || props.location.state?.component === 'chw' ? (
                         <>
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
                               label={'ID number *'}
                               nameProp={'idNumber'}
-                              register={userDetailRegister}
-                              error={detailFormErrors.idNumber?.message}
-                              defaultValue={
-                                chwData?.GetHealthCareWorkerById.user?.idNumber
-                              }
+                              register={registerCHW}
+                              error={chwDetailFormErrors.idNumber?.message}
                             />
                           </div>
                           <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
                               label={'Cellphone number *'}
                               nameProp={'phoneNumber'}
-                              register={userDetailRegister}
-                              error={detailFormErrors.phoneNumber?.message}
-                              defaultValue={
-                                chwData?.GetHealthCareWorkerById.user
-                                  ?.phoneNumber
-                              }
+                              register={registerCHW}
+                              error={chwDetailFormErrors.phoneNumber?.message}
                             />
                           </div>
                         </>
-
+                      ) : (
                         <div className="my-4 w-6/12 sm:col-span-3">
                           <FormField
-                            label={'Password *'}
-                            nameProp={'password'}
-                            register={passwordRegister}
-                            type="password"
-                            error={passwordFormErrors.password?.message}
-                            showPassword={showPassword}
-                            togglePasswordVisibility={togglePasswordVisibility}
+                            label={'Email *'}
+                            nameProp={'email'}
+                            register={register}
+                            error={adminDetailFormErrors.email?.message}
                           />
                         </div>
-                        <div className="-mx-1 flex w-6/12">
-                          {[...Array(4)].map((_, i) => (
-                            <div className="w-1/4 px-1" key={i}>
-                              <div
-                                className={`h-2 rounded-xl transition-colors ${
-                                  i < passwordScore
-                                    ? passwordScore <= 2
-                                      ? 'bg-red-400'
-                                      : passwordScore <= 3
-                                      ? 'bg-yellow-400'
-                                      : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                    : 'bg-gray-200'
-                                }`}
-                              ></div>
-                            </div>
-                          ))}
-                        </div>
+                      )}
+
+                      <div className="my-4 w-6/12 sm:col-span-3">
+                        <PasswordInput
+                          label={'Password'}
+                          nameProp={'password'}
+                          sufficIconColor="black"
+                          value={passwordForm.password}
+                          register={passwordRegister}
+                          strengthMeterVisible={true}
+                          className="mb-9 "
+                        />
                       </div>
                     </div>
-
+                  </div>
+                  {isCHW || props.location.state?.component === 'chw' ? (
                     <Button
                       className={'mt-3 w-4/12 rounded-md '}
                       type="filled"
-                      isLoading={chwLoading}
+                      isLoading={loading}
                       color="secondary"
-                      // disabled={!isDetailValid}
-                      onClick={handleSubmit(onSave)}
+                      disabled={!isChwDetailValid}
+                      onClick={handleSubmitChwDetails(onSave)}
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
                         {' '}
@@ -548,239 +543,291 @@ export function ViewUser(props: any) {
                         text={'Save Changes'}
                       ></Typography>
                     </Button>
-                  </>
-                ) : (
-                  <div className="flex flex-row justify-start pt-4 text-current">
-                    <p className="px-4 text-xl">
-                      ID: {chwData?.GetHealthCareWorkerById.user?.idNumber}
-                    </p>
-                    <p className="px-4 text-xl">
-                      {' '}
-                      Cellphone:{' '}
-                      {chwData?.GetHealthCareWorkerById.user?.phoneNumber}
-                    </p>
+                  ) : (
+                    <Button
+                      className={'mt-3 w-4/12 rounded-md '}
+                      type="filled"
+                      isLoading={loading}
+                      color="secondary"
+                      disabled={!isAdminDetailValid}
+                      onClick={handleSubmitAdminDetails(onSave)}
+                    >
+                      <SaveIcon color="white" className="mr-6 h-6 w-6">
+                        {' '}
+                      </SaveIcon>
+                      <Typography
+                        type="help"
+                        color="white"
+                        text={'Save Changes'}
+                      ></Typography>
+                    </Button>
+                  )}
+                </>
+              ) : isCHW || props.location.state?.component === 'chw' ? (
+                <div className="flex flex-row justify-start pt-4 text-current">
+                  <p className="px-4 text-xl">
+                    ID:{' '}
+                    {userData?.userById?.idNumber ||
+                      chwData?.GetHealthCareWorkerById?.user?.idNumber}
+                  </p>
+                  <p className="px-4 text-xl">
+                    {' '}
+                    Cellphone:{' '}
+                    {userData?.userById?.phoneNumber ||
+                      chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
+                  </p>
+                  {userData?.userById?.whatsappNumber && (
                     <p className="px-4 text-xl">
                       WhatsApp:{' '}
-                      {chwData?.GetHealthCareWorkerById.user?.phoneNumber}
+                      {userData?.userById?.whatsappNumber ||
+                        chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
                     </p>
-                  </div>
-                )}
-              </form>
-              {/* End main area */}
-            </div>
-            <div className="flex justify-end p-4">
-              <button
-                onClick={() => {
-                  setEditActive(!editActive);
-                  refetch();
-                }}
-                id="dropdownHoverButton"
-                className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-                type="button"
-              >
-                {' '}
-                {editActive ? 'Done' : 'Edit'}
-              </button>
-            </div>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-row justify-start pt-4 text-current">
+                  <p className="px-4 text-xl">
+                    Email: {userData?.userById?.email}
+                  </p>
+                </div>
+              )}
+            </form>
+            {/* End main area */}
           </div>
 
-          {/* {
-            data &&
-            data.tenantContext &&
-            data.tenantContext.applicationName === 'GrowGreat'
-            && <div className=" flex justify-end">
+          <div className="flex justify-end p-4">
+            <button
+              onClick={() => {
+                setEditActive(!editActive);
+              }}
+              id="dropdownHoverButton"
+              className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
+              type="button"
+            >
+              {' '}
+              {editActive ? 'Close' : 'Edit'}
+            </button>
+          </div>
+        </div>
+
+        {(isCHW || props.location.state?.component === 'chw') &&
+          data &&
+          data.tenantContext &&
+          data.tenantContext.applicationName === 'GrowGreat' && (
+            <div className=" flex justify-end">
               <div>
-                <Dropdown
-                  fillType="filled"
-                  textColor="white"
-                  fillColor="secondary"
-                  placeholder="Filter "
-                  labelColor="white"
-                  // selectedValue={statusFilter}
-                  list={[
-                    { label: 'All', value: '' },
-                    { label: 'Active', value: 'active' },
-                    { label: 'Inactive', value: 'inactive' },
-                  ]}
-                  onChange={(item) => {
-                    // setStatusFilter(item);
-                  }}
-                  className='p-2'
+                <CustomDateRangePicker
+                  handleDateChange={handleDateChange}
+                  selectedRange={selectedRange}
                 />
               </div>
-            </div>} */}
-          {
-            <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                {/* Start main area*/}
-                <h3 className="mb-2 border-b-4 border-dashed pb-2 text-xl">
-                  {' '}
-                  Clients summary
-                </h3>
-                <div className="flex flex-row justify-evenly pt-4 text-current">
-                  <p className="px-4 py-2  text-xl">
-                    <span className="p-2  text-3xl">4</span>pregnant moms
-                  </p>
-                  <p className="px-4 py-2  text-xl">
-                    <span className="p-2  text-3xl">44</span>children
-                  </p>
-                  <p className="px-4 py-2  text-xl">
-                    <span className="p-2  text-3xl">90</span>clients visited
-                  </p>
-                  <p className="px-4 py-2  text-xl">
-                    <span className="p-2  text-3xl">24</span>folders opened
-                  </p>
-                </div>
-                {/* End main area */}
-              </div>
             </div>
-          }
-          {
-            <div className="flex flex-row">
-              <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-                <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                  {/* Start main area*/}
-                  <div className="flex flex-row border-b-4 border-dashed pb-0">
-                    <ExclamationCircleIcon
-                      className="h-12 w-12 pb-2"
-                      style={{
-                        color: '#ED1414',
-                      }}
-                    ></ExclamationCircleIcon>
-                    <h3 className="mb-2  pb-0 pt-2 text-2xl"> Urgent issues</h3>
-                  </div>
-                  <div className="flex flex-col justify-evenly pt-4 text-current">
-                    <p className="px-4py-2 text-xl">
-                      <span className="text-errorMain p-2 text-3xl">
-                        {
-                          healthCareWorkerVisitStatusData
-                            ?.healthCareWorkerVisitStatus.motherOverDueVisits
-                        }
-                      </span>
-                      Mother Over Due Visits
-                    </p>
-
-                    <p className="px-4py-2 text-xl">
-                      <span className="text-errorMain p-2 text-3xl">2</span>
-                      pregnant moms have urgent issues
-                    </p>
-
-                    <p className="px-4py-2 text-xl">
-                      <span className="text-errorMain p-2 text-3xl">2</span>
-                      caregivers & children have urgent issues
-                    </p>
-                  </div>
-                  {/* End main area */}
-                </div>
+          )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              {/* Start main area*/}
+              <h3 className="mb-2 border-b-4 border-dashed pb-2 text-xl">
+                {' '}
+                Clients summary
+              </h3>
+              <div className="flex flex-row justify-evenly pt-4 text-current">
+                <p className="px-4 py-2  text-xl">
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalPregnantMoms
+                    }
+                  </span>
+                  pregnant moms
+                </p>
+                <p className="px-4 py-2  text-xl">
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalChildren
+                    }
+                  </span>
+                  children
+                </p>
+                <p className="px-4 py-2  text-xl">
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalClientsVisited
+                    }
+                  </span>
+                  clients visited
+                </p>
+                <p className="px-4 py-2  text-xl">
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalFoldersOpened
+                    }
+                  </span>
+                  folders opened
+                </p>
               </div>
-              <div className="border-l-alertMain  border-alertMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-                <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-                  {/* Start main area*/}
-                  <div className="flex flex-row border-b-4 border-dashed pb-0">
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      viewBox="0 0 24 24"
-                      fill="currentColor"
-                      className="h-12 w-12"
-                      style={{
-                        color: '#FF5C00',
-                      }}
-                    >
-                      <path
-                        fillRule="evenodd"
-                        d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
-                        clipRule="evenodd"
-                      />
-                    </svg>
-                    <h3 className="mb-2  pb-0 pt-2 text-2xl"> Other issues</h3>
-                  </div>
-                  <div className="flex flex-col justify-evenly pt-4 text-current">
-                    <p className="px-4py-2 text-xl">
-                      <span className="text-alertMain p-2 text-3xl">
-                        {
-                          healthCareWorkerVisitStatusData
-                            ?.healthCareWorkerVisitStatus.childDueVisits
-                        }
-                      </span>
-                      Child Due Visits
-                    </p>
-                    <p className="px-4py-2 text-xl">
-                      <span className="text-alertMain p-2 text-3xl">
-                        {
-                          healthCareWorkerVisitStatusData
-                            ?.healthCareWorkerVisitStatus.motherDueVisits
-                        }
-                      </span>
-                      Mother Due Visits
-                    </p>
-                  </div>
-
-                  {/* End main area */}
-                </div>
-              </div>
+              {/* End main area */}
             </div>
-          }
-          {
-            <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+          </div>
+        )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="flex flex-row">
+            <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
               <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
                 {/* Start main area*/}
                 <div className="flex flex-row border-b-4 border-dashed pb-0">
-                  <StarIcon
-                    className="successMain h-12 w-12 pb-2"
+                  <ExclamationCircleIcon
+                    className="h-12 w-12 pb-2"
                     style={{
-                      color: '#83BB26',
+                      color: '#ED1414',
                     }}
-                  ></StarIcon>
-                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Highlights</h3>
+                  ></ExclamationCircleIcon>
+                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Urgent issues</h3>
                 </div>
                 <div className="flex flex-col justify-evenly pt-4 text-current">
-                  <p className="px-4 py-2 text-lg">
-                    <span className="text-successMain p-2 text-3xl">
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-errorMain p-2 text-2xl">
                       {
-                        healthCareWorkerHighlightsData
-                          ?.healthCareWorkerHighlights.totalThisWeekNewClients
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalVisitsMissed
                       }
                     </span>
-                    This Week New Clients
+                    Visits Missed
                   </p>
-                  <p className="px-4 py-2 text-lg">
-                    <span className="text-successMain p-2 text-3xl">
+
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-errorMain p-2 text-2xl">
                       {
-                        healthCareWorkerHighlightsData
-                          ?.healthCareWorkerHighlights
-                          .totalThisWeekGrowthMonitored
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalPregnantMomsWithUrgentIssues
                       }
                     </span>
-                    This Week Growth Monitored
+                    pregnant moms have urgent issues
                   </p>
-                  <p className="px-4 py-2 text-lg">
-                    <span className="text-successMain p-2 text-3xl">
+
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-errorMain p-2 text-2xl">
                       {
-                        healthCareWorkerHighlightsData
-                          ?.healthCareWorkerHighlights.totalThisWeekFamilyVisits
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalCaregiversAndChildrenWithUrgentIssues
                       }
                     </span>
-                    This Week Family Visits
+                    caregivers & children have urgent issues
                   </p>
-                  {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekFamilyVisits}</span>Last Week Family Visits</p> */}
-                  {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekGrowthMonitored}</span>Last Week Growth Monitored</p> */}
-                  {/* <p className='text-lg px-4 py-2'><span className="text-3xl p-2 text-successMain">{healthCareWorkerHighlightsData?.healthCareWorkerHighlights.totalLastWeekNewClients}</span>Last Week New Client </p> */}
+                </div>
+                {/* End main area */}
+              </div>
+            </div>
+            <div className="border-l-alertMain  border-alertMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+              <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+                {/* Start main area*/}
+                <div className="flex flex-row border-b-4 border-dashed pb-0">
+                  <svg
+                    xmlns="http://www.w3.org/2000/svg"
+                    viewBox="0 0 24 24"
+                    fill="currentColor"
+                    className="h-12 w-12"
+                    style={{
+                      color: '#FF5C00',
+                    }}
+                  >
+                    <path
+                      fillRule="evenodd"
+                      d="M9.401 3.003c1.155-2 4.043-2 5.197 0l7.355 12.748c1.154 2-.29 4.5-2.599 4.5H4.645c-2.309 0-3.752-2.5-2.598-4.5L9.4 3.003zM12 8.25a.75.75 0 01.75.75v3.75a.75.75 0 01-1.5 0V9a.75.75 0 01.75-.75zm0 8.25a.75.75 0 100-1.5.75.75 0 000 1.5z"
+                      clipRule="evenodd"
+                    />
+                  </svg>
+                  <h3 className="mb-2  pb-0 pt-2 text-2xl"> Other issues</h3>
+                </div>
+                <div className="flex flex-col justify-evenly pt-4 text-current">
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-alertMain p-2 text-2xl">
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalVisitsOverdue
+                      }
+                    </span>
+                    visits overdue
+                  </p>
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-alertMain p-2 text-2xl">
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalPregnantMomsWithIssues
+                      }
+                    </span>
+                    pregnant moms have other issues
+                  </p>
+
+                  <p className="px-4py-2 text-xl">
+                    <span className="text-alertMain p-2 text-2xl">
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalCaregiversAndChildrenWithIssues
+                      }
+                    </span>
+                    caregivers & children have other issues
+                  </p>
                 </div>
 
                 {/* End main area */}
               </div>
             </div>
-          }
-          <div className="flex w-full flex-row justify-between pl-4">
-            {
+          </div>
+        )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
+              {/* Start main area*/}
+              <div className="flex flex-row border-b-4 border-dashed pb-0">
+                <StarIcon
+                  className="successMain h-12 w-12 pb-2"
+                  style={{
+                    color: '#83BB26',
+                  }}
+                ></StarIcon>
+                <h3 className="mb-2  pb-0 pt-2 text-2xl"> Highlights</h3>
+              </div>
+              <div className="flex flex-col justify-evenly pt-4 text-current">
+                <p className="px-4 py-2 text-lg">
+                  <span className="text-successMain p-2 text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalPregnantMoms
+                    }
+                  </span>
+                  pregnant moms are doing well & have no issues
+                </p>
+                <p className="px-4 py-2 text-lg">
+                  <span className="text-successMain p-2 text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalChildren
+                    }
+                  </span>
+                  children are doing well & have no issues
+                </p>
+              </div>
+
+              {/* End main area */}
+            </div>
+          </div>
+        )}
+
+        <div className="flex w-full justify-between  pl-4">
+          <div className="flex w-10/12 flex-row  pl-4">
+            {hasPermission(PermissionEnum.delete_user) && (
               <Button
-                className={'mt-3 w-4/12 rounded-md'}
+                className={'mt-3 mr-2 w-4/12 rounded-md'}
                 type="outlined"
                 // isLoading={isLoading}
                 color="tertiary"
                 onClick={deactivateUser}
               >
-                <TrashIcon color="tertiary" className="mr-6 h-6 w-6">
+                <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
                   {' '}
                 </TrashIcon>
                 <Typography
@@ -789,7 +836,7 @@ export function ViewUser(props: any) {
                   text={'Deactivate User'}
                 ></Typography>
               </Button>
-            }
+            )}
             {
               <Button
                 className={'mt-3 w-4/12 rounded-md'}
@@ -808,268 +855,18 @@ export function ViewUser(props: any) {
                 ></Typography>
               </Button>
             }
+          </div>
 
-            <p className="mt-3 text-sm text-gray-500">
-              User added to {data?.tenantContext.applicationName}:{' '}
-              {chwData?.GetHealthCareWorkerById.user?.StartDate}
+          <div className="w-2/12">
+            <p className="mt-3 w-full text-sm text-gray-500">
+              User added to {data?.tenantContext.applicationName} App:{' '}
+              {userData?.userById?.startDate}
             </p>
           </div>
         </div>
       </div>
-    );
-  } else {
-    return (
-      <div className="bg-red flex min-w-0 flex-col xl:flex">
-        <div className="justify-self col-end-3 ">
-          <button
-            onClick={() => history.goBack()}
-            type="button"
-            className="cursor text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
-          >
-            <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
-              {' '}
-            </ArrowLeftIcon>
-            Back
-            {/* <span className="text-black pl-2"> / View User</span> */}
-          </button>
-        </div>
-
-        <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
-          <div className="py-0 px-4 sm:px-6 lg:px-8">
-            {/* Start main area*/}
-
-            <div className="flex">
-              <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
-                <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-                  <img
-                    src="https://source.unsplash.com/75x75/?portrait"
-                    alt=""
-                    className="mr-6 h-40 w-40 flex-shrink-0 self-center rounded-full md:justify-self-start"
-                  />
-                  <div className="sm: pt-12">
-                    <p className="text-3xl font-normal text-black ">
-                      {userData?.userById?.fullName}
-                    </p>
-                    <div className="flex flex-row pt-4">
-                      {userData &&
-                        userData?.userById.roles.map(
-                          (i: any, index: number) => {
-                            return (
-                              <div
-                                key={i.id}
-                                className="bg-primary m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white"
-                              >
-                                <p className="text-16">
-                                  {' '}
-                                  {i.name === 'Health Care Worker'
-                                    ? 'CHW'
-                                    : i.name}
-                                </p>
-                              </div>
-                            );
-                          }
-                        )}
-                    </div>
-                    {/* <p>{userData?.firstName}</p> */}
-                  </div>
-                </div>
-              </div>
-            </div>
-            {/* End main area */}
-            {userData?.userById?.isActive && (
-              <Alert
-                className="mt-5 mb-3"
-                message="This user has been deactivated and cannot access AppName."
-                type="error"
-                // customIcon={<SaveIcon></SaveIcon>}
-              />
-            )}
-          </div>
-
-          <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
-            <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
-              {/* Start main area*/}
-              <h3 className="border-b-4 border-dashed pb-2 text-xl ">
-                {' '}
-                Personal information{' '}
-              </h3>
-              <form
-                key={'formKey'}
-                className="space-y-8 divide-y divide-gray-200"
-              >
-                {editActive ? (
-                  <>
-                    <div className="space-y-0">
-                      <div className="grid grid-cols-1 ">
-                        <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'Email *'}
-                            nameProp={'email'}
-                            register={userDetailRegister}
-                            error={detailFormErrors.email?.message}
-                            defaultValue={userData?.userById?.email}
-                          />
-                        </div>
-
-                        <div className="my-4 w-6/12 sm:col-span-3">
-                          <FormField
-                            label={'Password *'}
-                            nameProp={'password'}
-                            register={passwordRegister}
-                            type="password"
-                            error={passwordFormErrors.password?.message}
-                            showPassword={showPassword}
-                            togglePasswordVisibility={togglePasswordVisibility}
-                          />
-                        </div>
-                        <div className="-mx-1 flex w-6/12">
-                          {[...Array(4)].map((_, i) => (
-                            <div className="w-1/4 px-1" key={i}>
-                              <div
-                                className={`h-2 rounded-xl transition-colors ${
-                                  i < passwordScore
-                                    ? passwordScore <= 2
-                                      ? 'bg-red-400'
-                                      : passwordScore <= 3
-                                      ? 'bg-yellow-400'
-                                      : passwordScore <= 4
-                                      ? 'bg-green-500'
-                                      : 'bg-yellow-400'
-                                    : 'bg-gray-200'
-                                }`}
-                              ></div>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    </div>
-
-                    <Button
-                      className={'mt-3 w-4/12 rounded-md '}
-                      type="filled"
-                      isLoading={loading}
-                      color="secondary"
-                      // disabled={!isDetailValid}
-                      onClick={
-                        props.location.state.component !== 'chw'
-                          ? handleSubmit(onSave)
-                          : onSave
-                      }
-                    >
-                      <SaveIcon color="white" className="mr-6 h-6 w-6">
-                        {' '}
-                      </SaveIcon>
-                      <Typography
-                        type="help"
-                        color="white"
-                        text={'Save Changes'}
-                      ></Typography>
-                    </Button>
-                  </>
-                ) : (
-                  <div className="flex flex-row justify-start pt-4 text-current">
-                    <p className="px-4 text-xl">
-                      Email: {userData?.userById?.email}
-                    </p>
-                  </div>
-                )}
-              </form>
-              {/* End main area */}
-            </div>
-            <div className="flex justify-end p-4">
-              <button
-                onClick={() => {
-                  setEditActive(!editActive);
-                  refetch();
-                }}
-                id="dropdownHoverButton"
-                className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-                type="button"
-              >
-                {' '}
-                {editActive ? 'Done' : 'Edit'}
-              </button>
-            </div>
-          </div>
-
-          <div className="flex w-full flex-row justify-between pl-4">
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="outlined"
-                // isLoading={isLoading}
-                color="tertiary"
-                onClick={() => {
-                  dialog({
-                    // blocking: true,
-                    position: DialogPosition.Middle,
-                    render: (onSubmit: any, onCancel: any) => (
-                      <AlertModal
-                        title="Deactivate Administrator"
-                        message={`${userData?.userById?.firstName} will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
-                        onCancel={onCancel}
-                        onSubmit={() => {
-                          onSubmit();
-                          deleteUser({
-                            variables: {
-                              id: userId,
-                            },
-                          })
-                            .then((response: any) => {
-                              if (response.data.deleteUser) {
-                                setNotification({
-                                  title: 'Successfully Deactivated User!',
-                                  variant: NOTIFICATION.SUCCESS,
-                                });
-                              }
-                            })
-                            .catch((error) => {
-                              console.log(error);
-                            });
-                        }}
-                      />
-                    ),
-                  });
-                }}
-              >
-                <TrashIcon color="tertiary" className="mr-6 h-6 w-6">
-                  {' '}
-                </TrashIcon>
-                <Typography
-                  type="help"
-                  color="tertiary"
-                  text={'Deactivate User'}
-                ></Typography>
-              </Button>
-            }
-            {
-              <Button
-                className={'mt-3 w-4/12 rounded-md'}
-                type="filled"
-                // isLoading={isLoading}
-                color="secondary"
-                onClick={() => {}}
-              >
-                <PaperAirplaneIcon color="white" className="mr-6 h-6 w-6">
-                  {' '}
-                </PaperAirplaneIcon>
-                <Typography
-                  type="help"
-                  color="white"
-                  text={'Resend Invitation'}
-                ></Typography>
-              </Button>
-            }
-
-            <p className="mt-3 text-sm text-gray-500">
-              User added to {data?.tenantContext.applicationName}:{' '}
-              {userData?.userById?.StartDate}
-            </p>
-          </div>
-        </div>
-      </div>
-    );
-  }
+    </div>
+  );
 }
 
 export default ViewUser;

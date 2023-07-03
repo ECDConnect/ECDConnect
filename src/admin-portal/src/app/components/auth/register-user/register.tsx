@@ -15,6 +15,7 @@ import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../password-input/password-input';
 
 interface RouteParams {
   resetToken: string;
@@ -59,7 +60,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
       const body: RegisterRequestModel = {
         username: formValues.username,
         password: formValues.password,
-        resetToken: resetToken
+        resetToken: resetToken,
         // acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerUser(body, Config.authApi).catch(
@@ -98,9 +99,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">
-            Register for Funda App
-          </h2>
+          <h2 className="font-h1 textLight mt-6 text-2xl">Register</h2>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -120,41 +119,16 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               </div>
 
               <div className="space-y-1">
-                <FormField
-                  label={'Password *'}
+                <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  sufficIconColor="black"
+                  value={formValues.password}
                   register={register}
-                  type="password"
-                  error={errors.password?.message}
-                  instructions={[
-                    'At least 8 characters',
-                    'At least 1 number',
-                    'At least 1 capital letter',
-                  ]}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
+                  strengthMeterVisible={true}
+                  className="mb-9 "
                 />
               </div>
-              <div className="-mx-1 flex">
-                {[...Array(4)].map((_, i) => (
-                  <div className="w-1/4 px-1" key={i}>
-                    <div
-                      className={`h-2 rounded-xl transition-colors ${
-                        i < passwordScore
-                          ? passwordScore <= 1
-                            ? 'bg-red-400'
-                            : passwordScore <= 2
-                            ? 'bg-yellow-400'
-                            : passwordScore <= 4
-                            ? 'bg-green-500'
-                            : 'bg-yellow-400'
-                          : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  </div>
-                ))}
-              </div>
-
               <Divider></Divider>
               <div className="flex">
                 <div>
@@ -163,7 +137,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     nameProp={'acceptedTerms'}
                     type="checkbox"
                     register={register}
-                    instructions={['I accept the terms and conditions']}
+                    instructions={['']}
                     error={errors.acceptedTerms?.message}
                   />
                 </div>

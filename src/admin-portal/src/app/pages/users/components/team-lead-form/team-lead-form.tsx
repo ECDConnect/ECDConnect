@@ -21,7 +21,7 @@ const TeamLeadForm: React.FC<TeamLeadFormProps> = ({
   });
 
   return (
-    <form key={formKey} className="space-y-8 divide-y divide-gray-200">
+    <form key={formKey} className="space-y-4 divide-y divide-gray-200">
       <div className="space-y-8 divide-y divide-gray-200">
         <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
           <div className="sm:col-span-3">
@@ -37,14 +37,6 @@ const TeamLeadForm: React.FC<TeamLeadFormProps> = ({
                 })
               }
               error={errors.clinicId?.message}
-            />
-          </div>
-          <div className="sm:col-span-3">
-            <FormField
-              label={'Job Title *'}
-              nameProp={'jobTitle'}
-              register={register}
-              error={errors.jobTitle?.message}
             />
           </div>
         </div>

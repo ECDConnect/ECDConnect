@@ -1,7 +1,9 @@
 import { useLazyQuery, useMutation } from '@apollo/client';
 import {
   HealthCareWorkerTemplate,
+  TeamLeadsTemplate,
   UploadHealthCareWorkers,
+  UploadTeamLeads,
   importAll,
 } from '@ecdlink/graphql';
 import { useForm } from 'react-hook-form';
@@ -11,24 +13,21 @@ import { b64toBlob, useNotifications, NOTIFICATION } from '@ecdlink/core';
 import {
   ArrowLeftIcon,
   DownloadIcon,
+  LockClosedIcon,
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-
-export interface UploadAllTemplateProps {
-  closeDialog: (value: boolean) => void;
-}
+import { Alert } from '@ecdlink/ui';
 
 const acceptedFormats = ['xls', 'xlsx'];
 
-export default function UploadBulkUser({
-  closeDialog,
-}: UploadAllTemplateProps) {
+export default function UploadBulkUser(props: any) {
   const { setValue, handleSubmit } = useForm();
   const history = useHistory();
   const { setNotification } = useNotifications();
-
+  // props.location.state?.component === 'team-leads'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
+  const [docErrors, setDocErrors] = useState([]);
 
   const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
     HealthCareWorkerTemplate,
@@ -37,37 +36,83 @@ export default function UploadBulkUser({
     }
   );
 
-  const [allImport] = useMutation(importAll);
+  const [getTeamLeadsExcelTemplateGenerator, { data: teamLeadsTemplateData }] =
+    useLazyQuery(TeamLeadsTemplate, {
+      fetchPolicy: 'cache-and-network',
+    });
+
+  const [importTeamLeads] = useMutation(UploadTeamLeads);
   const [importPractitioners, loading] = useMutation(UploadHealthCareWorkers);
 
   const onSubmit = async (values: any) => {
     const model = { ...values };
 
     if (model.templateFile?.file) {
-      await importPractitioners({
-        variables: {
-          file: model.templateFile?.file,
-        },
-      }).then((res) => {
-        console.log(res);
-        // setNotification({
-        //   title: 'Successfully Updated User!',
-        //   variant: NOTIFICATION.SUCCESS,
-        // });
-        if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
-          setNotification({
-            title: 'Error uploading CHWs!',
-            variant: NOTIFICATION.ERROR,
-          });
-        } else {
-          setNotification({
-            title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
-            variant: NOTIFICATION.SUCCESS,
-          });
-        }
-      });
+      if (props.location.state?.component === 'team-leads') {
+        await importTeamLeads({
+          variables: {
+            file: model.templateFile?.file,
+          },
+        }).then((res) => {
+          if (res.data?.importTeamLeads.validationErrors.length !== 0) {
+            setDocErrors(res.data?.importTeamLeads.validationErrors);
+          } else {
+            setNotification({
+              title: `Successfully Uploaded ${res.data?.importTeamLeads.createdUsers} team leads!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        });
+      } else {
+        await importPractitioners({
+          variables: {
+            file: model.templateFile?.file,
+          },
+        }).then((res) => {
+          if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
+            setDocErrors(res.data?.importTeamLeads.validationErrors);
+          } else {
+            setNotification({
+              title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
+              variant: NOTIFICATION.SUCCESS,
+            });
+          }
+        });
+      }
     }
   };
+
+  useEffect(() => {
+    if (
+      teamLeadsTemplateData &&
+      teamLeadsTemplateData.teamLeadTemplateGenerator &&
+      !templateDownloaded &&
+      props.location.state?.component === 'team-leads'
+    ) {
+      const b64Data =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
+      const contentType =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.fileType;
+      const fileName = teamLeadsTemplateData.teamLeadTemplateGenerator.fileName;
+      const extension =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.extension;
+      const blob = b64toBlob(b64Data, contentType);
+
+      const link = document.createElement('a');
+
+      if (link.download !== undefined) {
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute('download', `${fileName}${extension}`);
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+      }
+
+      setTemplateDownloaded(true);
+    }
+  }, [teamLeadsTemplateData, templateDownloaded]);
 
   useEffect(() => {
     if (
@@ -101,7 +146,11 @@ export default function UploadBulkUser({
 
   const downloadContentTypeTemplate = async () => {
     setTemplateDownloaded(false);
-    await getExcelTemplateGenerator();
+    if (props.location.state?.component === 'team-leads') {
+      await getTeamLeadsExcelTemplateGenerator();
+    } else {
+      await getExcelTemplateGenerator();
+    }
   };
 
   return (
@@ -119,8 +168,14 @@ export default function UploadBulkUser({
           {/* <span className="text-black pl-2"> / View User</span> */}
         </button>
       </div>
-      <div className="flex flex-col pt-6">
-        <h1 className="text-xl">Step 1: Download the template</h1>
+      <div className="flex flex-col pt-10">
+        <h1 className="text-xl">
+          Step 1: Download the{' '}
+          {props.location.state?.component === 'team-leads'
+            ? 'Team Leads'
+            : 'CHWs'}{' '}
+          template
+        </h1>
 
         <p className="text-normal">
           Download the Excel template below and make sure all required fields
@@ -174,6 +229,16 @@ export default function UploadBulkUser({
               </div>
             </div>
           </form>
+
+          {docErrors.length > 0 ? (
+            <Alert
+              className="mt-5 mb-3 rounded-md"
+              message={`Error`}
+              type="error"
+              list={docErrors.map((error) => error.errorDescription)}
+              listColor="errorMain"
+            />
+          ) : null}
         </div>
         <div></div>
       </div>

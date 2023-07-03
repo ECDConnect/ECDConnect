@@ -7,11 +7,12 @@ import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
-import TeamLeadPanelCreate from './team-lead-panel-create/team-lead-panel-create';
-import { PlusIcon, SearchIcon } from '@heroicons/react/solid';
+
+import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
 import { Dropdown } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { Menu } from '@headlessui/react';
+import { useHistory } from 'react-router';
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
   const panel = usePanel();
@@ -21,6 +22,7 @@ export default function TeamLeads() {
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
+  const history = useHistory();
 
   const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
@@ -94,25 +96,6 @@ export default function TeamLeads() {
     }
   }, [data]);
 
-  const displayPanel = () => {
-    panel({
-      noPadding: true,
-      title: 'Create Team Lead',
-      render: (onSubmit: any) => (
-        <TeamLeadPanelCreate
-          key={`userPanelCreate`}
-          closeDialog={(userCreated: boolean) => {
-            onSubmit();
-
-            if (userCreated) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
   if (tableData) {
     return (
       <div>
@@ -165,16 +148,25 @@ export default function TeamLeads() {
               </div>
             </div>
             <div className="ml-4 w-6/12">
-              {hasPermission(PermissionEnum.create_user) && (
-                <button
-                  onClick={displayPanel}
-                  type="button"
-                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
-                >
-                  <PlusIcon className="mr-4 h-5 w-5"> </PlusIcon>
-                  Add Team Lead
-                </button>
-              )}
+              <div className="flex  flex-row">
+                {hasPermission(PermissionEnum.create_user) && (
+                  <button
+                    onClick={() => {
+                      history.push({
+                        pathname: '/upload-users',
+                        state: {
+                          component: 'team-leads',
+                        },
+                      });
+                    }}
+                    type="button"
+                    className="bg-secondary hover:bg-uiLight focus:outline-none ml-2 inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white  focus:ring-2 focus:ring-offset-2"
+                  >
+                    <UploadIcon className="mr-4 h-5 w-5"> </UploadIcon>
+                    Add Team Leads
+                  </button>
+                )}
+              </div>
             </div>
           </div>
           {showFilter && (

@@ -35,18 +35,7 @@ import UiTable from '../../../../components/ui-table';
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import {
-  ChevronDownIcon,
-  CogIcon,
-  DownloadIcon,
-  PlusIcon,
-  SaveIcon,
-  SearchIcon,
-  UploadIcon,
-} from '@heroicons/react/solid';
-import HealthCareWorkerPanelEdit from './components/health-care-worker-panel-edit/hcw-panel-edit';
-import UploadPractitionerTemplate from './components/upload-template/upload-template';
-import { Menu, Transition } from '@headlessui/react';
+import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
 export default function HealthCareWorkers() {
@@ -59,7 +48,7 @@ export default function HealthCareWorkers() {
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
-  const [statusFilter, setStatusFilter] = useState('');
+  const [statusFilter, setStatusFilter] = useState('active');
   const [teamLeadFilter, setTeamLeadFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
   const [isDropdownVisible, setIsDropdownVisible] = useState(false);
@@ -154,26 +143,6 @@ export default function HealthCareWorkers() {
   };
 
   useEffect(() => {
-    if (!data?.users) return;
-
-    let userStatus = statusFilter === 'active' ? true : false;
-    let allUsers: HealthCareWorkerDto[] = [...data.users];
-    setTableData(
-      allUsers
-        .filter(
-          (v) => v?.isActive === (statusFilter === '' ? true : userStatus)
-        )
-        .filter((v) => v?.teamLead?.clinic.name === clinicFilter)
-        .filter(
-          (v) =>
-            v?.teamLead.user.firstName + '' + v?.teamLead.user.surname ===
-            teamLeadFilter
-        )
-        .map(mapUserTableItem)
-    );
-  }, [statusFilter, provinceFilter, clinicFilter, teamLeadFilter, data]); // Add provinceFilter and clinicFilter to the dependency array
-
-  useEffect(() => {
     if (data && data.allHealthCareWorkers) {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
@@ -227,42 +196,6 @@ export default function HealthCareWorkers() {
       ),
     });
   };
-
-  const UploadContent = () => {
-    panel({
-      noPadding: true,
-      title: `Upload Practitioners`,
-      render: (onSubmit: any) => (
-        <UploadPractitionerTemplate
-          closeDialog={(created: boolean) => {
-            onSubmit();
-
-            if (created) {
-              refetch();
-            }
-          }}
-        />
-      ),
-    });
-  };
-
-  // const UploadContentImport = () => {
-  //   panel({
-  //     noPadding: true,
-  //     title: `Import Users`,
-  //     render: (onSubmit: any) => (
-  //       <UploadAllImportTemplate
-  //         closeDialog={(created: boolean) => {
-  //           onSubmit();
-
-  //           if (created) {
-  //             refetch();
-  //           }
-  //         }}
-  //       />
-  //     ),
-  //   });
-  // };
 
   const clearFilters = () => {
     setStatusFilter('');
@@ -482,7 +415,7 @@ export default function HealthCareWorkers() {
                   columns={[
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
-                    { field: 'usage', use: 'CHW Connect usage' },
+                    // { field: 'usage', use: 'CHW Connect usage' },
                     { field: 'InsertedDate', use: 'Date invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}

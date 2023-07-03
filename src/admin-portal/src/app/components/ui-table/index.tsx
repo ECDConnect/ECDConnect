@@ -152,6 +152,8 @@ export default function UiTable(
         userId: selectedRow?.userId,
       },
     });
+
+    console.log('>>>', selectedRow);
   };
 
   const renderFormat = (row: any, column: any, display_value: any) => {
@@ -235,7 +237,12 @@ export default function UiTable(
     }
 
     return (
-      <div className={'cursor-pointer'} onClick={() => viewSelectedRow(row)}>
+      <div
+        className={'cursor-pointer'}
+        onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}
+      >
         {rowValue}{' '}
       </div>
     );

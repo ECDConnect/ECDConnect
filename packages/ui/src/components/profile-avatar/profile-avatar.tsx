@@ -12,7 +12,7 @@ export interface ProfileAvatarProps extends ComponentBaseProps {
   size: AvatarSize;
   hasConsent: boolean;
   canChangeImage?: boolean;
-  onPressed: () => void;
+  onPressed?: () => void;
 }
 
 export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
@@ -27,7 +27,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
   const displayAvatar: boolean = hasConsent && !!dataUrl;
   const displayUserAvatar: boolean = !hasConsent || (hasConsent && !dataUrl);
   return (
-    <div className={classNames(styles.wrapper, className)}>
+    <a className={classNames(styles.wrapper, className)} onClick={onPressed}>
       {displayAvatar && (
         <Avatar size={size} dataUrl={dataUrl as string} displayBorder />
       )}
@@ -43,7 +43,6 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       {canChangeImage && (
         <div
           className={styles.camaraWrapper}
-          onClick={onPressed}
           data-testid="profile-icon-wrapper"
         >
           <CameraIcon
@@ -52,7 +51,7 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
           />
         </div>
       )}
-    </div>
+    </a>
   );
 };
 
