@@ -106,22 +106,8 @@ export function Profile(props: any) {
     }
 
     if (avatarFile) {
-      await fileUpload({
-        variables: {
-          file: avatarFile,
-          fileName: `${user.user?.fullName} profileImage`,
-          fileType: FileTypeEnum.ProfileImage,
-        },
-      }).then(async (result) => {
-        if (result && result.data) {
-          let profileImageUrl = result.data.fileUpload.url;
-          await saveUser(passwordChange, profileImageUrl);
-        }
-      });
-    }else{
-      await saveUser(passwordChange);
+      await saveUser(passwordChange, avatarFile);
     }
-
 
   };
 
