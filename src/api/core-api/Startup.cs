@@ -101,7 +101,7 @@ namespace EcdLink.Api.CoreApi
 
             SecurityStartup.ConfigureSecurityServices(services, Configuration);
 
-            GraphStartup.ConfigureGraphQlServices(services);
+            GraphStartup.ConfigureGraphQlServices(services, Environment.IsDevelopment());
 
             ContentManagementStartup.ConfigureContentManagement(services, Configuration);
 

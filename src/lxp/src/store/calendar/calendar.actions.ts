@@ -92,6 +92,48 @@ export const getCalendarEventTypes = createAsyncThunk<
   }
 );
 
+//        const start = subMonths(new Date().getFullYear(), new Date().getMonth(), 0);
+export const getCalendarEvents = createAsyncThunk<
+  CalendarEventModel[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  { start: Date },
+  ThunkApiType<RootState>
+>(
+  'getCalendarEvents',
+  // eslint-disable-next-line no-empty-pattern
+  async ({ start }, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      calendar: { events },
+    } = getState();
+
+    if (!events || events.length === 0) {
+      try {
+        let events: CalendarEventModel[] | undefined;
+
+        if (userAuth?.auth_token) {
+          const dtos = await new CalendarService(
+            userAuth?.auth_token
+          ).getCalendarEvents(start);
+          events = calendarConvert.CalendarEventDto.CalendarEventModels(dtos);
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!events) {
+          return rejectWithValue('Error getting calendar events');
+        }
+
+        return events;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return events;
+    }
+  }
+);
+
 export const updateCalendarEvent = createAsyncThunk<
   CalendarEventModel,
   CalendarEventInput,
