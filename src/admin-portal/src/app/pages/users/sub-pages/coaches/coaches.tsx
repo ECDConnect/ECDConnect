@@ -99,6 +99,7 @@ export default function Coaches() {
             sendInviteToApplication({
               variables: {
                 userId: coach.userId,
+                inviteToPortal: false,
               },
             }).then(() => {
               setNotification({

@@ -13,7 +13,7 @@ export const Alert: React.FC<AlertProps> = ({
   list,
   className,
   variant = 'flat',
-  listColor = "black",
+  listColor = 'black',
   button,
 }) => {
   const icon = styles.alertIcon(type, variant);
@@ -49,12 +49,7 @@ export const Alert: React.FC<AlertProps> = ({
               />
             )}
             {list && (
-              <ul
-                className={
-                  styles.list +
-                  `text-${listColor}`
-                }
-              >
+              <ul className={styles.list + `text-${listColor}`}>
                 {list.map((item: string, index: number) => (
                   <li key={index}>
                     <Typography

@@ -21,8 +21,8 @@ const DateRangePickerCalendar = ({ selectedRange, onDateChange }) => {
   return (
     <div>
       <DateRangePicker
-        color='#1DBADF'
-        rangeColors='#1DBADF'
+        color="#1DBADF"
+        rangeColors="#1DBADF"
         ranges={calendarRange}
         onChange={handleSelect}
         months={2}

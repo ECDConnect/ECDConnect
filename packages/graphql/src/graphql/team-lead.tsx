@@ -58,27 +58,27 @@ export const UpdateTeamLead = gql`
 `;
 
 export const UploadTeamLeads = gql`
-mutation ($file: String) {
-  importTeamLeads(file: $file) {
-    validationErrors {
-      row
-      errors
-      errorDescription
-    }
-    createdUsers {
-      id
+  mutation ($file: String) {
+    importTeamLeads(file: $file) {
+      validationErrors {
+        row
+        errors
+        errorDescription
+      }
+      createdUsers {
+        id
+      }
     }
   }
-}
 `;
 
 export const TeamLeadsTemplate = gql`
-query {
-  teamLeadTemplateGenerator {
-    fileType
-    base64File
-    fileName
-    extension
+  query {
+    teamLeadTemplateGenerator {
+      fileType
+      base64File
+      fileName
+      extension
+    }
   }
-}
 `;

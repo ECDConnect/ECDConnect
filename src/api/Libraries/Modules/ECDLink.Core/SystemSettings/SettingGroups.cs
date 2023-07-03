@@ -114,6 +114,7 @@
                 public const string InvitationsGrouping = "General.Callback.Invitations";
 
                 public const string Signup = "General.Callback.Invitations.Signup";
+                public const string AdminSignup = "General.Callback.Invitations.AdminSignup";
             }
 
             public static class Security

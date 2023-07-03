@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
@@ -101,7 +102,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         PhoneNumber = cellphone,
                         PhoneNumberConfirmed = false,
                         PendingPhoneNumber = cellphone,
-                        ContactPreference = "sms",
+                        ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId
                     };
                     userImportList.Add(user);
@@ -345,7 +346,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         PhoneNumber = cellphone,
                         PhoneNumberConfirmed = false,
                         PendingPhoneNumber = cellphone,
-                        ContactPreference = "sms",
+                        ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId
                     };
                     userImportList.Add(user);

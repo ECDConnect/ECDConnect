@@ -72,19 +72,11 @@ const FormField: React.FC<FormFieldProps> = ({
           </ul>
         )}
       </div>
-      <div
-        className={
-          type === 'checkbox'
-              ? 'mt-2 flex'
-              : 'mt-1'
-        }
-      >
+      <div className={type === 'checkbox' ? 'mt-2 flex' : 'mt-1'}>
         <input
           defaultValue={defaultValue}
           disabled={disabled}
-          type={
-             type
-          }
+          type={type}
           {...register(nameProp, {
             required: required,
             validate: validation,
@@ -95,8 +87,12 @@ const FormField: React.FC<FormFieldProps> = ({
 
         {nameProp === 'acceptedTerms' && (
           <div>
-            <p className='pl-4' >
-              I accept the <a className="text-md text-secondary mb-3 cursor-pointer" href="/ecd-terms">
+            <p className="pl-4">
+              I accept the{' '}
+              <a
+                className="text-md text-secondary mb-3 cursor-pointer"
+                href="/ecd-terms"
+              >
                 terms and conditions
               </a>
             </p>

@@ -1,12 +1,21 @@
-
-import { Colours, ComponentBaseProps, PasswordStrengthMeter, Typography, containsLowerCaseRegex, containsNumericRegex, containsUpperCaseRegex } from '@ecdlink/ui';
-import { FormFieldType, FormInput } from '@ecdlink/ui/lib/components/form-fields/form-input/form-input';
+import {
+  Colours,
+  ComponentBaseProps,
+  PasswordStrengthMeter,
+  Typography,
+  containsLowerCaseRegex,
+  containsNumericRegex,
+  containsUpperCaseRegex,
+} from '@ecdlink/ui';
+import {
+  FormFieldType,
+  FormInput,
+} from '@ecdlink/ui/lib/components/form-fields/form-input/form-input';
 import { PasswordStrength } from '@ecdlink/ui/lib/components/password-strength-meter/models/PasswordStrength';
 import { useEffect } from 'react';
 import { useState } from 'react';
 import { FieldError, FieldValues } from 'react-hook-form';
 import { Path, UseFormRegister } from 'react-hook-form';
-
 
 interface PasswordInputProps<T extends FieldValues> extends ComponentBaseProps {
   label?: string;
@@ -19,7 +28,7 @@ interface PasswordInputProps<T extends FieldValues> extends ComponentBaseProps {
   value: string;
   strengthMeterVisible?: boolean;
   register?: UseFormRegister<T>;
-  className?: string
+  className?: string;
 }
 
 interface PasswordChangedEvent {
@@ -174,14 +183,13 @@ export const PasswordInput = <T extends FieldValues>({
       </label>
       {strengthMeterVisible &&
         Object.values(passwordConstraintMessage).some((a) => !a) && (
-          <ul className="text-black mb-4 list-disc pl-5">
+          <ul className="mb-4 list-disc pl-5 text-black">
             {!passwordConstraintMessage.characterCount && (
               <li>
                 <Typography // TODO: Fix help text font-family
                   text={'At least 8 characters'}
                   type={'help'}
                   color={'black'}
-
                 />
               </li>
             )}
@@ -200,7 +208,6 @@ export const PasswordInput = <T extends FieldValues>({
                   text={'At least 1 capital letter'}
                   type={'help'}
                   color={'black'}
-
                 />
               </li>
             )}
@@ -210,7 +217,6 @@ export const PasswordInput = <T extends FieldValues>({
                   text={'At least 1 lowercase letter'}
                   type={'help'}
                   color={'black'}
-
                 />
               </li>
             )}

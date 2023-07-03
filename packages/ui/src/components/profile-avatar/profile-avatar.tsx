@@ -43,7 +43,6 @@ export const ProfileAvatar: React.FC<ProfileAvatarProps> = ({
       {canChangeImage && (
         <div
           className={styles.camaraWrapper}
-          
           data-testid="profile-icon-wrapper"
         >
           <CameraIcon

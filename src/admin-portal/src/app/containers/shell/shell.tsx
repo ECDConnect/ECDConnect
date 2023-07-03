@@ -96,8 +96,7 @@ export default function Shell() {
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
-    console.log( sorted)
-
+        console.log(sorted);
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -323,16 +322,16 @@ export default function Shell() {
                             size={'md'}
                             displayBorder
                             dataUrl={`${user?.profileImageUrl}`}
-                            borderColor='secondary'
+                            borderColor="secondary"
                           />
-                        ) :
+                        ) : (
                           <UserAvatar
                             size={'md'}
                             avatarColor={avatarColor}
                             text={`${user?.firstName[0]}${user?.surname[0]}`}
                             displayBorder
                           />
-                        }
+                        )}
                       </Menu.Button>
                     </div>
                   </>

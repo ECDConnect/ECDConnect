@@ -705,19 +705,19 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             return _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
         }
 
-        public int GetTotalInfantCountForPeriod(string id, DateTime? startDate = null, DateTime? endDate = null)
+        public int GetTotalInfantCountForPeriod(string healthCareWorkerUserId, DateTime? startDate = null, DateTime? endDate = null)
         {
-            var a = _infantRepo.GetAll().Where(
-                x => x.Caregiver.HealthCareWorker.UserId.Equals(id)
-                    && x.IsActive.Equals(true));
+            var infants = _infantRepo.GetAll().Where(
+                i => i.Caregiver.HealthCareWorker.UserId == healthCareWorkerUserId
+                    && i.IsActive == true);
 
             if (startDate is not null)
-                a = a.Where(x => x.InsertedDate >= startDate);
+                infants = infants.Where(x => x.InsertedDate >= startDate);
 
             if (endDate is not null)
-                a = a.Where(x => x.InsertedDate >= endDate);
+                infants = infants.Where(x => x.InsertedDate >= endDate);
 
-            return a.Select(x => x.Id)
+            return infants.Select(x => x.Id)
                 .Distinct()
                 .Count();
         }

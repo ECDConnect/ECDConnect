@@ -31,10 +31,14 @@ export default function ApplicationUsers() {
   );
   const { setNotification } = useNotifications();
 
-  const resendInvitation = async (userId: string) => {
+  const resendInvitation = async (
+    userId: string,
+    inviteToPortal: boolean = false
+  ) => {
     await sendInviteToApplication({
       variables: {
         userId: userId,
+        inviteToPortal: inviteToPortal,
       },
     });
     setNotification({
@@ -146,7 +150,6 @@ export default function ApplicationUsers() {
     setSearchValue(e.target.value || '');
   }, 150);
 
-
   const [selectedRange, setSelectedRange] = useState<Date[]>([]);
 
   const handleDateChange = (range: Date[]) => {
@@ -204,7 +207,6 @@ export default function ApplicationUsers() {
                         className="p-2"
                       />
                     </div>
-
 
                     {/* <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} /> */}
                   </div>

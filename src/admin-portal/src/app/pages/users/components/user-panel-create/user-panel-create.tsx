@@ -3,10 +3,24 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import { Button, SA_ID_REGEX, SA_PASSPORT_REGEX, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
+  Typography,
+} from '@ecdlink/ui';
 import { UserPanelCreateProps } from '../users';
-import { NOTIFICATION, initialUserDetailsValues, useNotifications } from '@ecdlink/core';
-import { AddUsersToRole, CreateUser, SendInviteToApplication, UserModelInput } from '@ecdlink/graphql';
+import {
+  NOTIFICATION,
+  initialUserDetailsValues,
+  useNotifications,
+} from '@ecdlink/core';
+import {
+  AddUsersToRole,
+  CreateUser,
+  SendInviteToApplication,
+  UserModelInput,
+} from '@ecdlink/graphql';
 import { newGuid } from '../../../../utils/uuid.utils';
 import FormField from '../../../../components/form-field/form-field';
 import { SaveIcon } from '@heroicons/react/solid';
@@ -17,14 +31,11 @@ export const userSchema = yup.object().shape({
   email: yup.string().email('Invalid email'),
 });
 
-export default function UserPanelCreate(
-  props: UserPanelCreateProps
-) {
+export default function UserPanelCreate(props: UserPanelCreateProps) {
   const { setNotification } = useNotifications();
   const emitCloseDialog = (value: boolean) => {
     props.closeDialog(value);
   };
-
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const [createUser] = useMutation(CreateUser);
@@ -38,9 +49,7 @@ export default function UserPanelCreate(
     mode: 'onChange',
   });
 
-
   const { errors, isValid } = formState;
-  
 
   const onSave = async (formData: any) => {
     await saveUser(formData);
@@ -76,19 +85,21 @@ export default function UserPanelCreate(
         await sendInviteToApplication({
           variables: {
             userId: userId,
+            inviteToPortal: false,
           },
-        }).then(() => {
-          setNotification({
-            title: 'Successfully Sent User an Invite!',
-            variant: NOTIFICATION.SUCCESS,
+        })
+          .then(() => {
+            setNotification({
+              title: 'Successfully Sent User an Invite!',
+              variant: NOTIFICATION.SUCCESS,
+            });
+          })
+          .catch(() => {
+            setNotification({
+              title: 'Failed to Send User an Invite!',
+              variant: NOTIFICATION.ERROR,
+            });
           });
-        }).catch(() => {
-          setNotification({
-            title: 'Failed to Send User an Invite!',
-            variant: NOTIFICATION.ERROR,
-          });
-        });
-
       });
     } catch (error) {
       setNotification({
@@ -158,14 +169,11 @@ export default function UserPanelCreate(
                     placeholder="e.g name@email.com"
                   />
                 </div>
-             
               </div>
             </div>
           </form>
           <div></div>
         </div>
-
-
       </>
     );
   };

@@ -77,7 +77,6 @@ export default function TeamLeads() {
     };
   });
 
-
   const clearFilters = () => {
     setStatusFilter('');
     setClinicFilter('');
@@ -150,16 +149,14 @@ export default function TeamLeads() {
             </div>
             <div className="ml-4 w-6/12">
               <div className="flex  flex-row">
-
-
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={() => {
                       history.push({
-                        pathname: "/upload-users",
+                        pathname: '/upload-users',
                         state: {
-                          component: "team-leads"
-                        }
+                          component: 'team-leads',
+                        },
                       });
                     }}
                     type="button"
@@ -170,9 +167,7 @@ export default function TeamLeads() {
                   </button>
                 )}
               </div>
-
             </div>
-
           </div>
           {showFilter && (
             <div className="mb-4 flex w-full flex-row items-center">

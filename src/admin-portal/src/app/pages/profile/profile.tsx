@@ -1,12 +1,25 @@
 import FormField from '../../components/form-field/form-field';
-import { initialPasswordValue, initialUserDetailsValues, passwordSchema, NOTIFICATION, useNotifications, } from '@ecdlink/core';
+import {
+  initialPasswordValue,
+  initialUserDetailsValues,
+  passwordSchema,
+  NOTIFICATION,
+  useNotifications,
+} from '@ecdlink/core';
 
-import { Button,  ProfileAvatar, Typography } from '@ecdlink/ui';
+import { Button, ProfileAvatar, Typography } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import zxcvbn from 'zxcvbn-typescript';
-import { GetUserById, ResetUserPassword, UpdateUser, UserModelInput, FileUpload, FileTypeEnum } from '@ecdlink/graphql';
+import {
+  GetUserById,
+  ResetUserPassword,
+  UpdateUser,
+  UserModelInput,
+  FileUpload,
+  FileTypeEnum,
+} from '@ecdlink/graphql';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { useUser } from '../../hooks/useUser';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -24,9 +37,8 @@ export function Profile(props: any) {
   const [isLoading, setIsLoading] = useState(false);
   const history = useHistory();
   const [resetUserPassword] = useMutation(ResetUserPassword);
-  const user = useUser()
+  const user = useUser();
   const { setNotification } = useNotifications();
-
 
   const { register, formState, getValues, handleSubmit, setValue } = useForm({
     resolver: yupResolver(userSchema),
@@ -39,7 +51,7 @@ export function Profile(props: any) {
     register: passwordRegister,
     formState: passwordFormState,
     getValues: passwordGetValues,
-    watch
+    watch,
   } = useForm({
     resolver: yupResolver(passwordSchema),
     defaultValues: initialPasswordValue,
@@ -48,7 +60,6 @@ export function Profile(props: any) {
 
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
-
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -65,7 +76,6 @@ export function Profile(props: any) {
   const [avatarFile, setAvatarFile] = useState(null);
 
   const saveUser = async (passwordChange: boolean, profileImage?: string) => {
-
     const userInputModel: UserModelInput = {
       firstName: userDetailForm?.firstName,
       surname: userDetailForm?.surname,
@@ -73,26 +83,27 @@ export function Profile(props: any) {
       dateOfBirth: null,
       isSouthAfricanCitizen: null,
       verifiedByHomeAffairs: null,
-      profileImageUrl: profileImage ?? userData.userById?.profileImageUrl
+      profileImageUrl: profileImage ?? userData.userById?.profileImageUrl,
     };
 
     await updateUser({
       variables: {
         id: user.user?.id,
         input: { ...userInputModel },
-      }
-    }).then(() => {
-      setNotification({
-        title: 'Successfully Updated User!',
-        variant: NOTIFICATION.SUCCESS,
+      },
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully Updated User!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((error) => {
+        setNotification({
+          title: 'Failed to Update User!',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-    }).catch((error) => {
-      setNotification({
-        title: 'Failed to Update User!',
-        variant: NOTIFICATION.ERROR,
-      });
-    });
-
 
     if (passwordChange) {
       await resetUserPassword({
@@ -117,7 +128,6 @@ export function Profile(props: any) {
     if (avatarFile) {
       await saveUser(passwordChange, avatarFile);
     }
-
   };
 
   useEffect(() => {
@@ -125,9 +135,8 @@ export function Profile(props: any) {
       variables: {
         userId: user.user?.id,
       },
-    })
-  }, [user])
-
+    });
+  }, [user]);
 
   const togglePasswordVisibility = () => {
     setShowPassword(!showPassword);
@@ -135,22 +144,20 @@ export function Profile(props: any) {
 
   useEffect(() => {
     if (user) {
-      setValue('firstName', (user.user?.firstName), {
+      setValue('firstName', user.user?.firstName, {
         shouldValidate: true,
       });
 
-      setValue('surname', (user.user?.surname), {
+      setValue('surname', user.user?.surname, {
         shouldValidate: true,
       });
 
-      setValue('email', (user.user?.email), {
+      setValue('email', user.user?.email, {
         shouldValidate: true,
       });
-
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [user]);
-
 
   const handleAvatarChange = (event) => {
     const file = event.target.files[0];
@@ -164,7 +171,6 @@ export function Profile(props: any) {
     }
   };
 
-
   const displayProfilePicturePrompt = () => {
     const fileInput = document.createElement('input');
     fileInput.type = 'file';
@@ -176,8 +182,6 @@ export function Profile(props: any) {
     document.body.appendChild(fileInput);
     fileInput.click();
   };
-
-
 
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
@@ -192,7 +196,6 @@ export function Profile(props: any) {
                   className="flex flex-col space-y-4 md:flex-row md:space-y-0 md:space-x-6  "
                   style={{ width: '50rem' }}
                 >
-
                   <ProfileAvatar
                     dataUrl={avatarFile ?? userData?.userById?.profileImageUrl}
                     size={'header'}
@@ -242,7 +245,6 @@ export function Profile(props: any) {
                       className="mb-9 "
                     />
                   </div>
-               
                 </div>
               </div>
             </div>

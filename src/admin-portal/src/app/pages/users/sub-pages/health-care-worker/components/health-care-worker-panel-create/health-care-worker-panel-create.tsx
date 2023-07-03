@@ -24,7 +24,12 @@ import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
 import { UserPanelCreateProps } from '../../../../components/users';
-import { Button, SA_ID_REGEX, SA_PASSPORT_REGEX, Typography } from '@ecdlink/ui';
+import {
+  Button,
+  SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
+  Typography,
+} from '@ecdlink/ui';
 import { SaveIcon } from '@heroicons/react/solid';
 import FormField from '../../../../../../components/form-field/form-field';
 import * as yup from 'yup';
@@ -33,9 +38,10 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
-  idNumber: yup.string()
-  .matches(SA_ID_REGEX || SA_PASSPORT_REGEX, 'Id number is not valid')
-  .required('ID Number is Required'),
+  idNumber: yup
+    .string()
+    .matches(SA_ID_REGEX || SA_PASSPORT_REGEX, 'Id number is not valid')
+    .required('ID Number is Required'),
 });
 
 export default function HealthCareWorkerPanelCreate(
@@ -70,7 +76,6 @@ export default function HealthCareWorkerPanelCreate(
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
   });
-  
 
   const { errors, isValid } = formState;
 
@@ -142,23 +147,25 @@ export default function HealthCareWorkerPanelCreate(
       variables: {
         input: { ...healthCareWorkModel },
       },
-    }).then(()=>{
-      setNotification({
-        title: 'Successfully Created Health Care Worker!',
-        variant: NOTIFICATION.SUCCESS,
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully Created Health Care Worker!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to Create Health Care Worker!',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-    }).catch((err)=>{
-      setNotification({
-        title: 'Failed to Create Health Care Worker!',
-        variant: NOTIFICATION.ERROR,
-      });
-    });
-
 
     if (healthCareWorkerForm.sendInvite) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
+          inviteToPortal: false,
         },
       });
 
@@ -171,7 +178,6 @@ export default function HealthCareWorkerPanelCreate(
 
   const saveRoles = async (userId: string) => {
     const rolesToAdd: string[] = ['Health Care Worker'];
-  
 
     await addRolesToUser({
       variables: {
@@ -207,10 +213,10 @@ export default function HealthCareWorkerPanelCreate(
     return (
       <>
         <div className="pb-2">
-            <h1 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h1>
-          </div>
+          <h1 className="text-uiMidDark text-lg font-medium leading-6">
+            User Detail
+          </h1>
+        </div>
         <div className=" border-b border-dashed border-gray-200 px-4 py-5">
           <div className="pb-2">
             <h3 className="text-uiMidDark text-lg font-medium leading-6">
@@ -218,48 +224,48 @@ export default function HealthCareWorkerPanelCreate(
             </h3>
           </div>
 
-          <form  className="space-y-8 divide-y divide-gray-200">
-      <div className="space-y-0">
-        <div className="grid grid-cols-1 ">
-          <div className="my-4 sm:col-span-3">
-            <FormField
-              label={'First name *'}
-              nameProp={'firstName'}
-              register={register}
-              error={errors.firstName?.message}
-              placeholder="First name"
-            />
-          </div>
-          <div className="my-4 sm:col-span-3">
-            <FormField
-              label={'Surname *'}
-              nameProp={'surname'}
-              register={register}
-              error={errors.surname?.message}
-              placeholder="Surname/family name"
-            />
-          </div>
-          <div className="my-4 sm:col-span-3">
-            <FormField
-              label={'Work email address *'}
-              nameProp={'email'}
-              register={register}
-              error={errors.email?.message}
-              placeholder="e.g name@email.com"
-            />
-          </div>
-          <div className="my-4 sm:col-span-3">
-            <FormField
-              label={'Id number / passport *'}
-              nameProp={'idNumber'}
-              register={register}
-              error={errors.idNumber?.message}
-              placeholder="e.g 6201014800088"
-            />
-          </div>
-        </div>
-      </div>
-    </form>
+          <form className="space-y-8 divide-y divide-gray-200">
+            <div className="space-y-0">
+              <div className="grid grid-cols-1 ">
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'First name *'}
+                    nameProp={'firstName'}
+                    register={register}
+                    error={errors.firstName?.message}
+                    placeholder="First name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'Surname *'}
+                    nameProp={'surname'}
+                    register={register}
+                    error={errors.surname?.message}
+                    placeholder="Surname/family name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'Work email address *'}
+                    nameProp={'email'}
+                    register={register}
+                    error={errors.email?.message}
+                    placeholder="e.g name@email.com"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'Id number / passport *'}
+                    nameProp={'idNumber'}
+                    register={register}
+                    error={errors.idNumber?.message}
+                    placeholder="e.g 6201014800088"
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
           <div></div>
         </div>
 

@@ -15,7 +15,12 @@ import {
 } from '@ecdlink/graphql';
 import { DialogPosition } from '@ecdlink/ui';
 import { Menu, Transition } from '@headlessui/react';
-import { CogIcon, DownloadIcon, SearchIcon, UploadIcon } from '@heroicons/react/outline';
+import {
+  CogIcon,
+  DownloadIcon,
+  SearchIcon,
+  UploadIcon,
+} from '@heroicons/react/outline';
 import { Fragment, useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import AlertModal from '../../../../components/dialog-alert/dialog-alert';
@@ -27,7 +32,6 @@ import UploadPractitionerTemplate from './components/upload-template/upload-temp
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import UploadAllChildrenTemplate from './components/upload-import-template-children/upload-import-template-children';
 import debounce from 'lodash.debounce';
-
 
 export default function Practitioners() {
   const { hasPermission } = useUser();
@@ -149,6 +153,7 @@ export default function Practitioners() {
             sendInviteToApplication({
               variables: {
                 userId: practitioner.userId,
+                inviteToPortal: false,
               },
             }).then(() => {
               setNotification({
@@ -242,7 +247,7 @@ export default function Practitioners() {
                 placeholder="       Search"
               />
             </div>
-            <div className="flex flex-row-end w-2/12">
+            <div className="flex-row-end flex w-2/12">
               <div className="mt-3 sm:mt-0 sm:ml-0">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button

@@ -29,7 +29,6 @@ export default function UploadBulkUser(props: any) {
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
 
-
   const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
     HealthCareWorkerTemplate,
     {
@@ -37,12 +36,10 @@ export default function UploadBulkUser(props: any) {
     }
   );
 
-  const [getTeamLeadsExcelTemplateGenerator, { data: teamLeadsTemplateData }] = useLazyQuery(
-    TeamLeadsTemplate,
-    {
+  const [getTeamLeadsExcelTemplateGenerator, { data: teamLeadsTemplateData }] =
+    useLazyQuery(TeamLeadsTemplate, {
       fetchPolicy: 'cache-and-network',
-    }
-  );
+    });
 
   const [importTeamLeads] = useMutation(UploadTeamLeads);
   const [importPractitioners, loading] = useMutation(UploadHealthCareWorkers);
@@ -58,8 +55,7 @@ export default function UploadBulkUser(props: any) {
           },
         }).then((res) => {
           if (res.data?.importTeamLeads.validationErrors.length !== 0) {
-
-            setDocErrors(res.data?.importTeamLeads.validationErrors)
+            setDocErrors(res.data?.importTeamLeads.validationErrors);
           } else {
             setNotification({
               title: `Successfully Uploaded ${res.data?.importTeamLeads.createdUsers} team leads!`,
@@ -73,11 +69,8 @@ export default function UploadBulkUser(props: any) {
             file: model.templateFile?.file,
           },
         }).then((res) => {
-
           if (res.data?.importHealthCareWorkers.validationErrors.length !== 0) {
-
-            setDocErrors(res.data?.importTeamLeads.validationErrors)
-
+            setDocErrors(res.data?.importTeamLeads.validationErrors);
           } else {
             setNotification({
               title: `Successfully Uploaded ${res.data?.importHealthCareWorkers.createdUsers} CHWs!`,
@@ -86,7 +79,6 @@ export default function UploadBulkUser(props: any) {
           }
         });
       }
-
     }
   };
 
@@ -94,9 +86,11 @@ export default function UploadBulkUser(props: any) {
     if (
       teamLeadsTemplateData &&
       teamLeadsTemplateData.teamLeadTemplateGenerator &&
-      !templateDownloaded && props.location.state?.component === 'team-leads'
+      !templateDownloaded &&
+      props.location.state?.component === 'team-leads'
     ) {
-      const b64Data = teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
+      const b64Data =
+        teamLeadsTemplateData.teamLeadTemplateGenerator.base64File;
       const contentType =
         teamLeadsTemplateData.teamLeadTemplateGenerator.fileType;
       const fileName = teamLeadsTemplateData.teamLeadTemplateGenerator.fileName;
@@ -154,7 +148,6 @@ export default function UploadBulkUser(props: any) {
     setTemplateDownloaded(false);
     if (props.location.state?.component === 'team-leads') {
       await getTeamLeadsExcelTemplateGenerator();
-
     } else {
       await getExcelTemplateGenerator();
     }
@@ -176,7 +169,13 @@ export default function UploadBulkUser(props: any) {
         </button>
       </div>
       <div className="flex flex-col pt-10">
-        <h1 className="text-xl">Step 1: Download the {props.location.state?.component === 'team-leads' ? "Team Leads": "CHWs"} template</h1>
+        <h1 className="text-xl">
+          Step 1: Download the{' '}
+          {props.location.state?.component === 'team-leads'
+            ? 'Team Leads'
+            : 'CHWs'}{' '}
+          template
+        </h1>
 
         <p className="text-normal">
           Download the Excel template below and make sure all required fields
@@ -236,10 +235,8 @@ export default function UploadBulkUser(props: any) {
               className="mt-5 mb-3 rounded-md"
               message={`Error`}
               type="error"
-              list={
-                docErrors.map(error => error.errorDescription)
-              }
-              listColor='errorMain'
+              list={docErrors.map((error) => error.errorDescription)}
+              listColor="errorMain"
             />
           ) : null}
         </div>

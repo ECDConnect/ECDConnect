@@ -630,15 +630,26 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             if (type == Constants.GGSettings.client_mother)
             {
-                totalVisitsMissed = totalVisitsMissed.Where(x => 
-                    x.Mother.IsActive == true
+                totalVisitsMissed = totalVisitsMissed.Where(m => 
+                    m.VisitType.Type == type
+                    && m.IsActive == true
+                    && m.Mother.IsActive == true
                     // TODO: Performance impact of multiple joins:     
-                    && x.Mother.HealthCareWorker.UserId == heathCareWorkerId);
+                    && m.Mother.HealthCareWorker.UserId == heathCareWorkerId);
             }
-            else
+            else if (type == Constants.GGSettings.client_child)
             {
-                totalVisitsMissed = totalVisitsMissed.Where(i => 
-                    i.Infant.IsActive == true
+                totalVisitsMissed = totalVisitsMissed.Where(i =>
+                    i.VisitType.Type == type
+                    && i.IsActive == true
+                    && i.Infant.IsActive == true
+                    // TODO: Performance impact of multiple joins:     
+                    && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
+            } else
+            {
+                totalVisitsMissed = totalVisitsMissed.Where(i =>
+                    i.VisitType.Type == type
+                    && i.IsActive == true
                     // TODO: Performance impact of multiple joins:     
                     && i.Infant.Caregiver.HealthCareWorker.UserId == heathCareWorkerId);
             }
@@ -651,19 +662,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
-            // Things that have been painted these color are urgent...
-            var urgentColors = new string[] { MetricsColorEnum.Error.ToString() }; //MetricsColorEnum.Warning.ToString()
-
             var allMothers = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
-                    .ThenInclude(vd => vd.Visit)
-                        .ThenInclude(v => v.Mother)
-                            .ThenInclude(m => m.HealthCareWorker)
-                .Where(vsd => vsd.IsActive == true);
-            allMothers = allMothers.Where(vsd =>
-                    vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId);
-            allMothers = allMothers.Where(vsd => vsd.Type == Constants.GGSettings.visit_data_client_summary);
-            allMothers = allMothers.Where(vsd => urgentColors.Contains(vsd.Color));
+                    .ThenInclude(vd => vd.Visit.Mother)
+                        .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd => vsd.IsActive == true
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    //&& vsd.Type == Constants.GGSettings.visit_data_client_summary
+                    // Things that have been painted these color are urgent...
+                    && vsd.Color == MetricsColorEnum.Error.ToString());
 
             if (startDate is not null)
                 allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
@@ -681,8 +688,36 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
+            var allMothers = _visitDataStatusRepo.GetAll()
+                .Include(vsd => vsd.VisitData)
+                    .ThenInclude(vd => vd.Visit.Mother)
+                        .ThenInclude(m => m.HealthCareWorker)
+                .Where(vsd => vsd.IsActive == true
+                    && vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
+                    //&& vsd.Type == Constants.GGSettings.visit_data_client_summary
+                    // Things that have been painted these color are urgent...
+                    && vsd.Color == MetricsColorEnum.Warning.ToString());
+
+            if (startDate is not null)
+                allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                allMothers = allMothers.Where(vsd => vsd.InsertedDate <= endDate);
+
+            return allMothers.Select(x => x.VisitData.Visit.Mother.Id)
+                .Distinct()
+                .Count();
+        }
+
+        public int GetTotalPregnantMothers(
+            string heathCareWorkerUserId,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
             // Things that have been painted these color are urgent...
-            var urgentColors = new string[] { MetricsColorEnum.Warning.ToString() };
+            var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
+            var motherIds = motherRepo.GetAll()
+                .Where(m => m.HealthCareWorker.UserId == heathCareWorkerUserId).Select(m=>m.Id);
 
             var allMothers = _visitDataStatusRepo.GetAll()
                 .Include(vsd => vsd.VisitData)
@@ -690,8 +725,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         .ThenInclude(m => m.HealthCareWorker)
                 .Where(vsd =>
                     vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
-                    && vsd.Type == Constants.GGSettings.visit_data_client_summary
-                    && urgentColors.Contains(vsd.Color));
+                    && vsd.Type == Constants.GGSettings.client_mother
+                    );
 
             if (startDate is not null)
                 allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);

@@ -6,7 +6,7 @@ import {
   registerSchema,
   useTheme,
 } from '@ecdlink/core';
-import { Alert, Button, Divider,  Typography } from '@ecdlink/ui';
+import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -60,7 +60,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
       const body: RegisterRequestModel = {
         username: formValues.username,
         password: formValues.password,
-        resetToken: resetToken
+        resetToken: resetToken,
         // acceptedTerms: formValues.acceptedTerms,
       };
       const isAuthenticated = await registerUser(body, Config.authApi).catch(
@@ -99,9 +99,7 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">
-            Register
-          </h2>
+          <h2 className="font-h1 textLight mt-6 text-2xl">Register</h2>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -121,8 +119,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
               </div>
 
               <div className="space-y-1">
-
-
                 <PasswordInput
                   label={'Password'}
                   nameProp={'password'}
@@ -145,7 +141,6 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
                     error={errors.acceptedTerms?.message}
                   />
                 </div>
-
               </div>
               {displayError && (
                 <Alert

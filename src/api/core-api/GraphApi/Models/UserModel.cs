@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.Constants;
 using ECDLink.DataAccessLayer.Entities;
 using System;
 
@@ -20,7 +21,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
             RaceId = user.RaceId;
             FirstName = user.FirstName;
             Surname = user.Surname;
-            ContactPreference = user.ContactPreference ?? "sms";
+            ContactPreference = user.ContactPreference ?? MessageTypeConstants.SMS;
             PhoneNumber = user.PhoneNumber;
             Email = user.Email;
             ProfileImageUrl = user.ProfileImageUrl;

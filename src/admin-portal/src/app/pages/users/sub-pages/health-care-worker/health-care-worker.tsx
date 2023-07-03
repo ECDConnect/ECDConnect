@@ -35,11 +35,7 @@ import UiTable from '../../../../components/ui-table';
 import UploadAllImportTemplate from './components/upload-import-template/upload-import-template';
 import { useUser } from '../../../../hooks/useUser';
 import HealthCareWorkerPanelCreate from './components/health-care-worker-panel-create/health-care-worker-panel-create';
-import {
-  PlusIcon,
-  SearchIcon,
-  UploadIcon,
-} from '@heroicons/react/solid';
+import { PlusIcon, SearchIcon, UploadIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
 export default function HealthCareWorkers() {
@@ -146,9 +142,7 @@ export default function HealthCareWorkers() {
     };
   };
 
-
   useEffect(() => {
-
     if (data && data.allHealthCareWorkers) {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
@@ -170,6 +164,7 @@ export default function HealthCareWorkers() {
             sendInviteToApplication({
               variables: {
                 userId: practitioner.userId,
+                inviteToPortal: false,
               },
             }).then(() => {
               setNotification({
@@ -201,8 +196,6 @@ export default function HealthCareWorkers() {
       ),
     });
   };
-
-
 
   const clearFilters = () => {
     setStatusFilter('');
@@ -335,20 +328,22 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                        ? 'bg-secondary text-white'
-                        : 'text-secondary border-secondary border-2 bg-white'
-                        } hover:text-secondary hover:bg-white `}
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
+                        !showDropDownFilter
+                          ? 'bg-secondary text-white'
+                          : 'text-secondary border-secondary border-2 bg-white'
+                      } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                          ? 'hover:text-secondary text-white'
-                          : 'text-secondary hover:text-white'
-                          }`}
+                        className={`-mr-1 h-5 w-5 hover:text-white ${
+                          !showDropDownFilter
+                            ? 'hover:text-secondary text-white'
+                            : 'text-secondary hover:text-white'
+                        }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"

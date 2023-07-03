@@ -11,7 +11,12 @@ import {
   Avatar,
   ProfileAvatar,
 } from '@ecdlink/ui';
-import { JSXElementConstructor, ReactElement, useEffect, useState } from 'react';
+import {
+  JSXElementConstructor,
+  ReactElement,
+  useEffect,
+  useState,
+} from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import {
@@ -32,7 +37,6 @@ import {
   PermissionEnum,
   useDialog,
   useNotifications,
-
 } from '@ecdlink/core';
 import AlertModal from '../../components/dialog-alert/dialog-alert';
 import CustomDateRangePicker from '../../components/date-picker/index';
@@ -49,7 +53,6 @@ import {
   healthCareWorkerVisitStatus,
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
-
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -57,7 +60,6 @@ import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
-
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -74,20 +76,23 @@ const adminSchema = yup.object().shape({
   email: yup.string().email().required('email address is required'),
 });
 
-
-const showNotification = (message: string, type: AlertType, icon?: ReactElement<any, string | JSXElementConstructor<any>>) => {
-  return <Alert
-    className="mt-5 mb-3 rounded-md mx-20"
-    message={message}
-    type={type}
-    customIcon={icon}
-  />
-}
-
+const showNotification = (
+  message: string,
+  type: AlertType,
+  icon?: ReactElement<any, string | JSXElementConstructor<any>>
+) => {
+  return (
+    <Alert
+      className="mx-20 mt-5 mb-3 rounded-md"
+      message={message}
+      type={type}
+      customIcon={icon}
+    />
+  );
+};
 
 export function ViewUser(props: any) {
   const [showPassword, setShowPassword] = useState(false);
-
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([]);
@@ -125,25 +130,25 @@ export function ViewUser(props: any) {
     fetchPolicy: 'cache-and-network',
   });
 
-
-  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] = useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
-    variables: {
-      healthCareWorkerUserId: "",
-      "startDate": "",
-      "endDate": ""
-    },
-    fetchPolicy: 'cache-and-network',
-  });
-
+  const [getHealthCareWorkerSummaryForPeriod, { data: summaryData }] =
+    useLazyQuery(GetHealthCareWorkerSummaryForPeriod, {
+      variables: {
+        healthCareWorkerUserId: '',
+        startDate: '',
+        endDate: '',
+      },
+      fetchPolicy: 'cache-and-network',
+    });
 
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
-        startDate: selectedRange[0]?.toISOString() ?? "2022-01-01T08:17:52.518Z",
-        endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString()
-      }
-    })
+        startDate:
+          selectedRange[0]?.toISOString() ?? '2022-01-01T08:17:52.518Z',
+        endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString(),
+      },
+    });
   }, [selectedRange]);
 
   useEffect(() => {
@@ -156,7 +161,6 @@ export function ViewUser(props: any) {
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
       });
-
   }, [userId]);
 
   const { hasPermission } = useUser();
@@ -171,9 +175,10 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${
+            chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -208,9 +213,10 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${
+            chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-            }`}
+          }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -218,19 +224,21 @@ export function ViewUser(props: any) {
               variables: {
                 userId:
                   userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+                inviteToPortal: true,
               },
-            }).then(() => {
-              setNotification({
-                title: 'Successfully Sent Invite!',
-                variant: NOTIFICATION.SUCCESS,
+            })
+              .then(() => {
+                setNotification({
+                  title: 'Successfully Sent Invite!',
+                  variant: NOTIFICATION.SUCCESS,
+                });
+              })
+              .catch((err) => {
+                setNotification({
+                  title: 'Failed to Send Invite!',
+                  variant: NOTIFICATION.ERROR,
+                });
               });
-
-            }).catch((err) => {
-              setNotification({
-                title: 'Failed to Send Invite!',
-                variant: NOTIFICATION.ERROR,
-              });
-            });
           }}
         />
       ),
@@ -243,10 +251,9 @@ export function ViewUser(props: any) {
 
   const [editActive, setEditActive] = useState<boolean>(false);
 
-
   let isCHW = userData?.userById?.roles?.some(
     (role: any) => role.name === 'Health Care Worker'
-  )
+  );
 
   const {
     register,
@@ -286,51 +293,34 @@ export function ViewUser(props: any) {
   const { errors: passwordFormErrors, isValid: isPasswordValid } =
     passwordFormState;
 
-
   const { errors: adminDetailFormErrors, isValid: isAdminDetailValid } =
     adminDetailFormState;
 
-
-  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } = chwDetailFormState;
+  const { errors: chwDetailFormErrors, isValid: isChwDetailValid } =
+    chwDetailFormState;
   const passwordForm = passwordGetValues();
 
   // SET EDIT FORMS
   useEffect(() => {
+    adminDetailSetValue('email', userData?.userById?.email, {
+      shouldValidate: true,
+    });
 
-    adminDetailSetValue(
-      'email',
-      userData?.userById?.email,
-      {
-        shouldValidate: true,
-      }
-    );
+    chwDetailSetValue('idNumber', userData?.userById?.idNumber, {
+      shouldValidate: true,
+    });
 
-    chwDetailSetValue(
-      'idNumber',
-      userData?.userById?.idNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
-    chwDetailSetValue(
-      'phoneNumber',
-      userData?.userById?.phoneNumber,
-      {
-        shouldValidate: true,
-      }
-    );
-
+    chwDetailSetValue('phoneNumber', userData?.userById?.phoneNumber, {
+      shouldValidate: true,
+    });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [userData]);
 
-
-
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
-    const adminDataForm = adminDetailGetValues()
-    const chwDataForm = chwDetailGetValues()
+    const adminDataForm = adminDetailGetValues();
+    const chwDataForm = chwDetailGetValues();
 
     const chwInputModel: UserModelInput = {
       phoneNumber: chwDataForm?.phoneNumber,
@@ -352,23 +342,26 @@ export function ViewUser(props: any) {
         id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
         input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
       },
-    }).then(() => {
-      refetch()
-      setNotification({
-        title: 'Successfully Updated User!',
-        variant: NOTIFICATION.SUCCESS,
+    })
+      .then(() => {
+        refetch();
+        setNotification({
+          title: 'Successfully Updated User!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to update User',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-    }).catch((err) => {
-      setNotification({
-        title: 'Failed to update User',
-        variant: NOTIFICATION.ERROR,
-      });
-    });
 
     if (passwordChange) {
       await resetUserPassword({
         variables: {
-          id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+          id:
+            userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
           newPassword: passwordForm.password,
         },
       }).then(() => {
@@ -383,7 +376,7 @@ export function ViewUser(props: any) {
     if (passwordForm.password.length > 0) {
       passwordChange = true;
     }
-    await saveUser(passwordChange)
+    await saveUser(passwordChange);
   };
 
   //check password strength
@@ -391,28 +384,30 @@ export function ViewUser(props: any) {
   const passwordStrength = zxcvbn(password);
   const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
 
-
-
-
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
       <div className="justify-self col-end-3 ">
         <button
           onClick={() => history.goBack()}
           type="button"
-          className="cursor-pointer text-secondary outline-none text-14 inline-flex w-full items-center border border-transparent px-4 py-2 font-medium "
+          className="text-secondary outline-none text-14 inline-flex w-full cursor-pointer items-center border border-transparent px-4 py-2 font-medium "
         >
           <ArrowLeftIcon className="text-secondary mr-1 h-4 w-4">
             {' '}
           </ArrowLeftIcon>
           Back
-          <span className="text-gray-400 px-1">  / View {isCHW ? "CHW" : "User"}</span>
+          <span className="px-1 text-gray-400">
+            {' '}
+            / View {isCHW ? 'CHW' : 'User'}
+          </span>
         </button>
       </div>
-      {
-        successNotification && showNotification("User Added Successfully! ", "success", <ThumbUpIcon className='w-10 h-10'></ThumbUpIcon>)
-      }
-
+      {successNotification &&
+        showNotification(
+          'User Added Successfully! ',
+          'success',
+          <ThumbUpIcon className="h-10 w-10"></ThumbUpIcon>
+        )}
 
       <div className="m-10 rounded-2xl lg:min-w-0 lg:flex-1">
         <div className="py-0 px-4 sm:px-6 lg:px-8">
@@ -421,8 +416,16 @@ export function ViewUser(props: any) {
           <div className="flex">
             <div className="p-6 dark:bg-gray-900 dark:text-gray-100 sm:p-12">
               <div className="flex flex-col space-y-4 md:flex-row md:space-y-0 ">
-
-                <ProfileAvatar canChangeImage={false} dataUrl={userData?.userById?.profileImageUrl || chwData?.GetHealthCareWorkerById?.user?.profileImageUrl} onPressed={() => { }} hasConsent size='header' />
+                <ProfileAvatar
+                  canChangeImage={false}
+                  dataUrl={
+                    userData?.userById?.profileImageUrl ||
+                    chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
+                  }
+                  onPressed={() => {}}
+                  hasConsent
+                  size="header"
+                />
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
@@ -459,11 +462,9 @@ export function ViewUser(props: any) {
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
               type="error"
-            // customIcon={<SaveIcon></SaveIcon>}
+              // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
-
-
         </div>
 
         <div className="border-l-primary border-primary m-10 mt-0  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
@@ -481,37 +482,35 @@ export function ViewUser(props: any) {
                 <>
                   <div className="space-y-0">
                     <div className="grid grid-cols-1 ">
-
-                      {
-                        (isCHW || props.location.state?.component === 'chw') ?
-                          <>
-                            <div className="my-4 w-6/12 sm:col-span-3">
-                              <FormField
-                                label={'ID number *'}
-                                nameProp={'idNumber'}
-                                register={registerCHW}
-                                error={chwDetailFormErrors.idNumber?.message}
-
-                              />
-                            </div>
-                            <div className="my-4 w-6/12 sm:col-span-3">
-                              <FormField
-                                label={'Cellphone number *'}
-                                nameProp={'phoneNumber'}
-                                register={registerCHW}
-                                error={chwDetailFormErrors.phoneNumber?.message}
-
-                              />
-                            </div>
-                          </> : <div className="my-4 w-6/12 sm:col-span-3">
+                      {isCHW || props.location.state?.component === 'chw' ? (
+                        <>
+                          <div className="my-4 w-6/12 sm:col-span-3">
                             <FormField
-                              label={'Email *'}
-                              nameProp={'email'}
-                              register={register}
-                              error={adminDetailFormErrors.email?.message}
+                              label={'ID number *'}
+                              nameProp={'idNumber'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.idNumber?.message}
                             />
                           </div>
-                      }
+                          <div className="my-4 w-6/12 sm:col-span-3">
+                            <FormField
+                              label={'Cellphone number *'}
+                              nameProp={'phoneNumber'}
+                              register={registerCHW}
+                              error={chwDetailFormErrors.phoneNumber?.message}
+                            />
+                          </div>
+                        </>
+                      ) : (
+                        <div className="my-4 w-6/12 sm:col-span-3">
+                          <FormField
+                            label={'Email *'}
+                            nameProp={'email'}
+                            register={register}
+                            error={adminDetailFormErrors.email?.message}
+                          />
+                        </div>
+                      )}
 
                       <div className="my-4 w-6/12 sm:col-span-3">
                         <PasswordInput
@@ -524,18 +523,16 @@ export function ViewUser(props: any) {
                           className="mb-9 "
                         />
                       </div>
-
                     </div>
                   </div>
-                  {
-                    (isCHW || props.location.state?.component === 'chw') ? <Button
+                  {isCHW || props.location.state?.component === 'chw' ? (
+                    <Button
                       className={'mt-3 w-4/12 rounded-md '}
                       type="filled"
                       isLoading={loading}
                       color="secondary"
                       disabled={!isChwDetailValid}
-                      onClick={handleSubmitChwDetails(onSave)
-                      }
+                      onClick={handleSubmitChwDetails(onSave)}
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
                         {' '}
@@ -545,14 +542,15 @@ export function ViewUser(props: any) {
                         color="white"
                         text={'Save Changes'}
                       ></Typography>
-                    </Button> : <Button
+                    </Button>
+                  ) : (
+                    <Button
                       className={'mt-3 w-4/12 rounded-md '}
                       type="filled"
                       isLoading={loading}
                       color="secondary"
                       disabled={!isAdminDetailValid}
-                      onClick={handleSubmitAdminDetails(onSave)
-                      }
+                      onClick={handleSubmitAdminDetails(onSave)}
                     >
                       <SaveIcon color="white" className="mr-6 h-6 w-6">
                         {' '}
@@ -562,31 +560,36 @@ export function ViewUser(props: any) {
                         color="white"
                         text={'Save Changes'}
                       ></Typography>
-                    </Button>}
-
-
+                    </Button>
+                  )}
                 </>
-              ) : (
-                (isCHW || props.location.state?.component === 'chw') ? <div className="flex flex-row justify-start pt-4 text-current">
-
+              ) : isCHW || props.location.state?.component === 'chw' ? (
+                <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
-                    ID: {userData?.userById?.idNumber || chwData?.GetHealthCareWorkerById?.user?.idNumber}
+                    ID:{' '}
+                    {userData?.userById?.idNumber ||
+                      chwData?.GetHealthCareWorkerById?.user?.idNumber}
                   </p>
                   <p className="px-4 text-xl">
                     {' '}
                     Cellphone:{' '}
-                    {userData?.userById?.phoneNumber || chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
+                    {userData?.userById?.phoneNumber ||
+                      chwData?.GetHealthCareWorkerById?.user?.phoneNumber}
                   </p>
-                  {userData?.userById?.whatsappNumber && <p className="px-4 text-xl">
-                    WhatsApp:{' '}
-                    {userData?.userById?.whatsappNumber || chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
-                  </p>}
-                </div> : <div className="flex flex-row justify-start pt-4 text-current">
+                  {userData?.userById?.whatsappNumber && (
+                    <p className="px-4 text-xl">
+                      WhatsApp:{' '}
+                      {userData?.userById?.whatsappNumber ||
+                        chwData?.GetHealthCareWorkerById?.user?.whatsappNumber}
+                    </p>
+                  )}
+                </div>
+              ) : (
+                <div className="flex flex-row justify-start pt-4 text-current">
                   <p className="px-4 text-xl">
                     Email: {userData?.userById?.email}
                   </p>
                 </div>
-
               )}
             </form>
             {/* End main area */}
@@ -596,7 +599,6 @@ export function ViewUser(props: any) {
             <button
               onClick={() => {
                 setEditActive(!editActive);
-
               }}
               id="dropdownHoverButton"
               className="bg-secondary focus:border-secondary w-1/ focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg py-2.5 px-12 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
@@ -608,17 +610,21 @@ export function ViewUser(props: any) {
           </div>
         </div>
 
-        {
-          (isCHW || props.location.state?.component === 'chw') && data &&
+        {(isCHW || props.location.state?.component === 'chw') &&
+          data &&
           data.tenantContext &&
-          data.tenantContext.applicationName === 'GrowGreat'
-          && <div className=" flex justify-end">
-            <div>
-              <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} />
+          data.tenantContext.applicationName === 'GrowGreat' && (
+            <div className=" flex justify-end">
+              <div>
+                <CustomDateRangePicker
+                  handleDateChange={handleDateChange}
+                  selectedRange={selectedRange}
+                />
+              </div>
             </div>
-          </div>}
-        {
-          (isCHW || props.location.state?.component === 'chw') && <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+          )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="border-l-secondary border-secondary m-10 my-6 mt-4  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               {/* Start main area*/}
               <h3 className="mb-2 border-b-4 border-dashed pb-2 text-xl">
@@ -627,24 +633,48 @@ export function ViewUser(props: any) {
               </h3>
               <div className="flex flex-row justify-evenly pt-4 text-current">
                 <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalPregnantMoms}</span>pregnant moms
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalPregnantMoms
+                    }
+                  </span>
+                  pregnant moms
                 </p>
                 <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalChildren}</span>children
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalChildren
+                    }
+                  </span>
+                  children
                 </p>
                 <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalClientsVisited}</span>clients visited
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalClientsVisited
+                    }
+                  </span>
+                  clients visited
                 </p>
                 <p className="px-4 py-2  text-xl">
-                  <span className="p-2  text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalFoldersOpened}</span>folders opened
+                  <span className="p-2  text-2xl">
+                    {
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalFoldersOpened
+                    }
+                  </span>
+                  folders opened
                 </p>
               </div>
               {/* End main area */}
             </div>
           </div>
-        }
-        {
-          (isCHW || props.location.state?.component === 'chw') && <div className="flex flex-row">
+        )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="flex flex-row">
             <div className="border-l-errorMain  border-errorMain m-10 mb-12  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
               <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
                 {/* Start main area*/}
@@ -660,22 +690,33 @@ export function ViewUser(props: any) {
                 <div className="flex flex-col justify-evenly pt-4 text-current">
                   <p className="px-4py-2 text-xl">
                     <span className="text-errorMain p-2 text-2xl">
-                      {summaryData?.healthCareWorkerSummaryForPeriod?.totalVisitsMissed}
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalVisitsMissed
+                      }
                     </span>
                     Visits Missed
                   </p>
 
                   <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalPregnantMomsWithUrgentIssues
-                    }</span>
+                    <span className="text-errorMain p-2 text-2xl">
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalPregnantMomsWithUrgentIssues
+                      }
+                    </span>
                     pregnant moms have urgent issues
                   </p>
 
                   <p className="px-4py-2 text-xl">
-                    <span className="text-errorMain p-2 text-2xl">{summaryData?.healthCareWorkerSummaryForPeriod?.totalCaregiversAndChildrenWithUrgentIssues}</span>
+                    <span className="text-errorMain p-2 text-2xl">
+                      {
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalCaregiversAndChildrenWithUrgentIssues
+                      }
+                    </span>
                     caregivers & children have urgent issues
                   </p>
-
                 </div>
                 {/* End main area */}
               </div>
@@ -705,7 +746,8 @@ export function ViewUser(props: any) {
                   <p className="px-4py-2 text-xl">
                     <span className="text-alertMain p-2 text-2xl">
                       {
-                        summaryData?.healthCareWorkerSummaryForPeriod?.totalVisitsOverdue
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalVisitsOverdue
                       }
                     </span>
                     visits overdue
@@ -713,7 +755,8 @@ export function ViewUser(props: any) {
                   <p className="px-4py-2 text-xl">
                     <span className="text-alertMain p-2 text-2xl">
                       {
-                        summaryData?.healthCareWorkerSummaryForPeriod?.totalPregnantMomsWithIssues
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalPregnantMomsWithIssues
                       }
                     </span>
                     pregnant moms have other issues
@@ -722,7 +765,8 @@ export function ViewUser(props: any) {
                   <p className="px-4py-2 text-xl">
                     <span className="text-alertMain p-2 text-2xl">
                       {
-                        summaryData?.healthCareWorkerSummaryForPeriod?.totalCaregiversAndChildrenWithIssues
+                        summaryData?.healthCareWorkerSummaryForPeriod
+                          ?.totalCaregiversAndChildrenWithIssues
                       }
                     </span>
                     caregivers & children have other issues
@@ -733,9 +777,9 @@ export function ViewUser(props: any) {
               </div>
             </div>
           </div>
-        }
-        {
-          (isCHW || props.location.state?.component === 'chw') && <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
+        )}
+        {(isCHW || props.location.state?.component === 'chw') && (
+          <div className="border-l-successMain  border-successMain m-10 mb-10  rounded-2xl border-2 border-l-8  bg-white lg:min-w-0 lg:flex-1">
             <div className="h-full py-6 px-4 sm:px-6 lg:px-8">
               {/* Start main area*/}
               <div className="flex flex-row border-b-4 border-dashed pb-0">
@@ -751,8 +795,8 @@ export function ViewUser(props: any) {
                 <p className="px-4 py-2 text-lg">
                   <span className="text-successMain p-2 text-2xl">
                     {
-                      summaryData?.healthCareWorkerSummaryForPeriod?.totalPregnantMoms
-
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalPregnantMoms
                     }
                   </span>
                   pregnant moms are doing well & have no issues
@@ -760,30 +804,28 @@ export function ViewUser(props: any) {
                 <p className="px-4 py-2 text-lg">
                   <span className="text-successMain p-2 text-2xl">
                     {
-                      summaryData?.healthCareWorkerSummaryForPeriod?.totalChildren
+                      summaryData?.healthCareWorkerSummaryForPeriod
+                        ?.totalChildren
                     }
                   </span>
                   children are doing well & have no issues
                 </p>
-
-
               </div>
 
               {/* End main area */}
             </div>
           </div>
-        }
+        )}
 
         <div className="flex w-full justify-between  pl-4">
           <div className="flex w-10/12 flex-row  pl-4">
-            {
-              hasPermission(PermissionEnum.delete_user) && <Button
-                className={'mt-3 w-4/12 rounded-md mr-2'}
+            {hasPermission(PermissionEnum.delete_user) && (
+              <Button
+                className={'mt-3 mr-2 w-4/12 rounded-md'}
                 type="outlined"
                 // isLoading={isLoading}
                 color="tertiary"
                 onClick={deactivateUser}
-
               >
                 <TrashIcon color="tertiary" className="mr-2 h-6 w-6">
                   {' '}
@@ -794,7 +836,7 @@ export function ViewUser(props: any) {
                   text={'Deactivate User'}
                 ></Typography>
               </Button>
-            }
+            )}
             {
               <Button
                 className={'mt-3 w-4/12 rounded-md'}
@@ -815,13 +857,12 @@ export function ViewUser(props: any) {
             }
           </div>
 
-          <div className='w-2/12'>
-            <p className="mt-3 text-sm text-gray-500 w-full">
+          <div className="w-2/12">
+            <p className="mt-3 w-full text-sm text-gray-500">
               User added to {data?.tenantContext.applicationName} App:{' '}
               {userData?.userById?.startDate}
             </p>
           </div>
-
         </div>
       </div>
     </div>

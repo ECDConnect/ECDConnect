@@ -96,7 +96,7 @@ export default function Login() {
                   className="mb-9 "
                 />
               </div>
-          
+
               <Button
                 className={
                   ' focus:outline-none my-6 inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white '

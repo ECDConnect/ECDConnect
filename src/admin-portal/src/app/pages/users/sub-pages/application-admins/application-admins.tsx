@@ -166,10 +166,7 @@ export default function ApplicationAdmins() {
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || ' ');
-
   }, 150);
-
-
 
   if (tableData) {
     return (
