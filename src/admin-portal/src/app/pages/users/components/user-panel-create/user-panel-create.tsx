@@ -84,7 +84,7 @@ export default function UserPanelCreate(
           });
         }).catch(() => {
           setNotification({
-            title: 'Successfully Sent User an Invite!',
+            title: 'Failed to Send User an Invite!',
             variant: NOTIFICATION.ERROR,
           });
         });
