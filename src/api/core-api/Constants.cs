@@ -508,6 +508,7 @@ namespace EcdLink.Api.CoreApi
             public const string has_birth_certificate = "Has applied for a birth certificate";
             public const string has_csg = "Has applied for a child support grant";
             public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
+            public const string has_csg3 = "Has not applied for a child support grant";
 
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
