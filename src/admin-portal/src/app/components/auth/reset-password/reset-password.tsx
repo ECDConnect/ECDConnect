@@ -15,6 +15,7 @@ import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
 import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../password-input/password-input';
 
 interface RouteParams {
   resetToken: string;
@@ -47,10 +48,10 @@ export default function ResetPassword() {
   const password = watch('password');
   const formValues = getValues();
 
-    //check password strength
-    const passwordStrength = zxcvbn(password);
-    const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-  
+  //check password strength
+  const passwordStrength = zxcvbn(password);
+  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
+
 
   const requestResetPasword = async () => {
     if (isValid) {
@@ -79,7 +80,7 @@ export default function ResetPassword() {
   };
 
   const { errors, isValid } = formState;
-console.log(isValid)
+  console.log(isValid)
 
 
   const submitResetPassword = async () => {
@@ -161,19 +162,15 @@ console.log(isValid)
             <div className="mt-6">
               <form className="space-y-6">
                 <div className="space-y-1">
-                  <FormField
-                    label={'Password *'}
+
+                  <PasswordInput
+                    label={'Password'}
                     nameProp={'password'}
+                    sufficIconColor="black"
+                    value={formValues.password}
                     register={register}
-                    type="password"
-                    error={errors.password?.message}
-                    instructions={[
-                      'At least 8 characters',
-                      'At least 1 number',
-                      'At least 1 capital letter',
-                    ]}
-                    showPassword={showPassword}
-                    togglePasswordVisibility={togglePasswordVisibility}
+                    strengthMeterVisible={false}
+                    className="mb-9 "
                   />
                 </div>
 
