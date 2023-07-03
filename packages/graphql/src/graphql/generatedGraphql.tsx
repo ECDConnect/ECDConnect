@@ -197,6 +197,7 @@ export type ApplicationUser = {
   genderId?: Maybe<Scalars['UUID']>;
   id?: Maybe<Scalars['String']>;
   idNumber?: Maybe<Scalars['String']>;
+  insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isImported?: Maybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
@@ -228,6 +229,7 @@ export type ApplicationUser = {
   surname?: Maybe<Scalars['String']>;
   tenantId?: Maybe<Scalars['UUID']>;
   twoFactorEnabled: Scalars['Boolean'];
+  updatedDate?: Maybe<Scalars['DateTime']>;
   userName?: Maybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
   whatsAppNumber?: Maybe<Scalars['String']>;
@@ -253,6 +255,7 @@ export type ApplicationUserFilterInput = {
   genderId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<StringOperationFilterInput>;
   idNumber?: InputMaybe<StringOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   isImported?: InputMaybe<BooleanOperationFilterInput>;
   isSouthAfricanCitizen?: InputMaybe<BooleanOperationFilterInput>;
@@ -284,6 +287,7 @@ export type ApplicationUserFilterInput = {
   surname?: InputMaybe<StringOperationFilterInput>;
   tenantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   twoFactorEnabled?: InputMaybe<BooleanOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
   userName?: InputMaybe<StringOperationFilterInput>;
   verifiedByHomeAffairs?: InputMaybe<BooleanOperationFilterInput>;
   whatsAppNumber?: InputMaybe<StringOperationFilterInput>;
@@ -308,6 +312,7 @@ export type ApplicationUserInput = {
   genderId?: InputMaybe<Scalars['UUID']>;
   id?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
+  insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   isImported?: InputMaybe<Scalars['Boolean']>;
   isSouthAfricanCitizen: Scalars['Boolean'];
@@ -338,6 +343,7 @@ export type ApplicationUserInput = {
   surname?: InputMaybe<Scalars['String']>;
   tenantId?: InputMaybe<Scalars['UUID']>;
   twoFactorEnabled: Scalars['Boolean'];
+  updatedDate?: InputMaybe<Scalars['DateTime']>;
   userName?: InputMaybe<Scalars['String']>;
   verifiedByHomeAffairs: Scalars['Boolean'];
   whatsAppNumber?: InputMaybe<Scalars['String']>;
@@ -529,18 +535,6 @@ export type CalendarEventParticipantInput = {
   IsActive: Scalars['Boolean'];
   ParticipantUserId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
-};
-
-export type CalendarEventType = {
-  __typename?: 'CalendarEventType';
-  colour?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type CalendarEventTypeInput = {
-  colour?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
 };
 
 export type Caregiver = {
@@ -2289,6 +2283,22 @@ export type HcwHighlights = {
   totalThisWeekNewClients: Scalars['Int'];
 };
 
+export type HcwSummary = {
+  __typename?: 'HCWSummary';
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+  totalCaregiversAndChildrenWithIssues: Scalars['Int'];
+  totalCaregiversAndChildrenWithUrgentIssues: Scalars['Int'];
+  totalChildren: Scalars['Int'];
+  totalClientsVisited: Scalars['Int'];
+  totalFoldersOpened: Scalars['Int'];
+  totalPregnantMoms: Scalars['Int'];
+  totalPregnantMomsWithIssues: Scalars['Int'];
+  totalPregnantMomsWithUrgentIssues: Scalars['Int'];
+  totalVisitsMissed: Scalars['Int'];
+  totalVisitsOverdue: Scalars['Int'];
+};
+
 export type HcwVisitStatus = {
   __typename?: 'HCWVisitStatus';
   childDueVisits: Scalars['Int'];
@@ -2633,9 +2643,17 @@ export enum InputFilterComparer {
   Equals = 'EQUALS',
   GreaterThan = 'GREATER_THAN',
   GreaterThanOrEqual = 'GREATER_THAN_OR_EQUAL',
+  ILike = 'I_LIKE',
   LessThan = 'LESS_THAN',
   LessThanOrEqual = 'LESS_THAN_OR_EQUAL',
 }
+
+export type InputValidationError = {
+  __typename?: 'InputValidationError';
+  errorDescription?: Maybe<Scalars['String']>;
+  errors?: Maybe<Array<Maybe<Scalars['String']>>>;
+  row: Scalars['Int'];
+};
 
 export type IntegrationAudit = {
   __typename?: 'IntegrationAudit';
@@ -3153,6 +3171,58 @@ export type LogRelatedTypeOperationFilterInput = {
   nin?: InputMaybe<Array<LogRelatedType>>;
 };
 
+export type MessageLog = {
+  __typename?: 'MessageLog';
+  from?: Maybe<Scalars['String']>;
+  fromUserId: Scalars['UUID'];
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  message?: Maybe<Scalars['String']>;
+  messageProtocol?: Maybe<Scalars['String']>;
+  messageTemplate?: Maybe<MessageTemplate>;
+  messageTemplateType?: Maybe<Scalars['String']>;
+  sentByUserId: Scalars['UUID'];
+  subject?: Maybe<Scalars['String']>;
+  to?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type MessageLogFilterInput = {
+  and?: InputMaybe<Array<MessageLogFilterInput>>;
+  from?: InputMaybe<StringOperationFilterInput>;
+  fromUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  message?: InputMaybe<StringOperationFilterInput>;
+  messageProtocol?: InputMaybe<StringOperationFilterInput>;
+  messageTemplate?: InputMaybe<MessageTemplateFilterInput>;
+  messageTemplateType?: InputMaybe<StringOperationFilterInput>;
+  or?: InputMaybe<Array<MessageLogFilterInput>>;
+  sentByUserId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  subject?: InputMaybe<StringOperationFilterInput>;
+  to?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type MessageLogInput = {
+  From?: InputMaybe<Scalars['String']>;
+  FromUserId: Scalars['UUID'];
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Message?: InputMaybe<Scalars['String']>;
+  MessageProtocol?: InputMaybe<Scalars['String']>;
+  MessageTemplate?: InputMaybe<MessageTemplateInput>;
+  MessageTemplateType?: InputMaybe<Scalars['String']>;
+  SentByUserId: Scalars['UUID'];
+  Subject?: InputMaybe<Scalars['String']>;
+  To?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
 export type MessageTemplate = {
   __typename?: 'MessageTemplate';
   id: Scalars['UUID'];
@@ -3405,7 +3475,6 @@ export type Mutation = {
   createAuditLogType?: Maybe<AuditLogType>;
   createCalendarEvent?: Maybe<CalendarEvent>;
   createCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
-  createCalendarEventType?: Maybe<Scalars['String']>;
   createCaregiver?: Maybe<Caregiver>;
   createChild?: Maybe<Child>;
   createChildProgressReport?: Maybe<ChildProgressReport>;
@@ -3448,6 +3517,7 @@ export type Mutation = {
   createLearner?: Maybe<Learner>;
   createLicense?: Maybe<License>;
   createLicenseType?: Maybe<LicenseType>;
+  createMessageLog?: Maybe<MessageLog>;
   createMessageTemplate?: Maybe<MessageTemplate>;
   createMoreInformation?: Maybe<Scalars['String']>;
   createMother?: Maybe<Mother>;
@@ -3511,7 +3581,6 @@ export type Mutation = {
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
   deleteCalendarEvent?: Maybe<Scalars['Boolean']>;
   deleteCalendarEventParticipant?: Maybe<Scalars['Boolean']>;
-  deleteCalendarEventType?: Maybe<Scalars['Boolean']>;
   deleteCaregiver?: Maybe<Scalars['Boolean']>;
   deleteChild?: Maybe<Scalars['Boolean']>;
   deleteChildProgressReport?: Maybe<Scalars['Boolean']>;
@@ -3555,6 +3624,7 @@ export type Mutation = {
   deleteLearner?: Maybe<Scalars['Boolean']>;
   deleteLicense?: Maybe<Scalars['Boolean']>;
   deleteLicenseType?: Maybe<Scalars['Boolean']>;
+  deleteMessageLog?: Maybe<Scalars['Boolean']>;
   deleteMessageTemplate?: Maybe<Scalars['Boolean']>;
   deleteMoreInformation?: Maybe<Scalars['Boolean']>;
   deleteMother?: Maybe<Scalars['Boolean']>;
@@ -3622,6 +3692,8 @@ export type Mutation = {
   expireRelationshipLinksService: Scalars['Boolean'];
   fileUpload?: Maybe<DocumentModel>;
   generateCaregiverChildToken?: Maybe<Scalars['String']>;
+  importHealthCareWorkers?: Maybe<UserImportModel>;
+  importTeamLeads?: Maybe<UserImportModel>;
   integrationAttendanceData: Scalars['Boolean'];
   integrationByFranchisees: Scalars['Boolean'];
   integrationByMappedCoach: Scalars['Boolean'];
@@ -3654,7 +3726,6 @@ export type Mutation = {
   updateAuditLogType?: Maybe<AuditLogType>;
   updateCalendarEvent?: Maybe<CalendarEvent>;
   updateCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
-  updateCalendarEventType?: Maybe<CalendarEventType>;
   updateCareGiverGrants: Scalars['Boolean'];
   updateCaregiver?: Maybe<Caregiver>;
   updateChild?: Maybe<Child>;
@@ -3692,6 +3763,7 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
+  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
@@ -3705,9 +3777,11 @@ export type Mutation = {
   updateLearner?: Maybe<Learner>;
   updateLicense?: Maybe<License>;
   updateLicenseType?: Maybe<LicenseType>;
+  updateMessageLog?: Maybe<MessageLog>;
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
+  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
@@ -3913,7 +3987,6 @@ export type MutationAddTeamLeadArgs = {
 };
 
 export type MutationAddUserArgs = {
-  createAdmin?: Scalars['Boolean'];
   input?: InputMaybe<UserModelInput>;
 };
 
@@ -3955,12 +4028,6 @@ export type MutationCreateCalendarEventArgs = {
 
 export type MutationCreateCalendarEventParticipantArgs = {
   input?: InputMaybe<CalendarEventParticipantInput>;
-};
-
-export type MutationCreateCalendarEventTypeArgs = {
-  input: CalendarEventTypeInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateCaregiverArgs = {
@@ -4147,6 +4214,10 @@ export type MutationCreateLicenseArgs = {
 
 export type MutationCreateLicenseTypeArgs = {
   input?: InputMaybe<LicenseTypeInput>;
+};
+
+export type MutationCreateMessageLogArgs = {
+  input?: InputMaybe<MessageLogInput>;
 };
 
 export type MutationCreateMessageTemplateArgs = {
@@ -4432,12 +4503,6 @@ export type MutationDeleteCalendarEventParticipantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
-export type MutationDeleteCalendarEventTypeArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type MutationDeleteCaregiverArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
@@ -4626,6 +4691,10 @@ export type MutationDeleteLicenseArgs = {
 };
 
 export type MutationDeleteLicenseTypeArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeleteMessageLogArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -4927,6 +4996,14 @@ export type MutationGenerateCaregiverChildTokenArgs = {
   surname?: InputMaybe<Scalars['String']>;
 };
 
+export type MutationImportHealthCareWorkersArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationImportTeamLeadsArgs = {
+  file?: InputMaybe<Scalars['String']>;
+};
+
 export type MutationOpenAccessAddChildArgs = {
   caregiver?: InputMaybe<AddChildCaregiverTokenModelInput>;
   child?: InputMaybe<AddChildTokenModelInput>;
@@ -4991,6 +5068,7 @@ export type MutationSendCoachInviteToApplicationArgs = {
 };
 
 export type MutationSendInviteToApplicationArgs = {
+  inviteToPortal?: Scalars['Boolean'];
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -5037,13 +5115,6 @@ export type MutationUpdateCalendarEventArgs = {
 export type MutationUpdateCalendarEventParticipantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CalendarEventParticipantInput>;
-};
-
-export type MutationUpdateCalendarEventTypeArgs = {
-  id: Scalars['String'];
-  input: CalendarEventTypeInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateCareGiverGrantsArgs = {
@@ -5308,6 +5379,11 @@ export type MutationUpdateLicenseArgs = {
 export type MutationUpdateLicenseTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<LicenseTypeInput>;
+};
+
+export type MutationUpdateMessageLogArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<MessageLogInput>;
 };
 
 export type MutationUpdateMessageTemplateArgs = {
@@ -6004,10 +6080,10 @@ export type PqaRatingInput = {
 };
 
 export type PagedQueryInput = {
-  filterBy?: InputMaybe<FilterByFieldInput>;
+  filterBy?: InputMaybe<Array<InputMaybe<FilterByFieldInput>>>;
   pageNumber: Scalars['Int'];
   pageSize: Scalars['Int'];
-  sortBy?: InputMaybe<SortByFieldInput>;
+  sortBy?: InputMaybe<Array<InputMaybe<SortByFieldInput>>>;
 };
 
 export type Permission = {
@@ -6897,7 +6973,6 @@ export type Query = {
   GetAllCalendarEventParticipant?: Maybe<
     Array<Maybe<CalendarEventParticipant>>
   >;
-  GetAllCalendarEventType: Array<Maybe<CalendarEventType>>;
   GetAllCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
   GetAllChildProgressReport?: Maybe<Array<Maybe<ChildProgressReport>>>;
@@ -6945,6 +7020,7 @@ export type Query = {
   GetAllLearner?: Maybe<Array<Maybe<Learner>>>;
   GetAllLicense?: Maybe<Array<Maybe<License>>>;
   GetAllLicenseType?: Maybe<Array<Maybe<LicenseType>>>;
+  GetAllMessageLog?: Maybe<Array<Maybe<MessageLog>>>;
   GetAllMessageTemplate?: Maybe<Array<Maybe<MessageTemplate>>>;
   GetAllMoreInformation: Array<Maybe<MoreInformation>>;
   GetAllMother?: Maybe<Array<Maybe<Mother>>>;
@@ -7013,7 +7089,6 @@ export type Query = {
   GetAuditLogTypeById?: Maybe<AuditLogType>;
   GetCalendarEventById?: Maybe<CalendarEvent>;
   GetCalendarEventParticipantById?: Maybe<CalendarEventParticipant>;
-  GetCalendarEventTypeById: Array<Maybe<CalendarEventType>>;
   GetCaregiverById?: Maybe<Caregiver>;
   GetChildById?: Maybe<Child>;
   GetChildProgressReportById?: Maybe<ChildProgressReport>;
@@ -7055,6 +7130,7 @@ export type Query = {
   GetLearnerById?: Maybe<Learner>;
   GetLicenseById?: Maybe<License>;
   GetLicenseTypeById?: Maybe<LicenseType>;
+  GetMessageLogById?: Maybe<MessageLog>;
   GetMessageTemplateById?: Maybe<MessageTemplate>;
   GetMoreInformationById: Array<Maybe<MoreInformation>>;
   GetMotherById?: Maybe<Mother>;
@@ -7197,6 +7273,86 @@ export type Query = {
   contentDefinitions?: Maybe<Array<Maybe<ContentDefinitionModel>>>;
   contentDefinitionsExcelTemplateGenerator?: Maybe<FileModel>;
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
+  countAbsentees?: Maybe<Scalars['Int']>;
+  countAuditLogType?: Maybe<Scalars['Int']>;
+  countCalendarEvent?: Maybe<Scalars['Int']>;
+  countCalendarEventParticipant?: Maybe<Scalars['Int']>;
+  countCaregiver?: Maybe<Scalars['Int']>;
+  countChild?: Maybe<Scalars['Int']>;
+  countChildProgressReport?: Maybe<Scalars['Int']>;
+  countClassProgramme?: Maybe<Scalars['Int']>;
+  countClassReassignmentHistory?: Maybe<Scalars['Int']>;
+  countClassroom?: Maybe<Scalars['Int']>;
+  countClassroomGroup?: Maybe<Scalars['Int']>;
+  countClinic?: Maybe<Scalars['Int']>;
+  countClub?: Maybe<Scalars['Int']>;
+  countClubMeeting?: Maybe<Scalars['Int']>;
+  countClubMeetingRegister?: Maybe<Scalars['Int']>;
+  countCoach?: Maybe<Scalars['Int']>;
+  countDailyProgramme?: Maybe<Scalars['Int']>;
+  countDocument?: Maybe<Scalars['Int']>;
+  countDocumentType?: Maybe<Scalars['Int']>;
+  countEducation?: Maybe<Scalars['Int']>;
+  countEventRecord?: Maybe<Scalars['Int']>;
+  countEventRecordType?: Maybe<Scalars['Int']>;
+  countFranchisor?: Maybe<Scalars['Int']>;
+  countGender?: Maybe<Scalars['Int']>;
+  countGrant?: Maybe<Scalars['Int']>;
+  countHealthCareWorker?: Maybe<Scalars['Int']>;
+  countHierarchyEntity?: Maybe<Scalars['Int']>;
+  countInfant?: Maybe<Scalars['Int']>;
+  countIntegrationAudit?: Maybe<Scalars['Int']>;
+  countIntegrationColumnMapping?: Maybe<Scalars['Int']>;
+  countIntegrationEntityMapping?: Maybe<Scalars['Int']>;
+  countIntegrationLog?: Maybe<Scalars['Int']>;
+  countLanguage?: Maybe<Scalars['Int']>;
+  countLearner?: Maybe<Scalars['Int']>;
+  countLicense?: Maybe<Scalars['Int']>;
+  countLicenseType?: Maybe<Scalars['Int']>;
+  countMessageLog?: Maybe<Scalars['Int']>;
+  countMessageTemplate?: Maybe<Scalars['Int']>;
+  countMother?: Maybe<Scalars['Int']>;
+  countNavigation?: Maybe<Scalars['Int']>;
+  countNote?: Maybe<Scalars['Int']>;
+  countNoteType?: Maybe<Scalars['Int']>;
+  countPQA?: Maybe<Scalars['Int']>;
+  countPermission?: Maybe<Scalars['Int']>;
+  countPractitioner?: Maybe<Scalars['Int']>;
+  countPrincipal?: Maybe<Scalars['Int']>;
+  countProgramme?: Maybe<Scalars['Int']>;
+  countProgrammeAttendanceReason?: Maybe<Scalars['Int']>;
+  countProgrammeType?: Maybe<Scalars['Int']>;
+  countProvince?: Maybe<Scalars['Int']>;
+  countRace?: Maybe<Scalars['Int']>;
+  countReasonForLeaving?: Maybe<Scalars['Int']>;
+  countRelation?: Maybe<Scalars['Int']>;
+  countServiceScheduler?: Maybe<Scalars['Int']>;
+  countShortenUrlEntity?: Maybe<Scalars['Int']>;
+  countSiteAddress?: Maybe<Scalars['Int']>;
+  countSmartSpaceVisit?: Maybe<Scalars['Int']>;
+  countStatementsContributionType?: Maybe<Scalars['Int']>;
+  countStatementsExpenseType?: Maybe<Scalars['Int']>;
+  countStatementsExpenses?: Maybe<Scalars['Int']>;
+  countStatementsFeeType?: Maybe<Scalars['Int']>;
+  countStatementsIncome?: Maybe<Scalars['Int']>;
+  countStatementsIncomeStatement?: Maybe<Scalars['Int']>;
+  countStatementsIncomeType?: Maybe<Scalars['Int']>;
+  countStatementsPayType?: Maybe<Scalars['Int']>;
+  countStatementsStartupSupport?: Maybe<Scalars['Int']>;
+  countSystemSetting?: Maybe<Scalars['Int']>;
+  countTeamLead?: Maybe<Scalars['Int']>;
+  countTrainee?: Maybe<Scalars['Int']>;
+  countUserConsent?: Maybe<Scalars['Int']>;
+  countUserHierarchyEntity?: Maybe<Scalars['Int']>;
+  countVisit?: Maybe<Scalars['Int']>;
+  countVisitBackReferral?: Maybe<Scalars['Int']>;
+  countVisitData?: Maybe<Scalars['Int']>;
+  countVisitDataStatus?: Maybe<Scalars['Int']>;
+  countVisitGrowthDataDay?: Maybe<Scalars['Int']>;
+  countVisitGrowthDataHeight?: Maybe<Scalars['Int']>;
+  countVisitType?: Maybe<Scalars['Int']>;
+  countWorkflowStatus?: Maybe<Scalars['Int']>;
+  countWorkflowStatusType?: Maybe<Scalars['Int']>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
   franchisorByUserId?: Maybe<Franchisor>;
@@ -7207,6 +7363,8 @@ export type Query = {
   hasContentTypeBeenTranslated: Scalars['Boolean'];
   healthCareWorkerByUserId?: Maybe<HealthCareWorker>;
   healthCareWorkerHighlights?: Maybe<HcwHighlights>;
+  healthCareWorkerSummaryForPeriod?: Maybe<HcwSummary>;
+  healthCareWorkerTemplateGenerator?: Maybe<FileModel>;
   healthCareWorkerVisitStatus?: Maybe<HcwVisitStatus>;
   healthPromotion: Array<Maybe<HealthPromotion>>;
   holidaysByMonth?: Maybe<Array<Maybe<Holiday>>>;
@@ -7259,6 +7417,7 @@ export type Query = {
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
+  teamLeadTemplateGenerator?: Maybe<FileModel>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
@@ -7315,11 +7474,6 @@ export type QueryGetAllCalendarEventArgs = {
 export type QueryGetAllCalendarEventParticipantArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CalendarEventParticipantFilterInput>;
-};
-
-export type QueryGetAllCalendarEventTypeArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllCaregiverArgs = {
@@ -7525,6 +7679,11 @@ export type QueryGetAllLicenseArgs = {
 export type QueryGetAllLicenseTypeArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<LicenseTypeFilterInput>;
+};
+
+export type QueryGetAllMessageLogArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<MessageLogFilterInput>;
 };
 
 export type QueryGetAllMessageTemplateArgs = {
@@ -7827,12 +7986,6 @@ export type QueryGetCalendarEventParticipantByIdArgs = {
   where?: InputMaybe<CalendarEventParticipantFilterInput>;
 };
 
-export type QueryGetCalendarEventTypeByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
-};
-
 export type QueryGetCaregiverByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<CaregiverFilterInput>;
@@ -8045,6 +8198,11 @@ export type QueryGetLicenseByIdArgs = {
 export type QueryGetLicenseTypeByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<LicenseTypeFilterInput>;
+};
+
+export type QueryGetMessageLogByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<MessageLogFilterInput>;
 };
 
 export type QueryGetMessageTemplateByIdArgs = {
@@ -8454,6 +8612,14 @@ export type QueryAllEventRecordTypesForTypeArgs = {
   type?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryAllHealthCareWorkersArgs = {
+  clinicSearch?: InputMaybe<Scalars['String']>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  provinceSearch?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  where?: InputMaybe<HealthCareWorkerFilterInput>;
+};
+
 export type QueryAllInfantsForHealthCareWorkerArgs = {
   id?: InputMaybe<Scalars['String']>;
   visitType?: InputMaybe<Scalars['String']>;
@@ -8504,6 +8670,14 @@ export type QueryAllStatementsStartupSupportArgs = {
   month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];
+};
+
+export type QueryAllTeamLeadsArgs = {
+  clinicSearch?: InputMaybe<Scalars['String']>;
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  provinceSearch?: InputMaybe<Scalars['String']>;
+  search?: InputMaybe<Scalars['String']>;
+  where?: InputMaybe<TeamLeadFilterInput>;
 };
 
 export type QueryAttendanceArgs = {
@@ -8646,6 +8820,406 @@ export type QueryContentDefinitionsExcelTemplateGeneratorArgs = {
   contentTypeId: Scalars['Int'];
 };
 
+export type QueryCountAbsenteesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountAuditLogTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountCalendarEventArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountCalendarEventParticipantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountCaregiverArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountChildArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountChildProgressReportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClassProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClassReassignmentHistoryArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClassroomArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClassroomGroupArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClinicArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClubArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClubMeetingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountClubMeetingRegisterArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountCoachArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountDailyProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountDocumentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountDocumentTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountEducationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountEventRecordArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountEventRecordTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountFranchisorArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountGenderArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountGrantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountHealthCareWorkerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountInfantArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountIntegrationAuditArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountIntegrationColumnMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountIntegrationEntityMappingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountIntegrationLogArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLanguageArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLearnerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLicenseArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountLicenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountMessageLogArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountMessageTemplateArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountMotherArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountNavigationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountNoteArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountNoteTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountPqaArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountPermissionArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountPractitionerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountPrincipalArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountProgrammeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountProgrammeAttendanceReasonArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountProgrammeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountProvinceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountRaceArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountReasonForLeavingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountRelationArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountServiceSchedulerArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountShortenUrlEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountSiteAddressArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountSmartSpaceVisitArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsContributionTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsExpenseTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsExpensesArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsFeeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsIncomeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsIncomeStatementArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsIncomeTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsPayTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountStatementsStartupSupportArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountSystemSettingArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountTeamLeadArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountTraineeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountUserConsentArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountUserHierarchyEntityArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitBackReferralArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitDataArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitDataStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitGrowthDataDayArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitGrowthDataHeightArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountVisitTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountWorkflowStatusArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type QueryCountWorkflowStatusTypeArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
 export type QueryDisplayMetricsArgs = {
   type?: InputMaybe<Scalars['String']>;
 };
@@ -8686,6 +9260,12 @@ export type QueryHealthCareWorkerByUserIdArgs = {
 };
 
 export type QueryHealthCareWorkerHighlightsArgs = {
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryHealthCareWorkerSummaryForPeriodArgs = {
+  endDate?: InputMaybe<Scalars['DateTime']>;
+  startDate?: InputMaybe<Scalars['DateTime']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
@@ -8899,6 +9479,7 @@ export type QueryUserCalendarEventsArgs = {
 
 export type QueryUsersArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
+  search?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryVisitAnswersForInfantArgs = {
@@ -9179,6 +9760,7 @@ export type Setting_InvitationCutoffDelay = {
 
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
+  AdminSignup: Scalars['String'];
   Signup: Scalars['String'];
 };
 
@@ -10454,9 +11036,43 @@ export type UserHierarchyEntityInput = {
   UserType?: InputMaybe<Scalars['String']>;
 };
 
+export type UserImportModel = {
+  __typename?: 'UserImportModel';
+  createdUsers?: Maybe<Array<Maybe<UserModel>>>;
+  /** Rows of errors. */
+  validationErrors?: Maybe<Array<Maybe<InputValidationError>>>;
+};
+
+export type UserModel = {
+  __typename?: 'UserModel';
+  contactPreference?: Maybe<Scalars['String']>;
+  dateOfBirth?: Maybe<Scalars['DateTime']>;
+  email?: Maybe<Scalars['String']>;
+  emergencyContactFirstName?: Maybe<Scalars['String']>;
+  emergencyContactPhoneNumber?: Maybe<Scalars['String']>;
+  emergencyContactSurname?: Maybe<Scalars['String']>;
+  firstName?: Maybe<Scalars['String']>;
+  genderId?: Maybe<Scalars['UUID']>;
+  id?: Maybe<Scalars['String']>;
+  idNumber?: Maybe<Scalars['String']>;
+  isAdmin?: Maybe<Scalars['Boolean']>;
+  isSouthAfricanCitizen?: Maybe<Scalars['Boolean']>;
+  languageId?: Maybe<Scalars['UUID']>;
+  nextOfKinContactNumber?: Maybe<Scalars['String']>;
+  nextOfKinFirstName?: Maybe<Scalars['String']>;
+  nextOfKinSurname?: Maybe<Scalars['String']>;
+  password?: Maybe<Scalars['String']>;
+  phoneNumber?: Maybe<Scalars['String']>;
+  profileImageUrl?: Maybe<Scalars['String']>;
+  raceId?: Maybe<Scalars['UUID']>;
+  surname?: Maybe<Scalars['String']>;
+  verifiedByHomeAffairs?: Maybe<Scalars['Boolean']>;
+  whatsAppNumber?: Maybe<Scalars['String']>;
+};
+
 export type UserModelInput = {
   contactPreference?: InputMaybe<Scalars['String']>;
-  dateOfBirth?: Scalars['DateTime'];
+  dateOfBirth?: InputMaybe<Scalars['DateTime']>;
   email?: InputMaybe<Scalars['String']>;
   emergencyContactFirstName?: InputMaybe<Scalars['String']>;
   emergencyContactPhoneNumber?: InputMaybe<Scalars['String']>;
@@ -10465,7 +11081,8 @@ export type UserModelInput = {
   genderId?: InputMaybe<Scalars['UUID']>;
   id?: InputMaybe<Scalars['String']>;
   idNumber?: InputMaybe<Scalars['String']>;
-  isSouthAfricanCitizen?: Scalars['Boolean'];
+  isAdmin?: InputMaybe<Scalars['Boolean']>;
+  isSouthAfricanCitizen?: InputMaybe<Scalars['Boolean']>;
   languageId?: InputMaybe<Scalars['UUID']>;
   nextOfKinContactNumber?: InputMaybe<Scalars['String']>;
   nextOfKinFirstName?: InputMaybe<Scalars['String']>;
@@ -10475,7 +11092,7 @@ export type UserModelInput = {
   profileImageUrl?: InputMaybe<Scalars['String']>;
   raceId?: InputMaybe<Scalars['UUID']>;
   surname?: InputMaybe<Scalars['String']>;
-  verifiedByHomeAffairs?: Scalars['Boolean'];
+  verifiedByHomeAffairs?: InputMaybe<Scalars['Boolean']>;
   whatsAppNumber?: InputMaybe<Scalars['String']>;
 };
 

@@ -146,6 +146,7 @@ export default function HealthCareWorkerPanelCreate(
       await sendInviteToApplication({
         variables: {
           userId: userId,
+          inviteToPortal: false,
         },
       });
 

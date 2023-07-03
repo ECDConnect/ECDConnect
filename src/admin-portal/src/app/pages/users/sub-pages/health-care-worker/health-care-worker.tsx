@@ -195,6 +195,7 @@ export default function HealthCareWorkers() {
             sendInviteToApplication({
               variables: {
                 userId: practitioner.userId,
+                inviteToPortal: false,
               },
             }).then(() => {
               setNotification({

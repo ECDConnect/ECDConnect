@@ -30,10 +30,14 @@ export default function ApplicationUsers() {
   );
   const { setNotification } = useNotifications();
 
-  const resendInvitation = async (userId: string) => {
+  const resendInvitation = async (
+    userId: string,
+    inviteToPortal: boolean = false
+  ) => {
     await sendInviteToApplication({
       variables: {
         userId: userId,
+        inviteToPortal: inviteToPortal,
       },
     });
     setNotification({

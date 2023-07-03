@@ -23,10 +23,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] InvitationNotificationManager notificationManager,
           [Service] UserManager<ApplicationUser> userManager,
           [Service] IHttpContextAccessor accessor,
-          string userId)
+          string userId,
+          bool inviteToPortal = false)
         {
             var userToInvite = await userManager.FindByIdAsync(userId);
-            var userToInviteIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
 
             if (userToInvite is default(ApplicationUser))
             {
@@ -40,16 +40,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return false;
             }
 
-            if (userToInviteIsAdmin)
+            if (inviteToPortal)
             {
-                var currentUserId = accessor.HttpContext.GetUser().Id;
-                var currentUser = await userManager.FindByIdAsync(currentUserId);
-                var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
-                if (currentUserIsAdmin)
-                    await notificationManager.SendAdminInvitationAsync(userToInvite, token);
+                var userToInviteIsAdmin = await userManager.IsInRoleAsync(userToInvite, Roles.ADMINISTRATOR);
+                if (userToInviteIsAdmin)
+                {
+                    var currentUserId = accessor.HttpContext.GetUser().Id;
+                    var currentUser = await userManager.FindByIdAsync(currentUserId);
+                    var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+                    if (currentUserIsAdmin)
+                        await notificationManager.SendAdminInvitationAsync(userToInvite, token);
+                }
             }
             else
+            {
                 await notificationManager.SendInvitationAsync(userToInvite, token);
+            }
 
             return true;
         }

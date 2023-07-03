@@ -107,6 +107,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         await sendInviteToApplication({
           variables: {
             userId: userId,
+            inviteToPortal: false,
           },
         });
         setNotification({

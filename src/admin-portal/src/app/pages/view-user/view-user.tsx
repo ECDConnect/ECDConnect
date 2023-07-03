@@ -181,7 +181,7 @@ export function ViewUser(props: any) {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="Invite User"
+          title="Invite Administrator"
           message={`You are about to send an invite to ${
             chwData.GetHealthCareWorkerById?.user.fullName ??
             userData.userById.fullName
@@ -193,6 +193,7 @@ export function ViewUser(props: any) {
               variables: {
                 userId:
                   userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+                inviteToPortal: true,
               },
             }).then(() => {
               setNotification({

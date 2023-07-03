@@ -6,5 +6,6 @@ namespace ECDLink.Core.SystemSettings.SystemOptions
     public class InvitationOptions
     {
         public string Signup { get; set; }
+        public string AdminSignup { get; set; }
     }
 }
