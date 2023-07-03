@@ -1071,7 +1071,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
-                AddVisitDataStatus(q1, comment, _none, Constants.GGSettings.clinic_referrals, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
             }
 
             if (wColor == _green && lColor == _green && mColor == _green) {
