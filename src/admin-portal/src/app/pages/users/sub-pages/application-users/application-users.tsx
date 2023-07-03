@@ -16,6 +16,7 @@ import { ContentLoader } from '../../../../components/content-loader/content-loa
 import UiTable from '../../../../components/ui-table';
 import { SearchIcon, ChevronDownIcon } from '@heroicons/react/solid';
 import debounce from 'lodash.debounce';
+import CustomDateRangePicker from '../../../../components/date-picker';
 
 export default function ApplicationUsers() {
   const dialog = useDialog();
@@ -145,6 +146,13 @@ export default function ApplicationUsers() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+
+  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
+
+  const handleDateChange = (range: Date[]) => {
+    setSelectedRange(range);
+  };
+
   if (tableData) {
     return (
       <div>
@@ -166,7 +174,7 @@ export default function ApplicationUsers() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex items-center sm:mt-6 ">
-                    <div>
+                    {/* <div>
                       <button
                         id="dropdownDividerButton"
                         className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
@@ -176,7 +184,7 @@ export default function ApplicationUsers() {
                         Date Invited
                         <ChevronDownIcon className="ml-2 h-4 w-4" />
                       </button>
-                    </div>
+                    </div> */}
 
                     <div>
                       <Dropdown
@@ -197,37 +205,8 @@ export default function ApplicationUsers() {
                       />
                     </div>
 
-                    <div className="flex-start flex flex-col justify-around ">
-                      {isDropdownVisible && (
-                        <div
-                          id="dropdownDivider"
-                          className=" flex w-96 divide-y divide-gray-100 rounded-lg bg-white shadow dark:divide-gray-600 dark:bg-gray-700"
-                        >
-                          <div className="w-1/2 p-4">
-                            <label htmlFor="">Start Date</label>
 
-                            <input
-                              defaultValue={startDate}
-                              type="date"
-                              className="bg-uiBg focus:outline-none sm:text-md border-secondary block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                              onChange={handleStartDateChange}
-                              placeholder="Start Date"
-                            />
-                          </div>
-                          <div className="w-1/2 p-4">
-                            <label htmlFor="">End Date</label>
-
-                            <input
-                              defaultValue={endDate}
-                              type="date"
-                              className="bg-uiBg focus:outline-none sm:text-md border-secondary block w-full rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
-                              onChange={handleEndDateChange}
-                              placeholder="End Date"
-                            />
-                          </div>
-                        </div>
-                      )}
-                    </div>
+                    {/* <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} /> */}
                   </div>
                 )}
               </div>

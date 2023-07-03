@@ -137,7 +137,7 @@ export function ViewUser(props: any) {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
-        startDate: selectedRange[0]?.toISOString() ?? "2020-01-01T08:17:52.518Z",
+        startDate: selectedRange[0]?.toISOString() ?? "2022-01-01T08:17:52.518Z",
         endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString()
       }
     })
@@ -392,7 +392,6 @@ export function ViewUser(props: any) {
 
 
 
-  console.log("chwData?.GetHealthCareWorkerById.user", isCHW);
 
   return (
     <div className="bg-red flex min-w-0 flex-col xl:flex">
