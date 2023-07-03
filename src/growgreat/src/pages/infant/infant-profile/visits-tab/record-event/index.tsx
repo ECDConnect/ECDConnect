@@ -254,6 +254,7 @@ export const RecordEvent: React.FC = () => {
           onOk: () => onSubmit(),
           onOkIcon: 'FolderAddIcon',
           onOkText: 'Yes, remove client',
+          disableSubmit: true,
         });
         break;
     }
