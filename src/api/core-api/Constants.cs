@@ -1,3 +1,5 @@
+using iTextSharp.text;
+
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -506,6 +508,7 @@ namespace EcdLink.Api.CoreApi
             public const string has_birth_certificate = "Has applied for a birth certificate";
             public const string has_csg = "Has applied for a child support grant";
             public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
+            public const string has_csg3 = "Has not applied for a child support grant";
 
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
@@ -518,10 +521,41 @@ namespace EcdLink.Api.CoreApi
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
             public const string q_mixed_foods = "Which of these foods have you given {client}?  You can choose more than one.";
             public const string q_check_can_do = "Check what {client} can do:";
-            public const string q_hearing = "Gets a fright when they hear a loud sound";
-            public const string q_seeing = "Follows faces or close objects with their eyes";
-            public const string q_brain = "Smiles at people";
-            public const string q_moving = "Holds their head upright when held against shoulder";
+
+            public const string q_hearing1 = "Gets a fright when they hear a loud sound";
+            public const string q_hearing2 = "Moves eyes or head in direction of sounds";
+            public const string q_hearing3 = "Responds by making sounds when talked to";
+            public const string q_hearing4 = "Babbles (ma-ma. da-daa)";
+            public const string q_hearing5 = "Turns when called";
+            public const string q_hearing6 = "Uses simple gestures (lifts arms to be picked up)";
+            public const string q_hearing7 = "Has one meaningful word (dada. mama) although it may not be clear";
+            public const string q_hearing8 = "Understands names of at least 2 common objects (cup)";
+            public const string q_hearing9 = "Uses at least 3 words";
+
+            public const string q_seeing1 = "Follows faces or close objects with their eyes";
+            public const string q_seeing2 = "Follows faces or close objects with his/her eyes";
+            public const string q_seeing3 = "Eyes move well together (no squinting). recognises familiar faces and looks at own hands";
+            public const string q_seeing4 = "Eyes focus on far objects?";
+            public const string q_seeing5 = "Looks for toys/objects that disappear";
+            public const string q_seeing6 = "Looks closely at toys/objects and pictures";
+            public const string q_seeing7 = "Looks at small shapes clearly at a distance";
+
+            public const string q_brain1 = "Smiles at people";
+            public const string q_brain2 = "Laughs out loud";
+            public const string q_brain3 = "Uses different cries or sounds to show hunger. tiredness or discomfort?";
+            public const string q_brain4 = "Throws. bangs toys/objects";
+            public const string q_brain5 = "React when caregiver leaves and calms when they return";
+            public const string q_brain6 = "Imitates gestures (clapping hands)";
+            public const string q_brain7 = "Follows simple commands";
+
+            public const string q_moving1 = "Holds up their head upright when held against shoulder";
+            public const string q_moving2 = "Grabs toys in each hand";
+            public const string q_moving3 = "Lifts their head when lying on their tummy";
+            public const string q_moving4 = "Moves objects from hand to hand";
+            public const string q_moving5 = "Sits without support";
+            public const string q_moving6 = "Walks alone";
+            public const string q_moving7 = "Uses fingers to feed themselves";
+
             public const string q_immunisation = "Did the baby have the 6 month immunisation?";
             public const string q_vitamin_a = "Is Vitamin A up to date?";
             public const string q_deworming = "Is deworming up to date?";
@@ -583,7 +617,7 @@ namespace EcdLink.Api.CoreApi
             public const string none_above = "None of the above";
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
-            public const string male = "Boy";
+            public const string male = "Male";
             public const string female = "Girl";
             public const string growth_section = "Growth";
             public const string breast_milk_only = "Breast milk only";
@@ -701,6 +735,19 @@ namespace EcdLink.Api.CoreApi
             //Note Queries
             public const string SSNote = "Note";
             public const string SLNote = "Note";
+            //Club data Queries
+            public const string SSClub = "Club";
+            public const string SLClub = "Club";
+            public const string SSClubMeeting = "ClubMeeting";
+            public const string SLClubMeeting = "ClubMeeting";
+            public const string SSClubMeetingRegister = "ClubMeetingRegister";
+            public const string SLClubMeetingRegister = "ClubMeetingRegister";
+            //PQA
+            public const string SSPQA = "PQA";
+            public const string SLPQA = "PQA";
+            //SmartSpaceVisits
+            public const string SSSmartSpaceVisit = "SmartSpaceVisit";
+            public const string SLSmartSpaceVisit = "SmartSpaceVisit";
 
             //Additional API Switches
             public const string QueryAll = "/Query";

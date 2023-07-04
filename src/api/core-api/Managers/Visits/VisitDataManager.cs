@@ -1,6 +1,5 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -224,6 +223,42 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
                 return true;
         }
+
+        public Boolean EditVisitData(CMSVisitDataInputModel input)
+        {
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    VisitData existingRecord = ValidateInsertRecordWithoutAnswer(visitData);
+                    if (existingRecord != null)
+                    {
+                        var entityToUpdate = _visitDataRepo.GetById(existingRecord.Id);
+                        entityToUpdate.QuestionAnswer = visitData.QuestionAnswer;
+                        _visitDataRepo.Update(entityToUpdate);
+                    } else
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
+                }
+            }
+            return true;
+        }
+
         private VisitData GetVisitDataFromInputModel(CMSQuestion input, String visitId, String visitName, String visitSection)
         {
             if (input == null)
@@ -304,8 +339,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             return (
-                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.Id.ToString() == id && x.ActualVisitDate >= monday && x.ActualVisitDate <= next7Days)
-                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId
+                from visit in _visitRepo.GetAll().Where(x => x.Infant.Caregiver.HealthCareWorker.UserId == id)
+                join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || y.Question == Constants.GGSettings.q_length || y.Question == Constants.GGSettings.q_muac && y.InsertedDate.Date >= monday.Date && y.InsertedDate.Date <= next7Days.Date) on visit.Id equals visitData.VisitId
                 select visit.InfantId
             ).Distinct().Count();
 
@@ -784,6 +819,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             
             return false;
         }
+
+        private VisitData ValidateInsertRecordWithoutAnswer(VisitData visitData)
+        {
+            VisitData record = _visitDataRepo.GetAll().Where(x => x.VisitId == visitData.VisitId &&
+                                                                  x.VisitName == visitData.VisitName &&
+                                                                  x.VisitSection == visitData.VisitSection &&
+                                                                  x.Question == visitData.Question).FirstOrDefault();
+            return record;
+        }
         public List<string> GetVisitStatusForSSChecklist(Guid traineeId)
         {
             List<string> vData = new List<string>();
@@ -796,7 +840,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return vData;
         }
-
         public List<PractitionerNotes> GetVisitNotesForPractitioner(string userId)
         {
             List<PractitionerNotes> vData = new List<PractitionerNotes>();

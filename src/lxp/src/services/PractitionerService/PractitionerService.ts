@@ -199,7 +199,9 @@ class PractitionerService {
             }
             programmeType
             isPrincipal
+            isTrainee
             isRegistered
+            isTrainee
             principalHierarchy
             coachHierarchy
             attendanceRegisterLink

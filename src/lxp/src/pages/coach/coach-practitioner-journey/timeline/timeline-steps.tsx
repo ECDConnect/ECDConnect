@@ -4,6 +4,7 @@ import { SupportVisits } from './support-visits-step';
 import { PrePqaVisits } from './pre-pqa-site-vists';
 import { PQAVisits, getRatingData } from './pqa-site-visits-step';
 import { PqaRatingData } from '@/store/pqa/pqa.types';
+import { CalendarEventModel } from '@ecdlink/core';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -62,8 +63,10 @@ export const setStep = (
 
 export const timelineSteps = ({
   timeline,
+  practitionerEvents,
   onView,
   onStart,
+  onScheduleOrStart,
   isLoading,
   isOnline,
   visits,
@@ -72,8 +75,10 @@ export const timelineSteps = ({
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
+  practitionerEvents?: CalendarEventModel[];
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
+  onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
@@ -199,6 +204,18 @@ export const timelineSteps = ({
     const currentVisit = !!visitToAttend
       ? visitToAttend
       : visits[visits.length - 1];
+    const currentVisitEvent =
+      !!currentVisit && !!practitionerEvents
+        ? practitionerEvents.find(
+            (e) =>
+              e.eventType === 'First PQA' &&
+              e.action.state !== undefined &&
+              e.action.state.action === 'onStart' &&
+              e.action.state.actionParams !== undefined &&
+              e.action.state.actionParams.visitName ===
+                currentVisit.visitType?.name
+          )
+        : undefined;
 
     const isLateDate =
       new Date(currentVisit?.plannedVisitDate) < new Date() &&
@@ -219,6 +236,18 @@ export const timelineSteps = ({
       currentPqaRating?.rating?.overallRatingColor
     );
 
+    const getSubTitleText = () => {
+      if (!!currentVisitEvent) {
+        return 'Scheduled';
+      }
+
+      if (visitToAttend) {
+        return 'By';
+      }
+
+      return '';
+    };
+
     steps.push({
       title: 'First PQA',
       customSubTitle: (
@@ -227,7 +256,7 @@ export const timelineSteps = ({
             type="body"
             color={stepType.color}
             className="mr-4"
-            text={`${visitToAttend ? 'By ' : ''} ${new Date(
+            text={`${getSubTitleText()} ${new Date(
               currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
@@ -247,7 +276,9 @@ export const timelineSteps = ({
           isLoading={isLoading}
           currentVisit={currentVisit}
           practitionerId={practitionerId}
-          onStart={onStart}
+          currentVisitEventId={currentVisitEvent?.id}
+          onScheduleOrStart={onScheduleOrStart}
+          isOnline={isOnline}
         />
       ),
     });

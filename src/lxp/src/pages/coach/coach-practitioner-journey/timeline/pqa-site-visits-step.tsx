@@ -15,7 +15,9 @@ interface PQAVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
   practitionerId: string;
-  onStart: (visitName: string) => void;
+  currentVisitEventId: string | undefined;
+  isOnline: boolean;
+  onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
 }
 
 export const newFollowUpId = 'new-follow-up';
@@ -44,7 +46,8 @@ export const getRatingData = (overallRatingColor?: Maybe<string>) => {
 export const PQAVisits = ({
   currentVisit,
   practitionerId,
-  onStart,
+  currentVisitEventId,
+  onScheduleOrStart,
 }: PQAVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
@@ -142,13 +145,16 @@ export const PQAVisits = ({
                   position: 'absolute',
                   right: -36,
                 }}
-                className="z-50 w-24"
-                textColor="white"
-                type="filled"
+                className="z-50 w-32"
+                textColor="primary"
+                type="outlined"
                 color="primary"
-                text="Start"
-                icon="ArrowCircleRightIcon"
-                onClick={() => onStart(item?.visitType?.name!)}
+                text="Schedule"
+                iconPosition="start"
+                icon="CalendarIcon"
+                onClick={() =>
+                  onScheduleOrStart(item as Visit, currentVisitEventId)
+                }
               />
             )}
           </div>

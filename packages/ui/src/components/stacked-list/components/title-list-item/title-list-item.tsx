@@ -8,13 +8,17 @@ import * as styles from './title-list-item.styles';
 
 export interface TitleListItemProps {
   item: TitleListDataItem;
+  onClickItem?: (item: any) => void;
 }
 
-export function TitleListItem({ item }: TitleListItemProps) {
+export function TitleListItem({ item, onClickItem }: TitleListItemProps) {
   return (
     <div
       className={classNames(styles.titlelistItemContainer, item.classNames)}
-      onClick={() => item.onActionClick()}
+      onClick={() => {
+        if (!!item.onActionClick) item.onActionClick();
+        else if (!!onClickItem) onClickItem(item);
+      }}
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>

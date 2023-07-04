@@ -39,5 +39,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string CreatedUserId { get; set; }
     }
 
+    public class ExpenseReceipt
+    {
+        public string Name { get; set; }
+        public string PhotoProof { get; set; }
+    }
+
 }
 

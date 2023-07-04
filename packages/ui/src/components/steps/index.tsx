@@ -12,12 +12,14 @@ import { Colours } from '../../models';
 import { classNames, renderIcon } from '../../utils';
 import Button from '../button/button';
 import Typography from '../typography/typography';
+import { ButtonType } from '../button/button.types';
 
 export interface StepItem<T = {}> {
   title: string;
   subTitle?: string;
   subTitleColor?: Colours;
   customSubTitle?: string;
+  todoStepIcon?: string;
   inProgressStepIcon?: string;
   completedStepIcon?: string;
   type: 'todo' | 'inProgress' | 'completed';
@@ -26,7 +28,9 @@ export interface StepItem<T = {}> {
   actionButtonTextColor?: Colours;
   actionButtonColor?: Colours;
   actionButtonIcon?: string;
+  actionButtonType?: ButtonType;
   actionButtonClassName?: string;
+  actionButtonIconStartPosition?: boolean;
   actionButtonOnClick?: () => void;
   showAccordion?: boolean;
   accordionContent?: ReactElement;
@@ -35,7 +39,11 @@ export interface StepItem<T = {}> {
 
 interface StepsProps {
   items: StepItem[];
-  typeColor?: { completed?: Colours; todoAndInProgress?: Colours };
+  typeColor?: {
+    completed?: Colours;
+    todoAndInProgress?: Colours;
+    todo?: Colours;
+  };
 }
 
 interface Icon {
@@ -63,9 +71,11 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
       typeColor?: StepsProps['typeColor'];
     }) => ({
       todo: {
-        style: 'bg-tertiaryAccent2 border-2 border-primary',
-        icon: '',
-        border: '',
+        style: `bg-${
+          typeColor?.todo || 'tertiaryAccent2'
+        } border-2 border-primary`,
+        icon: icon?.todo || '',
+        border: 'border-solid',
       },
       inProgress: {
         style: 'bg-primary',
@@ -75,7 +85,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
       completed: {
         style: `bg-${typeColor?.completed || 'secondary'}`,
         icon: icon?.completed || 'CheckIcon',
-        border: 'border-solid	',
+        border: 'border-solid',
       },
     }),
     []
@@ -85,7 +95,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
     (type: StepItem['type'], icon?: Icon) => {
       switch (type) {
         case 'todo':
-          return typeStyle({ typeColor }).todo;
+          return typeStyle({ typeColor, icon: { todo: icon?.todo } }).todo;
         case 'inProgress':
           return typeStyle({ icon: { inProgress: icon?.inProgress } })
             .inProgress;
@@ -166,6 +176,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                       getStatus(item.type, {
                         completed: item.completedStepIcon,
                         inProgress: item.inProgressStepIcon,
+                        todo: item?.todoStepIcon,
                       })?.icon,
                       'text-white w-5 h-5'
                     )}
@@ -202,12 +213,14 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
               {item.showActionButton && (
                 <div className="flex w-32 justify-end">
                   <Button
-                    type="filled"
+                    type={item?.actionButtonType || 'filled'}
                     color={item.actionButtonColor || 'primary'}
                     {...(item.actionButtonIcon && {
                       icon: item.actionButtonIcon,
                     })}
-                    iconPosition="end"
+                    iconPosition={
+                      item?.actionButtonIconStartPosition ? 'start' : 'end'
+                    }
                     className={'h-9 w-auto'}
                     onClick={item.actionButtonOnClick}
                     text={item.actionButtonText}

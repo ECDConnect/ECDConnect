@@ -172,6 +172,17 @@ export const FirstFoodsStep = ({
         {!isOnline && (
           <Alert type="error" title="You can only view this online" />
         )}
+
+        {isMixedFeedingVideo2 && (
+          <Alert
+            type="info"
+            title={`Encourage ${caregiverName} to choose 1 option - either exclusive breastfeeding or exclusive formula feeding. Support her in this decision.`}
+            list={[
+              `Show ${caregiverName} how to feed her baby with its head covered and skin-to-skin contact.`,
+              'This will keep the baby warm and encourage bonding.',
+            ]}
+          />
+        )}
       </div>
     </>
   );

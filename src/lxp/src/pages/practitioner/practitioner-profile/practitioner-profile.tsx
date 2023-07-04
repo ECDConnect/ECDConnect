@@ -247,11 +247,7 @@ export const PractitionerProfile: React.FC = () => {
       initActive: true,
       child: (
         <div>
-          {principalPractitioner?.isRegistered ||
-          practitioner?.isRegistered ||
-          practitioner?.progress !== 0 ? null : (
-            <CompleteProfile />
-          )}
+          {practitioner?.progress !== 0 ? null : <CompleteProfile />}
           <StackedList
             listItems={getStackedMenuList()}
             type={'MenuList'}

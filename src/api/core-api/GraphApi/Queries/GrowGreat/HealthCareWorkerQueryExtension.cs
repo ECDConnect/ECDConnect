@@ -102,7 +102,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: uId);
-            return documentRepo.GetAll().Where(x => x.CreatedUserId == createdUserId).OrderBy(x => x.Name).ToList();
+            List<Document> documents = documentRepo.GetAll().Where(x => x.CreatedUserId == createdUserId || x.UpdatedBy == createdUserId).OrderBy(x => x.Name).ToList();
+            return documents;
         }
 
     }

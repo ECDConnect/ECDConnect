@@ -14,7 +14,7 @@ import {
 } from '@ecdlink/ui';
 import { useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useLocation } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { OfflineSyncModal } from '../../modals';
@@ -47,6 +47,9 @@ import { programmeThunkActions } from '@/store/programme';
 import offlineStatments from '../../assets/statements-offline.png';
 import { setStorageItem } from '@/utils/common/local-storage.utils';
 import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
+import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
+import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
+import { calendarThunkActions } from '@/store/calendar';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -64,9 +67,15 @@ export enum NavigationTypes {
   Logout = 'Logout',
   Practitioners = 'Practitioners',
   Business = 'Business',
+  SmartStarters = 'SmartStarters',
+}
+
+export interface DashboardRouteState {
+  isFromTraineeFlow?: boolean;
 }
 
 export const Dashboard: React.FC = () => {
+  const location = useLocation<DashboardRouteState>();
   const shouldUserSync = useSelector(settingSelectors.getShouldUserSync);
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomGroup = useSelector(classroomsSelectors.getClassroomGroups);
@@ -85,10 +94,24 @@ export const Dashboard: React.FC = () => {
   );
   const isPrincipal = practitioner?.isPrincipal;
   const isFundaAppAdmin = practitioner?.isFundaAppAdmin;
+  const isRegistered = practitioner?.isRegistered;
+  const isProgress = practitioner?.progress;
+  const isFromTraineeFlow = location.state?.isFromTraineeFlow || false;
+  const isTrainee = practitioner?.isTrainee;
 
   const dashboardNotification = useSelector(
     notificationsSelectors.getDashboardNotification
   );
+
+  const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
+  const uncompletedSteps = timelineSteps(
+    timeline!,
+    () => {},
+    false,
+    isOnline,
+    // @ts-ignore
+    undefined
+  ).filter((item) => item?.type !== 'completed' && item?.type !== 'inProgress');
 
   const { userProfilePicture } = useDocuments();
 
@@ -141,6 +164,10 @@ export const Dashboard: React.FC = () => {
     await appDispatch(
       programmeThemeThunkActions.getProgrammeThemes({ locale: 'en-za' })
     ).unwrap();
+
+    await appDispatch(
+      calendarThunkActions.getCalendarEventTypes({ locale: 'en-za' })
+    ).unwrap();
   };
 
   useEffect(() => {
@@ -148,7 +175,11 @@ export const Dashboard: React.FC = () => {
   }, []);
 
   useEffect(() => {
-    if (dashboardNotification?.isNew && practitioner?.progress! >= 2) {
+    if (
+      dashboardNotification?.isNew &&
+      practitioner?.progress! >= 2 &&
+      !practitioner?.isTrainee
+    ) {
       appDispatch(notificationActions.resetNotificationState());
     }
   }, []);
@@ -232,6 +263,12 @@ export const Dashboard: React.FC = () => {
     }
   }, [practitioner?.userId]);
 
+  useEffect(() => {
+    if (isFromTraineeFlow) {
+      window.location.reload();
+    }
+  }, []);
+
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -312,13 +349,6 @@ export const Dashboard: React.FC = () => {
       },
     },
     {
-      name: NavigationTypes.Training,
-      href: ROUTES.TRAINING,
-      icon: 'BellIcon',
-      current: false,
-      showDivider: true,
-    },
-    {
       name: NavigationTypes.Community,
       href: ROUTES.COMMUNITY,
       icon: 'BookOpenIcon',
@@ -334,7 +364,17 @@ export const Dashboard: React.FC = () => {
     },
   ];
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (!isTrainee) {
+    navigation?.splice(4, 0, {
+      name: NavigationTypes.Training,
+      href: ROUTES.TRAINING,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+    });
+  }
+
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -352,7 +392,7 @@ export const Dashboard: React.FC = () => {
       current: true,
     },
     {
-      name: NavigationTypes.Practitioners,
+      name: NavigationTypes.SmartStarters,
       icon: 'AcademicCapIcon',
       current: false,
       href: ROUTES.COACH.PRACTITIONERS,
@@ -411,38 +451,39 @@ export const Dashboard: React.FC = () => {
         classNames: 'bg-uiBg',
       }
     );
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
   if (!isCoach) {
-    dashboardItems.push(
-      {
-        title: 'Classroom',
-        titleIcon: 'AcademicCapIcon',
-        titleIconClassName: styles.classRoomIcon,
-        classNames: 'bg-uiBg',
-        onActionClick: () => {
-          goToClassroom();
-        },
+    dashboardItems.push({
+      title: 'Classroom',
+      titleIcon: 'AcademicCapIcon',
+      titleIconClassName: styles.classRoomIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToClassroom();
       },
-      {
-        title: 'Calendar',
-        titleIcon: 'CalendarIcon',
-        titleIconClassName: styles.businessIcon,
-        onActionClick: () => ({}),
-        classNames: 'bg-uiBg',
-        chipConfig: {
-          colorPalette: {
-            backgroundColour: 'alertMain',
-            borderColour: 'alertMain',
-            textColour: 'white',
-          },
-          text: 'Coming soon',
-        },
-      }
-    );
+    });
+    dashboardItems.push({
+      title: 'Calendar',
+      titleIcon: 'CalendarIcon',
+      titleIconClassName: styles.calendarIcon,
+      classNames: 'bg-uiBg',
+      onActionClick: () => {
+        goToCalendar();
+      },
+    });
   }
 
-  if (isPrincipal || isFundaAppAdmin) {
+  if (isPrincipal || isFundaAppAdmin || isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -492,8 +533,11 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      (classroom && classroom.id) ||
-      (classroomGroup && classroomGroup.length > 0)
+      ((classroom && classroom.id) ||
+        (classroomGroup && classroomGroup.length > 0)) &&
+      isRegistered &&
+      isProgress &&
+      isProgress > 0
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
@@ -501,9 +545,18 @@ export const Dashboard: React.FC = () => {
     }
   };
 
+  const goToCalendar = () => {
+    history.push(ROUTES.CALENDAR);
+  };
+
   const goToBusiness = () => {
     if (isPrincipal || isFundaAppAdmin) {
       history.push(ROUTES.BUSINESS);
+      return;
+    }
+    if (isTrainee) {
+      history.push(ROUTES.TRAINEE.SETUP_TRAINEE);
+      return;
     }
   };
 

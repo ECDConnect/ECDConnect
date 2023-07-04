@@ -8,6 +8,7 @@ import {
   renderIcon,
 } from '@ecdlink/ui';
 import { differenceInMinutes, format } from 'date-fns';
+import { useDialog } from '@ecdlink/core';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory } from 'react-router';
 import { PractitionerNotRegisterProps } from './coach-practitioner-not-registered.types';
@@ -15,25 +16,23 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { authSelectors } from '@/store/auth';
 import { useSelector } from 'react-redux';
 import ROUTES from '@/routes/routes';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import * as styles from './coach-practitioner-not-registered.styles';
 import { ExclamationCircleIcon } from '@heroicons/react/solid';
+import OnlineOnlyModal from '../../../../../modals/offline-sync/online-only-modal';
 
 export const CoachPractitionerNotRegistered: React.FC<
   PractitionerNotRegisterProps
 > = ({ practitioner, classroom }) => {
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
+  const dialog = useDialog();
   const userAuth = useSelector(authSelectors.getAuthUser);
   const practitionerId = practitioner?.userId;
   const [inviteCount, setInviteCount] = useState(0);
   const [inviteDates, setInviteDates] = useState<[]>();
   const [lastInviteDate, setLastInviteDate] = useState<Date>();
-  const disableButton = inviteCount >= 3;
   const [showAlert, setShowAlert] = useState(false);
-  const diffHours = Math.abs(
-    differenceInMinutes(new Date(lastInviteDate as Date), new Date())
-  );
 
   useEffect(() => {
     getClassroomDetails();
@@ -51,6 +50,10 @@ export const CoachPractitionerNotRegistered: React.FC<
       userAuth?.auth_token || ''
     ).GetAllPractitionerInvites(practitioner?.userId || '');
     setLastInviteDate(lastInviteDate as any);
+    const diffHours = lastInviteDate
+      ? Math.abs(differenceInMinutes(new Date(lastInviteDate), new Date()))
+      : 0;
+
     if (diffHours > 60) {
       setShowAlert(true);
       return;
@@ -60,14 +63,31 @@ export const CoachPractitionerNotRegistered: React.FC<
   };
 
   const sendPractitionerInvite = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).SendPractitionerInviteToApplication(practitioner?.userId || '');
-    getClassroomDetails();
+    if (isOnline) {
+      await new PractitionerService(
+        userAuth?.auth_token || ''
+      ).SendPractitionerInviteToApplication(practitioner?.userId || '');
+      getClassroomDetails();
+    } else {
+      showOnlineOnly();
+    }
   };
 
   const callForHelp = () => {
     window.open('tel:+27800014817');
+  };
+
+  const disableButton = useMemo(() => {
+    return inviteCount >= 3;
+  }, [inviteCount]);
+
+  const showOnlineOnly = () => {
+    dialog({
+      position: DialogPosition.Bottom,
+      render: (onSubmit) => {
+        return <OnlineOnlyModal onSubmit={onSubmit}></OnlineOnlyModal>;
+      },
+    });
   };
 
   return (
@@ -104,15 +124,19 @@ export const CoachPractitionerNotRegistered: React.FC<
             `If ${practitioner?.user?.firstName} did not receive the SMS, you can resend it now.`,
           ]}
         />
-        {inviteCount && inviteDates && (
+
+        <div className="mt-4">
+          <div className="ml-2">
+            <Typography
+              color={'textMid'}
+              text={`• ${inviteCount} out of 3 invitations sent:`}
+              type="small"
+            />
+          </div>
+        </div>
+
+        {inviteDates && (
           <div className="mt-4">
-            <div className="ml-2">
-              <Typography
-                color={'textMid'}
-                text={`${inviteCount} out of 3 invitations sent:`}
-                type="small"
-              />
-            </div>
             <div className="mt-2 ml-4 flex w-full flex-wrap justify-center">
               {inviteDates.length > 0 &&
                 inviteDates?.map((item, index) => {

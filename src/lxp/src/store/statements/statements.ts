@@ -10,7 +10,7 @@ import {
   getAllStatementsContributionType,
   getAllStatementsFeeType,
   getAllStatementsBalanceSheet,
-  getIncomeExpensesPDFreport
+  getIncomeExpensesPDFreport,
 } from './statements.actions';
 import { StatementsState } from './statements.types';
 

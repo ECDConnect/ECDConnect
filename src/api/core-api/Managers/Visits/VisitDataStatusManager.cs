@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -122,6 +121,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var motherName = "";
                 if (infant.Mother != null) {
                     motherName = infant.Mother.User.FirstName;
+                } else
+                {
+                    motherName = infant.Caregiver.FirstName;
                 }
 
                 // add additional visit for when we need to add additional visits for the client
@@ -399,10 +401,36 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
                     }
                 }
-                else if (vData.Question == Constants.GGSettings.q_hearing ||
-                            vData.Question == Constants.GGSettings.q_seeing ||
-                            vData.Question == Constants.GGSettings.q_brain ||
-                            vData.Question == Constants.GGSettings.q_moving) {
+                else if (vData.Question == Constants.GGSettings.q_hearing1 ||
+                        vData.Question == Constants.GGSettings.q_hearing2 ||
+                        vData.Question == Constants.GGSettings.q_hearing3 ||
+                        vData.Question == Constants.GGSettings.q_hearing4 ||
+                        vData.Question == Constants.GGSettings.q_hearing5 ||
+                        vData.Question == Constants.GGSettings.q_hearing6 ||
+                        vData.Question == Constants.GGSettings.q_hearing7 ||
+                        vData.Question == Constants.GGSettings.q_hearing8 ||
+                        vData.Question == Constants.GGSettings.q_hearing9 ||
+                        vData.Question == Constants.GGSettings.q_seeing1 ||
+                        vData.Question == Constants.GGSettings.q_seeing2 ||
+                        vData.Question == Constants.GGSettings.q_seeing3 ||
+                        vData.Question == Constants.GGSettings.q_seeing4 ||
+                        vData.Question == Constants.GGSettings.q_seeing5 ||
+                        vData.Question == Constants.GGSettings.q_seeing6 ||
+                        vData.Question == Constants.GGSettings.q_seeing7 ||
+                        vData.Question == Constants.GGSettings.q_brain1 ||
+                        vData.Question == Constants.GGSettings.q_brain2 ||
+                        vData.Question == Constants.GGSettings.q_brain3 ||
+                        vData.Question == Constants.GGSettings.q_brain4 ||
+                        vData.Question == Constants.GGSettings.q_brain5 ||
+                        vData.Question == Constants.GGSettings.q_brain6 ||
+                        vData.Question == Constants.GGSettings.q_brain7 ||
+                        vData.Question == Constants.GGSettings.q_moving1 ||
+                        vData.Question == Constants.GGSettings.q_moving2 ||
+                        vData.Question == Constants.GGSettings.q_moving3 ||
+                        vData.Question == Constants.GGSettings.q_moving4 ||
+                        vData.Question == Constants.GGSettings.q_moving5 ||
+                        vData.Question == Constants.GGSettings.q_moving6 ||
+                        vData.Question == Constants.GGSettings.q_moving7) {
                     if (vData.QuestionAnswer == Constants.GGSettings.answer_no) {
                         developmentScreening.Add(vData);
                     }
@@ -490,7 +518,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = firstName + Constants.GGSettings.no_birth_certificate;
                         AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.home_affairs_referrals, false);
 
-                        // Add G4 secondary alert text: ""Refer to clinic urgently""
+                        // Add G4 secondary alert text: ""Refer to home affairs""
                         comment = Constants.GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
                     }
@@ -506,7 +534,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // G9 Client summary green, ""You applied for the child support grant - this will support Themba's healthy growth!"""
                         comment = Constants.GGSettings.has_csg2.Replace("{client}", firstName);
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
+                    } else if (vData.QuestionAnswer == Constants.GGSettings.answer_no)
+                    {
+                        comment = Constants.GGSettings.has_csg3;
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
                     }
+
                 }
             }
 
@@ -708,7 +741,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // a Constants.GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 comment = firstName + Constants.GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, _none, _referral, section, false);
+                AddVisitDataStatus(q3, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
                 comment = firstName + Constants.GGSettings.maternal_distress;
@@ -726,7 +759,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else {
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && (q1.QuestionAnswer == Constants.GGSettings.answer_yes || q2.QuestionAnswer == Constants.GGSettings.answer_yes)) {
                     comment = firstName + Constants.GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, _none, _referral, section, false);
+                    AddVisitDataStatus(q3, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                     comment = firstName + Constants.GGSettings.maternal_distress;
                     AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, false);
@@ -778,7 +811,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (score >= 2) {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
-                AddVisitDataStatus(q1, comment, _none, _referral, section, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                 // add to red items in progress screen (use case 2) (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
@@ -850,10 +883,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != "" ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2 != null && q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
-                var _prevWeight = previousVisitWeight != "undefined" ? double.Parse(previousVisitWeight, CultureInfo.InvariantCulture) : 0.0;
+                var _prevWeight = 0.0;
+                if (previousVisitWeight != "undefined" && previousVisitWeight != "")
+                {
+                    _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
+                }
                
-                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender);
                 Boolean weightIncreased = _weight > _prevWeight;
+                wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
 
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
                     wIndicator = "Low birth weight";
@@ -866,7 +903,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _red;
 
                         // Red progress
-                        comment = Constants.GGSettings.severely_underweight + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.severely_underweight;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -879,7 +916,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -892,7 +929,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = Constants.GGSettings.growth_faltering + " " + q1.QuestionAnswer;
+                        comment = Constants.GGSettings.growth_faltering;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -905,7 +942,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -918,7 +955,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _amber;
 
                         // Amber progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
@@ -931,7 +968,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         wColor = _green;
 
                         // Green progress
-                        comment = wIndicator + " " + q1.QuestionAnswer;
+                        comment = wIndicator;
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // Green G4 
@@ -946,13 +983,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var _weight = q1.QuestionAnswer != "undefined" && q1.QuestionAnswer != ""  ? double.Parse(q1.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
                 var _height = q2.QuestionAnswer != "undefined" && q2.QuestionAnswer != "" ? double.Parse(q2.QuestionAnswer, CultureInfo.InvariantCulture) : 0.0;
 
-                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender);
+                lIndicator = GetHeightWeightIndicator(false, totalDaysOld, _weight, _height, gender, false);
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
                     
                     // Red progress
-                    comment = lIndicator + " " + _height;
+                    comment = lIndicator;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
 
                     // additional visit
@@ -993,7 +1030,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator + " " + questionAnswer;
+                    comment = mIndicator;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1009,7 +1046,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted + " " + questionAnswer;
+                    comment = Constants.GGSettings.severely_stunted;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
@@ -1026,10 +1063,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     // Green progress
                     comment = mIndicator + " " + questionAnswer;
                     AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
-
-                    // Green G4 
-                    comment = firstName + Constants.GGSettings.growing_well;
-                    AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
                 }
             }
 
@@ -1037,13 +1070,17 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
-                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
             }
 
             if (wColor == _green && lColor == _green && mColor == _green) {
                 // add green item to G9 client summary: ""Themba is growing well""
                 comment = firstName + Constants.GGSettings.growing_well;
                 AddVisitDataStatus(q3, comment, _green, _G9, Constants.GGSettings.growth_section, false);
+
+                // Green G4 
+                comment = firstName + Constants.GGSettings.growing_well;
+                AddVisitDataStatus(q3, comment, mColor, _G4, q3.VisitSection, false);
             } else {
 
                 if (wColor == _red || lColor == _red || mColor == _red) {
@@ -1114,20 +1151,63 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageDevelopmentScreeningData(List<VisitData> developmentScreening, string firstName, string infantId) {
             var names = "";
             var comment = "";
+            string _hearing = "<li>Hearing</li>";
+            string _seeing = "<li>Seeing</li>";
+            string _brain = "<li>Brain</li>";
+            string _moving = "<li>Moving</li>";
 
             foreach (var item in developmentScreening)
             {
-                if (item.Question == Constants.GGSettings.q_hearing) {
-                    names = names + "<li>Hearing</li>";
+                if (item.Question == Constants.GGSettings.q_hearing1 ||
+                    item.Question == Constants.GGSettings.q_hearing2 ||
+                    item.Question == Constants.GGSettings.q_hearing3 ||
+                    item.Question == Constants.GGSettings.q_hearing4 ||
+                    item.Question == Constants.GGSettings.q_hearing5 ||
+                    item.Question == Constants.GGSettings.q_hearing6 ||
+                    item.Question == Constants.GGSettings.q_hearing7 ||
+                    item.Question == Constants.GGSettings.q_hearing8 ||
+                    item.Question == Constants.GGSettings.q_hearing9)
+                {
+                    if (names.IndexOf(_hearing) == -1)
+                    {
+                        names += _hearing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_seeing) {
-                    names = names + "<li>Seeing</li>";
+                if (item.Question == Constants.GGSettings.q_seeing1 ||
+                    item.Question == Constants.GGSettings.q_seeing2 ||
+                    item.Question == Constants.GGSettings.q_seeing3 ||
+                    item.Question == Constants.GGSettings.q_seeing4 ||
+                    item.Question == Constants.GGSettings.q_seeing5 ||
+                    item.Question == Constants.GGSettings.q_seeing6 ||
+                    item.Question == Constants.GGSettings.q_seeing7) {
+                    if (names.IndexOf(_seeing) == -1)
+                    {
+                        names += _seeing;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_brain) {
-                    names = names + "<li>Brain</li>";
+                if (item.Question == Constants.GGSettings.q_brain1 ||
+                    item.Question == Constants.GGSettings.q_brain2 ||
+                    item.Question == Constants.GGSettings.q_brain3 ||
+                    item.Question == Constants.GGSettings.q_brain4 ||
+                    item.Question == Constants.GGSettings.q_brain5 ||
+                    item.Question == Constants.GGSettings.q_brain6 ||
+                    item.Question == Constants.GGSettings.q_brain7) {
+                    if (names.IndexOf(_brain) == -1)
+                    {
+                        names += _brain;
+                    }
                 }
-                if (item.Question == Constants.GGSettings.q_moving) {
-                    names = names + "<li>Moving</li>";
+                if (item.Question == Constants.GGSettings.q_moving1 ||
+                    item.Question == Constants.GGSettings.q_moving2 ||
+                    item.Question == Constants.GGSettings.q_moving3 ||
+                    item.Question == Constants.GGSettings.q_moving4 ||
+                    item.Question == Constants.GGSettings.q_moving5 ||
+                    item.Question == Constants.GGSettings.q_moving6 ||
+                    item.Question == Constants.GGSettings.q_moving7) {
+                    if (names.IndexOf(_moving) == -1)
+                    {
+                        names += _moving;
+                    }
                 }
             }
 
@@ -1135,7 +1215,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             // IF the user selected ""No"" to any of the questions, show referral item: ""Themba is struggling with X, Y, Z""
             comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
-            AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+            AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
             // amber ""Themba is struggling with: * X; * Y""
             comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
@@ -1149,68 +1229,184 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageImmunisationData(List<VisitData> immunisationsData, string firstName, string infantId) {
             var comment = "";
+            var hasImmunisation = false;
+            var hasDeworm = false;
+            var hasVitaminA = false;
+            var no_comment = "";
+            var yes_comment = "";
+            var answeredItems = new List<VisitData>();
 
-            List<VisitData> no_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_no).ToList();
-            List<VisitData> yes_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_yes).ToList();
+            foreach (var item in immunisationsData)
+            {
+                if (item.QuestionAnswer != "undefined")
+                {
+                    answeredItems.Add(item);
 
-            // NO Answers
-            var q1 = no_answers.FirstOrDefault();
-            if (no_answers.Count == 1) {
-                if (q1.Question == Constants.GGSettings.q_immunisation) {
-                    // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
-                    comment = Constants.GGSettings.immunisations_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                    if (item.Question == Constants.GGSettings.q_immunisation)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasImmunisation = false;
+                            // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
+                            comment = Constants.GGSettings.immunisations_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Immunisations";
+                            }
+                            else
+                            {
+                                no_comment += "Immunisations";
+                            }
+                        } else
+                        {
+                            hasImmunisation = true;
+
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Immunisations";
+                            }
+                            else
+                            {
+                                yes_comment += "Immunisations";
+                            }
+                        }
+                    }
+                    if (item.Question == Constants.GGSettings.q_vitamin_a)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasVitaminA = false;
+                            // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
+                            comment = Constants.GGSettings.vitamin_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Vitamin A";
+                            } else
+                            {
+                                no_comment += "Vitamin A";
+                            }
+                        }
+                        else
+                        {
+                            hasVitaminA = true;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Vitamin A";
+                            }
+                            else
+                            {
+                                yes_comment += "vitamin A";
+                            }
+                        }
+                    }
+                    if (item.Question == Constants.GGSettings.q_deworming)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasDeworm = false;
+                            // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
+                            comment = Constants.GGSettings.deworming_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Deworming";
+                            } else
+                            {
+                                no_comment += "Deworming";
+                            }
+                        }
+                        else
+                        {
+                            hasDeworm = true;
+
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Deworming";
+                            }
+                            else
+                            {
+                                yes_comment += "Deworming";
+                            }
+                        }
+                    }
                 }
-                else if (q1.Question == Constants.GGSettings.q_vitamin_a) {
-                    // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
-                    comment = Constants.GGSettings.vitamin_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-                }
-                else if (q1.Question == Constants.GGSettings.q_deworming) {
-                    // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
-                    comment = Constants.GGSettings.deworming_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-                }
-            } else if (no_answers.Count > 1) {
-
-                // ""Immunisations, deworming and Vitamin A not up to date"" 
-                comment = Constants.GGSettings.not_up_to_date;
-                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-
-                //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
-                comment = Constants.GGSettings.not_up_to_date;
-                AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
-
-                // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
-                comment = Constants.GGSettings.missed_immunisations.Replace("{client}", firstName);
-                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
             }
 
-            // YES answers
-            var q2 = yes_answers.FirstOrDefault();
-            if (yes_answers.Count == 3) {
+            var _item = answeredItems.FirstOrDefault();
+            
+            if (hasImmunisation == true && hasVitaminA == true && hasDeworm == true)
+            {
                 //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
                 comment = Constants.GGSettings.all_up_to_date;
-                AddVisitDataStatus(q2, comment, _green, _progress, q2.VisitSection, false);
+                AddVisitDataStatus(_item, comment, _green, _progress, _item.VisitSection, false);
 
                 // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
                 comment = Constants.GGSettings.all_up_to_date_client.Replace("{client}", firstName);
-                AddVisitDataStatus(q2, comment, _green, _G9, q2.VisitSection, false);
+                AddVisitDataStatus(_item, comment, _green, _G9, _item.VisitSection, false);
+            } else
+            {
+                if (yes_comment != "")
+                {
+                    //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
+                    comment = yes_comment + " are up to date";
+                    AddVisitDataStatus(_item, comment, _green, _progress, _item.VisitSection, false);
+
+                    // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
+                    comment = firstName + "'s " + yes_comment + " are up to date";
+                    AddVisitDataStatus(_item, comment, _green, _G9, _item.VisitSection, false);
+                }
+
+                if (no_comment != "")
+                {
+                    //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
+                    comment = no_comment + " not up to date";
+                    AddVisitDataStatus(_item, comment, _amber, _progress, _item.VisitSection, false);
+
+                    // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
+                    comment = firstName + " missed an " + no_comment;
+                    AddVisitDataStatus(_item, comment, _amber, _G9, _item.VisitSection, false);
+                }
             }
+
+
             return true;
         }
-        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) {
+        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 
+        {
+            Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
+                                                          x.VisitType.Name == _additionalVisitType.Name &&
+                                                          x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
+                                                          x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
+            if (record == null)
+            {
 
-            VisitModel newVisit = new VisitModel();
-            newVisit.Attended = false;
-            newVisit.VisitType = _additionalVisitType;
-            newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
-            newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
-            newVisit.Risk = Constants.GGSettings.normal_risk;
-            newVisit.Comment = comment;
-            newVisit.LinkedVisitId = new Guid(_visitId);
-            newVisit.ActualVisitDate = DateTime.Now; 
-            _visitManager.AddAdditionalVisit(newVisit);
+                DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
+                if (nextVisitDate == default(DateTime))
+                {
+                    nextVisitDate = DateTime.Now.Date;
+                }
+                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                if (nextVisitDueDate == default(DateTime))
+                {
+                    nextVisitDueDate = DateTime.Now.Date;
+                }
+
+                VisitModel newVisit = new VisitModel();
+                newVisit.Attended = false;
+                newVisit.VisitType = _additionalVisitType;
+                newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
+                newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
+                newVisit.Risk = Constants.GGSettings.normal_risk;
+                newVisit.Comment = comment;
+                newVisit.LinkedVisitId = new Guid(_visitId);
+                newVisit.PlannedVisitDate = nextVisitDate;
+                newVisit.DueDate = nextVisitDueDate;
+                _visitManager.AddAdditionalVisit(newVisit);
+            }
+
             return true;
         }
         private Boolean AddVisitDataStatus(VisitData input, string comment, string color, string type, string section, Boolean isCompleted)
@@ -1297,75 +1493,81 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return result;
         }
-        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender) {
+        public string GetHeightWeightIndicator(Boolean isWeightCalc, double totalDaysOld, double weight, double height, string gender, Boolean weightIncreased) {
             var indicator = "Normal";
 
             if (isWeightCalc)
             {
-                string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
-                var ageSection_secondary = "";
-                if (totalDaysOld < 730)
+                if (weight > 0)
                 {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
-                } else
-                {
-                    ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
-                }
-
-                VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForAge != null)
-                {
-                    if (weight <= recordsForAge.SD3neg)
+                    string ageSection_primary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForAgeBoys : Constants.GGSettings.weightForAgeGirls);
+                    var ageSection_secondary = "";
+                    if (totalDaysOld < 730)
                     {
-                        indicator = "Severely underweight"; // priority 1
-                    }
-                    else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForLengthBoys : Constants.GGSettings.weightForLengthGirls);
+                    } else
                     {
-                        indicator = "Underweight"; // priority 2
-                    }
-                    else if (weight > recordsForAge.SD2neg)
-                    {
-                        indicator = "Growth faltering"; // priority 3
+                        ageSection_secondary = (gender == Constants.GGSettings.male ? Constants.GGSettings.weightForHeightBoys : Constants.GGSettings.weightForHeightGirls);
                     }
 
-                    if (indicator == "Normal")  // priority 6
-                    {
-                        VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+                    VisitGrowthDataDay recordsForAge = _visitGrowthDataDay.GetAll().Where(x => x.Section == ageSection_primary && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
 
-                        if (recordsForWeight != null)
+                    if (recordsForAge != null)
+                    {
+                        if (weight <= recordsForAge.SD3neg)
                         {
-                            if (weight >= recordsForWeight.SD3)
+                            indicator = "Severely underweight"; // priority 1
+                        }
+                        else if (weight > recordsForAge.SD3neg && weight <= recordsForAge.SD2neg)
+                        {
+                            indicator = "Underweight"; // priority 2
+                        }
+                        else if (weight > recordsForAge.SD2neg && weightIncreased == false)
+                        {
+                            indicator = "Growth faltering"; // priority 3
+                        }
+
+                        if (indicator == "Normal")  // priority 6
+                        {
+                            VisitGrowthDataHeight recordsForWeight = _visitGrowthDataHeight.GetAll().Where(x => x.Section == ageSection_secondary && x.Height == height).OrderBy(x => x.Id).FirstOrDefault();
+
+                            if (recordsForWeight != null)
                             {
-                                indicator = "Obese"; // priority 4
-                            }
-                            else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
-                            {
-                                indicator = "Overweight"; // priority 5
+                                if (weight >= recordsForWeight.SD3)
+                                {
+                                    indicator = "Obese"; // priority 4
+                                }
+                                else if (weight >= recordsForWeight.SD2 && weight < recordsForWeight.SD3)
+                                {
+                                    indicator = "Overweight"; // priority 5
+                                }
                             }
                         }
-                    }
 
+                    }
                 }
 
             } else
             {
-                string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
-                var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
-
-                if (recordsForHeight != null)
+                if (height > 0)
                 {
-                    if (weight <= recordsForHeight.SD3neg)
+                    string heightSection = (gender == Constants.GGSettings.male ? Constants.GGSettings.lengthHeightForAgeBoys : Constants.GGSettings.lengthHeightForAgeGirls);
+                    var recordsForHeight = _visitGrowthDataDay.GetAll().Where(x => x.Section == heightSection && x.Day == (int)totalDaysOld).OrderBy(x => x.Id).FirstOrDefault();
+
+                    if (recordsForHeight != null)
                     {
-                        indicator = "Severely stunted"; // priority 1
-                    }
-                    else if (weight > recordsForHeight.SD3neg && weight <= recordsForHeight.SD2neg)
-                    {
-                        indicator = "Stunted"; // priority 2
-                    }
-                    else if (weight > recordsForHeight.SD2neg)
-                    {
-                        indicator = "Normal"; // priority 3
+                        if (height <= recordsForHeight.SD3neg)
+                        {
+                            indicator = "Severely stunted"; // priority 1
+                        }
+                        else if (height > recordsForHeight.SD3neg && height <= recordsForHeight.SD2neg)
+                        {
+                            indicator = "Stunted"; // priority 2
+                        }
+                        else if (height > recordsForHeight.SD2neg)
+                        {
+                            indicator = "Normal"; // priority 3
+                        }
                     }
                 }
             }
@@ -1605,10 +1807,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 scoreColor = _red;
             }
 
-            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
-            result.ScoreColor = scoreColor;
-            result.VisitDataStatus = visitDataStatus;
-
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
@@ -1629,6 +1827,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
             result.MuacComment = muacData?.Comment;
+
+            result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
+            result.ScoreColor = scoreColor;
+            // EC-877: remove weigth, length and muac from list, because they are already handled above
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_length && 
+                                                                 y.VisitData.Question != Constants.GGSettings.q_muac).ToList();
 
             return result;
         }

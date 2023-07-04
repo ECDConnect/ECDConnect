@@ -31,6 +31,9 @@ import { getReferralsForInfantSelector } from '@/store/referral/referral.selecto
 import { differenceInDays } from 'date-fns';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useParams } from 'react-router';
+import { dangerSignsQuestion } from './pillar-4-steps/danger-signs';
+import { riskOption2 } from './pillar-4-steps/danger-signs/options';
+import { sicknessStepQuestion } from './pillar-4-steps/sickness';
 
 interface FormProps {
   onBack: () => void;
@@ -86,6 +89,11 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   } = getAgeInYearsMonthsAndDays(dateOfBirth);
   const ageDays = differenceInDays(new Date(), new Date(dateOfBirth));
 
+  const dangerSignsAnswer = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === dangerSignsQuestion)?.answer as string[];
+  const isSicknessAlertStep = dangerSignsAnswer?.includes(riskOption2);
+
   const isChild6Months = useMemo(
     () => !ageYears && ((ageMonths === 6 && days === 0) || ageMonths < 6),
     [ageMonths, ageYears, days]
@@ -105,10 +113,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   const isMixedFeedingFoodsForm = isChild6Months;
   const isMixedFeedingBenefitsOfBreastfeeding = useMemo(
     () => isFirstVisit && ageDays < 7,
-    [ageDays, isFirstVisit]
-  );
-  const isMixedFeedingHowBreastfeedingWorks = useMemo(
-    () => isFirstVisit && ageDays >= 7 && ageDays <= 13,
     [ageDays, isFirstVisit]
   );
   const isMixedFeedingUnsafeFeedingPractices = useMemo(
@@ -143,6 +147,13 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     breastfeedingIssuesAnswers?.includes(
       breastfeedingIssuesCheckboxOptions.noneOption
     );
+
+  const sicknessStepAnswer = sectionQuestions
+    ?.flatMap((section) => section.questions)
+    .find((item) => item.question === sicknessStepQuestion)?.answer;
+
+  const isToShowPillar4DangerSigns =
+    sicknessStepAnswer === true && !stepsRules.isChildBefore49Days;
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
@@ -246,7 +257,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isMixedFeedingComplementaryFeedingAfter9Months,
           isMixedFeedingFistFoods,
           isMixedFeedingFoodsForm,
-          isMixedFeedingHowBreastfeedingWorks,
           isMixedFeedingUnsafeFeedingPractices,
           isShowInterventionStep: ageDays >= 7,
           isShowMuacStep: !isChild6Months,
@@ -268,7 +278,9 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
       case activitiesTypes.pillar4:
         return getPillar4Steps(
           isPillar4FollowUp,
-          !stepsRules.isChildBefore49Days
+          !stepsRules.isChildBefore49Days,
+          isSicknessAlertStep,
+          isToShowPillar4DangerSigns
         );
       case activitiesTypes.pillar5:
         return pillar5Steps;
@@ -276,6 +288,8 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         return followUpSteps(!!referralsForInfant?.length);
     }
   }, [
+    isToShowPillar4DangerSigns,
+    isSicknessAlertStep,
     activityName,
     nutritionAnswer,
     isToSkipBreastfeedingIssuesRelevantItemsStep,
@@ -287,7 +301,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMixedFeedingComplementaryFeedingAfter9Months,
     isMixedFeedingFistFoods,
     isMixedFeedingFoodsForm,
-    isMixedFeedingHowBreastfeedingWorks,
     isMixedFeedingUnsafeFeedingPractices,
     ageDays,
     isDietFormStep,

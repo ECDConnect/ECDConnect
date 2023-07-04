@@ -7,6 +7,7 @@ import {
   NotificationValidator,
 } from '../../NotificationService.types';
 import ROUTES from '@/routes/routes';
+import { timelineSteps } from '@/pages/trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 
 export class IncompletePractitionerInformationNotificationValidator
   implements NotificationValidator
@@ -26,9 +27,20 @@ export class IncompletePractitionerInformationNotificationValidator
       user: userState,
       classroomData: classroomState,
       practitioner: practitionerState,
+      trainee: traineeState,
     } = this.store.getState();
 
     if (!classroomState || !userState) return [];
+
+    const timeline = traineeState?.traineeOnboardTimeline;
+    const completedSteps = timelineSteps(
+      timeline!,
+      () => {},
+      false,
+      true,
+      // @ts-ignore
+      undefined
+    ).filter((item) => item?.type === 'completed');
 
     /**
      * Notification is returned when
@@ -62,6 +74,29 @@ export class IncompletePractitionerInformationNotificationValidator
       const showNotificationForPrincipalFlow =
         (hasPrincipalRole && notRegistered && !addedByPrincipal) ||
         (!addedByPrincipal && practitionerState?.practitioner?.progress === 0);
+      const isTrainee = practitionerState?.practitioner?.isTrainee;
+
+      if (isTrainee && completedSteps?.length < 7) {
+        return [
+          {
+            reference: `trainee-profile`,
+            title: 'Start your trainee journey!',
+            message:
+              'Sign your franchisee & start-up support agreements, start registering children, and make sure your venue meets the SmartSpace standards.',
+            dateCreated: new Date().toISOString(),
+            priority: NotificationPriority.lower,
+            viewOnDashboard: true,
+            area: 'practitioner',
+            icon: 'SwitchVerticalIcon',
+            color: 'primary',
+            actionText: 'Get started',
+            viewType: 'Hub',
+            routeConfig: {
+              route: ROUTES.TRAINEE.SETUP_TRAINEE,
+            },
+          },
+        ];
+      }
 
       if (showNotificationForPrincipalFlow) {
         return [

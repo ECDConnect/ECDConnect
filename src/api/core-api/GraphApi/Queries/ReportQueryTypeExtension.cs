@@ -1,15 +1,19 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Users;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
 using ECDLink.Core.Extensions;
 using ECDLink.Core.Models;
-using ECDLink.Core.Services;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Documents;
+using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Users.Mapping;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories;
@@ -311,7 +315,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(c => c.UserId == Guid.Parse(practitionerId)).FirstOrDefault();
             var practitionerHieracry = hierarchyEngine.GetUserHierarchy(practitionerId);
 
-            var practitioner = await practRepo.GetByIdAsync(Guid.Parse(practitionerId));
+            var practitioner = practRepo.GetByUserId(practitionerId);
+
             // TODO: use this to apply:
             // https://docs.google.com/spreadsheets/d/1xsS-JECUKWzj26sNcOllesCSZ39QwOh95T8goYdozbk/edit#gid=607178088&range=F71
             // "Note for all actions:
@@ -1066,6 +1071,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         public List<NotificationDisplay> GetDisplayMetrics(
             [Service] IHttpContextAccessor contextAccessor,
             [Service] AttendanceTrackingRepository attendanceRepo,
+            [Service] VisitDataManager visitDataManager,
+            [Service] UserLicenseManager userLicenseManager,
+            [Service] VisitManager visitManager,
             IGenericRepositoryFactory repoFactory,
             string type)//, DateTime fromDate,DateTime toDate
         {
@@ -1074,6 +1082,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
 
             var childRepo = repoFactory.CreateRepository<Child>(userContext: uId);
             var practRepo = repoFactory.CreateRepository<Practitioner>(userContext: uId);
+            var visitRepo = repoFactory.CreateRepository<Visit>(userContext: uId);
+            var visitDataRepo = repoFactory.CreateRepository<VisitData>(userContext: uId);
 
             //set basic dates to be last month and before last
             DateTime reference = DateTime.Now;
@@ -1159,6 +1169,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         //get attendance register counts across all classroomgroups and programmes
                         attendancePercentage = attendanceRepo.GetAttendancePercentileByParent(user.UserId, fromDate, toDate);
                     }
+
+                    
+
+
+
+
                     //TODO
                     //progress reports overdue count
 
@@ -1169,7 +1185,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                     //child progress reporting for coach
                     //TODO - logic to calculate "x children did not progress"
 
-                    //priority 0
                     if (isComplete)
                     {
                         weighting10.Icon = MetricsIconEnum.Success.ToString();
@@ -1277,6 +1292,110 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                         weighting = 30;
                     }
 
+                    // PQA - EC-482 - start ------------------------
+                    if (type == "practitioner")
+                    {
+                        // license Status
+                        License SSLicense = userLicenseManager.GetLicenseForUserForType(user.UserId, Constants.SSSettings.ss_smart_space_licence);
+
+                        // Practitioner has a license and not delicensed
+                        if (SSLicense != null)
+                        {
+
+                            if (SSLicense.DelicensedDate != null)
+                            {
+                                // 1. immediately flag delicencing when yes on 'Did you observe an adult hitting or smacking a child at this programme?'
+                                VisitData PQAVisit =
+                                (
+                                    from visit in visitRepo.GetAll().Where(x => x.Practitioner.User.Id == user.UserId)
+                                    join visitData in visitDataRepo.GetAll().Where(y => y.Question == Constants.SSSettings.step16_q1 && y.QuestionAnswer == Constants.SSSettings.answer_yes) on visit.Id equals visitData.VisitId
+                                    select visitData
+                                ).OrderByDescending(y => y.InsertedDate).FirstOrDefault();
+
+                                // get pga rating
+                                PQARating pqaRating1 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_1);
+                                PQARating pqaRating2 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_2);
+                                PQARating pqaRating3 = visitDataManager.GetPractitionerPQARating(user.UserId, Constants.SSSettings.visitType_pqa_visit_3);
+
+                                // 2. When there are 2 red ratings delicence
+                                int redRating = 0;
+                                if (pqaRating1.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                                {
+                                    redRating++;
+                                }
+                                else if (pqaRating2.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                                {
+                                    redRating++;
+                                }
+                                else if (pqaRating3.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                                {
+                                    redRating++;
+                                }
+
+                                // this is the highest priority item
+                                if (PQAVisit != null || redRating == 2)
+                                {
+                                    weighting30.Icon = MetricsIconEnum.Error.ToString();
+                                    weighting30.Color = MetricsColorEnum.Error.ToString();
+                                    weighting30.Subject = "Delicence SmartStarter";
+                                    weighting30.Notes = "";
+                                    priority = 0;
+                                    weighting = 30;
+                                }
+                            }
+                            else
+                            {
+                                // Overdue PQA visit 1
+                                Visit firstPQAVisit = visitManager.GetVisitForUserForType(user.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_1);
+                                if (firstPQAVisit != null)
+                                {
+                                    if (!firstPQAVisit.Attended && firstPQAVisit.PlannedVisitDate < DateTime.Now)
+                                    {
+                                        weighting20.Icon = MetricsIconEnum.Error.ToString();
+                                        weighting20.Color = MetricsColorEnum.Error.ToString();
+                                        weighting20.Subject = "First PQA overdue";
+                                        weighting20.Notes = firstPQAVisit.PlannedVisitDate.ToShortDateString();
+                                        priority = 1;
+                                        weighting = 20;
+                                    }
+                                    if (!firstPQAVisit.Attended && firstPQAVisit.PlannedVisitDate > DateTime.Now)
+                                    {
+                                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
+                                        weighting10.Color = MetricsColorEnum.Warning.ToString();
+                                        weighting10.Subject = "First PQA due";
+                                        weighting10.Notes = firstPQAVisit.PlannedVisitDate.ToShortDateString();
+                                        priority = 2;
+                                        weighting = 10;
+                                    }
+                                }
+
+                                // Overdue PQA reaccreditation visit 1
+                                Visit firstAccreditationPQAVisit = visitManager.GetVisitForUserForType(user.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+                                if (firstAccreditationPQAVisit != null)
+                                {
+                                    if (!firstAccreditationPQAVisit.Attended && firstAccreditationPQAVisit.PlannedVisitDate < DateTime.Now)
+                                    {
+                                        weighting20.Icon = MetricsIconEnum.Error.ToString();
+                                        weighting20.Color = MetricsColorEnum.Error.ToString();
+                                        weighting20.Subject = "PQA reaccreditation overdue";
+                                        weighting20.Notes = "";
+                                        priority = 1;
+                                        weighting = 20;
+                                    }
+                                    if (!firstAccreditationPQAVisit.Attended && firstAccreditationPQAVisit.PlannedVisitDate > DateTime.Now)
+                                    {
+                                        weighting10.Icon = MetricsIconEnum.Warning.ToString();
+                                        weighting10.Color = MetricsColorEnum.Warning.ToString();
+                                        weighting10.Subject = "PQA reaccreditation due";
+                                        weighting10.Notes = firstAccreditationPQAVisit.PlannedVisitDate.ToShortDateString();
+                                        priority = 2;
+                                        weighting = 10;
+                                    }
+                                }
+                            }
+                        }
+                    }
+                    // PQA - end ------------------------
 
                     /*
                      Working in Priority high to low (in SLA terms, lower digits priority is higher) and weighting low to high (more important carries more weight) in seperate streams so that importance overrides
@@ -1307,6 +1426,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                             finalNotes = weighting30.Notes;
                         }
                     }
+
 
 
                     //build up display for this user

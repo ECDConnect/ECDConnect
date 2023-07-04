@@ -2,6 +2,11 @@ export interface PractitionerJourneyParams {
   practitionerId: string;
 }
 
+export interface CoachPractitionerJourneyPageState {
+  action?: string;
+  actionParams?: any;
+}
+
 export const visitTypes = {
   supportVisit: 'General support visit',
   delicensing: 'Delicensing',

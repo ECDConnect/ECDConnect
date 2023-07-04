@@ -122,7 +122,7 @@ export const Money: React.FC<MoneyProps> = ({
       {hasIncomeStatements || state?.run ? (
         <SubmitIncomeStatements />
       ) : (
-        <div className="h-full pt-7">
+        <div className="h-full px-4 py-2 pt-7">
           <div className="mt-2 flex flex-wrap justify-center p-8">
             <div className="">
               <MoneyIcon />

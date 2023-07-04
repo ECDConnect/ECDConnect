@@ -47,7 +47,7 @@ export const getInfantFirstVisitSelector = (
 
 export const getInfantPreviousVisitSelector = (
   state: RootState,
-  currentPlannedVisitDate: string
+  currentOrderVisitDate: string
 ) => {
   const visits = state.infants.visits;
 
@@ -55,7 +55,10 @@ export const getInfantPreviousVisitSelector = (
 
   const filteredVisits = visits.filter((visit) => {
     const orderDate = new Date(visit.orderDate);
-    return orderDate < new Date(currentPlannedVisitDate);
+    return (
+      orderDate < new Date(currentOrderVisitDate) &&
+      visit.visitType?.name !== 'additional_visit'
+    );
   });
 
   const previousVisit = filteredVisits.reduce(
@@ -74,18 +77,21 @@ export const getInfantPreviousVisitSelector = (
 
 export const getIsInfantFirstVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
-
-  return attendedVisitsCount === 0;
+  return attendedVisits?.length === 0;
 };
 
 export const getIsInfantSecondVisitSelector = (state: RootState): boolean => {
   const visits = state.infants.visits;
 
-  const attendedVisitsCount = visits?.filter((item) => !!item.attended).length;
+  const attendedVisits = visits?.filter(
+    (item) => item.visitType?.name !== 'additional_visit' && !!item.attended
+  );
 
-  return attendedVisitsCount === 1;
+  return attendedVisits?.length === 1;
 };
 
 export const getInfantVisitByVisitIdSelector = (
@@ -93,25 +99,6 @@ export const getInfantVisitByVisitIdSelector = (
   visitId: string
 ): VisitDto | undefined =>
   state.infants.visits?.find((item) => item.id === visitId);
-
-export const getInfantCurrentVisitSelector = (
-  state: RootState
-): VisitDto | undefined => {
-  const visits = state.infants.visits || [];
-
-  const noAttended =
-    visits?.filter(
-      (item) => !item.attended && new Date(item.orderDate) >= new Date()
-    ) || [];
-
-  return noAttended.length
-    ? noAttended.reduce((prev, curr) =>
-        (prev.visitType?.order || 0) < (curr.visitType?.order || 0)
-          ? prev
-          : curr
-      )
-    : undefined;
-};
 
 export const getAllInfantEventRecordTypesSelector = (
   state: RootState
@@ -126,11 +113,18 @@ export const getCompletedReferralsForInfantSelector = (
 ): VisitDataStatus[] | undefined =>
   state.infants.completedReferralsForInfant || [];
 
-export const getCurrentVisitSelector = (
+export const getInfantCurrentVisitSelector = (
   state: RootState,
   visitId: string
 ): VisitDto | undefined => {
-  const allVisits = state.infants.visits || [];
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+
+  const allVisits =
+    state.infants.visits?.filter(
+      (item) => item.visitType?.name !== 'additional_visits'
+    ) || [];
+
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
     for (var i = 0; i < allVisits.length; i++) {
@@ -146,9 +140,18 @@ export const getCurrentVisitSelector = (
       return inProgressList[0];
     }
 
-    // Priority 3: grab the latest completed visit from the list
-    const lastAttended = allVisits?.filter((item) => item.attended) || [];
-    if (lastAttended.length !== 0) {
+    // Priority 3: grab the latest uncompleted visit from the list
+    const noAttended =
+      allVisits?.filter(
+        (item) => !item.attended && new Date(item.orderDate) >= today
+      ) || [];
+    if (noAttended) {
+      if (noAttended.length !== 0) {
+        return noAttended[0];
+      }
+    } else {
+      // Priority 4: grab the latest completed visit from the list
+      const lastAttended = allVisits?.filter((item) => item.attended) || [];
       return lastAttended.length
         ? lastAttended.reduce((prev, curr) =>
             (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
@@ -156,13 +159,71 @@ export const getCurrentVisitSelector = (
               : curr
           )
         : undefined;
-    } else {
-      // Priority 4: grab the latest uncompleted visit from the list
-      const noAttended =
-        allVisits?.filter(
-          (item) => !item.attended && new Date(item.orderDate) >= new Date()
-        ) || [];
-      return noAttended[0];
     }
   }
 };
+
+export function getInfantNearestPreviousVisitByOrderDate(
+  state: RootState,
+  currentVisit?: VisitDto
+): VisitDto | undefined {
+  const visits = state.infants.visits;
+
+  if (!visits?.length || !currentVisit) return undefined;
+
+  if (currentVisit.visitType?.name === 'additional_visits') {
+    const currentPlannedDate = new Date(currentVisit?.plannedVisitDate!);
+
+    const previousVisits = visits.filter(
+      (item) =>
+        item.attended &&
+        item.actualVisitDate !== null &&
+        new Date(item.actualVisitDate) < currentPlannedDate
+    );
+
+    if (previousVisits.length === 0) {
+      return undefined; // No previous date found
+    }
+
+    const nearestDateObject = previousVisits.reduce((previous, current) => {
+      if (
+        !previous ||
+        currentPlannedDate.getTime() -
+          new Date(current.actualVisitDate).getTime() <
+          currentPlannedDate.getTime() -
+            new Date(previous.actualVisitDate).getTime()
+      ) {
+        return current;
+      }
+      return previous;
+    });
+
+    return nearestDateObject;
+  }
+
+  const currentOrderDate = new Date(currentVisit?.orderDate!);
+
+  const previousVisits = visits.filter(
+    (item) =>
+      item.attended &&
+      item.orderDate !== null &&
+      new Date(item.orderDate) < currentOrderDate
+  );
+
+  if (previousVisits.length === 0) {
+    return undefined; // No previous date found
+  }
+
+  const nearestDateObject = previousVisits.reduce((previous, current) => {
+    if (
+      !previous ||
+      currentOrderDate.getTime() - new Date(current.orderDate).getTime() <
+        currentOrderDate.getTime() - new Date(previous.orderDate).getTime()
+    ) {
+      return current;
+    }
+    return previous;
+  });
+
+  return nearestDateObject;
+}

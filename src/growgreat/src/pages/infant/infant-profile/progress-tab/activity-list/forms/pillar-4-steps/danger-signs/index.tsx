@@ -12,7 +12,7 @@ import {
   renderIcon,
   Typography,
 } from '@ecdlink/ui';
-import { noneOption, riskOption1, riskOption2, options } from './options';
+import { noneOption, riskOption2, options } from './options';
 import { CheckboxGroup } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../dynamic-form';
 import { activitiesColours } from '../../../activities-list';
@@ -31,8 +31,8 @@ export const getGroupColor = (count: number): Colours => {
   return 'successDark';
 };
 
-export const dietFormQuestion =
-  'What did you give {client} to eat or drink in the last 24 hours?';
+export const dangerSignsQuestion = `Tick the danger signs {client} is experiencing:`;
+export const dangerSignsVisitSection = 'Danger signs';
 
 export const DangerSignsStep = ({
   infant,
@@ -41,6 +41,7 @@ export const DangerSignsStep = ({
   setEnableButton,
   setSectionQuestions: setQuestions,
   setRisk,
+  onClose,
 }: DynamicFormProps) => {
   const [optionList, setOptionList] = useState<
     {
@@ -50,7 +51,7 @@ export const DangerSignsStep = ({
   >(options);
   const [currentOption, setCurrentOption] = useState<string>();
   const [question, setAnswers] = useState({
-    question: `Tick the danger signs {client} is experiencing:`,
+    question: dangerSignsQuestion,
     answer: [] as (string | number | undefined)[],
   });
 
@@ -59,8 +60,6 @@ export const DangerSignsStep = ({
   const answers = question.answer as string[];
 
   const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-
-  const visitSection = 'Danger signs';
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -107,7 +106,7 @@ export const DangerSignsStep = ({
         setEnableButton?.(true);
         return setQuestions?.([
           {
-            visitSection,
+            visitSection: dangerSignsVisitSection,
             questions: [updatedQuestion],
           },
         ]);
@@ -119,7 +118,7 @@ export const DangerSignsStep = ({
       setAnswers(updatedQuestion);
       return setQuestions?.([
         {
-          visitSection,
+          visitSection: dangerSignsVisitSection,
           questions: [updatedQuestion],
         },
       ]);
@@ -129,9 +128,10 @@ export const DangerSignsStep = ({
 
   const handleOnChangeSelectedOptions = useCallback(() => {
     if (!answers?.includes(noneOption) && answers.length) {
-      setRisk && setRisk(0);
-      if (answers?.includes(riskOption1) || answers.includes(riskOption2)) {
-        setRisk && setRisk(answers?.includes(riskOption2) ? 2 : 1);
+      setRisk?.(1);
+
+      if (answers.includes(riskOption2)) {
+        setRisk?.(2);
       }
       return setOptionList((prevState) =>
         prevState.map((item) => {
@@ -144,6 +144,8 @@ export const DangerSignsStep = ({
     }
 
     if (answers?.includes(noneOption)) {
+      setRisk?.(0);
+
       return setOptionList((prevState) =>
         prevState.map((item) => {
           if (item.title !== noneOption) {
@@ -173,7 +175,7 @@ export const DangerSignsStep = ({
         <Translations
           toTranslate={currentOption}
           onClose={() => setIsTip && setIsTip(false)}
-          section={visitSection}
+          section={dangerSignsVisitSection}
         />
       </Dialog>
     );
@@ -183,7 +185,7 @@ export const DangerSignsStep = ({
     <>
       <Header
         customIcon={P4}
-        title={visitSection}
+        title={dangerSignsVisitSection}
         subTitle="Check for these signs"
         iconHexBackgroundColor={activitiesColours.pillar4.primaryColor}
         hexBackgroundColor={activitiesColours.pillar4.secondaryColor}

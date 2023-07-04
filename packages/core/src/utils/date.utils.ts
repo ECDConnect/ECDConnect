@@ -127,3 +127,18 @@ export function getFormattedDateInYearsMonthsAndDays(startedDate?: string) {
     months > 1 ? 'months' : 'month'
   }`;
 }
+
+export const getDateWithoutTimeZone = (date: string) => {
+  if (!date) return;
+
+  const [dateWithoutTimeZoneString] = date?.split('T');
+
+  if (dateWithoutTimeZoneString) {
+    const dateWithoutTimeZone = new Date(dateWithoutTimeZoneString);
+    dateWithoutTimeZone.setHours(0, 0, 0, 0);
+
+    return dateWithoutTimeZone;
+  }
+
+  return undefined;
+};

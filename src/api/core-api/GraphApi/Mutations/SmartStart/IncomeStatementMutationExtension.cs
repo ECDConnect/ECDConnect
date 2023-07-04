@@ -1,23 +1,20 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using ECDLink.Abstractrions.Enums;
+using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
-using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -82,71 +79,34 @@ StatementsSubmit input)
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
 
-        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public async Task<bool> SaveIncomeStatementPDF(
-            [Service] IHttpContextAccessor contextAccessor,
-            [Service] IFileService fileService,
-            IGenericRepositoryFactory repoFactory, 
-            IncomeStatementPDFDoc input)
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.Create)]
+        public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
         {
-            if (input != null && input.Reference != "")
+            //TODO: pull from system settings
+            int forceSubmitDay = 8;
+            var statements = incomeManager.GetUnsubmittedStatements(forceSubmitDay);
+            var dateToSubmit = DateTime.Now.AddMonths(-1); //run previous months unsubmitted
+            foreach (var userId in statements)
             {
-                var userId = contextAccessor.HttpContext.GetUser().Id;
-                var documentRepo = repoFactory.CreateRepository<Document>(userContext: userId);
-                var documentTypeRepo = repoFactory.CreateRepository<DocumentType>(userContext: userId);
-                var workflowStatusTypeRepo = repoFactory.CreateRepository<WorkflowStatusType>(userContext: userId);
-                var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
-
-                // Workflow info
-                WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
-                WorkflowStatus ws = workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
-
-                // Get the document type
-                DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
-
-                // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
-
-                // Upload the document
-                var b64Str = input.Reference;
-
-                // using MemoryStream fileStream = new MemoryStream(bytes);
-                var fileName = input.UserId + "_" + input.FileName;
-                var document = await fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF);
-                //var fileUrl = Task.Run(() => fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF)).Result.Url;
-
-                if (doc == null)
-                {
-                    // Save new document to the database
-                    doc = new Document
-                    {
-                        CreatedUserId = _applicationUserId,
-                        Name = fileName,
-                        UpdatedBy = _applicationUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = input.UserId,
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    };
-                    documentRepo.Insert(doc);
-                }
-                else {
-                    // remove previous file on file server
-                    await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
-
-                     doc.Name = fileName;
-                     doc.UpdatedBy = _applicationUserId;
-                     doc.Reference = document.Url.TrimEnd('/');
-                     doc.UserId = input.UserId;
-                     doc.UpdatedDate = DateTime.Now;
-                     documentRepo.Update(doc);
-
-                }
+                incomeManager.AutoSubmitStatement(userId, dateToSubmit.Year, dateToSubmit.Month);
             }
 
-            return true;
+            return new ResultReturnObject() { ResultMessage = "OK" };
+        }
+
+
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
+        public async Task<Document> SaveIncomeStatementPDF(
+            [Service] DocumentManager documentManager,
+            [Service] IHttpContextAccessor contextAccessor,
+            [Service] IFileService fileService,
+            IGenericRepositoryFactory repoFactory,
+            IncomeStatementPDFDoc input)
+        {
+            input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
+
+            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, input);
+            
         }
     }
 }

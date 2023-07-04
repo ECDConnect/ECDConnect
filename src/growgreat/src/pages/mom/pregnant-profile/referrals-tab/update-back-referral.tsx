@@ -22,8 +22,9 @@ import { toCamelCase } from '@ecdlink/core/lib';
 import { addVisitBackReferral } from '@/store/referral/referral.actions';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import {
-  getCurrentVisitSelector,
+  getMotherCurrentVisitSelector,
   getMotherById,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 
 export const yesNoOptions = [
@@ -55,8 +56,17 @@ export const MotherBackReferralUpdate: React.FC<
   );
 
   const currentVisit = useSelector((state: RootState) =>
-    getCurrentVisitSelector(state, '')
+    getMotherCurrentVisitSelector(state, '')
   );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
 
   const selectedReferral = useMemo(() => {
     if (completedReferralsForMother) {
@@ -103,7 +113,14 @@ export const MotherBackReferralUpdate: React.FC<
   };
 
   const refreshList = useCallback(() => {
-    if (currentVisit) {
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
       appDispatch(
         motherThunkActions.getCompletedReferralsForMother({
           motherId: motherId,
@@ -111,7 +128,13 @@ export const MotherBackReferralUpdate: React.FC<
         })
       ).unwrap();
     }
-  }, [motherId, appDispatch, currentVisit]);
+  }, [
+    isToGetPreviousVisitStatusData,
+    currentVisit,
+    appDispatch,
+    motherId,
+    previousVisit?.id,
+  ]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

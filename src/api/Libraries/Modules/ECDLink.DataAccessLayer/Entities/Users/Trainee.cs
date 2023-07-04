@@ -45,6 +45,15 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public string HighestEducationLevel { get; set; }
         public bool? HaveCommunitySupport { get; set; }
         public DateTime? CommunitySupportGained { get; set; }
+        public string HomeAddressLine1 { get; set; }
+        public string HomeAddressLine2 { get; set; }
+        public string HomeAddressLine3 { get; set; }
+        public string HomeAddressPostalCode { get; set; }
+        public string PreferredCommunicationLanguage { get; set; }
+        public DateTime? FranchiseeAgreementAcceptedDate { get; set; }
+        public DateTime? SmartSpaceLicenceDate { get; set; }
+        public DateTime? StarterLicenceDate { get; set; }
+        public string StipendType { get; set; }
     }
 
     public interface TraineeIdJoin<TKey>

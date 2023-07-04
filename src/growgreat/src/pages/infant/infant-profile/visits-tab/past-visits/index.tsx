@@ -14,10 +14,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import {
   getInfantById,
-  getInfantCurrentVisitSelector,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
-import { filterArrayBeforeId } from '..';
+import { getDateWithoutTimeZone } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -28,36 +27,34 @@ export const PastVisits: React.FC = () => {
 
   const [, , , infantId] = location.pathname.split('/');
 
+  const currentDate = new Date();
+  currentDate?.setHours(0, 0, 0, 0);
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
-
-  const infantInsertedDate = useMemo(
-    () => new Date(infant?.insertedDate || ''),
-    [infant?.insertedDate]
-  );
-
-  const filteredVisits = useMemo(
-    () =>
-      visits.filter(
-        (item) => new Date(item.orderDate || '') >= infantInsertedDate
-      ),
-    [infantInsertedDate, visits]
-  );
 
   const visitSteps = useMemo(() => {
-    const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    );
-    const pastVisits = visitsBeforeCurrentVisit.length
-      ? visitsBeforeCurrentVisit
-      : filteredVisits;
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
 
-    const array: StepItem[] = pastVisits.map((item, index) => {
+      if (dueDate) {
+        return isAttend || (!isAttend && dueDate < todayDate!);
+      }
+
+      if (orderDate) {
+        return isAttend || (!isAttend && orderDate < todayDate!);
+      }
+
+      return isAttend;
+    });
+
+    const array: StepItem[] = filteredVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {
         if (!item.attended) {
           return 'inProgress';
@@ -75,7 +72,9 @@ export const PastVisits: React.FC = () => {
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),
-        showActionButton: getType() === 'completed',
+        // Change this rule to not show 'See info' for past visits until further notice 30 June 2023 (Kim)
+        //showActionButton: getType() === 'completed',
+        showActionButton: false,
         actionButtonText: 'See info',
         actionButtonTextColor: 'secondary',
         actionButtonColor: 'secondaryAccent2',
@@ -93,7 +92,7 @@ export const PastVisits: React.FC = () => {
     });
 
     return array;
-  }, [currentVisit?.id, filteredVisits, history, infantId]);
+  }, [history, infantId, todayDate, visits]);
 
   const goBack = useCallback(() => {
     history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);

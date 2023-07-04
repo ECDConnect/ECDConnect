@@ -20,6 +20,7 @@ import { HealthPromotion } from '../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
 
 export const clinicCheckupQuestion = `Has {client} been to the clinic for a postnatal check-up?`;
+export const clinicCheckupSectionName = 'Clinic check-ups';
 
 export const ClinicCheckupStep = ({
   infant,
@@ -29,8 +30,6 @@ export const ClinicCheckupStep = ({
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[]>();
-
-  const sectionName = 'Clinic check-ups';
 
   const caregiverName = useMemo(
     () => infant?.caregiver?.firstName || '',
@@ -48,7 +47,7 @@ export const ClinicCheckupStep = ({
       setQuestions &&
         setQuestions([
           {
-            visitSection: sectionName,
+            visitSection: clinicCheckupSectionName,
             questions: [
               {
                 question: clinicCheckupQuestion,
@@ -72,7 +71,7 @@ export const ClinicCheckupStep = ({
         <HealthPromotion
           title={`Discuss with ${caregiverName}`}
           subTitle="Clinic check-ups"
-          section={sectionName}
+          section={clinicCheckupSectionName}
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>
@@ -84,7 +83,7 @@ export const ClinicCheckupStep = ({
       <Header
         backgroundColor="tertiary"
         customIcon={Pregnant}
-        title={sectionName}
+        title={clinicCheckupSectionName}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard
