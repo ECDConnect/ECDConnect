@@ -124,6 +124,18 @@ export const PQAVisits = ({
     );
   };
 
+  const getSubTitleText = (item: Maybe<Visit>) => {
+    if (!!currentVisitEventId) {
+      return 'Scheduled ';
+    }
+
+    if (!item?.attended) {
+      return 'By ';
+    }
+
+    return '';
+  };
+
   return (
     <>
       {mergedVisits.map((item) => (
@@ -164,7 +176,7 @@ export const PQAVisits = ({
             color={getStepType(String('Success'))?.color || 'textMid'}
             text={
               !!item?.plannedVisitDate
-                ? `${!item.attended ? 'By ' : ''}${new Date(
+                ? `${getSubTitleText(item)}${new Date(
                     item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
