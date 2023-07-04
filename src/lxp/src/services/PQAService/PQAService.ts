@@ -1,6 +1,7 @@
 import { Config } from '@ecdlink/core';
 import {
   CmsVisitDataInputModelInput,
+  FollowUpVisitModelInput,
   PractitionerTimeline,
   SupportVisitModelInput,
   Visit,
@@ -66,6 +67,33 @@ class PQAService {
     return response.data.data.addSupportVisitForPractitioner;
   }
 
+  async addFollowUpVisitForPractitioner(
+    input: FollowUpVisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addFollowUpVisitForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
+          addFollowUpVisitForPractitioner(input: $input) {
+              id          
+          }        
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add follow up visit failed - Server connection error');
+    }
+
+    return response.data.data.addFollowUpVisitForPractitioner;
+  }
+
   async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -113,6 +141,48 @@ class PQAService {
             firstAidCourseColor
             firstAidCourseStatus
             firstAidDate
+            pQARating1 {
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+            }
+            pQARating2 {
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+            }
+            pQARating3 {
+              children {
+                sectionRating
+                sectionRatingColor
+                sectionScore
+                visitSection
+              }
+              overallRating
+              overallRatingColor
+              overallRatingStars
+              overallScore
+              plannedDate
+              visitName
+            }
             prePQAVisitDate1
             prePQAVisitDate1Color
             prePQAVisitDate1Status
@@ -137,6 +207,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              insertedDate
               visitType {
                 type
                 order

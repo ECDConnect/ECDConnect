@@ -1,5 +1,7 @@
 import {
   CmsVisitDataInputModelInput,
+  Maybe,
+  PqaRating,
   PractitionerTimeline,
   VisitData,
 } from '@ecdlink/graphql';
@@ -19,6 +21,11 @@ export interface PreviousFormData {
   formData: VisitData[];
 }
 
+export interface PqaRatingData {
+  rating?: Maybe<PqaRating>;
+  visitNumber?: number;
+}
+
 export type PQAState = {
   coachPractitionersTimeline?: CoachPractitionerTimeline[];
   prePqaFormData?: FormData[];
@@ -26,4 +33,5 @@ export type PQAState = {
   pqaFormData?: FormData[];
   reAccreditationFormData?: FormData[];
   supportVisitFormData?: FormData[];
+  followUpVisitFormData?: FormData[];
 };
