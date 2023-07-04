@@ -56,14 +56,9 @@ export const PQAVisits = ({
     getLastCoachAttendedVisitByUserId(practitionerId)
   );
 
-  // const filteredVisits = timeline?.pQASiteVisits?.filter(item => !item?.visitType?.name?.includes('follow_up'))
   const pqaRating1 = timeline?.pQARating1;
   const pqaRating2 = timeline?.pQARating2;
   const pqaRating3 = timeline?.pQARating3;
-
-  // const isFirstVisit = !pqaRating2?.overallRating && !pqaRating3?.overallRating
-  // const isRedRating = currentPqaRating?.rating?.overallRatingColor === 'Error'
-  // const isOrangeRating = currentPqaRating?.rating?.overallRatingColor === 'Warning'
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
   const currentFollowUpDeadline = pqaRating3?.overallRating

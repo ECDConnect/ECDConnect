@@ -235,15 +235,15 @@ export const CoachPractitionerJourney = () => {
     }
   }, [selectedForm]);
 
-  // useLayoutEffect(() => {
-  //   getTimeline();
-  // }, [getTimeline]);
+  useLayoutEffect(() => {
+    getTimeline();
+  }, [getTimeline]);
 
-  // useEffect(() => {
-  //   if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
-  //     getTimeline();
-  //   }
-  // }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
+  useEffect(() => {
+    if ((!wasOnline && isOnline) || (previousShowForm && !showForm)) {
+      getTimeline();
+    }
+  }, [getTimeline, isOnline, previousShowForm, showForm, wasOnline]);
 
   const renderAlert = () => {
     const isRedRating =

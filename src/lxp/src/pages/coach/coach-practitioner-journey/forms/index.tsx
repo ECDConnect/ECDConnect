@@ -48,6 +48,7 @@ import {
   step15ReAccreditationQuestions,
   step15ReAccreditationVisitSection,
 } from './reaccreditation';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -56,6 +57,11 @@ interface SubmitProps {
 
 interface ExtraVisitProps extends SubmitProps {
   type: 'support-visit' | 'follow-up-visit';
+}
+
+export interface PqaRating {
+  color: 'Success' | 'Warning' | 'Error';
+  score: number;
 }
 
 interface FormProps {
@@ -75,6 +81,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
   const [title, setTitle] = useState('');
+  const [pqaRating, setPqaRating] = useState<PqaRating | undefined>();
 
   const { isOnline } = useOnlineStatus();
 
@@ -87,6 +94,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const firstName = practitioner?.user?.firstName || 'the SmartStarter';
   const step16Question1Answer = sectionQuestions
@@ -97,9 +108,26 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     ?.questions.find(
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
+
+  const pqaRating1 = timeline?.pQARating1;
+  const pqaRating2 = timeline?.pQARating2;
+  const pqaRating3 = timeline?.pQARating3;
+
+  const pqaRatingColorList = [
+    pqaRating1?.overallRatingColor,
+    pqaRating2?.overallRatingColor,
+    pqaRating3?.overallRatingColor,
+    pqaRating?.color,
+  ];
+
+  const pqaRatingRedColorCount = pqaRatingColorList.filter(
+    (item) => item === 'Error'
+  ).length;
+  console.log({ pqaRatingRedColorCount });
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
-    step15ReAccreditationQuestion1Answer === true;
+    step15ReAccreditationQuestion1Answer === true ||
+    pqaRatingRedColorCount === 2;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -275,13 +303,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const onSubmitFollowUpVisit = useCallback(
     (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
-      // appDispatch(
-      //   pqaActions.addVisitFormData(payload, {
-      //     userId: practitionerId,
-      //     formType: 'follow-up-visit',
-      //   })
-      // );
-      // appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 'follow-up-visit',
+        })
+      );
+      appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
 
       window.sessionStorage.setItem(
         currentActivityKey,
@@ -289,7 +317,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       );
       setCurrentActivity(visitTypes.pqa.firstPQA.name);
     },
-    []
+    [appDispatch, practitionerId]
   );
 
   const handleSubmitExtraVisit = useCallback(
@@ -543,6 +571,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         smartStarter={practitioner}
         isTipPage={isTip}
         currentStep={step}
+        pqaRating={pqaRating}
         nextButtonText={
           step === 10 && isStep11AnswerTrue
             ? 'Continue to SmartSpace checklist'
@@ -554,6 +583,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        setPqaRating={setPqaRating}
         isLoading={isLoading || isLoadingSupportVisit || isLoadingDeactivate}
         secondaryButton={
           visitName === visitTypes.delicensing && step === 1
