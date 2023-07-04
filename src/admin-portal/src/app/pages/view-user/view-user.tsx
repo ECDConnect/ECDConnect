@@ -184,7 +184,7 @@ export function ViewUser(props: any) {
             onSubmit();
             deleteUser({
               variables: {
-                userId:
+                id:
                   userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
               },
             })
