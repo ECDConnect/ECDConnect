@@ -4,11 +4,39 @@ import { ArrowLeftIcon, XIcon } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
 
 export function TermsPage(props: any) {
-  const [showPassword, setShowPassword] = useState(false);
+  const [content, setContent] = useState(null);
   const history = useHistory();
 
+  useEffect(() => {
+    var myHeaders = new Headers();
+    myHeaders.append("Referer", "https://ecd-connect-newportal-fe.azurewebsites.net/");
+    myHeaders.append("Content-Type", "application/json");
+    
+
+    var raw = JSON.stringify({
+      "operationName": "GetAllConsent",
+      "variables": {
+        "locale": "en-za",
+        "type": "ConsentAgreement"
+      },
+      "query": "query GetAllConsent($locale: String) {GetAllConsent(locale: $locale) { id name type description}}"
+    });
+    
+
+    fetch("https://ecd-connect-newportal-api.azurewebsites.net/graphql/", {
+      method: 'POST',
+      headers: myHeaders,
+      body: raw,
+      redirect: 'follow'
+    })
+      .then(response => response.json())
+      .then(result => setContent(result?.data?.openConsent[0].description))
+      .catch(error => console.log('error', error));
+  },)
+
+
   return (
-    <div className="">
+    <div className="" >
 
       <header className="bg-primary static">
         <div className="container flex justify-between h-16 mx-auto">
@@ -40,7 +68,10 @@ export function TermsPage(props: any) {
         </div>
       </header>
 
-      <div className='p-14'>
+      <div className='p-14' style={{
+        height: '100vh', /* Adjust the height as needed */
+        overflow: ' auto'
+      }}>
         <div className='py-4'>
           <h1 className='text-xl font-bold'>TERMS AND CONDITIONS</h1>
 
@@ -107,7 +138,7 @@ export function TermsPage(props: any) {
         </div>
         <div className='py-6'>
           <h1 className='text-md font-bold'>13.	Intellectual Property Rights </h1>
-
+          {content}
         </div>
       </div>
     </div>
