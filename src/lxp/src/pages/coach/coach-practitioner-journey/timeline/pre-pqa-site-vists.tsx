@@ -75,7 +75,7 @@ export const PrePqaVisits = ({
                     position: 'absolute',
                     right: -36,
                   }}
-                  className="z-50 w-24"
+                  className="z-50 w-32"
                   type="filled"
                   color="secondaryAccent2"
                   textColor="secondary"

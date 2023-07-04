@@ -23,6 +23,7 @@ namespace ECDLink.DataAccessLayer.Entities.Calendar
         public DateTime Start { get; set; }
         public DateTime End { get; set; }
         public string Description { get; set; }
+        public string Action { get; set; }
         public virtual ICollection<CalendarEventParticipant> Participants { get; set; }
 	}
 

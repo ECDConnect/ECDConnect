@@ -3,6 +3,7 @@ import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { SupportVisits } from './support-visits-step';
 import { PrePqaVisits } from './pre-pqa-site-vists';
 import { PQAVisits } from './pqa-site-visits-step';
+import { CalendarEventModel } from '@ecdlink/core';
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -61,15 +62,19 @@ export const setStep = (
 
 export const timelineSteps = ({
   timeline,
+  practitionerEvents,
   onView,
   onStart,
+  onScheduleOrStart,
   isLoading,
   isOnline,
   visits,
 }: {
   timeline: PractitionerTimeline;
+  practitionerEvents?: CalendarEventModel[];
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
+  onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
@@ -194,6 +199,18 @@ export const timelineSteps = ({
     const currentVisit = !!visitToAttend
       ? visitToAttend
       : visits[visits.length - 1];
+    const currentVisitEvent =
+      !!currentVisit && !!practitionerEvents
+        ? practitionerEvents.find(
+            (e) =>
+              e.eventType === 'First PQA' &&
+              e.action.state !== undefined &&
+              e.action.state.action === 'onStart' &&
+              e.action.state.actionParams !== undefined &&
+              e.action.state.actionParams.visitName ===
+                currentVisit.visitType?.name
+          )
+        : undefined;
 
     const isLateDate =
       new Date(currentVisit?.plannedVisitDate) < new Date() &&
@@ -210,7 +227,7 @@ export const timelineSteps = ({
 
     steps.push({
       title: 'First PQA',
-      subTitle: `By ${new Date(
+      subTitle: `${!!currentVisitEvent ? 'Scheduled' : 'By'} ${new Date(
         currentVisit?.plannedVisitDate
       ).toLocaleDateString('en-ZA', dateOptions)}`,
       subTitleColor: stepType.color,
@@ -224,8 +241,9 @@ export const timelineSteps = ({
           isLoading={isLoading}
           visits={visits}
           currentVisit={currentVisit}
+          currentVisitEventId={currentVisitEvent?.id}
           onView={onView}
-          onStart={onStart}
+          onScheduleOrStart={onScheduleOrStart}
           isOnline={isOnline}
         />
       ),

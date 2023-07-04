@@ -453,6 +453,7 @@ export type CmsVisitSectionInput = {
 
 export type CalendarEvent = {
   __typename?: 'CalendarEvent';
+  action?: Maybe<Scalars['String']>;
   allDay: Scalars['Boolean'];
   description?: Maybe<Scalars['String']>;
   end: Scalars['DateTime'];
@@ -468,6 +469,7 @@ export type CalendarEvent = {
 };
 
 export type CalendarEventFilterInput = {
+  action?: InputMaybe<StringOperationFilterInput>;
   allDay?: InputMaybe<BooleanOperationFilterInput>;
   and?: InputMaybe<Array<CalendarEventFilterInput>>;
   description?: InputMaybe<StringOperationFilterInput>;
@@ -485,6 +487,7 @@ export type CalendarEventFilterInput = {
 };
 
 export type CalendarEventInput = {
+  Action?: InputMaybe<Scalars['String']>;
   AllDay: Scalars['Boolean'];
   Description?: InputMaybe<Scalars['String']>;
   End: Scalars['DateTime'];

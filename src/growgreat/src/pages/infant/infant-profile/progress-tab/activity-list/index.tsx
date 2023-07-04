@@ -47,7 +47,7 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
-import { relationshipTypes } from '../../../components/mother-details/mother-details.types';
+import { staticDataSelectors } from '@/store/static-data';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
@@ -78,7 +78,7 @@ export const ActivityList: React.FC = () => {
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
-
+  const relations = useSelector(staticDataSelectors.getRelations);
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
   const previousSelectedOption = usePrevious(selectedOption) as
     | string
@@ -111,7 +111,6 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, visit)
   );
-
   const appDispatch = useAppDispatch();
 
   const infant = useSelector((state: RootState) =>
@@ -213,14 +212,17 @@ export const ActivityList: React.FC = () => {
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
   const previousClinicCheckUpAnswer = previousAnswers?.find(
-    (item) => item.question === clinicCheckupQuestion
+    (item) =>
+      item.question === clinicCheckupQuestion &&
+      item.visitId === previousVisit?.id
   )?.questionAnswer;
 
   const isShowClinicCheckUps = useMemo(
     () =>
       (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 49) ||
       (isFirstVisit && ageDays >= 49 && ageDays <= 56) ||
-      (Boolean(previousClinicCheckUpAnswer) === false && ageDays <= 56),
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 57),
     [ageDays, previousClinicCheckUpAnswer, isFirstVisit]
   );
 
@@ -239,14 +241,9 @@ export const ActivityList: React.FC = () => {
     activitiesTypes.careForMom
   );
 
-  const isMotherCaregiver = useMemo(
-    () => infant?.caregiver?.relation?.description === 'Mother',
-    [infant?.caregiver?.relation?.description]
-  );
-
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
-    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && ageDays >= 49 && ageYears < 5,
+    [ageDays, ageYears, isFirstVisit]
   );
 
   const isDisplayPillar2 = [
@@ -336,9 +333,7 @@ export const ActivityList: React.FC = () => {
   );
 
   const { visibleActivities } = useMemo(() => {
-    const motherType = relationshipTypes.find(
-      (item) => item.label === 'Mother'
-    );
+    const motherType = relations.find((item) => item.description === 'Mother');
 
     const visibleActivities = activitiesList.filter((item) => {
       if (
@@ -346,7 +341,8 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.pillar2 && !isDisplayPillar2) ||
         (item.id === activitiesTypes.careForBaby && !isDisplayCareForBaby) ||
         (item.id === activitiesTypes.careForMom &&
-          infant?.caregiver?.relation?.description !== motherType?.label) ||
+          infant?.caregiver?.relation?.description !==
+            motherType?.description) ||
         (item.id === activitiesTypes.pillar3 && !isDisplayPillar3)
       )
         return undefined;
@@ -356,11 +352,12 @@ export const ActivityList: React.FC = () => {
 
     return { visibleActivities };
   }, [
-    isDisplayPillar3,
-    infant?.caregiver?.relation?.description,
+    relations,
     isChildAfter49Days,
     isDisplayPillar2,
     isDisplayCareForBaby,
+    infant?.caregiver?.relation?.description,
+    isDisplayPillar3,
   ]);
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =

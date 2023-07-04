@@ -1,6 +1,5 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -248,8 +247,9 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     VisitData existingRecord = ValidateInsertRecordWithoutAnswer(visitData);
                     if (existingRecord != null)
                     {
-                        visitData.Id = existingRecord.Id;
-                        _visitDataRepo.Update(visitData);
+                        var entityToUpdate = _visitDataRepo.GetById(existingRecord.Id);
+                        entityToUpdate.QuestionAnswer = visitData.QuestionAnswer;
+                        _visitDataRepo.Update(entityToUpdate);
                     } else
                     {
                         _visitDataRepo.Insert(visitData);

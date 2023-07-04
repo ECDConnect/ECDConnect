@@ -1,4 +1,8 @@
-import { CalendarEventModel, CalendarEventTypeDto } from '@ecdlink/core';
+import {
+  CalendarEventDto,
+  CalendarEventModel,
+  CalendarEventTypeDto,
+} from '@ecdlink/core';
 import { CalendarEventInput } from '@ecdlink/graphql';
 import type { EventObject } from '@toast-ui/calendar';
 
@@ -8,6 +12,7 @@ export const calendarConvert = {
       return {
         __changed: false,
         id: input.Id,
+        action: !!input.Action ? JSON.parse(input.Action) : undefined,
         allDay: input.AllDay,
         description: input.Description || '',
         end: input.End,
@@ -47,6 +52,7 @@ export const calendarConvert = {
 
     CalendarEventInput: (input: CalendarEventModel): CalendarEventInput => {
       return {
+        Action: !!input.action ? JSON.stringify(input.action) : null,
         AllDay: input.allDay,
         Description: input.description,
         End: input.end,
@@ -62,6 +68,34 @@ export const calendarConvert = {
         })),
         Start: input.start,
       };
+    },
+  },
+
+  CalendarEventDto: {
+    CalendarEventModel: (input: CalendarEventDto): CalendarEventModel => {
+      return {
+        __changed: false,
+        id: input.id,
+        action: !!input.action ? JSON.stringify(input.action) : null,
+        allDay: input.allDay,
+        description: input.description || '',
+        end: input.end,
+        eventType: input.eventType || '',
+        name: input.name || '',
+        start: input.start || '',
+        participants: !input.participants
+          ? []
+          : input.participants.map((p) => ({
+              id: p.id,
+              participantUserId: p.participantUserId || '',
+            })),
+      };
+    },
+
+    CalendarEventModels: (input: CalendarEventDto[]): CalendarEventModel[] => {
+      return input.map((i) =>
+        calendarConvert.CalendarEventDto.CalendarEventModel(i)
+      );
     },
   },
 };

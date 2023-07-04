@@ -26,6 +26,7 @@ type SearchHeaderProps<T> = {
   heading?: string;
   children: ReactNode;
   className?: string;
+  onClickItem?: (item: any) => void;
 };
 
 const SearchHeader = <T extends {}>({
@@ -39,6 +40,7 @@ const SearchHeader = <T extends {}>({
   className,
   heading,
   onBack,
+  onClickItem,
 }: SearchHeaderProps<T>) => {
   return (
     <>
@@ -93,6 +95,7 @@ const SearchHeader = <T extends {}>({
                 listItems={searchItems as any}
                 type={'UserAlertList'}
                 onScroll={onScroll}
+                onClickItem={onClickItem}
               />
             )}
           </div>

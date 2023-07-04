@@ -1,5 +1,5 @@
 import type { EventObject } from '@toast-ui/calendar';
-import { UpdateEventEvent } from './components/update-event/update-event.types';
+import { CalendarAddEventInfo } from './components/calendar-add-event/calendar-add-event.types';
 
 export const CALENDARS = [
   {
@@ -44,7 +44,7 @@ export interface EventInfo {
 
 export type ViewType = 'day' | 'week' | 'month';
 
-export type UpdateEventPopupData = {
+export type CalendarAddEventPopupData = {
   visible: boolean;
-  event?: UpdateEventEvent;
+  event?: CalendarAddEventInfo;
 };
