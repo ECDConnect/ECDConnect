@@ -56,9 +56,11 @@ const classroomsSlice = createSlice({
     },
     updateClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (state.classroomGroups) {
+        const isOnline = navigator.onLine;
+        const payloadUpdated = { ...action.payload, isOnline };
         for (let i = 0; i < state.classroomGroups.length; i++) {
           if (state.classroomGroups[i].id === action.payload.id)
-            state.classroomGroups[i] = action.payload;
+            state.classroomGroups[i] = payloadUpdated;
         }
       }
     },
@@ -91,7 +93,9 @@ const classroomsSlice = createSlice({
     },
     createClassroomGroup: (state, action: PayloadAction<ClassroomGroupDto>) => {
       if (!state.classroomGroups) state.classroomGroups = [];
-      state.classroomGroups?.push(action.payload);
+      const isOnline = false;
+      const payloadUpdated = { ...action.payload, isOnline };
+      state.classroomGroups?.push(payloadUpdated);
     },
     createClassroomProgramme: (
       state,
