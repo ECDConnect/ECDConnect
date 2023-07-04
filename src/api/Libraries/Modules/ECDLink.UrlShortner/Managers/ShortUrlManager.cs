@@ -3,6 +3,7 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.Tenancy.Context;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -53,13 +54,16 @@ namespace ECDLink.UrlShortner.Managers
 
         public string GetUrlToken(string url, ApplicationUser user, string messageType)
         {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            
             var urlEntity = new ShortenUrlEntity
             {
                 Id = new Guid(),
                 URL = url,
                 Clicked = 0,
                 UserId = user.Id,
-                MessageType = messageType
+                MessageType = messageType,
+                TenantId = tenantId
             };
 
             _entities.Add(urlEntity);
