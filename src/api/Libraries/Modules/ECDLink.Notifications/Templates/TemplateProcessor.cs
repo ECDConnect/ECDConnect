@@ -13,6 +13,7 @@ namespace ECDLink.Notifications.Templates
     {
         private TemplateFilters _templateFilters;
         private IDictionary<string, Action<ITemplateOverrideModel>> messageActions;
+        private IDictionary<string, Action<ITemplateOverrideModel>> messageSubjectActions;
         private ApplicationUser _user;
         private IMessageTemplate _messageTemplate;
 
@@ -24,6 +25,7 @@ namespace ECDLink.Notifications.Templates
             // TODO: Why is this called constatnly?
             _templateFilters = filters;
             messageActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
+            messageSubjectActions = new Dictionary<string, Action<ITemplateOverrideModel>>();
         }
 
         public TemplateProcessor SetUserContext(ApplicationUser applicationUser)
@@ -72,7 +74,7 @@ namespace ECDLink.Notifications.Templates
                 return "";
             }
 
-            return ProcessText(_messageSubject, messageActions, startToken, endToken);
+            return ProcessText(_messageSubject, messageSubjectActions, startToken, endToken);
         }
 
         public string ProcessText(string text, IDictionary<string, Action<ITemplateOverrideModel>> ationDictionary, string startToken = null, string endToken = null)
@@ -116,14 +118,14 @@ namespace ECDLink.Notifications.Templates
             var bodyFilters = ParseMessageFilterText(_messageBody, messageOverrides);
             foreach (var p in bodyFilters)
             {
-                messageActions.Add(p);
+                var added = messageActions.TryAdd(p.Key, p.Value);
             }
             
             var subjectFilters = ParseMessageFilterText(_messageSubject, messageOverrides);
             
             foreach (var p in subjectFilters ?? new Dictionary<string, Action<ITemplateOverrideModel>>())
             {
-                messageActions.TryAdd(p.Key, p.Value);
+                var added = messageSubjectActions.TryAdd(p.Key, p.Value);
             }
 
             return this;
@@ -137,7 +139,6 @@ namespace ECDLink.Notifications.Templates
             {
                 return messageActions;
             }
-
 
             foreach (var item in text.GetMessagePlaceHolders())
             {
