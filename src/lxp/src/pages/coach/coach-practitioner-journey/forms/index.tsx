@@ -123,7 +123,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const pqaRatingRedColorCount = pqaRatingColorList.filter(
     (item) => item === 'Error'
   ).length;
-  console.log({ pqaRatingRedColorCount });
+
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
     step15ReAccreditationQuestion1Answer === true ||
