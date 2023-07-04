@@ -111,7 +111,6 @@ export const ActivityList: React.FC = () => {
   const previousVisit = useSelector((state: RootState) =>
     getInfantNearestPreviousVisitByOrderDate(state, visit)
   );
-
   const appDispatch = useAppDispatch();
 
   const infant = useSelector((state: RootState) =>
@@ -213,14 +212,17 @@ export const ActivityList: React.FC = () => {
   const previousAnswers = useSelector(getVisitAnswersForInfantSelector);
 
   const previousClinicCheckUpAnswer = previousAnswers?.find(
-    (item) => item.question === clinicCheckupQuestion
+    (item) =>
+      item.question === clinicCheckupQuestion &&
+      item.visitId === previousVisit?.id
   )?.questionAnswer;
 
   const isShowClinicCheckUps = useMemo(
     () =>
       (isFirstVisit && ageDays >= 7 && ageDays <= 27) ||
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 49) ||
       (isFirstVisit && ageDays >= 49 && ageDays <= 56) ||
-      (Boolean(previousClinicCheckUpAnswer) === false && ageDays <= 56),
+      (previousClinicCheckUpAnswer === 'false' && ageDays < 57),
     [ageDays, previousClinicCheckUpAnswer, isFirstVisit]
   );
 
@@ -239,14 +241,9 @@ export const ActivityList: React.FC = () => {
     activitiesTypes.careForMom
   );
 
-  const isMotherCaregiver = useMemo(
-    () => infant?.caregiver?.relation?.description === 'Mother',
-    [infant?.caregiver?.relation?.description]
-  );
-
   const isMaternalDistressScreening = useMemo(
-    () => isFirstVisit && isMotherCaregiver && ageDays >= 49 && ageMonths < 9,
-    [ageDays, ageMonths, isFirstVisit, isMotherCaregiver]
+    () => isFirstVisit && ageDays >= 49 && ageYears < 5,
+    [ageDays, ageYears, isFirstVisit]
   );
 
   const isDisplayPillar2 = [
