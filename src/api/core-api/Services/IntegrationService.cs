@@ -852,9 +852,10 @@ namespace ECDLink.Core.Services
                         //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //5.1) get all frannchisees and map them                
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        //List<MappedFranchisee> remoteFranchisees = await _apiManager.GetFranchiseesByCoach(coach.RemoteId);
                         List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await _apiManager.GetFranchiseesById(franchiseeId) : await _apiManager.GetFranchiseesByCoach(coach.RemoteId));
                         //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        
                         if (remoteFranchisees != null)
                         {
                             //order all to load principals first
@@ -932,16 +933,16 @@ namespace ECDLink.Core.Services
                         }
 
                         //Pull Trainees
-                        List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                        if (remoteTrainees.Any())
-                        {
-                            foreach (var trainee in remoteTrainees)
-                            {
-                                trainee.localParentEntityUserId = coach.UserId;
-                                trainee.localParentEntityId = coach.Id.ToString();
-                                await MapTrainee(trainee);
-                            }
-                        }
+                        //List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+                        //if (remoteTrainees.Any())
+                        //{
+                        //    foreach (var trainee in remoteTrainees)
+                        //    {
+                        //        trainee.localParentEntityUserId = coach.UserId;
+                        //        trainee.localParentEntityId = coach.Id.ToString();
+                        //        await MapTrainee(trainee);
+                        //    }
+                        //}
                     }
                 }
 
