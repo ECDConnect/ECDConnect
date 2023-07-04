@@ -161,7 +161,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IntegrationHelperManager>();
             services.AddTransient<DocumentManager>();
 
-            ConfigureJobs(services);
+            //ConfigureJobs(services);
             
             services.AddControllers();
         }
