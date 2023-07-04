@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services;
@@ -99,70 +100,17 @@ StatementsSubmit input)
 
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public async Task<bool> SaveIncomeStatementPDF(
+        public async Task<Document> SaveIncomeStatementPDF(
+            [Service] DocumentManager documentManager,
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IFileService fileService,
-            IGenericRepositoryFactory repoFactory, 
+            IGenericRepositoryFactory repoFactory,
             IncomeStatementPDFDoc input)
         {
-            if (input != null && input.Reference != "")
-            {
-                var userId = contextAccessor.HttpContext.GetUser().Id;
-                var documentRepo = repoFactory.CreateRepository<Document>(userContext: userId);
-                var documentTypeRepo = repoFactory.CreateRepository<DocumentType>(userContext: userId);
-                var workflowStatusTypeRepo = repoFactory.CreateRepository<WorkflowStatusType>(userContext: userId);
-                var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: userId);
+            input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
 
-                // Workflow info
-                WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
-                WorkflowStatus ws = workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
-
-                // Get the document type
-                DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
-
-                // First validate if document is already in db
-                var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
-
-                // Upload the document
-                var b64Str = input.Reference;
-
-                // using MemoryStream fileStream = new MemoryStream(bytes);
-                var fileName = input.UserId + "_" + input.FileName;
-                var document = await fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF);
-                //var fileUrl = Task.Run(() => fileService.UploadBase64StringFile(b64Str, fileName, FileTypeEnum.IncomeStatementPDF)).Result.Url;
-
-                if (doc == null)
-                {
-                    // Save new document to the database
-                    doc = new Document
-                    {
-                        CreatedUserId = _applicationUserId,
-                        Name = fileName,
-                        UpdatedBy = _applicationUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = input.UserId,
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    };
-                    documentRepo.Insert(doc);
-                }
-                else {
-                    // remove previous file on file server
-                    await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
-
-                     doc.Name = fileName;
-                     doc.UpdatedBy = _applicationUserId;
-                     doc.Reference = document.Url.TrimEnd('/');
-                     doc.UserId = input.UserId;
-                     doc.UpdatedDate = DateTime.Now;
-                     documentRepo.Update(doc);
-
-                }
-            }
-
-            return true;
+            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, input);
+            
         }
     }
 }

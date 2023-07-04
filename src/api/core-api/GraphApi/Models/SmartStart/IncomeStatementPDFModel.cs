@@ -1,4 +1,6 @@
-﻿using System;
+﻿using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Repositories.Factories;
+using System;
 using System.Collections.Generic;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
@@ -37,6 +39,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string FileName { get; set; }
         public string UserId { get; set; }
         public string CreatedUserId { get; set; }
+    }
+
+    public class ExpenseReceipt
+    {
+        public string Name { get; set; }
+        public string PhotoProof { get; set; }
     }
 
 }
