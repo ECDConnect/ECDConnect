@@ -2,7 +2,7 @@
 
 namespace ECDLink.Notifications.Smtp
 {
-    internal class EmailMessage : IEmailMessage
+    public class EmailMessage : IEmailMessage
     {
         public string From { get; set; }
         public string FromDisplayName { get; set; }

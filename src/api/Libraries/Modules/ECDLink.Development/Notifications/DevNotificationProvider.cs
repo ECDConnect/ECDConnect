@@ -3,7 +3,9 @@ using ECDLink.Abstractrions.Notifications;
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
+using ECDLink.Notifications.Smtp;
 using ECDLink.Notifications.Templates;
 using Microsoft.Extensions.Configuration;
 using System.Collections.Generic;
@@ -21,14 +23,20 @@ namespace ECDLink.Development.Notifications
         private readonly IConfigurationSection _configuration;
 
         private IDictionary<string, string> _dropModel;
+        private readonly IMessageLogger<IEmailMessage> _messageLogger;
 
-        public DevNotificationProvider(IMessageFactory messageFactory, IConfiguration configuration, TemplateProcessor templateProcessor)
+        public DevNotificationProvider(
+            IMessageFactory messageFactory,
+            IConfiguration configuration,
+            TemplateProcessor templateProcessor,
+            IMessageLogger<IEmailMessage> messageLogger)
         {
             _messageFactory = messageFactory;
             _templateProcessor = templateProcessor;
             _configuration = configuration.GetSection("Development");
             _fieldTransform = new Dictionary<string, string>();
             _dropModel = new Dictionary<string, string>();
+            _messageLogger = messageLogger;
         }
 
         public Task SendMessageAsync(CancellationToken cancellationToken = default)
@@ -96,7 +104,18 @@ namespace ECDLink.Development.Notifications
                 string userState = "test message1";
 
                 client.SendAsync(message, userState);
-
+                _messageLogger.Log(new EmailMessage()
+                {
+                    From = "System",
+                    FromDisplayName = "System",
+                    To = _dropModel["To"],
+                    ToDisplayName = "",
+                    Cc = "",
+                    Bcc = "",
+                    Subject = _dropModel.ContainsKey("Subject") ? _dropModel["Subject"] : "",
+                MessageBody = _dropModel["Body"]
+                },
+                _messageTemplate?.TemplateType);
                 return Task.CompletedTask;
             }
         }

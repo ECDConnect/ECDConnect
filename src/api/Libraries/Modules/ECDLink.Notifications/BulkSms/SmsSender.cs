@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Templates;
 using Newtonsoft.Json;
@@ -20,6 +21,7 @@ namespace ECDLink.Notifications.BulkSms
     {
         private readonly IMessageFactory _messageFactory;
         private readonly TemplateProcessor _templateProcessor;
+        private readonly IMessageLogger<BulkSmsMessage> _messageLogger;
         private HttpClient _smsClient;
 
         private ISystemSetting<BulkSmsOptions> _smsOptions;
@@ -43,11 +45,12 @@ namespace ECDLink.Notifications.BulkSms
             }
         }
 
-        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor)
+        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessageLogger<BulkSmsMessage> messageLogger)
         {
             _smsOptions = optionsAccessor;
             _messageFactory = messageFactory;
             _templateProcessor = templateProcessor;
+            _messageLogger = messageLogger;
             _message = new BulkSmsMessage();
             _fieldTransform = new Dictionary<string, string>();
         }
@@ -80,6 +83,8 @@ namespace ECDLink.Notifications.BulkSms
             request.Content = new StringContent(JsonConvert.SerializeObject(_message), Encoding.UTF8, "application/json");
 
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
+            
+            _messageLogger.Log(_message, _messageTemplate.TemplateType);
 
             if (response.IsSuccessStatusCode)
             {
