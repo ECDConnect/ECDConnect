@@ -82,3 +82,45 @@ export const TeamLeadsTemplate = gql`
     }
   }
 `;
+
+export const GetTeamLead = gql`
+  query GetAllTeamLeadById(
+    $teamLeadId: UUID
+    $fetchImage: Boolean = true
+    $fetchClinic: Boolean = true
+    $fetchRoles: Boolean = true
+  ) {
+    GetAllTeamLead(where: { id: { eq: $teamLeadId } }) {
+      id
+      user {
+        isActive
+        userName
+        email
+        isSouthAfricanCitizen
+        verifiedByHomeAffairs
+        dateOfBirth
+        idNumber
+        firstName
+        surname
+        fullName
+        contactPreference
+        genderId
+        phoneNumber
+        profileImageUrl @include(if: $fetchImage)
+        roles @include(if: $fetchRoles) {
+          id
+          name
+        }
+      }
+
+      clinic @include(if: $fetchClinic) {
+        name
+        siteAddress {
+          province {
+            description
+          }
+        }
+      }
+    }
+  }
+`;

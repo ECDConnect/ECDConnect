@@ -31,7 +31,7 @@ export default function Login() {
 
 
   const formValues = getValues();
-
+  let password = watch('password')
   const { errors, isValid } = formState;
 
   const signIn = async () => {
@@ -39,7 +39,7 @@ export default function Login() {
       setIsLoading(true);
       const body: LoginRequestModel = {
         username: formValues.email,
-        password: formValues.password,
+        password: password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
         setDisplayError(true);
@@ -85,14 +85,13 @@ export default function Login() {
               </div>
 
               <div className="space-y-1">
-             
-              <PasswordInput
+
+                <PasswordInput
                   label={'Password'}
                   nameProp={'password'}
-                  sufficIconColor="black"
                   value={formValues.password}
                   register={register}
-                  strengthMeterVisible={false}
+                  strengthMeterVisible={true}
                   className="mb-9 "
                 />
               </div>

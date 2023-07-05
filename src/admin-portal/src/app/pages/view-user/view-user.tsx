@@ -53,6 +53,8 @@ import {
   healthCareWorkerVisitStatus,
   SendInviteToApplication,
   GetHealthCareWorkerSummaryForPeriod,
+  GetAllTeamLead,
+  GetTeamLead,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useUser } from '../../hooks/useUser';
@@ -103,9 +105,6 @@ export function ViewUser(props: any) {
   const history = useHistory();
   const [deleteUser] = useMutation(DeleteUser);
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [updateCHW, { loading: chwLoading }] = useMutation(
-    UpdateHealthCareWorker
-  );
 
   let userId = localStorage.getItem('selectedUser');
   const [resetUserPassword] = useMutation(ResetUserPassword);
@@ -122,6 +121,16 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     }
   );
+  const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(
+    GetTeamLead,
+    {
+      variables: {
+        userId: '',
+      },
+      fetchPolicy: 'cache-and-network',
+    }
+  );
+
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -152,7 +161,7 @@ export function ViewUser(props: any) {
   }, [selectedRange]);
 
   useEffect(() => {
-    props.location.state?.component !== 'chw' &&
+    props.location.state?.component === 'administrators' &&
       getUserById({
         variables: { userId: props.location.state.userId ?? userId },
       });
@@ -161,6 +170,12 @@ export function ViewUser(props: any) {
       getChwById({
         variables: { userId: props.location.state.userId ?? userId },
       });
+
+    props.location.state?.component === 'team-leads' &&
+      getAllTeamLead({
+        variables: { userId: props.location.state.userId ?? userId },
+      });
+
   }, [userId]);
 
   const { hasPermission } = useUser();
@@ -175,16 +190,15 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
             deleteUser({
               variables: {
-                userId:
+                id:
                   userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
               },
             })
@@ -213,10 +227,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-          }`}
+            }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -243,10 +256,6 @@ export function ViewUser(props: any) {
         />
       ),
     });
-  };
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
   };
 
   const [editActive, setEditActive] = useState<boolean>(false);
@@ -339,7 +348,7 @@ export function ViewUser(props: any) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id,
+        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id ?? teamLeadData,
         input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
       },
     })
@@ -422,7 +431,7 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => {}}
+                  onPressed={() => { }}
                   hasConsent
                   size="header"
                 />
@@ -462,7 +471,7 @@ export function ViewUser(props: any) {
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
               type="error"
-              // customIcon={<SaveIcon></SaveIcon>}
+            // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>
