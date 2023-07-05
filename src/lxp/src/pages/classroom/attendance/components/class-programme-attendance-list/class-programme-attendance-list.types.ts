@@ -6,6 +6,7 @@ export interface ClassProgrammeAttendanceListProps extends ComponentBaseProps {
   classroomGroup: ClassroomGroupDto;
   attendanceDate: Date;
   onAttendanceUpdated: (state: AttendanceListState) => void;
+  isMultipleClasses: boolean;
 }
 
 export interface AttendanceListState {
