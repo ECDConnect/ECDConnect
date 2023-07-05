@@ -21,10 +21,11 @@ import {
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
+import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
-> = ({ currentParticipantUserIds, onBack, onDone }) => {
+> = ({ currentParticipantUsers, onBack, onDone }) => {
   const [filteredData, setFilteredData] = useState<ListDataItem[]>([]);
   const [data, setData] = useState<ListDataItem[]>([]);
   const [selectedData, setSelectedData] = useState<ListDataItem[]>([]);
@@ -108,8 +109,13 @@ export const CalendarSearchParticipant: React.FC<
   );
 
   const onClickDone = useCallback(() => {
-    const participantUserIds = selectedData.slice(1).map((x) => x.id || '');
-    onDone(participantUserIds);
+    const participantUsers: CalendarAddEventParticipantFormModel[] =
+      selectedData.slice(1).map((x) => ({
+        userId: x.id || '',
+        firstName: x.extraData?.firstName || '',
+        surname: x.extraData?.surname || '',
+      }));
+    onDone(participantUsers);
   }, [selectedData]);
 
   useEffect(() => {
@@ -119,7 +125,7 @@ export const CalendarSearchParticipant: React.FC<
 
       const unselected = list.filter(
         (p) =>
-          !currentParticipantUserIds.includes(p.id || '') &&
+          currentParticipantUsers.findIndex((c) => c.userId === p.id) < 0 &&
           p.id !== currentUser.id
       );
       unselected.forEach((p) => {
@@ -132,7 +138,7 @@ export const CalendarSearchParticipant: React.FC<
       selected.push(
         ...list.filter(
           (p) =>
-            currentParticipantUserIds.includes(p.id || '') &&
+            currentParticipantUsers.findIndex((c) => c.userId === p.id) >= 0 &&
             p.id !== currentUser.id
         )
       );

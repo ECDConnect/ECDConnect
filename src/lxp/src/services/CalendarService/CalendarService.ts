@@ -1,7 +1,22 @@
-import { CalendarEventDto, CalendarEventTypeDto, Config } from '@ecdlink/core';
-import { CalendarEventInput } from '@ecdlink/graphql';
+import {
+  CalendarEventDto,
+  CalendarEventModel,
+  CalendarEventModelInputModel,
+  CalendarEventTypeDto,
+  Config,
+} from '@ecdlink/core';
 import { api } from '../axios.helper';
+import { calendarConvert } from '@/store/calendar/calendar.util';
 
+// 2023-07-04T08:00:00.000+02:00
+// 012345678901234567890123456789
+//           1         2
+const changeTZto0 = (date: string | null): string => {
+  if (date === null) return '';
+  if (!date) return date;
+  if (date.length < 23) return date + '+00:00';
+  return date.slice(0, 22) + '+00:00';
+};
 class CalendarService {
   _accessToken: string;
 
@@ -51,10 +66,19 @@ class CalendarService {
               id
               isActive
               participantUserId
+              participantUser {
+                firstName
+                surname
+              }
             }
             start
             action
             isActive
+            userId
+            user {
+              firstName
+              surname
+            }
           }
         }
     `,
@@ -69,17 +93,33 @@ class CalendarService {
       );
     }
 
+    // have to set TZ to 0, in db as GMT0 but transport layer is adding on a TZ from somewhere
+    if (
+      response.data.data.userCalendarEvents &&
+      response.data.data.userCalendarEvents.length > 0
+    ) {
+      (response.data.data.userCalendarEvents as CalendarEventDto[]).forEach(
+        (e) => {
+          e.start = changeTZto0(e.start);
+          e.end = changeTZto0(e.end);
+        }
+      );
+    }
     return response.data.data.userCalendarEvents;
   }
 
   async updateCalendarEvent(
-    input: CalendarEventInput,
+    inputModel: CalendarEventModelInputModel,
     id: string
   ): Promise<any> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const input =
+      calendarConvert.CalendarEventModelInputModel.CalendarEventModelInput(
+        inputModel
+      );
     const response = await apiInstance.post<any>(``, {
       query: `
-        mutation updateCalendarEvent($input: CalendarEventInput, $id: UUID!) {
+        mutation updateCalendarEvent($input: CalendarEventModelInput, $id: UUID!) {
           updateCalendarEvent(input: $input, id: $id) {
             id
           }
@@ -97,6 +137,31 @@ class CalendarService {
     }
 
     return response.data.data.updateCalendarEvent;
+  }
+
+  async syncCalendarEvent(event: CalendarEventModel): Promise<any> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const input =
+      calendarConvert.CalendarEventModel.CalendarEventModelInput(event);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+        mutation updateCalendarEvent($input: CalendarEventModelInput, $id: UUID!) {
+          updateCalendarEvent(input: $input, id: $id) {
+            id
+          }
+        }
+      `,
+      variables: {
+        input: input,
+        id: event.id,
+      },
+    });
+    if (response.status !== 200) {
+      throw new Error(
+        'Updating calendar event failed - Server connection error'
+      );
+    }
+    return true;
   }
 }
 

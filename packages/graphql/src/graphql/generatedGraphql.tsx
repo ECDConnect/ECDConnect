@@ -466,6 +466,7 @@ export type CalendarEvent = {
   start: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type CalendarEventFilterInput = {
@@ -484,6 +485,7 @@ export type CalendarEventFilterInput = {
   start?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type CalendarEventInput = {
@@ -498,24 +500,36 @@ export type CalendarEventInput = {
   Participants?: InputMaybe<Array<InputMaybe<CalendarEventParticipantInput>>>;
   Start: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type CalendarEventModelInput = {
+  action?: InputMaybe<Scalars['String']>;
+  allDay: Scalars['Boolean'];
+  description?: InputMaybe<Scalars['String']>;
+  end: Scalars['DateTime'];
+  eventType?: InputMaybe<Scalars['String']>;
+  id?: InputMaybe<Scalars['String']>;
+  name?: InputMaybe<Scalars['String']>;
+  participants?: InputMaybe<
+    Array<InputMaybe<CalendarEventParticipantModelInput>>
+  >;
+  start: Scalars['DateTime'];
 };
 
 export type CalendarEventParticipant = {
   __typename?: 'CalendarEventParticipant';
-  calendarEvent?: Maybe<CalendarEvent>;
-  calendarEventId: Scalars['UUID'];
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
   participantUserId?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  userId?: Maybe<Scalars['String']>;
 };
 
 export type CalendarEventParticipantFilterInput = {
   and?: InputMaybe<Array<CalendarEventParticipantFilterInput>>;
-  calendarEvent?: InputMaybe<CalendarEventFilterInput>;
-  calendarEventId?: InputMaybe<ComparableGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -523,15 +537,20 @@ export type CalendarEventParticipantFilterInput = {
   participantUserId?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
 };
 
 export type CalendarEventParticipantInput = {
-  CalendarEvent?: InputMaybe<CalendarEventInput>;
-  CalendarEventId: Scalars['UUID'];
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   ParticipantUserId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  UserId?: InputMaybe<Scalars['String']>;
+};
+
+export type CalendarEventParticipantModelInput = {
+  id?: InputMaybe<Scalars['String']>;
+  participantUserId?: InputMaybe<Scalars['String']>;
 };
 
 export type CalendarEventType = {
@@ -3695,6 +3714,7 @@ export type Mutation = {
   updateIncome?: Maybe<ResultReturnObject>;
   updateIncomeStatements?: Maybe<IncomeStatements>;
   updateInfant?: Maybe<Infant>;
+  updateInfantAdditionalDueDates: Scalars['Boolean'];
   updateInfantCaregiver?: Maybe<Infant>;
   updateInfantCaregiverAddress?: Maybe<Infant>;
   updateInfantCaregiverContactDetails?: Maybe<Infant>;
@@ -3711,6 +3731,7 @@ export type Mutation = {
   updateMessageTemplate?: Maybe<MessageTemplate>;
   updateMoreInformation?: Maybe<MoreInformation>;
   updateMother?: Maybe<Mother>;
+  updateMotherAdditionalDueDates: Scalars['Boolean'];
   updateMotherAddress?: Maybe<Mother>;
   updateMotherContactDetails?: Maybe<Mother>;
   updateMotherDeliveryDate?: Maybe<Mother>;
@@ -5034,7 +5055,7 @@ export type MutationUpdateAuditLogTypeArgs = {
 
 export type MutationUpdateCalendarEventArgs = {
   id?: InputMaybe<Scalars['UUID']>;
-  input?: InputMaybe<CalendarEventInput>;
+  input?: InputMaybe<CalendarEventModelInput>;
 };
 
 export type MutationUpdateCalendarEventParticipantArgs = {
