@@ -181,7 +181,7 @@ export default function HealthCareWorkers() {
   const displayPanel = () => {
     panel({
       noPadding: true,
-      title: 'Create Health Worker',
+      title: '',
       render: (onSubmit: any) => (
         <HealthCareWorkerPanelCreate
           key={`userPanelCreate`}

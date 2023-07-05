@@ -159,3 +159,13 @@ export const healthCareWorkerVisitStatus = gql`
     }
   }
 `;
+
+export const sentInviteToMultipleUsers = gql`
+mutation SendBulkInviteToPortal($userIds: [String]) {
+  sendBulkInviteToPortal(userIds: $userIds) {
+    success
+    failed
+  }
+}
+`;
+

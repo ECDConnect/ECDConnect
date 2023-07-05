@@ -213,21 +213,16 @@ export default function HealthCareWorkerPanelCreate(
     return (
       <>
         <div className="pb-2">
-          <h1 className="text-uiMidDark text-lg font-medium leading-6">
-            User Detail
+          <h1 className="text-uiMidDark text-xl font-medium leading-6">
+            Create Health Care Worker
           </h1>
         </div>
-        <div className=" border-b border-dashed border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
-          </div>
+        <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
 
-          <form className="space-y-8 divide-y divide-gray-200">
+          <form className="space-y-6 divide-y divide-gray-200">
             <div className="space-y-0">
               <div className="grid grid-cols-1 ">
-                <div className="my-4 sm:col-span-3">
+                <div className="my-0 sm:col-span-3">
                   <FormField
                     label={'First name *'}
                     nameProp={'firstName'}
