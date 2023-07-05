@@ -261,7 +261,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                                     }
                                     else
                                     {
-                                        if (DateTime.Parse(beforeValue).Date != DateTime.Parse(afterValue).Date)
+                                        if (DateTime.Parse(beforeValue).Date != (string.IsNullOrEmpty(afterValue) ? null : DateTime.Parse(afterValue).Date))
                                         {
                                             isValidChange = true;
                                         }
