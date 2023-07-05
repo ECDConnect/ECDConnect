@@ -50,7 +50,7 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<ExpireInvitations>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryMinute;
+                c.CronExpression = CronTags.EveryTwoHours;
             });
             //services.AddCronJob<RevertReassignment>(c =>
             //{
