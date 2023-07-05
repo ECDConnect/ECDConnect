@@ -93,10 +93,36 @@ export default function UiTable(
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return [{ [columns[0].field]: 'No entries found' }];
     }
+
+    const handleRowSelect = (row: any) => {
+      if (selectedRows.includes(row)) {
+        setSelectedRows(
+          selectedRows.filter((selectedRow) => selectedRow !== row)
+        );
+      } else {
+        setSelectedRows([...selectedRows, row]);
+      }
+    };
+
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
+
+      const checkboxCell = (
+        <input
+          type="checkbox"
+          className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
+          onChange={() => handleRowSelect(row)}
+          checked={selectedRows.includes(row)}
+        />
+      );
+
+      const rowWithCheckbox = {
+        select: checkboxCell,
+        ...row,
+      };
+
       ++rowKey;
-      return row;
+      return rowWithCheckbox;
     });
   };
 
@@ -118,6 +144,7 @@ export default function UiTable(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
     );
+    console.log(component);
     history.push({
       pathname: urlRow,
       state: {
@@ -126,7 +153,7 @@ export default function UiTable(
       },
     });
 
-    console.log('>>>', selectedRow);
+    console.log(">>>", selectedRow)
   };
 
   const renderFormat = (row: any, column: any, display_value: any) => {
@@ -175,10 +202,9 @@ export default function UiTable(
               <div
                 key={item.id}
                 className={
-                  `${
-                    item[column.displayProperty] === 'Administrator'
-                      ? 'bg-tertiary'
-                      : 'bg-primary'
+                  `${item[column.displayProperty] === 'Administrator'
+                    ? 'bg-tertiary'
+                    : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
@@ -210,11 +236,7 @@ export default function UiTable(
     }
 
     return (
-      <div
-        className={'cursor-pointer'}
-        onClick={() => {viewSelectedRow(row);
-        }}
-      >
+      <div className={'cursor-pointer'} onClick={() => { component !== "team-leads" && viewSelectedRow(row) }}>
         {rowValue}{' '}
       </div>
     );
@@ -223,11 +245,10 @@ export default function UiTable(
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       <Table
-      bulk_select_options={["Save","Delete","Update"]}
-      bulk_select_button_text={"select"}
         key={`table-${lastUpdate}`}
         row_render={renderFormat}
         should_export={options.should_export || false}
+        show_search={options.show_search || false}
         styling={{
           base_bg_color: 'white',
           base_text_color: 'text-gray-900',
@@ -250,12 +271,13 @@ export default function UiTable(
               'truncate w-20 px-6 pt-2 pb-2 text-sm font-medium text-gray-900 border-b border-gray-100',
           },
           footer: options.footer || {
-            main: `outline-none`,
+            main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: ``,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
-            page_numbers: `mx-2 text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4 rounded-full`,
+            page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
           },
         }}
         columns={makeColumns()}
@@ -264,7 +286,6 @@ export default function UiTable(
         no_content_text="-"
         striped
         bordered
-        on_bulk_action={(selected)=>console.log("bulk",selected)}
       />
     </div>
   );

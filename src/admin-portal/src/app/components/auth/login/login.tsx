@@ -89,10 +89,9 @@ export default function Login() {
                 <PasswordInput
                   label={'Password'}
                   nameProp={'password'}
-
                   value={formValues.password}
                   register={register}
-                  strengthMeterVisible={false}
+                  strengthMeterVisible={true}
                   className="mb-9 "
                 />
               </div>
