@@ -4,9 +4,7 @@ public static class Constants
 {
     public static class ApplicationSettings
     {
-        public const string DefaultDbConnection = "ConnectionStrings:DefaultConnection";
-
-        public const string GraphEndPoint = "GraphQl:EndPoint";
+        public const string DefaultTenant = "258a15e6-3736-45ea-875c-48d9377de4c8";
     }
 
 
