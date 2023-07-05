@@ -12,6 +12,8 @@
     <Content Remove="Tenancy\TempScripts\**" />
     <EmbeddedResource Remove="Tenancy\TempScripts\**" />
     <None Remove="Tenancy\TempScripts\**" />
+    <Compile Remove="Services\IntegrationService.cs" />
+    <Compile Remove="Services\Interfaces\IIntegrationService.cs" />
     <None Remove="Middleware\" />
     <None Remove="HtmlSanitizer" />
   </ItemGroup>
@@ -54,6 +56,7 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
     <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
+    <ProjectReference Include="..\Libraries\Modules\SmartStart.Integration\SmartStart.Integration.csproj" />
   </ItemGroup>
   
   <ItemGroup>

@@ -50,13 +50,49 @@ namespace EcdLink.Api.CoreApi
             services.AddCronJob<ExpireInvitations>(c =>
             {
                 c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryTwoHours;
+                c.CronExpression = CronTags.MidnightDaily;
             });
+            services.AddCronJob<RevertReassignment>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.MidnightDaily;
+            });
+            //services.AddCronJob<PQAsClubsVisitsLicensesRegisters>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.MidnightDaily;
+            //});
+            //services.AddCronJob<IntegrationTraineesPractitioners>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.MidnightDaily;
+            //});
             //services.AddCronJob<RevertReassignment>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
-            //    c.CronExpression = CronTags.EveryTwoHours;
+            //    c.CronExpression = CronTags.MidnightDaily;
             //});
+            //services.AddCronJob<IntegrationChanges>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryTwentyMinutes;
+            //});
+            //services.AddCronJob<IntegrationWeeklyAttendance>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EverySaturday;
+            //});
+            //services.AddCronJob<IntegrationMontlyAttendance>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.FirstDayOfMonth;
+            //});
+            //services.AddCronJob<IntegrationMontlyIncomeStatements>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.NinthDayOfMonth;
+            //});
+
         }
     }
 }

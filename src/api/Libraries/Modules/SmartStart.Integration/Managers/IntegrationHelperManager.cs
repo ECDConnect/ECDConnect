@@ -8,15 +8,10 @@ using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using Microsoft.AspNetCore.Http;
-using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
-using static EcdLink.Api.CoreApi.Constants;
+using static SmartStart.Integration.Constants;
 
-namespace EcdLink.Api.CoreApi.Managers.Integration
-{
+namespace SmartStart.Integration.Managers;
     public class IntegrationHelperManager
     {
         private IHttpContextAccessor _contextAccessor;
@@ -260,5 +255,3 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
             return valueToSend;
         }
     }
-}
-

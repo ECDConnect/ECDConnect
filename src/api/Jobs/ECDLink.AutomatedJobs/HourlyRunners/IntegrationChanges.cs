@@ -8,6 +8,8 @@ using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using SmartStart.Integration.Interfaces;
+using ECDLink.AutomatedJobs.Util;
 
 namespace ECDLink.AutomatedJobs.DailyRunners;
 
@@ -16,7 +18,7 @@ public class IntegrationChanges : CronJobService
     private readonly IServiceScopeFactory _scopeFactory;
     private readonly IGenericRepositoryFactory _repoFactory;
     private readonly HierarchyEngine _hierarchyEngine;
-    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<ExpireInvitations> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
+    public IntegrationChanges(IServiceScopeFactory scopeFactory, IScheduleConfig<IntegrationChanges> config/*, IGenericRepositoryFactory repoFactory, HierarchyEngine hierarchyEngine*/)
         : base(config.CronExpression, config.TimeZoneInfo)
     {
         _scopeFactory = scopeFactory;
@@ -26,25 +28,10 @@ public class IntegrationChanges : CronJobService
     {
         using (var scope = _scopeFactory.CreateScope())
         {
-            //var service = scope.ServiceProvider.GetRequiredService<>(IIntegrationService);
+            TenancyContext.SetTenantContext(scope);
+            var service = scope.ServiceProvider.GetRequiredService<IIntegrationService>();
 
-            //SetTenantContext(scope);            
-
-            //service.ExpireRelationshipLinks();
+            await service.IntegrationUpdates();
         }
-    }
-
-    // TODO: Convert to multi-tenancy jobs
-    //Single Tenant for now
-    private void SetTenantContext(IServiceScope scope)
-    {
-        var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
-
-        var tenant = tenancyRepo.GetAllTenants()
-            .Where(x => x.TenantType == Tenancy.Enums.TenantType.Tenant)
-            .OrderBy(x => x.Id)
-            .FirstOrDefault();
-
-        TenantExecutionContext.SetTenant(tenant);
     }
 }

@@ -3,7 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.AccessValidators;
 using EcdLink.Api.CoreApi.GraphApi.Interceptors;
 using EcdLink.Api.CoreApi.Managers;
 using EcdLink.Api.CoreApi.Managers.EventRecords;
-using EcdLink.Api.CoreApi.Managers.Integration;
+//using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.GrowGreat;
@@ -42,6 +42,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
+using SmartStart.Integration;
+using SmartStart.Integration.Interfaces;
+using SmartStart.Integration.Managers;
+using ECDLink.AutomatedJobs.Services;
+using ECDLink.AutomatedJobs.Services.Interfaces;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -146,7 +151,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
-            services.AddTransient<IncomeExpenseService>();
+            services.AddTransient<ECDLink.Core.Services.IncomeExpenseService>();
+            services.AddTransient<SmartStart.Integration.IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();

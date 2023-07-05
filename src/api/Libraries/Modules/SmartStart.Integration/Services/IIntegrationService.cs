@@ -3,8 +3,7 @@ using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-namespace ECDLink.Core.Services.Interfaces
-{
+namespace SmartStart.Integration.Interfaces;
     public interface IIntegrationService
     {
         Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
@@ -16,4 +15,3 @@ namespace ECDLink.Core.Services.Interfaces
         Task<bool> IntegrationUpdates();
         Task<bool> IntegrationByTrainees();
     }
-}

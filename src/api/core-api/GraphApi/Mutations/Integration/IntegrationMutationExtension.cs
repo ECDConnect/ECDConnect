@@ -2,6 +2,7 @@ using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
 using System.Threading.Tasks;
+using SmartStart.Integration.Interfaces;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
 {
