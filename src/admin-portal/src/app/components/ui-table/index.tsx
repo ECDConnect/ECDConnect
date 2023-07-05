@@ -144,7 +144,7 @@ export default function UiTable(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
     );
-    console.log(component);
+
     history.push({
       pathname: urlRow,
       state: {
@@ -153,7 +153,7 @@ export default function UiTable(
       },
     });
 
-    console.log(">>>", selectedRow)
+    console.log('>>>', selectedRow);
   };
 
   const renderFormat = (row: any, column: any, display_value: any) => {
@@ -202,9 +202,10 @@ export default function UiTable(
               <div
                 key={item.id}
                 className={
-                  `${item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : 'bg-primary'
+                  `${
+                    item[column.displayProperty] === 'Administrator'
+                      ? 'bg-tertiary'
+                      : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
@@ -236,7 +237,12 @@ export default function UiTable(
     }
 
     return (
-      <div className={'cursor-pointer'} onClick={() => { component !== "team-leads" && viewSelectedRow(row) }}>
+      <div
+        className={'cursor-pointer'}
+        onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}
+      >
         {rowValue}{' '}
       </div>
     );
@@ -273,8 +279,9 @@ export default function UiTable(
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${rows.length < 10 ? 'hidden' : ''
-                } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${
+                rows.length < 10 ? 'hidden' : ''
+              } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,

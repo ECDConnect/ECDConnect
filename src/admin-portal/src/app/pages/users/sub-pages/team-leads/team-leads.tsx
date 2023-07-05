@@ -31,7 +31,7 @@ export default function TeamLeads() {
       textSearch: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 30,
+        pageSize: 100,
       },
     },
     fetchPolicy: 'network-only',
@@ -45,7 +45,7 @@ export default function TeamLeads() {
         clinicSearch: clinicFilter,
         pagingInput: {
           pageNumber: 1,
-          pageSize: 30,
+          pageSize: 100,
         },
       },
     });

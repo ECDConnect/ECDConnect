@@ -30,13 +30,12 @@ export default function ApplicationUsers() {
       filterBy: [],
       sortBy: [{ fieldName: 'FullName', descending: true }],
       pagingInput: {
-        pageNumber: '',
-        pageSize: '',
+        pageNumber: 1,
+        pageSize: 10,
       },
     },
     fetchPolicy: 'network-only',
   });
-
 
   const getRoleOptions = (users: UserDto[]) => {
     if (!users) return [];
@@ -71,8 +70,8 @@ export default function ApplicationUsers() {
         filterBy: [],
         sortBy: [{ fieldName: 'FullName', descending: true }],
         pagingInput: {
-          pageNumber: "",
-          pageSize: '',
+          pageNumber: 1,
+          pageSize: 100,
         },
       },
     });
@@ -117,15 +116,14 @@ export default function ApplicationUsers() {
   const mapUserTableItem = (user: UserDto) => {
     return {
       ...user,
-      fullName: `${user.firstName} ${user.surname}`,
-      email: user.idNumber ? user.email : '',
+      fullName: `${user?.firstName} ${user?.surname}`,
+      email: user?.idNumber ? user?.email : '',
     };
   };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
-
 
   if (tableData) {
     return (
@@ -148,13 +146,13 @@ export default function ApplicationUsers() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex items-center sm:mt-6 ">
-                    <span className="flex flex-row text-lg font-medium leading-6 text-gray-900 w-5/12">
+                    <span className="flex w-5/12 flex-row text-lg font-medium leading-6 text-gray-900">
                       <Dropdown
                         className="mr-2 w-full"
                         fillType="filled"
-                        fillColor='secondary'
+                        fillColor="secondary"
                         placeholder="Filter roles"
-                        labelColor='white'
+                        labelColor="white"
                         selectedValue={selectedRoleFilter}
                         list={getRoleOptions(data?.users) || []}
                         onChange={(item) => {
@@ -236,10 +234,7 @@ export default function ApplicationUsers() {
                   searchInput={searchValue}
                   urlRow={'/view-user/'}
                   component={'administrators'}
-                  options={
-                    { should_export: true }
-
-                  }
+                  options={{ should_export: true }}
                 />
               </div>
             </div>

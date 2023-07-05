@@ -66,7 +66,7 @@ export default function HealthCareWorkers() {
         search: '',
         pagingInput: {
           pageNumber: 1,
-          pageSize: 20,
+          pageSize: 100,
         },
       },
       fetchPolicy: 'network-only',
@@ -81,7 +81,7 @@ export default function HealthCareWorkers() {
         clinicSearch: clinicFilter,
         pagingInput: {
           pageNumber: 1,
-          pageSize: 20,
+          pageSize: 500,
         },
       },
     });
