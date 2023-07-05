@@ -40,7 +40,7 @@ export default function ForgotPassword() {
       console.log(Config.authApi);
 
       setIsLoading(true);
-      const body: SimpleUserModel = {
+      const body = {
         email: formValues.email,
       };
       const isLinkSent = await forgotPassword(body, Config.authApi);
