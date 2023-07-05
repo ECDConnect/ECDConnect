@@ -30,7 +30,11 @@ import { useSelector } from 'react-redux';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PhotoPrompt } from '../../../components/photo-prompt/photo-prompt';
 import { useAppDispatch } from '@store';
-import { caregiverActions, caregiverSelectors } from '@store/caregiver';
+import {
+  caregiverActions,
+  caregiverSelectors,
+  caregiverThunkActions,
+} from '@store/caregiver';
 import { childrenActions, childrenSelectors } from '@store/children';
 import {
   classroomsActions,
@@ -607,6 +611,12 @@ export const EditChildInformation: React.FC = () => {
       };
 
       appDispatch(caregiverActions.updateCaregiver(careGiverInputModel));
+      await appDispatch(
+        caregiverThunkActions.updateCaregiver({
+          id: careGiverInputModel.id as string,
+          caregiver: careGiverInputModel,
+        })
+      );
       setViewInfomationVisible(false);
     }
   };
@@ -633,6 +643,12 @@ export const EditChildInformation: React.FC = () => {
         setChildCaregiver(updateCareGiver);
 
         appDispatch(caregiverActions.updateCaregiver(updateCareGiver));
+        await appDispatch(
+          caregiverThunkActions.updateCaregiver({
+            id: updateCareGiver.id as string,
+            caregiver: updateCareGiver,
+          })
+        );
       }
 
       setViewInfomationVisible(false);

@@ -11,6 +11,7 @@ export interface CaregiverContactHistory {
   childId: string;
   dateContacted: string;
   contactReason: CaregiverContactReason;
+  isOnline?: boolean;
 }
 
 export enum CaregiverContactReason {

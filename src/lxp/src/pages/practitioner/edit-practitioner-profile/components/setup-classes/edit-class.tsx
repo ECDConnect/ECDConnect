@@ -18,7 +18,11 @@ import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, Controller, useWatch } from 'react-hook-form';
 import { buttonDays } from '../edit-playgroup-form/edit-playgroup.form.types';
 import { yesNoOptions } from '../edit-programme-form/edit-programme-form.types';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -115,6 +119,19 @@ export const EditClass = ({
         programmeTypeId: programmeType?.id,
         isActive: true,
         practitionerId: practitionerId,
+      })
+    );
+
+    appDispatch(
+      classroomsThunkActions.updateClassroomGroup({
+        id: classToEdit.id,
+        classroomGroup: {
+          name: name || '',
+          classroomId: editClassroomId,
+          programmeTypeId: programmeType?.id,
+          isActive: true,
+          practitionerId: practitionerId,
+        },
       })
     );
 
