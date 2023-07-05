@@ -16,7 +16,11 @@ import { useAppDispatch } from '@/store';
 import { Weekdays } from '@/utils/practitioner/playgroups-utils';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useForm, Controller, useWatch } from 'react-hook-form';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useSelector } from 'react-redux';
 import { useEffect, useState } from 'react';
 import { newGuid } from '@/utils/common/uuid.utils';
@@ -131,6 +135,20 @@ export const EditClass = ({
         programmeTypeId: programmeType?.id,
         isActive: true,
         userId: practitionerId,
+      })
+    );
+
+    appDispatch(
+      classroomsThunkActions.updateClassroomGroup({
+        id: classToEdit.id,
+        classroomGroup: {
+          classroomId: editClassroomId,
+          id: classToEdit.id,
+          programmeTypeId: programmeType?.id,
+          name: name || '',
+          userId: practitionerId,
+          isActive: true,
+        },
       })
     );
 

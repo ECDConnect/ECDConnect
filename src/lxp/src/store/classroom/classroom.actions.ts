@@ -372,13 +372,13 @@ export const upsertClassroomGroups = createAsyncThunk<
   }
 );
 
-export const upsertClassroomGroupProgrammes = createAsyncThunk<
+export const updateClassroomGroupProgrammes = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroupProgrammes',
+  'updateClassroomGroupProgrammes',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -412,13 +412,55 @@ export const upsertClassroomGroupProgrammes = createAsyncThunk<
   }
 );
 
-export const upsertClassroomGroupLearners = createAsyncThunk<
+export const upsertClassroomGroupProgrammes = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertClassroomGroupLearners',
+  'upsertClassroomGroupProgrammes',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroomProgrammes },
+    } = getState();
+
+    try {
+      let promises: Promise<boolean>[] = [];
+      if (classroomProgrammes?.some((item) => item?.isOnline === false)) {
+        if (userAuth?.auth_token && classroomProgrammes) {
+          promises = classroomProgrammes.map(async (x) => {
+            const input: ClassProgrammeInput = {
+              Id: x.id,
+              ClassroomGroupId: x.classroomGroupId,
+              ProgrammeStartDate: x.programmeStartDate ?? new Date(),
+              MeetingDay: x.meetingDay,
+              IsFullDay: x.isFullDay,
+              IsActive: x.isActive === false ? false : true,
+            };
+
+            return await new ClassroomGroupProgrammesService(
+              userAuth?.auth_token
+            ).updateClassProgramme(x.id ?? '', input);
+          });
+        }
+        return Promise.all(promises);
+      }
+      return [true];
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateClassroomGroupLearners = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'updateClassroomGroupLearners',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
@@ -464,6 +506,67 @@ export const upsertClassroomGroupLearners = createAsyncThunk<
               ).createLearner(input));
             }
           });
+      }
+      return Promise.all(promises);
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const upsertClassroomGroupLearners = createAsyncThunk<
+  boolean[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'upsertClassroomGroupLearners',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      classroomData: { classroomGroupLearners },
+      children: { children },
+      staticData: { WorkflowStatuses },
+    } = getState();
+
+    try {
+      let promises: Promise<boolean>[] = [];
+      const workflowStatus = WorkflowStatuses?.find(
+        (x) => x.enumId === WorkflowStatusEnum.ChildExternalLink
+      );
+      if (classroomGroupLearners?.some((item) => item?.isOnline === false)) {
+        if (userAuth?.auth_token && classroomGroupLearners) {
+          promises = classroomGroupLearners
+            .filter((classroomGroupLearner) => {
+              const child = children?.find(
+                (x) => x.userId === classroomGroupLearner.userId
+              );
+              return child && child.workflowStatusId !== workflowStatus?.id
+                ? true
+                : false;
+            })
+            .map(async (x) => {
+              const input: LearnerInput = {
+                UserId: x.userId,
+                ClassroomGroupId: x.classroomGroupId,
+                ProgrammeAttendanceReasonId: x.attendanceReasonId,
+                OtherAttendanceReason: x.otherAttendanceReason,
+                StartedAttendance: x.startedAttendance,
+                StoppedAttendance: x.stoppedAttendance,
+                IsActive: Boolean(x.isActive),
+              };
+              if (x.id && x.id.length > 0) {
+                return await new ClassroomGroupLearnerService(
+                  userAuth?.auth_token
+                ).updateLearner(x.id, input);
+              } else {
+                return !!(await new ClassroomGroupLearnerService(
+                  userAuth?.auth_token
+                ).createLearner(input));
+              }
+            });
+        }
       }
       return Promise.all(promises);
     } catch (err) {

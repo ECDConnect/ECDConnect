@@ -69,14 +69,18 @@ const classroomsSlice = createSlice({
       action: PayloadAction<ClassProgrammeDto>
     ) => {
       if (state.classroomProgrammes) {
+        const isOnline = navigator.onLine;
+        const payloadUpdated = { ...action.payload, isOnline };
         for (let i = 0; i < state.classroomProgrammes.length; i++) {
           if (state.classroomProgrammes[i].id === action.payload.id)
-            state.classroomProgrammes[i] = action.payload;
+            state.classroomProgrammes[i] = payloadUpdated;
         }
       }
     },
     updateClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
       if (state.classroomGroupLearners) {
+        const isOnline = navigator.onLine;
+        const payloadUpdated = { ...action.payload, isOnline };
         for (let i = 0; i < state.classroomGroupLearners.length; i++) {
           if (
             state.classroomGroupLearners[i].userId === action.payload.userId &&
@@ -84,7 +88,7 @@ const classroomsSlice = createSlice({
               action.payload.classroomGroupId &&
             state.classroomGroupLearners[i].id === action.payload.id
           )
-            state.classroomGroupLearners[i] = action.payload;
+            state.classroomGroupLearners[i] = payloadUpdated;
         }
       }
     },
@@ -105,8 +109,10 @@ const classroomsSlice = createSlice({
       state.classroomProgrammes?.push(action.payload);
     },
     createClassroomGroupLearner: (state, action: PayloadAction<LearnerDto>) => {
+      const isOnline = false;
+      const payloadUpdated = { ...action.payload, isOnline };
       if (!state.classroomGroupLearners) state.classroomGroupLearners = [];
-      state.classroomGroupLearners?.push(action.payload);
+      state.classroomGroupLearners?.push(payloadUpdated);
     },
     removeClassroomGroupOnEdit: (
       state,
