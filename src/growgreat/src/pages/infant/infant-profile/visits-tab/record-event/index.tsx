@@ -155,6 +155,7 @@ export const RecordEvent: React.FC = () => {
       onOkText,
       onOkIcon,
       hideDismissButton,
+      disableSubmit,
     }: {
       title: string;
       detailText?: string;
@@ -162,6 +163,7 @@ export const RecordEvent: React.FC = () => {
       onOkText: string;
       onOkIcon: string;
       hideDismissButton?: boolean;
+      disableSubmit?: boolean;
     }) => {
       return dialog({
         blocking: false,
@@ -190,7 +192,7 @@ export const RecordEvent: React.FC = () => {
               type: 'outlined',
               leadingIcon: 'XIcon',
               onClick: () => {
-                onSubmit();
+                !disableSubmit && onSubmit();
                 onClose();
               },
             });
@@ -245,12 +247,22 @@ export const RecordEvent: React.FC = () => {
           hideDismissButton: true,
         });
       default:
+        displayConfirmDialog({
+          title: `Are you sure you want to remove ${
+            infant?.user?.firstName || ''
+          }?`,
+          onOk: () => onSubmit(),
+          onOkIcon: 'FolderAddIcon',
+          onOkText: 'Yes, remove client',
+          disableSubmit: true,
+        });
         break;
     }
   }, [
+    onSubmit,
     displayConfirmDialog,
     history,
-    infant?.caregiver?.id,
+    infant,
     infantId,
     infantName,
     recordEventInput,

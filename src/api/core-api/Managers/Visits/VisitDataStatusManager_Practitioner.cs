@@ -1,5 +1,4 @@
-﻿using EcdLink.Api.CoreApi.Managers.Integration;
-using ECDLink.Abstractrions.Enums;
+﻿using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;

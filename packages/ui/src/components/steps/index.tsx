@@ -18,6 +18,7 @@ export interface StepItem<T = {}> {
   title: string;
   subTitle?: string;
   subTitleColor?: Colours;
+  customSubTitle?: string;
   todoStepIcon?: string;
   inProgressStepIcon?: string;
   completedStepIcon?: string;
@@ -206,6 +207,7 @@ export const Steps = ({ items, typeColor }: StepsProps) => {
                     color={item.subTitleColor || 'textMid'}
                   />
                 )}
+                {item.customSubTitle}
                 {item.showAccordion && isOpen && item.accordionContent}
               </div>
               {item.showActionButton && (

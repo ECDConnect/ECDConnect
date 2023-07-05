@@ -1,5 +1,4 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -519,7 +518,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = firstName + Constants.GGSettings.no_birth_certificate;
                         AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.home_affairs_referrals, false);
 
-                        // Add G4 secondary alert text: ""Refer to clinic urgently""
+                        // Add G4 secondary alert text: ""Refer to home affairs""
                         comment = Constants.GGSettings.home_affairs_referrals;
                         AddVisitDataStatus(vData, comment, _amber, _G4, vData.VisitSection, false);
                     }
@@ -535,7 +534,12 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         // G9 Client summary green, ""You applied for the child support grant - this will support Themba's healthy growth!"""
                         comment = Constants.GGSettings.has_csg2.Replace("{client}", firstName);
                         AddVisitDataStatus(vData, comment, _green, _G9, vData.VisitSection, false);
+                    } else if (vData.QuestionAnswer == Constants.GGSettings.answer_no)
+                    {
+                        comment = Constants.GGSettings.has_csg3;
+                        AddVisitDataStatus(vData, comment, _none, _referral, Constants.GGSettings.sassa_refferals, false);
                     }
+
                 }
             }
 
@@ -737,7 +741,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // a Constants.GGSettings.answer_yes response to the 3rd question trumps all.
             if (q3.QuestionAnswer == Constants.GGSettings.answer_yes) {
                 comment = firstName + Constants.GGSettings.maternal_distress;
-                AddVisitDataStatus(q3, comment, _none, _referral, section, false);
+                AddVisitDataStatus(q3, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                 // add to amber items in progress screen(use case 2)(""Lethabo was experiencing maternal distress"")
                 comment = firstName + Constants.GGSettings.maternal_distress;
@@ -755,7 +759,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             } else {
                 if (q3.QuestionAnswer == Constants.GGSettings.answer_no && (q1.QuestionAnswer == Constants.GGSettings.answer_yes || q2.QuestionAnswer == Constants.GGSettings.answer_yes)) {
                     comment = firstName + Constants.GGSettings.maternal_distress;
-                    AddVisitDataStatus(q3, comment, _none, _referral, section, false);
+                    AddVisitDataStatus(q3, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                     comment = firstName + Constants.GGSettings.maternal_distress;
                     AddVisitDataStatus(q3, comment, _amber, _progress, q3.VisitSection, false);
@@ -807,7 +811,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (score >= 2) {
                 // IF this is not already unchecked in the referrals list for this client; add to referrals items list (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
-                AddVisitDataStatus(q1, comment, _none, _referral, section, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
                 // add to red items in progress screen (use case 2) (""Lethabo is at risk of a drinking problem (T-ACE score = X)"", where X = the T-ACE score calculated)
                 comment = firstName + Constants.GGSettings.t_ace_score + score + ")";
@@ -1066,7 +1070,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             if (wIndicator != "Normal" && lIndicator != "Normal" && mIndicator != "Normal") {
                 // Referrals
                 comment = firstName + Constants.GGSettings.growth_referral + "<li>" + wIndicator + "</li><li>" + lIndicator + "</li><li>" + mIndicator + "</li>";
-                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
             }
 
             if (wColor == _green && lColor == _green && mColor == _green) {
@@ -1211,7 +1215,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             // IF the user selected ""No"" to any of the questions, show referral item: ""Themba is struggling with X, Y, Z""
             comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
-            AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+            AddVisitDataStatus(q1, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
 
             // amber ""Themba is struggling with: * X; * Y""
             comment = Constants.GGSettings.dev_is_struggling.Replace("{client}", firstName) + names;
@@ -1225,54 +1229,149 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageImmunisationData(List<VisitData> immunisationsData, string firstName, string infantId) {
             var comment = "";
+            var hasImmunisation = false;
+            var hasDeworm = false;
+            var hasVitaminA = false;
+            var no_comment = "";
+            var yes_comment = "";
+            var answeredItems = new List<VisitData>();
 
-            List<VisitData> no_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_no).ToList();
-            List<VisitData> yes_answers = immunisationsData.Where(x => x.QuestionAnswer == Constants.GGSettings.answer_yes).ToList();
+            foreach (var item in immunisationsData)
+            {
+                if (item.QuestionAnswer != "undefined")
+                {
+                    answeredItems.Add(item);
 
-            // NO Answers
-            var q1 = no_answers.FirstOrDefault();
-            if (no_answers.Count == 1) {
-                if (q1.Question == Constants.GGSettings.q_immunisation) {
-                    // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
-                    comment = Constants.GGSettings.immunisations_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
+                    if (item.Question == Constants.GGSettings.q_immunisation)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasImmunisation = false;
+                            // - if ""No"" to immunisation question only, add referral: ""Immunisations not up to date""
+                            comment = Constants.GGSettings.immunisations_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Immunisations";
+                            }
+                            else
+                            {
+                                no_comment += "Immunisations";
+                            }
+                        } else
+                        {
+                            hasImmunisation = true;
+
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Immunisations";
+                            }
+                            else
+                            {
+                                yes_comment += "Immunisations";
+                            }
+                        }
+                    }
+                    if (item.Question == Constants.GGSettings.q_vitamin_a)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasVitaminA = false;
+                            // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
+                            comment = Constants.GGSettings.vitamin_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Vitamin A";
+                            } else
+                            {
+                                no_comment += "Vitamin A";
+                            }
+                        }
+                        else
+                        {
+                            hasVitaminA = true;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Vitamin A";
+                            }
+                            else
+                            {
+                                yes_comment += "vitamin A";
+                            }
+                        }
+                    }
+                    if (item.Question == Constants.GGSettings.q_deworming)
+                    {
+                        if (item.QuestionAnswer == Constants.GGSettings.answer_no)
+                        {
+                            hasDeworm = false;
+                            // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
+                            comment = Constants.GGSettings.deworming_not_up_to_date;
+                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
+                            if (no_comment != "")
+                            {
+                                no_comment += ", Deworming";
+                            } else
+                            {
+                                no_comment += "Deworming";
+                            }
+                        }
+                        else
+                        {
+                            hasDeworm = true;
+
+                            if (yes_comment != "")
+                            {
+                                yes_comment += ", Deworming";
+                            }
+                            else
+                            {
+                                yes_comment += "Deworming";
+                            }
+                        }
+                    }
                 }
-                else if (q1.Question == Constants.GGSettings.q_vitamin_a) {
-                    // if ""No"" to Vitamin A question only, add referral: ""Vitamin A not up to date""
-                    comment = Constants.GGSettings.vitamin_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-                }
-                else if (q1.Question == Constants.GGSettings.q_deworming) {
-                    // if ""No"" to deworming question only, add referral: ""Deworming not up to date""
-                    comment = Constants.GGSettings.deworming_not_up_to_date;
-                    AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-                }
-            } else if (no_answers.Count > 1) {
-
-                // ""Immunisations, deworming and Vitamin A not up to date"" 
-                comment = Constants.GGSettings.not_up_to_date;
-                AddVisitDataStatus(q1, comment, _none, _referral, q1.VisitSection, false);
-
-                //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
-                comment = Constants.GGSettings.not_up_to_date;
-                AddVisitDataStatus(q1, comment, _amber, _progress, q1.VisitSection, false);
-
-                // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
-                comment = Constants.GGSettings.missed_immunisations.Replace("{client}", firstName);
-                AddVisitDataStatus(q1, comment, _amber, _G9, q1.VisitSection, false);
             }
 
-            // YES answers
-            var q2 = yes_answers.FirstOrDefault();
-            if (yes_answers.Count == 3) {
+            var _item = answeredItems.FirstOrDefault();
+            
+            if (hasImmunisation == true && hasVitaminA == true && hasDeworm == true)
+            {
                 //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
                 comment = Constants.GGSettings.all_up_to_date;
-                AddVisitDataStatus(q2, comment, _green, _progress, q2.VisitSection, false);
+                AddVisitDataStatus(_item, comment, _green, _progress, _item.VisitSection, false);
 
                 // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
                 comment = Constants.GGSettings.all_up_to_date_client.Replace("{client}", firstName);
-                AddVisitDataStatus(q2, comment, _green, _G9, q2.VisitSection, false);
+                AddVisitDataStatus(_item, comment, _green, _G9, _item.VisitSection, false);
+            } else
+            {
+                if (yes_comment != "")
+                {
+                    //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
+                    comment = yes_comment + " are up to date";
+                    AddVisitDataStatus(_item, comment, _green, _progress, _item.VisitSection, false);
+
+                    // G9 Client summary: green - if ""Yes"" to all questions on screen, show ""All of Themba's immunisations are up to date""
+                    comment = firstName + "'s " + yes_comment + " are up to date";
+                    AddVisitDataStatus(_item, comment, _green, _G9, _item.VisitSection, false);
+                }
+
+                if (no_comment != "")
+                {
+                    //amber - if user responded ""No"" to all 3 questions: ""Immunisations, deworming and Vitamin A not up to date""; if user responded ""No"" to 1 or more, please see row 160 here for variations
+                    comment = no_comment + " not up to date";
+                    AddVisitDataStatus(_item, comment, _amber, _progress, _item.VisitSection, false);
+
+                    // G9 Client summary: ""Themba missed an immunisation, deworming and Vitamin A supplement
+                    comment = firstName + " missed an " + no_comment;
+                    AddVisitDataStatus(_item, comment, _amber, _G9, _item.VisitSection, false);
+                }
             }
+
+
             return true;
         }
         private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 

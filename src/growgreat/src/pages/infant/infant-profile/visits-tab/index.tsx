@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
 import {
+  getDateWithoutTimeZone,
   getStringFromClassNameOrId,
   useDialog,
   usePrevious,
@@ -128,14 +129,6 @@ export const VisitsTab: React.FC = () => {
     [infant?.insertedDate]
   );
 
-  const filteredVisits = useMemo(
-    () =>
-      visits.filter(
-        (item) => new Date(item?.orderDate || '') >= infantInsertedDate
-      ),
-    [infantInsertedDate, visits]
-  );
-
   const getType = useCallback(
     (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
       if (item.attended) {
@@ -154,33 +147,42 @@ export const VisitsTab: React.FC = () => {
     [currentVisit, isWeekDeadline]
   );
 
-  const filterArrayById = (arr: VisitDto[], id: string) => {
-    const index = arr.findIndex((obj) => obj.id === id);
-    return index !== -1 ? arr.slice(index) : [];
-  };
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
+  const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
+    return visitsToSort.sort((a, b) => {
+      if (a === undefined && b === undefined) {
+        return 0;
+      }
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
+
+      return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+    });
+  }, []);
 
   const visitSteps = useMemo(() => {
-    const visitsFromCurrentVisit = filterArrayById(
-      visits,
-      currentVisit?.id || ''
-    );
-    const visitsNoAttend = visitsFromCurrentVisit.filter(
-      (item) => !item.attended
-    );
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
+      if (dueDate) {
+        return !isAttend && dueDate >= todayDate!;
+      }
 
-    // const visitsBeforeCurrentVisit = filterArrayBeforeId(
-    //   filteredVisits,
-    //   currentVisit?.id || ''
-    // );
+      if (orderDate) {
+        return !isAttend && orderDate >= todayDate!;
+      }
 
-    const isPastVisits = !!filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    ).length;
+      return !isAttend;
+    });
 
-    const sortedVisits = visitsNoAttend.sort(
-      (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
-    );
+    const sortedVisits = getSortedVisits(filteredVisits);
+    const isToShowPastVisits = visits.length > filteredVisits.length;
 
     const array: StepItem[] = sortedVisits.map((item) => {
       const date = new Date(item.orderDate);
@@ -192,7 +194,7 @@ export const VisitsTab: React.FC = () => {
         title:
           item.visitType?.normalizedName === 'Additional visits'
             ? 'Other visit'
-            : item.visitType?.normalizedName + ' visit' || 'Visit',
+            : item.visitType?.normalizedName || 'Visit',
         subTitle: isMissedVisit
           ? 'Missed visit deadline'
           : `By ${date.getDate()} ${date.toLocaleString('default', {
@@ -216,8 +218,8 @@ export const VisitsTab: React.FC = () => {
     });
 
     array.unshift({
-      title: isPastVisits ? 'Past visits' : 'Folder opened',
-      subTitle: isPastVisits
+      title: isToShowPastVisits ? 'Past visits' : 'Folder opened',
+      subTitle: isToShowPastVisits
         ? ''
         : `${infantInsertedDate.getDate()} ${infantInsertedDate.toLocaleString(
             'default',
@@ -226,7 +228,7 @@ export const VisitsTab: React.FC = () => {
             }
           )} ${infantInsertedDate.getFullYear()}`,
       type: 'completed',
-      showActionButton: isPastVisits,
+      showActionButton: isToShowPastVisits,
       actionButtonText: 'See info',
       actionButtonTextColor: 'secondary',
       actionButtonColor: 'secondaryAccent2',
@@ -237,12 +239,12 @@ export const VisitsTab: React.FC = () => {
     return array;
   }, [
     currentDate,
-    currentVisit?.id,
-    filteredVisits,
+    getSortedVisits,
     getType,
     history,
     infantInsertedDate,
     location.pathname,
+    todayDate,
     visits,
   ]);
 

@@ -126,6 +126,7 @@ export const Practitioners: React.FC = () => {
       for (const practitioner of practitionersList) {
         practitionerListItem.push(mapUserListDataItem(practitioner));
       }
+
       setPractitionerUserListData(practitionerListItem);
       setFilteredChildData(practitionerListItem);
       setTaskFilterOptions(getTaskFilterOptions(practitionerListItem));

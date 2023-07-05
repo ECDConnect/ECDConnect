@@ -48,10 +48,20 @@ import {
   step15ReAccreditationQuestions,
   step15ReAccreditationVisitSection,
 } from './reaccreditation';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
   payload: CmsVisitDataInputModelInput;
+}
+
+interface ExtraVisitProps extends SubmitProps {
+  type: 'support-visit' | 'follow-up-visit';
+}
+
+export interface PqaRating {
+  color: 'Success' | 'Warning' | 'Error';
+  score: number;
 }
 
 interface FormProps {
@@ -71,6 +81,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
   const [title, setTitle] = useState('');
+  const [pqaRating, setPqaRating] = useState<PqaRating | undefined>();
 
   const { isOnline } = useOnlineStatus();
 
@@ -83,6 +94,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
 
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
   const practitioner = useSelector(getPractitionerByUserId(practitionerId));
   const firstName = practitioner?.user?.firstName || 'the SmartStarter';
   const step16Question1Answer = sectionQuestions
@@ -93,9 +108,26 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     ?.questions.find(
       (item) => item.question === step15ReAccreditationQuestions.question1
     )?.answer;
+
+  const pqaRating1 = timeline?.pQARating1;
+  const pqaRating2 = timeline?.pQARating2;
+  const pqaRating3 = timeline?.pQARating3;
+
+  const pqaRatingColorList = [
+    pqaRating1?.overallRatingColor,
+    pqaRating2?.overallRatingColor,
+    pqaRating3?.overallRatingColor,
+    pqaRating?.color,
+  ];
+
+  const pqaRatingRedColorCount = pqaRatingColorList.filter(
+    (item) => item === 'Error'
+  ).length;
+
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
-    step15ReAccreditationQuestion1Answer === true;
+    step15ReAccreditationQuestion1Answer === true ||
+    pqaRatingRedColorCount === 2;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -241,35 +273,18 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   }, [dialog]);
 
   const onSubmitSupportVisit = useCallback(
-    ({ payload, sections }: SubmitProps) => {
-      const visitOrCallSection = sections?.find((item) =>
-        item?.questions?.some(
-          (question) => question?.question === visitOrCallQuestion
-        )
-      )?.questions;
-      const visitOrCallAnswer = visitOrCallSection?.find(
-        (item) => item?.question === visitOrCallQuestion
-      )?.answer;
-
-      const supportVisitPayload: SupportVisitModelInput = {
-        practitionerId,
-        plannedVisitDate: new Date(),
-        isSupportCall: visitOrCallAnswer === callAnswer,
-        // TODO: add schedule option
-        attended: true,
-        supportData: payload,
-      };
+    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
       appDispatch(
-        pqaActions.addVisitFormData(supportVisitPayload, {
+        pqaActions.addVisitFormData(payload, {
           userId: practitionerId,
           formType: 'support-visit',
         })
       );
-      appDispatch(pqaThunkActions.addSupportVisitFormData(supportVisitPayload));
+      appDispatch(pqaThunkActions.addSupportVisitFormData(payload));
       onBack?.();
       showMessage({
         message: `${
-          visitOrCallAnswer === callAnswer ? 'Support call' : 'Support visit'
+          visitType === callAnswer ? 'Support call' : 'Support visit'
         } complete!`,
       });
       if (!isOnline) {
@@ -281,9 +296,59 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       displayOfflineWarning,
       isOnline,
       onBack,
-      showMessage,
       practitionerId,
+      showMessage,
     ]
+  );
+
+  const onSubmitFollowUpVisit = useCallback(
+    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
+      appDispatch(
+        pqaActions.addVisitFormData(payload, {
+          userId: practitionerId,
+          formType: 'follow-up-visit',
+        })
+      );
+      appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visitTypes.pqa.firstPQA.name
+      );
+      setCurrentActivity(visitTypes.pqa.firstPQA.name);
+    },
+    [appDispatch, practitionerId]
+  );
+
+  const handleSubmitExtraVisit = useCallback(
+    ({ payload, sections, type }: ExtraVisitProps) => {
+      const visitOrCallSection = sections?.find((item) =>
+        item?.questions?.some(
+          (question) => question?.question === visitOrCallQuestion
+        )
+      )?.questions;
+      const visitOrCallAnswer = visitOrCallSection?.find(
+        (item) => item?.question === visitOrCallQuestion
+      )?.answer;
+
+      const formattedPayload: SupportVisitModelInput = {
+        practitionerId,
+        plannedVisitDate: new Date(),
+        isSupportCall: visitOrCallAnswer === callAnswer,
+        // TODO: add schedule option
+        attended: true,
+        supportData: payload,
+      };
+
+      if (type === 'support-visit') {
+        return onSubmitSupportVisit(formattedPayload, visitOrCallAnswer);
+      }
+
+      if (type === 'follow-up-visit') {
+        return onSubmitFollowUpVisit(formattedPayload, visitOrCallAnswer);
+      }
+    },
+    [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
   );
 
   const onSubmitPrePqa = useCallback(
@@ -362,7 +427,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     };
 
     if (activityName === visitTypes.supportVisit) {
-      return onSubmitSupportVisit({ payload, sections });
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 'support-visit',
+      });
+    }
+
+    if (activityName === visitTypes.pqa.followUp.name) {
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 'follow-up-visit',
+      });
     }
 
     if (activityName.includes(visitTypes.prePqa.includes)) {
@@ -379,7 +456,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     onSubmitPqa,
     onSubmitPrePqa,
     onSubmitReAccreditation,
-    onSubmitSupportVisit,
+    handleSubmitExtraVisit,
     practitionerId,
     sectionQuestions,
     visitId,
@@ -418,7 +495,16 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const visitName = currentActivity || activityName;
   const currentSteps = useMemo(() => {
-    if (visitName === visitTypes.supportVisit) {
+    if (
+      visitName === visitTypes.supportVisit ||
+      visitName.includes(visitTypes.pqa.followUp.name)
+    ) {
+      if (activityName === visitTypes.supportVisit) {
+        setTitle(visitTypes.supportVisit);
+      } else {
+        setTitle(visitTypes.pqa.followUp.description);
+      }
+
       return generalSupportVisit;
     }
 
@@ -485,6 +571,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         smartStarter={practitioner}
         isTipPage={isTip}
         currentStep={step}
+        pqaRating={pqaRating}
         nextButtonText={
           step === 10 && isStep11AnswerTrue
             ? 'Continue to SmartSpace checklist'
@@ -496,6 +583,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        setPqaRating={setPqaRating}
         isLoading={isLoading || isLoadingSupportVisit || isLoadingDeactivate}
         secondaryButton={
           visitName === visitTypes.delicensing && step === 1
@@ -506,6 +594,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           submitButton: {
             text: 'Remove SmartStarter',
             icon: 'TrashIcon',
+          },
+        })}
+        // TODO: add schedule integration
+        {...(visitName === visitTypes.pqa.followUp.name && {
+          submitButton: {
+            text: 'Start your next visit',
+            icon: 'ArrowCircleRightIcon',
           },
         })}
       />

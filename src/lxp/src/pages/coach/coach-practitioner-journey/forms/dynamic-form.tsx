@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
+import { PqaRating } from '.';
 
 export interface Question {
   question: string;
@@ -30,6 +31,8 @@ export interface DynamicFormProps {
   nextButtonText?: string;
   submitButton?: { text: string; icon: string };
   secondaryButton?: { text: string; icon: string; onClick: () => void };
+  pqaRating?: PqaRating;
+  setPqaRating?: (value: PqaRating) => void;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -49,11 +52,13 @@ export const DynamicForm = ({
   nextButtonText = 'Next',
   submitButton = { text: 'Save', icon: 'SaveIcon' },
   secondaryButton,
+  pqaRating,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
   setIsTip,
   onClose,
   onSubmit,
+  setPqaRating,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
@@ -118,14 +123,18 @@ export const DynamicForm = ({
         isView={isView}
         smartStarter={smartStarter}
         isTipPage={isTipPage}
+        pqaRating={pqaRating}
         setIsTip={setIsTip}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
+        setPqaRating={setPqaRating}
       />
     );
   }, [
+    pqaRating,
+    setPqaRating,
     isView,
     handleSetQuestions,
     smartStarter,
@@ -141,8 +150,8 @@ export const DynamicForm = ({
     if (Number(steps?.length) === 1) {
       return {
         action: isView ? onClose : onSubmit,
-        text: isView ? 'Close' : 'Save',
-        icon: isView ? 'XIcon' : 'SaveIcon',
+        text: isView ? 'Close' : submitButton.text,
+        icon: isView ? 'XIcon' : submitButton.icon,
       };
     }
 

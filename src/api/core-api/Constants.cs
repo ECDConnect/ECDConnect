@@ -1,3 +1,5 @@
+using iTextSharp.text;
+
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -506,6 +508,7 @@ namespace EcdLink.Api.CoreApi
             public const string has_birth_certificate = "Has applied for a birth certificate";
             public const string has_csg = "Has applied for a child support grant";
             public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
+            public const string has_csg3 = "Has not applied for a child support grant";
 
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
@@ -522,16 +525,16 @@ namespace EcdLink.Api.CoreApi
             public const string q_hearing1 = "Gets a fright when they hear a loud sound";
             public const string q_hearing2 = "Moves eyes or head in direction of sounds";
             public const string q_hearing3 = "Responds by making sounds when talked to";
-            public const string q_hearing4 = "Babbles(ma-ma.da-daa)";
+            public const string q_hearing4 = "Babbles (ma-ma. da-daa)";
             public const string q_hearing5 = "Turns when called";
-            public const string q_hearing6 = "Uses simple gestures(lifts arms to be picked up)";
-            public const string q_hearing7 = "Has one meaningful word(dada.mama) although it may not be clear";
-            public const string q_hearing8 = "Understands names of at least 2 common objects(cup)";
+            public const string q_hearing6 = "Uses simple gestures (lifts arms to be picked up)";
+            public const string q_hearing7 = "Has one meaningful word (dada. mama) although it may not be clear";
+            public const string q_hearing8 = "Understands names of at least 2 common objects (cup)";
             public const string q_hearing9 = "Uses at least 3 words";
 
             public const string q_seeing1 = "Follows faces or close objects with their eyes";
             public const string q_seeing2 = "Follows faces or close objects with his/her eyes";
-            public const string q_seeing3 = "Eyes move well together(no squinting). recognises familiar faces and looks at own hands";
+            public const string q_seeing3 = "Eyes move well together (no squinting). recognises familiar faces and looks at own hands";
             public const string q_seeing4 = "Eyes focus on far objects?";
             public const string q_seeing5 = "Looks for toys/objects that disappear";
             public const string q_seeing6 = "Looks closely at toys/objects and pictures";
@@ -539,13 +542,13 @@ namespace EcdLink.Api.CoreApi
 
             public const string q_brain1 = "Smiles at people";
             public const string q_brain2 = "Laughs out loud";
-            public const string q_brain3 = "Uses different cries or sounds to show hunger.tiredness or discomfort?";
-            public const string q_brain4 = "Throws.bangs toys/objects";
+            public const string q_brain3 = "Uses different cries or sounds to show hunger. tiredness or discomfort?";
+            public const string q_brain4 = "Throws. bangs toys/objects";
             public const string q_brain5 = "React when caregiver leaves and calms when they return";
             public const string q_brain6 = "Imitates gestures (clapping hands)";
             public const string q_brain7 = "Follows simple commands";
 
-            public const string q_moving1 = "Holds their head upright when held against shoulder";
+            public const string q_moving1 = "Holds up their head upright when held against shoulder";
             public const string q_moving2 = "Grabs toys in each hand";
             public const string q_moving3 = "Lifts their head when lying on their tummy";
             public const string q_moving4 = "Moves objects from hand to hand";

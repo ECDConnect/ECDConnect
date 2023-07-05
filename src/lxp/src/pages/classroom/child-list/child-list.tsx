@@ -283,17 +283,10 @@ export const ChildList: React.FC<ComponentBaseProps> = () => {
   };
 
   const onSortItemsChanges = (column: string) => {
-    if (
-      (children && classroomGroupLearners) ||
-      (childrenForPrincipal && classroomGroupLearners)
-    ) {
-      const filteredChildren = !isPrincipal
-        ? childrenForPrincipal?.filter((child) =>
-            childUserListData?.some((x) => x.id === child.id)
-          )
-        : children?.filter((child) =>
-            childUserListData?.some((x) => x.id === child.id)
-          );
+    if (children && classroomGroupLearners) {
+      const filteredChildren = children?.filter((child) =>
+        childUserListData?.some((x) => x.id === child.id)
+      );
       const sorted = [...(filteredChildren || [])].sort(
         (a: ChildDto, b: ChildDto) => {
           const childUserOne = childUsers?.find((x) => x.id === a.userId);

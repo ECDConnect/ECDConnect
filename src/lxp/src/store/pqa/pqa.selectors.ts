@@ -3,6 +3,7 @@ import { createSelector } from '@reduxjs/toolkit';
 import {
   CoachPractitionerTimeline,
   FormData,
+  PqaRatingData,
   PreviousFormData,
 } from './pqa.types';
 
@@ -91,3 +92,52 @@ export const getVisitDataForVisitIdSelectorByUserId = (
     }
   );
 };
+
+export const getCurrentPQaRatingByUserId = (userId: string) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const pqaRating1 = timeline?.pQARating1;
+    const pqaRating2 = timeline?.pQARating2;
+    const pqaRating3 = timeline?.pQARating3;
+
+    if (pqaRating3?.overallRating) {
+      return {
+        rating: pqaRating3,
+        visitNumber: 3,
+      } as PqaRatingData;
+    }
+
+    if (pqaRating2?.overallRating) {
+      return {
+        rating: pqaRating2,
+        visitNumber: 2,
+      } as PqaRatingData;
+    }
+
+    return {
+      rating: pqaRating1,
+      visitNumber: 1,
+    } as PqaRatingData;
+  });
+
+export const getLastCoachAttendedVisitByUserId = (userId: string) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const attendedVisits = timeline?.pQASiteVisits?.filter(
+      (visit) =>
+        visit?.attended && !visit?.visitType?.name?.includes('follow_up')
+    );
+
+    if (attendedVisits?.length === 0) {
+      return null;
+    }
+
+    return attendedVisits?.reduce((mostRecentVisit, visit) => {
+      if (
+        !mostRecentVisit ||
+        new Date(visit?.insertedDate) > new Date(mostRecentVisit.insertedDate)
+      ) {
+        return visit;
+      }
+
+      return mostRecentVisit;
+    }, null);
+  });
