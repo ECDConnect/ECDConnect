@@ -7,6 +7,7 @@ using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Security.Managers;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
@@ -69,7 +70,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] InvitationNotificationManager notificationManager,
           [Service] UserManager<ApplicationUser> userManager,
-          [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
           [Service] IHttpContextAccessor accessor,
           IEnumerable<string> userIds)
         {
@@ -109,6 +109,55 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 catch
                 {
                     result.Failed.Add(invitedAdmin.Id);
+                }
+            }
+
+            return result;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public async Task<BulkInvitationResult> SendBulkInviteToApp(
+          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
+          [Service] InvitationNotificationManager notificationManager,
+          [Service] UserManager<ApplicationUser> userManager,
+          [Service] IDbContextFactory<AuthenticationDbContext> dbContextFactory,
+          [Service] IHttpContextAccessor accessor,
+          IEnumerable<string> userIds)
+        {
+            // Create result
+            var result = new BulkInvitationResult() { Failed = userIds.ToList(), Success = new List<string>() };
+
+            // Get current and other admins
+            var currentUserId = accessor.HttpContext.GetUser()?.Id;
+            var currentUser = await userManager.FindByIdAsync(currentUserId);
+            var currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+            var inviteUsers = await userManager.Users.Where(u => userIds.Contains(u.Id) && u.TenantId == TenantExecutionContext.Tenant.Id).ToListAsync();
+
+            // Only admins can send invitations to admins
+            if (!currentUserIsAdmin)
+                return result;
+
+            // Add reqested users that aren't in the list to failedInvitations
+            result.Failed = userIds.Except(inviteUsers.Select(u => u.Id)).ToList();
+
+            foreach (var invitedUser in inviteUsers)
+            {
+                try
+                {
+                    var token = await invitationManager.GenerateTokenAsync(invitedUser);
+
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        result.Failed.Add(invitedUser.Id);
+                        continue;
+                    }
+                    await notificationManager.SendInvitationAsync(invitedUser, token);
+                    result.Success.Add(invitedUser.Id);
+                }
+                catch
+                {
+                    result.Failed.Add(invitedUser.Id);
                 }
             }
 
