@@ -348,7 +348,7 @@ export function ViewUser(props: any) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id ?? "3",
+        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id ?? teamLeadData,
         input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
       },
     })

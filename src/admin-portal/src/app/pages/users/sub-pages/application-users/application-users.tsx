@@ -118,9 +118,7 @@ export default function ApplicationUsers() {
     return {
       ...user,
       fullName: `${user.firstName} ${user.surname}`,
-      _view: undefined,
-      _edit: undefined,
-      _url: undefined,
+      email: user.idNumber ? user.email : '',
     };
   };
 
@@ -223,8 +221,7 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'idNumber' || 'email', use: 'ID/Passport/Email' },
-                    { field: 'email', use: 'Email' },
+                    { field: 'email', use: 'ID/Passport/Email' },
                     { field: 'fullName', use: 'Name' },
                     {
                       field: 'roles',
