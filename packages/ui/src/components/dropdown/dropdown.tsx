@@ -37,7 +37,7 @@ export function Dropdown<T>({
   fillType = 'filled',
   fullWidth = false,
   fillColor = 'uiBg',
-  textColor = 'primary',
+  textColor = 'white',
   className,
   inputRef,
   showSearch,

@@ -10,7 +10,7 @@ import {
   SendInviteToApplication,
   UserList,
 } from '@ecdlink/graphql';
-import { Dropdown } from '@ecdlink/ui';
+import { DropDownOption, Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -19,47 +19,10 @@ import debounce from 'lodash.debounce';
 import CustomDateRangePicker from '../../../../components/date-picker';
 
 export default function ApplicationUsers() {
-  const dialog = useDialog();
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
   const [showFilter, setShowFilter] = useState(false);
-  const [isDropdownVisible, setIsDropdownVisible] = useState(false);
-  const [startDate, setStartDate] = useState('');
-  const [endDate, setEndDate] = useState('');
-  const [sendInviteToApplication, { loading: invitationLoading }] = useMutation(
-    SendInviteToApplication
-  );
-  const { setNotification } = useNotifications();
-
-  const resendInvitation = async (
-    userId: string,
-    inviteToPortal: boolean = false
-  ) => {
-    await sendInviteToApplication({
-      variables: {
-        userId: userId,
-        inviteToPortal: inviteToPortal,
-      },
-    });
-    setNotification({
-      title: 'Successfully Sent User an Invite!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-  };
-
-  const toggleDropdown = () => {
-    setIsDropdownVisible(!isDropdownVisible);
-  };
-
-  const handleStartDateChange = (
-    event: React.ChangeEvent<HTMLInputElement>
-  ) => {
-    setStartDate(event.target.value);
-  };
-
-  const handleEndDateChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    setEndDate(event.target.value);
-  };
+  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
 
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
@@ -67,12 +30,39 @@ export default function ApplicationUsers() {
       filterBy: [],
       sortBy: [{ fieldName: 'FullName', descending: true }],
       pagingInput: {
-        pageNumber: 5,
-        pageSize: 50,
+        pageNumber: 1,
+        pageSize: 10,
       },
     },
     fetchPolicy: 'network-only',
   });
+
+
+  const getRoleOptions = (users: UserDto[]) => {
+    if (!users) return [];
+
+    return users.reduce(
+      (acc, curr) => {
+        const items = curr.roles.map((x) => ({ label: x.name, value: x.name }));
+
+        const distinctItems = items.filter(
+          (item) => !acc.some((ac) => ac.value === item.value)
+        );
+
+        if (distinctItems) {
+          return [...acc, ...distinctItems];
+        }
+
+        return acc;
+      },
+      [
+        {
+          label: 'All',
+          value: undefined,
+        },
+      ] as DropDownOption<string>[]
+    );
+  };
 
   useEffect(() => {
     getAllUsers({
@@ -82,15 +72,13 @@ export default function ApplicationUsers() {
         sortBy: [{ fieldName: 'FullName', descending: true }],
         pagingInput: {
           pageNumber: 1,
-          pageSize: 10,
+          pageSize: 20,
         },
       },
     });
   }, [searchValue]);
 
   const [tableData, setTableData] = useState<any[]>([]);
-
-  const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
 
   useEffect(() => {
     if (data && data.users) {
@@ -136,25 +124,10 @@ export default function ApplicationUsers() {
     };
   };
 
-  const getDefaultStartDate = () => {
-    const currentDate = new Date();
-    const previousMonth = new Date(
-      currentDate.getFullYear(),
-      currentDate.getMonth() - 1,
-      1
-    );
-    return previousMonth.toISOString().split('T')[0];
-  };
-
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
   }, 150);
 
-  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
-
-  const handleDateChange = (range: Date[]) => {
-    setSelectedRange(range);
-  };
 
   if (tableData) {
     return (
@@ -177,18 +150,20 @@ export default function ApplicationUsers() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex items-center sm:mt-6 ">
-                    {/* <div>
-                      <button
-                        id="dropdownDividerButton"
-                        className="bg-secondary focus:border-secondary focus:outline-none focus:ring-secondary dark:bg-secondary dark:hover:bg-grey-300 dark:focus:ring-secondary inline-flex items-center rounded-lg px-4 py-2.5 text-center text-sm font-medium text-white hover:bg-gray-300 focus:ring-2"
-                        type="button"
-                        onClick={toggleDropdown}
-                      >
-                        Date Invited
-                        <ChevronDownIcon className="ml-2 h-4 w-4" />
-                      </button>
-                    </div> */}
-
+                    <span className="flex flex-row text-lg font-medium leading-6 text-gray-900 w-5/12">
+                      <Dropdown
+                        className="mr-2 w-full"
+                        fillType="filled"
+                        fillColor='secondary'
+                        placeholder="Filter roles"
+                        labelColor='white'
+                        selectedValue={selectedRoleFilter}
+                        list={getRoleOptions(data?.users) || []}
+                        onChange={(item) => {
+                          setSelectedRoleFilter(item);
+                        }}
+                      />
+                    </span>
                     <div>
                       <Dropdown
                         fillType="filled"
@@ -248,7 +223,7 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'idNumber', use: 'ID/Passport' },
+                    { field: 'idNumber' || 'email', use: 'ID/Passport/Email' },
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'Name' },
                     {
@@ -257,13 +232,17 @@ export default function ApplicationUsers() {
                       type: 'array',
                       displayProperty: 'name',
                     },
-                    { field: 'StartDate', use: 'Date Invited' },
+                    { field: 'createdAt', use: 'Date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
                   searchInput={searchValue}
                   urlRow={'/view-user/'}
                   component={'administrators'}
+                  options={
+                    { should_export: true }
+
+                  }
                 />
               </div>
             </div>
