@@ -30,8 +30,8 @@ export default function ApplicationUsers() {
       filterBy: [],
       sortBy: [{ fieldName: 'FullName', descending: true }],
       pagingInput: {
-        pageNumber: 1,
-        pageSize: 10,
+        pageNumber: '',
+        pageSize: '',
       },
     },
     fetchPolicy: 'network-only',
@@ -71,8 +71,8 @@ export default function ApplicationUsers() {
         filterBy: [],
         sortBy: [{ fieldName: 'FullName', descending: true }],
         pagingInput: {
-          pageNumber: 1,
-          pageSize: 20,
+          pageNumber: "",
+          pageSize: '',
         },
       },
     });
