@@ -11,4 +11,9 @@ export interface CalendarEventDto {
   name: string | null;
   participants: CalendarEventParticipantDto[] | null;
   start: string | null;
+  userId: string | null;
+  user: {
+    firstName: string | null;
+    surname: string | null;
+  } | null;
 }

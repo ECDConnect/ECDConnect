@@ -32,6 +32,12 @@ export interface CalendarAddEventProps {
   onCancel: () => void;
 }
 
+export interface CalendarAddEventParticipantFormModel {
+  userId: string;
+  firstName: string;
+  surname: string;
+}
+
 export interface CalendarAddEventFormModel {
   name: string;
   start: Date;
@@ -39,7 +45,7 @@ export interface CalendarAddEventFormModel {
   allDay: boolean;
   description: string;
   eventType?: string;
-  participants: string[];
+  participants: CalendarAddEventParticipantFormModel[];
 }
 
 export const defaultCalendarAddEventFormSchema: CalendarAddEventFormModel = {

@@ -5,6 +5,7 @@ import {
   CalendarAddEventFormSchema,
   CalendarAddEventOptions,
   CalendarEditEventOptions,
+  CalendarAddEventParticipantFormModel,
 } from './calendar-add-event.types';
 import { useSelector } from 'react-redux';
 import { useCallback, useEffect, useState } from 'react';
@@ -58,11 +59,27 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   const [searchParticipantsVisible, setSearchParticipantsVisible] =
     useState<boolean>(false);
 
+  const currentUser = useSelector(userSelectors.getUser) as UserDto;
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
   const isNewEvent = !eventProps?.id;
+
+  const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
+    eventProps?.participantUserIds?.map((pid) => {
+      const practitioner = practitioners?.find((x) => x.id === pid);
+      return {
+        id: newGuid(),
+        participantUserId: pid,
+        participantUser: {
+          firstName: practitioner?.user?.firstName || '',
+          surname: practitioner?.user?.surname || '',
+        },
+      };
+    });
+
   const event: CalendarEventModel = useSelector(
     calendarSelectors.getCalendarEventById(eventProps?.id || '')
   ) || {
-    __changed: true,
     id: '',
     allDay: eventProps?.allDay || false,
     description: eventProps?.description || '',
@@ -70,21 +87,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     eventType: eventProps?.eventType || '',
     name: eventProps?.name || '',
     start: eventProps?.start || '',
-    participants: (eventProps?.participantUserIds || []).map(
-      (participantUserId) => ({
-        id: newGuid(),
-        participantUserId,
-      })
-    ),
+    participants: eventPropParticipants || [],
     action: eventProps?.action || null,
+    userId: currentUser.id || '',
+    user: {
+      firstName: currentUser.firstName || '',
+      surname: currentUser.surname || '',
+    },
   };
 
   const calendarEventTypes = useSelector(
     calendarSelectors.getCalendarEventTypes
   );
-
-  const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const [confirmGoBackPromptVisible, setConfirmGoBackPromptVisible] =
     useState<boolean>(false);
@@ -129,7 +143,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
-    participants: event.participants.map((p) => p.participantUserId),
+    participants: event.participants.map((p) => ({
+      userId: p.participantUserId,
+      firstName: p.participantUser.firstName,
+      surname: p.participantUser.surname,
+    })),
   };
   const {
     setValue: setEventFormValue,
@@ -165,19 +183,24 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
       const participants: CalendarEventParticipantModel[] =
         formValues.participants
-          .filter((participantUserId) => participantUserId !== currentUser.id)
-          .map((participantUserId) => {
+          .filter(
+            (participantUser) => participantUser.userId !== currentUser.id
+          )
+          .map((participantUser) => {
             return {
               id:
                 event.participants.find(
-                  (x) => x.participantUserId === participantUserId
+                  (x) => x.participantUserId === participantUser.userId
                 )?.id || newGuid(),
-              participantUserId,
+              participantUserId: participantUser.userId,
+              participantUser: {
+                firstName: participantUser.firstName,
+                surname: participantUser.surname,
+              },
             };
           });
 
       const model: CalendarEventModel = {
-        __changed: true,
         id: id,
         allDay: formValues.allDay,
         description: formValues.description,
@@ -191,10 +214,15 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           : formValues.start.toISOString(),
         participants: participants,
         action: event.action,
+        userId: currentUser.id || '',
+        user: {
+          firstName: currentUser.firstName || '',
+          surname: currentUser.surname || '',
+        },
       };
       appDispatch(
         calendarThunkActions.updateCalendarEvent(
-          calendarConvert.CalendarEventModel.CalendarEventInput(model)
+          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(model)
         )
       );
       if (onUpdated) {
@@ -219,9 +247,9 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   }, []);
 
   const onSearchParticipantDone = useCallback(
-    (participantUserIds: string[]) => {
+    (participantUsers: CalendarAddEventParticipantFormModel[]) => {
       setSearchParticipantsVisible(false);
-      setEventFormValue('participants', participantUserIds);
+      setEventFormValue('participants', participantUsers);
     },
     []
   );
@@ -234,7 +262,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     (item: any) => {
       const id = (item as ListDataItem).id as string;
       const list = [...getEventFormValues().participants];
-      const index = list.findIndex((x) => x === id);
+      const index = list.findIndex((x) => x.userId === id);
       if (index !== -1) {
         list.splice(index, 1);
         setEventFormValue('participants', list);
@@ -244,12 +272,17 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   );
 
   const getParticipantList = useCallback(
-    (participantUserIds: string[]): ListDataItem[] => {
+    (
+      participantUsers: CalendarAddEventParticipantFormModel[]
+    ): ListDataItem[] => {
       const list: ListDataItem[] = [];
       if (!!practitioners) {
         list.push(
           ...practitioners
-            .filter((p) => participantUserIds.includes(p.userId || ''))
+            .filter(
+              (p) =>
+                participantUsers.findIndex((u) => u.userId === p.userId) >= 0
+            )
             .map((p) => mapPractitionerToListDataItem(p))
         );
         list.forEach((x) => (x.rightIcon = 'XIcon'));
@@ -434,7 +467,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         position={DialogPosition.Full}
       >
         <CalendarSearchParticipant
-          currentParticipantUserIds={getEventFormValues().participants}
+          currentParticipantUsers={getEventFormValues().participants}
           onBack={onSearchParticipantClose}
           onDone={onSearchParticipantDone}
         />

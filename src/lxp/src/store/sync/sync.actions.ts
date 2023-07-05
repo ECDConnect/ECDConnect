@@ -41,7 +41,7 @@ export const syncOfflineData = createAsyncThunk<
     // },
     {
       title: 'Calendar',
-      action: calendarThunkActions.upsertCalendar,
+      action: calendarThunkActions.upsertCalendarEvents,
     },
     {
       title: 'Care givers',
@@ -153,7 +153,7 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       // },
       {
         title: 'Calendar',
-        action: calendarThunkActions.upsertCalendar,
+        action: calendarThunkActions.upsertCalendarEvents,
       },
       {
         title: 'Care givers',
