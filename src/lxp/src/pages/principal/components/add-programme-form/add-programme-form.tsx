@@ -14,7 +14,11 @@ import {
 } from '@schemas/practitioner/edit-programme';
 import { yesNoOptions } from './add-programme-form.types';
 import { userSelectors } from '@/store/user';
-import { classroomsActions, classroomsSelectors } from '@/store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@/store/classroom';
 import { useAppDispatch } from '@/store';
 import { newGuid } from '@/utils/common/uuid.utils';
 import {

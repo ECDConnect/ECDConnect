@@ -41,9 +41,11 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
   const { status, error, currentAction, currentStep, stepTotal } =
     useAppSelector((state) => state.sync);
 
-  const handleSync = () => {
+  const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
-      dispatch(syncThunkActions.syncOfflineData({}));
+      await dispatch(syncThunkActions.syncOfflineData({}));
+      dispatch(settingActions.setLastDataSync());
+      window.location.reload();
     } else {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }

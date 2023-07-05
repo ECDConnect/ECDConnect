@@ -9,7 +9,11 @@ import { EditMultiplePlayGroups } from '../edit-practitioner-profile/components/
 import { EditPlaygroupModel } from '@schemas/practitioner/edit-playgroups';
 import * as styles from './save-practitioner-playgroups.styles';
 import { useAppDispatch } from '@store';
-import { classroomsActions, classroomsSelectors } from '@store/classroom';
+import {
+  classroomsActions,
+  classroomsSelectors,
+  classroomsThunkActions,
+} from '@store/classroom';
 import { newGuid } from '@utils/common/uuid.utils';
 import {
   EditPlaygroupsState,
@@ -165,15 +169,36 @@ export const EditPlaygroups: React.FC = () => {
           (x) => x.id === playGroup.classroomGroupId
         );
 
+        const hasChanges =
+          currentPlayGroup?.name !== playGroup?.name ||
+          playGroup?.userId !== currentPlayGroup?.userId;
+
         if (currentPlayGroup) {
-          appDispatch(
-            classroomsActions.updateClassroomGroup({
-              ...currentPlayGroup,
-              programmeTypeId: programmeType?.id,
-              name: playGroup.name,
-              userId: playGroup.userId,
-            })
-          );
+          if (hasChanges) {
+            appDispatch(
+              classroomsActions.updateClassroomGroup({
+                ...currentPlayGroup,
+                programmeTypeId: programmeType?.id,
+                name: playGroup.name,
+                userId: playGroup.userId,
+              })
+            );
+
+            appDispatch(
+              classroomsThunkActions.updateClassroomGroup({
+                id: currentPlayGroup.id!,
+                classroomGroup: {
+                  ...currentPlayGroup,
+                  classroomId: playGroup?.classroomId!,
+                  id: playGroup?.id,
+                  programmeTypeId: playGroup?.id,
+                  name: playGroup.name,
+                  userId: playGroup.userId,
+                  isActive: true,
+                },
+              })
+            );
+          }
 
           const currentPlayGroupProgrammes = classProgrammes?.filter(
             (x) => x.classroomGroupId === currentPlayGroup.id

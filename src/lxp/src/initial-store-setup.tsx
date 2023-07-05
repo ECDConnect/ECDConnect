@@ -329,10 +329,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       classroomsThunkActions.upsertClassroomGroups({})
     ).unwrap();
     await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      classroomsThunkActions.updateClassroomGroupProgrammes({})
     ).unwrap();
     await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupLearners({})
+      classroomsThunkActions.updateClassroomGroupLearners({})
     ).unwrap();
   };
 
