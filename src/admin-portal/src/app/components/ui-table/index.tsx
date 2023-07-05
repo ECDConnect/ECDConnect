@@ -144,7 +144,6 @@ export default function UiTable(
       'selectedUser',
       selectedRow?.userId ?? selectedRow?.id
     );
-    console.log(component);
     history.push({
       pathname: urlRow,
       state: {
@@ -239,8 +238,7 @@ export default function UiTable(
     return (
       <div
         className={'cursor-pointer'}
-        onClick={() => {
-          component !== 'team-leads' && viewSelectedRow(row);
+        onClick={() => {viewSelectedRow(row);
         }}
       >
         {rowValue}{' '}

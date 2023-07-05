@@ -82,3 +82,42 @@ export const TeamLeadsTemplate = gql`
     }
   }
 `;
+
+
+export const GetTeamLead = gql`
+query ($userId: String, $fetchImage: Boolean = true, $fetchClinic: Boolean = true) {
+  GetAllTeamLead(where: { userId: { eq: $userId } }) {
+    id
+    user {
+      id
+      isActive
+      userName
+      email
+      isSouthAfricanCitizen
+      verifiedByHomeAffairs
+      dateOfBirth
+      idNumber
+      firstName
+      surname
+      fullName
+      contactPreference
+      genderId
+      phoneNumber
+      profileImageUrl @include(if: $fetchImage)
+      roles {
+        id
+        name
+      }
+    }
+
+    clinic @include(if: $fetchClinic) {
+      name
+      siteAddress {
+        province {
+          description
+        }
+      }
+    }
+  }
+}
+`;
