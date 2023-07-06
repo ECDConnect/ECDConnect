@@ -13,6 +13,9 @@ export const getChildInitialObservationPeriod = (state: RootState): number =>
 export const getLastDataSync = (state: RootState): string =>
   state.settings.lastDataSync;
 
+export const getLasUnformattedDataSync = (state: RootState): string =>
+  state.settings.lastDataSyncUnformatted;
+
 export const getShouldUserSync = (state: RootState): boolean => {
   const lastSynced = new Date(state.settings.lastDataSync);
   const lastSyncedCutOffDateEpoch = new Date(lastSynced).setDate(

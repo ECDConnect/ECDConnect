@@ -5,6 +5,7 @@ export type SettingsState = {
   childProgressReportMonths: number[];
   childInitialObservationPeriod: number;
   lastDataSync: string;
+  lastDataSyncUnformatted: string;
   notificationPollInterval: number;
   applicationVersion?: string;
   settings?: SettingTypeDto;

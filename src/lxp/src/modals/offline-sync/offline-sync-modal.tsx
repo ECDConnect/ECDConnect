@@ -45,7 +45,6 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
     if (practitioner?.isPrincipal === true) {
       await dispatch(syncThunkActions.syncOfflineData({}));
       dispatch(settingActions.setLastDataSync());
-      window.location.reload();
     } else {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
