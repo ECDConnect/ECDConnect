@@ -4,7 +4,7 @@ import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
 import { useAppDispatch, useAppSelector } from './store';
 import { attendanceActions, attendanceThunkActions } from './store/attendance';
-import { authActions, authSelectors } from './store/auth';
+import { authActions } from './store/auth';
 import { caregiverActions, caregiverThunkActions } from './store/caregiver';
 import { childrenActions, childrenThunkActions } from './store/children';
 import { classroomsActions, classroomsThunkActions } from './store/classroom';
@@ -30,7 +30,7 @@ import {
   progressTrackingActions,
   progressTrackingThunkActions,
 } from './store/progress-tracking';
-import { settingActions, settingSelectors } from './store/settings';
+import { settingActions } from './store/settings';
 import { staticDataActions } from './store/static-data';
 import { userActions, userThunkActions } from './store/user';
 import { coachActions, coachThunkActions } from './store/coach';
@@ -52,7 +52,6 @@ import { childrenForPractitionerThunkActions } from './store/childrenForPractiti
 import { programmeActions, programmeThunkActions } from './store/programme';
 import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
-import { SettingsService } from './services/SettingsService';
 
 type IntialStoreSetupContextValues = {
   initloading: boolean;
@@ -71,7 +70,6 @@ export const IntialStoreSetupContext =
 
 const InitialStoreSetup: React.FC = ({ children }) => {
   const appDispatch = useAppDispatch();
-  const userAuth = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const [initloading, setInitLoading] = useState(false);
   const [staticDataLoading, setStaticDataLoading] = useState(false);
@@ -80,16 +78,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
-  const lastDataSyncDate = useSelector(
-    settingSelectors.getLasUnformattedDataSync
-  );
+
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline
   );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
-  const [checkSync, setCheckSync] = useState(true);
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -97,21 +91,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const { sync, analytics, settings, notifications, ...state } = useAppSelector(
     (state) => state
   );
-
-  useEffect(() => {
-    if (userAuth?.auth_token && userData?.firstName) {
-      asyncCheck();
-    }
-  }, [userAuth?.auth_token, userData?.firstName]);
-
-  const asyncCheck = async () => {
-    if (userAuth?.auth_token) {
-      const asyncCheckresponse = await new SettingsService(
-        userAuth?.auth_token!
-      ).queryChangesToSync(lastDataSyncDate);
-      setCheckSync(asyncCheckresponse);
-    }
-  };
 
   const resetAuth = async () => {
     appDispatch(authActions.resetAuthState());
@@ -207,35 +186,31 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   };
 
   const resetStaticStoreSetup = async () => {
-    if (checkSync) {
-      appDispatch(staticDataActions.resetStaticDataState());
-      appDispatch(progressTrackingActions.resetProgressTrackingState());
-      appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
-      appDispatch(activityActions.resetActivityState());
-      appDispatch(storyBookActions.resetStoryBookState());
-      appDispatch(programmeThemeActions.resetProgrammeThemeState());
-      appDispatch(contentConsentActions.resetContentConsentState());
-      appDispatch(notificationActions.resetNotificationState());
-      appDispatch(settingActions.resetSettingsState());
-      appDispatch(analyticsActions.resetAnalyticsState());
-      appDispatch(programmeActions.resetProgrammeState());
-    }
+    appDispatch(staticDataActions.resetStaticDataState());
+    appDispatch(progressTrackingActions.resetProgressTrackingState());
+    appDispatch(programmeRoutineActions.resetProgrammeRoutineState());
+    appDispatch(activityActions.resetActivityState());
+    appDispatch(storyBookActions.resetStoryBookState());
+    appDispatch(programmeThemeActions.resetProgrammeThemeState());
+    appDispatch(contentConsentActions.resetContentConsentState());
+    appDispatch(notificationActions.resetNotificationState());
+    appDispatch(settingActions.resetSettingsState());
+    appDispatch(analyticsActions.resetAnalyticsState());
+    appDispatch(programmeActions.resetProgrammeState());
   };
 
   const resetAdditionalStoreSetup = async () => {
-    if (checkSync) {
-      appDispatch(notesActions.resetNotesState());
-      appDispatch(classroomsActions.resetClassroomState());
-      appDispatch(userActions.resetUserState());
-      appDispatch(coachActions.resetCoachState());
-      appDispatch(practitionerActions.resetPractitionerState());
-      appDispatch(practitionerForCoachActions.resetPractitionerState());
-      appDispatch(childrenActions.resetChildrenState());
-      appDispatch(caregiverActions.resetCaregiverState());
-      appDispatch(documentActions.resetDocumentsState());
-      appDispatch(attendanceActions.resetAttendanceState());
-      appDispatch(contentReportActions.resetContentReportState());
-    }
+    appDispatch(notesActions.resetNotesState());
+    appDispatch(classroomsActions.resetClassroomState());
+    appDispatch(userActions.resetUserState());
+    appDispatch(coachActions.resetCoachState());
+    appDispatch(practitionerActions.resetPractitionerState());
+    appDispatch(practitionerForCoachActions.resetPractitionerState());
+    appDispatch(childrenActions.resetChildrenState());
+    appDispatch(caregiverActions.resetCaregiverState());
+    appDispatch(documentActions.resetDocumentsState());
+    appDispatch(attendanceActions.resetAttendanceState());
+    appDispatch(contentReportActions.resetContentReportState());
   };
 
   const initStoreSetup = useCallback(async () => {
@@ -260,47 +235,43 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
     setOtherLoading(true);
-    if (checkSync) {
-      await appDispatch(notesThunkActions.getNotes({})).unwrap();
-      await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
-      await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
-      await appDispatch(
-        classroomsThunkActions.getClassroomProgrammes({})
-      ).unwrap();
-      await appDispatch(
-        classroomsThunkActions.getClassroomGroupLearners({})
-      ).unwrap();
-      await appDispatch(userThunkActions.getUser({})).unwrap();
-      await appDispatch(userThunkActions.getUserConsents({})).unwrap();
-      await appDispatch(
-        practitionerThunkActions.getAllPractitioners({})
-      ).unwrap();
-      await appDispatch(childrenThunkActions.getChildren({})).unwrap();
-      await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
-      await appDispatch(documentThunkActions.getDocuments({})).unwrap();
-      await appDispatch(
-        contentReportThunkActions.getDetailedProgressReports(50)
-      );
-      await appDispatch(
-        contentReportThunkActions.getChildProgressReportSummary(50)
-      ).unwrap();
-      await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
-      await appDispatch(
-        attendanceThunkActions.getAttendance({
-          year: getYear(new Date()),
-          monthOfYear: getMonth(new Date()) + 1,
-          weekOfYear: getWeek(new Date()),
-        })
-      ).unwrap();
-      await appDispatch(
-        calendarThunkActions.getCalendarEvents({
-          start: subMonths(
-            new Date(new Date().getFullYear(), new Date().getMonth(), 0),
-            1
-          ),
-        })
-      );
-    }
+    await appDispatch(notesThunkActions.getNotes({})).unwrap();
+    await appDispatch(classroomsThunkActions.getClassroom({})).unwrap();
+    await appDispatch(classroomsThunkActions.getClassroomGroups({})).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomProgrammes({})
+    ).unwrap();
+    await appDispatch(
+      classroomsThunkActions.getClassroomGroupLearners({})
+    ).unwrap();
+    await appDispatch(userThunkActions.getUser({})).unwrap();
+    await appDispatch(userThunkActions.getUserConsents({})).unwrap();
+    await appDispatch(
+      practitionerThunkActions.getAllPractitioners({})
+    ).unwrap();
+    await appDispatch(childrenThunkActions.getChildren({})).unwrap();
+    await appDispatch(caregiverThunkActions.getCaregivers({})).unwrap();
+    await appDispatch(documentThunkActions.getDocuments({})).unwrap();
+    await appDispatch(contentReportThunkActions.getDetailedProgressReports(50));
+    await appDispatch(
+      contentReportThunkActions.getChildProgressReportSummary(50)
+    ).unwrap();
+    await appDispatch(programmeThunkActions.getUserProgrammes({})).unwrap();
+    await appDispatch(
+      attendanceThunkActions.getAttendance({
+        year: getYear(new Date()),
+        monthOfYear: getMonth(new Date()) + 1,
+        weekOfYear: getWeek(new Date()),
+      })
+    ).unwrap();
+    await appDispatch(
+      calendarThunkActions.getCalendarEvents({
+        start: subMonths(
+          new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+          1
+        ),
+      })
+    );
     setOtherLoading(false);
   };
 
