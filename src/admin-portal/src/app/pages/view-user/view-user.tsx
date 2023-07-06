@@ -10,6 +10,7 @@ import {
   AlertType,
   Avatar,
   ProfileAvatar,
+  classNames,
 } from '@ecdlink/ui';
 import {
   JSXElementConstructor,
@@ -438,7 +439,7 @@ export function ViewUser(props: any) {
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
-                    {userData?.userById?.fullName}
+                    {userData?.userById?.fullName ?? chwData?.GetHealthCareWorkerById?.user?.fullName}
                   </p>
                   <div className="flex flex-row pt-2">
                     {userData &&
@@ -447,7 +448,7 @@ export function ViewUser(props: any) {
                           return (
                             <div
                               key={i.id}
-                              className="bg-primary m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white"
+                              className={classNames(("bg-tertiary"), " m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white")}
                             >
                               <p className="text-16">
                                 {' '}
@@ -459,6 +460,25 @@ export function ViewUser(props: any) {
                           );
                         }
                       )}
+                    {chwData &&
+                      chwData?.GetHealthCareWorkerById?.user?.roles?.map(
+                        (i: any, index: number) => {
+                          return (
+                            <div
+                              key={i.id}
+                              className={classNames(("bg-primary"), " m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white")}
+                            >
+                              <p className="text-16">
+                                {' '}
+                                {i.name === 'Health Care Worker'
+                                  ? 'CHW'
+                                  : i.name}
+                              </p>
+                            </div>
+                          );
+                        }
+                      )}
+
                   </div>
                   {/* <p>{userData?.firstName}</p> */}
                 </div>
@@ -536,7 +556,7 @@ export function ViewUser(props: any) {
                   </div>
                   {isCHW || props.location.state?.component === 'chw' ? (
                     <Button
-                      className={'mt-3 w-4/12 rounded-md '}
+                      className={' w-4/12 rounded-md '}
                       type="filled"
                       isLoading={loading}
                       color="secondary"
@@ -554,7 +574,7 @@ export function ViewUser(props: any) {
                     </Button>
                   ) : (
                     <Button
-                      className={'mt-3 w-4/12 rounded-md '}
+                      className={' w-4/12 rounded-md '}
                       type="filled"
                       isLoading={loading}
                       color="secondary"
