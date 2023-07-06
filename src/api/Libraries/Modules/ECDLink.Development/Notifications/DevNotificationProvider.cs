@@ -69,7 +69,7 @@ namespace ECDLink.Development.Notifications
             if (string.IsNullOrWhiteSpace(dropLocation))
             {
                 var appRoute = DirectoryHelper.GetApplicationRoot();
-                dropLocation = $"{appRoute}\\notification_drop";
+                dropLocation = $"{appRoute}{Path.DirectorySeparatorChar}notification_drop";
             }
 
             if (!Directory.Exists(dropLocation))
