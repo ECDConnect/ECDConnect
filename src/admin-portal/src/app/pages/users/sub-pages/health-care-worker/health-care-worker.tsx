@@ -66,7 +66,7 @@ export default function HealthCareWorkers() {
         search: '',
         pagingInput: {
           pageNumber: 1,
-          pageSize: 20,
+          pageSize: 100,
         },
       },
       fetchPolicy: 'network-only',
@@ -81,7 +81,7 @@ export default function HealthCareWorkers() {
         clinicSearch: clinicFilter,
         pagingInput: {
           pageNumber: 1,
-          pageSize: 20,
+          pageSize: 500,
         },
       },
     });
@@ -181,7 +181,7 @@ export default function HealthCareWorkers() {
   const displayPanel = () => {
     panel({
       noPadding: true,
-      title: 'Create Health Worker',
+      title: '',
       render: (onSubmit: any) => (
         <HealthCareWorkerPanelCreate
           key={`userPanelCreate`}

@@ -1,5 +1,6 @@
 export interface SimpleUserModel {
-  username: string;
+  email?: string;
+  username?: string;
 }
 
 export interface PasswordResetModel {

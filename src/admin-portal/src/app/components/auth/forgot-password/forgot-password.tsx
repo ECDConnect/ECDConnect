@@ -40,8 +40,8 @@ export default function ForgotPassword() {
       console.log(Config.authApi);
 
       setIsLoading(true);
-      const body: SimpleUserModel = {
-        username: formValues.username,
+      const body = {
+        email: formValues.email,
       };
       const isLinkSent = await forgotPassword(body, Config.authApi);
 
@@ -164,9 +164,9 @@ export default function ForgotPassword() {
                 <div>
                   <FormField
                     label={'Email address *'}
-                    nameProp={'username'}
+                    nameProp={'email'}
                     register={register}
-                    error={errors.username?.message}
+                    error={errors.email?.message}
                   />
                 </div>
 
