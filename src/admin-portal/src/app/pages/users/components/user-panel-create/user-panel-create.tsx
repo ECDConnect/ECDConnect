@@ -1,13 +1,11 @@
-import { useMutation, useQuery } from '@apollo/client';
-import { useEffect, useState } from 'react';
+import { useMutation } from '@apollo/client';
+
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
   Alert,
   Button,
-  SA_ID_REGEX,
-  SA_PASSPORT_REGEX,
   Typography,
 } from '@ecdlink/ui';
 import { UserPanelCreateProps } from '../users';
@@ -188,7 +186,6 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         className="mt-2 mb-2 rounded-md"
         message={`An invitation will be sent to the new user when you click add.`}
         type="info"
-      // customIcon={<SaveIcon></SaveIcon>}
       />}
       <Button
         className="mt-3 mr-6 w-full rounded"
