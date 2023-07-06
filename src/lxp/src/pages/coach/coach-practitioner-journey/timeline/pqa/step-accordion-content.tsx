@@ -1,5 +1,4 @@
 import { Visit, Maybe } from '@ecdlink/graphql';
-import { dateOptions, getStepType } from './timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
@@ -8,9 +7,10 @@ import {
   getLastCoachAttendedFollowUpVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
-import { visitTypes } from '../coach-practitioner-journey.types';
 import { addDays } from 'date-fns';
-import { followUpDeadline, getRatingData } from './utils';
+import { followUpDeadline, getRatingData } from '../utils';
+import { visitTypes } from '../../coach-practitioner-journey.types';
+import { dateOptions, getStepType } from '../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
