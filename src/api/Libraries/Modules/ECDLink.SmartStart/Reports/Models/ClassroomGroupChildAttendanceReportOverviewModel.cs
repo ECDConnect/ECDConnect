@@ -1,5 +1,3 @@
-using ECDLink.DataAccessLayer.Entities.Users;
-using System;
 using System.Collections.Generic;
 
 namespace ECDLink.SmartStart.Reports.Models

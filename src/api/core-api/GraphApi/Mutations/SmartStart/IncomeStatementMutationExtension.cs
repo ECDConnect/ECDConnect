@@ -101,7 +101,7 @@ StatementsSubmit input)
             [Service] IHttpContextAccessor contextAccessor,
             [Service] IFileService fileService,
             IGenericRepositoryFactory repoFactory,
-            IncomeStatementPDFDoc input)
+            PdfDocumentModel input)
         {
             input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
 
