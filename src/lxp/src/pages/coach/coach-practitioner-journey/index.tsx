@@ -332,7 +332,7 @@ export const CoachPractitionerJourney = () => {
     ...uncompletedPqaFollowUpVisit,
     ...uncompletedReAccreditationFollowUpVisit,
   ];
-
+  console.log({ uncompletedVisits });
   const currentVisit = uncompletedVisits
     ?.filter(filterVisit)
     .sort(sortVisit)

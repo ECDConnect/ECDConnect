@@ -15,7 +15,7 @@ import {
   generalSupportVisit,
   getFirstPqaSteps,
   prePqaVisits,
-  reaccreditationSteps,
+  getReAccreditationSteps,
 } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
@@ -59,7 +59,7 @@ interface ExtraVisitProps extends SubmitProps {
   type: 'support-visit' | 'follow-up-visit';
 }
 
-export interface PqaRating {
+export interface Rating {
   color: 'Success' | 'Warning' | 'Error';
   score: number;
 }
@@ -81,7 +81,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
   const [title, setTitle] = useState('');
-  const [pqaRating, setPqaRating] = useState<PqaRating | undefined>();
+  const [pqaRating, setPqaRating] = useState<Rating | undefined>();
+  const [reAccreditationRating, setReAccreditationRating] = useState<
+    Rating | undefined
+  >();
 
   const { isOnline } = useOnlineStatus();
 
@@ -113,6 +116,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const pqaRating2 = timeline?.pQARating2;
   const pqaRating3 = timeline?.pQARating3;
 
+  const reAccreditationRating1 = timeline?.reAccreditationRating1;
+  const reAccreditationRating2 = timeline?.reAccreditationRating2;
+  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+
   const pqaRatingColorList = [
     pqaRating1?.overallRatingColor,
     pqaRating2?.overallRatingColor,
@@ -120,14 +127,25 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     pqaRating?.color,
   ];
 
+  const reAccreditationRatingColorList = [
+    reAccreditationRating1?.overallRatingColor,
+    reAccreditationRating2?.overallRatingColor,
+    reAccreditationRating3?.overallRatingColor,
+    reAccreditationRating?.color,
+  ];
+
   const pqaRatingRedColorCount = pqaRatingColorList.filter(
     (item) => item === 'Error'
   ).length;
 
+  const reAccreditationRatingRedColorCount =
+    reAccreditationRatingColorList.filter((item) => item === 'Error').length;
+
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
     step15ReAccreditationQuestion1Answer === true ||
-    pqaRatingRedColorCount === 2;
+    pqaRatingRedColorCount === 2 ||
+    reAccreditationRatingRedColorCount === 2;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
@@ -524,7 +542,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
     if (visitName.includes(visitTypes.reaccreditation.includes)) {
       setTitle('Reaccreditation');
-      return reaccreditationSteps;
+      return getReAccreditationSteps({ isToRemoveSmartStarter });
     }
 
     setTitle(visitTypes.pqa.firstPQA.description);
@@ -572,6 +590,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         isTipPage={isTip}
         currentStep={step}
         pqaRating={pqaRating}
+        reAccreditationRating={reAccreditationRating}
         nextButtonText={
           step === 10 && isStep11AnswerTrue
             ? 'Continue to SmartSpace checklist'
@@ -584,6 +603,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onClose={onBack}
         onSubmit={handleOnSubmit}
         setPqaRating={setPqaRating}
+        setReAccreditationRating={setReAccreditationRating}
         isLoading={isLoading || isLoadingSupportVisit || isLoadingDeactivate}
         secondaryButton={
           visitName === visitTypes.delicensing && step === 1
