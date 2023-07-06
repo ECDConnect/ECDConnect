@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
 import {
+  Alert,
   Button,
   SA_ID_REGEX,
   SA_PASSPORT_REGEX,
@@ -133,12 +134,12 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className="">
-        <div className="border-b border-dashed border-gray-500 px-2">
-          <h1 className="text-black text-xl font-medium leading-6 py-4">
-            Administrator Details
-          </h1>
-          <p className="text-md text-gray-500 pb-2">Step 1 of 1</p>
-        </div>
+          <div className="border-b border-dashed border-gray-500 px-2">
+            <h1 className="text-black text-xl font-medium leading-6 py-4">
+              Administrator Details
+            </h1>
+            <p className="text-md text-gray-500 pb-2">Step 1 of 1</p>
+          </div>
           <form className="space-y-8 divide-y divide-gray-200">
             <div className="space-y-0">
               <div className="grid grid-cols-1 ">
@@ -172,7 +173,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
               </div>
             </div>
           </form>
-          <div></div>
+          <div>
+
+          </div>
         </div>
       </>
     );
@@ -181,6 +184,12 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   return (
     <article>
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      {<Alert
+        className="mt-2 mb-2 rounded-md"
+        message={`An invitation will be sent to the new user when you click add.`}
+        type="info"
+      // customIcon={<SaveIcon></SaveIcon>}
+      />}
       <Button
         className="mt-3 mr-6 w-full rounded"
         type="filled"
