@@ -91,7 +91,7 @@ export default function Login() {
                   nameProp={'password'}
                   value={formValues.password}
                   register={register}
-                  strengthMeterVisible={true}
+                  // strengthMeterVisible={true}
                   className="mb-9 "
                 />
               </div>
