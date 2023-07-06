@@ -37,8 +37,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     props.closeDialog(value);
   };
 
-  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-  const [createUser] = useMutation(CreateUser);
+  const [sendInviteToApplication,] = useMutation(SendInviteToApplication);
+  const [createUser, { error }] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
   // FORMS
@@ -101,9 +101,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             });
           });
       });
-    } catch (error) {
+    } catch (err) {
       setNotification({
-        title: 'Failed to Create Admin',
+        title: `Failed: ${error?.message}`,
         variant: NOTIFICATION.ERROR,
       });
     }
@@ -133,11 +133,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     return (
       <>
         <div className=" border-b border-dashed border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
-          </div>
+        <div className="pb-2">
+          <h1 className="text-uiMidDark text-xl font-medium leading-6">
+            Create Administrator
+          </h1>
+        </div>
+
+        <div className=" border-t border-dashed border-gray-500 px-4 py-5 "></div>
 
           <form className="space-y-8 divide-y divide-gray-200">
             <div className="space-y-0">
