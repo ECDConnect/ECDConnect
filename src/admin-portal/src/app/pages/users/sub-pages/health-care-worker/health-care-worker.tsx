@@ -97,13 +97,7 @@ export default function HealthCareWorkers() {
   const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
-
-  const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
-    HealthCareWorkerTemplate,
-    {
-      fetchPolicy: 'cache-and-network',
-    }
-  );
+  
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
