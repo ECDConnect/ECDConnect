@@ -122,16 +122,12 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     }
   );
-  const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(
-    GetTeamLead,
-    {
-      variables: {
-        userId: '',
-      },
-      fetchPolicy: 'cache-and-network',
-    }
-  );
-
+  const [getAllTeamLead, { data: teamLeadData }] = useLazyQuery(GetTeamLead, {
+    variables: {
+      userId: '',
+    },
+    fetchPolicy: 'cache-and-network',
+  });
 
   const [getUserById, { data: userData, refetch }] = useLazyQuery(GetUserById, {
     variables: {
@@ -176,7 +172,6 @@ export function ViewUser(props: any) {
       getAllTeamLead({
         variables: { userId: props.location.state.userId ?? userId },
       });
-
   }, [userId]);
 
   const { hasPermission } = useUser();
@@ -191,16 +186,16 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${
+            chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
             deleteUser({
               variables: {
-                id:
-                  userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
+                id: userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
               },
             })
               .then((response: any) => {
@@ -228,9 +223,10 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${
+            chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-            }`}
+          }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -312,20 +308,20 @@ export function ViewUser(props: any) {
 
   // SET EDIT FORMS
   useEffect(() => {
-    adminDetailSetValue('email', userData?.userById?.email, {
+    adminDetailSetValue('email', userData?.userById?.email || chwData?.GetHealthCareWorkerById?.user.email, {
       shouldValidate: true,
     });
 
-    chwDetailSetValue('idNumber', userData?.userById?.idNumber, {
+    chwDetailSetValue('idNumber', userData?.userById?.idNumber || chwData?.GetHealthCareWorkerById?.user.idNumber, {
       shouldValidate: true,
     });
 
-    chwDetailSetValue('phoneNumber', userData?.userById?.phoneNumber, {
+    chwDetailSetValue('phoneNumber', userData?.userById?.phoneNumber || chwData?.GetHealthCareWorkerById?.user.phoneNumber, {
       shouldValidate: true,
     });
 
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [userData]);
+  }, [userData, chwData]);
 
   const saveUser = async (passwordChange: boolean) => {
     const passwordForm = passwordGetValues();
@@ -349,7 +345,10 @@ export function ViewUser(props: any) {
 
     await updateUser({
       variables: {
-        id: userData?.userById.id ?? chwData?.GetHealthCareWorkerById?.user.id ?? teamLeadData,
+        id:
+          userData?.userById.id ??
+          chwData?.GetHealthCareWorkerById?.user.id ??
+          teamLeadData,
         input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
       },
     })
@@ -432,14 +431,15 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => { }}
+                  onPressed={() => {}}
                   hasConsent
                   size="header"
                 />
 
                 <div className="sm: pt-4 pl-8">
                   <p className="text-3xl font-normal text-black ">
-                    {userData?.userById?.fullName ?? chwData?.GetHealthCareWorkerById?.user?.fullName}
+                    {userData?.userById?.fullName ??
+                      chwData?.GetHealthCareWorkerById?.user?.fullName}
                   </p>
                   <div className="flex flex-row pt-2">
                     {userData &&
@@ -448,7 +448,10 @@ export function ViewUser(props: any) {
                           return (
                             <div
                               key={i.id}
-                              className={classNames(("bg-tertiary"), " m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white")}
+                              className={classNames(
+                                'bg-tertiary',
+                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
+                              )}
                             >
                               <p className="text-16">
                                 {' '}
@@ -466,7 +469,12 @@ export function ViewUser(props: any) {
                           return (
                             <div
                               key={i.id}
-                              className={classNames(("bg-primary"), " m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white")}
+                              className={classNames(
+                                i.name === 'Health Care Worker'
+                                  ? 'bg-primary'
+                                  : 'bg-tertiary',
+                                ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
+                              )}
                             >
                               <p className="text-16">
                                 {' '}
@@ -478,7 +486,6 @@ export function ViewUser(props: any) {
                           );
                         }
                       )}
-
                   </div>
                   {/* <p>{userData?.firstName}</p> */}
                 </div>
@@ -491,7 +498,7 @@ export function ViewUser(props: any) {
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
               type="error"
-            // customIcon={<SaveIcon></SaveIcon>}
+              // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>

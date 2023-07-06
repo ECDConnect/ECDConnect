@@ -6,8 +6,7 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import {
-  GetUserById,
-  SendInviteToApplication,
+  sentInviteToMultipleUsers,
   UserList,
 } from '@ecdlink/graphql';
 import { DropDownOption, Dropdown } from '@ecdlink/ui';
@@ -245,7 +244,4 @@ export default function ApplicationUsers() {
   } else {
     return <ContentLoader />;
   }
-}
-function saveRoles(userId: any) {
-  throw new Error('Function not implemented.');
 }

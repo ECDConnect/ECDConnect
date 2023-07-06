@@ -4,6 +4,8 @@ import { useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
+import { useLazyQuery, useMutation } from '@apollo/client';
+import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
 
 export default function UiTable(
   {
@@ -17,6 +19,7 @@ export default function UiTable(
   props
 ) {
   const history = useHistory();
+  const [inviteRows, setInviteRows] = useState<boolean>(false);
 
   const [lastUpdate, setLastUpdate] = useState(Date.now());
   const [searchValue, setSearchValue] = useState('');
@@ -30,6 +33,16 @@ export default function UiTable(
     distance: 0,
   };
   const fuse = useRef(new Fuse(rows, fuseOptions));
+
+  const [sendInvitations, { loading }] = useMutation(sentInviteToMultipleUsers, {
+    variables: {
+      userIds: [
+        "aea5c560-8c89-4f08-9d98-167155a721c8"
+      ]
+    },
+    fetchPolicy: 'network-only',
+  });
+
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -75,6 +88,9 @@ export default function UiTable(
 
   const handleRowSelect = (row: any) => {
     console.log(row);
+    setInviteRows(!inviteRows)
+    let users: string[] = [];
+
     const isSelected = selectedRows.includes(row);
     let updatedSelectedRows = [];
 
@@ -85,7 +101,7 @@ export default function UiTable(
     } else {
       updatedSelectedRows = [...selectedRows, row];
     }
-
+    // users.push(updatedSelectedRows.)
     setSelectedRows(updatedSelectedRows);
   };
 
@@ -153,7 +169,6 @@ export default function UiTable(
       },
     });
 
-    console.log('>>>', selectedRow);
   };
 
   const renderFormat = (row: any, column: any, display_value: any) => {
@@ -190,22 +205,25 @@ export default function UiTable(
       column.field.match(/created|createdAt|updated|InsertedDate|updatedAt/)
     ) {
       rowValue = (
-        <span className="cursor-pointer overflow-ellipsis">
+        <span className="cursor-pointer overflow-ellipsis" onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}>
           {formatDate(display_value)}
         </span>
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center">
+        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center" onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}>
           {display_value &&
             display_value.map((item) => (
               <div
                 key={item.id}
                 className={
-                  `${
-                    item[column.displayProperty] === 'Administrator'
-                      ? 'bg-tertiary'
-                      : 'bg-primary'
+                  `${item[column.displayProperty] === 'Administrator'
+                    ? 'bg-tertiary'
+                    : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
@@ -221,6 +239,9 @@ export default function UiTable(
             'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white ',
             display_value && display_value[0].statusColor
           )}
+          onClick={() => {
+            component !== 'team-leads' && viewSelectedRow(row);
+          }}
         >
           {display_value && display_value[0].statusValue}
         </span>
@@ -228,20 +249,25 @@ export default function UiTable(
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div className="inline-block overflow-ellipsis ">
+          <div className="inline-block overflow-ellipsis " onClick={() => {
+            component !== 'team-leads' && viewSelectedRow(row);
+          }}>
             <span>{display_value}</span>
           </div>
         ) : (
-          display_value
+          <div onClick={() => {
+            component !== 'team-leads' && viewSelectedRow(row);
+          }}>
+
+            {display_value
+            }
+          </div>
         );
     }
 
     return (
       <div
         className={'cursor-pointer'}
-        onClick={() => {
-          component !== 'team-leads' && viewSelectedRow(row);
-        }}
       >
         {rowValue}{' '}
       </div>
@@ -279,9 +305,8 @@ export default function UiTable(
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${
-                rows.length < 10 ? 'hidden' : ''
-              } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${rows.length < 10 ? 'hidden' : ''
+                } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
