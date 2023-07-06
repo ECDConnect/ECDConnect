@@ -21,7 +21,7 @@ export interface PreviousFormData {
   formData: VisitData[];
 }
 
-export interface PqaRatingData {
+export interface RatingData {
   rating?: Maybe<PqaRating>;
   visitNumber?: number;
 }
@@ -35,3 +35,5 @@ export type PQAState = {
   supportVisitFormData?: FormData[];
   followUpVisitFormData?: FormData[];
 };
+
+export type FollowUpType = 'pqa_visit_follow_up' | 're_accreditation_follow_up';

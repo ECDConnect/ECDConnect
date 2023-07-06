@@ -1,18 +1,18 @@
 import { Visit, Maybe } from '@ecdlink/graphql';
-import { dateOptions, getStepType } from './timeline-steps';
+import { dateOptions, getStepType } from '../timeline-steps';
 import { CalendarIcon } from '@heroicons/react/solid';
 import { Button, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
-  getCurrentPQaRatingByUserId,
+  getCurrentReAccreditationRatingByUserId,
   getLastCoachAttendedFollowUpVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
-import { visitTypes } from '../coach-practitioner-journey.types';
+import { visitTypes } from '../../coach-practitioner-journey.types';
 import { addDays } from 'date-fns';
-import { followUpDeadline, getRatingData } from './utils';
+import { followUpDeadline, getRatingData } from '../utils';
 
-interface PQAVisitsProps {
+interface ReAccreditationVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
   practitionerId: string;
@@ -21,59 +21,61 @@ interface PQAVisitsProps {
   onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
 }
 
-export const newPqaFollowUpId = 'new-pqa-follow-up';
+export const newReAccreditationFollowUpId = 'new-re-accreditation-follow-up';
 
-export const PQAVisits = ({
+export const ReAccreditationVisits = ({
   currentVisit,
   practitionerId,
   currentVisitEventId,
   onScheduleOrStart,
-}: PQAVisitsProps) => {
+}: ReAccreditationVisitsProps) => {
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
-  const currentPqaRating = useSelector(
-    getCurrentPQaRatingByUserId(practitionerId)
+  const currentReAccreditationRating = useSelector(
+    getCurrentReAccreditationRatingByUserId(practitionerId)
   );
-  const lastAttendedPqaFollowUpVisit = useSelector(
+  const lastAttendedReAccreditationFollowUpVisit = useSelector(
     getLastCoachAttendedFollowUpVisitByUserId(
       practitionerId,
-      'pqa_visit_follow_up'
+      're_accreditation_follow_up'
     )
   );
 
-  const pqaRating1 = timeline?.pQARating1;
-  const pqaRating2 = timeline?.pQARating2;
-  const pqaRating3 = timeline?.pQARating3;
+  const rating1 = timeline?.reAccreditationRating1;
+  const rating2 = timeline?.reAccreditationRating2;
+  const rating3 = timeline?.reAccreditationRating3;
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
-  const currentFollowUpDeadline = pqaRating3?.overallRating
+  const currentFollowUpDeadline = rating3?.overallRating
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
-  const isPQAFollowUpDeadline =
+  const isReAccreditationFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+      new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
-  const isPQAFollowUp =
-    currentPqaRating.rating?.overallRating &&
-    !lastAttendedPqaFollowUpVisit?.visitType?.name?.includes(
-      visitTypes.pqa.thirdPQA.name
+  const isReAccreditationFollowUp =
+    currentReAccreditationRating.rating?.overallRating &&
+    !lastAttendedReAccreditationFollowUpVisit?.visitType?.name?.includes(
+      visitTypes.reaccreditation.third.name
     );
 
-  const mergedVisits = timeline?.pQASiteVisits
+  const mergedVisits = timeline?.reAccreditationVisits
     ? [
-        ...timeline.pQASiteVisits,
-        ...(isPQAFollowUp
+        ...timeline.reAccreditationVisits,
+        ...(isReAccreditationFollowUp
           ? [
               {
-                id: newPqaFollowUpId,
+                id: newReAccreditationFollowUpId,
                 visitType: {
-                  description: `Follow-up visit ${currentPqaRating.visitNumber}`,
-                  name: visitTypes.pqa.followUp.name,
+                  description: `Follow-up visit ${currentReAccreditationRating.visitNumber}`,
+                  name: visitTypes.reaccreditation.followUp.name,
                 },
                 plannedVisitDate: addDays(
-                  new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+                  new Date(
+                    lastAttendedReAccreditationFollowUpVisit?.insertedDate
+                  ),
                   currentFollowUpDeadline
                 ),
                 attended: false,
@@ -85,19 +87,19 @@ export const PQAVisits = ({
 
   const getVisitRating = (item: Maybe<Visit>) => {
     switch (item?.visitType?.name) {
-      case visitTypes.pqa.thirdPQA.name:
-        return pqaRating3;
-      case visitTypes.pqa.secondPQA.name:
-        return pqaRating2;
+      case visitTypes.reaccreditation.third.name:
+        return rating3;
+      case visitTypes.reaccreditation.second.name:
+        return rating2;
       default:
-        return pqaRating1;
+        return rating1;
     }
   };
 
   const renderIcon = (item: Maybe<Visit>) => {
     if (
       item?.attended &&
-      !item.visitType?.name?.includes(visitTypes.pqa.followUp.name)
+      !item.visitType?.name?.includes(visitTypes.reaccreditation.followUp.name)
     ) {
       return getRatingData(getVisitRating(item)?.overallRatingColor).icon;
     }
@@ -134,9 +136,10 @@ export const PQAVisits = ({
               text={item?.visitType?.description || ''}
             />
             {((item?.id === currentVisit?.id && !item?.attended) ||
-              (item?.visitType?.name === visitTypes.pqa.followUp.name &&
+              (item?.visitType?.name ===
+                visitTypes.reaccreditation.followUp.name &&
                 item.attended === false &&
-                isPQAFollowUpDeadline)) && (
+                isReAccreditationFollowUpDeadline)) && (
               <Button
                 style={{
                   position: 'absolute',
