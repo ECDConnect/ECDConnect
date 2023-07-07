@@ -69,7 +69,6 @@ export function Profile(props: any) {
   });
 
   const [updateUser, { loading }] = useMutation(UpdateUser);
-  const [fileUpload] = useMutation(FileUpload);
 
   const passwordForm = passwordGetValues();
   const userDetailForm = getValues();
@@ -127,6 +126,8 @@ export function Profile(props: any) {
 
     if (avatarFile) {
       await saveUser(passwordChange, avatarFile);
+    } else {
+      await saveUser(passwordChange);
     }
   };
 
@@ -137,10 +138,6 @@ export function Profile(props: any) {
       },
     });
   }, [user]);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   useEffect(() => {
     if (user) {
@@ -255,7 +252,7 @@ export function Profile(props: any) {
           <Button
             className={'mt-3 w-4/12 rounded'}
             type="filled"
-            isLoading={isLoading}
+            isLoading={loading}
             color="secondary"
             disabled={!isValid}
             onClick={handleSubmit(onSave)}

@@ -22,7 +22,7 @@ export default function ApplicationAdmins() {
       search: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 50,
+        pageSize: 100,
         filterBy: [
           {
             fieldName: 'ADMINISTRATOR',
@@ -62,7 +62,7 @@ export default function ApplicationAdmins() {
           search: '',
           pagingInput: {
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: 100,
             filterBy: [
               {
                 fieldName: 'ADMINISTRATOR',
@@ -165,7 +165,7 @@ export default function ApplicationAdmins() {
   };
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
-    setSearchValue(e.target.value || ' ');
+    setSearchValue(e.target.value || '');
   }, 150);
 
   if (tableData) {

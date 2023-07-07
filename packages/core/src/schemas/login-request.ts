@@ -1,6 +1,6 @@
 import * as Yup from 'yup';
 import { LoginRequestModel } from '../models/login';
-import { RegisterRequestModel} from '../models/login';
+import { RegisterRequestModel } from '../models/login';
 import { PasswordResetModel, SimpleUserModel } from '../models/forgot-password';
 
 export const initialRegisterValues: RegisterRequestModel = {
@@ -15,7 +15,7 @@ export const initialLoginValues: LoginRequestModel = {
 };
 
 export const initialForgotPasswordValues: SimpleUserModel = {
-  username: '',
+  email: '',
 };
 
 export const initialResetPasswordValues: PasswordResetModel = {
@@ -47,7 +47,7 @@ export const loginSchema = Yup.object().shape({
 });
 
 export const resetSchema = Yup.object().shape({
-  username: Yup.string().email().required(),
+  email: Yup.string().email().required('Password is required'),
 });
 
 export const resetPasswordSchema = Yup.object().shape({

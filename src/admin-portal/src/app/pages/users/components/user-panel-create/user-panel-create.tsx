@@ -1,14 +1,9 @@
-import { useMutation, useQuery } from '@apollo/client';
-import { useEffect, useState } from 'react';
+import { useMutation } from '@apollo/client';
+
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import {
-  Button,
-  SA_ID_REGEX,
-  SA_PASSPORT_REGEX,
-  Typography,
-} from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { UserPanelCreateProps } from '../users';
 import {
   NOTIFICATION,
@@ -38,7 +33,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-  const [createUser] = useMutation(CreateUser);
+  const [createUser, { error }] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
   // FORMS
@@ -101,9 +96,9 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
             });
           });
       });
-    } catch (error) {
+    } catch (err) {
       setNotification({
-        title: 'Failed to Create Admin',
+        title: `User ${formData.email} is already taken.`,
         variant: NOTIFICATION.ERROR,
       });
     }
@@ -132,13 +127,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   const getComponent = () => {
     return (
       <>
-        <div className=" border-b border-dashed border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
+        <div className="">
+          <div className="border-b border-dashed border-gray-500 px-2">
+            <h1 className="py-4 text-xl font-medium leading-6 text-black">
+              Administrator Details
+            </h1>
+            <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
           </div>
-
           <form className="space-y-8 divide-y divide-gray-200">
             <div className="space-y-0">
               <div className="grid grid-cols-1 ">
@@ -181,6 +176,13 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   return (
     <article>
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      {
+        <Alert
+          className="mt-2 mb-2 rounded-md"
+          message={`An invitation will be sent to the new user when you click add.`}
+          type="info"
+        />
+      }
       <Button
         className="mt-3 mr-6 w-full rounded"
         type="filled"

@@ -29,9 +29,8 @@ export default function Login() {
     mode: 'onChange',
   });
 
-
   const formValues = getValues();
-  let password = watch('password')
+  let password = watch('password');
   const { errors, isValid } = formState;
 
   const signIn = async () => {
@@ -85,13 +84,12 @@ export default function Login() {
               </div>
 
               <div className="space-y-1">
-
                 <PasswordInput
                   label={'Password'}
                   nameProp={'password'}
                   value={formValues.password}
                   register={register}
-                  strengthMeterVisible={true}
+                  // strengthMeterVisible={true}
                   className="mb-9 "
                 />
               </div>

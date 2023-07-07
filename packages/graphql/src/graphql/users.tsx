@@ -18,6 +18,7 @@ export const UserList = gql`
       genderId
       phoneNumber
       profileImageUrl
+      InsertedDate
       roles {
         id
         name
@@ -48,12 +49,8 @@ export const GetUserById = gql`
       isImported
       raceId
       languageId
-      emergencyContactFirstName
-      emergencyContactSurname
-      emergencyContactPhoneNumber
-      nextOfKinContactNumber
-      nextOfKinFirstName
-      nextOfKinSurname
+
+      InsertedDate
       roles {
         id
         name
@@ -156,6 +153,15 @@ export const healthCareWorkerVisitStatus = gql`
       motherOverDueVisits
       motherDueVisits
       childDueVisits
+    }
+  }
+`;
+
+export const sentInviteToMultipleUsers = gql`
+  mutation SendBulkInviteToPortal($userIds: [String]) {
+    sendBulkInviteToPortal(userIds: $userIds) {
+      success
+      failed
     }
   }
 `;
