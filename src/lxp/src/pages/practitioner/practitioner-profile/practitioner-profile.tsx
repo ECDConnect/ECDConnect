@@ -1,5 +1,6 @@
 import { useDialog } from '@ecdlink/core';
 import {
+  Alert,
   ActionModal,
   BannerWrapper,
   DialogPosition,
@@ -8,13 +9,13 @@ import {
   TabItem,
   TabList,
 } from '@ecdlink/ui';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
-import { OfflineSyncModal } from '../../../modals';
+import { OfflineSyncModal, LogoutModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
 import { settingActions, settingSelectors } from '@store/settings';
@@ -37,6 +38,8 @@ export const PractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
   const { isOnline } = useOnlineStatus();
+  const [isLoading, setIsLoading] = useState(false);
+  const [displayError, setDisplayError] = useState(false);
   const history = useHistory();
   const dialog = useDialog();
 
@@ -196,41 +199,13 @@ export const PractitionerProfile: React.FC = () => {
         showIcon: true,
         onActionClick: () => {
           dialog({
-            position: DialogPosition.Middle,
-            render: (onSubmit, onClose) => {
+            position: DialogPosition.Bottom,
+            render: (onSubmit, onCancel) => {
               return (
-                <ActionModal
-                  className={'mx-4'}
-                  title={'Are you sure you want to log out?'}
-                  importantText={''}
-                  icon={'ExclamationCircleIcon'}
-                  iconColor={'alertDark'}
-                  iconBorderColor={'alertBg'}
-                  actionButtons={[
-                    {
-                      text: 'Yes, log out',
-                      colour: 'primary',
-                      onClick: async () => {
-                        onSubmit();
-                        await sync();
-                        await resetAuth();
-                        await resetAppStore();
-                        history.push('/');
-                      },
-                      type: 'filled',
-                      textColour: 'white',
-                      leadingIcon: 'CheckCircleIcon',
-                    },
-                    {
-                      text: 'No, cancel',
-                      textColour: 'white',
-                      colour: 'primary',
-                      type: 'filled',
-                      onClick: () => onClose && onClose(),
-                      leadingIcon: 'XCircleIcon',
-                    },
-                  ]}
-                />
+                <LogoutModal
+                  onSubmit={onSubmit}
+                  onCancel={onCancel}
+                ></LogoutModal>
               );
             },
           });
@@ -271,6 +246,13 @@ export const PractitionerProfile: React.FC = () => {
       <div className="bg-white">
         <TabList className="mb-1 bg-white" tabItems={tabItem} />
       </div>
+      {displayError && (
+        <Alert
+          className={'mt-5 mb-3'}
+          message={'Password or Username incorrect. Please try again'}
+          type={'error'}
+        />
+      )}
     </BannerWrapper>
   );
 };

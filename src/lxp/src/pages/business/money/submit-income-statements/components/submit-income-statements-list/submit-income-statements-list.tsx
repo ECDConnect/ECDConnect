@@ -100,8 +100,15 @@ export const SubmitIncomeStatementsList: React.FC = () => {
 
   const totalBalance = (totalIncome - totalExpenses).toFixed(2);
   const appDispatch = useAppDispatch();
+  const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
+  const today = new Date();
+  const isLastMonth =
+    today.getMonth() === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
-  const statementMonth = getMonth(new Date());
+  const statementMonth =
+    balanceSheet?.[balanceSheet?.length - 1]?.submitted === false && isLastMonth
+      ? getMonth(new Date()) - 1
+      : getMonth(new Date());
   const statementYear = getYear(new Date());
 
   // Income values
@@ -456,6 +463,30 @@ export const SubmitIncomeStatementsList: React.FC = () => {
     );
   };
 
+  const refreshStatements = async () => {
+    if (userAuth?.auth_token) {
+      await appDispatch(
+        statementsThunkActions.getAllExpenses({
+          month: statementMonth + 1,
+          year: statementYear,
+        })
+      );
+      await appDispatch(
+        statementsThunkActions.getAllIncome({
+          month: statementMonth + 1,
+          year: statementYear,
+        })
+      );
+      await appDispatch(
+        statementsThunkActions.getAllStatementsBalanceSheet({
+          // userId: userAuth?.id!,
+          year: statementYear,
+          month: 0,
+        })
+      );
+    }
+  };
+
   return (
     <BannerWrapper
       showBackground={false}
@@ -473,7 +504,14 @@ export const SubmitIncomeStatementsList: React.FC = () => {
           type="h2"
           weight="bold"
           color="textDark"
-          text={format(new Date(), 'LLLL yyyy')}
+          text={
+            isLastMonth
+              ? `${format(
+                  new Date().setMonth(today.getMonth() - 1),
+                  'LLLL'
+                )} balance`
+              : `${format(new Date(), 'LLLL')} balance`
+          }
         />
         <StackedList
           className="mt-4 flex w-full flex-col"
@@ -582,8 +620,10 @@ export const SubmitIncomeStatementsList: React.FC = () => {
                     })
                   ).unwrap();
                   submitPdfReport(reportData ?? []);
+                  refreshStatements();
                 });
                 setConfimSubmitIncomeValues(false);
+                history.push(ROUTES.BUSINESS);
               },
               leadingIcon: 'ArrowCircleRightIcon',
             },
