@@ -110,37 +110,6 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
-  // User has switched back to the tab
-  // const onFocus = () => {
-  //   const focusItem = JSON.parse(localStorage?.getItem('appFocus')!)
-  //   console.log({focusItem})
-  //   const isSameDayItem = isSameDay(new Date(), new Date(focusItem))
-  //   const differenceInHoursBetweenItems = differenceInHours(new Date(), new Date(focusItem))
-  //   console.log({isSameDayItem})
-  //   console.log({differenceInHoursBetweenItems})
-  //   if(!isSameDayItem ||  differenceInHoursBetweenItems > 6) {
-  //   localStorage.setItem('appFocus', JSON.stringify(new Date()));
-  //   }
-  //   console.log("Tab is in focus");
-  // };
-
-  // User has switched away from the tab (AKA tab is hidden)
-  // const onBlur = () => {
-  //   console.log("Tab is blurred");
-  // };
-
-  //     useEffect(() => {
-  //       window.addEventListener("focus", onFocus);
-  //       window.addEventListener("blur", onBlur);
-  //       // Calls onFocus when the window first loads
-  //       onFocus();
-  //       // Specify how to clean up after this effect:
-  //       return () => {
-  //           window.removeEventListener("focus", onFocus);
-  //           window.removeEventListener("blur", onBlur);
-  //       };
-  // }, []);
-
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const uncompletedSteps = timelineSteps(
     timeline!,
