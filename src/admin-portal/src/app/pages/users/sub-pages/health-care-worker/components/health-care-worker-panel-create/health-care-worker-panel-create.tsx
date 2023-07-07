@@ -108,7 +108,7 @@ export default function HealthCareWorkerPanelCreate(
       verifiedByHomeAffairs: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
-      email: userDetailForm.email,
+      phoneNumber: userDetailForm.phoneNumber,
     };
 
     await createUser({
@@ -242,11 +242,12 @@ export default function HealthCareWorkerPanelCreate(
                 </div>
                 <div className="my-4 sm:col-span-3">
                   <FormField
-                    label={'Work email address *'}
-                    nameProp={'email'}
+                    label={'Cellphone number *'}
+                    nameProp={'phoneNumber'}
                     register={register}
-                    error={errors.email?.message}
-                    placeholder="e.g name@email.com"
+                    error={errors.phoneNumber?.message}
+                    placeholder="eg. 0650025055"
+
                   />
                 </div>
                 <div className="my-4 sm:col-span-3">
@@ -258,6 +259,7 @@ export default function HealthCareWorkerPanelCreate(
                     placeholder="e.g 6201014800088"
                   />
                 </div>
+
               </div>
             </div>
           </form>
