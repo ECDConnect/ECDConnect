@@ -78,16 +78,13 @@ const chwSchema = yup.object().shape({
 const adminSchema = yup.object().shape({
   email: yup.string().email().required('email address is required'),
 });
-const formatDate = (value: string | number | Date): string => {
+const formatDate = (value: string | number | Date) => {
   try {
     const date = new Date(value);
-    date.setHours(date.getHours() + 2);
-    const formattedDate = date.toLocaleDateString('en-GB', {
-      day: '2-digit',
-      month: '2-digit',
-      year: 'numeric'
-    });
-    return formattedDate.replace(/\//g, '/');
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear());
+    return `${day}/${month}/${year}`;
   } catch (e) {
     return 'N/A';
   }
@@ -907,8 +904,7 @@ export function ViewUser(props: any) {
           <div className="w-2/12">
             <p className="mt-3 w-full text-sm text-gray-600">
               User added to {data?.tenantContext.applicationName} App :{' '}
-              {chwData?.GetHealthCareWorkerById?.InsertedDate}
-        
+              {formatDate(chwData?.GetHealthCareWorkerById?.insertedDate || userData?.userById?.insertedDate)}
             </p>
           </div>
         </div>
