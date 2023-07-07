@@ -8,23 +8,30 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
     public class PagedQueryInput
     {
         private const int DEFAULT_PAGESIZE = 10;
-        private int pageNumber;
-        private int pageSize;
+        private const int DEFAULT_PAGENUMBER = 10;
+        private int? pageNumber;
+        private int? pageSize;
 
-        public int PageNumber { get => pageNumber; set => pageNumber = value - 1 > 0 ? value - 1 : 0; }
-        public int PageSize { get => pageSize; set => pageSize = value >= 0 ? value : DEFAULT_PAGESIZE; }
+        public int? PageNumber { 
+            get => pageNumber; 
+            set => pageNumber = value - 1 > 0 ? value - 1 : 0; 
+        }
+        public int? PageSize { 
+            get => pageSize;
+            set => pageSize = value >= 1 ? value : DEFAULT_PAGESIZE; 
+        }
 
         public PagedQueryInput()
         {
         }
 
-        public List<SortByField>? SortBy { get; set; }
-        public List<FilterByField>? FilterBy { get; set; }
+        public List<SortByField> SortBy { get; set; }
+        public List<FilterByField> FilterBy { get; set; }
 
         [GraphQLIgnore]
         public int RowOffset
         {
-            get => PageNumber * PageSize;
+            get => PageNumber ?? DEFAULT_PAGENUMBER * PageSize ?? DEFAULT_PAGESIZE;
         }
     }
 

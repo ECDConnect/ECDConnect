@@ -10,10 +10,12 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using NPOI.SS.UserModel;
 using System;
 using System.Collections.Generic;
@@ -39,13 +41,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (file is null || currentUserId is null)
             {
-                throw new Exception("Invalid input.");
+                throw new QueryException("Invalid input.");
             }
 
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
             if (!userIsAdmin)
-                throw new Exception("You do not have permission to use this function.");
+                throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userImportList = new List<ApplicationUser>();
@@ -274,6 +276,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<UserImportModel> ImportTeamLeadsAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] ILogger<ImportUserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
           string file)
@@ -283,12 +286,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (file is null || currentUserId is null)
             {
-                throw new Exception("Invalid input.");
+                throw new QueryException("Invalid input.");
             }
 
             var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
             if (!userIsAdmin)
-                throw new Exception("You do not have permission to use this function.");
+                throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userImportList = new List<ApplicationUser>();
@@ -449,7 +452,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch (Exception ex)
                 {
-                    throw;
+                    _logger.LogError(ex.Message, ex);
+                    throw new QueryException($"Could not create user: {user.UserName}");
                 }
             }
 

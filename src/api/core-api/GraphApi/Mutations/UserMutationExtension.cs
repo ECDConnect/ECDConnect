@@ -29,6 +29,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<ApplicationUser> AddUser(
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] ILogger<UserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
           UserModel input)
@@ -40,7 +41,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input is null || currentUserId is null)
             {
-                throw new Exception("Invalid input.");
+                throw new QueryException("Invalid User input.");
             }
 
             if (input?.IsAdmin ?? false)
@@ -49,15 +50,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!currentUserIsAdmin)
                 {
-                    throw new Exception("You may not create an admin user.");
+                    throw new QueryException("You may not create an admin user.");
                 }
             }
+            
+            // Check for existing user.
+            var newUsername = input?.IdNumber ?? input.Email ?? Guid.NewGuid().ToString();
+            var existingUser = await userManager.FindByNameAsync(newUsername);
+            existingUser ??= await userManager.FindByIdAsync(input.Id);
 
+            if (existingUser is not null)
+                throw new QueryException("User already exists.");
+
+            // Create new user.
             var newUser = new ApplicationUser
             {
                 Id = input.Id ?? Guid.NewGuid().ToString(),
                 PhoneNumber = input.PhoneNumber,
-                UserName = input?.IdNumber ?? input.Email ?? Guid.NewGuid().ToString(),
+                UserName = newUsername,
                 IdNumber = input.IdNumber,
                 Email = input.Email,
                 IsSouthAfricanCitizen = input.IsSouthAfricanCitizen ?? false,
@@ -77,24 +87,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 UpdatedDate = null
             };
 
-            if (string.IsNullOrEmpty(newUser.UserName))
-            {
-                newUser.UserName = string.IsNullOrEmpty(newUser.Email) ? Guid.NewGuid().ToString() : newUser.Email;
-            }
-
-
             IdentityResult userCreatedResult = null;
             try
             {
                 userCreatedResult = await userManager.CreateAsync(newUser);
             } catch (Exception ex)
             {
-                throw new QueryException(ex?.InnerException?.Message ?? ex.Message);
+                _logger.LogError("Could not add user: {0}\nException:{1}", userCreatedResult?.Errors?.FirstOrDefault()?.Description, ex?.InnerException?.Message ?? ex.Message);
+                throw new QueryException("Could not add user.");
             }
 
             if (!(userCreatedResult?.Succeeded ?? false))
             {
-                throw new Exception(userCreatedResult.Errors.Count() > 0 ? userCreatedResult.Errors.First().Description : "Could not add user");
+                _logger.LogError("Could not add user: {0}", userCreatedResult?.Errors?.FirstOrDefault()?.Description);
+                throw new QueryException("Could not add user.");
             }
 
             DoAudit(currentUserId, repoFactory, null, newUser.Id);
@@ -108,9 +114,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     if (!adminRoleResult.Succeeded)
                     {
-                        throw new Exception(adminRoleResult.Errors.Count() > 0
-                            ? adminRoleResult.Errors.First().Description
-                            : "Could not add user to admin role.");
+                        _logger.LogError(adminRoleResult?.Errors?.FirstOrDefault()?.Description ??
+                            "Could not add user to admin role.");
+                        throw new QueryException();
                     }
 
                     // Audit log the role change
@@ -130,7 +136,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!passwordCreatedResult.Succeeded)
                 {
-                    throw new Exception(passwordCreatedResult.Errors.First().Description);
+                    _logger.LogError(passwordCreatedResult.Errors.First().Description);
+                    throw new QueryException("Could not set user password.");
                 }
             }
 
@@ -228,7 +235,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 user.LanguageId = input.LanguageId;
             }
 
-            if (input.FirstName is not null)
+            if (input.FirstName is not null
+                && input.FirstName != user.FirstName)
             {
                 if (input.FirstName != user.FirstName)
                     auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
@@ -394,7 +402,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!isAlsoAdmin)
                 {
-                    throw new Exception("You may not disable an administrator.");
+                    throw new QueryException("You may not disable an administrator.");
                 }
             }
 
@@ -431,7 +439,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!isAlsoAdmin)
                 {
-                    throw new Exception("You may not disable an administrator.");
+                    throw new QueryException("You may not disable an administrator.");
                 }
             }
 

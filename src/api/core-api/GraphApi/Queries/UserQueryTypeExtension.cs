@@ -53,6 +53,37 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 .Where(u => u.TenantId == tenantId)
                 .AsNoTracking();
 
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+
+            usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
+            usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
+            usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
+            usersQuery = PaginationHelper.AddSorting(
+                pagingInput?.SortBy,
+                usersQuery,
+                // Set default sort by column.
+                new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
+            usersQuery = AddDefaultUserSearch(search, usersQuery);
+
+            if (pagingInput is not null)
+                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize ?? 1, usersQuery);
+
+            return usersQuery;
+        }
+
+        private static IQueryable<ApplicationUser> AddDefaultUserSearch(string search, IQueryable<ApplicationUser> usersQuery)
+        {
+            if (!string.IsNullOrWhiteSpace(search))
+                usersQuery = usersQuery
+                    .Where(h => EF.Functions.ILike(h.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.Email, $"%{search}%"));
+            return usersQuery;
+        }
+
+        private static async Task<IQueryable<ApplicationUser>> GetAllAdminUsersForTenantAndExclude(UserManager<ApplicationUser> userManager, bool userIsAdmin, IQueryable<ApplicationUser> usersQuery)
+        {
             if (!userIsAdmin)
             {
                 var adminUsers = await userManager.GetUsersInRoleAsync(Roles.ADMINISTRATOR);
@@ -64,6 +95,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 usersQuery = usersQuery.Where(u => !adminUserIds.Contains(u.Id));
             }
 
+            return usersQuery;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        // TODO: Move paging code into a "Pagination" service
+        // TODO: Builder pattern for query?
+        public async Task<int> GetCountUsersAsync(
+            [Service] UserManager<ApplicationUser> userManager,
+            [Service] IGenericRepositoryFactory repoFactory,
+            [Service] IHttpContextAccessor httpContextAccessor,
+            PagedQueryInput? pagingInput = null,
+            string search = null)
+        {
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+
+            string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
+            ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
+            var userIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
+
+            var usersQuery = userManager.Users
+                .Where(u => u.TenantId == tenantId)
+                .AsNoTracking();
+
+            usersQuery = await GetAllAdminUsersForTenantAndExclude(userManager, userIsAdmin, usersQuery);
+
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
@@ -72,22 +128,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 usersQuery,
                 // Set default sort by column.
                 new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
+            usersQuery = AddDefaultUserSearch(search, usersQuery);
 
-            if (!string.IsNullOrWhiteSpace(search))
-                usersQuery = usersQuery
-                    .Where(h => EF.Functions.ILike(h.FullName, $"%{search}%")
-                    || EF.Functions.ILike(h.IdNumber, $"%{search}%")
-                    || EF.Functions.ILike(h.PhoneNumber, $"%{search}%")
-                    || EF.Functions.ILike(h.Email, $"%{search}%"));
-
-            if (pagingInput is not null)
-                usersQuery = PaginationHelper.AddPaging(pagingInput.RowOffset, pagingInput.PageSize, usersQuery);
-
-            return usersQuery;
+            return usersQuery.Count();
         }
 
-        // Can this become generic?
-        private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+            // Can this become generic?
+            private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
         {
             if (pagingInput is null)
                 return usersQuery;
