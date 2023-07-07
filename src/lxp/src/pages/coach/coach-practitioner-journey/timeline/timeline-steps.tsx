@@ -9,6 +9,12 @@ import { getPqaStepData } from './pqa/step';
 import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
 import { getReAccreditationStepData } from './re-accreditation/step';
 
+export interface ScheduleProps {
+  visit: Visit;
+  visitEventId?: string;
+  eventType: 'First PQA' | 'ReAccreditation';
+}
+
 export interface StepType {
   type: StepItem['type'];
   color?: Colours;
@@ -84,7 +90,7 @@ export const timelineSteps = ({
   practitionerEvents?: CalendarEventModel[];
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
-  onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
+  onScheduleOrStart: (schedule: ScheduleProps) => void;
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];

@@ -2,6 +2,7 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   addFollowUpVisitForPractitioner,
+  addReAccreditationVisitData,
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
@@ -134,6 +135,7 @@ const pqaSlice = createSlice({
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, addReAccreditationVisitData);
     setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
     setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
@@ -216,6 +218,9 @@ const pqaSlice = createSlice({
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addReAccreditationVisitData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {

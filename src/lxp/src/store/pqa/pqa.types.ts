@@ -37,3 +37,5 @@ export type PQAState = {
 };
 
 export type FollowUpType = 'pqa_visit_follow_up' | 're_accreditation_follow_up';
+
+export type VisitType = 'pQASiteVisits' | 'reAccreditationVisits';

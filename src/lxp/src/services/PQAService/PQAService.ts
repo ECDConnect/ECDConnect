@@ -3,6 +3,7 @@ import {
   CmsVisitDataInputModelInput,
   FollowUpVisitModelInput,
   PractitionerTimeline,
+  ReAccreditationVisitModelInput,
   SupportVisitModelInput,
   Visit,
   VisitData,
@@ -26,6 +27,34 @@ class PQAService {
         mutation addVisitData($input: CMSVisitDataInputModelInput) {
           addVisitData(input: $input) {
           }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add visit failed - Server connection error');
+    }
+
+    return true;
+  }
+
+  async addReAccreditationVisitData(
+    input: ReAccreditationVisitModelInput
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addReAccreditationVisitForPractitioner: boolean };
+      errors?: {};
+    }>(``, {
+      query: ` 
+        mutation AddReAccreditationVisitForPractitioner($input: ReAccreditationVisitModelInput) {
+          addReAccreditationVisitForPractitioner(input: $input) {
+              id, 
+              plannedVisitData
+          }        
         }
       `,
       variables: {

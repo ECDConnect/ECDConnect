@@ -13,6 +13,7 @@ export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
   GET_VISIT_DATA_FOR_VISIT_ID: 'getVisitDataForVisitId',
   ADD_VISIT_FORM_DATA: 'addVisitFormData',
+  ADD_RE_ACCREDITATION_VISIT_FORM_DATA: 'addReAccreditationVisitData',
   ADD_SUPPORT_VISIT_FORM_DATA: 'addSupportVisitFormData',
   ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
 };
@@ -67,6 +68,45 @@ export const addVisitFormData = createAsyncThunk<
               await new PQAService(userAuth?.auth_token).addVisitData(
                 item.formData
               )
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addReAccreditationVisitData = createAsyncThunk<
+  any,
+  CmsVisitDataInputModelInput,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa: { reAccreditationFormData },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addReAccreditationVisitData(input);
+
+          return response;
+        }
+
+        if (!!reAccreditationFormData?.length) {
+          const promises = reAccreditationFormData?.map(
+            async (item) =>
+              await new PQAService(
+                userAuth?.auth_token
+              ).addReAccreditationVisitData(item.formData)
           );
 
           return promises?.length && Promise.all(promises);

@@ -13,7 +13,7 @@ import { useSelector } from 'react-redux';
 import {
   getCurrentPQaRatingByUserId,
   getCurrentReAccreditationRatingByUserId,
-  getLastCoachAttendedFollowUpVisitByUserId,
+  getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
   getVisitDataForVisitIdSelectorByUserId,
 } from '@/store/pqa/pqa.selectors';
@@ -93,15 +93,17 @@ export const CoachingAndVisitOrCallStep = ({
   const visitSection = 'Coaching visit or call';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
-  const lastAttendedPqaFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
+  const lastAttendedPqaVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(
       practitionerId,
+      'pQASiteVisits',
       'pqa_visit_follow_up'
     )
   );
-  const lastAttendedReAccreditationFollowUpVisit = useSelector(
-    getLastCoachAttendedFollowUpVisitByUserId(
+  const lastAttendedReAccreditationVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(
       practitionerId,
+      'reAccreditationVisits',
       're_accreditation_follow_up'
     )
   );
@@ -128,12 +130,12 @@ export const CoachingAndVisitOrCallStep = ({
 
   const isPQAFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+      new Date(lastAttendedPqaVisit?.insertedDate),
       currentPqaFollowUpDeadline
     ) <= new Date();
   const isReAccreditationFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+      new Date(lastAttendedPqaVisit?.insertedDate),
       currentReAccreditationFollowUpDeadline
     ) <= new Date();
   const isToShowPqaFollowUpQuestion =
@@ -272,8 +274,8 @@ export const CoachingAndVisitOrCallStep = ({
       ? currentPqaRating.rating?.overallRatingColor
       : currentReAccreditationRating.rating?.overallRatingColor;
     const lastAttendedFollowUpVisit = isPqaFollowUp
-      ? lastAttendedPqaFollowUpVisit?.insertedDate
-      : lastAttendedReAccreditationFollowUpVisit?.insertedDate;
+      ? lastAttendedPqaVisit?.insertedDate
+      : lastAttendedReAccreditationVisit?.insertedDate;
 
     return (
       <>
@@ -302,7 +304,7 @@ export const CoachingAndVisitOrCallStep = ({
               className="mt-4"
               type="warning"
               title={`Start another First PQA visit by ${addDays(
-                new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+                new Date(lastAttendedPqaVisit?.insertedDate),
                 currentPqaFollowUpDeadline
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
@@ -316,7 +318,7 @@ export const CoachingAndVisitOrCallStep = ({
               type="warning"
               title={`This is your third follow up visit with ${firstName}.`}
               message={`You must conduct a full PQA visit by ${addDays(
-                new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+                new Date(lastAttendedPqaVisit?.insertedDate),
                 currentPqaFollowUpDeadline
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
@@ -341,9 +343,7 @@ export const CoachingAndVisitOrCallStep = ({
               className="mt-4"
               type="warning"
               title={`Start another reaccreditation visit by ${addDays(
-                new Date(
-                  lastAttendedReAccreditationFollowUpVisit?.insertedDate
-                ),
+                new Date(lastAttendedReAccreditationVisit?.insertedDate),
                 currentReAccreditationFollowUpDeadline
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
@@ -357,9 +357,7 @@ export const CoachingAndVisitOrCallStep = ({
               type="warning"
               title={`This is your third follow up visit with ${firstName}.`}
               message={`You must conduct a full reaccreditation visit by ${addDays(
-                new Date(
-                  lastAttendedReAccreditationFollowUpVisit?.insertedDate
-                ),
+                new Date(lastAttendedReAccreditationVisit?.insertedDate),
                 currentReAccreditationFollowUpDeadline
               ).toLocaleDateString('en-ZA', {
                 month: 'long',
