@@ -126,9 +126,9 @@ public class IntegrationService : IIntegrationService
          IntegrationAPIManager apiManager,
          IntegrationHelperManager integrationHelperManager,
          //[Service] ISchedulerService schedulerService,
-         [Service] IFileService fileService,
-         [Service] IncomeExpenseService incomeManager,
-         [Service] AttendanceTrackingRepository attendanceTrackingRepository
+         [Service] IFileService fileService//,
+         //[Service] IncomeExpenseService incomeManager,
+         //[Service] AttendanceTrackingRepository attendanceTrackingRepository
         )
     {
         _repositoryFactory = repositoryFactory;
@@ -141,7 +141,7 @@ public class IntegrationService : IIntegrationService
         //_personnelService = personnelService;
         //_schedulerService = schedulerService;
         _fileService = fileService;
-        _incomeManager = incomeManager;
+        
         _integrationHelperManager = integrationHelperManager;
         _logManager = logManager;
         _apiManager = apiManager;
@@ -180,7 +180,8 @@ public class IntegrationService : IIntegrationService
         _statementsRepo = repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
 
         //_pqaRepo = _repositoryFactory.CreateGenericRepository<pqa>(userContext: _uId);
-        _attendanceTrackingRepository = attendanceTrackingRepository;
+        //_attendanceTrackingRepository = attendanceTrackingRepository;
+        //_incomeManager = incomeManager;
 
     }
 
@@ -980,7 +981,7 @@ public class IntegrationService : IIntegrationService
 
     #region Utilities
 
-    private async Task<List<IntegrationAudit>> GetAudits(string entityType = null, string auditUserId = null, int historyDays = 2)
+    public async Task<List<IntegrationAudit>> GetAudits(string entityType = null, string auditUserId = null, int historyDays = 2)
     {
         try
         {
@@ -1005,7 +1006,7 @@ public class IntegrationService : IIntegrationService
         }
     }
 
-    private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
+    public async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
     {
         try
         {
@@ -1035,7 +1036,7 @@ public class IntegrationService : IIntegrationService
         }
     }
 
-    private async Task<List<IntegrationEntityMapping>> GetMappedGroupingEntities(string groupingType = null)
+    public async Task<List<IntegrationEntityMapping>> GetMappedGroupingEntities(string groupingType = null)
     {
         try
         {
@@ -3149,24 +3150,26 @@ public class IntegrationService : IIntegrationService
         return isComplete;
     }
 
-    private async Task<string> PushNewDocument(Document newDoc)
+    public async Task<string> PushNewDocument(Document newDoc)
     {
+        _mappedEntities = await GetMappedEntities();
+        var mappedDocEntities = await GetMappedEntities(SSIntegrationSettings.SSDocument);
         string docRemoteId = "";
         var responseString = "";
         if (newDoc != null)
         {
             string noteRemoteId = "";
-            IntegrationEntityMapping docTypeMapped = null;
+            IntegrationEntityMapping? docTypeMapped = null;
             try
             {
                 StringBuilder jsonDocString = new StringBuilder();
                 string docUrl = "";
 
                 var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
-                docTypeMapped = mappedDocTypes.Where(x => x.LocalId == newDoc.DocumentTypeId.ToString()).FirstOrDefault();
+                docTypeMapped = mappedDocTypes.Where(x => string.Equals(x.LocalId, newDoc.DocumentTypeId.ToString())).FirstOrDefault();
 
                 docUrl = SSIntegrationSettings.SLDocument + SSIntegrationSettings.CreateMultiple;
-                var existingDoc = _mappedEntities.Where(x => x.LocalId == newDoc.Id.ToString() && x.LocalEntity.Equals("Document")).FirstOrDefault();
+                var existingDoc = _mappedEntities.Where(x => string.Equals(x.LocalId,newDoc.Id.ToString()) && string.Equals(x.LocalEntity, "Document")).FirstOrDefault();
                 if (existingDoc == null)
                 {
                     //pull from new list here as child mightve just been added

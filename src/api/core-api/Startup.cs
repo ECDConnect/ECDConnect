@@ -161,6 +161,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IIntegrationService, IntegrationService>();
+            services.AddTransient<SmartStartIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
