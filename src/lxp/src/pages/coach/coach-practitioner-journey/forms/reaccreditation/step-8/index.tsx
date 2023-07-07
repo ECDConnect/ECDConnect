@@ -8,7 +8,7 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useLayoutEffect, useState } from 'react';
 import { detailTexts, options } from './options';
 import { useDialog } from '@ecdlink/core';
 import { DynamicFormProps } from '../../dynamic-form';
@@ -48,7 +48,6 @@ export const Step8ReAccreditation = ({
         const updatedQuestion = { ...question, answer: currentAnswers };
 
         setAnswers(updatedQuestion);
-        setEnableButton?.(true);
         return setSectionQuestions?.([
           {
             visitSection: step8ReAccreditation.visitSection,
@@ -59,7 +58,6 @@ export const Step8ReAccreditation = ({
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
-      setEnableButton?.(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
@@ -68,8 +66,12 @@ export const Step8ReAccreditation = ({
         },
       ]);
     },
-    [answers, question, setEnableButton, setSectionQuestions]
+    [answers, question, setSectionQuestions]
   );
+
+  useLayoutEffect(() => {
+    setEnableButton?.(true);
+  }, [setEnableButton]);
 
   const renderDialog = ({ index }: { index?: number }) => {
     let title = 'Check all of the statements that are true';

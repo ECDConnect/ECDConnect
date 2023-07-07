@@ -136,6 +136,61 @@ class PractitionerService {
                   description
                 }
               }
+              reAccreditationVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+              }
+              reAccreditationRating1 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              reAccreditationRating2 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              reAccreditationRating3 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
               smartSpaceLicenseColor
               smartSpaceLicenseDate
               smartSpaceLicenseStatus

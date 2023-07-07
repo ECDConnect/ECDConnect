@@ -31,14 +31,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
 
     }
 
-    public class IncomeStatementPDFDoc
-    {
-        public string Reference { get; set; } // base64 string
-        public string FileName { get; set; }
-        public string UserId { get; set; }
-        public string CreatedUserId { get; set; }
-    }
-
     public class ExpenseReceipt
     {
         public string Name { get; set; }

@@ -3,8 +3,9 @@ import { createSelector } from '@reduxjs/toolkit';
 import {
   CoachPractitionerTimeline,
   FormData,
-  PqaRatingData,
+  RatingData,
   PreviousFormData,
+  FollowUpType,
 } from './pqa.types';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
@@ -103,27 +104,56 @@ export const getCurrentPQaRatingByUserId = (userId: string) =>
       return {
         rating: pqaRating3,
         visitNumber: 3,
-      } as PqaRatingData;
+      } as RatingData;
     }
 
     if (pqaRating2?.overallRating) {
       return {
         rating: pqaRating2,
         visitNumber: 2,
-      } as PqaRatingData;
+      } as RatingData;
     }
 
     return {
       rating: pqaRating1,
       visitNumber: 1,
-    } as PqaRatingData;
+    } as RatingData;
   });
 
-export const getLastCoachAttendedVisitByUserId = (userId: string) =>
+export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const rating1 = timeline?.reAccreditationRating1;
+    const rating2 = timeline?.reAccreditationRating2;
+    const rating3 = timeline?.reAccreditationRating3;
+
+    if (rating3?.overallRating) {
+      return {
+        rating: rating3,
+        visitNumber: 3,
+      } as RatingData;
+    }
+
+    if (rating2?.overallRating) {
+      return {
+        rating: rating2,
+        visitNumber: 2,
+      } as RatingData;
+    }
+
+    return {
+      rating: rating1,
+      visitNumber: 1,
+    } as RatingData;
+  });
+
+export const getLastCoachAttendedFollowUpVisitByUserId = (
+  userId: string,
+  followUpType: FollowUpType
+) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
     const attendedVisits = timeline?.pQASiteVisits?.filter(
       (visit) =>
-        visit?.attended && !visit?.visitType?.name?.includes('follow_up')
+        visit?.attended && !visit?.visitType?.name?.includes(followUpType)
     );
 
     if (attendedVisits?.length === 0) {

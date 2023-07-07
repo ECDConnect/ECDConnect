@@ -67,6 +67,7 @@ namespace EcdLink.Api.CoreApi
             public const string second_site_visit = "Second site visit before PQA";
 
             public const string income_statement_pdf_type = "IncomeStatementPDF";
+            public const string attendance_pdf_type = "AttendancePDF";
             public const string workflow_pdf_type = "Document";
             public const string workflow_status_pdf_type = "Verified";
 

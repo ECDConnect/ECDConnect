@@ -2,9 +2,17 @@ import { Colours, StepItem, Typography } from '@ecdlink/ui';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { SupportVisits } from './support-visits-step';
 import { PrePqaVisits } from './pre-pqa-site-vists';
-import { PQAVisits, getRatingData } from './pqa-site-visits-step';
-import { PqaRatingData } from '@/store/pqa/pqa.types';
+import { RatingData } from '@/store/pqa/pqa.types';
 import { CalendarEventModel } from '@ecdlink/core';
+import { PQAVisits } from './pqa/step-accordion-content';
+import { getPqaStepData } from './pqa/step';
+import { ReAccreditationVisits } from './re-accreditation/step-accordion-content';
+import { getReAccreditationStepData } from './re-accreditation/step';
+
+export interface StepType {
+  type: StepItem['type'];
+  color?: Colours;
+}
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -21,9 +29,7 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
   return orderA - orderB;
 };
 
-export const getStepType = (
-  color?: Maybe<string>
-): { type: StepItem['type']; color?: Colours } => {
+export const getStepType = (color?: Maybe<string>): StepType => {
   if (!color) return { type: 'todo' };
 
   switch (color.toLowerCase()) {
@@ -82,7 +88,7 @@ export const timelineSteps = ({
   isLoading: boolean;
   isOnline: boolean;
   visits?: Maybe<Visit>[];
-  currentPqaRating: PqaRatingData;
+  currentPqaRating: RatingData;
 }): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
@@ -194,59 +200,13 @@ export const timelineSteps = ({
   }
 
   if (!!timeline.pQASiteVisits?.length) {
-    const visits = timeline.pQASiteVisits
-      ?.filter(
-        (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-      )
-      ?.sort(sortVisit);
-
-    const visitToAttend = visits.find((item) => !item?.attended);
-    const currentVisit = !!visitToAttend
-      ? visitToAttend
-      : visits[visits.length - 1];
-    const currentVisitEvent =
-      !!currentVisit && !!practitionerEvents
-        ? practitionerEvents.find(
-            (e) =>
-              e.eventType === 'First PQA' &&
-              e.action.state !== undefined &&
-              e.action.state.action === 'onStart' &&
-              e.action.state.actionParams !== undefined &&
-              e.action.state.actionParams.visitName ===
-                currentVisit.visitType?.name
-          )
-        : undefined;
-
-    const isLateDate =
-      new Date(currentVisit?.plannedVisitDate) < new Date() &&
-      timeline.pQASiteVisits.some((item) => !item?.attended);
-    const isAllCompleted = timeline.pQASiteVisits?.every(
-      (item) => !!item?.attended
-    );
-
-    const stepType = getStepType(
-      currentPqaRating?.rating?.overallRatingColor?.toLocaleLowerCase() ||
-        '' ||
-        (isLateDate ? 'error' : '') ||
-        (isAllCompleted ? 'success' : '') ||
-        undefined
-    );
-
-    const ratingData = getRatingData(
-      currentPqaRating?.rating?.overallRatingColor
-    );
-
-    const getSubTitleText = () => {
-      if (!!currentVisitEvent) {
-        return 'Scheduled';
-      }
-
-      if (visitToAttend) {
-        return 'By';
-      }
-
-      return '';
-    };
+    const {
+      currentVisit,
+      currentVisitEvent,
+      ratingData,
+      stepType,
+      subTitleText,
+    } = getPqaStepData({ timeline, practitionerEvents, currentPqaRating });
 
     steps.push({
       title: 'First PQA',
@@ -254,19 +214,19 @@ export const timelineSteps = ({
         <div className="flex items-center">
           <Typography
             type="body"
-            color={stepType.color}
+            color={stepType?.color}
             className="mr-4"
-            text={`${getSubTitleText()} ${new Date(
+            text={`${subTitleText} ${new Date(
               currentVisit?.plannedVisitDate
             ).toLocaleDateString('en-ZA', dateOptions)}`}
           />
 
-          {ratingData.icon}
-          <p className="text-textMid text-12 ml-2">{ratingData.text}</p>
+          {ratingData?.icon}
+          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
         </div>
       ),
-      inProgressStepIcon: stepType.color && 'ExclamationCircleIcon',
-      type: stepType.type,
+      inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
+      type: stepType?.type,
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
       },
@@ -274,7 +234,7 @@ export const timelineSteps = ({
       accordionContent: (
         <PQAVisits
           isLoading={isLoading}
-          currentVisit={currentVisit}
+          currentVisit={currentVisit!}
           practitionerId={practitionerId}
           currentVisitEventId={currentVisitEvent?.id}
           onScheduleOrStart={onScheduleOrStart}
@@ -285,38 +245,38 @@ export const timelineSteps = ({
   }
 
   if (timeline.reAccreditationVisits?.length) {
-    const visits = timeline.reAccreditationVisits
-      ?.filter(
-        (visit: Maybe<Visit>) => typeof visit?.visitType?.order !== 'undefined'
-      )
-      ?.sort(sortVisit);
-
-    const visitToAttend = visits.find((item) => !item?.attended);
-    const currentVisit = !!visitToAttend
-      ? visitToAttend
-      : visits[visits.length - 1];
-
-    const isLateDate =
-      new Date(currentVisit?.plannedVisitDate) < new Date() &&
-      timeline.reAccreditationVisits.some((item) => !item?.attended);
-    const isAllCompleted = timeline.reAccreditationVisits?.every(
-      (item) => !!item?.attended
-    );
-
-    const stepType = getStepType(
-      (isLateDate ? 'error' : '') ||
-        (isAllCompleted ? 'success' : '') ||
-        undefined
-    );
+    const {
+      currentVisit,
+      currentVisitEvent,
+      ratingData,
+      stepType,
+      subTitleText,
+    } = getReAccreditationStepData({
+      timeline,
+      practitionerEvents,
+      currentPqaRating,
+    });
 
     steps.push({
       title: 'Re-accreditation visit',
-      subTitle: `By ${new Date(
-        currentVisit?.plannedVisitDate
-      ).toLocaleDateString('en-ZA', dateOptions)}`,
-      subTitleColor: stepType.color,
-      type: stepType.type,
-      inProgressStepIcon: isLateDate && 'ExclamationCircleIcon',
+      customSubTitle: (
+        <div className="flex items-center">
+          <Typography
+            type="body"
+            color={stepType?.color}
+            className="mr-4"
+            text={`${subTitleText} ${new Date(
+              currentVisit?.plannedVisitDate
+            ).toLocaleDateString('en-ZA', dateOptions)}`}
+          />
+
+          {ratingData?.icon}
+          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+        </div>
+      ),
+      subTitleColor: stepType?.color,
+      type: stepType?.type,
+      inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
       },
@@ -327,6 +287,17 @@ export const timelineSteps = ({
       actionButtonOnClick: () => {
         onStart(String(currentVisit?.visitType?.name));
       },
+      showAccordion: true,
+      accordionContent: (
+        <ReAccreditationVisits
+          isLoading={isLoading}
+          currentVisit={currentVisit!}
+          practitionerId={practitionerId}
+          currentVisitEventId={currentVisitEvent?.id}
+          onScheduleOrStart={onScheduleOrStart}
+          isOnline={isOnline}
+        />
+      ),
     });
   }
 
