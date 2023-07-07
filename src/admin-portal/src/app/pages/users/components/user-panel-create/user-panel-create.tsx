@@ -3,11 +3,7 @@ import { useMutation } from '@apollo/client';
 import { useForm } from 'react-hook-form';
 import { yupResolver } from '@hookform/resolvers/yup';
 import * as yup from 'yup';
-import {
-  Alert,
-  Button,
-  Typography,
-} from '@ecdlink/ui';
+import { Alert, Button, Typography } from '@ecdlink/ui';
 import { UserPanelCreateProps } from '../users';
 import {
   NOTIFICATION,
@@ -36,8 +32,8 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
     props.closeDialog(value);
   };
 
-  const [sendInviteToApplication,] = useMutation(SendInviteToApplication);
-  const [createUser, { error }] = useMutation(CreateUser);
+  const [sendInviteToApplication] = useMutation(SendInviteToApplication);
+  const [createUser, { loading }] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
   // FORMS
@@ -133,10 +129,10 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
       <>
         <div className="">
           <div className="border-b border-dashed border-gray-500 px-2">
-            <h1 className="text-black text-xl font-medium leading-6 py-4">
+            <h1 className="py-4 text-xl font-medium leading-6 text-black">
               Administrator Details
             </h1>
-            <p className="text-md text-gray-500 pb-2">Step 1 of 1</p>
+            <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
           </div>
           <form className="space-y-8 divide-y divide-gray-200">
             <div className="space-y-0">
@@ -171,9 +167,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
               </div>
             </div>
           </form>
-          <div>
-
-          </div>
+          <div></div>
         </div>
       </>
     );
@@ -182,17 +176,20 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   return (
     <article>
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
-      {<Alert
-        className="mt-2 mb-2 rounded-md"
-        message={`An invitation will be sent to the new user when you click add.`}
-        type="info"
-      />}
+      {
+        <Alert
+          className="mt-2 mb-2 rounded-md"
+          message={`An invitation will be sent to the new user when you click add.`}
+          type="info"
+        />
+      }
       <Button
         className="mt-3 mr-6 w-full rounded"
         type="filled"
         color="secondary"
         disabled={!isValid}
         onClick={handleSubmit(onSave)}
+        isLoading={loading}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />
         <Typography type="help" color="white" text="Save"></Typography>

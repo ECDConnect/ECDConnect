@@ -8,6 +8,7 @@ export const GetAllHealthCareWorker = gql`
       provinceSearch: $provinceSearch
     ) {
       id
+      insertedDate
       user {
         isActive
         userName
@@ -46,6 +47,7 @@ export const GetHealthCareWorkerByUserId = gql`
   query GetHealthCareWorkerByUserId($userId: UUID) {
     GetHealthCareWorkerById(id: $userId) {
       id
+      insertedDate
       user {
         id
         isActive

@@ -226,7 +226,6 @@ export default function ApplicationUsers() {
                       type: 'array',
                       displayProperty: 'name',
                     },
-                    { field: 'createdAt', use: 'Date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
