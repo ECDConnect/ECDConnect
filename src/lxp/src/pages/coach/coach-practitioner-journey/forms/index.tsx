@@ -21,6 +21,7 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
+  FollowUpVisitModelInput,
   InputMaybe,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
@@ -49,6 +50,7 @@ import {
   step15ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -151,6 +153,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
+  const { isLoading: isLoadingReAccreditationVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
+  );
   const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
     'pqa',
     PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
@@ -161,6 +167,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     PractitionerActions.DEACTIVATE_PRACTITIONER
   );
 
+  const wasLoading = usePrevious(isLoading);
+  const wasLoadingReAccreditation = usePrevious(isLoadingReAccreditationVisit);
   const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
@@ -349,7 +357,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         (item) => item?.question === visitOrCallQuestion
       )?.answer;
 
-      const formattedPayload: SupportVisitModelInput = {
+      const supportPayload: SupportVisitModelInput = {
         practitionerId,
         plannedVisitDate: new Date(),
         isSupportCall: visitOrCallAnswer === callAnswer,
@@ -358,12 +366,20 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         supportData: payload,
       };
 
+      const followUpPayload: FollowUpVisitModelInput = {
+        practitionerId,
+        plannedVisitDate: new Date(),
+        // TODO: add schedule option
+        attended: true,
+        followUpData: payload,
+      };
+
       if (type === 'support-visit') {
-        return onSubmitSupportVisit(formattedPayload, visitOrCallAnswer);
+        return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
       }
 
       if (type === 'follow-up-visit') {
-        return onSubmitFollowUpVisit(formattedPayload, visitOrCallAnswer);
+        return onSubmitFollowUpVisit(followUpPayload, visitOrCallAnswer);
       }
     },
     [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
@@ -404,13 +420,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           formType: 'pqa',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      // Create a new ID if it doesn't already exist
+      appDispatch(
+        pqaThunkActions.addVisitFormData({
+          ...payload,
+          visitId: visitId?.includes('new') ? newGuid() : visitId,
+        })
+      );
 
       if (step19Question2Answer === 'true') {
         displayChildrenDialog('First PQA visit');
       }
     },
-    [appDispatch, displayChildrenDialog, practitionerId]
+    [appDispatch, displayChildrenDialog, practitionerId, visitId]
   );
 
   const onSubmitReAccreditation = useCallback(
@@ -421,7 +443,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           formType: 're-accreditation',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
     },
     [appDispatch, practitionerId]
   );
@@ -548,6 +570,21 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     setTitle(visitTypes.pqa.firstPQA.description);
     return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+
+  useEffect(() => {
+    if (
+      (wasLoading && !isLoading) ||
+      (wasLoadingReAccreditation && !isLoadingReAccreditationVisit)
+    ) {
+      onBack?.();
+    }
+  }, [
+    isLoading,
+    wasLoading,
+    onBack,
+    wasLoadingReAccreditation,
+    isLoadingReAccreditationVisit,
+  ]);
 
   useEffect(() => {
     if (wasLoadingDeactivate && !isLoadingDeactivate) {

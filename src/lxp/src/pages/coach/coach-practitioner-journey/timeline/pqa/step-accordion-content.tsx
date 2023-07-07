@@ -5,12 +5,13 @@ import { useSelector } from 'react-redux';
 import {
   getCurrentPQaRatingByUserId,
   getLastCoachAttendedFollowUpVisitByUserId,
+  getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { addDays } from 'date-fns';
 import { followUpDeadline, getRatingData } from '../utils';
 import { visitTypes } from '../../coach-practitioner-journey.types';
-import { dateOptions, getStepType } from '../timeline-steps';
+import { ScheduleProps, dateOptions, getStepType } from '../timeline-steps';
 
 interface PQAVisitsProps {
   isLoading: boolean;
@@ -18,10 +19,11 @@ interface PQAVisitsProps {
   practitionerId: string;
   currentVisitEventId: string | undefined;
   isOnline: boolean;
-  onScheduleOrStart: (visit: Visit, visitEventId?: string) => void;
+  onScheduleOrStart: (schedule: ScheduleProps) => void;
 }
 
 export const newPqaFollowUpId = 'new-pqa-follow-up';
+export const newPqaVisitId = 'new-pqa-visit';
 
 export const PQAVisits = ({
   currentVisit,
@@ -35,9 +37,17 @@ export const PQAVisits = ({
   const currentPqaRating = useSelector(
     getCurrentPQaRatingByUserId(practitionerId)
   );
+  const lastAttendedPqaVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(
+      practitionerId,
+      'pQASiteVisits',
+      'pqa_visit_follow_up'
+    )
+  );
   const lastAttendedPqaFollowUpVisit = useSelector(
     getLastCoachAttendedFollowUpVisitByUserId(
       practitionerId,
+      'pQASiteVisits',
       'pqa_visit_follow_up'
     )
   );
@@ -52,14 +62,23 @@ export const PQAVisits = ({
     : followUpDeadline.default;
   const isPQAFollowUpDeadline =
     addDays(
-      new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+      new Date(lastAttendedPqaVisit?.insertedDate),
       currentFollowUpDeadline
     ) <= new Date();
+  const isNewVisit =
+    !pqaRating3?.overallRating &&
+    timeline?.pQASiteVisits?.some(
+      (item) =>
+        item?.attended && item?.visitType?.name !== visitTypes.pqa.followUp.name
+    ) &&
+    new Date(lastAttendedPqaFollowUpVisit?.insertedDate) >
+      new Date(lastAttendedPqaVisit?.insertedDate);
   const isPQAFollowUp =
-    currentPqaRating.rating?.overallRating &&
-    !lastAttendedPqaFollowUpVisit?.visitType?.name?.includes(
+    currentPqaRating.rating?.overallRatingColor !== 'Success' &&
+    !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
-    );
+    ) &&
+    !isNewVisit;
 
   const mergedVisits = timeline?.pQASiteVisits
     ? [
@@ -69,19 +88,46 @@ export const PQAVisits = ({
               {
                 id: newPqaFollowUpId,
                 visitType: {
-                  description: `Follow-up visit ${currentPqaRating.visitNumber}`,
+                  description: `First PQA`,
                   name: visitTypes.pqa.followUp.name,
                 },
                 plannedVisitDate: addDays(
-                  new Date(lastAttendedPqaFollowUpVisit?.insertedDate),
+                  new Date(lastAttendedPqaVisit?.insertedDate),
                   currentFollowUpDeadline
                 ),
                 attended: false,
               } as Maybe<Visit>,
             ]
           : []),
+        ...(isNewVisit
+          ? [
+              {
+                id: newPqaVisitId,
+                visitType: {
+                  description: `First PQA visit`,
+                  name: visitTypes.pqa.firstPQA.name,
+                },
+                plannedVisitDate: lastAttendedPqaFollowUpVisit?.insertedDate,
+                attended: false,
+              } as Maybe<Visit>,
+            ]
+          : []),
       ]
     : [];
+
+  const sortedVisits = mergedVisits.sort((a, b) => {
+    if (!a?.insertedDate && !b?.insertedDate) {
+      return 0;
+    } else if (!a?.insertedDate) {
+      return 1;
+    } else if (!b?.insertedDate) {
+      return -1;
+    }
+
+    return (
+      new Date(a.insertedDate).getTime() - new Date(b.insertedDate).getTime()
+    );
+  });
 
   const getVisitRating = (item: Maybe<Visit>) => {
     switch (item?.visitType?.name) {
@@ -123,7 +169,7 @@ export const PQAVisits = ({
 
   return (
     <>
-      {mergedVisits.map((item) => (
+      {sortedVisits.map((item) => (
         <div className="my-4" key={item?.id}>
           <div className="relative flex items-center gap-1">
             {renderIcon(item)}
@@ -136,7 +182,8 @@ export const PQAVisits = ({
             {((item?.id === currentVisit?.id && !item?.attended) ||
               (item?.visitType?.name === visitTypes.pqa.followUp.name &&
                 item.attended === false &&
-                isPQAFollowUpDeadline)) && (
+                isPQAFollowUpDeadline) ||
+              (item?.id === newPqaVisitId && !item.attended)) && (
               <Button
                 style={{
                   position: 'absolute',
@@ -150,7 +197,11 @@ export const PQAVisits = ({
                 iconPosition="start"
                 icon="CalendarIcon"
                 onClick={() =>
-                  onScheduleOrStart(item as Visit, currentVisitEventId)
+                  onScheduleOrStart({
+                    visit: item as Visit,
+                    visitEventId: currentVisitEventId,
+                    eventType: 'First PQA',
+                  })
                 }
               />
             )}
@@ -162,7 +213,7 @@ export const PQAVisits = ({
             text={
               !!item?.plannedVisitDate
                 ? `${getSubTitleText(item)}${new Date(
-                    item.plannedVisitDate
+                    item.attended ? item.insertedDate : item.plannedVisitDate
                   ).toLocaleDateString('en-ZA', dateOptions)}`
                 : ''
             }

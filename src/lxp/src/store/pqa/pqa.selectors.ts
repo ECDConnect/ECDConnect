@@ -6,6 +6,7 @@ import {
   RatingData,
   PreviousFormData,
   FollowUpType,
+  VisitType,
 } from './pqa.types';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
@@ -146,14 +147,42 @@ export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
     } as RatingData;
   });
 
-export const getLastCoachAttendedFollowUpVisitByUserId = (
+export const getLastCoachAttendedVisitByUserId = (
   userId: string,
+  visitType: VisitType,
   followUpType: FollowUpType
 ) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const attendedVisits = timeline?.pQASiteVisits?.filter(
+    const attendedVisits = timeline?.[visitType]?.filter(
       (visit) =>
         visit?.attended && !visit?.visitType?.name?.includes(followUpType)
+    );
+
+    if (attendedVisits?.length === 0) {
+      return null;
+    }
+
+    return attendedVisits?.reduce((mostRecentVisit, visit) => {
+      if (
+        !mostRecentVisit ||
+        new Date(visit?.insertedDate) > new Date(mostRecentVisit.insertedDate)
+      ) {
+        return visit;
+      }
+
+      return mostRecentVisit;
+    }, null);
+  });
+
+export const getLastCoachAttendedFollowUpVisitByUserId = (
+  userId: string,
+  visitType: VisitType,
+  followUpType: FollowUpType
+) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const attendedVisits = timeline?.[visitType]?.filter(
+      (visit) =>
+        visit?.attended && visit?.visitType?.name?.includes(followUpType)
     );
 
     if (attendedVisits?.length === 0) {
