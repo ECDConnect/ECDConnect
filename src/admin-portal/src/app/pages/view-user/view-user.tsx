@@ -78,7 +78,20 @@ const chwSchema = yup.object().shape({
 const adminSchema = yup.object().shape({
   email: yup.string().email().required('email address is required'),
 });
-
+const formatDate = (value: string | number | Date): string => {
+  try {
+    const date = new Date(value);
+    date.setHours(date.getHours() + 2);
+    const formattedDate = date.toLocaleDateString('en-GB', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    });
+    return formattedDate.replace(/\//g, '/');
+  } catch (e) {
+    return 'N/A';
+  }
+};
 const showNotification = (
   message: string,
   type: AlertType,
@@ -186,10 +199,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -223,10 +235,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-          }`}
+            }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -431,7 +442,7 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => {}}
+                  onPressed={() => { }}
                   hasConsent
                   size="header"
                 />
@@ -498,7 +509,7 @@ export function ViewUser(props: any) {
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
               type="error"
-              // customIcon={<SaveIcon></SaveIcon>}
+            // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>
@@ -894,9 +905,10 @@ export function ViewUser(props: any) {
           </div>
 
           <div className="w-2/12">
-            <p className="mt-3 w-full text-sm text-gray-500">
-              User added to {data?.tenantContext.applicationName} App:{' '}
-              {userData?.userById?.startDate}
+            <p className="mt-3 w-full text-sm text-gray-600">
+              User added to {data?.tenantContext.applicationName} App :{' '}
+              {chwData?.GetHealthCareWorkerById?.InsertedDate}
+        
             </p>
           </div>
         </div>

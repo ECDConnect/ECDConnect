@@ -93,11 +93,9 @@ export default function HealthCareWorkers() {
   const { data: clinicData } = useQuery(GetAllClinic, {
     fetchPolicy: 'cache-and-network',
   });
-
   const { data: provinceData } = useQuery(GetAllProvince, {
     fetchPolicy: 'cache-and-network',
   });
-  
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -130,9 +128,7 @@ export default function HealthCareWorkers() {
       fullName: `${item.user?.fullName}`,
       isActive: item.user?.isActive,
       idNumber: item.user?.idNumber,
-      _view: undefined,
-      _edit: undefined,
-      _url: undefined,
+      dateInvited: item.user?.insertedDate,
     };
   };
 
@@ -410,7 +406,7 @@ export default function HealthCareWorkers() {
                     { field: 'idNumber', use: 'id / Passport' },
                     { field: 'fullName', use: 'name' },
                     // { field: 'usage', use: 'CHW Connect usage' },
-                    { field: 'InsertedDate', use: 'Date invited' },
+                    { field: 'insertedDate', use: 'Date invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
                   rows={tableData}

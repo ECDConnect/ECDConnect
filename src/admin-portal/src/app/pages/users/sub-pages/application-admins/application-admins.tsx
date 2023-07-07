@@ -161,6 +161,7 @@ export default function ApplicationAdmins() {
     return {
       ...user,
       fullName: `${user.firstName} ${user.surname}`,
+      dateInvited: user?.insertedDate,
     };
   };
 
@@ -343,6 +344,7 @@ export default function ApplicationAdmins() {
                   columns={[
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'name' },
+                    { field: 'insertedDate', use: 'date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
                   urlRow={'/view-user'}
