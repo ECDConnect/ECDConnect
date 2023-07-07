@@ -161,7 +161,6 @@ export default function ApplicationAdmins() {
     return {
       ...user,
       fullName: `${user.firstName} ${user.surname}`,
-      dateInvited: user?.insertedDate,
     };
   };
 

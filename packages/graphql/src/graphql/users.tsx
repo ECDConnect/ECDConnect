@@ -49,8 +49,6 @@ export const GetUserById = gql`
       isImported
       raceId
       languageId
- 
-      InsertedDate
       roles {
         id
         name
