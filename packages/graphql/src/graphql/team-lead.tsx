@@ -11,6 +11,7 @@ export const GetAllTeamLead = gql`
       user {
         isActive
         userName
+        InsertedDate
         email
         isSouthAfricanCitizen
         verifiedByHomeAffairs
@@ -96,6 +97,7 @@ export const GetTeamLead = gql`
         isActive
         userName
         email
+        InsertedDate
         isSouthAfricanCitizen
         verifiedByHomeAffairs
         dateOfBirth

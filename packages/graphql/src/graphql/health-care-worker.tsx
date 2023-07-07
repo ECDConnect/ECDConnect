@@ -23,6 +23,7 @@ export const GetAllHealthCareWorker = gql`
         genderId
         phoneNumber
         profileImageUrl
+        InsertedDate
         roles {
           id
           name
@@ -62,6 +63,7 @@ export const GetHealthCareWorkerByUserId = gql`
         genderId
         phoneNumber
         profileImageUrl
+        InsertedDate
         roles {
           id
           name
