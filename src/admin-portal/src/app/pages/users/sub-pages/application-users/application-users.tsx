@@ -31,6 +31,7 @@ export default function ApplicationUsers() {
       pagingInput: {
         pageNumber: 1,
         pageSize: 10,
+        sortBy: { fieldName: "insertedDate", descending: true }
       },
     },
     fetchPolicy: 'network-only',
@@ -71,6 +72,8 @@ export default function ApplicationUsers() {
         pagingInput: {
           pageNumber: 1,
           pageSize: 100,
+          sortBy: { fieldName: "insertedDate", descending: true }
+
         },
       },
     });
@@ -226,6 +229,7 @@ export default function ApplicationUsers() {
                       type: 'array',
                       displayProperty: 'name',
                     },
+                    { field: 'insertedDate', use: 'date Invited' },
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}

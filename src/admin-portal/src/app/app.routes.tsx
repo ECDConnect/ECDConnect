@@ -72,8 +72,6 @@ const AuthRoutes: React.FC = () => {
       <Route path={`/profile`} component={Profile}></Route>
       <Route path={`/view-user`} component={ViewUser}></Route>
       <Route path={`/upload-users`} component={UploadBulkUser}></Route>
-
-      {/* TermsPage */}
       <Route path={`/users`} component={Users}></Route>
       <Route path={`/documents`} component={Documents}></Route>
       <Route path={`/content-management`} component={ContentManagement}></Route>

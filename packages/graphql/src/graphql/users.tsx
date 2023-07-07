@@ -17,8 +17,7 @@ export const UserList = gql`
       contactPreference
       genderId
       phoneNumber
-      profileImageUrl
-      InsertedDate
+      insertedDate
       roles {
         id
         name
@@ -49,6 +48,7 @@ export const GetUserById = gql`
       isImported
       raceId
       languageId
+      insertedDate
       roles {
         id
         name

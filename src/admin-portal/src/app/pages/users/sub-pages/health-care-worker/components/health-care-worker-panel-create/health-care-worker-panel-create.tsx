@@ -63,7 +63,7 @@ export default function HealthCareWorkerPanelCreate(
   }, [roleData]);
 
   const [createUser] = useMutation(CreateUser);
-  const [createHealthCareWorker] = useMutation(CreateHealthCareWorker);
+  const [createHealthCareWorker, {loading}] = useMutation(CreateHealthCareWorker);
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
@@ -85,7 +85,7 @@ export default function HealthCareWorkerPanelCreate(
     formState: healthCareWorkerFormState,
     getValues: healthCareWorkerGetValues,
   } = useForm({
-    defaultValues: { ...initialHealthCareWorkerValues, sendInvite: false },
+    defaultValues: { ...initialHealthCareWorkerValues },
     mode: 'onBlur',
   });
   const {
@@ -123,24 +123,23 @@ export default function HealthCareWorkerPanelCreate(
         });
 
         const userId = response.data.addUser.id;
-        await saveRoles(userId);
-        await saveHealthCareWorker(userId);
+        if (userId) {
+          await saveHealthCareWorker(userId);
+          await saveRoles(userId);
+        }
+
       })
-      .catch((error) => {
-        setNotification({
-          title: 'Failed to Create User!',
-          variant: NOTIFICATION.ERROR,
-        });
-      });
+    
   };
 
   const saveHealthCareWorker = async (userId: string) => {
     const healthCareWorkerForm = healthCareWorkerGetValues();
     const healthCareWorkModel: HealthCareWorkerModelInput = {
       userId: userId,
-      teamLeadId: healthCareWorkerForm.teamLeadId || null,
+      teamLeadId: healthCareWorkerForm?.teamLeadId,
       languageId: null,
       isRegistered: false,
+
     };
 
     await createHealthCareWorker({
@@ -161,13 +160,18 @@ export default function HealthCareWorkerPanelCreate(
         });
       });
 
-    if (healthCareWorkerForm.sendInvite) {
+    if (userId) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
-          inviteToPortal: false,
+          inviteToPortal: true,
         },
-      });
+      }).catch((err)=>[
+        setNotification({
+          title: 'Failed to send Health Care Worker Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        })
+      ]);
 
       setNotification({
         title: 'Successfully Sent Health Care Worker Invite!',
@@ -185,15 +189,6 @@ export default function HealthCareWorkerPanelCreate(
         roleNames: rolesToAdd,
       },
     })
-      .then((response: any) => {
-        setNotification({
-          title: 'Successfully Added roles to User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
   };
 
   const addUserRole = () => {
@@ -266,12 +261,7 @@ export default function HealthCareWorkerPanelCreate(
           <div></div>
         </div>
 
-        <div className=" mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Health Care Worker Details
-            </h3>
-          </div>
+        <div className="  rounded-lg border-b border-gray-200 px-4 pb-6">
 
           <HealthCareWorkerForm
             formKey={`createhealthcareworker-${new Date().getTime()}`}
@@ -291,6 +281,7 @@ export default function HealthCareWorkerPanelCreate(
         type="filled"
         color="secondary"
         disabled={!isValid}
+        isLoading={loading}
         onClick={handleSubmit(onSave)}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />

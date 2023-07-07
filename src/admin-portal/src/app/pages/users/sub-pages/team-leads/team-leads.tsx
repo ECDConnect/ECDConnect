@@ -32,6 +32,7 @@ export default function TeamLeads() {
       pagingInput: {
         pageNumber: 1,
         pageSize: 100,
+        sortBy: [{ fieldName: "insertedDate", descending: true }]
       },
     },
     fetchPolicy: 'network-only',
@@ -46,6 +47,7 @@ export default function TeamLeads() {
         pagingInput: {
           pageNumber: 1,
           pageSize: 100,
+          sortBy: [{ fieldName: "insertedDate", descending: true }]
         },
       },
     });
@@ -234,6 +236,7 @@ export default function TeamLeads() {
                     columns={[
                       { field: 'idNumber', use: 'id / Passport' },
                       { field: 'fullName', use: 'name' },
+                      { field: 'insertedDate', use: 'Date Invited' },
                       { field: 'isActive', use: 'Active' },
                     ]}
                     rows={tableData}

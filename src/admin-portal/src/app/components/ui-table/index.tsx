@@ -1,11 +1,12 @@
 import { classNames } from '@ecdlink/ui';
 import Fuse from 'fuse.js';
-import { useEffect, useRef, useState } from 'react';
+import { Key, ReactChild, ReactFragment, ReactPortal, useEffect, useRef, useState } from 'react';
 import Table from 'react-tailwind-table';
 import Icon from '../icon';
 import { Link, useHistory } from 'react-router-dom';
 import { useLazyQuery, useMutation } from '@apollo/client';
 import { sentInviteToMultipleUsers } from '@ecdlink/graphql';
+import { ReactI18NextChild } from 'react-i18next';
 
 export default function UiTable(
   {
@@ -144,12 +145,11 @@ export default function UiTable(
 
   const formatDate = (value: string | number | Date) => {
     try {
-      // date stored in UTC add 2 hours
       const date = new Date(value);
-      date.setHours(date.getHours() + 2);
-      return new Date(value)
-        .toString()
-        .replace(' GMT+0200 (South Africa Standard Time)', '');
+      const day = String(date.getDate()).padStart(2, '0');
+      const month = String(date.getMonth() + 1).padStart(2, '0');
+      const year = String(date.getFullYear());
+      return `${day}/${month}/${year}`;
     } catch (e) {
       return 'N/A';
     }
@@ -202,7 +202,7 @@ export default function UiTable(
         </div>
       );
     } else if (
-      column.field.match(/created|createdAt|updated|InsertedDate|updatedAt/)
+      column.field.match(/created|createdAt|updated|insertedDate|updatedAt/)
     ) {
       rowValue = (
         <span className="cursor-pointer overflow-ellipsis" onClick={() => {
@@ -213,11 +213,8 @@ export default function UiTable(
       );
     } else if (column.type === 'array') {
       rowValue = (
-        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center" onClick={() => {
-          component !== 'team-leads' && viewSelectedRow(row);
-        }}>
-          {display_value &&
-            display_value.map((item) => (
+        <div className="ml-0 flex cursor-pointer flex-row flex-wrap items-center" >
+          {display_value?.map((item: { [x: string]: boolean | ReactChild | ReactFragment | ReactPortal | Iterable<ReactI18NextChild>; id: Key; }) => (
               <div
                 key={item.id}
                 className={

@@ -67,6 +67,7 @@ export default function HealthCareWorkers() {
         pagingInput: {
           pageNumber: 1,
           pageSize: 100,
+          sortBy: [{ fieldName: "insertedDate", descending: true }]
         },
       },
       fetchPolicy: 'network-only',
@@ -82,10 +83,13 @@ export default function HealthCareWorkers() {
         pagingInput: {
           pageNumber: 1,
           pageSize: 500,
+          sortBy: [{ fieldName: "insertedDate", descending: true }]
         },
       },
     });
   }, [provinceFilter, searchValue, clinicFilter]);
+
+
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -318,22 +322,20 @@ export default function HealthCareWorkers() {
                     <button
                       type="button"
                       onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${
-                        !showDropDownFilter
+                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
                           ? 'bg-secondary text-white'
                           : 'text-secondary border-secondary border-2 bg-white'
-                      } hover:text-secondary hover:bg-white `}
+                        } hover:text-secondary hover:bg-white `}
                       id="menu-button"
                       aria-expanded={showDropDownFilter}
                       aria-haspopup={showDropDownFilter}
                     >
                       {statusFilter === '' ? 'Status' : statusFilter}
                       <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${
-                          !showDropDownFilter
+                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
                             ? 'hover:text-secondary text-white'
                             : 'text-secondary hover:text-white'
-                        }`}
+                          }`}
                         viewBox="0 0 20 20"
                         fill="currentColor"
                         aria-hidden="true"

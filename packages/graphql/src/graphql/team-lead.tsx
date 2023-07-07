@@ -1,11 +1,12 @@
 import { gql } from '@apollo/client';
 
 export const GetAllTeamLead = gql`
-  query ($search: String, $clinicSearch: String, $provinceSearch: String) {
+  query ($search: String, $clinicSearch: String, $provinceSearch: String, $pagingInput: PagedQueryInput) {
     allTeamLeads(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      pagingInput: $pagingInput
     ) {
       id
       user {
@@ -21,8 +22,8 @@ export const GetAllTeamLead = gql`
         fullName
         contactPreference
         genderId
+        insertedDate
         phoneNumber
-        profileImageUrl
         roles {
           id
           name
