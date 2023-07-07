@@ -7,7 +7,7 @@ import {
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
@@ -23,7 +23,7 @@ export default function Login() {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, getValues, formState, watch } = useForm({
+  const { register, getValues, formState, watch, setValue } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
@@ -34,12 +34,17 @@ export default function Login() {
   let password = watch('password')
   const { errors, isValid } = formState;
 
+  useEffect(() => {
+    setValue('password', password) 
+  }, [password])
+
+
   const signIn = async () => {
     if (isValid) {
       setIsLoading(true);
       const body: LoginRequestModel = {
         username: formValues.email,
-        password: password,
+        password: formValues.password,
       };
       const isAuthenticated = await login(body, Config.authApi).catch(() => {
         setDisplayError(true);
