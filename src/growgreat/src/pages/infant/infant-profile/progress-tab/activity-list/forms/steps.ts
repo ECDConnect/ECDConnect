@@ -118,6 +118,7 @@ export const getPillar1Steps = ({
   isShowInterventionStep,
   isShowMuacStep,
   isDietFormStep,
+  isChildAfter7Days,
 }: {
   nutritionAnswer: Question['answer'];
   isToSkipBreastfeedingIssuesRelevantItemsStep: boolean;
@@ -133,10 +134,11 @@ export const getPillar1Steps = ({
   isShowInterventionStep: boolean;
   isShowMuacStep: boolean;
   isDietFormStep: boolean;
+  isChildAfter7Days: boolean;
 }) => {
   const defaultScreens = [
-    WeightAndLengthFormStep,
-    WeightAndLengthResultStep,
+    ...(isChildAfter7Days ? [WeightAndLengthFormStep] : []),
+    ...(isChildAfter7Days ? [WeightAndLengthResultStep] : []),
     ...(isShowMuacStep ? [MidUpperArmCircumferenceFormStep] : []),
     ...(isShowMuacStep ? [MidUpperArmCircumferenceResultStep] : []),
     ...(isShowInterventionStep ? [InterventionsStep] : []),
