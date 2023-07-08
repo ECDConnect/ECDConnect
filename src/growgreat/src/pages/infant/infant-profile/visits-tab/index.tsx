@@ -161,7 +161,16 @@ export const VisitsTab: React.FC = () => {
         return 1;
       }
 
-      return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+      if (a.visitType && b.visitType) {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime() ||
+          a.visitType.order - b.visitType.order!
+        );
+      } else {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        );
+      }
     });
   }, []);
 
@@ -189,18 +198,22 @@ export const VisitsTab: React.FC = () => {
       currentDate.setHours(0, 0, 0, 0);
       date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
 
       return {
-        title:
-          item.visitType?.normalizedName === 'Additional visits'
-            ? 'Other visit'
-            : item.visitType?.normalizedName || 'Visit',
-        subTitle: isMissedVisit
-          ? 'Missed visit deadline'
-          : `By ${date.getDate()} ${date.toLocaleString('default', {
-              month: 'long',
-            })} ${date.getFullYear()}`,
-        ...(isMissedVisit && {
+        title: isAdditionalVisit
+          ? 'Other visit'
+          : item.visitType?.normalizedName || 'Visit',
+        subTitle:
+          isAdditionalVisit && item.comment!
+            ? item.comment
+            : isMissedVisit
+            ? 'Missed visit deadline'
+            : `By ${date.getDate()} ${date.toLocaleString('default', {
+                month: 'long',
+              })} ${date.getFullYear()}`,
+        ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit

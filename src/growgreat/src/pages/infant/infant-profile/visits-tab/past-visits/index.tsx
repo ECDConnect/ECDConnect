@@ -16,7 +16,7 @@ import {
   getInfantById,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
-import { getDateWithoutTimeZone } from '@ecdlink/core';
+import { getDateWithoutTimeZone, VisitDto } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -37,6 +37,31 @@ export const PastVisits: React.FC = () => {
 
   const visits = useSelector(getInfantVisitsSelector);
 
+  const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
+    return visitsToSort.sort((a, b) => {
+      if (a === undefined && b === undefined) {
+        return 0;
+      }
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
+
+      if (a.visitType && b.visitType) {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime() ||
+          a.visitType.order - b.visitType.order!
+        );
+      } else {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        );
+      }
+    });
+  }, []);
+
   const visitSteps = useMemo(() => {
     const filteredVisits = visits.filter((item) => {
       const dueDate = getDateWithoutTimeZone(item.dueDate);
@@ -54,7 +79,9 @@ export const PastVisits: React.FC = () => {
       return isAttend;
     });
 
-    const array: StepItem[] = filteredVisits.map((item, index) => {
+    const sortedVisits = getSortedVisits(filteredVisits);
+
+    const array: StepItem[] = sortedVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {
         if (!item.attended) {
           return 'inProgress';
@@ -62,13 +89,19 @@ export const PastVisits: React.FC = () => {
 
         return 'completed';
       };
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
 
       return {
-        title:
-          item.visitType?.normalizedName === 'Additional visits'
-            ? 'Other visit'
-            : item.visitType?.normalizedName + ' visit' || 'Visit',
-        subTitle: getType() === 'inProgress' ? 'Missed visit' : '',
+        title: isAdditionalVisit
+          ? 'Other visit'
+          : item.visitType?.normalizedName + ' visit' || 'Visit',
+        subTitle:
+          isAdditionalVisit && item.comment!
+            ? item.comment
+            : getType() === 'inProgress'
+            ? 'Missed visit'
+            : '',
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),

@@ -147,7 +147,9 @@ export const PregnantRegisterForm: React.FC = () => {
       healthCareWorkerId: user?.id ?? '',
       age: details?.age,
       expectedDateOfDelivery:
-        pregnantMaternalCaseRecord?.deliveryDate?.toISOString(),
+        pregnantMaternalCaseRecord?.notHaveAMaternalRecord === false
+          ? pregnantMaternalCaseRecord?.deliveryDate?.toISOString()
+          : undefined,
       whatsAppNumber:
         contactInformation?.whatsapp ?? contactInformation?.cellphone,
       ...(!!location?.state?.linkedInfantId
