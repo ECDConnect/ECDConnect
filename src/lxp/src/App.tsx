@@ -19,12 +19,16 @@ import InitialNotificationSetup from './initial-notifications-setup';
 import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
-import { settingSelectors } from './store/settings';
-import BackgroundSync from './components/background-sync/background-sync';
-import { getTime } from 'date-fns';
+import { settingActions, settingSelectors } from './store/settings';
+// import BackgroundSync from './components/background-sync/background-sync';
+import { differenceInHours, getTime, isSameDay } from 'date-fns';
+import { syncThunkActions } from './store/sync';
+import { useAppDispatch } from './store';
+import { practitionerSelectors } from './store/practitioner';
 
 const App: React.FC = () => {
   const dialog = useDialog();
+  const dispatch = useAppDispatch();
   const user = useSelector(authSelectors.getAuthUser);
   const userExpired = useSelector(authSelectors.getUserExpired);
   const applicationSettings = useSelector(
@@ -33,6 +37,7 @@ const App: React.FC = () => {
   const userLocalxpiration = JSON.parse(
     localStorage?.getItem('userLocalxpiration')!
   );
+  const practitioner = useSelector(practitionerSelectors.getPractitioner);
 
   const [expirationTime, setExpirationTime] = useState<number>();
 
@@ -105,6 +110,51 @@ const App: React.FC = () => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [expirationTime, userLocalxpiration, user?.auth_token]);
 
+  const onFocus = () => {
+    const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
+    const isSameDayItem = isSameDay(new Date(), new Date(focusItem));
+    const differenceInHoursBetweenItems = differenceInHours(
+      new Date(),
+      new Date(focusItem)
+    );
+
+    if (!isSameDayItem || differenceInHoursBetweenItems > 6) {
+      handleSync();
+      localStorage.setItem('appFocus', JSON.stringify(new Date()));
+    }
+  };
+
+  useEffect(() => {
+    window.addEventListener('focus', onFocus);
+    onFocus();
+    return () => {
+      window.removeEventListener('focus', onFocus);
+    };
+  }, []);
+
+  const handleSync = async () => {
+    if (practitioner?.isPrincipal === true) {
+      await dispatch(syncThunkActions.syncOfflineData({}));
+      dispatch(settingActions.setLastDataSync());
+    } else {
+      dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+    }
+    dispatch(settingActions.setLastDataSync());
+    // asyncCheck();
+  };
+
+  // const asyncCheck = async () => {
+  //   if (user?.auth_token) {
+  //     const asyncCheckresponse = await new SettingsService(
+  //       user?.auth_token!
+  //     ).queryChangesToSync(lastDataSyncDate);
+
+  //     if (asyncCheckresponse === false) {
+  //       window.location.reload();
+  //     }
+  //   }
+  // };
+
   const getRoutes = () => {
     if (user && user.isTempUser !== true) {
       return (
@@ -113,7 +163,7 @@ const App: React.FC = () => {
             <DialogServiceProvider>
               <InitialNotificationSetup>
                 <AuthRoutes />
-                <BackgroundSync />
+                {/* <BackgroundSync /> */}
               </InitialNotificationSetup>
             </DialogServiceProvider>
           </SnackbarProvider>

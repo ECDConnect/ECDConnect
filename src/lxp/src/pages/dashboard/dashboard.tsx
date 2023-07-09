@@ -50,6 +50,7 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
+import { differenceInHours, isSameDay } from 'date-fns';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
