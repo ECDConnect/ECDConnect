@@ -5,8 +5,12 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Tenancy.Context;
 using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
-namespace SmartStart.Integration.Managers;
+namespace EcdLink.Api.CoreApi.Managers.Integration;
 
     public class IntegrationLogManager
     {

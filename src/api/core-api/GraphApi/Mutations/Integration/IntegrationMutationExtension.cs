@@ -2,7 +2,6 @@ using ECDLink.Core.Services.Interfaces;
 using HotChocolate;
 using HotChocolate.Types;
 using System.Threading.Tasks;
-using SmartStart.Integration.Interfaces;
 using EcdLink.Api.CoreApi.Services;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
@@ -29,11 +28,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.Integration
         {
             return await integrationService.IntegrationPQASmartSpaceVisitsData();
         }
-        public async Task<bool> IntegrationStatementsData([Service] SmartStartIntegrationService integrationService)//IIntegrationService
+        public async Task<bool> IntegrationStatementsData([Service] IIntegrationService integrationService)//IIntegrationService
         {
             return await integrationService.IntegrationStatementsData();
         }
-        public async Task<bool> IntegrationAttendanceData([Service] SmartStartIntegrationService integrationService)//IIntegrationService
+        public async Task<bool> IntegrationAttendanceData([Service] IIntegrationService integrationService)//IIntegrationService
         {
             return await integrationService.IntegrationAttendanceData();
         }

@@ -2,7 +2,6 @@
 using ECDLink.PostgresTenancy.Services;
 using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
-using SmartStart.Integration;
 using System;
 using System.Linq;
 
@@ -10,7 +9,7 @@ namespace ECDLink.AutomatedJobs.Util
 {
     public class TenancyContext
     {
-        public static void SetTenantContext(IServiceScope scope, string tenantGuid = Constants.ApplicationSettings.DefaultTenant)
+        public static void SetTenantContext(IServiceScope scope, string tenantGuid = "258a15e6-3736-45ea-875c-48d9377de4c8")
         {
             var tenancyRepo = scope.ServiceProvider.GetRequiredService<TenantService>();
 

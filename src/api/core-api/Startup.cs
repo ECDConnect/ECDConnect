@@ -42,11 +42,9 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
 using System.Diagnostics;
-using SmartStart.Integration;
-using SmartStart.Integration.Interfaces;
-using SmartStart.Integration.Managers;
 using ECDLink.AutomatedJobs.Services;
 using ECDLink.AutomatedJobs.Services.Interfaces;
+using EcdLink.Api.CoreApi.Managers.Integration;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -151,8 +149,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<UserLicenseManager>();
             services.AddTransient<PersonnelService>();
             services.AddTransient<ChildManager>();
-            services.AddTransient<ECDLink.Core.Services.IncomeExpenseService>();
-            services.AddTransient<SmartStart.Integration.IncomeExpenseService>();
+            services.AddTransient<IncomeExpenseService>();
             services.AddTransient<AttendanceService>();
             services.AddTransient<IClaimsManager, ClaimsManager>();
             services.AddTransient<IAuthorizationManager, AuthorizationManager>();
@@ -160,8 +157,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IChildrenAnonymiseService, ChildrenAnonymiseService>();
             services.AddTransient<IDocumentManagementService, DocumentManagementService>();
             services.AddTransient<IReassignmentService, ReassignmentService>();
-            services.AddTransient<IIntegrationService, IntegrationService>();
-            services.AddTransient<SmartStartIntegrationService, SmartStartIntegrationService>();
+            services.AddTransient<IIntegrationService, SmartStartIntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();

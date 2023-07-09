@@ -6,12 +6,16 @@ using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Net.Http;
 using System.Text;
 using System.Text.Json;
-using static SmartStart.Integration.Constants;
+using System.Threading.Tasks;
 using JsonSerializer = System.Text.Json.JsonSerializer;
 
-namespace SmartStart.Integration.Managers;
+namespace EcdLink.Api.CoreApi.Managers.Integration;
 
 public class IntegrationAPIManager
 {

@@ -56,7 +56,6 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.SmartStart\ECDLink.SmartStart.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.UrlShortner\ECDLink.UrlShortner.csproj" />
     <ProjectReference Include="..\ECDLink.Moodle\ECDLink.Moodle.csproj" />
-    <ProjectReference Include="..\Libraries\Modules\SmartStart.Integration\SmartStart.Integration.csproj" />
   </ItemGroup>
   
   <ItemGroup>

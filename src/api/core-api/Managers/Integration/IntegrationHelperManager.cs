@@ -9,9 +9,12 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using Microsoft.AspNetCore.Http;
 using System.Text;
-using static SmartStart.Integration.Constants;
+using System;
+using System.Threading.Tasks;
+using System.Collections.Generic;
+using System.Linq;
 
-namespace SmartStart.Integration.Managers;
+namespace EcdLink.Api.CoreApi.Managers.Integration;
     public class IntegrationHelperManager
     {
         private IHttpContextAccessor _contextAccessor;

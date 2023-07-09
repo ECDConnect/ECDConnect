@@ -1,10 +1,7 @@
 ﻿using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.Util;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.PostgresTenancy.Services;
-using ECDLink.Tenancy.Context;
 using Microsoft.Extensions.DependencyInjection;
-using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 

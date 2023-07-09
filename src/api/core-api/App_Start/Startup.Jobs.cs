@@ -2,6 +2,7 @@
 using ECDLink.AutomatedJobs.Configuration;
 using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.DailyRunners;
+using ECDLink.AutomatedJobs.MonthlyRunners;
 using ECDLink.AutomatedJobs.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -75,7 +76,7 @@ namespace EcdLink.Api.CoreApi
             //services.AddCronJob<IntegrationChanges>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
-            //    c.CronExpression = CronTags.EveryTwentyMinutes;
+            //    c.CronExpression = CronTags.EveryMinute;
             //});
             //services.AddCronJob<IntegrationWeeklyAttendance>(c =>
             //{
@@ -87,10 +88,15 @@ namespace EcdLink.Api.CoreApi
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
             //    c.CronExpression = CronTags.FirstDayOfMonth;
             //});
-            //services.AddCronJob<IntegrationMontlyIncomeStatements>(c =>
+            services.AddCronJob<IncomeStatementSubmit>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EveryMinute;
+            });
+            //services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
-            //    c.CronExpression = CronTags.NinthDayOfMonth;
+            //    c.CronExpression = CronTags.NineAmWeekDaily;
             //});
 
         }
