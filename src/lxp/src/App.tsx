@@ -20,7 +20,7 @@ import InitialStoreSetup from './initial-store-setup';
 import { LoginModal } from './pages/auth/login-modal/login-modal';
 import { authSelectors } from './store/auth';
 import { settingActions, settingSelectors } from './store/settings';
-import BackgroundSync from './components/background-sync/background-sync';
+// import BackgroundSync from './components/background-sync/background-sync';
 import { differenceInHours, getTime, isSameDay } from 'date-fns';
 import { syncThunkActions } from './store/sync';
 import { useAppDispatch } from './store';
@@ -112,9 +112,6 @@ const App: React.FC = () => {
 
   const onFocus = () => {
     const focusItem = JSON.parse(localStorage?.getItem('appFocus')!);
-    console.log({ focusItem });
-    const a = JSON.stringify(new Date());
-    console.log(JSON.parse(a));
     const isSameDayItem = isSameDay(new Date(), new Date(focusItem));
     const differenceInHoursBetweenItems = differenceInHours(
       new Date(),
@@ -166,7 +163,7 @@ const App: React.FC = () => {
             <DialogServiceProvider>
               <InitialNotificationSetup>
                 <AuthRoutes />
-                <BackgroundSync />
+                {/* <BackgroundSync /> */}
               </InitialNotificationSetup>
             </DialogServiceProvider>
           </SnackbarProvider>

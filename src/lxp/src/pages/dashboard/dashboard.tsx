@@ -104,12 +104,6 @@ export const Dashboard: React.FC = () => {
     notificationsSelectors.getDashboardNotification
   );
 
-  useEffect(() => {
-    if (document.hasFocus()) {
-      console.log('focusssssssssssssssssssss');
-    }
-  }, []);
-
   const timeline = useSelector(traineeSelectors.getTraineeOnboardTimeline);
   const uncompletedSteps = timelineSteps(
     timeline!,
