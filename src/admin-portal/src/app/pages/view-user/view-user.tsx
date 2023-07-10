@@ -78,7 +78,17 @@ const chwSchema = yup.object().shape({
 const adminSchema = yup.object().shape({
   email: yup.string().email().required('email address is required'),
 });
-
+const formatDate = (value: string | number | Date) => {
+  try {
+    const date = new Date(value);
+    const day = String(date.getDate()).padStart(2, '0');
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const year = String(date.getFullYear());
+    return `${day}/${month}/${year}`;
+  } catch (e) {
+    return 'N/A';
+  }
+};
 const showNotification = (
   message: string,
   type: AlertType,
@@ -908,9 +918,12 @@ export function ViewUser(props: any) {
           </div>
 
           <div className="w-2/12">
-            <p className="mt-3 w-full text-sm text-gray-500">
-              User added to {data?.tenantContext.applicationName} App:{' '}
-              {userData?.userById?.startDate}
+            <p className="mt-3 w-full text-sm text-gray-600">
+              User added to {data?.tenantContext.applicationName} App :{' '}
+              {formatDate(
+                chwData?.GetHealthCareWorkerById?.insertedDate ||
+                  userData?.userById?.insertedDate
+              )}
             </p>
           </div>
         </div>

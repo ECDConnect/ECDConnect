@@ -1,13 +1,20 @@
 import { gql } from '@apollo/client';
 
 export const GetAllHealthCareWorker = gql`
-  query ($search: String, $clinicSearch: String, $provinceSearch: String) {
+  query (
+    $search: String
+    $clinicSearch: String
+    $provinceSearch: String
+    $pagingInput: PagedQueryInput
+  ) {
     allHealthCareWorkers(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      pagingInput: $pagingInput
     ) {
       id
+      insertedDate
       user {
         isActive
         userName
@@ -22,8 +29,7 @@ export const GetAllHealthCareWorker = gql`
         contactPreference
         genderId
         phoneNumber
-        profileImageUrl
-        InsertedDate
+        insertedDate
         roles {
           id
           name
@@ -47,6 +53,7 @@ export const GetHealthCareWorkerByUserId = gql`
   query GetHealthCareWorkerByUserId($userId: UUID) {
     GetHealthCareWorkerById(id: $userId) {
       id
+      insertedDate
       user {
         id
         isActive
@@ -63,7 +70,7 @@ export const GetHealthCareWorkerByUserId = gql`
         genderId
         phoneNumber
         profileImageUrl
-        InsertedDate
+        insertedDate
         roles {
           id
           name

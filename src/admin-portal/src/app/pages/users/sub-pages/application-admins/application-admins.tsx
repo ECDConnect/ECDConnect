@@ -31,6 +31,7 @@ export default function ApplicationAdmins() {
           },
         ],
         sortBy: [
+          { fieldName: 'insertedDate', descending: true },
           {
             fieldName: 'FullName',
             descending: true,
@@ -75,6 +76,7 @@ export default function ApplicationAdmins() {
                 fieldName: 'FullName',
                 descending: true,
               },
+              { fieldName: 'insertedDate', descending: true },
             ],
           },
         },
@@ -99,6 +101,7 @@ export default function ApplicationAdmins() {
                 fieldName: 'FullName',
                 descending: true,
               },
+              { fieldName: 'insertedDate', descending: true },
             ],
           },
         },
@@ -343,6 +346,7 @@ export default function ApplicationAdmins() {
                   columns={[
                     { field: 'email', use: 'Email' },
                     { field: 'fullName', use: 'name' },
+                    { field: 'insertedDate', use: 'Date Invited' },
                     { field: 'isActive', use: 'Active' },
                   ]}
                   urlRow={'/view-user'}

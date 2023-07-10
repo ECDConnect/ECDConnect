@@ -33,7 +33,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
   };
 
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
-  const [createUser, { error }] = useMutation(CreateUser);
+  const [createUser, { loading }] = useMutation(CreateUser);
   const [addRolesToUser] = useMutation(AddUsersToRole);
 
   // FORMS
@@ -189,6 +189,7 @@ export default function UserPanelCreate(props: UserPanelCreateProps) {
         color="secondary"
         disabled={!isValid}
         onClick={handleSubmit(onSave)}
+        isLoading={loading}
       >
         <SaveIcon color="white" className="mr-6 h-6 w-6" />
         <Typography type="help" color="white" text="Save"></Typography>
