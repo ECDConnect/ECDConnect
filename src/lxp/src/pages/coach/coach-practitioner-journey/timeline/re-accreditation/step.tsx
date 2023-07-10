@@ -6,14 +6,14 @@ import { CalendarEventModel } from '@ecdlink/core';
 
 interface Props {
   timeline: PractitionerTimeline;
-  currentPqaRating: RatingData;
+  currentRating: RatingData;
   practitionerEvents?: CalendarEventModel[];
 }
 
 export const getReAccreditationStepData = ({
   timeline,
   practitionerEvents,
-  currentPqaRating,
+  currentRating,
 }: Props): {
   currentVisit?: Maybe<Visit>;
   stepType?: StepType;
@@ -61,9 +61,7 @@ export const getReAccreditationStepData = ({
       undefined
   );
 
-  const ratingData = getRatingData(
-    currentPqaRating?.rating?.overallRatingColor
-  );
+  const ratingData = getRatingData(currentRating?.rating?.overallRatingColor);
 
   const getSubTitleText = () => {
     if (!!currentVisitEvent) {

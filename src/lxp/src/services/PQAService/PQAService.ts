@@ -123,6 +123,35 @@ class PQAService {
     return response.data.data.addFollowUpVisitForPractitioner;
   }
 
+  async addReAccreditationFollowUpVisitForPractitioner(
+    input: FollowUpVisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addReAccreditationFollowUpVisitForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddReAccreditationFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
+          addReAccreditationFollowUpVisitForPractitioner(input: $input) {
+              id 
+          }        
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add reAccreditation follow up visit failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addReAccreditationFollowUpVisitForPractitioner;
+  }
+
   async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
