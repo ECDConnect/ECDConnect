@@ -151,7 +151,7 @@ export default function UiTable(
       const year = String(date.getFullYear());
       return `${day}/${month}/${year}`;
     } catch (e) {
-      return 'N/A';
+      return '';
     }
   };
 
