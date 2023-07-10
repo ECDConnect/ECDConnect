@@ -14,23 +14,22 @@ import { useSelector } from 'react-redux';
 import { useHistory } from 'react-router-dom';
 import { useDocuments } from '@hooks/useDocuments';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
-import { useStoreSetup } from '@hooks/useStoreSetup';
 import { OfflineSyncModal, LogoutModal } from '../../../modals';
 import { useAppDispatch } from '@store';
 import { classroomsSelectors } from '@store/classroom';
-import { settingActions, settingSelectors } from '@store/settings';
+import { settingSelectors } from '@store/settings';
 import { userSelectors } from '@store/user';
 import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
-import { syncThunkActions } from '@/store/sync';
+// import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
-  const { resetAuth, resetAppStore } = useStoreSetup();
+  // const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
-  const practitioners = useSelector(practitionerSelectors?.getPractitioners);
+  const isTrainee = practitioner?.isTrainee;
   const classroom = useSelector(classroomsSelectors.getClassroom);
   const classroomForPractitionerAnyType: any = classroom;
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
@@ -38,23 +37,18 @@ export const PractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
   const { isOnline } = useOnlineStatus();
-  const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
   const history = useHistory();
   const dialog = useDialog();
 
-  const principalPractitioner = practitioners?.find(
-    (item) => item?.userId === user?.id
-  );
-
-  const sync = async () => {
-    if (practitioner?.isPrincipal === true) {
-      await appDispatch(syncThunkActions.syncOfflineData({}));
-    } else {
-      await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
-    }
-    await appDispatch(settingActions.setLastDataSync());
-  };
+  // const sync = async () => {
+  //   if (practitioner?.isPrincipal === true) {
+  //     await appDispatch(syncThunkActions.syncOfflineData({}));
+  //   } else {
+  //     await appDispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
+  //   }
+  //   await appDispatch(settingActions.setLastDataSync());
+  // };
 
   useEffect(() => {
     if (!isOnline) {
@@ -91,6 +85,71 @@ export const PractitionerProfile: React.FC = () => {
         },
       },
       {
+        title: 'Account',
+        titleStyle,
+        subTitleStyle,
+        subTitle: 'Password',
+        menuIcon: 'ShieldCheckIcon',
+        menuIconClassName: 'text-white bg-primary',
+        iconBackgroundColor: 'tertiary',
+        showIcon: true,
+        iconColor: 'white',
+        onActionClick: () => {
+          history.push(ROUTES.PRACTITIONER.ACCOUNT);
+        },
+      },
+      {
+        title: 'Logout',
+        titleStyle,
+        subTitleStyle,
+        subTitle: 'Logout',
+        menuIcon: 'LogoutIcon',
+        iconColor: 'white',
+        iconBackgroundColor: 'tertiary',
+        showIcon: true,
+        onActionClick: () => {
+          dialog({
+            position: DialogPosition.Bottom,
+            render: (onSubmit, onCancel) => {
+              return (
+                <LogoutModal
+                  onSubmit={onSubmit}
+                  onCancel={onCancel}
+                ></LogoutModal>
+              );
+            },
+          });
+        },
+      },
+    ];
+
+    if (!isTrainee) {
+      stackedMenuList.splice(2, 0, {
+        title: 'Sync App Data',
+        titleStyle,
+        subTitleStyle,
+        subTitle: lastDataSyncDate,
+        menuIcon: 'RefreshIcon',
+        iconColor: 'white',
+        iconBackgroundColor: 'tertiary',
+        showIcon: true,
+        onActionClick: () => {
+          dialog({
+            position: DialogPosition.Bottom,
+            render: (onSubmit, onCancel) => {
+              return (
+                <OfflineSyncModal
+                  isManual
+                  onSubmit={onSubmit}
+                  onCancel={onCancel}
+                ></OfflineSyncModal>
+              );
+            },
+          });
+        },
+      });
+
+      stackedMenuList?.splice(1, 0, {
         title: 'Programme information',
         titleStyle,
         subTitle:
@@ -149,69 +208,8 @@ export const PractitionerProfile: React.FC = () => {
             });
           }
         },
-      },
-      {
-        title: 'Account',
-        titleStyle,
-        subTitleStyle,
-        subTitle: 'Password',
-        menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white bg-primary',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        iconColor: 'white',
-        onActionClick: () => {
-          history.push(ROUTES.PRACTITIONER.ACCOUNT);
-        },
-      },
-      {
-        title: 'Sync App Data',
-        titleStyle,
-        subTitleStyle,
-        subTitle: lastDataSyncDate,
-        menuIcon: 'RefreshIcon',
-        iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        onActionClick: () => {
-          dialog({
-            position: DialogPosition.Bottom,
-            render: (onSubmit, onCancel) => {
-              return (
-                <OfflineSyncModal
-                  isManual
-                  onSubmit={onSubmit}
-                  onCancel={onCancel}
-                ></OfflineSyncModal>
-              );
-            },
-          });
-        },
-      },
-      {
-        title: 'Logout',
-        titleStyle,
-        subTitleStyle,
-        subTitle: 'Logout',
-        menuIcon: 'LogoutIcon',
-        iconColor: 'white',
-        iconBackgroundColor: 'tertiary',
-        showIcon: true,
-        onActionClick: () => {
-          dialog({
-            position: DialogPosition.Bottom,
-            render: (onSubmit, onCancel) => {
-              return (
-                <LogoutModal
-                  onSubmit={onSubmit}
-                  onCancel={onCancel}
-                ></LogoutModal>
-              );
-            },
-          });
-        },
-      },
-    ];
+      });
+    }
 
     return stackedMenuList;
   };
