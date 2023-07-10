@@ -105,7 +105,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var userRoles = await _userManager.GetRolesAsync(user);
             if (userRoles.Contains("admin"))
             {
-                await notificationProvider
+                var adminNotificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
+                await adminNotificationProvider
                     .SetMessageTemplate(TemplateTypeEnum.SuperadminNotifyEmailChanged)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
@@ -120,7 +121,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
             string firstName = user.FirstName;
 
-            var notificationProvider = _notificationProviderFactory.Create(user);
+            var notificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
 
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.PasswordChangedByAdmin)

@@ -224,9 +224,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
-            var user = userManager.FindByIdAsync(userId).Result;
+            var user = await userManager.FindByIdAsync(userId);
 
-            if (user is null)
+            if (user is null || !user.IsActive)
             {
                 return default(ApplicationUser);
             }
@@ -271,7 +271,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
                 user.childObjectData = childRepo.GetByUserId(user.Id);
             }
 
-            return user.IsActive ? user : default(ApplicationUser);
+            return user;
         }
 
         public UserByToken GetUserByToken(
