@@ -20,8 +20,8 @@ namespace ECDLink.Notifications.Factories
         public INotificationProvider<ApplicationUser> Create(ApplicationUser user, string overrideMessageType = null)
         {
             var actualMessageType = string.IsNullOrWhiteSpace(overrideMessageType) 
-                ? user.ContactPreference.ToLower()
-                : overrideMessageType.ToLower();
+                ? user.ContactPreference?.ToLower()
+                : overrideMessageType?.ToLower();
 
             switch (actualMessageType)
             {
