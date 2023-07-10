@@ -78,8 +78,8 @@ export const GetAllUserHierarchyEntity = gql`
 `;
 
 export const SendInviteToApplication = gql`
-  mutation sendInviteToApplication($userId: String) {
-    sendInviteToApplication(userId: $userId)
+  mutation sendInviteToApplication($userId: String, $inviteToPortal: Boolean) {
+    sendInviteToApplication(userId: $userId, inviteToPortal: $inviteToPortal)
   }
 `;
 
