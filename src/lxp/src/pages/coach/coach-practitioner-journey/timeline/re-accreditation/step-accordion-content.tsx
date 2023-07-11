@@ -75,6 +75,7 @@ export const ReAccreditationVisits = ({
     new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
       new Date(lastAttendedReAccreditationVisit?.insertedDate);
   const isReAccreditationFollowUp =
+    currentReAccreditationRating.rating?.overallRatingColor &&
     currentReAccreditationRating.rating?.overallRatingColor !== 'Success' &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.third.name

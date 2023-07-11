@@ -74,6 +74,7 @@ export const PQAVisits = ({
     new Date(lastAttendedPqaFollowUpVisit?.insertedDate) >
       new Date(lastAttendedPqaVisit?.insertedDate);
   const isPQAFollowUp =
+    !!currentPqaRating.rating?.overallRatingColor &&
     currentPqaRating.rating?.overallRatingColor !== 'Success' &&
     !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
@@ -88,7 +89,7 @@ export const PQAVisits = ({
               {
                 id: newPqaFollowUpId,
                 visitType: {
-                  description: `First PQA`,
+                  description: `Follow-up visit ${currentPqaRating.visitNumber}`,
                   name: visitTypes.pqa.followUp.name,
                 },
                 plannedVisitDate: addDays(
