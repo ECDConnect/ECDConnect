@@ -83,12 +83,13 @@ StatementsSubmit input)
         public ResultReturnObject AutoSubmitStatement([Service] IncomeExpenseService incomeManager)
         {
             //TODO: pull from system settings
-            int forceSubmitDay = 8;
-            var statements = incomeManager.GetUnsubmittedStatements(forceSubmitDay);
-            var dateToSubmit = DateTime.Now.AddMonths(-1); //run previous months unsubmitted
-            foreach (var userId in statements)
+            //run previous months unsubmitted
+            StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
+            var pracsDueSubmits = incomeManager.GetUnsubmittedStatements();
+            
+            foreach (var userId in pracsDueSubmits)
             {
-                incomeManager.AutoSubmitStatement(userId, dateToSubmit.Year, dateToSubmit.Month);
+                incomeManager.AutoSubmitStatement(userId, submitPeriod.Start.Year, submitPeriod.Start.Month);
             }
 
             return new ResultReturnObject() { ResultMessage = "OK" };

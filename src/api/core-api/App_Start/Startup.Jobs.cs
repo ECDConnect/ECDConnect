@@ -4,6 +4,8 @@ using ECDLink.AutomatedJobs.Cron;
 using ECDLink.AutomatedJobs.DailyRunners;
 using ECDLink.AutomatedJobs.MonthlyRunners;
 using ECDLink.AutomatedJobs.Notifications;
+using ECDLink.AutomatedJobs.Services.Interfaces;
+using ECDLink.AutomatedJobs.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using System;
@@ -14,6 +16,8 @@ namespace EcdLink.Api.CoreApi
     {
         private void ConfigureJobs(IServiceCollection services)
         {
+            services.AddTransient<ISchedulerService, SchedulerService>();
+
             if (Environment.IsProduction())
             {
                 //Hard - coded times for now, consider using ISystemSettings and move the cron expressions to DB
@@ -88,11 +92,13 @@ namespace EcdLink.Api.CoreApi
             //    c.TimeZoneInfo = TimeZoneInfo.Local;
             //    c.CronExpression = CronTags.FirstDayOfMonth;
             //});
-            services.AddCronJob<IncomeStatementSubmit>(c =>
-            {
-                c.TimeZoneInfo = TimeZoneInfo.Local;
-                c.CronExpression = CronTags.EveryMinute;
-            });
+
+            //services.AddCronJob<IncomeStatementSubmit>(c =>
+            //{
+            //    c.TimeZoneInfo = TimeZoneInfo.Local;
+            //    c.CronExpression = CronTags.EveryFiveMinutes;
+            //});
+
             //services.AddCronJob<IncomeStatementsAutoSubmit>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;

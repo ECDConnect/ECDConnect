@@ -18,6 +18,7 @@ namespace ECDLink.Core.Services.Interfaces
         StatementsStartupSupport UpdateStartupSupport(StatementsStartupSupport model);
         bool SubmitStatement(StatementsSubmit model, bool autoSubmitted = false);
         bool AutoSubmitStatement(string userId, int year, int month);
-        List<string> GetUnsubmittedStatements(int forceSubmitDay);
+        List<string> GetUnsubmittedStatements();
+        List<string> GetPractitionersDueStatements();
     }
 }

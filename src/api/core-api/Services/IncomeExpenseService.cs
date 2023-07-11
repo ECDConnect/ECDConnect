@@ -10,6 +10,12 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using ECDLink.Security.Extensions;
+using ECDLink.Core.Extensions;
+using ECDLink.DataAccessLayer.Entities.Integration.MappedEntities;
+using System.Reflection.Metadata;
+using ECDLink.DataAccessLayer.Entities.Documents;
+using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
+using EcdLink.Api.CoreApi.GraphApi.Queries;
 
 namespace ECDLink.Core.Services
 {
@@ -18,6 +24,7 @@ namespace ECDLink.Core.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repoFactory;
         private string _applicationUserId;
+        private string _adminId;
         private readonly ISystemSetting<IncomeStatementSubmitStartOptions> _submitStartDate;
         private readonly ISystemSetting<IncomeStatementSubmitEndOptions> _submitEndDate;
         private IGenericRepository<StatementsExpenseType, Guid> _statementsExpenseTypeRepo;
@@ -45,6 +52,13 @@ namespace ECDLink.Core.Services
             _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
         }
+
+        #region Utils
+        public static StatementsSubmitPeriod GetStatementPeriod()
+        {
+            return new StatementsSubmitPeriod() { Start = DateTime.Now.GetStartOfPreviousMonth().AddDays(24).Date, End = DateTime.Now.GetStartOfMonth().AddDays(7).Date };
+        }
+        #endregion
 
         #region Statement Queries
 
@@ -672,7 +686,7 @@ namespace ECDLink.Core.Services
                     IsActive = true,
                     Month = model.Month,
                     Year = model.Year,
-                    Notes = "Manual Monthly Statement Submission",
+                    Notes = (autoSubmitted ? "Auto" : "Manual") + " Monthly Statement Submission",
                     Period = "Monthly",
                     Submitted = true,
                     SubmittedDate = DateTime.Now,
@@ -720,8 +734,20 @@ namespace ECDLink.Core.Services
                 submittedStatement.IncomeTotal = allIncome;
                 submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
                 submittedStatement.UpdatedDate = DateTime.Now;
-                submittedStatement.UpdatedBy = _applicationUserId;
+                submittedStatement.UpdatedBy = _applicationUserId;                
+                //try
+                //{
+                //    //try generating autosubmit doc
+                //    //Document pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile()
+                //    //submittedStatement.RelatedDocumentId = pdfDoc.Id;
+                //}
+                //catch (Exception e)
+                //{
+                //    submittedStatement.RelatedDocumentId = null;
+                //}
                 statementRepo.Update(submittedStatement);
+
+
             }
             return retVal;
         }
@@ -732,16 +758,31 @@ namespace ECDLink.Core.Services
             return SubmitStatement(statement, true);
         }
 
-        public List<string> GetUnsubmittedStatements(int forceSubmitDay)
+        public List<string> GetUnsubmittedStatements()
         {
+            StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             //find statements that have not been submitted for the previous month, assuming the SW runs the <<forceSubmitDay>> of the following month,
             //not having a statement for any users but have income/expenses mean they have not submitted and needs to be auto submit.
-            var statementsRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-            var incomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
+            List<string> allPractitionersToCheck = GetPractitionersDueStatements();
+            List<string> allDuePractitioners = allPractitionersToCheck; //copy and yank from this list to prevent issues with foreach loop
+            foreach (var practitioner in allPractitionersToCheck)
+            {
+                if (IsSubmitted(practitioner, submitPeriod.Start.Year, submitPeriod.Start.Month))
+                {
+                    allDuePractitioners.Remove(practitioner);
+                }
+            }
+            return allDuePractitioners;
+        }
 
-            //TODO for service worker
+        public List<string> GetPractitionersDueStatements()
+        {
+            //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
+            StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
+            var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
+            var allDuePracs =pracsRepo.GetAll().Where(x => x.IsPrincipal == true || x.IsFundaAppAdmin == true && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId).ToList();
 
-            return new List<string>();
+            return allDuePracs;
         }
     }
     #endregion
