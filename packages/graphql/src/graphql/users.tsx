@@ -164,3 +164,36 @@ export const sentInviteToMultipleUsers = gql`
   }
 `;
 
+export const getUserCount = gql`
+  query countUsers($search: String) {
+    countUsers(
+      search: $search
+    )
+  }
+`;
+
+export const getHealthCareWorkerCount = gql`
+query countHealthCareWorker(
+  $search: String
+  $clinicSearch: String
+  $provinceSearch: String
+) {
+  countHealthCareWorkers(
+    search: $search
+    clinicSearch: $clinicSearch
+    provinceSearch: $provinceSearch
+  )
+}
+`;
+
+export const getTeamLeadCount = gql`
+query countTeamLead {
+  countTeamLead(
+    search: ""
+    pagingInput: {
+      pageNumber: ""
+      pageSize: ""
+    }
+  )
+}
+`;

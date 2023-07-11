@@ -48,7 +48,7 @@ const PublicRoutes: React.FC = () => {
       <Route exact path="/" component={Login} />
       <Route exact path="/register/:resetToken" component={Register} />
       <Route exact path="/forgot-password" component={ForgotPassword} />
-      <Route exact path="/reset/:resetToken/:email" component={ResetPassword} />
+      <Route exact path="/reset/:resetToken" component={ResetPassword} />
       <Route path={`/ecd-terms`} component={TermsPage}></Route>
     </Switch>
   );

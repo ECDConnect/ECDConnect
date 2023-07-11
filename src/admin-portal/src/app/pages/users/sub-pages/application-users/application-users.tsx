@@ -5,7 +5,11 @@ import {
   useNotifications,
   UserDto,
 } from '@ecdlink/core';
-import { sentInviteToMultipleUsers, UserList } from '@ecdlink/graphql';
+import {
+  getUserCount,
+  sentInviteToMultipleUsers,
+  UserList,
+} from '@ecdlink/graphql';
 import { DropDownOption, Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -20,14 +24,21 @@ export default function ApplicationUsers() {
   const [showFilter, setShowFilter] = useState(true);
   const [nameFilter, setNameFilter] = useState(false);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
-
+  const { data: userCountData } = useQuery(getUserCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      "search": "",
+      "clinicSearch": "",
+      "provinceSearch": ""
+    }
+  });
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
       search: '',
       filterBy: [],
       pagingInput: {
         pageNumber: 1,
-        pageSize: 10,
+        pageSize: userCountData?.countUsers,
         sortBy: [{ fieldName: "insertedDate", descending: true }],
       },
     },
@@ -67,7 +78,7 @@ export default function ApplicationUsers() {
         filterBy: [],
         pagingInput: {
           pageNumber: 1,
-          pageSize: 100,
+          pageSize: userCountData?.countUsers,
           sortBy: [
             { fieldName: 'FullName', descending: nameFilter },
             { fieldName: "insertedDate", descending: true }
@@ -75,7 +86,7 @@ export default function ApplicationUsers() {
         },
       },
     });
-  }, [searchValue, nameFilter]);
+  }, [searchValue, nameFilter, userCountData]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 
