@@ -8,9 +8,13 @@ import {
   addVisitFormData,
   getPractitionerTimeline,
   getVisitDataForVisitId,
+  updateVisitPlannedVisitDate,
 } from './pqa.actions';
 import { PQAState } from './pqa.types';
-import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  UpdateVisitPlannedVisitDateModelInput,
+} from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
@@ -28,6 +32,37 @@ const pqaSlice = createSlice({
   name: 'pqa',
   initialState,
   reducers: {
+    updateVisitPlannedVisitDate: (
+      state,
+      action: PayloadAction<UpdateVisitPlannedVisitDateModelInput>
+    ) => {
+      const input = action.payload;
+
+      state.coachPractitionersTimeline?.forEach((p) => {
+        var visit = p.timeline.pQASiteVisits?.find(
+          (v) => v?.id === input.visitId
+        );
+        if (!visit)
+          visit = p.timeline.supportVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.prePQASiteVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.requestedCoachVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.reAccreditationVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!!visit) {
+          visit.plannedVisitDate = input.plannedVisitDate;
+        }
+      });
+    },
     addVisitFormData: {
       reducer: (
         state,
@@ -245,6 +280,35 @@ const pqaSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(updateVisitPlannedVisitDate.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const input = action.meta.arg;
+      state.coachPractitionersTimeline?.forEach((p) => {
+        var visit = p.timeline.pQASiteVisits?.find(
+          (v) => v?.id === input.visitId
+        );
+        if (!visit)
+          visit = p.timeline.supportVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.prePQASiteVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.requestedCoachVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.reAccreditationVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!!visit) {
+          visit.plannedVisitDate = input.plannedVisitDate;
+        }
+      });
+    });
   },
 });
 

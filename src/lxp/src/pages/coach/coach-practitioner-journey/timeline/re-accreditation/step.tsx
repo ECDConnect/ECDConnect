@@ -40,10 +40,10 @@ export const getReAccreditationStepData = ({
       ? practitionerEvents.find(
           (e) =>
             e.eventType === 'ReAccreditation' &&
-            e.action.state !== undefined &&
-            e.action.state.action === 'onStart' &&
-            e.action.state.actionParams !== undefined &&
-            e.action.state.actionParams.visitName ===
+            e.action?.state !== undefined &&
+            e.action?.state.action === 'onStart' &&
+            e.action?.state.actionParams !== undefined &&
+            e.action?.state.actionParams.visitName ===
               currentVisit.visitType?.name
         )
       : undefined;

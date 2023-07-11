@@ -245,6 +245,7 @@ export const timelineSteps = ({
           currentVisit={currentVisit!}
           practitionerId={practitionerId}
           currentVisitEventId={currentVisitEvent?.id}
+          onStart={onStart}
           onScheduleOrStart={onScheduleOrStart}
           isOnline={isOnline}
         />
