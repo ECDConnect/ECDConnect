@@ -71,7 +71,6 @@ export default function UiTable(
     if (!searchValue) {
       return rows;
     }
-
     return fuse.current.search(searchValue).map((result) => result.item);
   };
 
@@ -96,17 +95,19 @@ export default function UiTable(
   };
 
   const handleRowSelect = (row: any) => {
+    if (row.field === 'select') {
+      return;
+    }
+  
     console.log(row);
     setInviteRows(!inviteRows);
-    let users: string[] = [];
-
+    let users = [];
+  
     const isSelected = selectedRows.includes(row);
     let updatedSelectedRows = [];
-
+  
     if (isSelected) {
-      updatedSelectedRows = selectedRows.filter(
-        (selectedRow) => selectedRow !== row
-      );
+      updatedSelectedRows = selectedRows.filter((selectedRow) => selectedRow !== row);
     } else {
       updatedSelectedRows = [...selectedRows, row];
     }
@@ -159,7 +160,7 @@ export default function UiTable(
       const year = String(date.getFullYear());
       return `${day}/${month}/${year}`;
     } catch (e) {
-      return 'N/A';
+      return '';
     }
   };
 
@@ -292,6 +293,7 @@ export default function UiTable(
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
       <Table
+
         key={`table-${lastUpdate}`}
         row_render={renderFormat}
         should_export={options.should_export || false}

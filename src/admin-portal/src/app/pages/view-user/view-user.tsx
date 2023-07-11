@@ -248,6 +248,7 @@ export function ViewUser(props: any) {
               },
             })
               .then(() => {
+                refetch()
                 setNotification({
                   title: 'Successfully Sent Invite!',
                   variant: NOTIFICATION.SUCCESS,
