@@ -709,7 +709,6 @@ export const Form = ({
             : 'Next'
         }
         setIsTip={setIsTip}
-        // @ts-ignore
         setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
