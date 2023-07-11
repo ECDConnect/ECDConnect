@@ -37,7 +37,7 @@ export function Dropdown<T>({
   fillType = 'filled',
   fullWidth = false,
   fillColor = 'uiBg',
-  textColor = 'white',
+  textColor = 'primary',
   className,
   inputRef,
   showSearch,
@@ -200,9 +200,9 @@ export function Dropdown<T>({
                                 }`}
                               >
                                 <CheckCircleIcon
-                                  className={`h-12 w-12 cursor-pointer text-${
+                                  className={`h-6 w-6 cursor-pointer text-${
                                     item.value === selectedItem?.value
-                                      ? 'secondary opacity-100'
+                                      ? 'secondary '
                                       : 'secondary'
                                   }`}
                                 />
