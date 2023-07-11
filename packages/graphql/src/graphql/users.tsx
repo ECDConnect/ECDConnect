@@ -165,37 +165,37 @@ mutation SendBulkInviteToPortal($userIds: [String]) {
 `;
 
 export const getUserCount = gql`
-query countUsers {
-  countUsers(
-    search: ""
-    pagingInput: {
-      pageNumber: ""
-      pageSize: ""
-    }
-  )
-}
+  query countUsers($search: String) {
+    countUsers(
+      search: $search
+    )
+  }
 `;
 
 export const getHealthCareWorkerCount = gql`
-query countHealthCareWorker {
-  countHealthCareWorker(
-    search: ""
-    pagingInput: {
-      pageNumber: ""
-      pageSize: ""
-    }
+query countHealthCareWorker(
+  $search: String
+  $clinicSearch: String
+  $provinceSearch: String
+) {
+  countHealthCareWorkers(
+    search: $search
+    clinicSearch: $clinicSearch
+    provinceSearch: $provinceSearch
   )
 }
 `;
 
 export const getTeamLeadCount = gql`
-query countTeamLead {
-  countTeamLead(
-    search: ""
-    pagingInput: {
-      pageNumber: ""
-      pageSize: ""
-    }
+query countTeamLeads(
+  $search: String
+  $clinicSearch: String
+  $provinceSearch: String
+) {
+  countTeamLeads(
+    search: $search
+    clinicSearch: $clinicSearch
+    provinceSearch: $provinceSearch
   )
 }
 `;

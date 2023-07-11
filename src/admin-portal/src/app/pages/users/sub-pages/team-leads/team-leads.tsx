@@ -2,7 +2,7 @@ import { useLazyQuery, useQuery } from '@apollo/client';
 import { ClinicDto, PermissionEnum, ProvinceDto } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
-import { GetAllClinic, GetAllProvince, GetAllTeamLead } from '@ecdlink/graphql';
+import { GetAllClinic, GetAllProvince, GetAllTeamLead, getTeamLeadCount } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -23,6 +23,14 @@ export default function TeamLeads() {
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
   const history = useHistory();
+  const { data: teamCountData } = useQuery(getTeamLeadCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      "search": "",
+      "clinicSearch": "",
+      "provinceSearch": ""
+    }
+  });
 
   const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
     variables: {
@@ -31,7 +39,7 @@ export default function TeamLeads() {
       textSearch: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: teamCountData?.countTeamLeads,
         sortBy: [{ fieldName: "insertedDate", descending: true }]
       },
     },
@@ -39,6 +47,7 @@ export default function TeamLeads() {
   });
 
   useEffect(() => {
+    console.log(teamCountData)
     GetAllTeamLeads({
       variables: {
         textSearch: searchValue,
@@ -46,12 +55,12 @@ export default function TeamLeads() {
         clinicSearch: clinicFilter,
         pagingInput: {
           pageNumber: 1,
-          pageSize: 100,
+          pageSize: teamCountData?.countTeamLeads,
           sortBy: [{ fieldName: "insertedDate", descending: true }]
         },
       },
     });
-  }, [provinceFilter, searchValue, clinicFilter]);
+  }, [provinceFilter, searchValue, clinicFilter, teamCountData]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');

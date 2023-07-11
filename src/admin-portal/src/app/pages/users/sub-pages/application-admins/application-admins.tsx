@@ -8,7 +8,7 @@ import {
   usePanel,
   UserDto,
 } from '@ecdlink/core';
-import { DeleteUser, UserList } from '@ecdlink/graphql';
+import { DeleteUser, UserList, getUserCount } from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -19,13 +19,20 @@ import { Dropdown } from '@ecdlink/ui';
 
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
-
+  const { data: userCountData } = useQuery(getUserCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      "search": "",
+      "clinicSearch": "",
+      "provinceSearch": ""
+    }
+  });
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
       search: '',
       pagingInput: {
         pageNumber: 1,
-        pageSize: 100,
+        pageSize: userCountData.countUsers,
         filterBy: [
           {
             fieldName: 'ADMINISTRATOR',
@@ -66,7 +73,9 @@ export default function ApplicationAdmins() {
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
   let userStatus = statusFilter === 'active' ? true : false;
 
+
   useEffect(() => {
+    console.log(userCountData)
     if (searchValue === '') {
       // Perform the refetch when search value is empty
       getAllUsers({
@@ -74,7 +83,7 @@ export default function ApplicationAdmins() {
           search: '',
           pagingInput: {
             pageNumber: 1,
-            pageSize: 100,
+            pageSize: userCountData.countUsers,
             filterBy: [
               {
                 fieldName: 'ADMINISTRATOR',
@@ -100,7 +109,7 @@ export default function ApplicationAdmins() {
           search: searchValue,
           pagingInput: {
             pageNumber: 1,
-            pageSize: 10,
+            pageSize: userCountData.countUsers,
             filterBy: [
               {
                 fieldName: 'ADMINISTRATOR',
@@ -119,7 +128,7 @@ export default function ApplicationAdmins() {
         },
       });
     }
-  }, [searchValue, nameFilter]);
+  }, [searchValue, nameFilter, userCountData]);
 
   useEffect(() => {
     if (data && data.users) {

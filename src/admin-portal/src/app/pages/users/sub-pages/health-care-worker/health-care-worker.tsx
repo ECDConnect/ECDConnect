@@ -20,6 +20,7 @@ import {
   GetAllClinic,
   GetAllProvince,
   HealthCareWorkerTemplate,
+  getHealthCareWorkerCount,
 } from '@ecdlink/graphql';
 import {
   Button,
@@ -55,8 +56,15 @@ export default function HealthCareWorkers() {
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
+  const { data: chwCountData } = useQuery(getHealthCareWorkerCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      "search": "",
+      "clinicSearch": "",
+      "provinceSearch": ""
+    }
+  });
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
     GetAllHealthCareWorker,
     {
@@ -66,7 +74,7 @@ export default function HealthCareWorkers() {
         search: '',
         pagingInput: {
           pageNumber: 1,
-          pageSize: 100,
+          pageSize: chwCountData?.countHealthCareWorkers,
           sortBy: [{ fieldName: "insertedDate", descending: true }]
         },
       },
@@ -75,6 +83,7 @@ export default function HealthCareWorkers() {
   );
 
   useEffect(() => {
+    
     getAllHealthCareWorkers({
       variables: {
         search: searchValue,
@@ -82,15 +91,14 @@ export default function HealthCareWorkers() {
         clinicSearch: clinicFilter,
         pagingInput: {
           pageNumber: 1,
-          pageSize: 500,
+          pageSize: chwCountData?.countHealthCareWorkers,
           sortBy: [
-            // { fieldName: 'FullName', descending: true },
             { fieldName: "insertedDate", descending: true }
           ]
         },
       },
     });
-  }, [provinceFilter, searchValue, clinicFilter, nameFilter]);
+  }, [provinceFilter, searchValue, clinicFilter, chwCountData ]);
 
 
 
