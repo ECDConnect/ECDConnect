@@ -642,12 +642,14 @@ export const Form = ({
 
   useEffect(() => {
     if (
-      (wasLoading && !isLoading) ||
-      (wasLoadingReAccreditation && !isLoadingReAccreditationVisit)
+      !isToRemoveSmartStarter &&
+      ((wasLoading && !isLoading) ||
+        (wasLoadingReAccreditation && !isLoadingReAccreditationVisit))
     ) {
       onBack?.();
     }
   }, [
+    isToRemoveSmartStarter,
     isLoading,
     wasLoading,
     onBack,
