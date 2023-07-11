@@ -6,6 +6,7 @@ import {
   GetAllClinic,
   GetAllProvince,
   GetAllTeamLead,
+  getTeamLeadCount,
   SortEnumType,
   TeamLeadSortInput,
 } from '@ecdlink/graphql';
@@ -35,6 +36,14 @@ export default function TeamLeads() {
   const [pageSize, setPageSize] = useState(10);
 
   const history = useHistory();
+  const { data: teamCountData } = useQuery(getTeamLeadCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      search: '',
+      clinicSearch: '',
+      provinceSearch: '',
+    },
+  });
 
   const getVariables = (
     search: string,
@@ -73,6 +82,7 @@ export default function TeamLeads() {
   });
 
   useEffect(() => {
+    console.log(teamCountData);
     GetAllTeamLeads({
       variables: getVariables(
         searchValue,
@@ -80,7 +90,7 @@ export default function TeamLeads() {
         clinicFilter,
         sortDescending,
         currentPage,
-        pageSize
+        teamCountData?.countTeamLeads
       ),
     });
   }, [
@@ -90,6 +100,7 @@ export default function TeamLeads() {
     sortDescending,
     currentPage,
     pageSize,
+    teamCountData,
   ]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {

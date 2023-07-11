@@ -27,7 +27,7 @@ export default function ResetPassword() {
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const { resetPassword } = useAuth();
-  const { resetToken, email } = useParams<RouteParams>();
+  const { resetToken } = useParams<RouteParams>();
   const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
@@ -48,12 +48,9 @@ export default function ResetPassword() {
   const password = watch('password');
   const formValues = getValues();
 
-  //check password strength
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-
-
   const requestResetPasword = async () => {
+    let email = localStorage.getItem('email');
+
     if (isValid) {
       console.log(Config.authApi);
 
@@ -61,7 +58,7 @@ export default function ResetPassword() {
       const body: PasswordResetModel = {
         username: email,
         password: formValues.password,
-        resetToken: resetToken
+        resetToken: resetToken,
       };
       const isLinkSent = await resetPassword(body, Config.authApi);
 
@@ -80,12 +77,11 @@ export default function ResetPassword() {
   };
 
   const { errors, isValid } = formState;
-  console.log(isValid)
-
+  console.log(isValid);
 
   const submitResetPassword = async () => {
     if (isValid) {
-      requestResetPasword()
+      requestResetPasword();
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
     }
@@ -162,7 +158,6 @@ export default function ResetPassword() {
             <div className="mt-6">
               <form className="space-y-6">
                 <div className="space-y-1">
-
                   <PasswordInput
                     label={'Password'}
                     nameProp={'password'}

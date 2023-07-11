@@ -167,3 +167,39 @@ export const sentInviteToMultipleUsers = gql`
     }
   }
 `;
+
+export const getUserCount = gql`
+  query countUsers($search: String, $pagingInput: PagedQueryInput) {
+    countUsers(search: $search, pagingInput: $pagingInput)
+  }
+`;
+
+export const getHealthCareWorkerCount = gql`
+  query countHealthCareWorker(
+    $search: String
+    $clinicSearch: String
+    $provinceSearch: String
+  ) {
+    countHealthCareWorkers(
+      search: $search
+      clinicSearch: $clinicSearch
+      provinceSearch: $provinceSearch
+    )
+  }
+`;
+
+export const getTeamLeadCount = gql`
+  query countTeamLead(
+    $search: String
+    $clinicSearch: String
+    $provinceSearch: String
+    $pagingInput: PagedQueryInput
+  ) {
+    countTeamLeads(
+      search: $search
+      clinicSearch: $clinicSearch
+      provinceSearch: $provinceSearch
+      pagingInput: $pagingInput
+    )
+  }
+`;

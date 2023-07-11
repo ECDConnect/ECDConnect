@@ -8,7 +8,12 @@ import {
   usePanel,
   UserDto,
 } from '@ecdlink/core';
-import { DeleteUser, UserList } from '@ecdlink/graphql';
+import {
+  DeleteUser,
+  SortEnumType,
+  UserList,
+  getUserCount,
+} from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -19,30 +24,6 @@ import { Dropdown } from '@ecdlink/ui';
 
 export default function ApplicationAdmins() {
   const [nameFilter, setNameFilter] = useState(true);
-
-  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
-    variables: {
-      search: '',
-      order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
-      pagingInput: {
-        pageNumber: 1,
-        pageSize: 100,
-        filterBy: [
-          {
-            fieldName: 'ADMINISTRATOR',
-            filterType: 'EQUALS',
-            value: 'true',
-          },
-        ],
-      },
-    },
-    fetchPolicy: 'network-only',
-  });
-
-  const clearFilters = () => {
-    setStatusFilter('');
-    setNameFilter(false);
-  };
 
   const { hasPermission } = useUser();
 
@@ -55,48 +36,99 @@ export default function ApplicationAdmins() {
   const [statusFilter, setStatusFilter] = useState('active');
   const [showFilter, setShowFilter] = useState(false);
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
+
+  const [selectedPage, setSelectedPage] = useState<number>(1);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(10);
+
   let userStatus = statusFilter === 'active' ? true : false;
 
+  const clearFilters = () => {
+    setStatusFilter('');
+    setNameFilter(false);
+  };
+
+  const getCountVariables = (search: string) => {
+    return {
+      search: search,
+      pagingInput: {
+        filterBy: [
+          {
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
+        ],
+      },
+    };
+  };
+
+  const { data: userCountData } = useQuery(getUserCount, {
+    variables: getCountVariables(''),
+    fetchPolicy: 'cache-and-network',
+  });
+
+  const getVariables = (
+    search: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      search: search,
+      order: [
+        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+      ],
+      pagingInput: {
+        pageNumber: currentPage,
+        pageSize: pageSize,
+        filterBy: [
+          {
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
+        ],
+      },
+    };
+  };
+
+  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
+    variables: {
+      search: '',
+      order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
+      pagingInput: {
+        pageNumber: selectedPage,
+        pageSize: selectedPageSize,
+        filterBy: [
+          {
+            fieldName: 'ADMINISTRATOR',
+            filterType: 'EQUALS',
+            value: 'true',
+          },
+        ],
+      },
+    },
+    fetchPolicy: 'network-only',
+  });
+
   useEffect(() => {
-    if (searchValue === '') {
-      // Perform the refetch when search value is empty
-      getAllUsers({
-        variables: {
-          search: '',
-          order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
-          pagingInput: {
-            pageNumber: 1,
-            pageSize: 100,
-            filterBy: [
-              {
-                fieldName: 'ADMINISTRATOR',
-                filterType: 'EQUALS',
-                value: 'true',
-              },
-            ],
-          },
-        },
-      });
-    } else {
-      // Perform the search query
-      getAllUsers({
-        variables: {
-          search: searchValue,
-          order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
-          pagingInput: {
-            pageNumber: 1,
-            pageSize: 10,
-            filterBy: [
-              {
-                fieldName: 'ADMINISTRATOR',
-                filterType: 'EQUALS',
-                value: 'true',
-              },
-            ],
-          },
-        },
-      });
-    }
+    // TODO: Use nameFilter
+    const getUserQueryVariables = getVariables(
+      searchValue,
+      nameFilter,
+      selectedPage,
+      selectedPageSize
+    );
+    getAllUsers({
+      variables: getUserQueryVariables,
+    });
+
+    // TODO: Use actual pagination when table component supports it.
+    // const getUserCountQueryVariables = getCountVariables(searchValue);
+    // getCountUsers({
+    //   variables: getUserCountQueryVariables
+    // });
   }, [searchValue, nameFilter]);
 
   useEffect(() => {
@@ -143,6 +175,7 @@ export default function ApplicationAdmins() {
             onSubmit();
             if (userCreated) {
               refetch();
+              // refetchCount();
             }
           }}
         />
@@ -347,6 +380,10 @@ export default function ApplicationAdmins() {
                   rows={tableData}
                   sendRow={true}
                   searchInput={searchValue}
+                  options={{
+                    per_page: selectedPageSize,
+                    rows: userCountData?.userCount,
+                  }}
                   component={'administrators'}
                 />
               </div>

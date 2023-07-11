@@ -37,8 +37,6 @@ export default function ForgotPassword() {
 
   const requestResetPasword = async () => {
     if (isValid) {
-      console.log(Config.authApi);
-
       setIsLoading(true);
       const body = {
         email: formValues.email,
@@ -48,6 +46,7 @@ export default function ForgotPassword() {
       if (isLinkSent) {
         setIsLoading(false);
         history.push('/reset');
+        localStorage.setItem('email', formValues.email);
       } else {
         setIsLoading(false);
         setDisplayError(true);

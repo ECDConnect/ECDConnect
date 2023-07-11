@@ -6,6 +6,7 @@ import {
   UserDto,
 } from '@ecdlink/core';
 import {
+  getUserCount,
   sentInviteToMultipleUsers,
   UserList,
   SortEnumType,
@@ -25,10 +26,9 @@ export default function ApplicationUsers() {
   const [showFilter, setShowFilter] = useState(true);
   const [nameFilter, setNameFilter] = useState(false);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
-
-  const [sortDescending, setSortDescending] = useState(true);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [pageSize, setPageSize] = useState(10);
+  const [sortDescending, setSortDescending] = useState<boolean>(true);
+  const [selectedPage, setSelectedPage] = useState<number>(1);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
 
   // type SortInput = { [Key in keyof ApplicationUserSortInput]?: ApplicationUserSortInput[Key] };
   // const getSortInput = (sorts: SortInput[]) => {
@@ -50,7 +50,7 @@ export default function ApplicationUsers() {
       search: search,
       order: [
         { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
-        //{ "fullName": sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
+        { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
       ],
       pagingInput: {
         pageNumber: currentPage,
@@ -59,8 +59,15 @@ export default function ApplicationUsers() {
     };
   };
 
+  const { data: userCountData } = useQuery(getUserCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      search: '',
+    },
+  });
+
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
-    variables: getVariables(searchValue, sortDescending, currentPage, pageSize),
+    variables: getVariables(searchValue, sortDescending, selectedPage, 100),
     fetchPolicy: 'network-only',
   });
 
@@ -95,11 +102,11 @@ export default function ApplicationUsers() {
       variables: getVariables(
         searchValue,
         sortDescending,
-        currentPage,
-        pageSize
+        selectedPage,
+        selectedPageSize ?? userCountData?.countUsers ?? 100
       ),
     });
-  }, [searchValue, nameFilter]);
+  }, [searchValue, nameFilter, userCountData, sortDescending, selectedPage]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 

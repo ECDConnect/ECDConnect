@@ -20,6 +20,7 @@ import {
   GetAllClinic,
   GetAllProvince,
   HealthCareWorkerTemplate,
+  getHealthCareWorkerCount,
   SortEnumType,
   HealthCareWorkerSortInput,
 } from '@ecdlink/graphql';
@@ -57,8 +58,6 @@ export default function HealthCareWorkers() {
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
-  const [showDropDownFilter, setShowDropDownFilter] = useState(false);
-
   const [sortDescending, setSortDescending] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [pageSize, setPageSize] = useState(10);
@@ -89,6 +88,15 @@ export default function HealthCareWorkers() {
     };
   };
 
+  const { data: chwCountData } = useQuery(getHealthCareWorkerCount, {
+    fetchPolicy: 'cache-and-network',
+    variables: {
+      search: '',
+      clinicSearch: '',
+      provinceSearch: '',
+    },
+  });
+
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
     GetAllHealthCareWorker,
     {
@@ -114,7 +122,7 @@ export default function HealthCareWorkers() {
         teamLeadFilter,
         sortDescending,
         currentPage,
-        pageSize
+        chwCountData?.countHealthCareWorkers
       ),
     });
   }, [
@@ -125,6 +133,7 @@ export default function HealthCareWorkers() {
     currentPage,
     pageSize,
     sortDescending,
+    chwCountData,
   ]);
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
