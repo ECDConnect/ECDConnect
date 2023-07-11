@@ -168,47 +168,6 @@ namespace ECDLink.DataAccessLayer.Helpers
             return inputValue?.ToString();
         }
 
-        public static IQueryable<T> AddSorting<T>(IEnumerable<SortByField> sortBy, in IQueryable<T> usersQuery, SortByField[] defaultSortFields = null)
-        {
-            // Don't mutate the input:
-            var newQuery = usersQuery.AsQueryable();
-
-            if (sortBy?.Any() ?? false)
-            {
-                foreach (var sort in sortBy)
-                {
-                    var sortByFieldName = sort?.FieldName;
-
-                    if (sort.Descending)
-                        return newQuery.OrderByDescending(u => EF.Property<object>(u, sortByFieldName));
-                    else
-                        return newQuery.OrderBy(u => EF.Property<object>(u, sortByFieldName));
-                }
-            }
-            else
-            // Add default sort.
-            {
-                if (defaultSortFields?.Any() ?? false)
-                {
-                    foreach (var field in defaultSortFields.Select((value, i) => new { i, value }))
-                    {
-                        if (field.i == 0)
-                            newQuery = newQuery.OrderBy(u => EF.Property<object>(u, field.value.FieldName));
-
-                        else
-                        {
-                            newQuery = (newQuery as IOrderedQueryable<T>).ThenBy(u => EF.Property<object>(u, field.value.FieldName)).AsQueryable();
-
-                        }
-                    }
-
-                    return newQuery;
-                }
-            }
-
-            return newQuery;
-        }
-
         public static IQueryable<T> AddPaging<T>(int skip, int take, in IQueryable<T> usersQuery)
         {
             if (skip < 0 || take < 0)

@@ -21,6 +21,7 @@ using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.Abstractrions.GraphQL.Attributes;
 using Microsoft.AspNetCore.Http;
 using ECDLink.Security.Extensions;
+using HotChocolate.Data;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
@@ -36,6 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         // TODO: Move paging code into a "Pagination" service
         // TODO: Builder pattern for query?
+        [UseSorting]
         public async Task<IQueryable<ApplicationUser>> GetUsersAsync(
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IGenericRepositoryFactory repoFactory,
@@ -58,11 +60,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
-            usersQuery = PaginationHelper.AddSorting(
-                pagingInput?.SortBy,
-                usersQuery,
-                // Set default sort by column.
-                new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
             if (pagingInput is not null)
@@ -123,18 +120,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
             usersQuery = AddProvinceFilter(repoFactory, pagingInput, usersQuery);
             usersQuery = await AddAdministratorFilter(userManager, pagingInput, usersQuery);
             usersQuery = PaginationHelper.AddFiltering(pagingInput?.FilterBy, usersQuery);
-            usersQuery = PaginationHelper.AddSorting(
-                pagingInput?.SortBy,
-                usersQuery,
-                // Set default sort by column.
-                new SortByField[] { new SortByField(nameof(ApplicationUser.FullName).ToString()) });
             usersQuery = AddDefaultUserSearch(search, usersQuery);
 
             return usersQuery.Count();
         }
 
-            // Can this become generic?
-            private IQueryable<ApplicationUser> AddProvinceFilter(IGenericRepositoryFactory repoFactory, PagedQueryInput pagingInput, IQueryable<ApplicationUser> usersQuery)
+        // Can this become generic?
+        private IQueryable<ApplicationUser> AddProvinceFilter(
+            IGenericRepositoryFactory repoFactory,
+            PagedQueryInput pagingInput,
+            IQueryable<ApplicationUser> usersQuery)
         {
             if (pagingInput is null)
                 return usersQuery;

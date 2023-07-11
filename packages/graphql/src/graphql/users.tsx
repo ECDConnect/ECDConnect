@@ -1,8 +1,12 @@
 import { gql } from '@apollo/client';
 
 export const UserList = gql`
-  query ($pagingInput: PagedQueryInput, $search: String) {
-    users(pagingInput: $pagingInput, search: $search) {
+  query (
+    $pagingInput: PagedQueryInput
+    $search: String
+    $order: [ApplicationUserSortInput!]
+  ) {
+    users(pagingInput: $pagingInput, search: $search, order: $order) {
       id
       isActive
       userName

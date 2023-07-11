@@ -21,6 +21,7 @@ using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -30,13 +31,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
-        public List<HealthCareWorker> GetAllHealthCareWorkers(
+        [UseSorting]
+        public IQueryable<HealthCareWorker> GetAllHealthCareWorkers(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
+            CancellationToken cancellationToken, 
             PagedQueryInput pagingInput = null,
             string search = null,
             string provinceSearch = null,
-            string clinicSearch = null)
+            string clinicSearch = null,
+            string teamLeadSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
@@ -48,12 +52,26 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+
+            if (!string.IsNullOrWhiteSpace(teamLeadSearch))
+            {
+                healthCareWorkers = healthCareWorkers
+                    .Include(h => h.TeamLead.User)
+                    .Where(h => EF.Functions.ILike(h.TeamLead.User.FullName, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(h.TeamLead.User.IdNumber, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(h.TeamLead.User.PhoneNumber, $"%{teamLeadSearch}%")
+                    || EF.Functions.ILike(h.TeamLead.User.Email, $"%{teamLeadSearch}%"));
+            }
+
             if (!string.IsNullOrWhiteSpace(provinceSearch))
                 healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+
             if (!string.IsNullOrWhiteSpace(clinicSearch))
                 healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.Name, $"%{clinicSearch}%"));
-
-            return healthCareWorkers.ToList();
+            
+            if (cancellationToken.IsCancellationRequested)
+                return null;
+            return healthCareWorkers;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

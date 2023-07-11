@@ -15,6 +15,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
@@ -24,8 +25,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
     {
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
+        [UseSorting]
         public IQueryable<TeamLead> GetAllTeamLeads([Service] IHttpContextAccessor contextAccessor,
          IGenericRepositoryFactory repoFactory,
+         CancellationToken cancellationToken,
          PagedQueryInput pagingInput = null,
          string search = null,
          string provinceSearch = null,
@@ -41,9 +44,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
                     || EF.Functions.ILike(h.User.Email, $"%{search}%"));
             if (!string.IsNullOrWhiteSpace(provinceSearch))
+            {
+                teamLeadRepo.Include(h => h.Clinic.SiteAddress.Province);
                 teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            }
             if (!string.IsNullOrWhiteSpace(clinicSearch))
                 teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+            
+            if (cancellationToken.IsCancellationRequested)
+                return null;
 
             return teamLeadRepo;
         }

@@ -25,7 +25,6 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
         {
         }
 
-        public List<SortByField> SortBy { get; set; }
         public List<FilterByField> FilterBy { get; set; }
 
         [GraphQLIgnore]
@@ -41,16 +40,6 @@ namespace ECDLink.Abstractrions.GraphQL.Attributes
             IInputObjectTypeDescriptor<PagedQueryInput> descriptor)
         {
             descriptor.Field(f => f.FilterBy).Type<ListType<FilterByFieldType>>();
-            descriptor.Field(f => f.SortBy).Type<ListType<SortByFieldType>>();
-        }
-    }
-
-    public class SortByFieldType : InputObjectType<SortByField>
-    {
-        protected override void Configure(
-            IInputObjectTypeDescriptor<SortByField> descriptor)
-        {
-            descriptor.BindFieldsImplicitly();
         }
     }
 

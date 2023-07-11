@@ -20,6 +20,8 @@ import {
   GetAllClinic,
   GetAllProvince,
   HealthCareWorkerTemplate,
+  SortEnumType,
+  HealthCareWorkerSortInput,
 } from '@ecdlink/graphql';
 import {
   Button,
@@ -57,37 +59,73 @@ export default function HealthCareWorkers() {
   const [clinicFilter, setClinicFilter] = useState('');
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
+  const [sortDescending, setSortDescending] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  const getVariables = (
+    search: string,
+    province: string,
+    teamLead: string,
+    clinic: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      provinceSearch: province,
+      clinicSearch: clinic,
+      teamLeadSearch: teamLead,
+      search: search,
+      order: [
+        {
+          insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
+        } as HealthCareWorkerSortInput,
+      ],
+      pagingInput: {
+        pageNumber: currentPage,
+        pageSize: pageSize,
+      },
+    };
+  };
+
   const [getAllHealthCareWorkers, { data, refetch }] = useLazyQuery(
     GetAllHealthCareWorker,
     {
-      variables: {
-        provinceSearch: '',
-        clinicSearch: '',
-        search: '',
-        pagingInput: {
-          pageNumber: 1,
-          pageSize: 100,
-          sortBy: [{ fieldName: 'insertedDate', descending: true }],
-        },
-      },
+      variables: getVariables(
+        searchValue,
+        provinceFilter,
+        clinicFilter,
+        teamLeadFilter,
+        sortDescending,
+        currentPage,
+        pageSize
+      ),
       fetchPolicy: 'network-only',
     }
   );
 
   useEffect(() => {
     getAllHealthCareWorkers({
-      variables: {
-        search: searchValue,
-        provinceSearch: provinceFilter,
-        clinicSearch: clinicFilter,
-        pagingInput: {
-          pageNumber: 1,
-          pageSize: 500,
-          sortBy: [{ fieldName: 'insertedDate', descending: true }],
-        },
-      },
+      variables: getVariables(
+        searchValue,
+        provinceFilter,
+        clinicFilter,
+        teamLeadFilter,
+        sortDescending,
+        currentPage,
+        pageSize
+      ),
     });
-  }, [provinceFilter, searchValue, clinicFilter]);
+  }, [
+    provinceFilter,
+    searchValue,
+    clinicFilter,
+    teamLeadFilter,
+    currentPage,
+    pageSize,
+    sortDescending,
+  ]);
 
   const { data: teamLeadData } = useQuery(GetAllTeamLead, {
     fetchPolicy: 'cache-and-network',
@@ -237,9 +275,9 @@ export default function HealthCareWorkers() {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M19 9l-7 7-7-7"
                       ></path>
                     </svg>

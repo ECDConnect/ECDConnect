@@ -48,7 +48,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (pagingInput is not null)
             {
                 queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
-                queryable = PaginationHelper.AddSorting(pagingInput?.SortBy, queryable);
                 queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
             }
 
@@ -62,7 +61,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (pagingInput is not null)
             {
                 queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
-                // No need to sort or paginate for counts.
             }
 
             return queryable.Count();

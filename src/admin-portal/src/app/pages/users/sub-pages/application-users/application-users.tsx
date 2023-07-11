@@ -5,7 +5,12 @@ import {
   useNotifications,
   UserDto,
 } from '@ecdlink/core';
-import { sentInviteToMultipleUsers, UserList } from '@ecdlink/graphql';
+import {
+  sentInviteToMultipleUsers,
+  UserList,
+  SortEnumType,
+  ApplicationUserSortInput,
+} from '@ecdlink/graphql';
 import { DropDownOption, Dropdown } from '@ecdlink/ui';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
@@ -20,17 +25,41 @@ export default function ApplicationUsers() {
   const [showFilter, setShowFilter] = useState(false);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
 
-  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
-    variables: {
-      search: '',
-      filterBy: [],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
+  const [sortDescending, setSortDescending] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
+  // type SortInput = { [Key in keyof ApplicationUserSortInput]?: ApplicationUserSortInput[Key] };
+  // const getSortInput = (sorts: SortInput[]) => {
+  //   return sorts.map(sort => sort);
+  // };
+
+  // const sortinput = getSortInput([
+  //   { insertedDate : sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+  //   { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
+  // ]);
+
+  const getVariables = (
+    search: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      search: search,
+      order: [
+        { insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
+        //{ "fullName": sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
+      ],
       pagingInput: {
-        pageNumber: 1,
-        pageSize: 10,
-        sortBy: { fieldName: 'insertedDate', descending: true },
+        pageNumber: currentPage,
+        pageSize: pageSize,
       },
-    },
+    };
+  };
+
+  const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
+    variables: getVariables(searchValue, sortDescending, currentPage, pageSize),
     fetchPolicy: 'network-only',
   });
 
@@ -62,16 +91,12 @@ export default function ApplicationUsers() {
 
   useEffect(() => {
     getAllUsers({
-      variables: {
-        search: searchValue,
-        filterBy: [],
-        sortBy: [{ fieldName: 'FullName', descending: true }],
-        pagingInput: {
-          pageNumber: 1,
-          pageSize: 100,
-          sortBy: { fieldName: 'insertedDate', descending: true },
-        },
-      },
+      variables: getVariables(
+        searchValue,
+        sortDescending,
+        currentPage,
+        pageSize
+      ),
     });
   }, [searchValue]);
 
@@ -200,9 +225,9 @@ export default function ApplicationUsers() {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M19 9l-7 7-7-7"
                       ></path>
                     </svg>

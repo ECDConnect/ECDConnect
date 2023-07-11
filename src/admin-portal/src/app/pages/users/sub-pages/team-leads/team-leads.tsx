@@ -2,7 +2,13 @@ import { useLazyQuery, useQuery } from '@apollo/client';
 import { ClinicDto, PermissionEnum, ProvinceDto } from '@ecdlink/core';
 import { TeamLeadDto } from '@ecdlink/core/lib/models/dto/Users/team-lead.dto';
 import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
-import { GetAllClinic, GetAllProvince, GetAllTeamLead } from '@ecdlink/graphql';
+import {
+  GetAllClinic,
+  GetAllProvince,
+  GetAllTeamLead,
+  SortEnumType,
+  TeamLeadSortInput,
+} from '@ecdlink/graphql';
 import { useEffect, useState } from 'react';
 import { ContentLoader } from '../../../../components/content-loader/content-loader';
 import UiTable from '../../../../components/ui-table';
@@ -13,6 +19,7 @@ import { Dropdown } from '@ecdlink/ui';
 import debounce from 'lodash.debounce';
 import { Menu } from '@headlessui/react';
 import { useHistory } from 'react-router';
+
 export default function TeamLeads() {
   const [tableData, setTableData] = useState<any[]>([]);
   const panel = usePanel();
@@ -22,36 +29,68 @@ export default function TeamLeads() {
   const [searchValue, setSearchValue] = useState('');
   const [provinceFilter, setProvinceFilter] = useState('');
   const [clinicFilter, setClinicFilter] = useState('');
+
+  const [sortDescending, setSortDescending] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
+
   const history = useHistory();
 
-  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
-    variables: {
-      provinceSearch: '',
-      clinicSearch: '',
-      textSearch: '',
+  const getVariables = (
+    search: string,
+    province: string,
+    clinic: string,
+    sortDescending: boolean,
+    currentPage: number,
+    pageSize: number
+  ) => {
+    return {
+      provinceSearch: province,
+      clinicSearch: clinic,
+      search: search,
+      order: [
+        {
+          insertedDate: sortDescending ? SortEnumType.Desc : SortEnumType.Asc,
+        } as TeamLeadSortInput,
+      ],
       pagingInput: {
-        pageNumber: 1,
-        pageSize: 100,
-        sortBy: [{ fieldName: 'insertedDate', descending: true }],
+        pageNumber: currentPage,
+        pageSize: pageSize,
       },
-    },
+    };
+  };
+
+  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
+    variables: getVariables(
+      searchValue,
+      provinceFilter,
+      clinicFilter,
+      sortDescending,
+      currentPage,
+      pageSize
+    ),
     fetchPolicy: 'network-only',
   });
 
   useEffect(() => {
     GetAllTeamLeads({
-      variables: {
-        textSearch: searchValue,
-        provinceSearch: provinceFilter,
-        clinicSearch: clinicFilter,
-        pagingInput: {
-          pageNumber: 1,
-          pageSize: 100,
-          sortBy: [{ fieldName: 'insertedDate', descending: true }],
-        },
-      },
+      variables: getVariables(
+        searchValue,
+        provinceFilter,
+        clinicFilter,
+        sortDescending,
+        currentPage,
+        pageSize
+      ),
     });
-  }, [provinceFilter, searchValue, clinicFilter]);
+  }, [
+    provinceFilter,
+    searchValue,
+    clinicFilter,
+    sortDescending,
+    currentPage,
+    pageSize,
+  ]);
 
   const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
     setSearchValue(e.target.value || '');
@@ -139,9 +178,9 @@ export default function TeamLeads() {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M19 9l-7 7-7-7"
                       ></path>
                     </svg>

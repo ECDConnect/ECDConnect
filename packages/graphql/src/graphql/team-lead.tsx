@@ -6,14 +6,17 @@ export const GetAllTeamLead = gql`
     $clinicSearch: String
     $provinceSearch: String
     $pagingInput: PagedQueryInput
+    $order: [TeamLeadSortInput!]
   ) {
     allTeamLeads(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
       pagingInput: $pagingInput
+      order: $order
     ) {
       id
+      insertedDate
       user {
         isActive
         userName
@@ -27,7 +30,6 @@ export const GetAllTeamLead = gql`
         fullName
         contactPreference
         genderId
-        insertedDate
         phoneNumber
         roles {
           id

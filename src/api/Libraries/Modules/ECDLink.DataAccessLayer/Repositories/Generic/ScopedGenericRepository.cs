@@ -60,7 +60,6 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (pagingInput is not null)
             {
                 query = PaginationHelper.AddFiltering(pagingInput?.FilterBy, query);
-                query = PaginationHelper.AddSorting(pagingInput?.SortBy, query);
                 query = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, query);
             }
 

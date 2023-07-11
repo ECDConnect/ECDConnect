@@ -20,6 +20,7 @@ export default function ApplicationAdmins() {
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
       search: '',
+      order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
       pagingInput: {
         pageNumber: 1,
         pageSize: 100,
@@ -28,13 +29,6 @@ export default function ApplicationAdmins() {
             fieldName: 'ADMINISTRATOR',
             filterType: 'EQUALS',
             value: 'true',
-          },
-        ],
-        sortBy: [
-          { fieldName: 'insertedDate', descending: true },
-          {
-            fieldName: 'FullName',
-            descending: true,
           },
         ],
       },
@@ -61,6 +55,7 @@ export default function ApplicationAdmins() {
       getAllUsers({
         variables: {
           search: '',
+          order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
           pagingInput: {
             pageNumber: 1,
             pageSize: 100,
@@ -71,13 +66,6 @@ export default function ApplicationAdmins() {
                 value: 'true',
               },
             ],
-            sortBy: [
-              {
-                fieldName: 'FullName',
-                descending: true,
-              },
-              { fieldName: 'insertedDate', descending: true },
-            ],
           },
         },
       });
@@ -86,6 +74,7 @@ export default function ApplicationAdmins() {
       getAllUsers({
         variables: {
           search: searchValue,
+          order: [{ insertedDate: 'DESC' }, { fullName: 'DESC' }],
           pagingInput: {
             pageNumber: 1,
             pageSize: 10,
@@ -95,13 +84,6 @@ export default function ApplicationAdmins() {
                 filterType: 'EQUALS',
                 value: 'true',
               },
-            ],
-            sortBy: [
-              {
-                fieldName: 'FullName',
-                descending: true,
-              },
-              { fieldName: 'insertedDate', descending: true },
             ],
           },
         },
@@ -314,9 +296,9 @@ export default function ApplicationAdmins() {
                       xmlns="http://www.w3.org/2000/svg"
                     >
                       <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth="2"
                         d="M19 9l-7 7-7-7"
                       ></path>
                     </svg>

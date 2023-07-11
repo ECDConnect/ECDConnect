@@ -26,7 +26,7 @@ namespace ECDLink.EGraphQL.Resolvers
         public IEnumerable<T> GetAll(
           IGenericRepositoryFactory repositoryFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
-          PagedQueryInput? pagingInput = null)
+          PagedQueryInput pagingInput = null)
         {
             var repository = repositoryFactory.CreateRepository<T>();
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
@@ -39,7 +39,7 @@ namespace ECDLink.EGraphQL.Resolvers
         public int Count(
           IGenericRepositoryFactory repositoryFactory,
           [Service] IHttpContextAccessor httpContextAccessor,
-          PagedQueryInput? pagingInput = null)
+          PagedQueryInput pagingInput = null)
         {
             var repository = repositoryFactory.CreateRepository<T>();
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
