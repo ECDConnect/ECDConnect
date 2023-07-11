@@ -57,6 +57,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        public int GetCountHealthCareWorkers(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            PagedQueryInput pagingInput = null,
+            string search = null,
+            string provinceSearch = null,
+            string clinicSearch = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: uId);
+            var healthCareWorkers = healthCareWorkerRepo.GetAll(pagingInput);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                healthCareWorkers = healthCareWorkers
+                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            if (!string.IsNullOrWhiteSpace(provinceSearch))
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            if (!string.IsNullOrWhiteSpace(clinicSearch))
+                healthCareWorkers = healthCareWorkers.Where(h => EF.Functions.ILike(h.TeamLead.Clinic.Name, $"%{clinicSearch}%"));
+
+            return healthCareWorkers.Count();
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public HealthCareWorker GetHealthCareWorkerByUserId(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,

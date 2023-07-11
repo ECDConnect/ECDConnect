@@ -48,6 +48,32 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             return teamLeadRepo;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.View)]
+        [UseFiltering]
+        public int GetCountTeamLeads([Service] IHttpContextAccessor contextAccessor,
+         IGenericRepositoryFactory repoFactory,
+         PagedQueryInput pagingInput = null,
+         string search = null,
+         string provinceSearch = null,
+         string clinicSearch = null)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
+
+            if (!string.IsNullOrWhiteSpace(search))
+                teamLeadRepo = teamLeadRepo
+                    .Where(h => EF.Functions.ILike(h.User.FullName, $"%{search}%")
+                    || EF.Functions.ILike(h.User.IdNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.PhoneNumber, $"%{search}%")
+                    || EF.Functions.ILike(h.User.Email, $"%{search}%"));
+            if (!string.IsNullOrWhiteSpace(provinceSearch))
+                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.SiteAddress.Province.Description, $"%{provinceSearch}%"));
+            if (!string.IsNullOrWhiteSpace(clinicSearch))
+                teamLeadRepo = teamLeadRepo.Where(h => EF.Functions.ILike(h.Clinic.Name, $"%{clinicSearch}%"));
+
+            return teamLeadRepo.Count();
+        }
+
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> TeamLeadTemplateGenerator(
