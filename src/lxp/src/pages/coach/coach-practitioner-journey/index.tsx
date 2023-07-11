@@ -386,7 +386,8 @@ export const CoachPractitionerJourney = () => {
   const uncompletedPqaVisits =
     timeline?.pQASiteVisits?.filter(
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
-    ) || isNewPqaVisit
+    ) ||
+    (isNewPqaVisit
       ? [
           {
             id: newPqaVisitId,
@@ -400,15 +401,14 @@ export const CoachPractitionerJourney = () => {
             plannedVisitDate: new Date(),
           } as Visit,
         ]
-      : [];
+      : []);
 
   const uncompletedReAccreditationVisits =
     timeline?.reAccreditationVisits?.filter(
       (visit) =>
         !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
     ) ||
-    isReadyToReAccreditationVisit ||
-    isReAccreditationNewVisit
+    (isReadyToReAccreditationVisit || isReAccreditationNewVisit
       ? [
           {
             id: newReAccreditationVisitId,
@@ -422,7 +422,7 @@ export const CoachPractitionerJourney = () => {
             plannedVisitDate: new Date(),
           } as Visit,
         ]
-      : [];
+      : []);
 
   const uncompletedPqaFollowUpVisit =
     isPQAFollowUpDeadline && isPQAFollowUp && !isNewPqaVisit
@@ -567,7 +567,10 @@ export const CoachPractitionerJourney = () => {
     const isReAccreditationOrangeRating =
       currentReAccreditationRating?.rating?.overallRatingColor === 'Warning';
 
-    if (isPqaOrangeRating || isPqaRedRating) {
+    if (
+      (isPqaOrangeRating || isPqaRedRating) &&
+      !!lastAttendedPqaVisit?.insertedDate
+    ) {
       return (
         <Alert
           className="mt-4"
@@ -591,7 +594,10 @@ export const CoachPractitionerJourney = () => {
       );
     }
 
-    if (isReAccreditationRedRating || isReAccreditationOrangeRating) {
+    if (
+      (isReAccreditationRedRating || isReAccreditationOrangeRating) &&
+      !!lastAttendedReAccreditationVisit?.insertedDate
+    ) {
       return (
         <Alert
           className="mt-4"
