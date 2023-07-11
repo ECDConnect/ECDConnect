@@ -225,10 +225,13 @@ export const upsertChildren = createAsyncThunk<
               IsActive: x.isActive === false ? false : true,
             };
 
-            return await new ChildService(userAuth?.auth_token).updateChild(
-              x.id ?? '',
-              input
-            );
+            if (x?.isOnline === false) {
+              return await new ChildService(userAuth?.auth_token).updateChild(
+                x.id ?? '',
+                input
+              );
+            }
+            return true;
           });
       }
       return Promise.all(promises);

@@ -351,7 +351,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           )}
       </div>
       <div>
-        <div className={styles.statusChipsWrapper(true)}>
+        <div className={styles.statusChipsWrapper(false)}>
           <StatusChip
             className={'mr-2 '}
             padding={'px-3 py-3'}
@@ -384,6 +384,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 isPrimaryClass={isPrimaryList}
                 classroomGroup={selectedGroup}
                 attendanceDate={attendanceDate}
+                isMultipleClasses={selectedClassroomGroups.length > 1}
                 onAttendanceUpdated={(state) => {
                   validateAttendanceList(
                     editAttendanceRegisterVisible

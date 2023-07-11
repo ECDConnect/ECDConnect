@@ -87,6 +87,10 @@ namespace ECDLink.Core.Services
                                         .Where(x => x.DateToBeRemoved != null)
                                         .ToList();
 
+            var serviceSchedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: adminId);
+            var schedLine = serviceSchedulerRepo.GetAll().Where(x => string.Equals(x.Name, "ExpireInvitationsJob")).FirstOrDefault();
+            schedLine.StartTime = DateTime.Now;
+
             if (pracsToExpire.Count > 0)
             {
                 foreach (var prac in pracsToExpire)
@@ -108,6 +112,12 @@ namespace ECDLink.Core.Services
                     practiRepo.Update(prac);
                 }
             }
+            
+            schedLine.UpdatedDate = DateTime.Now;
+            schedLine.UpdatedBy = adminId;
+            schedLine.Results = pracsToExpire.Count().ToString();
+            schedLine.EndTime = DateTime.Now;
+            serviceSchedulerRepo.Update(schedLine);
         }
 
         public bool AddReassignmentForPractitioner(string uId,

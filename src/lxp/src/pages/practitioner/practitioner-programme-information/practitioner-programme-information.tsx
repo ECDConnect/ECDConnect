@@ -305,11 +305,10 @@ export const PractitionerProgrammeInformation: React.FC = () => {
     const copy = Object.assign({}, classroomDto);
     if (copy) {
       copy.name = updatedProgrammeName as string;
+
       appDispatch(classroomsActions.updateClassroom(copy));
-      isOnline &&
-        (await appDispatch(
-          classroomsThunkActions.upsertClassroom({})
-        ).unwrap());
+
+      await appDispatch(classroomsThunkActions.upsertClassroom({}));
     }
   };
 

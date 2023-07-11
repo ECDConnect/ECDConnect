@@ -933,7 +933,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severely_stunted);
+                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
@@ -1917,7 +1917,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 vData =  (
                     from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.Attended == true).OrderBy(x => x.PlannedVisitDate)
                     join visitData in _visitDataRepo.GetAll().OrderByDescending(y => y.InsertedDate) on visit.Id equals visitData.VisitId
-                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() && z.Comment == Constants.GGSettings.refer_to_clinic_urgently) on visitData.Id equals visitDataStatus.VisitDataId
+                    join visitDataStatus in _visitDataStatusRepo.GetAll().Where(z => z.Color == MetricsIconEnum.Error.ToString() && z.Comment == Constants.GGSettings.refer_to_clinic_urgently && z.IsCompleted == false) on visitData.Id equals visitDataStatus.VisitDataId
                     select visitDataStatus
                 ).FirstOrDefault();
 

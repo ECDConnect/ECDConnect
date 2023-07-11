@@ -3,7 +3,7 @@ import { useHistory } from 'react-router';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useStoreSetup } from '@hooks/useStoreSetup';
 import { useAppDispatch, useAppSelector } from '@store';
-import { settingActions } from '@store/settings';
+import { settingActions, settingSelectors } from '@store/settings';
 import { syncActions, syncThunkActions } from '@store/sync';
 import { ThunkActionStatuses } from '@store/types';
 import OfflineSyncError from './offline-sync-error';
@@ -13,6 +13,8 @@ import OfflineSyncSuccess from './offline-sync-success';
 import ROUTES from '@routes/routes';
 import { useSelector } from 'react-redux';
 import { practitionerSelectors } from '@/store/practitioner';
+import { authSelectors } from '@/store/auth';
+import { SettingsService } from '@/services/SettingsService';
 
 export type OfflineSyncModalProps = {
   onSubmit: () => void;
@@ -33,21 +35,39 @@ const OfflineSyncModal: React.FC<OfflineSyncModalProps> = ({
 }) => {
   const { isOnline } = useOnlineStatus();
   const dispatch = useAppDispatch();
+  const userAuth = useSelector(authSelectors.getAuthUser);
   const [unableToSync, setUnableToSync] = useState(false);
   const { resetAppStore, initStoreSetup } = useStoreSetup();
   const history = useHistory();
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const lastDataSyncDate = useSelector(
+    settingSelectors.getLasUnformattedDataSync
+  );
 
   const { status, error, currentAction, currentStep, stepTotal } =
     useAppSelector((state) => state.sync);
 
-  const handleSync = () => {
+  const handleSync = async () => {
     if (practitioner?.isPrincipal === true) {
-      dispatch(syncThunkActions.syncOfflineData({}));
+      await dispatch(syncThunkActions.syncOfflineData({}));
+      dispatch(settingActions.setLastDataSync());
     } else {
       dispatch(syncThunkActions.syncOfflineDataForPractitioner({}));
     }
     dispatch(settingActions.setLastDataSync());
+    asyncCheck();
+  };
+
+  const asyncCheck = async () => {
+    if (userAuth?.auth_token) {
+      const asyncCheckresponse = await new SettingsService(
+        userAuth?.auth_token!
+      ).queryChangesToSync(lastDataSyncDate);
+
+      if (asyncCheckresponse === false) {
+        window.location.reload();
+      }
+    }
   };
 
   const handleOnErrorSubmit = () => {

@@ -9,6 +9,7 @@ export interface EditPlaygroupModel {
   meetingDays: number[];
   isFullDay?: boolean;
   userId?: string;
+  id?: string;
 }
 
 export interface EditGroupedPlaygroupModel {

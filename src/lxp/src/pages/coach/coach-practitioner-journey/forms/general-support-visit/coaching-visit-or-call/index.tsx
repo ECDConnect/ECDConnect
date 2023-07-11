@@ -12,6 +12,7 @@ import { replaceBraces } from '@ecdlink/core';
 import { useSelector } from 'react-redux';
 import {
   getCurrentPQaRatingByUserId,
+  getCurrentReAccreditationRatingByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
   getVisitDataForVisitIdSelectorByUserId,
@@ -23,15 +24,14 @@ import {
 } from '../../../coach-practitioner-journey.types';
 import { Maybe } from 'graphql/jsutils/Maybe';
 import { currentActivityKey, visitIdKey } from '../..';
-import {
-  followUpDeadline,
-  getRatingData,
-} from '../../../timeline/pqa-site-visits-step';
 import { addDays } from 'date-fns';
+import { followUpDeadline, getRatingData } from '../../../timeline/utils';
 
 export const visitOrCallQuestion =
   'Did you visit the practitioner’s site, or did you have a support phone call?';
 export const callAnswer = 'Call';
+export const reAccreditationFollowUpQuestion =
+  'Is {client} ready for a follow-up reaccreditation visit?';
 
 export const CoachingAndVisitOrCallStep = ({
   isView,
@@ -66,10 +66,6 @@ export const CoachingAndVisitOrCallStep = ({
       question: 'What next steps did you agree on?',
       answer: '',
     },
-    {
-      question: 'Is {client} ready for a follow-up PQA observation visit?',
-      answer: '',
-    },
   ]);
 
   const visitTypeOptions = [
@@ -90,41 +86,74 @@ export const CoachingAndVisitOrCallStep = ({
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  const followUpQuestionIndex = 5;
-  const isFollowUp = activityName === visitTypes.pqa.followUp.name;
+  const followUpQuestionIndex = questions.length - 1;
+  const isPqaFollowUp = activityName === visitTypes.pqa.followUp.name;
+  const isReAccreditationFollowUp =
+    activityName === visitTypes.reaccreditation.followUp.name;
 
   const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const visitSection = 'Coaching visit or call';
 
   const { practitionerId } = useParams<PractitionerJourneyParams>();
-  const lastAttendedVisit = useSelector(
-    getLastCoachAttendedVisitByUserId(practitionerId)
+  const lastAttendedPqaVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(
+      practitionerId,
+      'pQASiteVisits',
+      'pqa_visit_follow_up'
+    )
+  );
+  const lastAttendedReAccreditationVisit = useSelector(
+    getLastCoachAttendedVisitByUserId(
+      practitionerId,
+      'reAccreditationVisits',
+      're_accreditation_follow_up'
+    )
   );
   const currentPqaRating = useSelector(
     getCurrentPQaRatingByUserId(practitionerId)
+  );
+  const currentReAccreditationRating = useSelector(
+    getCurrentReAccreditationRatingByUserId(practitionerId)
   );
   const timeline = useSelector(
     getPractitionerTimelineByIdSelector(practitionerId)
   );
   const pqaRating3 = timeline?.pQARating3;
+  const reAccreditationRating3 = timeline?.reAccreditationRating3;
 
   // INFO: The user can start the follow-up after 14 days, but if it's the last visit (third one), this number changes to 60 days
-  const currentFollowUpDeadline = pqaRating3?.overallRating
+  const currentPqaFollowUpDeadline = pqaRating3?.overallRating
     ? followUpDeadline.lastVisit
     : followUpDeadline.default;
+  const currentReAccreditationFollowUpDeadline =
+    reAccreditationRating3?.overallRating
+      ? followUpDeadline.lastVisit
+      : followUpDeadline.default;
+
   const isPQAFollowUpDeadline =
     addDays(
-      new Date(lastAttendedVisit?.insertedDate),
-      currentFollowUpDeadline
+      new Date(lastAttendedPqaVisit?.insertedDate),
+      currentPqaFollowUpDeadline
     ) <= new Date();
-  const isToShowFollowUpQuestion =
+  const isReAccreditationFollowUpDeadline =
+    addDays(
+      new Date(lastAttendedPqaVisit?.insertedDate),
+      currentReAccreditationFollowUpDeadline
+    ) <= new Date();
+  const isToShowPqaFollowUpQuestion =
     !pqaRating3?.overallRating &&
     currentPqaRating.rating?.overallRatingColor !== 'Error';
-  console.log({ isPQAFollowUpDeadline });
+
+  const isToShowReAccreditationFollowUpQuestion = true;
+
   const visitId = window.sessionStorage.getItem(visitIdKey);
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, visitId || '')
+    getVisitDataForVisitIdSelectorByUserId(
+      practitionerId,
+      visitId || '',
+      'prePqaPreviousFormData'
+    )
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection
@@ -216,26 +245,165 @@ export const CoachingAndVisitOrCallStep = ({
         },
       ]);
 
-      const questionList = isToShowFollowUpQuestion
-        ? updatedQuestions
-        : updatedQuestions.slice(0, 5);
-      const isAllCompleted =
-        questionList.every((item) => !!item.answer) && isPQAFollowUpDeadline;
+      const questionList =
+        isToShowPqaFollowUpQuestion || isToShowReAccreditationFollowUpQuestion
+          ? updatedQuestions
+          : updatedQuestions.slice(0, 5);
 
-      if (isAllCompleted) {
+      const isAllCompleted = questionList.every((item) => !!item.answer);
+      const isEnabledButton =
+        isAllCompleted &&
+        ((questionList.length === 5 &&
+          !isPqaFollowUp &&
+          !isReAccreditationFollowUp) ||
+          (isPqaFollowUp && isPQAFollowUpDeadline) ||
+          (isReAccreditationFollowUp && isReAccreditationFollowUpDeadline));
+
+      if (isEnabledButton) {
         return setEnableButton?.(true);
       }
 
       setEnableButton?.(false);
     },
     [
+      isToShowReAccreditationFollowUpQuestion,
       isPQAFollowUpDeadline,
-      isToShowFollowUpQuestion,
+      isPqaFollowUp,
+      isReAccreditationFollowUp,
+      isReAccreditationFollowUpDeadline,
+      isToShowPqaFollowUpQuestion,
       questions,
       setEnableButton,
       setSectionQuestions,
     ]
   );
+
+  const InfoCard = () => {
+    const currentRating = isPqaFollowUp
+      ? currentPqaRating.rating?.overallRatingColor
+      : currentReAccreditationRating.rating?.overallRatingColor;
+    const lastAttendedFollowUpVisit = isPqaFollowUp
+      ? lastAttendedPqaVisit?.insertedDate
+      : lastAttendedReAccreditationVisit?.insertedDate;
+
+    return (
+      <>
+        <Divider dividerType="dashed" className="my-3" />
+        <Typography
+          type="h4"
+          text={`${firstName} ${
+            smartStarter?.user?.surname ?? ''
+          } received an ${getRatingData(
+            currentRating
+          ).text.toLowerCase()} on ${new Date(
+            lastAttendedFollowUpVisit
+          ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`}
+        />
+        <Divider dividerType="dashed" className="my-3" />
+      </>
+    );
+  };
+
+  const PqaAlerts = () => {
+    if (isPqaFollowUp) {
+      return (
+        <>
+          {currentPqaRating.rating?.overallRatingColor === 'Error' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`Start another First PQA visit by ${addDays(
+                new Date(lastAttendedPqaVisit?.insertedDate),
+                currentPqaFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
+          {pqaRating3?.overallRatingColor === 'Warning' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`This is your third follow up visit with ${firstName}.`}
+              message={`You must conduct a full PQA visit by ${addDays(
+                new Date(lastAttendedPqaVisit?.insertedDate),
+                currentPqaFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
+        </>
+      );
+    }
+
+    return <></>;
+  };
+
+  const ReAccreditationAlerts = () => {
+    if (isReAccreditationFollowUp) {
+      return (
+        <>
+          {currentReAccreditationRating.rating?.overallRatingColor ===
+            'Error' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`Start another reaccreditation visit by ${addDays(
+                new Date(lastAttendedReAccreditationVisit?.insertedDate),
+                currentReAccreditationFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
+          {reAccreditationRating3?.overallRatingColor === 'Warning' && (
+            <Alert
+              className="mt-4"
+              type="warning"
+              title={`This is your third follow up visit with ${firstName}.`}
+              message={`You must conduct a full reaccreditation visit by ${addDays(
+                new Date(lastAttendedReAccreditationVisit?.insertedDate),
+                currentReAccreditationFollowUpDeadline
+              ).toLocaleDateString('en-ZA', {
+                month: 'long',
+                day: 'numeric',
+              })}.`}
+            />
+          )}
+        </>
+      );
+    }
+
+    return <></>;
+  };
+
+  useEffect(() => {
+    if (isToShowPqaFollowUpQuestion) {
+      setAnswers((prevState) => [
+        ...prevState,
+        {
+          question: 'Is {client} ready for a follow-up PQA observation visit?',
+          answer: '',
+        },
+      ]);
+    }
+  }, [isToShowPqaFollowUpQuestion]);
+
+  useEffect(() => {
+    if (isToShowReAccreditationFollowUpQuestion) {
+      setAnswers((prevState) => [
+        ...prevState,
+        {
+          question: reAccreditationFollowUpQuestion,
+          answer: '',
+        },
+      ]);
+    }
+  }, [isToShowReAccreditationFollowUpQuestion]);
 
   useEffect(() => {
     if (isView) {
@@ -270,22 +438,7 @@ export const CoachingAndVisitOrCallStep = ({
           title="You are viewing this form and cannot edit responses."
         />
       )}
-      {isFollowUp && (
-        <>
-          <Divider dividerType="dashed" className="my-3" />
-          <Typography
-            type="h4"
-            text={`${firstName} ${
-              smartStarter?.user?.surname ?? ''
-            } received an ${getRatingData(
-              currentPqaRating.rating?.overallRatingColor
-            ).text.toLowerCase()} on ${new Date(
-              lastAttendedVisit?.insertedDate
-            ).toLocaleDateString('en-ZA', dateLongMonthOptions)}`}
-          />
-          <Divider dividerType="dashed" className="my-3" />
-        </>
-      )}
+      {(isPqaFollowUp || isReAccreditationFollowUp) && <InfoCard />}
       <Typography
         type="h4"
         text={replaceBraces(questions[0].question, firstName)}
@@ -327,9 +480,10 @@ export const CoachingAndVisitOrCallStep = ({
           />
         );
       })}
-      {isFollowUp && (
+      {(isPqaFollowUp || isReAccreditationFollowUp) && (
         <>
-          {isToShowFollowUpQuestion && (
+          {(isToShowPqaFollowUpQuestion ||
+            isToShowReAccreditationFollowUpQuestion) && (
             <>
               <Typography
                 type="h4"
@@ -355,33 +509,8 @@ export const CoachingAndVisitOrCallStep = ({
               />
             </>
           )}
-          {currentPqaRating.rating?.overallRatingColor === 'Error' && (
-            <Alert
-              className="mt-4"
-              type="warning"
-              title={`Start another First PQA visit by ${addDays(
-                new Date(lastAttendedVisit?.insertedDate),
-                currentFollowUpDeadline
-              ).toLocaleDateString('en-ZA', {
-                month: 'long',
-                day: 'numeric',
-              })}.`}
-            />
-          )}
-          {pqaRating3?.overallRatingColor === 'Warning' && (
-            <Alert
-              className="mt-4"
-              type="warning"
-              title={`This is your third follow up visit with ${firstName}.`}
-              message={`You must conduct a full PQA visit by ${addDays(
-                new Date(lastAttendedVisit?.insertedDate),
-                currentFollowUpDeadline
-              ).toLocaleDateString('en-ZA', {
-                month: 'long',
-                day: 'numeric',
-              })}.`}
-            />
-          )}
+          <PqaAlerts />
+          <ReAccreditationAlerts />
         </>
       )}
     </div>

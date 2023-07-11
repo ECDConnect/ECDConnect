@@ -261,6 +261,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isShowInterventionStep: ageDays >= 7,
           isShowMuacStep: !isChild6Months,
           isDietFormStep,
+          isChildAfter7Days: ageDays >= 7,
         });
       case activitiesTypes.pillar2:
         return pillar2Steps(

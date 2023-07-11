@@ -3,8 +3,11 @@ import { createSelector } from '@reduxjs/toolkit';
 import {
   CoachPractitionerTimeline,
   FormData,
-  PqaRatingData,
+  RatingData,
   PreviousFormData,
+  FollowUpType,
+  VisitType,
+  PQAStateKeys,
 } from './pqa.types';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
@@ -83,10 +86,11 @@ export const getPreviousCoachVisitByUserId = (
 
 export const getVisitDataForVisitIdSelectorByUserId = (
   userId: string,
-  visitId: string
+  visitId: string,
+  stateType: PQAStateKeys
 ) => {
   return createSelector(
-    (state: RootState) => state.pqa.prePqaPreviousFormData,
+    (state: RootState) => state.pqa[stateType],
     (items: PreviousFormData[] | undefined) => {
       return items?.find((item) => item.visitId === visitId)?.formData;
     }
@@ -103,27 +107,84 @@ export const getCurrentPQaRatingByUserId = (userId: string) =>
       return {
         rating: pqaRating3,
         visitNumber: 3,
-      } as PqaRatingData;
+      } as RatingData;
     }
 
     if (pqaRating2?.overallRating) {
       return {
         rating: pqaRating2,
         visitNumber: 2,
-      } as PqaRatingData;
+      } as RatingData;
     }
 
     return {
       rating: pqaRating1,
       visitNumber: 1,
-    } as PqaRatingData;
+    } as RatingData;
   });
 
-export const getLastCoachAttendedVisitByUserId = (userId: string) =>
+export const getCurrentReAccreditationRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
-    const attendedVisits = timeline?.pQASiteVisits?.filter(
+    const rating1 = timeline?.reAccreditationRating1;
+    const rating2 = timeline?.reAccreditationRating2;
+    const rating3 = timeline?.reAccreditationRating3;
+
+    if (rating3?.overallRating) {
+      return {
+        rating: rating3,
+        visitNumber: 3,
+      } as RatingData;
+    }
+
+    if (rating2?.overallRating) {
+      return {
+        rating: rating2,
+        visitNumber: 2,
+      } as RatingData;
+    }
+
+    return {
+      rating: rating1,
+      visitNumber: 1,
+    } as RatingData;
+  });
+
+export const getLastCoachAttendedVisitByUserId = (
+  userId: string,
+  visitType: VisitType,
+  followUpType: FollowUpType
+) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const attendedVisits = timeline?.[visitType]?.filter(
       (visit) =>
-        visit?.attended && !visit?.visitType?.name?.includes('follow_up')
+        visit?.attended && !visit?.visitType?.name?.includes(followUpType)
+    );
+
+    if (attendedVisits?.length === 0) {
+      return null;
+    }
+
+    return attendedVisits?.reduce((mostRecentVisit, visit) => {
+      if (
+        !mostRecentVisit ||
+        new Date(visit?.insertedDate) > new Date(mostRecentVisit.insertedDate)
+      ) {
+        return visit;
+      }
+
+      return mostRecentVisit;
+    }, null);
+  });
+
+export const getLastCoachAttendedFollowUpVisitByUserId = (
+  userId: string,
+  visitType: VisitType,
+  followUpType: FollowUpType
+) =>
+  createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {
+    const attendedVisits = timeline?.[visitType]?.filter(
+      (visit) =>
+        visit?.attended && visit?.visitType?.name?.includes(followUpType)
     );
 
     if (attendedVisits?.length === 0) {

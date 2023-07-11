@@ -466,6 +466,7 @@ export type CalendarEvent = {
   start: Scalars['DateTime'];
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
   userId?: Maybe<Scalars['String']>;
 };
 
@@ -485,6 +486,7 @@ export type CalendarEventFilterInput = {
   start?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
   userId?: InputMaybe<StringOperationFilterInput>;
 };
 
@@ -500,6 +502,7 @@ export type CalendarEventInput = {
   Participants?: InputMaybe<Array<InputMaybe<CalendarEventParticipantInput>>>;
   Start: Scalars['DateTime'];
   UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
   UserId?: InputMaybe<Scalars['String']>;
 };
 
@@ -522,6 +525,7 @@ export type CalendarEventParticipant = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
+  participantUser?: Maybe<ApplicationUser>;
   participantUserId?: Maybe<Scalars['String']>;
   updatedBy?: Maybe<Scalars['String']>;
   updatedDate: Scalars['DateTime'];
@@ -534,6 +538,7 @@ export type CalendarEventParticipantFilterInput = {
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
   or?: InputMaybe<Array<CalendarEventParticipantFilterInput>>;
+  participantUser?: InputMaybe<ApplicationUserFilterInput>;
   participantUserId?: InputMaybe<StringOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
   updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
@@ -543,6 +548,7 @@ export type CalendarEventParticipantFilterInput = {
 export type CalendarEventParticipantInput = {
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
+  ParticipantUser?: InputMaybe<ApplicationUserInput>;
   ParticipantUserId?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
   UserId?: InputMaybe<Scalars['String']>;
@@ -2500,13 +2506,6 @@ export type IncomeExpensePdfTableModel = {
   type?: Maybe<Scalars['String']>;
 };
 
-export type IncomeStatementPdfDocInput = {
-  createdUserId?: InputMaybe<Scalars['String']>;
-  fileName?: InputMaybe<Scalars['String']>;
-  reference?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
@@ -3663,7 +3662,7 @@ export type Mutation = {
   removePermissionsFromRole: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
-  saveIncomeStatementPDF: Scalars['Boolean'];
+  saveIncomeStatementPDF?: Maybe<Document>;
   scheduleConsolidationMeetingDate?: Maybe<Trainee>;
   sendCoachInviteToApplication: Scalars['Boolean'];
   sendInviteToApplication: Scalars['Boolean'];
@@ -5002,7 +5001,7 @@ export type MutationResetUserPasswordArgs = {
 };
 
 export type MutationSaveIncomeStatementPdfArgs = {
-  input?: InputMaybe<IncomeStatementPdfDocInput>;
+  input?: InputMaybe<PdfDocumentModelInput>;
 };
 
 export type MutationScheduleConsolidationMeetingDateArgs = {
@@ -6032,6 +6031,13 @@ export type PagedQueryInput = {
   pageNumber: Scalars['Int'];
   pageSize: Scalars['Int'];
   sortBy?: InputMaybe<SortByFieldInput>;
+};
+
+export type PdfDocumentModelInput = {
+  createdUserId?: InputMaybe<Scalars['String']>;
+  fileName?: InputMaybe<Scalars['String']>;
+  reference?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Permission = {
@@ -7188,6 +7194,7 @@ export type Query = {
   backReferralsForMother?: Maybe<Array<Maybe<VisitBackReferral>>>;
   caregiverClients?: Maybe<CaregiverClients>;
   caregiverGrants?: Maybe<Array<Maybe<UserGrant>>>;
+  changesToSync: Scalars['Boolean'];
   childAttendanceReport?: Maybe<ChildAttendanceReportModel>;
   childByUserId?: Maybe<Child>;
   childCreatedByDetail?: Maybe<ChildCreatedByDetail>;
@@ -7206,6 +7213,7 @@ export type Query = {
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
+  classroomAttendanceReportPDFFile?: Maybe<Document>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -7223,6 +7231,7 @@ export type Query = {
   contentTypes?: Maybe<Array<Maybe<ContentType>>>;
   displayMetrics?: Maybe<Array<Maybe<NotificationDisplay>>>;
   documentsForHCW?: Maybe<Array<Maybe<Document>>>;
+  entityChangesToSync?: Maybe<Array<Maybe<Scalars['String']>>>;
   franchisorByUserId?: Maybe<Franchisor>;
   franchisorSiteAddressById?: Maybe<SiteAddress>;
   generateChildProgressReport?: Maybe<Scalars['String']>;
@@ -7283,6 +7292,7 @@ export type Query = {
   statementsIncomeExpensesPDFData?: Maybe<
     Array<Maybe<IncomeExpensePdfTableModel>>
   >;
+  statementsIncomeExpensesPDFFile?: Maybe<Document>;
   tenantContext?: Maybe<TenantModel>;
   totalDaysAbsent: Scalars['Int'];
   traineeByUserId?: Maybe<Trainee>;
@@ -8557,6 +8567,10 @@ export type QueryCaregiverGrantsArgs = {
   careGiverId: Scalars['UUID'];
 };
 
+export type QueryChangesToSyncArgs = {
+  lastUpdated: Scalars['DateTime'];
+};
+
 export type QueryChildAttendanceReportArgs = {
   classgroupId: Scalars['UUID'];
   endDate: Scalars['DateTime'];
@@ -8624,6 +8638,13 @@ export type QueryClassroomAttendanceReportArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
 
+export type QueryClassroomAttendanceReportPdfFileArgs = {
+  classgroupId: Scalars['UUID'];
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
 export type QueryClassroomDetailsForPractitionerArgs = {
   userId?: InputMaybe<Scalars['String']>;
 };
@@ -8676,6 +8697,10 @@ export type QueryDisplayMetricsArgs = {
 
 export type QueryDocumentsForHcwArgs = {
   createdUserId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryEntityChangesToSyncArgs = {
+  lastUpdated: Scalars['DateTime'];
 };
 
 export type QueryFranchisorByUserIdArgs = {
@@ -8896,6 +8921,12 @@ export type QueryRoleForUserArgs = {
 };
 
 export type QueryStatementsIncomeExpensesPdfDataArgs = {
+  month: Scalars['Int'];
+  userId?: InputMaybe<Scalars['String']>;
+  year: Scalars['Int'];
+};
+
+export type QueryStatementsIncomeExpensesPdfFileArgs = {
   month: Scalars['Int'];
   userId?: InputMaybe<Scalars['String']>;
   year: Scalars['Int'];

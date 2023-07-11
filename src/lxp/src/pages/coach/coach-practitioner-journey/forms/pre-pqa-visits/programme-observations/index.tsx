@@ -43,7 +43,11 @@ export const ProgrammeObservations = ({
     )
   );
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+    getVisitDataForVisitIdSelectorByUserId(
+      practitionerId,
+      currentVisit?.id,
+      'prePqaPreviousFormData'
+    )
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection

@@ -62,7 +62,7 @@ export const WeightAndLengthFormStep = ({
   }, [weightAtBirth]);
 
   const isCheckedLength =
-    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 70;
+    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 95;
 
   const dialog = useDialog();
 

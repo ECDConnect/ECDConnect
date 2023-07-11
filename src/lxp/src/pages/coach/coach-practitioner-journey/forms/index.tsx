@@ -15,12 +15,13 @@ import {
   generalSupportVisit,
   getFirstPqaSteps,
   prePqaVisits,
-  reaccreditationSteps,
+  getReAccreditationSteps,
 } from './steps';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   CmsVisitDataInputModelInput,
   CmsVisitSectionInput,
+  FollowUpVisitModelInput,
   InputMaybe,
   SupportVisitModelInput,
 } from '@ecdlink/graphql';
@@ -49,6 +50,7 @@ import {
   step15ReAccreditationVisitSection,
 } from './reaccreditation';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { newGuid } from '@/utils/common/uuid.utils';
 
 interface SubmitProps {
   sections: InputMaybe<InputMaybe<CmsVisitSectionInput>[]>;
@@ -56,10 +58,13 @@ interface SubmitProps {
 }
 
 interface ExtraVisitProps extends SubmitProps {
-  type: 'support-visit' | 'follow-up-visit';
+  type:
+    | 'support-visit'
+    | 'pqa-follow-up-visit'
+    | 're-accreditation-follow-up-visit';
 }
 
-export interface PqaRating {
+export interface Rating {
   color: 'Success' | 'Warning' | 'Error';
   score: number;
 }
@@ -67,6 +72,8 @@ export interface PqaRating {
 interface FormProps {
   visitId?: string;
   onBack: () => void;
+  setPqaRating: (rating: Rating) => void;
+  setReAccreditationRating: (rating: Rating) => void;
 }
 
 export const currentActivityKey = 'selectedOption';
@@ -74,14 +81,22 @@ export const visitIdKey = 'visitId';
 export const isViewKey = 'isView';
 const sessionStorageKey = 'currentStepNumber';
 
-export const Form = ({ visitId, onBack }: FormProps) => {
+export const Form = ({
+  visitId,
+  onBack,
+  setReAccreditationRating: setReAccreditationRatingForm,
+  setPqaRating: setPqaRatingForm,
+}: FormProps) => {
   const [isTip, setIsTip] = useState(false);
   const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
   const [title, setTitle] = useState('');
-  const [pqaRating, setPqaRating] = useState<PqaRating | undefined>();
+  const [pqaRating, setPqaRating] = useState<Rating | undefined>();
+  const [reAccreditationRating, setReAccreditationRating] = useState<
+    Rating | undefined
+  >();
 
   const { isOnline } = useOnlineStatus();
 
@@ -113,6 +128,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const pqaRating2 = timeline?.pQARating2;
   const pqaRating3 = timeline?.pQARating3;
 
+  const reAccreditationRating1 = timeline?.reAccreditationRating1;
+  const reAccreditationRating2 = timeline?.reAccreditationRating2;
+  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+
   const pqaRatingColorList = [
     pqaRating1?.overallRatingColor,
     pqaRating2?.overallRatingColor,
@@ -120,29 +139,55 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     pqaRating?.color,
   ];
 
+  const reAccreditationRatingColorList = [
+    reAccreditationRating1?.overallRatingColor,
+    reAccreditationRating2?.overallRatingColor,
+    reAccreditationRating3?.overallRatingColor,
+    reAccreditationRating?.color,
+  ];
+
   const pqaRatingRedColorCount = pqaRatingColorList.filter(
     (item) => item === 'Error'
   ).length;
 
+  const reAccreditationRatingRedColorCount =
+    reAccreditationRatingColorList.filter((item) => item === 'Error').length;
+
   const isToRemoveSmartStarter =
     step16Question1Answer === true ||
     step15ReAccreditationQuestion1Answer === true ||
-    pqaRatingRedColorCount === 2;
+    pqaRatingRedColorCount === 2 ||
+    reAccreditationRatingRedColorCount === 2;
 
   const { isLoading } = useThunkFetchCall(
     'pqa',
     PqaActions.ADD_VISIT_FORM_DATA
   );
+  const { isLoading: isLoadingReAccreditationVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_RE_ACCREDITATION_VISIT_FORM_DATA
+  );
   const { isLoading: isLoadingSupportVisit } = useThunkFetchCall(
     'pqa',
     PqaActions.ADD_SUPPORT_VISIT_FORM_DATA
   );
+  const { isLoading: isLoadingPqaFollowUpVisit } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_FOLLOW_UP_VISIT_FORM_DATA
+  );
+  const { isLoading: isLoadingReAccreditationFollowUpVisit } =
+    useThunkFetchCall(
+      'pqa',
+      PqaActions.ADD_RE_ACCREDITATION_FOLLOW_UP_VISIT_FORM_DATA
+    );
 
   const { isLoading: isLoadingDeactivate, isRejected } = useThunkFetchCall(
     'practitioner',
     PractitionerActions.DEACTIVATE_PRACTITIONER
   );
 
+  const wasLoading = usePrevious(isLoading);
+  const wasLoadingReAccreditation = usePrevious(isLoadingReAccreditationVisit);
   const wasLoadingDeactivate = usePrevious(isLoadingDeactivate);
 
   const isStep11AnswerTrue =
@@ -302,20 +347,45 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   );
 
   const onSubmitFollowUpVisit = useCallback(
-    (payload: CmsVisitDataInputModelInput, visitType?: InputMaybe<string>) => {
-      appDispatch(
-        pqaActions.addVisitFormData(payload, {
-          userId: practitionerId,
-          formType: 'follow-up-visit',
-        })
-      );
-      appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
+    (
+      payload: CmsVisitDataInputModelInput,
+      type: 'pqa' | 're-accreditation'
+    ) => {
+      if (type === 'pqa') {
+        appDispatch(
+          pqaActions.addVisitFormData(payload, {
+            userId: practitionerId,
+            formType: 'follow-up-visit',
+          })
+        );
+        appDispatch(pqaThunkActions.addFollowUpVisitForPractitioner(payload));
 
-      window.sessionStorage.setItem(
-        currentActivityKey,
-        visitTypes.pqa.firstPQA.name
-      );
-      setCurrentActivity(visitTypes.pqa.firstPQA.name);
+        window.sessionStorage.setItem(
+          currentActivityKey,
+          visitTypes.pqa.firstPQA.name
+        );
+        setCurrentActivity(visitTypes.pqa.firstPQA.name);
+      }
+
+      if (type === 're-accreditation') {
+        appDispatch(
+          pqaActions.addVisitFormData(payload, {
+            userId: practitionerId,
+            formType: 'follow-up-visit',
+          })
+        );
+        appDispatch(
+          pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner(
+            payload
+          )
+        );
+
+        window.sessionStorage.setItem(
+          currentActivityKey,
+          visitTypes.reaccreditation.first.name
+        );
+        setCurrentActivity(visitTypes.reaccreditation.first.name);
+      }
     },
     [appDispatch, practitionerId]
   );
@@ -331,7 +401,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         (item) => item?.question === visitOrCallQuestion
       )?.answer;
 
-      const formattedPayload: SupportVisitModelInput = {
+      const supportPayload: SupportVisitModelInput = {
         practitionerId,
         plannedVisitDate: new Date(),
         isSupportCall: visitOrCallAnswer === callAnswer,
@@ -340,12 +410,24 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         supportData: payload,
       };
 
+      const followUpPayload: FollowUpVisitModelInput = {
+        practitionerId,
+        plannedVisitDate: new Date(),
+        // TODO: add schedule option
+        attended: true,
+        followUpData: payload,
+      };
+
       if (type === 'support-visit') {
-        return onSubmitSupportVisit(formattedPayload, visitOrCallAnswer);
+        return onSubmitSupportVisit(supportPayload, visitOrCallAnswer);
       }
 
-      if (type === 'follow-up-visit') {
-        return onSubmitFollowUpVisit(formattedPayload, visitOrCallAnswer);
+      if (type === 'pqa-follow-up-visit') {
+        return onSubmitFollowUpVisit(followUpPayload, 'pqa');
+      }
+
+      if (type === 're-accreditation-follow-up-visit') {
+        return onSubmitFollowUpVisit(followUpPayload, 're-accreditation');
       }
     },
     [onSubmitFollowUpVisit, onSubmitSupportVisit, practitionerId]
@@ -386,13 +468,19 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           formType: 'pqa',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      // Create a new ID if it doesn't already exist
+      appDispatch(
+        pqaThunkActions.addVisitFormData({
+          ...payload,
+          visitId: visitId?.includes('new') ? newGuid() : visitId,
+        })
+      );
 
       if (step19Question2Answer === 'true') {
         displayChildrenDialog('First PQA visit');
       }
     },
-    [appDispatch, displayChildrenDialog, practitionerId]
+    [appDispatch, displayChildrenDialog, practitionerId, visitId]
   );
 
   const onSubmitReAccreditation = useCallback(
@@ -403,7 +491,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
           formType: 're-accreditation',
         })
       );
-      appDispatch(pqaThunkActions.addVisitFormData(payload));
+      appDispatch(pqaThunkActions.addReAccreditationVisitData(payload));
     },
     [appDispatch, practitionerId]
   );
@@ -438,7 +526,15 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       return handleSubmitExtraVisit({
         payload,
         sections,
-        type: 'follow-up-visit',
+        type: 'pqa-follow-up-visit',
+      });
+    }
+
+    if (activityName === visitTypes.reaccreditation.followUp.name) {
+      return handleSubmitExtraVisit({
+        payload,
+        sections,
+        type: 're-accreditation-follow-up-visit',
       });
     }
 
@@ -497,10 +593,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const currentSteps = useMemo(() => {
     if (
       visitName === visitTypes.supportVisit ||
-      visitName.includes(visitTypes.pqa.followUp.name)
+      visitName.includes(visitTypes.pqa.followUp.name) ||
+      visitName.includes(visitTypes.reaccreditation.followUp.name)
     ) {
       if (activityName === visitTypes.supportVisit) {
         setTitle(visitTypes.supportVisit);
+      } else if (activityName === visitTypes.reaccreditation.followUp.name) {
+        setTitle(visitTypes.reaccreditation.followUp.description);
       } else {
         setTitle(visitTypes.pqa.followUp.description);
       }
@@ -524,12 +623,43 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
     if (visitName.includes(visitTypes.reaccreditation.includes)) {
       setTitle('Reaccreditation');
-      return reaccreditationSteps;
+      return getReAccreditationSteps({ isToRemoveSmartStarter });
     }
 
     setTitle(visitTypes.pqa.firstPQA.description);
     return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
+
+  const onSetPqaRating = (rating: Rating) => {
+    if (rating.score === pqaRating?.score) return;
+
+    setPqaRating(rating);
+    setPqaRatingForm(rating);
+  };
+
+  const onSetReAccreditationRating = (rating: Rating) => {
+    if (rating.score === reAccreditationRating?.score) return;
+
+    setReAccreditationRatingForm(rating);
+    setReAccreditationRating(rating);
+  };
+
+  useEffect(() => {
+    if (
+      !isToRemoveSmartStarter &&
+      ((wasLoading && !isLoading) ||
+        (wasLoadingReAccreditation && !isLoadingReAccreditationVisit))
+    ) {
+      onBack?.();
+    }
+  }, [
+    isToRemoveSmartStarter,
+    isLoading,
+    wasLoading,
+    onBack,
+    wasLoadingReAccreditation,
+    isLoadingReAccreditationVisit,
+  ]);
 
   useEffect(() => {
     if (wasLoadingDeactivate && !isLoadingDeactivate) {
@@ -572,6 +702,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         isTipPage={isTip}
         currentStep={step}
         pqaRating={pqaRating}
+        reAccreditationRating={reAccreditationRating}
         nextButtonText={
           step === 10 && isStep11AnswerTrue
             ? 'Continue to SmartSpace checklist'
@@ -583,8 +714,15 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
-        setPqaRating={setPqaRating}
-        isLoading={isLoading || isLoadingSupportVisit || isLoadingDeactivate}
+        setPqaRating={onSetPqaRating}
+        setReAccreditationRating={onSetReAccreditationRating}
+        isLoading={
+          isLoading ||
+          isLoadingSupportVisit ||
+          isLoadingDeactivate ||
+          isLoadingPqaFollowUpVisit ||
+          isLoadingReAccreditationFollowUpVisit
+        }
         secondaryButton={
           visitName === visitTypes.delicensing && step === 1
             ? { icon: 'XIcon', text: 'Cancel', onClick: onCancelDelicensing }

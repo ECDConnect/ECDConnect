@@ -15,7 +15,7 @@ import * as childRegisterUtils from '@utils/child/child-registration.utils';
 import { WorkflowStatusEnum } from '@ecdlink/graphql';
 import { useStaticData } from '@hooks/useStaticData';
 import { ChildRegistrationSteps } from '../../child-registration/child-registration.types';
-import { classroomsActions } from '@store/classroom';
+import { classroomsActions, classroomsThunkActions } from '@store/classroom';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
@@ -189,6 +189,9 @@ export const CaregiverLink: React.FC<CaregiverLinkProps> = ({
     dispatch(childrenActions.createChildUser(userInputModel));
     dispatch(childrenActions.createChild(childInputModel));
     dispatch(classroomsActions.createClassroomGroupLearner(learnerInputModel));
+    dispatch(
+      classroomsThunkActions.createLearner({ learner: learnerInputModel })
+    );
   };
 
   return (

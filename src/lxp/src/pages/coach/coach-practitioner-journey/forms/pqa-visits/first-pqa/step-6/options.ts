@@ -4,11 +4,11 @@ export const options: Options = {
   question1: [
     '0 - Adults rarely talked to children and did not create opportunities for conversation.  Adults mostly talked to children to give instructions and maintain order.',
     '1 - There was some adult-child conversation and some activities were used to encourage children to communicate.',
-    '2 - Adults talked frequently with children throughout the session for varied purposes, and created lots of opportunities.',
+    '2 - Adults talked frequently with children throughout the session for varied purposes, and created lots of opportunities for conversations.',
   ],
   question2: [
     "0 - Adults often ignored children's questions and comments and did not listen carefully to children.",
-    "1 - Adults responded to children's comments and questions only some of the time.  Adults did not always lsten carefully to children.",
+    "1 - Adults responded to children's comments and questions only some of the time.  Adults did not always listen carefully to children.",
     "2 - Adults responded respectfully to children's comments and questions, and listened carefully to children.",
   ],
   question3: [

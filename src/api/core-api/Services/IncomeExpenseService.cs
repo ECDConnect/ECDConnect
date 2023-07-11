@@ -133,16 +133,38 @@ namespace ECDLink.Core.Services
             }
             else
             {
-
-                DateTime lastMonthToSubmit = DateTime.Today.AddMonths(-1);
-                var unsubmittedMonth = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Month : DateTime.Today.Month) : DateTime.Today.Month;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
-                var unsubmittedMonthYear = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Year : DateTime.Today.Year) : DateTime.Today.Year;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
-
-                IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, unsubmittedMonthYear, unsubmittedMonth);
-
-                if (incomeExpenses.AllUnSubmitted != null)
+                if (month == 0 && !IsSubmitted(userId, year, DateTime.Today.Month))
                 {
-                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = unsubmittedMonth, Year = unsubmittedMonthYear, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
+                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, DateTime.Today.Month);
+                    if (incomeExpenses.AllUnSubmitted != null)
+                    {
+                        balanceSheets.Add(new StatementsBalanceSheet()
+                        {
+                            Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2),
+                            IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2),
+                            ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2),
+                            Month = DateTime.Today.Month,
+                            Year = year,
+                            UserId = userId,
+                            AutoSubmitted = false,
+                            SubmittedDate = null,
+                            Submitted = false
+                        });
+                    }
+                }
+                else
+                {
+
+                    DateTime lastMonthToSubmit = DateTime.Today.AddMonths(-1);
+                    var unsubmittedMonth = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Month : DateTime.Today.Month) : DateTime.Today.Month;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
+                    var unsubmittedMonthYear = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Year : DateTime.Today.Year) : DateTime.Today.Year;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
+
+                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, unsubmittedMonthYear, unsubmittedMonth);
+
+                    if (incomeExpenses.AllUnSubmitted != null && incomeExpenses.AllUnSubmitted.Income != null && incomeExpenses.AllUnSubmitted.Expenses != null)
+                    {
+                        balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = unsubmittedMonth, Year = unsubmittedMonthYear, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
+                    }
                 }
             }
             return balanceSheets;
