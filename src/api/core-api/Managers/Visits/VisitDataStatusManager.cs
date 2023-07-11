@@ -933,7 +933,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severely_stunted);
+                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
