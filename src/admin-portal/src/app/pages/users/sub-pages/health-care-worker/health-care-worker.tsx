@@ -84,7 +84,7 @@ export default function HealthCareWorkers() {
           pageNumber: 1,
           pageSize: 500,
           sortBy: [
-            { fieldName: 'FullName', descending: nameFilter },
+            // { fieldName: 'FullName', descending: true },
             { fieldName: "insertedDate", descending: true }
           ]
         },
@@ -145,13 +145,13 @@ export default function HealthCareWorkers() {
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
       setTableData(copyItems)
-      let userStatus = statusFilter === 'active' ? true : false;
-      setTableData(
-        copyItems.filter((user: { isActive: boolean; }) => user.isActive === userStatus).map(mapUserTableItem)
-      );
+      // let userStatus = statusFilter === 'active' ? true : false;
+      // setTableData(
+      //   copyItems.filter((user: { isActive: boolean; }) => user.isActive === userStatus).map(mapUserTableItem)
+      // );
 
     }
-  }, [data, statusFilter]);
+  }, [data]);
 
   const sendInvite = async (practitioner: HealthCareWorkerDto) => {
     dialog({
