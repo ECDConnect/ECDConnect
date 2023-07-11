@@ -70,6 +70,12 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? DateAccepted { get; set; }
         public DateTime? DateToBeRemoved { get; set; }
         public bool? IsLeaving { get; set; }
+
+        //[ForeignKey(nameof(ReasonForLeavingPractionerId))]
+        //public virtual ReasonForLeavingPractioner ReasonForLeaving { get; set; }
+
+        //public Guid? ReasonForLeavingPractionerId { get; set; }
+        //public string ReasonForLeavingDetail { get; set; }
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public bool? IsClubOwner { get; set; }

@@ -96,6 +96,7 @@ const ROUTES = {
     PRACTITIONER_JOURNEY: '/practitioner-journey/:practitionerId',
     PRACTITIONER_CLASSROOM: '/practitioner-classroom',
     PRACTITIONER_CHILD_LIST: '/practitioner-childlist',
+    PRACTIONER_REMOVE: '/practioner-remove',
     PROGRAMME_INFORMATION: '/programme-information',
     CLASSES_REASSIGNED: '/classes-reassigned',
     CHILD_PROFILE: '/child-profile',

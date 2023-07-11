@@ -154,10 +154,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-    [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
-    [Service] IReassignmentService reassignmentService,
-    string practitionerId, string principalId, bool accepted)
+            IGenericRepositoryFactory repoFactory,
+            [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
+            [Service] IReassignmentService reassignmentService,
+        string practitionerId, string principalId, bool accepted)//, Guid? reasonId, string reasonDetail)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -177,6 +177,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                     }
 
+                    // MATTODO -> Need to also store the reason for leaving here. How does this fit with the confirmation??? Need to double check the permutations below to cover all cases
+
                     status.AcceptedDate = null;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
                     if (practitioner.DateToBeRemoved != null)
@@ -188,18 +190,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
+                        //practitioner.ReasonForLeavingPractionerId = reasonId;
+                        //practitioner.ReasonForLeavingDetail = reasonDetail;
 
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
                     }
                     else
                     {
-                        //reset the classroomgroups away from this practitioner and back to teh principal
-                        if (principal.UserId != null && practitioner.UserId != null)
-                        {
-                            //Reassign all classes and programmes back to principal
-                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
-                        }
+                        //reset the classroomgroups away from this practitioner and back to the principal
+                        //I think this code is just already run above ^
+                        //if (principal.UserId != null && practitioner.UserId != null)
+                        //{
+                        //    //Reassign all classes and programmes back to principal
+                        //    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        //}
 
                         int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
 

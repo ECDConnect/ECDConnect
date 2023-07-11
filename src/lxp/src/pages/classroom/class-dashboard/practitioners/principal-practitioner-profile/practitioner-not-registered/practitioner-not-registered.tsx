@@ -107,7 +107,7 @@ export const PractitionerNotRegistered: React.FC<
           color={'primary'}
           textColor={'white'}
           className="mt-4 w-11/12"
-          onClick={removePractitioner}
+          onClick={removePractitioner} // MATTODO - Does this need the confirm section as well???
         />
       </div>
     </>
