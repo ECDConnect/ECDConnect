@@ -7,6 +7,7 @@ import {
   PreviousFormData,
   FollowUpType,
   VisitType,
+  PQAStateKeys,
 } from './pqa.types';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
@@ -85,10 +86,11 @@ export const getPreviousCoachVisitByUserId = (
 
 export const getVisitDataForVisitIdSelectorByUserId = (
   userId: string,
-  visitId: string
+  visitId: string,
+  stateType: PQAStateKeys
 ) => {
   return createSelector(
-    (state: RootState) => state.pqa.prePqaPreviousFormData,
+    (state: RootState) => state.pqa[stateType],
     (items: PreviousFormData[] | undefined) => {
       return items?.find((item) => item.visitId === visitId)?.formData;
     }
