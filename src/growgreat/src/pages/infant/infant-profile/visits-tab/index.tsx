@@ -131,13 +131,17 @@ export const VisitsTab: React.FC = () => {
 
   const getType = useCallback(
     (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
+
       if (item.attended) {
         return 'completed';
       }
 
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
-        isMissedVisit
+        isMissedVisit ||
+        (new Date(item.orderDate) <= currentDate && isAdditionalVisit)
       ) {
         return 'inProgress';
       }
