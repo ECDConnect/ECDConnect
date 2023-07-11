@@ -6,6 +6,7 @@ import {
   FollowUpVisitModelInput,
   PractitionerTimeline,
   SupportVisitModelInput,
+  UpdateVisitPlannedVisitDateModelInput,
   VisitData,
 } from '@ecdlink/graphql';
 
@@ -18,6 +19,7 @@ export const PqaActions = {
   ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
   ADD_RE_ACCREDITATION_FOLLOW_UP_VISIT_FORM_DATA:
     'addReAccreditationFollowUpVisitFormData',
+  UPDATE_PLANNEDVISITDATE: 'updatePlannedVisitDate',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -283,6 +285,34 @@ export const getPractitionerTimeline = createAsyncThunk<
         ).getPractitionerTimeline(userId);
       } else {
         return rejectWithValue('no access token, profile check required');
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const updateVisitPlannedVisitDate = createAsyncThunk<
+  any,
+  UpdateVisitPlannedVisitDateModelInput,
+  ThunkApiType<RootState>
+>(
+  PqaActions.UPDATE_PLANNEDVISITDATE,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa,
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).updateVisitPlannedVisitDate(input);
+
+          return response;
+        }
       }
     } catch (err) {
       return rejectWithValue(err);

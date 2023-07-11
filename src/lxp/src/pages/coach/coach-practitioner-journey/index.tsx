@@ -36,6 +36,7 @@ import {
   getPractitionerTimeline,
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
+import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import {
   getCurrentPQaRatingByUserId,
   getCurrentReAccreditationRatingByUserId,
@@ -61,7 +62,7 @@ import {
   useDialog,
   usePrevious,
 } from '@ecdlink/core';
-import { Visit } from '@ecdlink/graphql';
+import { UpdateVisitPlannedVisitDateModelInput, Visit } from '@ecdlink/graphql';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { ExclamationIcon } from '@heroicons/react/solid';
 import { addDays } from 'date-fns';
@@ -326,7 +327,12 @@ export const CoachPractitionerJourney = () => {
     calendarAddEvent({
       event,
       onUpdated: (isNew: boolean, event: CalendarEventModel) => {
-        //TODO Update visit.plannedVisitDate to event.start
+        const payload: UpdateVisitPlannedVisitDateModelInput = {
+          visitId: visit.id,
+          plannedVisitDate: event.start,
+        };
+        appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
+        appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
       },
       onCancel: () => {},
     });

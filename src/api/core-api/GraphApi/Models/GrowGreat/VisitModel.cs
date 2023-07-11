@@ -95,5 +95,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public CMSVisitDataInputModel ChecklistData { get; set; }
     }
 
+    public class UpdateVisitPlannedVisitDateModel
+    {
+        public Guid VisitId { get; set; }
+        public DateTime PlannedVisitDate { get; set; }
+    }
+
 }
 
