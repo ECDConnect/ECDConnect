@@ -15,8 +15,11 @@ import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import UserPanelCreate from '../../components/user-panel-create/user-panel-create';
 import { ChevronDownIcon, PlusIcon, SearchIcon } from '@heroicons/react/solid';
+import { Dropdown } from '@ecdlink/ui';
 
 export default function ApplicationAdmins() {
+  const [nameFilter, setNameFilter] = useState(true);
+
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
       search: '',
@@ -45,6 +48,11 @@ export default function ApplicationAdmins() {
     fetchPolicy: 'network-only',
   });
 
+  const clearFilters = () => {
+    setStatusFilter('');
+    setNameFilter(false);
+  };
+  
   const { hasPermission } = useUser();
 
   const [searchValue, setSearchValue] = useState('');
@@ -77,7 +85,7 @@ export default function ApplicationAdmins() {
             sortBy: [
               {
                 fieldName: 'FullName',
-                descending: true,
+                descending: nameFilter,
               },
               { fieldName: "insertedDate", descending: true }
 
@@ -103,7 +111,7 @@ export default function ApplicationAdmins() {
             sortBy: [
               {
                 fieldName: 'FullName',
-                descending: true,
+                descending: nameFilter,
               },
               { fieldName: "insertedDate", descending: true }
             ],
@@ -111,7 +119,7 @@ export default function ApplicationAdmins() {
         },
       });
     }
-  }, [searchValue]);
+  }, [searchValue, nameFilter]);
 
   useEffect(() => {
     if (data && data.users) {
@@ -196,20 +204,26 @@ export default function ApplicationAdmins() {
                 </div>
                 {showFilter && (
                   <div className="mt-4 flex flex-row items-center justify-between sm:mt-6">
-                    {/* <div>
+                  
+                  <div className=' w-6/12'>
                       <Dropdown
                         fillType="filled"
                         textColor="white"
                         fillColor="secondary"
-                        placeholder="Filter roles"
+                        placeholder="Filter By Name"
                         labelColor="white"
-                        selectedValue={selectedRoleFilter}
-                        list={getRoleOptions(data?.users) || []}
+                        selectedValue={nameFilter}
+                        list={[
+                          { label: 'Ascending', value: false },
+                          { label: 'Descending', value: true },
+                        ]}
                         onChange={(item) => {
-                          setSelectedRoleFilter(item);
+
+                          setNameFilter(item)
                         }}
+                        className="p-2"
                       />
-                    </div> */}
+                    </div>
 
                     <div>
                       <div className="relative inline-block text-left">
@@ -287,7 +301,7 @@ export default function ApplicationAdmins() {
 
                     <div className="justify-self col-end-3 ">
                       <button
-                        onClick={() => setStatusFilter('active')}
+                        onClick={clearFilters}
                         type="button"
                         className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white  "
                       >
