@@ -631,11 +631,15 @@ export const Form = ({
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   const onSetPqaRating = (rating: Rating) => {
+    if (rating.score === pqaRating?.score) return;
+
     setPqaRating(rating);
     setPqaRatingForm(rating);
   };
 
   const onSetReAccreditationRating = (rating: Rating) => {
+    if (rating.score === reAccreditationRating?.score) return;
+
     setReAccreditationRatingForm(rating);
     setReAccreditationRating(rating);
   };
@@ -705,6 +709,7 @@ export const Form = ({
             : 'Next'
         }
         setIsTip={setIsTip}
+        // @ts-ignore
         setSectionQuestions={setSectionQuestions}
         onPreviousStep={handleOnBack}
         onNextStep={handleOnNext}
