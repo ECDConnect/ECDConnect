@@ -1,6 +1,6 @@
 import { Divider, Radio, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
 
@@ -82,7 +82,7 @@ export const Step2 = ({
       />
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
-        <>
+        <Fragment key={question.question}>
           <Typography type="h4" text={`1.${index + 1} ${question.question}`} />
           <fieldset className="flex flex-col gap-2">
             {options[`question${String(index + 1)}`]?.map((item) => (
@@ -96,7 +96,7 @@ export const Step2 = ({
               />
             ))}
           </fieldset>
-        </>
+        </Fragment>
       ))}
       {questions.some((item) => item.answer !== '') && (
         <Score questions={questions} total={step2TotalScore} />
