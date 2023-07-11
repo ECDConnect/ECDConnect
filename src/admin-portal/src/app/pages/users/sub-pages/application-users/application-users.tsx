@@ -20,18 +20,18 @@ import CustomDateRangePicker from '../../../../components/date-picker';
 export default function ApplicationUsers() {
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [showFilter, setShowFilter] = useState(false);
+  const [showFilter, setShowFilter] = useState(true);
+  const [nameFilter, setNameFilter] = useState(false);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
 
   const [getAllUsers, { data, refetch }] = useLazyQuery(UserList, {
     variables: {
       search: '',
       filterBy: [],
-      sortBy: [{ fieldName: 'FullName', descending: true }],
       pagingInput: {
         pageNumber: 1,
         pageSize: 10,
-        sortBy: { fieldName: "insertedDate", descending: true }
+        sortBy: [{ fieldName: "insertedDate", descending: true }],
       },
     },
     fetchPolicy: 'network-only',
@@ -68,16 +68,17 @@ export default function ApplicationUsers() {
       variables: {
         search: searchValue,
         filterBy: [],
-        sortBy: [{ fieldName: 'FullName', descending: true }],
         pagingInput: {
           pageNumber: 1,
           pageSize: 100,
-          sortBy: { fieldName: "insertedDate", descending: true }
-
+          sortBy: [
+            { fieldName: 'FullName', descending: nameFilter },
+            { fieldName: "insertedDate", descending: true }
+          ]
         },
       },
     });
-  }, [searchValue]);
+  }, [searchValue, nameFilter]);
 
   const [tableData, setTableData] = useState<any[]>([]);
 
@@ -101,19 +102,22 @@ export default function ApplicationUsers() {
     if (!data?.users) return;
 
     let allUsers: UserDto[] = [...data.users];
-    console.log(selectedRoleFilter);
+    let userStatus = statusFilter === 'active' ? true : false;
+
+    if (userStatus) {
+      setTableData(
+        allUsers.filter((user) => user.isActive === userStatus).map(mapUserTableItem)
+      );
+    }
 
     if (selectedRoleFilter) {
       allUsers = allUsers.filter((user) =>
         user.roles.some((role) => role.name === selectedRoleFilter)
       );
     }
-
-    setTableData(
-      allUsers.filter((v) => v.isActive === true).map(mapUserTableItem)
-    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [selectedRoleFilter]);
+  }, [selectedRoleFilter, statusFilter]);
+
 
   const mapUserTableItem = (user: UserDto) => {
     return {
@@ -127,14 +131,20 @@ export default function ApplicationUsers() {
     setSearchValue(e.target.value || '');
   }, 150);
 
+  const clearFilters = () => {
+    setStatusFilter('');
+    setNameFilter(false);
+    setSelectedRoleFilter('');
+  };
+
   if (tableData) {
     return (
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
-            <div className="text-body w-8/12 sm:flex  sm:justify-around">
-              <div className="text-body w-8/12 flex-col sm:flex sm:justify-around">
-                <div className="relative w-full">
+            <div className="text-body w-full sm:flex  sm:justify-around">
+              <div className="text-body w-full flex-col sm:flex sm:justify-around">
+                <div className="relative w-auto">
                   <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
                     {searchValue === '' && (
                       <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
@@ -147,8 +157,8 @@ export default function ApplicationUsers() {
                   />
                 </div>
                 {showFilter && (
-                  <div className="mt-4 flex items-center sm:mt-6 ">
-                    <span className="flex w-5/12 flex-row text-lg font-medium leading-6 text-gray-900">
+                  <div className="mb-4 flex w-full flex-row items-center ">
+                    <span className="flex w-4/12 flex-row text-lg font-medium leading-6 text-gray-900">
                       <Dropdown
                         className="mr-2 w-full"
                         fillType="filled"
@@ -161,13 +171,35 @@ export default function ApplicationUsers() {
                           setSelectedRoleFilter(item);
                         }}
                       />
+
                     </span>
-                    <div>
+
+                    <div className=' w-4/12'>
                       <Dropdown
                         fillType="filled"
                         textColor="white"
                         fillColor="secondary"
-                        placeholder="Filter by status"
+                        placeholder="Filter By Name"
+                        labelColor="white"
+                        selectedValue={nameFilter}
+                        list={[
+                          { label: 'Ascending', value: false },
+                          { label: 'Descending', value: true },
+                        ]}
+                        onChange={(item) => {
+
+                          setNameFilter(item)
+                        }}
+                        className="p-2"
+                      />
+                    </div>
+
+                    <div className=' w-4/12'>
+                      <Dropdown
+                        fillType="filled"
+                        textColor="white"
+                        fillColor="secondary"
+                        placeholder="Filter By Status"
                         labelColor="white"
                         selectedValue={statusFilter}
                         list={[
@@ -181,12 +213,23 @@ export default function ApplicationUsers() {
                       />
                     </div>
 
+                    <div className="flex w-3/12 justify-end">
+                      <div className="">
+                        <button
+                          onClick={clearFilters}
+                          type="button"
+                          className="text-secondary hover:bg-secondary outline-none inline-flex w-full items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium hover:text-white "
+                        >
+                          Clear All
+                        </button>
+                      </div>
+                    </div>
                     {/* <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} /> */}
                   </div>
                 )}
               </div>
 
-              <div className="mx-4 w-3/12">
+              <div className="mx-2 w-3/12">
                 <span className="w-full text-lg font-medium leading-6 text-gray-900">
                   <button
                     onClick={() => setShowFilter(!showFilter)}
@@ -233,10 +276,9 @@ export default function ApplicationUsers() {
                     { field: 'isActive', use: 'Status' },
                   ]}
                   rows={tableData}
-                  searchInput={searchValue}
                   urlRow={'/view-user/'}
                   component={'administrators'}
-                  options={{ should_export: true }}
+
                 />
               </div>
             </div>

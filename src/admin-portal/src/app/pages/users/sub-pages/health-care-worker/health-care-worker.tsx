@@ -45,7 +45,7 @@ export default function HealthCareWorkers() {
   const [tableData, setTableData] = useState<any[]>([]);
   const [rawData, setRawData] = useState<any[]>([]);
   const history = useHistory();
-
+  const [nameFilter, setNameFilter] = useState(false);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
   const panel = usePanel();
   const [statusFilter, setStatusFilter] = useState('active');
@@ -83,11 +83,14 @@ export default function HealthCareWorkers() {
         pagingInput: {
           pageNumber: 1,
           pageSize: 500,
-          sortBy: [{ fieldName: "insertedDate", descending: true }]
+          sortBy: [
+            { fieldName: 'FullName', descending: nameFilter },
+            { fieldName: "insertedDate", descending: true }
+          ]
         },
       },
     });
-  }, [provinceFilter, searchValue, clinicFilter]);
+  }, [provinceFilter, searchValue, clinicFilter, nameFilter]);
 
 
 
@@ -141,9 +144,14 @@ export default function HealthCareWorkers() {
       const copyItems = data.allHealthCareWorkers.map(
         (item: HealthCareWorkerDto) => mapUserTableItem(item)
       );
-      setTableData(copyItems);
+      setTableData(copyItems)
+      let userStatus = statusFilter === 'active' ? true : false;
+      setTableData(
+        copyItems.filter((user: { isActive: boolean; }) => user.isActive === userStatus).map(mapUserTableItem)
+      );
+
     }
-  }, [data]);
+  }, [data, statusFilter]);
 
   const sendInvite = async (practitioner: HealthCareWorkerDto) => {
     dialog({
@@ -248,9 +256,8 @@ export default function HealthCareWorkers() {
                   </button>
                 </span>
               </div>
-
-              <div className="ml-4 w-6/12"></div>
-              <div className="flex w-11/12 flex-row ">
+              
+              <div className="flex w-full flex-row ">
                 {hasPermission(PermissionEnum.create_user) && (
                   <button
                     onClick={displayPanel}
@@ -277,7 +284,7 @@ export default function HealthCareWorkers() {
             </div>
           </div>
           {showFilter && (
-            <div className="mb-4 flex w-full flex-row items-center">
+            <div className="mb-0 flex w-full flex-row flex-wrap items-center">
               <div className="relative inline-block pr-2 text-left">
                 <Dropdown
                   showSearch
@@ -317,77 +324,45 @@ export default function HealthCareWorkers() {
               </div>
 
               <div>
-                <div className="relative inline-block text-left">
-                  <div>
-                    <button
-                      type="button"
-                      onClick={() => setShowDropDownFilter(!showDropDownFilter)}
-                      className={`border-secondary inline-flex w-full justify-center gap-x-1.5 rounded-md border-2 px-3 py-2 text-sm font-normal ${!showDropDownFilter
-                          ? 'bg-secondary text-white'
-                          : 'text-secondary border-secondary border-2 bg-white'
-                        } hover:text-secondary hover:bg-white `}
-                      id="menu-button"
-                      aria-expanded={showDropDownFilter}
-                      aria-haspopup={showDropDownFilter}
-                    >
-                      {statusFilter === '' ? 'Status' : statusFilter}
-                      <svg
-                        className={`-mr-1 h-5 w-5 hover:text-white ${!showDropDownFilter
-                            ? 'hover:text-secondary text-white'
-                            : 'text-secondary hover:text-white'
-                          }`}
-                        viewBox="0 0 20 20"
-                        fill="currentColor"
-                        aria-hidden="true"
-                      >
-                        <path
-                          fillRule="evenodd"
-                          d="M5.23 7.21a.75.75 0 011.06.02L10 11.168l3.71-3.938a.75.75 0 111.08 1.04l-4.25 4.5a.75.75 0 01-1.08 0l-4.25-4.5a.75.75 0 01.02-1.06z"
-                          clipRule="evenodd"
-                        />
-                      </svg>
-                    </button>
-                  </div>
-                  {/*  */}
-                  {showDropDownFilter && (
-                    <div
-                      className="focus:outline-none absolute right-0 z-10 mt-2 w-48 origin-top-right rounded-md bg-white shadow-lg ring-1 ring-black ring-opacity-5"
-                      role="menu"
-                      aria-orientation="horizontal"
-                      aria-labelledby="menu-button"
-                    >
-                      <div className="py-1" role="none">
-                        {/* <!-- Active: "bg-gray-100 text-gray-900", Not Active: "text-gray-700" --> */}
-                        <a
-                          onClick={() => {
-                            setStatusFilter('active');
-                            setShowDropDownFilter(!showDropDownFilter);
-                          }}
-                          className=" focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                          role="menuitem"
-                          id="menu-item-0"
-                        >
-                          Active
-                        </a>
-                        <a
-                          onClick={() => {
-                            setStatusFilter('inactive');
-                            setShowDropDownFilter(!showDropDownFilter);
-                          }}
-                          className="focus:bg-secondary block cursor-auto px-4 py-2 text-sm text-gray-700 focus:text-white"
-                          role="menuitem"
-                          id="menu-item-1"
-                        >
-                          Inactive
-                        </a>
-                      </div>
-                    </div>
-                  )}
-                </div>
-              </div>
+                      <Dropdown
+                        fillType="filled"
+                        textColor="white"
+                        fillColor="secondary"
+                        placeholder="Filter By Name"
+                        labelColor="white"
+                        selectedValue={nameFilter}
+                        list={[
+                          { label: 'Ascending', value: false },
+                          { label: 'Descending', value: true },
+                        ]}
+                        onChange={(item) => {
 
-              <div className="flex w-full justify-end">
-                <div className="">
+                          setNameFilter(item)
+                        }}
+                        className="p-2"
+                      />
+                    </div>
+
+                    <div>
+                      <Dropdown
+                        fillType="filled"
+                        textColor="white"
+                        fillColor="secondary"
+                        placeholder="Filter By Status"
+                        labelColor="white"
+                        selectedValue={statusFilter}
+                        list={[
+                          { label: 'Active', value: 'active' },
+                          { label: 'Inactive', value: 'inactive' },
+                        ]}
+                        onChange={(item) => {
+                          setStatusFilter(item);
+                        }}
+                        className="p-2"
+                      />
+                    </div>
+
+                    <div className=" flex flex-end">
                   <button
                     onClick={clearFilters}
                     type="button"
@@ -396,7 +371,14 @@ export default function HealthCareWorkers() {
                     Clear All
                   </button>
                 </div>
+
+                    {/* <CustomDateRangePicker handleDateChange={handleDateChange} selectedRange={selectedRange} /> */}
+             
+              <div>
+  
               </div>
+
+            
             </div>
           )}
 

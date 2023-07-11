@@ -164,3 +164,38 @@ mutation SendBulkInviteToPortal($userIds: [String]) {
 }
 `;
 
+export const getUserCount = gql`
+query countUsers {
+  countUsers(
+    search: ""
+    pagingInput: {
+      pageNumber: ""
+      pageSize: ""
+    }
+  )
+}
+`;
+
+export const getHealthCareWorkerCount = gql`
+query countHealthCareWorker {
+  countHealthCareWorker(
+    search: ""
+    pagingInput: {
+      pageNumber: ""
+      pageSize: ""
+    }
+  )
+}
+`;
+
+export const getTeamLeadCount = gql`
+query countTeamLead {
+  countTeamLead(
+    search: ""
+    pagingInput: {
+      pageNumber: ""
+      pageSize: ""
+    }
+  )
+}
+`;
