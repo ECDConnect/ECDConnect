@@ -24,12 +24,17 @@ import {
 } from '@/schemas/practitioner/remove-practioner';
 import * as styles from './remove-practioner.styles';
 import { RemovePractionerReasonsProps as RemovePractionerProps } from './remove-practioner.types';
-import { practitionerSelectors } from '@/store/practitioner';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
 import { staticDataSelectors } from '@store/static-data';
 import { useStaticData } from '@hooks/useStaticData';
 import { useOnlineStatus } from '@hooks/useOnlineStatus';
 import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../practitioner-profile-info.types';
+import { PractitionerService } from '@/services/PractitionerService';
+import ROUTES from '@routes/routes';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   userId,
@@ -48,9 +53,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   );
 
   // Is there a better way to do this???
-  const otherReasonId = reasonsForLeaving?.find(
-    (x) => x.description === 'Other'
-  )?.id;
+  const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
 
   const appDispatch = useAppDispatch();
 
@@ -77,18 +80,24 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     defaultValue: initialRemovePractionerValues,
   });
 
-  //Don't think I need a back warning, just don't remove them...
-  // useEffect(() => {
-  //   if ((removeReasonId && removeReasonId.length > 0))) {
-  //     setHasChangesOnNote(true);
-  //   } else {
-  //     setHasChangesOnNote(false);
-  //   }
-  // }, [title, body]);
-
   const handleFormSubmit = async (formValues: RemovePractionerModel) => {
     if (isValid) {
-      //MATTODO - submit changes
+      await new PractitionerService(
+        user?.auth_token || ''
+      ).UpdatePrincipalInvitation(
+        practitioner?.userId!,
+        practitioner?.principalHierarchy!,
+        false,
+        formValues.removeReasonId,
+        formValues.reasonDetail
+      );
+      await new PractitionerService(
+        user?.auth_token!
+      ).UpdatePractitionerRegistered(practitioner?.userId!, false);
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
+      history.push(ROUTES.COACH.PRACTITIONERS);
     }
   };
 

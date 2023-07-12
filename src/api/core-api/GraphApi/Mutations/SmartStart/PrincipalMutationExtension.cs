@@ -13,6 +13,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -157,7 +158,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
-        string practitionerId, string principalId, bool accepted, Guid? reasonId, string reasonDetail)
+        string practitionerId, string principalId, bool accepted, string reasonForLeavingPractitionerId, string reasonDetails)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -165,6 +166,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
             //reassign all practitioners to the new principal
+
             if (principal != null && practitioner != null)
             {
                 status.LinkedDate = practitioner.DateLinked;
@@ -190,8 +192,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        //practitioner.ReasonForLeavingPractitionerId = reasonId;
-                        //practitioner.ReasonForLeavingDetail = reasonDetail;
+                        if (!string.IsNullOrEmpty(reasonForLeavingPractitionerId))
+                        {
+                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForLeavingPractitionerId);
+                        }
+                        practitioner.ReasonForLeavingDetails = reasonDetails;
 
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
@@ -211,6 +216,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
+                        if (!string.IsNullOrEmpty(reasonForLeavingPractitionerId))
+                        {
+                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForLeavingPractitionerId);
+                        }
+                        practitioner.ReasonForLeavingDetails = reasonDetails;
 
                         status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;

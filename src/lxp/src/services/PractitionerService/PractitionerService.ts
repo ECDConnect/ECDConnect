@@ -831,7 +831,9 @@ class PractitionerService {
   async UpdatePrincipalInvitation(
     practitionerId: string,
     principalId: string,
-    accepted: boolean = true
+    accepted: boolean = true,
+    reasonForLeavingPractitionerId: string | undefined = undefined,
+    reasonDetails: string | undefined = undefined
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
@@ -840,11 +842,15 @@ class PractitionerService {
         $practitionerId: String
         $principalId: String
         $accepted: Boolean!
+        $reasonForLeavingPractitionerId: String
+        $reasonDetails: String
       ) {
         updatePrincipalInvitation(
           practitionerId: $practitionerId
           principalId: $principalId
           accepted: $accepted
+          reasonForLeavingPractitionerId: $reasonForLeavingPractitionerId
+          reasonDetails: $reasonDetails
         ) {
           leavingDate
           acceptedDate
@@ -857,6 +863,8 @@ class PractitionerService {
         practitionerId,
         principalId,
         accepted,
+        reasonForLeavingPractitionerId,
+        reasonDetails,
       },
     });
 

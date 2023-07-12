@@ -5458,8 +5458,8 @@ export type MutationUpdatePrincipalInvitationArgs = {
   accepted: Scalars['Boolean'];
   practitionerId?: InputMaybe<Scalars['String']>;
   principalId?: InputMaybe<Scalars['String']>;
-  reasonDetail?: InputMaybe<Scalars['String']>;
-  reasonId?: InputMaybe<Scalars['UUID']>;
+  reasonDetails?: InputMaybe<Scalars['String']>;
+  reasonForLeavingPractitionerId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateProgrammeArgs = {

@@ -75,29 +75,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
   };
 
   const appDispatch = useAppDispatch();
-  const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    history.push(ROUTES.COACH.PRACTITIONERS);
-  };
 
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
