@@ -6,7 +6,7 @@ import { PasswordResetModel, SimpleUserModel } from '../models/forgot-password';
 export const initialRegisterValues: RegisterRequestModel = {
   username: '',
   password: '',
-  resetToken: '',
+  token: '',
   acceptedTerms: false,
 };
 export const initialLoginValues: LoginRequestModel = {
