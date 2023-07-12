@@ -14,7 +14,6 @@ export interface AuthUser {
 export interface RegisterRequestModel {
   username: string;
   password: string;
-  resetToken: string;
+  token: string;
   acceptedTerms?: boolean;
 }
-

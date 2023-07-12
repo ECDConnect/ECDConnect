@@ -22,7 +22,7 @@ interface RouteParams {
 }
 
 export default function Register(props: RouteComponentProps<RouteParams>) {
-  const { registerUser } = useAuth();
+  const { registerUser, logout } = useAuth();
   const { theme } = useTheme();
   const history = useHistory();
   const [displayError, setDisplayError] = useState(false);
@@ -72,7 +72,8 @@ export default function Register(props: RouteComponentProps<RouteParams>) {
 
       if (isAuthenticated) {
         setIsLoading(false);
-        history.push('/dashboard');
+        logout();
+        history.push('/');
       } else {
         setIsLoading(false);
         setDisplayError(true);

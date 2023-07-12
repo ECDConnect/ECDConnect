@@ -10842,6 +10842,16 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
+export type Setting_IncomeStatementSubmitEnd = {
+  __typename?: 'Setting_IncomeStatementSubmitEnd';
+  IncomeStatementSubmitEnd: Scalars['String'];
+};
+
+export type Setting_IncomeStatementSubmitStart = {
+  __typename?: 'Setting_IncomeStatementSubmitStart';
+  IncomeStatementSubmitStart: Scalars['String'];
+};
+
 export type Setting_IntegrationDelay = {
   __typename?: 'Setting_IntegrationDelay';
   IntegrationDelay: Scalars['String'];
@@ -10890,6 +10900,17 @@ export type Setting_SendGrid = {
   User: Scalars['String'];
 };
 
+export type Setting_SmartLinkApi = {
+  __typename?: 'Setting_SmartLinkApi';
+  BaseUrl: Scalars['String'];
+  Key: Scalars['String'];
+  MaskDataEmail: Scalars['String'];
+  MaskDataIdNumber: Scalars['String'];
+  MaskDataMode: Scalars['String'];
+  MaskDataNumber: Scalars['String'];
+  Mode: Scalars['String'];
+};
+
 export type Setting_Smtp = {
   __typename?: 'Setting_Smtp';
   FromEmail: Scalars['String'];
@@ -10928,6 +10949,8 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
+  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
+  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
@@ -10936,6 +10959,7 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
+  SmartLinkApi: Setting_SmartLinkApi;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;

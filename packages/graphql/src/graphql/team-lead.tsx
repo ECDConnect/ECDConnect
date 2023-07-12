@@ -49,6 +49,43 @@ export const GetAllTeamLead = gql`
   }
 `;
 
+export const GetAllTeamLeadAdminList = gql`
+  query (
+    $search: String
+    $clinicSearch: String
+    $provinceSearch: String
+    $pagingInput: PagedQueryInput
+    $order: [TeamLeadSortInput!]
+  ) {
+    allTeamLeads(
+      search: $search
+      clinicSearch: $clinicSearch
+      provinceSearch: $provinceSearch
+      pagingInput: $pagingInput
+      order: $order
+    ) {
+      id
+      insertedDate
+      user {
+        isActive
+        userName
+        email
+        idNumber
+        fullName
+      }
+
+      clinic {
+        name
+        siteAddress {
+          province {
+            description
+          }
+        }
+      }
+    }
+  }
+`;
+
 export const CreateTeamLead = gql`
   mutation addTeamLead($input: TeamLeadModelInput) {
     addTeamLead(input: $input) {
