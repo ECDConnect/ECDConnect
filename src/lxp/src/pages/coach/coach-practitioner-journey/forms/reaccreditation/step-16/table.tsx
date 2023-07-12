@@ -87,7 +87,14 @@ export const Rating = ({
       color: scoreColours,
       component: (
         <p className={`text-${scoreColours} font-semibold`}>
-          <span className="text-xl">{icon}</span> {result}/{total}
+          <span
+            className={`${
+              scoreColours === 'alertMain' ? 'text-xs' : 'text-xl'
+            }`}
+          >
+            {icon}
+          </span>{' '}
+          {result}/{total}
         </p>
       ),
     };
