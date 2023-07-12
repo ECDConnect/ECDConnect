@@ -38,7 +38,7 @@ export default function ApplicationAdmins() {
   const [showDropDownFilter, setShowDropDownFilter] = useState(false);
 
   const [selectedPage, setSelectedPage] = useState<number>(1);
-  const [selectedPageSize, setSelectedPageSize] = useState<number>(10);
+  const [selectedPageSize, setSelectedPageSize] = useState<number>(100);
 
   let userStatus = statusFilter === 'active' ? true : false;
 
@@ -118,12 +118,11 @@ export default function ApplicationAdmins() {
       searchValue,
       nameFilter,
       selectedPage,
-      selectedPageSize
+      userCountData?.countUsers ?? selectedPageSize
     );
     getAllUsers({
       variables: getUserQueryVariables,
     });
-
     // TODO: Use actual pagination when table component supports it.
     // const getUserCountQueryVariables = getCountVariables(searchValue);
     // getCountUsers({

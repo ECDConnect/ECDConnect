@@ -63,6 +63,7 @@ import * as yup from 'yup';
 
 import zxcvbn from 'zxcvbn-typescript';
 import { PasswordInput } from '../../components/password-input/password-input';
+import { startOfMonth, subDays } from 'date-fns';
 
 const chwSchema = yup.object().shape({
   idNumber: yup
@@ -105,10 +106,14 @@ const showNotification = (
 };
 
 export function ViewUser(props: any) {
-  const [showPassword, setShowPassword] = useState(false);
+  const currentDate = new Date();
+  const startDate = startOfMonth(currentDate);
+  const endDate = subDays(currentDate, 30);
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
-  const [selectedRange, setSelectedRange] = useState<Date[]>([]);
+  const [selectedRange, setSelectedRange] = useState<Date[]>([
+    startDate, endDate
+  ]);
 
   const handleDateChange = (range: Date[]) => {
     setSelectedRange(range);
@@ -156,16 +161,19 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     });
 
+
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
         startDate:
-          selectedRange[0]?.toISOString() ?? '2022-01-01T08:17:52.518Z',
-        endDate: selectedRange[1]?.toISOString() ?? new Date().toISOString(),
+          selectedRange[0]?.toISOString() ?? startDate.toISOString(),
+        endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },
     });
   }, [selectedRange]);
+
+
 
   useEffect(() => {
     props.location.state?.component === 'administrators' &&
@@ -196,10 +204,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate Administrator"
-          message={`${
-            chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-          } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -233,10 +240,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${
-            chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-          }`}
+            }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -330,7 +336,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'idNumber',
       userData?.userById?.idNumber ||
-        chwData?.GetHealthCareWorkerById?.user.idNumber,
+      chwData?.GetHealthCareWorkerById?.user.idNumber,
       {
         shouldValidate: true,
       }
@@ -339,7 +345,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'phoneNumber',
       userData?.userById?.phoneNumber ||
-        chwData?.GetHealthCareWorkerById?.user.phoneNumber,
+      chwData?.GetHealthCareWorkerById?.user.phoneNumber,
       {
         shouldValidate: true,
       }
@@ -456,7 +462,7 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => {}}
+                  onPressed={() => { }}
                   hasConsent
                   size="header"
                 />
@@ -523,7 +529,7 @@ export function ViewUser(props: any) {
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName}`}
               type="error"
-              // customIcon={<SaveIcon></SaveIcon>}
+            // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>
@@ -923,7 +929,7 @@ export function ViewUser(props: any) {
               User added to {data?.tenantContext.applicationName} App :{' '}
               {formatDate(
                 chwData?.GetHealthCareWorkerById?.insertedDate ||
-                  userData?.userById?.insertedDate
+                userData?.userById?.insertedDate
               )}
             </p>
           </div>

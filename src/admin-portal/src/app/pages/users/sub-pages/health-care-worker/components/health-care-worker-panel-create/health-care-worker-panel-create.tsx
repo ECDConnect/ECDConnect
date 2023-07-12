@@ -118,10 +118,7 @@ export default function HealthCareWorkerPanelCreate(
         input: { ...userInputModel },
       },
     }).then(async (response) => {
-      setNotification({
-        title: 'Successfully Created User!',
-        variant: NOTIFICATION.SUCCESS,
-      });
+    
 
       const userId = response.data.addUser.id;
       if (userId) {
@@ -147,13 +144,13 @@ export default function HealthCareWorkerPanelCreate(
     })
       .then(() => {
         setNotification({
-          title: 'Successfully Created Health Care Worker!',
+          title: 'Successfully Created CHW!',
           variant: NOTIFICATION.SUCCESS,
         });
       })
       .catch((err) => {
         setNotification({
-          title: 'Failed to Create Health Care Worker!',
+          title: 'Failed to Create CHW!',
           variant: NOTIFICATION.ERROR,
         });
       });
@@ -166,13 +163,13 @@ export default function HealthCareWorkerPanelCreate(
         },
       }).catch((err) => [
         setNotification({
-          title: 'Failed to send Health Care Worker Invite!',
+          title: 'Failed to send CHW Invite!',
           variant: NOTIFICATION.SUCCESS,
         }),
       ]);
 
       setNotification({
-        title: 'Successfully Sent Health Care Worker Invite!',
+        title: 'Successfully Sent CHW Invite!',
         variant: NOTIFICATION.SUCCESS,
       });
     }
@@ -207,7 +204,7 @@ export default function HealthCareWorkerPanelCreate(
       <>
         <div className="pb-2">
           <h1 className="text-uiMidDark text-xl font-medium leading-6">
-            Create Health Care Worker
+            Create CHW
           </h1>
         </div>
         <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
