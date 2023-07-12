@@ -516,7 +516,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
             public const string q_weight = "Weight";
             public const string q_length = "Length";
-            public const string q_muac = "What is {client}�s MUAC today?";
+            public const string q_muac = "What is {client} MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
             public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
