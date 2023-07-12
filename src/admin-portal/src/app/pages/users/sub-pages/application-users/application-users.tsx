@@ -76,7 +76,7 @@ export default function ApplicationUsers() {
 
     return users.reduce(
       (acc, curr) => {
-        const items = curr.roles.map((x) => ({ label: x.name === 'Health Care Worker' ? 'CHW': x.name, value: x.name }));
+        const items = curr.roles.map((x) => ({ label: x.name ==="Health Care Worker" ? 'CHW': x.name, value: x.name }));
 
         const distinctItems = items.filter(
           (item) => !acc.some((ac) => ac.value === item.value)
@@ -131,6 +131,12 @@ export default function ApplicationUsers() {
 
     let allUsers: UserDto[] = [...data.users];
     let userStatus = statusFilter === 'active' ? true : false;
+
+    if (selectedRoleFilter) {
+      allUsers = allUsers.filter((user) =>
+        user.roles.some((role) => role.name === selectedRoleFilter)
+      );
+    }
 
     if (userStatus) {
       setTableData(
