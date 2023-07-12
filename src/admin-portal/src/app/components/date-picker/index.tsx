@@ -1,11 +1,12 @@
 import React, { useState } from 'react';
-import { format } from 'date-fns';
 import DateRangePickerCalendar from './DateRangePickerCalendar'; // Custom calendar component
-import { ChevronDownIcon } from '@heroicons/react/solid';
+import { startOfMonth, endOfMonth, format, subDays } from 'date-fns';
 
 function CustomDateRangePicker(props: any) {
   const [showCalendar, setShowCalendar] = useState(false);
-
+  const currentDate = new Date();
+  const startDate = startOfMonth(currentDate);
+  const endDate = subDays(currentDate, 30);
   const toggleCalendar = () => {
     setShowCalendar((prevShowCalendar) => !prevShowCalendar);
   };
@@ -13,6 +14,7 @@ function CustomDateRangePicker(props: any) {
   const formatDate = (date: Date) => {
     return format(date, 'MM/dd/yyyy');
   };
+
 
   return (
     <div>
@@ -26,7 +28,10 @@ function CustomDateRangePicker(props: any) {
             {formatDate(props.selectedRange[1])}
           </>
         ) : (
-          'Filter by Date'
+          <>
+            {formatDate(endDate)} -{' '}  {formatDate(startDate)}
+          </>
+
         )}
       </button>
 

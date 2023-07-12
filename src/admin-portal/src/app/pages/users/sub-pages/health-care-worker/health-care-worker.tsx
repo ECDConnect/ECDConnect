@@ -199,7 +199,7 @@ export default function HealthCareWorkers() {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="Health Worker Invite"
+          title="CHW Invite"
           message={`You are about to send an invite to ${practitioner.user.firstName} ${practitioner.user.surname}`}
           onCancel={onCancel}
           onSubmit={() => {
@@ -211,7 +211,7 @@ export default function HealthCareWorkers() {
               },
             }).then(() => {
               setNotification({
-                title: 'Successfully Sent Health Worker Invite!',
+                title: 'Successfully Sent CHW Invite!',
                 variant: NOTIFICATION.SUCCESS,
               });
             });
