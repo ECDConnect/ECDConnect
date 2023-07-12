@@ -38,12 +38,6 @@ export default function ResetPassword() {
     defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
-  // ResetPasswordRequestModel
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   //check password strength
   const password = watch('password');
@@ -65,7 +59,7 @@ export default function ResetPassword() {
 
       if (isLinkSent) {
         setIsLoading(false);
-        history.push('/dashboard');
+        history.push('/login');
       } else {
         setIsLoading(false);
         // setDisplayError(true);
@@ -151,8 +145,7 @@ export default function ResetPassword() {
             </h2>
           </div>
           <p className="text-md mb-3 pt-2 text-center text-gray-700">
-            Fill in your email address and we will send you a link to reset your
-            password.
+            Fill in your new password.
           </p>
 
           <div className="mt-8">
@@ -165,7 +158,7 @@ export default function ResetPassword() {
                     sufficIconColor="black"
                     value={formValues.password}
                     register={register}
-                    strengthMeterVisible={false}
+                    strengthMeterVisible={true}
                     className="mb-9 "
                   />
                 </div>

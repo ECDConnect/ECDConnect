@@ -241,8 +241,8 @@ export default function UiTable(
                 key={item.id}
                 className={
                   `${item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : 'bg-primary'
+                    ? 'bg-tertiary' : item[column.displayProperty] === 'Practitioner' ? 'bg-secondary'
+                      : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
