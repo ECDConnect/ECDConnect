@@ -115,7 +115,7 @@ export const Step6ReAccreditation = ({
         className="my-4"
       />
       {questions.map((item, index) => (
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2" key={item.question}>
           <FormInput
             type="number"
             className="mt-2"
