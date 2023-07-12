@@ -16,7 +16,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.DOCUMENTS, GraphActionEnum.Create)]
         public async Task<DocumentModel> FileUpload([Service] IFileService _fileService, string file, string fileName, FileTypeEnum fileType)
         {
-            var document = await _fileService.UploadBase64StringFile(file, fileName, fileType);
+            var document = await _fileService.UploadBase64StringFileAsync(file, fileName, fileType);
             return document;
         }
     }

@@ -18,14 +18,12 @@ using ECDLink.DataAccessLayer.Repositories;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
-using ECDLink.AzureStorage.Blob;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using Microsoft.EntityFrameworkCore;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 using ECDLink.DataAccessLayer.Entities.Clubs;
 using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
@@ -403,13 +401,13 @@ public class SmartStartIntegrationService : IIntegrationService
         if (DateTime.Now.Date > submitPeriod.Start || DateTime.Now.Date < submitPeriod.End.AddDays(3))//only run task daily withing submit window
         {
             ////[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-            
             string statementsUrl = SSIntegrationSettings.SLIncomeStatementIncome + SSIntegrationSettings.CreateMultiple;
 
-            //TODO: change to run by entities that need sto have docs sent rather than waiting for docs to be picked up - what if autosubmit doesnt run
+            //TODO: change to run by entities that needs to have docs sent rather than waiting for docs to be picked up - what if autosubmit doesnt run
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
             var _mappedEntities = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+            List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
             List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();
             /**/
@@ -420,124 +418,129 @@ public class SmartStartIntegrationService : IIntegrationService
                 {
                     foreach (var statement in submittedStatements)
                     {
-                        var statementDoc = (statement.RelatedDocumentId != null ?
-                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null && string.Equals(d.Id, statement.RelatedDocumentId)).FirstOrDefault() :
-                            _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
-                        string remoteStatementId = "";
-                        //get associated audit lines
-                        List<IntegrationAudit> audits = await GetAudits("Document", statement.UserId, 30);
-                        string remoteDocId = "";
-                        audits = audits.Where(x => x.Submitted == null && x.RelatedId == statementDoc.Id.ToString()).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted
-                        if (statementDoc != null)
+                        if (statement.IncomeTotal > 0 || statement.ExpenseTotal > 0) //only usestatements that have some form of income or expense, 0 submitted statements are NOT to be sent at this time.
                         {
-                            remoteDocId = await PushNewDocument(statementDoc);
-                        }
 
-                        List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
-                        double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
-                        double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
-                        //calculate based on categories
-                        foreach (var statementLine in statementData)
-                        {
-                            foreach (var dataLine in statementLine.Data)
+                            var statementDoc = (statement.RelatedDocumentId != null ?
+                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && d.Reference != null && d.Id.ToString() == statement.RelatedDocumentId).FirstOrDefault() :
+                                _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId) && d.Reference != null).OrderByDescending(d => d.InsertedDate).FirstOrDefault());
+                            string remoteStatementId = "";
+                            //get associated audit lines
+
+                            List<IntegrationAudit> docaudits = null;
+
+
+                            string remoteDocId = "";
+                            if (statementDoc != null)
                             {
-                                //TODO: add transport and wages and fundraising
-                                switch (statementLine.TableName)//dataLine.Type
-                                {
-                                    case "Startup Support":
-                                        dStartupSupport += dataLine.Amount;
-                                        break;
-                                    case "Rent":
-                                        dRent += dataLine.Amount;
-                                        break;
-                                    case "Food":
-                                        dFood += dataLine.Amount;
-                                        break;
-                                    case "Subcontractor Wages":
-                                        dSalary += dataLine.Amount;
-                                        break;
-                                    case "Learning Materials":
-                                    case "Maintenance":
-                                        dOtherExpenses += dataLine.Amount;
-                                        break;
-                                    case "Utilities":
-                                        dUtilities += dataLine.Amount;
-                                        break;
-                                    case "Preschool Fee":
-                                        dFees += dataLine.Amount;
-                                        break;
-                                    case "Donation":
-                                        dDonations += dataLine.Amount;
-                                        break;
-                                    case "DBE Subsidy":
-                                        dDonations += dataLine.Amount;
-                                        break;
-                                    case "Other":
-                                        if (statementLine.Type == "Income")
-                                            dOtherIncome += dataLine.Amount;
-                                        else
-                                            dOtherExpenses += dataLine.Amount;
-                                        break;
-                                    default:
-                                        break;
-                                }
+                                docaudits = allAudits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statementDoc.Id.ToString())).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted                                               
+                                remoteDocId = await PushNewDocument(statementDoc);
                             }
-                        }
 
-                        StringBuilder jsonStatementString = new StringBuilder();
-                        jsonStatementString.AppendLine("[{");
-                        jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
-                        jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
-
-                        jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
-                        jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
-                        jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
-                        jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
-                        jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
-                        jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
-                        jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
-                        jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
-                        jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
-                        jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
-                        jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
-                        jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
-                        //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
-                        jsonStatementString.AppendLine("}]");
-
-                        try
-                        {
-                            //now send to API call <entity type>/Multiple
-                            var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
-                            if (!string.IsNullOrEmpty(responseString))
+                            List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, submitPeriod.Start.Year, submitPeriod.Start.Month);
+                            double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
+                            double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
+                            //calculate based on categories
+                            foreach (var statementLine in statementData)
                             {
-                                var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
-                                if (returnObj != null)
+                                foreach (var dataLine in statementLine.Data)
                                 {
-                                    remoteStatementId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
-                                    if (audits.Count > 0)
+                                    //TODO: add transport and wages and fundraising
+                                    switch (statementLine.TableName)//dataLine.Type
                                     {
-                                        await _logManager.UpdateAuditSubmitted(audits);
+                                        case "Startup Support":
+                                            dStartupSupport += dataLine.Amount;
+                                            break;
+                                        case "Rent":
+                                            dRent += dataLine.Amount;
+                                            break;
+                                        case "Food":
+                                            dFood += dataLine.Amount;
+                                            break;
+                                        case "Subcontractor Wages":
+                                            dSalary += dataLine.Amount;
+                                            break;
+                                        case "Learning Materials":
+                                        case "Maintenance":
+                                            dOtherExpenses += dataLine.Amount;
+                                            break;
+                                        case "Utilities":
+                                            dUtilities += dataLine.Amount;
+                                            break;
+                                        case "Preschool Fee":
+                                            dFees += dataLine.Amount;
+                                            break;
+                                        case "Donation":
+                                            dDonations += dataLine.Amount;
+                                            break;
+                                        case "DBE Subsidy":
+                                            dDonations += dataLine.Amount;
+                                            break;
+                                        case "Other":
+                                            if (statementLine.Type == "Income")
+                                                dOtherIncome += dataLine.Amount;
+                                            else
+                                                dOtherExpenses += dataLine.Amount;
+                                            break;
+                                        default:
+                                            break;
                                     }
-
-                                    //no need to insert entity mapping item for statements as long as document saved
-                                    isComplete = true;
-                                    //update entity to note its statements has been sent
-                                    prac.LastIncomeSubmittedDate = DateTime.Now;
-                                    _mapperRepo.Update(prac);
-
-                                }
-                                else //error empty response received
-                                {
-                                    await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
                                 }
                             }
+
+                            StringBuilder jsonStatementString = new StringBuilder();
+                            jsonStatementString.AppendLine("[{");
+                            jsonStatementString.AppendLine("\"Month\":\"" + submitPeriod.Start.ToString("MMMM") + "\",");
+                            jsonStatementString.AppendLine("\"Year\":\"" + submitPeriod.Start.Year + "\",");
+
+                            jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
+                            jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
+                            jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
+                            jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
+                            jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
+                            jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
+                            jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
+                            jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
+                            jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
+                            jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
+                            jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
+                            jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
+                            //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}"); //do not send in doc id otherwise SL wobbles, it must create its own document on SL side and not be linked                    
+                            jsonStatementString.AppendLine("}]");
+
+                            try
+                            {
+                                //now send to API call <entity type>/Multiple
+                                var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
+                                if (!string.IsNullOrEmpty(responseString))
+                                {
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
+                                    if (returnObj != null)
+                                    {
+                                        remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
+                                        if (docaudits.Count > 0)
+                                        {
+                                            await _logManager.UpdateAuditSubmitted(docaudits);
+                                        }
+
+                                        //no need to insert entity mapping item for statements as long as document saved
+                                        isComplete = true;
+                                        //update entity to note its statements has been sent
+                                        prac.LastIncomeSubmittedDate = DateTime.Now;
+                                        _mapperRepo.Update(prac);
+
+                                    }
+                                    else //error empty response received
+                                    {
+                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                    }
+                                }
+                            }
+                            catch (Exception e)
+                            {
+                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                            }
                         }
-                        catch (Exception e)
-                        {
-                            await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
-                        }
-                        //}
-                        //}
                     }
                 }
             }
@@ -650,9 +653,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                 }
                                 validAttendance = true;
                             }
-
                             //[{"NumberOfDaysPresent": 1,"NumberOfDaysAbsent": 4,"StartDateOfWeek": "2023-02-06T22:00:00Z","Monday": "Present","Tuesday": "Absent","Wednesday": "Absent","Thursday": "Absent","Friday": "Absent","Franchisee": {"Guid": "2e884385-319d-eb11-8346-00155d326100"},"Child": {"Guid": "e3d2f84d-8614-ec11-834c-00155d326100"}}]
-
 
                             jsonAttendanceString.AppendLine("{");
                             jsonAttendanceString.AppendLine("\"StartDateOfWeek\":\"" + trackingWeekDate.StartOfWeek(DayOfWeek.Monday).ToString("yyyy-MM-ddT00:00:00Z") + "\",");
@@ -678,10 +679,10 @@ public class SmartStartIntegrationService : IIntegrationService
                             var responseString = await _apiManager.GetAPIHandlerResponse(attendanceUrl, null, null, null, false, false, jsonAttendanceString.ToString());
                             if (!string.IsNullOrEmpty(responseString))
                             {
-                                var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                 if (returnObj != null)
                                 {
-                                    var remoteStatementId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
+                                    var remoteStatementId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                     isComplete = true;
                                     //mark mapped parent practitioner of last date attendance was sent
                                     parent.LastAttendanceSubmittedDate = DateTime.Now;
@@ -698,10 +699,6 @@ public class SmartStartIntegrationService : IIntegrationService
                     {
                         await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationAttendanceData > GetAPIHandlerResponse");
                     }
-
-
-
-
                 }
                 catch (Exception e)
                 {
@@ -753,28 +750,27 @@ public class SmartStartIntegrationService : IIntegrationService
             }
         }
 
-        if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull)
+        if (_apiMode == MappingMode.Push || _apiMode == MappingMode.PushPull) //Only allow data pushing when api mode has been set
         {
             List<SL_Ingestion_User_Update> ids = _dbContext.SL_Ingestion_Users_Update.ToList();
             if (ids.Count > 0)
             {
                 foreach (var item in ids)
                 {
-                    //Only allow data pushing when api mode has been set
-
-                    //await PushDeletes(franchiseeId);
+                    //Deletes
+                    await PushDeletes(item.Id.ToString(), 2);
                     //Inserts
                     await PushInserts(item.Id.ToString(), 2);
                     //Updates & Deactivates
-
                     await PushUpdates(item.Id.ToString(), 2);
                     returnOK = true;
-
                 }
             }
             else
             {
+                //Deletes
                 await PushDeletes();
+                //Inserts
                 await PushInserts();
                 //Updates & Deactivates
                 await PushUpdates();
@@ -868,7 +864,6 @@ public class SmartStartIntegrationService : IIntegrationService
                     //5. - get all data from API and discard whats complete and known to SS
                     //-------------------
                     //5.1) get all frannchisees and map them                
-                    //List<MappedFranchisee> remoteFranchisees = await _apiManager.GetFranchiseesByCoach(coach.RemoteId);
                     List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await _apiManager.GetFranchiseesById(franchiseeId) : await _apiManager.GetFranchiseesByCoach(coach.RemoteId));
                     //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
 
@@ -2018,7 +2013,7 @@ public class SmartStartIntegrationService : IIntegrationService
             {
                 //check if it exists already before importing
 
-                _mappedEntities = await GetMappedEntities(SSIntegrationSettings.SSTrainee);
+                //_mappedEntities = await GetMappedEntities();//SSIntegrationSettings.SSTrainee
 
                 if (!_mappedEntities.Where(x => string.Equals(x.RemoteId, entity.Guid) && string.Equals(x.RemoteEntity, SSIntegrationSettings.SLTrainee)).Any())
                 {
@@ -2125,233 +2120,243 @@ public class SmartStartIntegrationService : IIntegrationService
                             //if phone number cant be used, ignore it
                         }
 
-                        ApplicationUser newUser = null;
-                        if (existingPractitioner == null)
+                        ApplicationUser newUser = await _userManager.FindByNameAsync(entity.IdNumber);
+                        if (newUser == null)
                         {
-                            newUser = new ApplicationUser
-                            {
-                                Id = userId.ToString(),
-                                PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : whatsappNumberToImport),
-                                UserName = entity.IdNumber,
-                                IdNumber = entity.IdNumber,
-                                //Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
-                                //IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
-                                //VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
-                                //DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
-                                FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
-                                Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
-                                FullName = entity.FirstName + " " + entity.Surname,
-                                ContactPreference = MessageTypeConstants.SMS,
-                                IsActive = true,
-                                PasswordHash = password,
-                                //NextOfKinFirstName = entity.NextOfKinFirstName,
-                                //NextOfKinSurname = entity.NextOfKinSurname,
-                                //NextOfKinContactNumber = entity.NextOfKinContactNumber,
-                                //EmergencyContactFirstName = entity.NextOfKinFirstName,
-                                //EmergencyContactSurname = entity.NextOfKinSurname,
-                                //EmergencyContactFullName = entity.NextOfKinFirstName + " " + entity.NextOfKinSurname,
-                                //EmergencyContactPhoneNumber = entity.NextOfKinContactNumber,
-                                TenantId = tenantId,
-                                IsImported = true,
-                                //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
-                                WhatsAppNumber = whatsappNumberToImport,
-                                //ReasonForLeaving = entity.ReasonForLeaving,
-                                //ReasonForLeavingComments = entity.InactivityComments
-                            };
-
-
-                            //    //check language
-                            if (entity.PreferredCommunicationLanguage != null)
-                            {
-                                var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.PreferredCommunicationLanguage).OrderBy(x => x.Id).FirstOrDefault();
-                                if (language != null)
-                                {
-                                    newUser.PreferredCommunicationLanguage = language.Id.ToString();
-                                    newUser.LanguageId = language.Id;
-                                    newPractitioner.LanguageUsedInGroups = language.Id.ToString();
-                                    newTrainee.PreferredCommunicationLanguage = language.Id.ToString();
-                                }
-                            }
-                            if (entity.HighestEducationLevel != null)
-                            {
-                                var education = _staticEducationRepo.GetAll().Where(x => x.Description == entity.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
-                                if (education != null)
-                                {
-                                    newTrainee.HighestEducationLevel = education.Id.ToString();
-                                }
-                            }
-                            //    //check gender
-                            //    if (entity.Gender != null)
-                            //    {
-                            //        var gender = _staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
-                            //        if (gender != null)
-                            //        {
-                            //            newUser.GenderId = gender.Id;
-                            //        }
-                            //    }
-                            //    //check race
-                            //    if (entity.EthnicGroup != null)
-                            //    {
-                            //        var race = _staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
-                            //        if (race != null)
-                            //        {
-                            //            newUser.RaceId = race.Id;
-                            //        }
-                            //    }
-
-                            await _userManager.CreateAsync(newUser);
-                            await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                        }
-                        else
-                        {
-                            newUser = existingPractitioner.User;
-                        }
-
-                        //    //Create siteaddress
-                        //bool insertedAddress = false;
-                        //if (entity.SiteAddress != null)
-                        //{
-                        //    SiteAddress newEntityAddress = new SiteAddress();
-
-                        //        newEntityAddress.Ward = entity.SiteAddress.Ward;
-                        //        newEntityAddress.Name = entity.SiteAddress.Name;
-                        //        siteName = entity.SiteAddress.Name;
-                        //        newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
-                        //        newEntityAddress.Municipality = entity.SiteAddress.Municipality;
-                        //        newEntityAddress.Area = entity.SiteAddress.Area;
-                        //        newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
-                        //        newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
-                        //        newEntityAddress.AddressLine3 = entity.SiteAddress.Area;
-                        //        newEntityAddress.Longitude = entity.SiteAddress.Longitude;
-                        //        newEntityAddress.Latitude = entity.SiteAddress.Latitude;
-
-                        //        //check province
-                        //        if (entity.SiteAddress.Province != null)
-                        //        {
-                        //            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
-                        //            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
-                        //            if (prov != null)
-                        //            {
-                        //                newEntityAddress.ProvinceId = prov.Id;
-                        //            }
-                        //        }
-                        //        newEntityAddress.Id = siteAddressId;
-                        //        newEntityAddress.UpdatedBy = _uId;
-                        //        newEntityAddress.UpdatedDate = DateTime.Now;
-                        //        _siteAddressRepo.Insert(newEntityAddress);
-
-                        //        newPractitioner.SiteAddressId = siteAddressId;
-                        //        insertedAddress = true;
-                        //    }
-
-                        //    //Mark Principal/FAA/Linked Practitioner
-                        //    if (!(bool)entity.IsPrincipal && entity.Principal == null)
-                        //    {
-                        //        newPractitioner.IsFundaAppAdmin = true;
-                        //        newPractitioner.IsPrincipal = false;
-
-                        //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                        //    }
-                        //    else if (!(bool)entity.IsPrincipal && entity.Principal != null)
-                        //    {
-                        //        string principalRemoteId = entity.Principal.Guid.ToString();
-                        //        //find the principal if they have been mapped already, else flag to add principals at the end
-                        //        List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
-                        //        if (mappedEntities.Count > 0)
-                        //        {
-                        //            var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
-                        //            if (principalExistsCheck != null)
-                        //            {
-                        //                newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
-                        //                newPractitioner.DateLinked = DateTime.Now;
-                        //            }
-                        //            else
-                        //            {
-                        //                //add note in mappingline to return and resolve
-                        //                mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
-                        //            }
-                        //        }
-                        //        newPractitioner.IsFundaAppAdmin = false;
-                        //        newPractitioner.IsPrincipal = false;
-                        //        //newPractitioner.DateLinked = DateTime.Now;
-                        //        //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
-
-                        //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
-                        //    }
-                        //    else if ((bool)entity.IsPrincipal)
-                        //    {
-                        //        newPractitioner.IsPrincipal = true;
-                        //        newPractitioner.IsFundaAppAdmin = false;
-
-                        //        await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
-                        //    }
-
-
-                        //    //insert the new Practitioner
-                        try
-                        {
-                            _traineeRepo.Insert(newTrainee);
                             if (existingPractitioner == null)
                             {
-                                _practitionerRepo.Insert(newPractitioner);
+                                newUser = new ApplicationUser
+                                {
+                                    Id = userId.ToString(),
+                                    PhoneNumber = (_maskMode == MappingMaskDataMode.MaskNumbers || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataNumber : whatsappNumberToImport),
+                                    UserName = entity.IdNumber,
+                                    IdNumber = entity.IdNumber,
+                                    //Email = (_maskMode == MappingMaskDataMode.MaskEmails || _maskMode == MappingMaskDataMode.MaskAll || _maskMode == MappingMaskDataMode.MaskEmailsAndNumbers ? _options.Value.MaskDataEmail : entity.EmailAddress),
+                                    //IsSouthAfricanCitizen = (bool)entity.IsSouthAfricanCitizen,
+                                    //VerifiedByHomeAffairs = (bool)entity.VerifiedByHomeAffairs,
+                                    //DateOfBirth = Convert.ToDateTime(entity.BirthDate).Date,
+                                    FirstName = entity.FirstName != null ? entity.FirstName.Trim() : entity.FirstName,
+                                    Surname = entity.Surname != null ? entity.Surname.Trim() : entity.Surname,
+                                    FullName = entity.FirstName + " " + entity.Surname,
+                                    ContactPreference = MessageTypeConstants.SMS,
+                                    IsActive = true,
+                                    PasswordHash = password,
+                                    //NextOfKinFirstName = entity.NextOfKinFirstName,
+                                    //NextOfKinSurname = entity.NextOfKinSurname,
+                                    //NextOfKinContactNumber = entity.NextOfKinContactNumber,
+                                    //EmergencyContactFirstName = entity.NextOfKinFirstName,
+                                    //EmergencyContactSurname = entity.NextOfKinSurname,
+                                    //EmergencyContactFullName = entity.NextOfKinFirstName + " " + entity.NextOfKinSurname,
+                                    //EmergencyContactPhoneNumber = entity.NextOfKinContactNumber,
+                                    TenantId = tenantId,
+                                    IsImported = true,
+                                    //PreferredCommunicationLanguage = entity.PreferredCommunicationLanguage,
+                                    WhatsAppNumber = whatsappNumberToImport,
+                                    //ReasonForLeaving = entity.ReasonForLeaving,
+                                    //ReasonForLeavingComments = entity.InactivityComments
+                                };
+
+
+                                //    //check language
+                                if (entity.PreferredCommunicationLanguage != null)
+                                {
+                                    var language = _staticLanguageRepo.GetAll().Where(x => x.Description == entity.PreferredCommunicationLanguage).OrderBy(x => x.Id).FirstOrDefault();
+                                    if (language != null)
+                                    {
+                                        newUser.PreferredCommunicationLanguage = language.Id.ToString();
+                                        newUser.LanguageId = language.Id;
+                                        newPractitioner.LanguageUsedInGroups = language.Id.ToString();
+                                        newTrainee.PreferredCommunicationLanguage = language.Id.ToString();
+                                    }
+                                }
+                                if (entity.HighestEducationLevel != null)
+                                {
+                                    var education = _staticEducationRepo.GetAll().Where(x => x.Description == entity.HighestEducationLevel).OrderBy(x => x.Id).FirstOrDefault();
+                                    if (education != null)
+                                    {
+                                        newTrainee.HighestEducationLevel = education.Id.ToString();
+                                    }
+                                }
+                                //    //check gender
+                                //    if (entity.Gender != null)
+                                //    {
+                                //        var gender = _staticGenderRepo.GetAll().Where(x => x.Description == entity.Gender).OrderBy(x => x.Id).FirstOrDefault();
+                                //        if (gender != null)
+                                //        {
+                                //            newUser.GenderId = gender.Id;
+                                //        }
+                                //    }
+                                //    //check race
+                                //    if (entity.EthnicGroup != null)
+                                //    {
+                                //        var race = _staticRaceRepo.GetAll().Where(x => x.Description == entity.EthnicGroup).OrderBy(x => x.Id).FirstOrDefault();
+                                //        if (race != null)
+                                //        {
+                                //            newUser.RaceId = race.Id;
+                                //        }
+                                //    }
+
+                                var userCreatedResult = await _userManager.CreateAsync(newUser);
+                                if (userCreatedResult.Succeeded)
+                                {
+                                    await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                                }
+                                else
+                                {
+                                    pracCreated = false;
+                                }
+                            }
+                            else
+                            {
+                                newUser = existingPractitioner.User;
                             }
 
-                            pracCreated = true;
-                        }
-                        catch (Exception e)
-                        {
-                            await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapTrainee > insert trainee & practitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
-                            await RemoveImportedAndFlag(userId, true, false);
-                        }
-
-                        if (pracCreated)
-                        {
-                            //create classrooms and classroomgroups - only map for principals or FAAs
-                            //if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
+                            //    //Create siteaddress
+                            //bool insertedAddress = false;
+                            //if (entity.SiteAddress != null)
                             //{
-                            Classroom pracClass = new Classroom()
+                            //    SiteAddress newEntityAddress = new SiteAddress();
+
+                            //        newEntityAddress.Ward = entity.SiteAddress.Ward;
+                            //        newEntityAddress.Name = entity.SiteAddress.Name;
+                            //        siteName = entity.SiteAddress.Name;
+                            //        newEntityAddress.PostalCode = entity.SiteAddress.PostalCode;
+                            //        newEntityAddress.Municipality = entity.SiteAddress.Municipality;
+                            //        newEntityAddress.Area = entity.SiteAddress.Area;
+                            //        newEntityAddress.AddressLine1 = entity.SiteAddress.StreetAddress;
+                            //        newEntityAddress.AddressLine2 = entity.SiteAddress.SharedFullAddress;
+                            //        newEntityAddress.AddressLine3 = entity.SiteAddress.Area;
+                            //        newEntityAddress.Longitude = entity.SiteAddress.Longitude;
+                            //        newEntityAddress.Latitude = entity.SiteAddress.Latitude;
+
+                            //        //check province
+                            //        if (entity.SiteAddress.Province != null)
+                            //        {
+                            //            var staticProvinceRepo = _repositoryFactory.CreateGenericRepository<Province>(userContext: _uId);
+                            //            var prov = staticProvinceRepo.GetAll().Where(x => x.Description == entity.SiteAddress.Province).FirstOrDefault();
+                            //            if (prov != null)
+                            //            {
+                            //                newEntityAddress.ProvinceId = prov.Id;
+                            //            }
+                            //        }
+                            //        newEntityAddress.Id = siteAddressId;
+                            //        newEntityAddress.UpdatedBy = _uId;
+                            //        newEntityAddress.UpdatedDate = DateTime.Now;
+                            //        _siteAddressRepo.Insert(newEntityAddress);
+
+                            //        newPractitioner.SiteAddressId = siteAddressId;
+                            //        insertedAddress = true;
+                            //    }
+
+                            //    //Mark Principal/FAA/Linked Practitioner
+                            //    if (!(bool)entity.IsPrincipal && entity.Principal == null)
+                            //    {
+                            //        newPractitioner.IsFundaAppAdmin = true;
+                            //        newPractitioner.IsPrincipal = false;
+
+                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                            //    }
+                            //    else if (!(bool)entity.IsPrincipal && entity.Principal != null)
+                            //    {
+                            //        string principalRemoteId = entity.Principal.Guid.ToString();
+                            //        //find the principal if they have been mapped already, else flag to add principals at the end
+                            //        List<IntegrationEntityMapping> mappedEntities = await this.GetMappedEntities();
+                            //        if (mappedEntities.Count > 0)
+                            //        {
+                            //            var principalExistsCheck = mappedEntities.Where(x => x.RemoteId.Equals(principalRemoteId)).FirstOrDefault();
+                            //            if (principalExistsCheck != null)
+                            //            {
+                            //                newPractitioner.PrincipalHierarchy = Guid.Parse(principalExistsCheck.UserId);
+                            //                newPractitioner.DateLinked = DateTime.Now;
+                            //            }
+                            //            else
+                            //            {
+                            //                //add note in mappingline to return and resolve
+                            //                mapperLine.Notes = "REMAP_PRINCIPAL_REMOTE_ID_" + principalRemoteId;
+                            //            }
+                            //        }
+                            //        newPractitioner.IsFundaAppAdmin = false;
+                            //        newPractitioner.IsPrincipal = false;
+                            //        //newPractitioner.DateLinked = DateTime.Now;
+                            //        //newPractitioner.DateAccepted = DateTime.Now; -- do not accept the link until business clears this - Practitioners need to approve the process
+
+                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRACTITIONER);
+                            //    }
+                            //    else if ((bool)entity.IsPrincipal)
+                            //    {
+                            //        newPractitioner.IsPrincipal = true;
+                            //        newPractitioner.IsFundaAppAdmin = false;
+
+                            //        await _userManager.AddToRoleAsync(newUser, Roles.PRINCIPAL);
+                            //    }
+
+
+                            //    //insert the new Practitioner
+                            try
                             {
-                                Id = Guid.NewGuid(),
-                                UserId = userId,
-                                IsActive = true,
-                                Name = siteName,
-                                IsPrinciple = true,
-                                NumberPractitioners = 1,
-                                Hierarchy = newPractitioner.Hierarchy,
-                                TenantId = tenantId,
-                                //SiteAddressId = insertedAddress ? siteAddressId : null
-                            };
-                            _classroomGenericRepo.Insert(pracClass);
+                                _traineeRepo.Insert(newTrainee);
+                                if (existingPractitioner == null)
+                                {
+                                    _practitionerRepo.Insert(newPractitioner);
+                                }
 
-                            //create UNSURE classroomgroup to assign children to
-                            ClassroomGroup pracUnsureClass = new ClassroomGroup()
+                                pracCreated = true;
+                            }
+                            catch (Exception e)
                             {
-                                Id = Guid.NewGuid(),
-                                UserId = Guid.Parse(userId),
-                                IsActive = true,
-                                Name = "Unsure",
-                                TenantId = tenantId,
-                                Hierarchy = newPractitioner.Hierarchy,
-                                ProgrammeTypeId = programmeType.Id,
-                                ClassroomId = pracClass.Id
-                            };
-                            _classroomGroupGenericRepo.Insert(pracUnsureClass);
-                            //}
+                                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "MapTrainee > insert trainee & practitioner " + Newtonsoft.Json.JsonConvert.SerializeObject(newPractitioner));
+                                await RemoveImportedAndFlag(userId, true, false);
+                            }
 
-                            mapperLine.LocalEntity = SSIntegrationSettings.SSTrainee;
-                            mapperLine.RemoteEntity = SSIntegrationSettings.SLTrainee;
-                            mapperLine.LocalId = newTrainee.Id.ToString();
-                            mapperLine.RemoteId = entity.Guid;
-                            mapperLine.UserId = userId;
-                            mapperLine.UpdatedBy = _uId;
-                            mapperLine.UpdatedDate = DateTime.Now;
-                            mapperLine.IsComplete = true;
-                            mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
-                            mapperLine.IsComplete = true;
-                            //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
-                            _mapperRepo.Insert(mapperLine);
+                            if (pracCreated)
+                            {
+                                //create classrooms and classroomgroups - only map for principals or FAAs
+                                //if ((bool)newPractitioner.IsPrincipal || (bool)newPractitioner.IsFundaAppAdmin)
+                                //{
+                                Classroom pracClass = new Classroom()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = userId,
+                                    IsActive = true,
+                                    Name = siteName,
+                                    IsPrinciple = true,
+                                    NumberPractitioners = 1,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    TenantId = tenantId,
+                                    //SiteAddressId = insertedAddress ? siteAddressId : null
+                                };
+                                _classroomGenericRepo.Insert(pracClass);
 
-                            return newTrainee;
+                                //create UNSURE classroomgroup to assign children to
+                                ClassroomGroup pracUnsureClass = new ClassroomGroup()
+                                {
+                                    Id = Guid.NewGuid(),
+                                    UserId = Guid.Parse(userId),
+                                    IsActive = true,
+                                    Name = "Unsure",
+                                    TenantId = tenantId,
+                                    Hierarchy = newPractitioner.Hierarchy,
+                                    ProgrammeTypeId = programmeType.Id,
+                                    ClassroomId = pracClass.Id
+                                };
+                                _classroomGroupGenericRepo.Insert(pracUnsureClass);
+                                //}
+
+                                mapperLine.LocalEntity = SSIntegrationSettings.SSTrainee;
+                                mapperLine.RemoteEntity = SSIntegrationSettings.SLTrainee;
+                                mapperLine.LocalId = newTrainee.Id.ToString();
+                                mapperLine.RemoteId = entity.Guid;
+                                mapperLine.UserId = userId;
+                                mapperLine.UpdatedBy = _uId;
+                                mapperLine.UpdatedDate = DateTime.Now;
+                                mapperLine.IsComplete = true;
+                                mapperLine.BeforeJSON = JsonSerializer.Serialize(entity);
+                                mapperLine.IsComplete = true;
+                                //mapperLine.AfterJSON = JsonSerializer.Serialize(newPractitioner);
+                                _mapperRepo.Insert(mapperLine);
+
+                                return newTrainee;
+                            }
                         }
                     }
                     else
@@ -2483,7 +2488,6 @@ public class SmartStartIntegrationService : IIntegrationService
 
     private async Task<bool> UpdateEntityColumn(UpdateLocalEntity model, IntegrationEntityMapping mappedEntity)
     {
-        //TODO: convert to reflection to simplify
         bool updatedEntity = false;
         try
         {
@@ -2520,9 +2524,7 @@ public class SmartStartIntegrationService : IIntegrationService
                                             }
                                         else
                                         {
-                                            //TODO
                                             string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
-
                                         }
 
                                         updatedEntity = true;
@@ -2585,7 +2587,6 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 prop.SetValue(prac, model.NewData);
                                             else
                                             {
-                                                //TODO
                                                 string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
                                             }
                                             updatedEntity = true;
@@ -2619,7 +2620,6 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 prop.SetValue(child, model.NewData);
                                             else
                                             {
-                                                //TODO
                                                 string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
                                             }
                                             updatedEntity = true;
@@ -2709,7 +2709,6 @@ public class SmartStartIntegrationService : IIntegrationService
                                                 prop.SetValue(address, model.NewData);
                                             else
                                             {
-                                                //TODO
                                                 string value = await _integrationHelperManager.RemapStaticToString(localColumnChange.LocalEntity, model.NewData);
                                             }
                                             updatedEntity = true;
@@ -2804,9 +2803,6 @@ public class SmartStartIntegrationService : IIntegrationService
         _audits = await GetAudits(null, auditUserId, historyDays);
         var updates = _audits.Where(x => x.ChangeType.Equals("Update") && x.Submitted == null).ToList();
 
-        //List<IntegrationEntityMapping> entities = _mappedEntities.Where(x => x.LocalId != null && x.RemoteId != null).ToList();
-
-        //audits = audits.Where(x => x.RelatedId.Equals("ad8796d4-9f6e-42e3-9bff-2a59e074eaab")).ToList();//audits.Where(x => x.Entity.Equals("ApplicationUser") || x.Entity.Equals("Practitioner")).ToList();
         var responseString = "";
         List<IntegrationAudit> completedList = new List<IntegrationAudit>();
         List<IntegrationEntityMapping> completedEntityList = new List<IntegrationEntityMapping>();
@@ -2984,19 +2980,24 @@ public class SmartStartIntegrationService : IIntegrationService
         return true;
     }
 
-    private async Task<bool> PushDeletes(string auditUserId = null)
+    private async Task<bool> PushDeletes(string auditUserId = null, int historyDays = 2)
     {
         _audits = await GetAudits(null, auditUserId);
         var deletes = _audits.Where(x => x.ChangeType.Equals("Delete") && x.Submitted == null).ToList();
 
-        //DeleteEntity(entity);
+        foreach (var delete in deletes)
+        {
+            var entity = _mappedEntities.Where(x => x.LocalId == delete.RelatedId).FirstOrDefault();
+
+            await DeleteEntity(entity);
+        }
 
         return true;
     }
 
     private async Task<bool> DeleteEntity(IntegrationEntityMapping entityToDelete)
     {
-        //Delete entry json todo
+        //TODO: Complete
 
         return true;
     }
@@ -3164,10 +3165,10 @@ public class SmartStartIntegrationService : IIntegrationService
                             responseString = await _apiManager.GetAPIHandlerResponse(docUrl, null, null, null, false, false, jsonDocString.ToString());
                             if (!string.IsNullOrEmpty(responseString))
                             {
-                                var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                                var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                 if (returnObj != null)
                                 {
-                                    docRemoteId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
+                                    docRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                 }
                                 else //error empty response received
                                 {
@@ -3220,10 +3221,10 @@ public class SmartStartIntegrationService : IIntegrationService
                                 responseString = await _apiManager.GetAPIHandlerResponse(noteUrl, null, null, null, false, false, jsonNoteString.ToString());
                                 if (!string.IsNullOrEmpty(responseString))
                                 {
-                                    var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                                    var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                                     if (returnObj != null)
                                     {
-                                        noteRemoteId = returnObj.Count() > 0 ? returnObj[0].ToString() : null;
+                                        noteRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                         IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
                                         cgMapping.LocalEntity = SSIntegrationSettings.SSDocument;
                                         cgMapping.RemoteEntity = SSIntegrationSettings.SLDocument;
@@ -3358,10 +3359,10 @@ public class SmartStartIntegrationService : IIntegrationService
                         responseString = await _apiManager.GetAPIHandlerResponse(cgUrl, null, null, null, false, false, jsonCaregiverString.ToString());
                         if (!string.IsNullOrEmpty(responseString))
                         {
-                            var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                            var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                             if (returnObj != null)
                             {
-                                cgRemoteId = returnObj[0].ToString();
+                                cgRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                                 IntegrationEntityMapping cgMapping = new IntegrationEntityMapping();
                                 cgMapping.LocalEntity = SSIntegrationSettings.SSCaregiver;
                                 cgMapping.RemoteEntity = SSIntegrationSettings.SLCaregiver;
@@ -3539,10 +3540,10 @@ public class SmartStartIntegrationService : IIntegrationService
                     responseString = await _apiManager.GetAPIHandlerResponse(childUrl, null, null, null, false, false, jsonChildString.ToString());
                     if (!string.IsNullOrEmpty(responseString))
                     {
-                        var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                        var returnObj = JsonConvert.DeserializeObject<List<PostResponse>>(responseString);
                         if (returnObj != null)
                         {
-                            childRemoteId = (returnObj.Count > 0 ? returnObj[0].ToString() : null);
+                            childRemoteId = returnObj.Count() > 0 ? returnObj[0].Guid.ToString() : null;
                             if (!string.IsNullOrEmpty(childRemoteId))
                             {
                                 IntegrationEntityMapping childMapping = new IntegrationEntityMapping();

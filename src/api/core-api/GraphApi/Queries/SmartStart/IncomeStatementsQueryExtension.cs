@@ -60,13 +60,11 @@ string userId, int year, int month)
             return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
 
-        public async Task<Document> GetStatementsIncomeExpensesPDFFile(
+        public Document GetStatementsIncomeExpensesPDFFile(
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IFileService fileService,
             [Service] IncomeExpenseService incomeManager,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] DocumentManager documentManager,
-            IGenericRepositoryFactory repoFactory,
             string userId, int year, int month)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -307,41 +305,47 @@ string userId, int year, int month)
             }
 
             _html += "</body></html>";
-
+            try { 
             // discard result
-            var doc = new HtmlToPdfDocument()
-            {
-                GlobalSettings = {
-                    ColorMode = ColorMode.Color,
-                    Orientation = Orientation.Portrait,
-                   // PaperSize = PaperKind.A4Plus,
-                    PaperSize = PaperKind.A4,
-                    Margins = new MarginSettings() { Top = 10, Bottom=10, Left=10, Right=10 },
-                    // Use Out when you want to save the pdf to your local disk
-                   // Out = @"C:\DinkToPdf\" + _header.Replace(" ", "_") + ".pdf",
+                var doc = new HtmlToPdfDocument()
+                {
+                    GlobalSettings = {
+                        ColorMode = ColorMode.Color,
+                        Orientation = Orientation.Portrait,
+                       // PaperSize = PaperKind.A4Plus,
+                        PaperSize = PaperKind.A4,
+                        Margins = new MarginSettings() { Top = 10, Bottom=10, Left=10, Right=10 },
+                        // Use Out when you want to save the pdf to your local disk
+                       // Out = @"C:\DinkToPdf\" + _header.Replace(" ", "_") + ".pdf",
 
-                },
-                Objects = {
-                    new ObjectSettings() {
-                        PagesCount = true,
-                        HtmlContent = _html,
-                        WebSettings = { DefaultEncoding = "utf-8" },
-                        HeaderSettings = { FontSize=12, FontName="Arial", Left= _header, Line=false },
-                        FooterSettings = { FontSize=8, FontName="Arial", Right="Page [page] of [toPage]", Line = false },
+                    },
+                    Objects = {
+                        new ObjectSettings() {
+                            PagesCount = true,
+                            HtmlContent = _html,
+                            WebSettings = { DefaultEncoding = "utf-8" },
+                            HeaderSettings = { FontSize=12, FontName="Arial", Left= _header, Line=false },
+                            FooterSettings = { FontSize=8, FontName="Arial", Right="Page [page] of [toPage]", Line = false },
+                            }
                         }
-                    }
-            };
+                };
 
-            byte[] pdf = _pdfConverter.Convert(doc);
-            string Base64Result = Convert.ToBase64String(pdf);
+                SynchronizedConverter _pdfConverter = new SynchronizedConverter(new PdfTools());
+                byte[] pdf = _pdfConverter.Convert(doc);
+                string Base64Result = Convert.ToBase64String(pdf);
 
-            IncomeStatementPDFDoc pdfDoc = new IncomeStatementPDFDoc();
-            pdfDoc.Reference = Base64Result;
-            pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
-            pdfDoc.UserId = userId;
-            pdfDoc.CreatedUserId = uId;
+                IncomeStatementPDFDoc pdfDoc = new IncomeStatementPDFDoc();
+                pdfDoc.Reference = Base64Result;
+                pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
+                pdfDoc.UserId = userId;
+                pdfDoc.CreatedUserId = uId;
 
-            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, pdfDoc);
+                return documentManager.SaveIncomeStatementPDF(pdfDoc);
+            }
+            catch (Exception e)
+            {
+               return null;
+            }
 
         }
 

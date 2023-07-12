@@ -28,7 +28,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
-          //IntegrationHelperManager integrationHelperManager,
           Guid? id,
           Practitioner input)
         {
@@ -108,8 +107,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
-                    //Update RemoteEntity - Integration
-                    //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
                     return updateResult;
                 }

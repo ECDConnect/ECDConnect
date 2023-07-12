@@ -16,6 +16,12 @@ using System.Reflection.Metadata;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.GraphApi.Queries;
+using Document = ECDLink.DataAccessLayer.Entities.Documents.Document;
+using HotChocolate;
+using EcdLink.Api.CoreApi.Managers;
+using ECDLink.DataAccessLayer.Entities;
+using Microsoft.AspNetCore.Identity;
+using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services
 {
@@ -34,10 +40,18 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
 
+        private UserManager<ApplicationUser> _userManager;
+        private IFileService _fileService;
+        private DocumentManager _documentManager;
+
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
+            [Service] IFileService fileService,
+            [Service] DocumentManager documentManager,
+            [Service] UserManager<ApplicationUser> userManager,
+            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
+            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -51,6 +65,10 @@ namespace ECDLink.Core.Services
             _statementsIncomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
             _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
+
+            _userManager = userManager;
+            _fileService = fileService;
+            _documentManager = documentManager;
         }
 
         #region Utils
@@ -74,7 +92,7 @@ namespace ECDLink.Core.Services
         {
             var expenseRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
             var statements = expenseRepo.GetAll()
-                .Where(x => x.UserId.Equals(userId) && x.InsertedDate.Year.Equals(year) && x.InsertedDate.Month.Equals(month))
+                .Where(x => x.UserId.Equals(userId) && x.Year.Equals(year) && x.Month.Equals(month))
                 .ToList();
             if (statements.Any())
             {
@@ -655,7 +673,7 @@ namespace ECDLink.Core.Services
         {
             bool retVal = false;
             var statementRepo = _repoFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _applicationUserId);
-
+            int rows = 0;
             DateTime previousTimePeriod = DateTime.Now.AddMonths(-1); //previous months date to check for any unsubmitted records of current - 1 month
             IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(model.UserId, model.Year, model.Month);
 
@@ -669,6 +687,7 @@ namespace ECDLink.Core.Services
                     row.AnnualSubmittedDate = DateTime.Now;
                     row.AutoSubmitted = autoSubmitted;
                     statementRepo.Update(row);
+                    rows++;
                 }
             }
             else
@@ -709,6 +728,7 @@ namespace ECDLink.Core.Services
                         //row.AutoSubmitted = autoSubmitted;
 
                         incomeRepo.Update(row);
+                        rows++;
                     }
                     retVal = true;
                 }
@@ -726,6 +746,7 @@ namespace ECDLink.Core.Services
                         //row.AutoSubmitted = autoSubmitted;
 
                         expenseRepo.Update(row);
+                        rows++;
                     }
                     retVal = true;
                 }
@@ -734,17 +755,22 @@ namespace ECDLink.Core.Services
                 submittedStatement.IncomeTotal = allIncome;
                 submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
                 submittedStatement.UpdatedDate = DateTime.Now;
-                submittedStatement.UpdatedBy = _applicationUserId;                
-                //try
-                //{
-                //    //try generating autosubmit doc
-                //    //Document pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile()
-                //    //submittedStatement.RelatedDocumentId = pdfDoc.Id;
-                //}
-                //catch (Exception e)
-                //{
-                //    submittedStatement.RelatedDocumentId = null;
-                //}
+                submittedStatement.UpdatedBy = _applicationUserId;
+
+                try
+                {
+                    if (rows>0) //dont create or send empty docs
+                    {
+                        //try generating autosubmit doc
+                        Document pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile(_contextAccessor, this, _userManager, _documentManager, model.UserId, model.Year, model.Month);
+                        if (pdfDoc != null)
+                            submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+                    }
+                }
+                catch (Exception e)
+                {
+                    submittedStatement.RelatedDocumentId = null;
+                }
                 statementRepo.Update(submittedStatement);
 
 
@@ -764,7 +790,7 @@ namespace ECDLink.Core.Services
             //find statements that have not been submitted for the previous month, assuming the SW runs the <<forceSubmitDay>> of the following month,
             //not having a statement for any users but have income/expenses mean they have not submitted and needs to be auto submit.
             List<string> allPractitionersToCheck = GetPractitionersDueStatements();
-            List<string> allDuePractitioners = allPractitionersToCheck; //copy and yank from this list to prevent issues with foreach loop
+            List<string> allDuePractitioners = allPractitionersToCheck.Copy(); //copy and yank from this list to prevent issues with foreach loop
             foreach (var practitioner in allPractitionersToCheck)
             {
                 if (IsSubmitted(practitioner, submitPeriod.Start.Year, submitPeriod.Start.Month))

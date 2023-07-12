@@ -73,8 +73,8 @@ StatementsSubmit input)
         {
             if (input != null)
             {
-                var retObj = incomeManager.SubmitStatement(input);
-                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
+                var isUbmitted = incomeManager.SubmitStatement(input);
+                return isUbmitted == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted" } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" };
             }
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
@@ -97,17 +97,27 @@ StatementsSubmit input)
 
 
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public async Task<Document> SaveIncomeStatementPDF(
+        public Document SaveIncomeStatementPDF(
             [Service] DocumentManager documentManager,
             [Service] IHttpContextAccessor contextAccessor,
-            [Service] IFileService fileService,
-            IGenericRepositoryFactory repoFactory,
             IncomeStatementPDFDoc input)
         {
             input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
 
-            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, input);
+            return documentManager.SaveIncomeStatementPDF(input);
             
+        }
+
+        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
+        public async Task<Document> SaveIncomeStatementPDFAsync(
+    [Service] DocumentManager documentManager,
+    [Service] IHttpContextAccessor contextAccessor,
+    IncomeStatementPDFDoc input)
+        {
+            input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
+
+            return await documentManager.SaveIncomeStatementPDFAsync(input);
+
         }
     }
 }
