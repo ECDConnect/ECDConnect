@@ -15,29 +15,31 @@ const AlertModal: React.FC<AlertModalProps> = ({
   onCancel,
 }) => {
   return (
+    
     <ActionModal
       icon={'ExclamationCircleIcon'}
       iconColor="alertMain"
       iconBorderColor="alertBg"
       title={title}
       detailText={message}
+      buttonClass='rounded-xl'
       actionButtons={[
         {
           
-          text: 'Okay',
+          text: 'Yes, Deactivate User',
           textColour: 'white',
           colour: 'secondary',
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
-          leadingIcon: 'CheckCircleIcon',
+          leadingIcon: 'TrashIcon',
         },
         {
-          text: 'Cancel',
-          textColour: 'white',
+          text: 'No, Cancel',
+          textColour: 'secondary',
           colour: 'secondary',
-          type: 'filled',
+          type: 'outlined',
           onClick: () =>  onCancel && onCancel(),
-          leadingIcon: 'XCircleIcon',
+          leadingIcon: 'XIcon',
         },
       ]}
     />

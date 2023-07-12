@@ -203,10 +203,10 @@ export function ViewUser(props: any) {
       position: DialogPosition.Middle,
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
-          title="Deactivate Administrator"
+          title="Deactivate User"
           message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-            } will lose their access to AppName immediately. Make sure you have communicated with them before deactivating them.`}
+            } will lose their access to ${data?.tenantContext.applicationName} App immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
