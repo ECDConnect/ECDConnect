@@ -15,5 +15,6 @@ namespace ECDLink.Abstractrions.Enums
         SuperadminNotifyEmailChanged = 10,
         AdminPasswordChanged = 11,
         AdminPortalInvitation = 12,
+        ForgotPasswordPortal = 13,
     }
 }

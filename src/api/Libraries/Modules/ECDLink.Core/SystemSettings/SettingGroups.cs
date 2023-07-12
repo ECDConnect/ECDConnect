@@ -122,6 +122,7 @@
                 public const string SecurityGrouping = "General.Callback.Security";
 
                 public const string ForgotPassword = "General.Callback.Security.ForgotPassword";
+                public const string ForgotPasswordPortal = "General.Callback.Security.ForgotPasswordPortal";
                 public const string Login = "General.Callback.Security.Login";
             }
         }

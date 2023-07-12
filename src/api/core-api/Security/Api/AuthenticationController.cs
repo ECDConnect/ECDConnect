@@ -103,19 +103,29 @@ namespace ECDLink.Security.Api
         [Route("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] SimpleUserModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Username))
+            var userIdentifier = model?.Username ?? model?.Email;
+            if (string.IsNullOrWhiteSpace(userIdentifier))
             {
                 return BadRequest("No username specified for Password Reset");
             }
 
-            var user = await _securityManager.GetUserByNameAsync(model.Username);
-            var tenantId = TenantExecutionContext.Tenant.Id;
+            // Use username first, if provided, otherwise use email
+            var user = string.IsNullOrEmpty(model.Username)
+                ? await _securityManager.GetUserByEmailAsync(model.Email)
+                : await _securityManager.GetUserByNameAsync(model.Username);
+            
+            var tenant = TenantExecutionContext.Tenant;
+            var tenantId = tenant.Id;
             if (user.TenantId.HasValue && user.TenantId.Value != tenantId)
             {
                 return BadRequest("Could not reset password");
             }
 
-            var result = await _securityManager.ForgotPasswordAsync(user);
+            var sites = new string[] { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
+            var originHost = new Uri(Request.Headers.Origin);
+            var isPortal = sites.Contains($"{originHost.Host}:{originHost.Port}") || sites.Contains(originHost.Host);
+
+            var result = await _securityManager.ForgotPasswordAsync(user, isPortal);
 
             if (!result)
             {

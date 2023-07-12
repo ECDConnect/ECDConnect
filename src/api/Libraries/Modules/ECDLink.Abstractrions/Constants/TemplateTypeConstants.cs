@@ -25,5 +25,7 @@ namespace ECDLink.Abstractrions.Constants
         public const string SuperadminNotifyEmailChanged = "superadmin-notify-email-changed";
 
         public const string AdminPortalInvitation = "admin-portal-invitation";
+        
+        public const string ForgotPasswordPortal = "forgot-password-portal";
     }
 }

@@ -28,6 +28,7 @@ export default function ResetPassword() {
   const [isLoading, setIsLoading] = useState(false);
   const { resetPassword } = useAuth();
   const { resetToken } = useParams<RouteParams>();
+  const { email } = useParams<RouteParams>();
   const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
@@ -49,14 +50,14 @@ export default function ResetPassword() {
   const formValues = getValues();
 
   const requestResetPasword = async () => {
-    let email = localStorage.getItem('email');
+    let _email = localStorage.getItem('email') ?? email;
 
     if (isValid) {
       console.log(Config.authApi);
 
       setIsLoading(true);
       const body: PasswordResetModel = {
-        username: email,
+        username: _email,
         password: formValues.password,
         resetToken: resetToken,
       };
