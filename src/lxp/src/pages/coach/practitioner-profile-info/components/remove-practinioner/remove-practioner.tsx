@@ -38,7 +38,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const user = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
   const reasonsForLeaving = useSelector(
-    staticDataSelectors.getReasonsForLeaving
+    staticDataSelectors.getReasonsForLeavingPractitioner
   );
   const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;

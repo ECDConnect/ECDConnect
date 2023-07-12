@@ -157,7 +157,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
-        string practitionerId, string principalId, bool accepted)//, Guid? reasonId, string reasonDetail)
+        string practitionerId, string principalId, bool accepted, Guid? reasonId, string reasonDetail)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -190,7 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        //practitioner.ReasonForLeavingPractionerId = reasonId;
+                        //practitioner.ReasonForLeavingPractitionerId = reasonId;
                         //practitioner.ReasonForLeavingDetail = reasonDetail;
 
                         status.LeavingDate = DateTime.Now;

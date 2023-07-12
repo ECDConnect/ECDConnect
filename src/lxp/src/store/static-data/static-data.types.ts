@@ -10,6 +10,7 @@ import {
   RaceDto,
   RelationDto,
   ReasonForLeavingDto,
+  ReasonForLeavingPractitionerDto,
   DocumentTypeDto,
   WorkflowStatusDto,
   NoteTypeDto,
@@ -26,6 +27,7 @@ export type StaticDataState = {
   provinces: ProvinceDto[] | undefined;
   holidays: HolidayDto[] | undefined;
   reasonForLeaving: ReasonForLeavingDto[] | undefined;
+  reasonForLeavingPractitioner: ReasonForLeavingPractitionerDto[] | undefined;
   grants: GrantDto[] | undefined;
   documentTypes: DocumentTypeDto[] | undefined;
   WorkflowStatuses: WorkflowStatusDto[] | undefined;
