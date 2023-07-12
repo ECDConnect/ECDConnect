@@ -329,6 +329,9 @@ class PQAService {
               plannedDate
               visitName
             }
+            selfAssessmentColor
+            selfAssessmentDate
+            selfAssessmentStatus
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus

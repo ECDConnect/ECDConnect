@@ -6,7 +6,7 @@ import {
   VisitData,
 } from '@ecdlink/graphql';
 
-export interface CoachPractitionerTimeline {
+export interface PractitionerTimelineState {
   practitionerId: string;
   timeline: PractitionerTimeline;
 }
@@ -27,7 +27,7 @@ export interface RatingData {
 }
 
 export type PQAState = {
-  coachPractitionersTimeline?: CoachPractitionerTimeline[];
+  coachPractitionersTimeline?: PractitionerTimelineState[];
   prePqaFormData?: FormData[];
   prePqaPreviousFormData?: PreviousFormData[];
   reAccreditationFollowUpVisitPreviousFormData?: PreviousFormData[];
