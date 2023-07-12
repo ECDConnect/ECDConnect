@@ -4,9 +4,7 @@ import { startOfMonth, endOfMonth, format, subDays } from 'date-fns';
 
 function CustomDateRangePicker(props: any) {
   const [showCalendar, setShowCalendar] = useState(false);
-  const currentDate = new Date();
-  const startDate = startOfMonth(currentDate);
-  const endDate = subDays(currentDate, 30);
+
   const toggleCalendar = () => {
     setShowCalendar((prevShowCalendar) => !prevShowCalendar);
   };
@@ -27,12 +25,7 @@ function CustomDateRangePicker(props: any) {
             {formatDate(props.selectedRange[0])} -{' '}
             {formatDate(props.selectedRange[1])}
           </>
-        ) : (
-          <>
-            {formatDate(endDate)} -{' '}  {formatDate(startDate)}
-          </>
-
-        )}
+        ) : null}
       </button>
 
       {showCalendar && (
