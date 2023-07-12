@@ -78,9 +78,9 @@ export const Step17ReAccreditation = ({
     | ClassroomGroupDto[]
     | undefined;
 
-  const currentClassProgrammes = classProgrammes.filter((el) => {
+  const currentClassProgrammes = classProgrammes?.filter((el) => {
     return currentClassroomGroups.some((f) => {
-      return f.id === el.classroomGroupId;
+      return f.id === el?.classroomGroupId;
     });
   });
 
@@ -125,10 +125,7 @@ export const Step17ReAccreditation = ({
   );
 
   const handleChildren = useCallback(() => {
-    if (
-      currentClassProgrammes[0] &&
-      previousClassroomGroups?.length === currentClassroomGroups.length
-    )
+    if (previousClassroomGroups?.length === currentClassroomGroups.length)
       return;
 
     const filteredChildren = [];
@@ -138,7 +135,8 @@ export const Step17ReAccreditation = ({
 
     for (const learner of _allLearners) {
       if (
-        learner.classroomGroupId !== currentClassProgrammes[0].classroomGroupId
+        learner?.classroomGroupId !==
+        currentClassProgrammes[0]?.classroomGroupId
       )
         continue;
 
