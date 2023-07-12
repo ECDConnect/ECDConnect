@@ -652,18 +652,6 @@ export type CalendarEventSortInput = {
   updatedDate?: InputMaybe<SortEnumType>;
 };
 
-export type CalendarEventType = {
-  __typename?: 'CalendarEventType';
-  colour?: Maybe<Scalars['String']>;
-  id?: Maybe<Scalars['Int']>;
-  name?: Maybe<Scalars['String']>;
-};
-
-export type CalendarEventTypeInput = {
-  colour?: InputMaybe<Scalars['String']>;
-  name?: InputMaybe<Scalars['String']>;
-};
-
 export type Caregiver = {
   __typename?: 'Caregiver';
   additionalFirstName?: Maybe<Scalars['String']>;
@@ -4180,7 +4168,6 @@ export type Mutation = {
   createAuditLogType?: Maybe<AuditLogType>;
   createCalendarEvent?: Maybe<CalendarEvent>;
   createCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
-  createCalendarEventType?: Maybe<Scalars['String']>;
   createCaregiver?: Maybe<Caregiver>;
   createChild?: Maybe<Child>;
   createChildProgressReport?: Maybe<ChildProgressReport>;
@@ -4287,7 +4274,6 @@ export type Mutation = {
   deleteAuditLogType?: Maybe<Scalars['Boolean']>;
   deleteCalendarEvent?: Maybe<Scalars['Boolean']>;
   deleteCalendarEventParticipant?: Maybe<Scalars['Boolean']>;
-  deleteCalendarEventType?: Maybe<Scalars['Boolean']>;
   deleteCaregiver?: Maybe<Scalars['Boolean']>;
   deleteChild?: Maybe<Scalars['Boolean']>;
   deleteChildProgressReport?: Maybe<Scalars['Boolean']>;
@@ -4435,7 +4421,6 @@ export type Mutation = {
   updateAuditLogType?: Maybe<AuditLogType>;
   updateCalendarEvent?: Maybe<CalendarEvent>;
   updateCalendarEventParticipant?: Maybe<CalendarEventParticipant>;
-  updateCalendarEventType?: Maybe<CalendarEventType>;
   updateCareGiverGrants: Scalars['Boolean'];
   updateCaregiver?: Maybe<Caregiver>;
   updateChild?: Maybe<Child>;
@@ -4738,12 +4723,6 @@ export type MutationCreateCalendarEventArgs = {
 
 export type MutationCreateCalendarEventParticipantArgs = {
   input?: InputMaybe<CalendarEventParticipantInput>;
-};
-
-export type MutationCreateCalendarEventTypeArgs = {
-  input: CalendarEventTypeInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationCreateCaregiverArgs = {
@@ -5217,12 +5196,6 @@ export type MutationDeleteCalendarEventArgs = {
 
 export type MutationDeleteCalendarEventParticipantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
-};
-
-export type MutationDeleteCalendarEventTypeArgs = {
-  id: Scalars['String'];
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationDeleteCaregiverArgs = {
@@ -5845,13 +5818,6 @@ export type MutationUpdateCalendarEventArgs = {
 export type MutationUpdateCalendarEventParticipantArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<CalendarEventParticipantInput>;
-};
-
-export type MutationUpdateCalendarEventTypeArgs = {
-  id: Scalars['String'];
-  input: CalendarEventTypeInput;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateCareGiverGrantsArgs = {
@@ -7958,7 +7924,6 @@ export type Query = {
   GetAllCalendarEventParticipant?: Maybe<
     Array<Maybe<CalendarEventParticipant>>
   >;
-  GetAllCalendarEventType: Array<Maybe<CalendarEventType>>;
   GetAllCaregiver?: Maybe<Array<Maybe<Caregiver>>>;
   GetAllChild?: Maybe<Array<Maybe<Child>>>;
   GetAllChildProgressReport?: Maybe<Array<Maybe<ChildProgressReport>>>;
@@ -8075,7 +8040,6 @@ export type Query = {
   GetAuditLogTypeById?: Maybe<AuditLogType>;
   GetCalendarEventById?: Maybe<CalendarEvent>;
   GetCalendarEventParticipantById?: Maybe<CalendarEventParticipant>;
-  GetCalendarEventTypeById: Array<Maybe<CalendarEventType>>;
   GetCaregiverById?: Maybe<Caregiver>;
   GetChildById?: Maybe<Child>;
   GetChildProgressReportById?: Maybe<ChildProgressReport>;
@@ -8468,11 +8432,6 @@ export type QueryGetAllCalendarEventParticipantArgs = {
   order?: InputMaybe<Array<CalendarEventParticipantSortInput>>;
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<CalendarEventParticipantFilterInput>;
-};
-
-export type QueryGetAllCalendarEventTypeArgs = {
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetAllCaregiverArgs = {
@@ -9059,12 +9018,6 @@ export type QueryGetCalendarEventByIdArgs = {
 export type QueryGetCalendarEventParticipantByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<CalendarEventParticipantFilterInput>;
-};
-
-export type QueryGetCalendarEventTypeByIdArgs = {
-  id?: InputMaybe<Scalars['Int']>;
-  locale?: InputMaybe<Scalars['String']>;
-  localeId?: InputMaybe<Scalars['String']>;
 };
 
 export type QueryGetCaregiverByIdArgs = {
@@ -10901,6 +10854,7 @@ export type Setting_InvitationCutoffDelay = {
 
 export type Setting_Invitations = {
   __typename?: 'Setting_Invitations';
+  AdminSignup: Scalars['String'];
   Signup: Scalars['String'];
 };
 

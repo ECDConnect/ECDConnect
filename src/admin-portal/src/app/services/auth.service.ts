@@ -56,7 +56,7 @@ export async function RegisterNewUser(
   body: RegisterRequestModel
 ) {
   return await api(baseEndPoint).post(
-    APIs.confirmForgotPasswordReset,
+    APIs.acceptAdminInvitation,
     JSON.stringify(body),
     {
       headers: headers,
