@@ -81,7 +81,7 @@ export default function HealthCareWorkerPanelCreate(
 
   const { errors, isValid } = formState;
 
-  // HEALTH CARE WORKER FORMS
+  // COMMUNITY HEALTH WORKER FORMS
   const {
     register: healthCareWorkerRegister,
     formState: healthCareWorkerFormState,
@@ -118,8 +118,6 @@ export default function HealthCareWorkerPanelCreate(
         input: { ...userInputModel },
       },
     }).then(async (response) => {
-    
-
       const userId = response.data.addUser.id;
       if (userId) {
         await saveHealthCareWorker(userId);
@@ -176,7 +174,7 @@ export default function HealthCareWorkerPanelCreate(
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = ['Health Care Worker'];
+    const rolesToAdd: string[] = ['Community Health Worker'];
 
     await addRolesToUser({
       variables: {
@@ -189,7 +187,7 @@ export default function HealthCareWorkerPanelCreate(
   const addUserRole = () => {
     const role = roleData.roles.find(
       //TODO: Keeping this patern but the name should not be hard coded
-      (role: RoleDto) => role.name === 'Health Care Worker'
+      (role: RoleDto) => role.name === 'Community Health Worker'
     );
 
     const copy = [...selectedUserRoles];

@@ -112,7 +112,8 @@ export function ViewUser(props: any) {
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
   const [selectedRange, setSelectedRange] = useState<Date[]>([
-    startDate, endDate
+    startDate,
+    endDate,
   ]);
 
   const handleDateChange = (range: Date[]) => {
@@ -161,19 +162,15 @@ export function ViewUser(props: any) {
       fetchPolicy: 'cache-and-network',
     });
 
-
   useEffect(() => {
     getHealthCareWorkerSummaryForPeriod({
       variables: {
         healthCareWorkerUserId: props.location.state.userId ?? userId,
-        startDate:
-          selectedRange[0]?.toISOString() ?? startDate.toISOString(),
+        startDate: selectedRange[0]?.toISOString() ?? startDate.toISOString(),
         endDate: selectedRange[1]?.toISOString() ?? endDate.toISOString(),
       },
     });
   }, [selectedRange]);
-
-
 
   useEffect(() => {
     props.location.state?.component === 'administrators' &&
@@ -204,9 +201,12 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate User"
-          message={`${chwData?.GetHealthCareWorkerById.user?.firstName ??
+          message={`${
+            chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
-            } will lose their access to ${data?.tenantContext.applicationName} App immediately. Make sure you have communicated with them before deactivating them.`}
+          } will lose their access to ${
+            data?.tenantContext.applicationName
+          } App immediately. Make sure you have communicated with them before deactivating them.`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -240,9 +240,10 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Invite User"
-          message={`You are about to send an invite to ${chwData?.GetHealthCareWorkerById?.user?.fullName ??
+          message={`You are about to send an invite to ${
+            chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
-            }`}
+          }`}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
@@ -275,7 +276,7 @@ export function ViewUser(props: any) {
   const [editActive, setEditActive] = useState<boolean>(false);
 
   let isCHW = userData?.userById?.roles?.some(
-    (role: any) => role.name === 'Health Care Worker'
+    (role: any) => role.name === 'Community Health Worker'
   );
 
   const {
@@ -336,7 +337,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'idNumber',
       userData?.userById?.idNumber ||
-      chwData?.GetHealthCareWorkerById?.user.idNumber,
+        chwData?.GetHealthCareWorkerById?.user.idNumber,
       {
         shouldValidate: true,
       }
@@ -345,7 +346,7 @@ export function ViewUser(props: any) {
     chwDetailSetValue(
       'phoneNumber',
       userData?.userById?.phoneNumber ||
-      chwData?.GetHealthCareWorkerById?.user.phoneNumber,
+        chwData?.GetHealthCareWorkerById?.user.phoneNumber,
       {
         shouldValidate: true,
       }
@@ -462,7 +463,7 @@ export function ViewUser(props: any) {
                     userData?.userById?.profileImageUrl ||
                     chwData?.GetHealthCareWorkerById?.user?.profileImageUrl
                   }
-                  onPressed={() => { }}
+                  onPressed={() => {}}
                   hasConsent
                   size="header"
                 />
@@ -484,12 +485,7 @@ export function ViewUser(props: any) {
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
                               )}
                             >
-                              <p className="text-16">
-                                {' '}
-                                {i.name === 'Health Care Worker'
-                                  ? 'CHW'
-                                  : i.name}
-                              </p>
+                              <p className="text-16"> {i.name}</p>
                             </div>
                           );
                         }
@@ -501,18 +497,13 @@ export function ViewUser(props: any) {
                             <div
                               key={i.id}
                               className={classNames(
-                                i.name === 'Health Care Worker'
+                                i.name === 'Community Health Worker'
                                   ? 'bg-primary'
                                   : 'bg-tertiary',
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
                               )}
                             >
-                              <p className="text-16">
-                                {' '}
-                                {i.name === 'Health Care Worker'
-                                  ? 'CHW'
-                                  : i.name}
-                              </p>
+                              <p className="text-16"> {i.name}</p>
                             </div>
                           );
                         }
@@ -524,12 +515,13 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {(!userData?.userById?.isActive || !chwData?.GetHealthCareWorkerById?.user?.isActive) && (
+          {(!userData?.userById?.isActive ||
+            !chwData?.GetHealthCareWorkerById?.user?.isActive) && (
             <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
               type="error"
-            // customIcon={<SaveIcon></SaveIcon>}
+              // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
         </div>
@@ -929,7 +921,7 @@ export function ViewUser(props: any) {
               User added to {data?.tenantContext.applicationName} App :{' '}
               {formatDate(
                 chwData?.GetHealthCareWorkerById?.insertedDate ||
-                userData?.userById?.insertedDate
+                  userData?.userById?.insertedDate
               )}
             </p>
           </div>

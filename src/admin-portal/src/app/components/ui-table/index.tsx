@@ -230,23 +230,26 @@ export default function UiTable(
           {display_value?.map(
             (item: {
               [x: string]:
-              | boolean
-              | ReactChild
-              | ReactFragment
-              | ReactPortal
-              | Iterable<ReactI18NextChild>;
+                | boolean
+                | ReactChild
+                | ReactFragment
+                | ReactPortal
+                | Iterable<ReactI18NextChild>;
               id: Key;
             }) => (
               <div
                 key={item.id}
                 className={
-                  `${item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary' : item[column.displayProperty] === 'Practitioner' ? 'bg-secondary'
+                  `${
+                    item[column.displayProperty] === 'Administrator'
+                      ? 'bg-tertiary'
+                      : item[column.displayProperty] === 'Practitioner'
+                      ? 'bg-secondary'
                       : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
                 }
               >
-                {item[column.displayProperty] === "Health Care Worker" ? "CHW" : item[column.displayProperty]}
+                {item[column.displayProperty]}
               </div>
             )
           )}
@@ -322,8 +325,9 @@ export default function UiTable(
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${rows.length < 10 ? 'hidden' : ''
-                } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${
+                rows.length < 10 ? 'hidden' : ''
+              } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,
