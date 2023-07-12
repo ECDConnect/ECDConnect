@@ -76,7 +76,7 @@ export default function ApplicationUsers() {
 
     return users.reduce(
       (acc, curr) => {
-        const items = curr.roles.map((x) => ({ label: x.name, value: x.name }));
+        const items = curr.roles.map((x) => ({ label: x.name === 'Health Care Worker' ? 'CHW': x.name, value: x.name }));
 
         const distinctItems = items.filter(
           (item) => !acc.some((ac) => ac.value === item.value)
