@@ -5,7 +5,7 @@ import { usePanel } from '@ecdlink/core/lib/services/panel/PanelService';
 import {
   GetAllClinic,
   GetAllProvince,
-  GetAllTeamLead,
+  GetAllTeamLeadAdminList,
   getTeamLeadCount,
   SortEnumType,
   TeamLeadSortInput,
@@ -69,17 +69,20 @@ export default function TeamLeads() {
     };
   };
 
-  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(GetAllTeamLead, {
-    variables: getVariables(
-      searchValue,
-      provinceFilter,
-      clinicFilter,
-      sortDescending,
-      currentPage,
-      pageSize
-    ),
-    fetchPolicy: 'network-only',
-  });
+  const [GetAllTeamLeads, { data, refetch }] = useLazyQuery(
+    GetAllTeamLeadAdminList,
+    {
+      variables: getVariables(
+        searchValue,
+        provinceFilter,
+        clinicFilter,
+        sortDescending,
+        currentPage,
+        pageSize
+      ),
+      fetchPolicy: 'network-only',
+    }
+  );
 
   useEffect(() => {
     console.log(teamCountData);

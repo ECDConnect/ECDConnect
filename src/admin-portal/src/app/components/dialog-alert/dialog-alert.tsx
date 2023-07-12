@@ -35,7 +35,7 @@ const AlertModal: React.FC<AlertModalProps> = ({
         },
         {
           text: 'No, Cancel',
-          textColour: 'white',
+          textColour: 'secondary',
           colour: 'secondary',
           type: 'outlined',
           onClick: () =>  onCancel && onCancel(),

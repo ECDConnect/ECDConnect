@@ -17,4 +17,3 @@ export interface RegisterRequestModel {
   token: string;
   acceptedTerms?: boolean;
 }
-

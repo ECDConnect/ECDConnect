@@ -75,7 +75,7 @@ namespace ECDLink.Security.Api
 
             if (user == default(ApplicationUser))
             {
-                return BadRequest();
+                return BadRequest("Invalid token");
             }
 
             if (!await _passwordManager.IsPasswordSecureAsync(user, invitationModel.Password))
