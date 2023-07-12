@@ -68,7 +68,7 @@ export const Step17ReAccreditation = ({
     classroomsSelectors.getClassroomGroups
   );
   const classProgrammes = useSelector(classroomsSelectors.getClassProgrammes);
-  const classroomGroups = allClassroomGroups.filter(
+  const classroomGroups = allClassroomGroups?.filter(
     (x) => x.name !== NoPlaygroupClassroomType.name
   );
   const currentClassroomGroups = classroomGroups.filter(
@@ -80,11 +80,11 @@ export const Step17ReAccreditation = ({
 
   const currentClassProgrammes = classProgrammes?.filter((el) => {
     return currentClassroomGroups.some((f) => {
-      return f.id === el?.classroomGroupId;
+      return f?.id === el?.classroomGroupId;
     });
   });
 
-  const days = currentClassProgrammes.map((item) => item.meetingDay).sort();
+  const days = currentClassProgrammes.map((item) => item?.meetingDay).sort();
 
   const stringDays = days
     // remove duplicates
@@ -125,11 +125,11 @@ export const Step17ReAccreditation = ({
   );
 
   const handleChildren = useCallback(() => {
-    if (previousClassroomGroups?.length === currentClassroomGroups.length)
+    if (previousClassroomGroups?.length === currentClassroomGroups?.length)
       return;
 
     const filteredChildren = [];
-    const _allLearners = allLearners.filter(
+    const _allLearners = allLearners?.filter(
       (x) => !Boolean(x.stoppedAttendance)
     );
 
@@ -141,9 +141,9 @@ export const Step17ReAccreditation = ({
         continue;
 
       const child = children?.find(
-        (child) => child.userId === learner.userId && child.isActive
+        (child) => child?.userId === learner?.userId && child?.isActive
       );
-      const childUser = childUsers?.find((y) => y.id === learner.userId);
+      const childUser = childUsers?.find((y) => y?.id === learner?.userId);
 
       if (
         child &&
@@ -178,8 +178,8 @@ export const Step17ReAccreditation = ({
     childUsers,
     children,
     currentClassProgrammes,
-    currentClassroomGroups.length,
-    previousClassroomGroups?.length,
+    currentClassroomGroups,
+    previousClassroomGroups,
   ]);
 
   useEffect(() => {
@@ -226,13 +226,16 @@ export const Step17ReAccreditation = ({
         <span className="bg-primary rounded-15 px-2 text-sm font-semibold text-white">
           {isPrincipal
             ? currentClassProgrammes?.length
-            : currentClassroomGroups.length}
+            : currentClassroomGroups?.length}
         </span>
         <Typography
           type="h4"
           text={
             isPrincipal
-              ? `classes at ${currentClassroomGroups[0].programmeType?.description}`
+              ? `classes at ${
+                  currentClassroomGroups?.[0]?.programmeType?.description ??
+                  'Not provided'
+                }`
               : `classes assigned to ${name}`
           }
         />
