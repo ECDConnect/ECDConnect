@@ -575,11 +575,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
 
-                        var months = GetMonthDifference(today, visit.PlannedVisitDate);
-                        if (months <= 3)
-                        {
+                       // var months = GetMonthDifference(today, visit.PlannedVisitDate);
+                       // if (months <= 3)
+                      //  {
                             reaccreditation_visits.Add(visit);
-                        }
+                       // }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
                     {
