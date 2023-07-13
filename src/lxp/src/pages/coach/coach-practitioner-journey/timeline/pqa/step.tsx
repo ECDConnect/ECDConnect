@@ -38,10 +38,10 @@ export const getPqaStepData = ({
       ? practitionerEvents.find(
           (e) =>
             e.eventType === 'First PQA' &&
-            e.action.state !== undefined &&
-            e.action.state.action === 'onStart' &&
-            e.action.state.actionParams !== undefined &&
-            e.action.state.actionParams.visitName ===
+            e.action?.state !== undefined &&
+            e.action?.state.action === 'onStart' &&
+            e.action?.state.actionParams !== undefined &&
+            e.action?.state.actionParams.visitName ===
               currentVisit.visitType?.name
         )
       : undefined;

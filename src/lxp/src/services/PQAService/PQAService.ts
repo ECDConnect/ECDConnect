@@ -5,6 +5,7 @@ import {
   PractitionerTimeline,
   ReAccreditationVisitModelInput,
   SupportVisitModelInput,
+  UpdateVisitPlannedVisitDateModelInput,
   Visit,
   VisitData,
 } from '@ecdlink/graphql';
@@ -401,6 +402,35 @@ class PQAService {
     }
 
     return response.data.data.practitionerTimeline;
+  }
+
+  async updateVisitPlannedVisitDate(
+    input: UpdateVisitPlannedVisitDateModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateVisitPlannedVisitDate: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation updateVisitPlannedVisitDate($input: UpdateVisitPlannedVisitDateModelInput) {
+          updateVisitPlannedVisitDate(input: $input) {
+            id 
+          }        
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Update Visit PlannedVisitDate failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateVisitPlannedVisitDate;
   }
 }
 

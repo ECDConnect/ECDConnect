@@ -106,8 +106,8 @@ export const Step2ReAccreditation = ({
         type="h4"
         text={
           isOnline
-            ? `${practitionerClassroomDetails?.[0].classroom?.name || ''} ${
-                practitionerClassroomDetails?.[0].programmeType?.description ||
+            ? `${practitionerClassroomDetails?.[0]?.classroom?.name || ''} ${
+                practitionerClassroomDetails?.[0]?.programmeType?.description ||
                 ''
               }`
             : 'Not available offline'

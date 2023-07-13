@@ -155,6 +155,7 @@ export const CalendarHome: React.FC = () => {
       calendarInstance()?.off('clickEvent');
       // calendarInstance()?.off('clickDayName');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

@@ -29,6 +29,7 @@ import {
   getInfantCurrentVisitSelector,
   getInfantById,
   getInfantVisitsSelector,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
 import { InfantProfileParams } from '../infant-profile.types';
@@ -77,6 +78,9 @@ export const VisitsTab: React.FC = () => {
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
+  );
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
   const { isLoading } = useThunkFetchCall(
@@ -138,17 +142,22 @@ export const VisitsTab: React.FC = () => {
         return 'completed';
       }
 
+      if (item.visitType?.normalizedName === 'Day 7') {
+        if (infantAgeDays < 7 || infantAgeDays > 13) {
+          return 'todo';
+        }
+      }
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
         isMissedVisit ||
-        (new Date(item.orderDate) <= currentDate && isAdditionalVisit)
+        (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, isWeekDeadline]
+    [currentVisit, infantAgeDays, isWeekDeadline, previousVisit?.attended]
   );
 
   const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
