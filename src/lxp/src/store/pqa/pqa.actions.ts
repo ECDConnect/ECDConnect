@@ -18,6 +18,7 @@ export const PqaActions = {
   ADD_FOLLOW_UP_VISIT_FORM_DATA: 'addFollowUpVisitFormData',
   ADD_RE_ACCREDITATION_FOLLOW_UP_VISIT_FORM_DATA:
     'addReAccreditationFollowUpVisitFormData',
+  ADD_SELF_ASSESSMENT_FOR_PRACTITIONER: 'addSelfAssessmentForPractitioner',
 };
 
 export const addVisitFormData = createAsyncThunk<
@@ -29,7 +30,7 @@ export const addVisitFormData = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { prePqaFormData, pqaFormData, reAccreditationFormData },
+      pqa: { prePqaFormData, pqaFormData },
     } = getState();
 
     try {
@@ -55,17 +56,6 @@ export const addVisitFormData = createAsyncThunk<
 
         if (!!pqaFormData?.length) {
           const promises = pqaFormData?.map(
-            async (item) =>
-              await new PQAService(userAuth?.auth_token).addVisitData(
-                item.formData
-              )
-          );
-
-          return promises?.length && Promise.all(promises);
-        }
-
-        if (!!reAccreditationFormData?.length) {
-          const promises = reAccreditationFormData?.map(
             async (item) =>
               await new PQAService(userAuth?.auth_token).addVisitData(
                 item.formData
@@ -168,7 +158,7 @@ export const addFollowUpVisitForPractitioner = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { supportVisitFormData },
+      pqa: { followUpVisitFormData },
     } = getState();
 
     try {
@@ -181,8 +171,8 @@ export const addFollowUpVisitForPractitioner = createAsyncThunk<
           return response;
         }
 
-        if (!!supportVisitFormData?.length) {
-          const promises = supportVisitFormData?.map(
+        if (!!followUpVisitFormData?.length) {
+          const promises = followUpVisitFormData?.map(
             async (item) =>
               await new PQAService(
                 userAuth?.auth_token
@@ -207,7 +197,7 @@ export const addReAccreditationFollowUpVisitForPractitioner = createAsyncThunk<
   async (input, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      pqa: { supportVisitFormData },
+      pqa: { reAccreditationFollowUpVisitFormData },
     } = getState();
 
     try {
@@ -220,12 +210,51 @@ export const addReAccreditationFollowUpVisitForPractitioner = createAsyncThunk<
           return response;
         }
 
-        if (!!supportVisitFormData?.length) {
-          const promises = supportVisitFormData?.map(
+        if (!!reAccreditationFollowUpVisitFormData?.length) {
+          const promises = reAccreditationFollowUpVisitFormData?.map(
             async (item) =>
               await new PQAService(
                 userAuth?.auth_token
               ).addReAccreditationFollowUpVisitForPractitioner(item.formData)
+          );
+
+          return promises?.length && Promise.all(promises);
+        }
+      }
+    } catch (err) {
+      return rejectWithValue(err);
+    }
+  }
+);
+
+export const addSelfAssessmentForPractitioner = createAsyncThunk<
+  any,
+  SupportVisitModelInput | undefined,
+  ThunkApiType<RootState>
+>(
+  PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER,
+  async (input, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      pqa: { selfAssessmentFormData },
+    } = getState();
+
+    try {
+      if (userAuth?.auth_token) {
+        if (!!input && !!Object.keys(input).length) {
+          const response = await new PQAService(
+            userAuth?.auth_token
+          ).addSelfAssessmentForPractitioner(input);
+
+          return response;
+        }
+
+        if (!!selfAssessmentFormData?.length) {
+          const promises = selfAssessmentFormData?.map(
+            async (item) =>
+              await new PQAService(
+                userAuth?.auth_token
+              ).addSelfAssessmentForPractitioner(item.formData)
           );
 
           return promises?.length && Promise.all(promises);

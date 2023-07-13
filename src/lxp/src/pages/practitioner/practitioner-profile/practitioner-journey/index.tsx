@@ -112,6 +112,12 @@ export const PractitionerJourney = ({
   }, [appDispatch, userId]);
 
   useLayoutEffect(() => {
+    if (activityName) {
+      onIsDisplayFormChange(true);
+    }
+  }, [activityName, onIsDisplayFormChange]);
+
+  useLayoutEffect(() => {
     getTimeline();
   }, [getTimeline]);
 

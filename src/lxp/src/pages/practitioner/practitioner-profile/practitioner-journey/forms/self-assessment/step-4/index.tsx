@@ -2,44 +2,46 @@ import { Alert, Divider, Radio, Typography } from '@ecdlink/ui';
 import { Fragment, useLayoutEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 
-export const Step2 = ({
+export const Step4 = ({
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question: 'I make sure children are supervised:',
-      answer: '',
-    },
-    {
-      question: 'I make a fun & interesting space, with things on the wall:',
+      question:
+        'I talk with children throughout the programme. I encourage children to talk about what they are doing and thinking, and I listen carefully to their ideas:',
       answer: '',
     },
     {
       question:
-        'I unpack the playkit and materials and put them where children can reach them:',
+        'I help to improve children’s language by telling them new words and explaining what they mean:',
       answer: '',
     },
     {
       question:
-        'I set up different interest areas with area labels (art, pretend, building, toys and games, story):',
+        'I let children make their own choices about what to play and I allow them to play and learn at their own level:',
       answer: '',
     },
     {
       question:
-        'I put up the SmartStart routine so children can reach and ask the children to move a marker that shows where we are in the programme:',
+        'I give children appropriate toys and materials to play with and support them to use them when needed:',
       answer: '',
     },
     {
       question:
-        'I make sure children always have the chance to plan their activities before free play, and to talk about it afterwards:',
+        'I join in children’s play and give support when needed. I get onto their level and share information and ask questions during play, to help children think and learn:',
+      answer: '',
+    },
+    {
+      question:
+        'I make storytimes that are fun and full of conversation. I use questions and comments to encourage children to think:',
       answer: '',
     },
   ]);
 
   const options = ['Sometimes', 'Most of the time', 'All the time'];
 
-  const visitSection = 'Step 2';
+  const visitSection = 'Step 4';
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,

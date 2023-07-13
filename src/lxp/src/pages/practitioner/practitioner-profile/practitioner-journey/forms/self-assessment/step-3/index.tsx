@@ -2,44 +2,35 @@ import { Alert, Divider, Radio, Typography } from '@ecdlink/ui';
 import { Fragment, useLayoutEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 
-export const Step2 = ({
+export const Step3 = ({
   setEnableButton,
   setSectionQuestions,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question: 'I make sure children are supervised:',
+      question:
+        'I speak and act warmly and respectfully to children. I give individual attention to different children and encourage them:',
       answer: '',
     },
     {
-      question: 'I make a fun & interesting space, with things on the wall:',
+      question: 'I make sure that children who are upset are comforted:',
       answer: '',
     },
     {
       question:
-        'I unpack the playkit and materials and put them where children can reach them:',
+        'I use calm methods to keep order, and do not use harsh words or physical methods:',
       answer: '',
     },
     {
       question:
-        'I set up different interest areas with area labels (art, pretend, building, toys and games, story):',
-      answer: '',
-    },
-    {
-      question:
-        'I put up the SmartStart routine so children can reach and ask the children to move a marker that shows where we are in the programme:',
-      answer: '',
-    },
-    {
-      question:
-        'I make sure children always have the chance to plan their activities before free play, and to talk about it afterwards:',
+        'I involve children in solving conflicts and listen carefully to their feelings, views and suggestions:',
       answer: '',
     },
   ]);
 
   const options = ['Sometimes', 'Most of the time', 'All the time'];
 
-  const visitSection = 'Step 2';
+  const visitSection = 'Step 3';
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
