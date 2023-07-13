@@ -19,6 +19,7 @@ interface PQAVisitsProps {
   practitionerId: string;
   currentVisitEventId: string | undefined;
   isOnline: boolean;
+  onStart: (visitName: string) => void;
   onScheduleOrStart: (schedule: ScheduleProps) => void;
 }
 
@@ -29,6 +30,7 @@ export const PQAVisits = ({
   currentVisit,
   practitionerId,
   currentVisitEventId,
+  onStart,
   onScheduleOrStart,
 }: PQAVisitsProps) => {
   const timeline = useSelector(
@@ -74,6 +76,7 @@ export const PQAVisits = ({
     new Date(lastAttendedPqaFollowUpVisit?.insertedDate) >
       new Date(lastAttendedPqaVisit?.insertedDate);
   const isPQAFollowUp =
+    !!currentPqaRating.rating?.overallRatingColor &&
     currentPqaRating.rating?.overallRatingColor !== 'Success' &&
     !lastAttendedPqaVisit?.visitType?.name?.includes(
       visitTypes.pqa.thirdPQA.name
@@ -88,7 +91,7 @@ export const PQAVisits = ({
               {
                 id: newPqaFollowUpId,
                 visitType: {
-                  description: `First PQA`,
+                  description: `Follow-up visit ${currentPqaRating.visitNumber}`,
                   name: visitTypes.pqa.followUp.name,
                 },
                 plannedVisitDate: addDays(
@@ -167,6 +170,28 @@ export const PQAVisits = ({
     return '';
   };
 
+  const getButtonText = (item: Maybe<Visit>) => {
+    if (!currentVisitEventId) {
+      return 'Schedule';
+    }
+    return 'Start';
+  };
+
+  const getButtonIcon = (item: Maybe<Visit>) => {
+    if (!currentVisitEventId) {
+      return 'CalendarIcon';
+    }
+    return 'ArrowCircleRightIcon';
+  };
+
+  const onClick = (options: ScheduleProps) => {
+    if (!currentVisitEventId) {
+      onScheduleOrStart(options);
+    } else {
+      onStart(options.visit.visitType?.name as string);
+    }
+  };
+
   return (
     <>
       {sortedVisits.map((item) => (
@@ -193,11 +218,11 @@ export const PQAVisits = ({
                 textColor="primary"
                 type="outlined"
                 color="primary"
-                text="Schedule"
+                text={getButtonText(item)}
                 iconPosition="start"
-                icon="CalendarIcon"
+                icon={getButtonIcon(item)}
                 onClick={() =>
-                  onScheduleOrStart({
+                  onClick({
                     visit: item as Visit,
                     visitEventId: currentVisitEventId,
                     eventType: 'First PQA',

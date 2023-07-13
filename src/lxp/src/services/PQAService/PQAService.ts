@@ -5,6 +5,7 @@ import {
   PractitionerTimeline,
   ReAccreditationVisitModelInput,
   SupportVisitModelInput,
+  UpdateVisitPlannedVisitDateModelInput,
   Visit,
   VisitData,
 } from '@ecdlink/graphql';
@@ -121,6 +122,35 @@ class PQAService {
     }
 
     return response.data.data.addFollowUpVisitForPractitioner;
+  }
+
+  async addReAccreditationFollowUpVisitForPractitioner(
+    input: FollowUpVisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addReAccreditationFollowUpVisitForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddReAccreditationFollowUpVisitForPractitioner($input: FollowUpVisitModelInput) {
+          addReAccreditationFollowUpVisitForPractitioner(input: $input) {
+              id 
+          }        
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Add reAccreditation follow up visit failed - Server connection error'
+      );
+    }
+
+    return response.data.data.addReAccreditationFollowUpVisitForPractitioner;
   }
 
   async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
@@ -335,6 +365,35 @@ class PQAService {
     }
 
     return response.data.data.practitionerTimeline;
+  }
+
+  async updateVisitPlannedVisitDate(
+    input: UpdateVisitPlannedVisitDateModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateVisitPlannedVisitDate: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation updateVisitPlannedVisitDate($input: UpdateVisitPlannedVisitDateModelInput) {
+          updateVisitPlannedVisitDate(input: $input) {
+            id 
+          }        
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Update Visit PlannedVisitDate failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateVisitPlannedVisitDate;
   }
 }
 

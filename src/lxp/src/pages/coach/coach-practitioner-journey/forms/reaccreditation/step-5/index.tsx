@@ -8,7 +8,7 @@ import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
 
 export const step5ReAccreditationQuestion =
   'How many assistants will attend every session?';
-export const step5ReAccreditationVisitSection = 'step 5';
+export const step5ReAccreditationVisitSection = 'Programme details';
 
 export const Step5ReAccreditation = ({
   smartStarter,
@@ -65,7 +65,7 @@ export const Step5ReAccreditation = ({
         <Typography
           type="h4"
           text={
-            currentClassroomGroups?.[0].programmeType?.description ??
+            currentClassroomGroups?.[0]?.programmeType?.description ??
             'Not provided'
           }
           color={isOnline ? 'textDark' : 'errorMain'}

@@ -84,6 +84,7 @@ export const timelineSteps = ({
   visits,
   practitionerId,
   currentPqaRating,
+  currentReAccreditationRating,
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
@@ -95,6 +96,7 @@ export const timelineSteps = ({
   isOnline: boolean;
   visits?: Maybe<Visit>[];
   currentPqaRating: RatingData;
+  currentReAccreditationRating: RatingData;
 }): StepItem[] => {
   const steps: (StepItem<{ date?: Date }> | {})[] = [];
   steps.push(
@@ -243,6 +245,7 @@ export const timelineSteps = ({
           currentVisit={currentVisit!}
           practitionerId={practitionerId}
           currentVisitEventId={currentVisitEvent?.id}
+          onStart={onStart}
           onScheduleOrStart={onScheduleOrStart}
           isOnline={isOnline}
         />
@@ -260,7 +263,7 @@ export const timelineSteps = ({
     } = getReAccreditationStepData({
       timeline,
       practitionerEvents,
-      currentPqaRating,
+      currentRating: currentReAccreditationRating,
     });
 
     steps.push({
@@ -285,13 +288,6 @@ export const timelineSteps = ({
       inProgressStepIcon: stepType?.color && 'ExclamationCircleIcon',
       extraData: {
         date: new Date(currentVisit?.plannedVisitDate),
-      },
-      showActionButton: true,
-      // TODO: add schedule feature
-      actionButtonText: 'Start',
-      actionButtonIcon: 'ArrowCircleRightIcon',
-      actionButtonOnClick: () => {
-        onStart(String(currentVisit?.visitType?.name));
       },
       showAccordion: true,
       accordionContent: (

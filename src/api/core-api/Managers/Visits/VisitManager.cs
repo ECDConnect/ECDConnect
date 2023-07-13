@@ -10,6 +10,7 @@ using HotChocolate;
 using Microsoft.AspNetCore.Http;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Visits
@@ -690,6 +691,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             return true;
         }
 
+        public Visit UpdateVisitPlannedVisitDate(UpdateVisitPlannedVisitDateModel input)
+        {
+            var visit = _visitRepo.GetById(input.VisitId);
+            visit.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            _visitRepo.Update(visit);
+            return visit;
+        }
     }
 }
     
