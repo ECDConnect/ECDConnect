@@ -1,7 +1,7 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
 import {
-  CoachPractitionerTimeline,
+  PractitionerTimelineState,
   FormData,
   RatingData,
   PreviousFormData,
@@ -13,7 +13,7 @@ import {
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
     (state: RootState) => state.pqa.coachPractitionersTimeline,
-    (items: CoachPractitionerTimeline[] | undefined) => {
+    (items: PractitionerTimelineState[] | undefined) => {
       return items?.find((item) => item.practitionerId === userId)?.timeline;
     }
   );
