@@ -3477,6 +3477,9 @@ export type Mutation = {
   createNoteType?: Maybe<NoteType>;
   createPQA?: Maybe<Pqa>;
   createPermission?: Maybe<Permission>;
+  createPointsLibrary?: Maybe<PointsLibrary>;
+  createPointsUser?: Maybe<PointsUser>;
+  createPointsUserSummary?: Maybe<PointsUserSummary>;
   createPractitioner?: Maybe<Practitioner>;
   createPrincipal?: Maybe<Principal>;
   createProgramme?: Maybe<Programme>;
@@ -3584,6 +3587,9 @@ export type Mutation = {
   deleteNoteType?: Maybe<Scalars['Boolean']>;
   deletePQA?: Maybe<Scalars['Boolean']>;
   deletePermission?: Maybe<Scalars['Boolean']>;
+  deletePointsLibrary?: Maybe<Scalars['Boolean']>;
+  deletePointsUser?: Maybe<Scalars['Boolean']>;
+  deletePointsUserSummary?: Maybe<Scalars['Boolean']>;
   deletePractitioner?: Maybe<Scalars['Boolean']>;
   deletePractitionerForCoach?: Maybe<Practitioner>;
   deletePractitionerFromPrincipal?: Maybe<Practitioner>;
@@ -3740,6 +3746,9 @@ export type Mutation = {
   updateNoteType?: Maybe<NoteType>;
   updatePQA?: Maybe<Pqa>;
   updatePermission?: Maybe<Permission>;
+  updatePointsLibrary?: Maybe<PointsLibrary>;
+  updatePointsUser?: Maybe<PointsUser>;
+  updatePointsUserSummary?: Maybe<PointsUserSummary>;
   updatePractitioner?: Maybe<Practitioner>;
   updatePractitionerContactInfo?: Maybe<ApplicationUser>;
   updatePractitionerEmergencyContact: Scalars['Boolean'];
@@ -4204,6 +4213,18 @@ export type MutationCreatePqaArgs = {
 
 export type MutationCreatePermissionArgs = {
   input?: InputMaybe<PermissionInput>;
+};
+
+export type MutationCreatePointsLibraryArgs = {
+  input?: InputMaybe<PointsLibraryInput>;
+};
+
+export type MutationCreatePointsUserArgs = {
+  input?: InputMaybe<PointsUserInput>;
+};
+
+export type MutationCreatePointsUserSummaryArgs = {
+  input?: InputMaybe<PointsUserSummaryInput>;
 };
 
 export type MutationCreatePractitionerArgs = {
@@ -4683,6 +4704,18 @@ export type MutationDeletePqaArgs = {
 };
 
 export type MutationDeletePermissionArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeletePointsLibraryArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeletePointsUserArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+};
+
+export type MutationDeletePointsUserSummaryArgs = {
   id?: InputMaybe<Scalars['UUID']>;
 };
 
@@ -5390,6 +5423,21 @@ export type MutationUpdatePermissionArgs = {
   input?: InputMaybe<PermissionInput>;
 };
 
+export type MutationUpdatePointsLibraryArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PointsLibraryInput>;
+};
+
+export type MutationUpdatePointsUserArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PointsUserInput>;
+};
+
+export type MutationUpdatePointsUserSummaryArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  input?: InputMaybe<PointsUserSummaryInput>;
+};
+
 export type MutationUpdatePractitionerArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<PractitionerInput>;
@@ -6078,6 +6126,165 @@ export type PermissionInput = {
   Name?: InputMaybe<Scalars['String']>;
   NormalizedName?: InputMaybe<Scalars['String']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type PointsLibrary = {
+  __typename?: 'PointsLibrary';
+  activity?: Maybe<Scalars['String']>;
+  calculatedAtMonthEnd?: Maybe<Scalars['Boolean']>;
+  calculatedAtYearEnd?: Maybe<Scalars['Boolean']>;
+  description?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  maxPointsIndividualMonthly: Scalars['Int'];
+  maxPointsNonPrincipalMonthly: Scalars['Int'];
+  maxPointsNonPrincipalYearly: Scalars['Int'];
+  maxPointsPrincipalMonthly: Scalars['Int'];
+  maxPointsPrincipalYearly: Scalars['Int'];
+  points: Scalars['Int'];
+  subActivity?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+};
+
+export type PointsLibraryFilterInput = {
+  activity?: InputMaybe<StringOperationFilterInput>;
+  and?: InputMaybe<Array<PointsLibraryFilterInput>>;
+  calculatedAtMonthEnd?: InputMaybe<BooleanOperationFilterInput>;
+  calculatedAtYearEnd?: InputMaybe<BooleanOperationFilterInput>;
+  description?: InputMaybe<StringOperationFilterInput>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  maxPointsIndividualMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  maxPointsNonPrincipalMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  maxPointsNonPrincipalYearly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  maxPointsPrincipalMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  maxPointsPrincipalYearly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  or?: InputMaybe<Array<PointsLibraryFilterInput>>;
+  points?: InputMaybe<ComparableInt32OperationFilterInput>;
+  subActivity?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+};
+
+export type PointsLibraryInput = {
+  Activity?: InputMaybe<Scalars['String']>;
+  CalculatedAtMonthEnd?: InputMaybe<Scalars['Boolean']>;
+  CalculatedAtYearEnd?: InputMaybe<Scalars['Boolean']>;
+  Description?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  MaxPointsIndividualMonthly: Scalars['Int'];
+  MaxPointsNonPrincipalMonthly: Scalars['Int'];
+  MaxPointsNonPrincipalYearly: Scalars['Int'];
+  MaxPointsPrincipalMonthly: Scalars['Int'];
+  MaxPointsPrincipalYearly: Scalars['Int'];
+  Points: Scalars['Int'];
+  SubActivity?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+};
+
+export type PointsUser = {
+  __typename?: 'PointsUser';
+  activity?: Maybe<Scalars['String']>;
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  month: Scalars['Int'];
+  points: Scalars['Int'];
+  pointsLibrary?: Maybe<PointsLibrary>;
+  pointsLibraryId: Scalars['UUID'];
+  subActivity?: Maybe<Scalars['String']>;
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+  year: Scalars['Int'];
+};
+
+export type PointsUserFilterInput = {
+  activity?: InputMaybe<StringOperationFilterInput>;
+  and?: InputMaybe<Array<PointsUserFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  month?: InputMaybe<ComparableInt32OperationFilterInput>;
+  or?: InputMaybe<Array<PointsUserFilterInput>>;
+  points?: InputMaybe<ComparableInt32OperationFilterInput>;
+  pointsLibrary?: InputMaybe<PointsLibraryFilterInput>;
+  pointsLibraryId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  subActivity?: InputMaybe<StringOperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+  year?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type PointsUserInput = {
+  Activity?: InputMaybe<Scalars['String']>;
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Month: Scalars['Int'];
+  Points: Scalars['Int'];
+  PointsLibrary?: InputMaybe<PointsLibraryInput>;
+  PointsLibraryId: Scalars['UUID'];
+  SubActivity?: InputMaybe<Scalars['String']>;
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+  Year: Scalars['Int'];
+};
+
+export type PointsUserSummary = {
+  __typename?: 'PointsUserSummary';
+  id: Scalars['UUID'];
+  insertedDate: Scalars['DateTime'];
+  isActive: Scalars['Boolean'];
+  month: Scalars['Int'];
+  pointsLibrary?: Maybe<PointsLibrary>;
+  pointsLibraryId: Scalars['UUID'];
+  pointsTotal: Scalars['Int'];
+  pointsYTD: Scalars['Int'];
+  updatedBy?: Maybe<Scalars['String']>;
+  updatedDate: Scalars['DateTime'];
+  user?: Maybe<ApplicationUser>;
+  userId?: Maybe<Scalars['String']>;
+  year: Scalars['Int'];
+};
+
+export type PointsUserSummaryFilterInput = {
+  and?: InputMaybe<Array<PointsUserSummaryFilterInput>>;
+  id?: InputMaybe<ComparableGuidOperationFilterInput>;
+  insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  isActive?: InputMaybe<BooleanOperationFilterInput>;
+  month?: InputMaybe<ComparableInt32OperationFilterInput>;
+  or?: InputMaybe<Array<PointsUserSummaryFilterInput>>;
+  pointsLibrary?: InputMaybe<PointsLibraryFilterInput>;
+  pointsLibraryId?: InputMaybe<ComparableGuidOperationFilterInput>;
+  pointsTotal?: InputMaybe<ComparableInt32OperationFilterInput>;
+  pointsYTD?: InputMaybe<ComparableInt32OperationFilterInput>;
+  updatedBy?: InputMaybe<StringOperationFilterInput>;
+  updatedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
+  user?: InputMaybe<ApplicationUserFilterInput>;
+  userId?: InputMaybe<StringOperationFilterInput>;
+  year?: InputMaybe<ComparableInt32OperationFilterInput>;
+};
+
+export type PointsUserSummaryInput = {
+  Id?: InputMaybe<Scalars['UUID']>;
+  IsActive: Scalars['Boolean'];
+  Month: Scalars['Int'];
+  PointsLibrary?: InputMaybe<PointsLibraryInput>;
+  PointsLibraryId: Scalars['UUID'];
+  PointsTotal: Scalars['Int'];
+  PointsYTD: Scalars['Int'];
+  UpdatedBy?: InputMaybe<Scalars['String']>;
+  User?: InputMaybe<ApplicationUserInput>;
+  UserId?: InputMaybe<Scalars['String']>;
+  Year: Scalars['Int'];
 };
 
 export type Practitioner = {
@@ -6983,6 +7190,9 @@ export type Query = {
   GetAllNoteType?: Maybe<Array<Maybe<NoteType>>>;
   GetAllPQA?: Maybe<Array<Maybe<Pqa>>>;
   GetAllPermission?: Maybe<Array<Maybe<Permission>>>;
+  GetAllPointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
+  GetAllPointsUser?: Maybe<Array<Maybe<PointsUser>>>;
+  GetAllPointsUserSummary?: Maybe<Array<Maybe<PointsUserSummary>>>;
   GetAllPractitioner?: Maybe<Array<Maybe<Practitioner>>>;
   GetAllPrincipal?: Maybe<Array<Maybe<Principal>>>;
   GetAllProgramme?: Maybe<Array<Maybe<Programme>>>;
@@ -7093,6 +7303,9 @@ export type Query = {
   GetNoteTypeById?: Maybe<NoteType>;
   GetPQAById?: Maybe<Pqa>;
   GetPermissionById?: Maybe<Permission>;
+  GetPointsLibraryById?: Maybe<PointsLibrary>;
+  GetPointsUserById?: Maybe<PointsUser>;
+  GetPointsUserSummaryById?: Maybe<PointsUserSummary>;
   GetPractitionerById?: Maybe<Practitioner>;
   GetPrincipalById?: Maybe<Principal>;
   GetProgrammeAttendanceReasonById?: Maybe<ProgrammeAttendanceReason>;
@@ -7599,6 +7812,21 @@ export type QueryGetAllPqaArgs = {
 export type QueryGetAllPermissionArgs = {
   pagingInput?: InputMaybe<PagedQueryInput>;
   where?: InputMaybe<PermissionFilterInput>;
+};
+
+export type QueryGetAllPointsLibraryArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<PointsLibraryFilterInput>;
+};
+
+export type QueryGetAllPointsUserArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<PointsUserFilterInput>;
+};
+
+export type QueryGetAllPointsUserSummaryArgs = {
+  pagingInput?: InputMaybe<PagedQueryInput>;
+  where?: InputMaybe<PointsUserSummaryFilterInput>;
 };
 
 export type QueryGetAllPractitionerArgs = {
@@ -8120,6 +8348,21 @@ export type QueryGetPqaByIdArgs = {
 export type QueryGetPermissionByIdArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   where?: InputMaybe<PermissionFilterInput>;
+};
+
+export type QueryGetPointsLibraryByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PointsLibraryFilterInput>;
+};
+
+export type QueryGetPointsUserByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PointsUserFilterInput>;
+};
+
+export type QueryGetPointsUserSummaryByIdArgs = {
+  id?: InputMaybe<Scalars['UUID']>;
+  where?: InputMaybe<PointsUserSummaryFilterInput>;
 };
 
 export type QueryGetPractitionerByIdArgs = {
