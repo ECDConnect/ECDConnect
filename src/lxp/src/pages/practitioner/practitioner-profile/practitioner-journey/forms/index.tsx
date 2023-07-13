@@ -15,6 +15,8 @@ import {
 } from '@ecdlink/graphql';
 import { useAppDispatch } from '@/store';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import { PqaActions } from '@/store/pqa/pqa.actions';
 
 export const visitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -33,6 +35,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
+  const { isLoading: isLoadingSelfAssessment } = useThunkFetchCall(
+    'pqa',
+    PqaActions.ADD_SELF_ASSESSMENT_FOR_PRACTITIONER
+  );
   const { isOnline } = useOnlineStatus();
 
   const user = useSelector(getUser);
@@ -167,7 +173,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
-        isLoading={false}
+        isLoading={isLoadingSelfAssessment}
       />
     </BannerWrapper>
   );

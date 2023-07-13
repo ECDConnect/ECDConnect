@@ -180,9 +180,7 @@ class PQAService {
     });
 
     if (response.status !== 200 || response.data.errors) {
-      throw new Error(
-        'Add reAccreditation follow up visit failed - Server connection error'
-      );
+      throw new Error('Add self assessment failed - Server connection error');
     }
 
     return response.data.data.addSelfAssessmentForPractitioner;
