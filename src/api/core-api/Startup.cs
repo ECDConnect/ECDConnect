@@ -156,6 +156,7 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<IReassignmentService, ReassignmentService>();
             services.AddTransient<IIntegrationService, IntegrationService>();
             services.AddTransient<ISchedulerService, SchedulerService>();
+            services.AddTransient<IPointsEngineService, PointsEngineService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
             services.AddTransient<IntegrationHelperManager>();
