@@ -27,7 +27,6 @@ export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
 > = ({ currentParticipantUsers, onBack, onDone }) => {
   const [filteredData, setFilteredData] = useState<ListDataItem[]>([]);
-  const [data, setData] = useState<ListDataItem[]>([]);
   const [selectedData, setSelectedData] = useState<ListDataItem[]>([]);
   const [unselectedData, setUnselectedData] = useState<ListDataItem[]>([]);
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
@@ -87,7 +86,7 @@ export const CalendarSearchParticipant: React.FC<
       setSelectedData([selectedData[0], ...selected]);
       setFilteredData(filtered);
     },
-    [unselectedData, selectedData, filteredData]
+    [unselectedData, selectedData, filteredData, currentUser.id]
   );
 
   const onPractitionerRemove = useCallback(
@@ -105,7 +104,7 @@ export const CalendarSearchParticipant: React.FC<
       setSelectedData(selected);
       setUnselectedData(unselected);
     },
-    [unselectedData, selectedData]
+    [unselectedData, selectedData, currentUser.id]
   );
 
   const onClickDone = useCallback(() => {
@@ -116,12 +115,11 @@ export const CalendarSearchParticipant: React.FC<
         surname: x.extraData?.surname || '',
       }));
     onDone(participantUsers);
-  }, [selectedData]);
+  }, [selectedData, onDone]);
 
   useEffect(() => {
     if (!!practitioners && practitioners.length > 0) {
       const list = practitioners.map((p) => mapPractitionerToListDataItem(p));
-      setData(list);
 
       const unselected = list.filter(
         (p) =>

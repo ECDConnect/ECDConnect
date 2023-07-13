@@ -1,4 +1,5 @@
 import {
+  CalendarEventActionModel,
   CalendarEventDto,
   CalendarEventModel,
   CalendarEventModelInputModel,
@@ -13,7 +14,7 @@ export const calendarConvert = {
       input: CalendarEventModelInputModel
     ): CalendarEventModelInput => {
       return {
-        action: !!input.action ? JSON.stringify(input.action) : null,
+        action: input.action,
         allDay: input.allDay,
         description: input.description,
         end: input.end,
@@ -34,7 +35,9 @@ export const calendarConvert = {
       return {
         __changed: input.__changed,
         id: input.id || '',
-        action: !!input.action ? JSON.parse(input.action) : undefined,
+        action: !input.action
+          ? null
+          : (JSON.parse(input.action) as CalendarEventActionModel),
         allDay: input.allDay,
         description: input.description || '',
         end: input.end as string,
@@ -87,7 +90,7 @@ export const calendarConvert = {
       return {
         __changed: input.__changed,
         userId: input.userId,
-        action: !!input.action ? JSON.stringify(input.action) : null,
+        action: !input.action ? null : JSON.stringify(input.action),
         allDay: input.allDay,
         description: input.description,
         end: input.end,
@@ -135,7 +138,7 @@ export const calendarConvert = {
       return {
         __changed: false,
         id: input.id,
-        action: !!input.action ? JSON.stringify(input.action) : null,
+        action: !!input.action ? JSON.parse(input.action) : null,
         allDay: input.allDay,
         description: input.description || '',
         end: input.end,

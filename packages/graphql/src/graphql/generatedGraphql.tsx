@@ -3808,6 +3808,7 @@ export type Mutation = {
   updateVisitDataStatus: Scalars['Boolean'];
   updateVisitGrowthDataDay?: Maybe<VisitGrowthDataDay>;
   updateVisitGrowthDataHeight?: Maybe<VisitGrowthDataHeight>;
+  updateVisitPlannedVisitDate?: Maybe<Visit>;
   updateVisitType?: Maybe<VisitType>;
   updateVisitVideos?: Maybe<VisitVideos>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
@@ -5758,6 +5759,10 @@ export type MutationUpdateVisitGrowthDataDayArgs = {
 export type MutationUpdateVisitGrowthDataHeightArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<VisitGrowthDataHeightInput>;
+};
+
+export type MutationUpdateVisitPlannedVisitDateArgs = {
+  input?: InputMaybe<UpdateVisitPlannedVisitDateModelInput>;
 };
 
 export type MutationUpdateVisitTypeArgs = {
@@ -10645,6 +10650,11 @@ export type TraineeOnBoardTimeline = {
   threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
   traineeVisits?: Maybe<Array<Maybe<Visit>>>;
+};
+
+export type UpdateVisitPlannedVisitDateModelInput = {
+  plannedVisitDate: Scalars['DateTime'];
+  visitId: Scalars['UUID'];
 };
 
 export type UserByToken = {
