@@ -1,6 +1,4 @@
-﻿/*
-
-CREATE TABLE "PointsLibrary" (
+﻿/*CREATE TABLE "PointsLibrary" (
 	"Id" uuid NOT NULL,
 	"IsActive" bool NOT NULL DEFAULT true,
 	"InsertedDate" timestamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
@@ -17,6 +15,7 @@ CREATE TABLE "PointsLibrary" (
 	"MaxPointsPrincipalYearly" numeric NULL DEFAULT 0,
 	"CalculatedAtMonthEnd" bool NOT NULL DEFAULT false,
 	"CalculatedAtYearEnd" bool NOT NULL DEFAULT false,
+	"Description" text NULL,
 	CONSTRAINT "PK_PointsLibrary" PRIMARY KEY ("Id")
 );
 
