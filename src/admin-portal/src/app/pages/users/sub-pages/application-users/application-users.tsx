@@ -23,7 +23,7 @@ import CustomDateRangePicker from '../../../../components/date-picker';
 export default function ApplicationUsers() {
   const [searchValue, setSearchValue] = useState('');
   const [statusFilter, setStatusFilter] = useState('');
-  const [showFilter, setShowFilter] = useState(true);
+  const [showFilter, setShowFilter] = useState(false);
   const [nameFilter, setNameFilter] = useState(false);
   const [selectedRoleFilter, setSelectedRoleFilter] = useState<string>();
   const [sortDescending, setSortDescending] = useState<boolean>(true);
