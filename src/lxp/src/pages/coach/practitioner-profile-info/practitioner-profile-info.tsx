@@ -74,8 +74,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     );
   };
 
-  const appDispatch = useAppDispatch();
-
   const classroomsDetailsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
       userAuth?.auth_token!
@@ -500,9 +498,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 type="outlined"
                 color="primary"
                 className={'mt-6 mb-6 w-11/12'}
-                // MATTODO Add new step in between, so they are not directly removed, but reason selected and confirmed first, then removed
-                //onClick={removePractitioner}
-                onClick={() => setRemovePractionerReasonsVisible(true)} //history.push(ROUTES.COACH.PRACTIONER_REMOVE, { practitionerId })}
+                onClick={() => setRemovePractionerReasonsVisible(true)}
               >
                 {renderIcon(
                   'TrashIcon',

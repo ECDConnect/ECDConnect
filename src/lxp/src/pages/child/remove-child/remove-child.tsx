@@ -82,7 +82,6 @@ export const RemoveChild: React.FC = () => {
 
     const updatedChild = { ...child };
     updatedChild.isActive = false;
-    // SHOULDN'T THIS SAVE THE REASON???
     appDispatch(childrenActions.deactivateChild(updatedChild));
     appDispatch(
       classroomsActions.deactivateClassroomGroupLearner(updatedChild)

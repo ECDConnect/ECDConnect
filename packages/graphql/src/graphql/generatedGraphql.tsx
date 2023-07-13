@@ -5543,7 +5543,7 @@ export type MutationUpdatePrincipalInvitationArgs = {
   practitionerId?: InputMaybe<Scalars['String']>;
   principalId?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
-  reasonForLeavingPractitionerId?: InputMaybe<Scalars['String']>;
+  reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationUpdateProgrammeArgs = {
