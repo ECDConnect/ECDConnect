@@ -1,14 +1,11 @@
 using ECDLink.DataAccessLayer.Entities;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
-using static NPOI.HSSF.Util.HSSFColor;
 
 namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static
 {
-    internal static class ReasonsForLeavingPractitionerSeedConstants
+    internal static class ReasonsForPractitionerLeavingSeedConstants
     {
-        // MATTODO - update all the ids!
         public static Guid CouldNotFindChildren = Guid.Parse("06eefbbd-ee77-4d02-9dae-dea3608742c9");
         public static Guid NotInterestedInECD = Guid.Parse("512e06fb-5805-4207-9b87-4fba4ea00f12");
         public static Guid Relocated = Guid.Parse("d7c94ba2-9279-47cb-8d9d-f5b80b1fc70a");
@@ -22,66 +19,66 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedData.Static
         public static Guid Other = Guid.Parse("528d108a-b70a-4cbb-943e-f799cecceba6");    
     }
 
-    internal static class ReasonsForLeavingPractitionerSeed<T>
-        where T : ReasonForLeavingPractitioner, new()
+    internal static class ReasonsForPractitionerLeavingSeed<T>
+        where T : ReasonForPractitionerLeaving, new()
     {
-        internal static IList<T> GetReasonForLeavingPractitionerSeed()
+        internal static IList<T> GetReasonForPractitionerLeavingSeed()
         {
             return new List<T>()
             {
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.CouldNotFindChildren,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.CouldNotFindChildren,
                     Description = "Could not find children"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.NotInterestedInECD,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.NotInterestedInECD,
                     Description = "Not interested in ECD"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.Relocated,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.Relocated,
                     Description = "Relocated"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.ProblemsWithVenue,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.ProblemsWithVenue,
                     Description = "Problems with venue"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.MovedToOtherCWP,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.MovedToOtherCWP,
                     Description = "Moved to other CWP"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.HealthIssues,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.HealthIssues,
                     Description = "Health issues"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.WentBackToSchool,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.WentBackToSchool,
                     Description = "Went back to school"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.NotEnoughIncome,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.NotEnoughIncome,
                     Description = "Not enough income"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.Delicensed,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.Delicensed,
                     Description = "Delicensed"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.DidNotCompleteOnboarding,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.DidNotCompleteOnboarding,
                     Description = "Did not complete onboarding"
                 },
                 new T
                 {
-                    Id = ReasonsForLeavingPractitionerSeedConstants.Other,
+                    Id = ReasonsForPractitionerLeavingSeedConstants.Other,
                     Description = "Other"
                 },
             };

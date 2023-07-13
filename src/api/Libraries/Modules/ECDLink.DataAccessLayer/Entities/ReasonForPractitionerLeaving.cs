@@ -6,9 +6,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    [Table(nameof(ReasonForLeavingPractitioner))]
+    [Table(nameof(ReasonForPractitionerLeaving))]
     [EntityPermission(PermissionGroups.GENERAL)]
-    public class ReasonForLeavingPractitioner : ReasonForLeavingPractitioner<Guid>
+    public class ReasonForPractitionerLeaving : ReasonForLeavingPractitioner<Guid>
     {
 
     }
@@ -22,7 +22,7 @@ namespace ECDLink.DataAccessLayer.Entities
     public interface ReasonForLeavingPractitionerJoin<TKey>
     {
         [ForeignKey(nameof(ReasonForLeavingPractionerId))]
-        public ReasonForLeavingPractitioner ReasonForLeaving { get; set; }
+        public ReasonForPractitionerLeaving ReasonForLeaving { get; set; }
         public TKey ReasonForLeavingPractionerId { get; set; }
     }
 }

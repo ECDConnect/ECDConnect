@@ -72,7 +72,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public bool? IsLeaving { get; set; }
 
         [ForeignKey(nameof(ReasonForLeavingPractitionerId))]
-        public virtual ReasonForLeavingPractitioner ReasonForLeaving { get; set; }
+        public virtual ReasonForPractitionerLeaving ReasonForLeaving { get; set; }
         public Guid? ReasonForLeavingPractitionerId { get; set; }
         public string ReasonForLeavingDetails { get; set; }
         public decimal Progress { get; set; }

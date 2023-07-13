@@ -7,7 +7,7 @@ import {
   ProgrammeAttendanceReasonDto,
   ProgrammeTypeDto,
   ReasonForLeavingDto,
-  ReasonForLeavingPractitionerDto,
+  ReasonForPractitionerLeavingDto,
   ProvinceDto,
   RaceDto,
   RelationDto,
@@ -28,7 +28,7 @@ import { ProgrammeTypeService } from '@services/ProgrammeTypeService';
 import { ProvinceService } from '@services/ProvinceService';
 import { RaceService } from '@services/RaceService';
 import { ReasonForLeavingService } from '@services/ReasonForLeavingService';
-import { ReasonForLeavingPractitionerService } from '@services/ReasonForLeavingPractitionerService';
+import { ReasonForPractitionerLeavingService } from '@services/ReasonForPractitionerLeavingService';
 import { RelationsService } from '@services/RelationsService';
 import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
@@ -424,29 +424,28 @@ export const getReasonsForLeaving = createAsyncThunk<
   }
 );
 
-export const getReasonsForLeavingPractitioner = createAsyncThunk<
-  ReasonForLeavingPractitionerDto[],
+export const getReasonsForPractitionerLeaving = createAsyncThunk<
+  ReasonForPractitionerLeavingDto[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'getReasonsForLeavingPractitioner',
+  'getReasonsForPractitionerLeaving',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      staticData: { reasonForLeavingPractitioner },
+      staticData: { reasonForPractitionerLeaving },
     } = getState();
 
-    console.log('ReasonsFromState', reasonForLeavingPractitioner);
-    if (!reasonForLeavingPractitioner) {
+    if (!reasonForPractitionerLeaving) {
       try {
-        let reasons: ReasonForLeavingPractitionerDto[] | undefined;
+        let reasons: ReasonForPractitionerLeavingDto[] | undefined;
 
         if (userAuth?.auth_token) {
-          reasons = await new ReasonForLeavingPractitionerService(
+          reasons = await new ReasonForPractitionerLeavingService(
             userAuth?.auth_token
-          ).getReasonsForLeavingPractitioner();
+          ).getReasonsForPractitionerLeaving();
         } else {
           return rejectWithValue('no access token, profile check required');
         }
@@ -457,13 +456,12 @@ export const getReasonsForLeavingPractitioner = createAsyncThunk<
           );
         }
 
-        console.log('ReasonsFromCall', reasons);
         return reasons;
       } catch (err) {
         return rejectWithValue(err);
       }
     } else {
-      return reasonForLeavingPractitioner;
+      return reasonForPractitionerLeaving;
     }
   }
 );

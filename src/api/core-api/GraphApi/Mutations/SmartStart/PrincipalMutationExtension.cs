@@ -6,14 +6,12 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -158,7 +156,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
-        string practitionerId, string principalId, bool accepted, string reasonForLeavingPractitionerId, string reasonDetails)
+        string practitionerId, string principalId, bool accepted, string reasonForPractitionerLeavingId, string reasonDetails)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
@@ -179,8 +177,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
                     }
 
-                    // MATTODO -> Need to also store the reason for leaving here. How does this fit with the confirmation??? Need to double check the permutations below to cover all cases
-
                     status.AcceptedDate = null;
                     //if the function is run twice and the leaving date is already set, remove immediately, this is the principal confirming removal of this practitioner link
                     if (practitioner.DateToBeRemoved != null)
@@ -192,9 +188,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        if (!string.IsNullOrEmpty(reasonForLeavingPractitionerId))
+                        if (!string.IsNullOrEmpty(reasonForPractitionerLeavingId))
                         {
-                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForLeavingPractitionerId);
+                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForPractitionerLeavingId);
                         }
                         practitioner.ReasonForLeavingDetails = reasonDetails;
 
@@ -204,21 +200,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     else
                     {
                         //reset the classroomgroups away from this practitioner and back to the principal
-                        //I think this code is just already run above ^
-                        //if (principal.UserId != null && practitioner.UserId != null)
-                        //{
-                        //    //Reassign all classes and programmes back to principal
-                        //    reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
-                        //}
+                        if (principal.UserId != null && practitioner.UserId != null)
+                        {
+                            //Reassign all classes and programmes back to principal
+                            reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, principal.UserId, "Removing link between Principal and Practitioner", DateTime.Now, uId, null, true);
+                        }
 
                         int hrsToReassign = int.Parse(invitationDelay.Value.InvitationCutoffDelay);
 
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
-                        if (!string.IsNullOrEmpty(reasonForLeavingPractitionerId))
+                        if (!string.IsNullOrEmpty(reasonForPractitionerLeavingId))
                         {
-                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForLeavingPractitionerId);
+                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForPractitionerLeavingId);
                         }
                         practitioner.ReasonForLeavingDetails = reasonDetails;
 

@@ -1,5 +1,5 @@
 import { EntityStaticBase } from '../entity-static-base';
 
-export interface ReasonForLeavingPractitionerDto extends EntityStaticBase {
+export interface ReasonForPractitionerLeavingDto extends EntityStaticBase {
   description: string;
 }

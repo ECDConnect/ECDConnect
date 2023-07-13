@@ -141,7 +141,7 @@ export const Dashboard: React.FC = () => {
     await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
     await appDispatch(
-      staticDataThunkActions.getReasonsForLeavingPractitioner({})
+      staticDataThunkActions.getReasonsForPractitionerLeaving({})
     ).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
