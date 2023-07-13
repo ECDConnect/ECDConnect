@@ -2317,6 +2317,24 @@ export type HcwHighlights = {
   totalThisWeekNewClients: Scalars['Int'];
 };
 
+export type HcwPointsEngine = {
+  __typename?: 'HCWPointsEngine';
+  pointsLibrary?: Maybe<Array<Maybe<PointsLibrary>>>;
+  pointsUserSummary?: Maybe<Array<Maybe<PointsUserSummary>>>;
+};
+
+export type HcwPointsEngineFilterInput = {
+  and?: InputMaybe<Array<HcwPointsEngineFilterInput>>;
+  or?: InputMaybe<Array<HcwPointsEngineFilterInput>>;
+  pointsLibrary?: InputMaybe<ListFilterInputTypeOfPointsLibraryFilterInput>;
+  pointsUserSummary?: InputMaybe<ListFilterInputTypeOfPointsUserSummaryFilterInput>;
+};
+
+export type HcwPointsEngineInput = {
+  pointsLibrary?: InputMaybe<Array<InputMaybe<PointsLibraryInput>>>;
+  pointsUserSummary?: InputMaybe<Array<InputMaybe<PointsUserSummaryInput>>>;
+};
+
 export type HcwVisitStatus = {
   __typename?: 'HCWVisitStatus';
   childDueVisits: Scalars['Int'];
@@ -2340,6 +2358,7 @@ export type HealthCareWorker = {
   isRegistered: Scalars['Boolean'];
   language?: Maybe<Language>;
   languageId?: Maybe<Scalars['UUID']>;
+  pointsEngineData?: Maybe<HcwPointsEngine>;
   teamLead?: Maybe<TeamLead>;
   teamLeadId?: Maybe<Scalars['UUID']>;
   updatedBy?: Maybe<Scalars['String']>;
@@ -2365,6 +2384,7 @@ export type HealthCareWorkerFilterInput = {
   language?: InputMaybe<LanguageFilterInput>;
   languageId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   or?: InputMaybe<Array<HealthCareWorkerFilterInput>>;
+  pointsEngineData?: InputMaybe<HcwPointsEngineFilterInput>;
   teamLead?: InputMaybe<TeamLeadFilterInput>;
   teamLeadId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   updatedBy?: InputMaybe<StringOperationFilterInput>;
@@ -2387,6 +2407,7 @@ export type HealthCareWorkerInput = {
   IsRegistered: Scalars['Boolean'];
   Language?: InputMaybe<LanguageInput>;
   LanguageId?: InputMaybe<Scalars['UUID']>;
+  PointsEngineData?: InputMaybe<HcwPointsEngineInput>;
   TeamLead?: InputMaybe<TeamLeadInput>;
   TeamLeadId?: InputMaybe<Scalars['UUID']>;
   UpdatedBy?: InputMaybe<Scalars['String']>;
@@ -3138,6 +3159,20 @@ export type ListFilterInputTypeOfPqaRatingChildFilterInput = {
   any?: InputMaybe<Scalars['Boolean']>;
   none?: InputMaybe<PqaRatingChildFilterInput>;
   some?: InputMaybe<PqaRatingChildFilterInput>;
+};
+
+export type ListFilterInputTypeOfPointsLibraryFilterInput = {
+  all?: InputMaybe<PointsLibraryFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<PointsLibraryFilterInput>;
+  some?: InputMaybe<PointsLibraryFilterInput>;
+};
+
+export type ListFilterInputTypeOfPointsUserSummaryFilterInput = {
+  all?: InputMaybe<PointsUserSummaryFilterInput>;
+  any?: InputMaybe<Scalars['Boolean']>;
+  none?: InputMaybe<PointsUserSummaryFilterInput>;
+  some?: InputMaybe<PointsUserSummaryFilterInput>;
 };
 
 export type ListFilterInputTypeOfPractitionerCoachCircleFilterInput = {
@@ -6142,7 +6177,7 @@ export type PointsLibrary = {
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
-  maxPointsIndividualMonthly: Scalars['Int'];
+  maxPointsIndividualMonthly?: Maybe<Scalars['Int']>;
   maxPointsNonPrincipalMonthly: Scalars['Int'];
   maxPointsNonPrincipalYearly: Scalars['Int'];
   maxPointsPrincipalMonthly: Scalars['Int'];
@@ -6162,7 +6197,7 @@ export type PointsLibraryFilterInput = {
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
-  maxPointsIndividualMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
+  maxPointsIndividualMonthly?: InputMaybe<ComparableNullableOfInt32OperationFilterInput>;
   maxPointsNonPrincipalMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
   maxPointsNonPrincipalYearly?: InputMaybe<ComparableInt32OperationFilterInput>;
   maxPointsPrincipalMonthly?: InputMaybe<ComparableInt32OperationFilterInput>;
@@ -6181,7 +6216,7 @@ export type PointsLibraryInput = {
   Description?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
-  MaxPointsIndividualMonthly: Scalars['Int'];
+  MaxPointsIndividualMonthly?: InputMaybe<Scalars['Int']>;
   MaxPointsNonPrincipalMonthly: Scalars['Int'];
   MaxPointsNonPrincipalYearly: Scalars['Int'];
   MaxPointsPrincipalMonthly: Scalars['Int'];

@@ -17,7 +17,7 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
         public string SubActivity { get; set; }
         public string Description { get; set; }
         public int Points { get; set; }
-        public int MaxPointsIndividualMonthly { get; set; }
+        public int? MaxPointsIndividualMonthly { get; set; }
         public int MaxPointsNonPrincipalMonthly { get; set; }
         public int MaxPointsNonPrincipalYearly { get; set; }
         public int MaxPointsPrincipalMonthly { get; set; }

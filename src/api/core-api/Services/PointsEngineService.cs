@@ -69,7 +69,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         public List<PointsLibrary> GetPointsLibraryForTenant()
         {
-            return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == TenantExecutionContext.Tenant.Id).ToList();
+            Guid tenantId = TenantExecutionContext.Tenant.Id;
+            return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == tenantId).ToList();
         }
 
         public List<PointsUser> GetIndividualUserPoints(string subActivity, string userId, int month, int year)
@@ -77,9 +78,9 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsUserRepo.GetAll().Where(x => x.PointsLibrary.SubActivity == subActivity && x.UserId == userId && x.Month == month && x.Year == year).ToList();
         }
 
-        public List<PointsUserSummary> GetSummaryUserPoints(string subActivity, string userId)
+        public List<PointsUserSummary> GetSummaryUserPoints(string userId, int year)
         {
-            return _pointsUserSummaryRepo.GetAll().Where(x => x.PointsLibrary.SubActivity == subActivity && x.UserId == userId).ToList();
+            return _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Year == year).ToList();
         }
         public PointsUser InsertIndividualUserPoints(PointsUser input)
         {
