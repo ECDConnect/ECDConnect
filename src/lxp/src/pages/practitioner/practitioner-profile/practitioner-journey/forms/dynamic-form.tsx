@@ -1,6 +1,7 @@
 import React, { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
+import { ButtonProps } from '@ecdlink/ui/lib/components/button/button.types';
 
 export interface Question {
   question: string;
@@ -28,7 +29,7 @@ export interface DynamicFormProps {
   sectionQuestions?: SectionQuestions[];
   isLoading?: boolean;
   nextButtonText?: string;
-  submitButton?: { text: string; icon: string };
+  submitButton?: { text: string; icon: string; type?: ButtonProps['type'] };
   secondaryButton?: { text: string; icon: string; onClick: () => void };
   setIsSecondaryPage?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
@@ -47,7 +48,7 @@ export const DynamicForm = ({
   isSecondaryPage,
   isLoading,
   nextButtonText = 'Next',
-  submitButton = { text: 'Save', icon: 'SaveIcon' },
+  submitButton = { text: 'Save', icon: 'SaveIcon', type: 'filled' },
   secondaryButton,
   setSectionQuestions: setSectionQuestionsForm,
   onNextStep,
@@ -141,6 +142,7 @@ export const DynamicForm = ({
         action: isView ? onClose : onSubmit,
         text: isView ? 'Close' : submitButton.text,
         icon: isView ? 'XIcon' : submitButton.icon,
+        type: submitButton.type,
       };
     }
 
@@ -149,6 +151,7 @@ export const DynamicForm = ({
         action: handleOnNext,
         text: nextButtonText,
         icon: 'ArrowCircleRightIcon',
+        type: submitButton.type,
       };
     }
 
@@ -156,6 +159,7 @@ export const DynamicForm = ({
       action: isView ? onClose : onSubmit,
       text: isView ? 'Close' : submitButton.text,
       icon: isView ? 'XIcon' : submitButton.icon,
+      type: submitButton.type,
     };
   }, [
     steps?.length,
@@ -163,8 +167,7 @@ export const DynamicForm = ({
     isView,
     onClose,
     onSubmit,
-    submitButton.text,
-    submitButton.icon,
+    submitButton,
     handleOnNext,
     nextButtonText,
   ]);
@@ -175,9 +178,9 @@ export const DynamicForm = ({
       {!isSecondaryPage && (
         <div id="button" className="mx-4 mt-auto flex flex-col items-end">
           <Button
-            type="filled"
+            type={renderButton.type ?? 'filled'}
             color="primary"
-            textColor="white"
+            textColor={renderButton.type === 'outlined' ? 'primary' : 'white'}
             icon={renderButton.icon}
             className="mb-4 w-full"
             text={renderButton.text}

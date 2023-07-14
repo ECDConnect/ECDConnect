@@ -32,6 +32,7 @@ export const visitOrCallQuestion =
 export const callAnswer = 'Call';
 export const reAccreditationFollowUpQuestion =
   'Is {client} ready for a follow-up reaccreditation visit?';
+export const supportVisitSharedQuestion = 'What next steps did you agree on?';
 
 export const CoachingAndVisitOrCallStep = ({
   isView,
@@ -63,7 +64,7 @@ export const CoachingAndVisitOrCallStep = ({
       answer: '',
     },
     {
-      question: 'What next steps did you agree on?',
+      question: supportVisitSharedQuestion,
       answer: '',
     },
   ]);

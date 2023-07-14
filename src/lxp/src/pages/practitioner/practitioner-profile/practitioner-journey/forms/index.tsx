@@ -2,10 +2,10 @@ import { useCallback, useMemo, useState } from 'react';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
-import { selfAssessmentSteps } from './steps';
+import { selfAssessmentSteps, supportVisitSteps } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { useDialog } from '@ecdlink/core';
+import { parseBool, useDialog } from '@ecdlink/core';
 import { visitTypes } from '../index.types';
 import {
   CmsVisitDataInputModelInput,
@@ -17,9 +17,11 @@ import { useAppDispatch } from '@/store';
 import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
+import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 
 export const visitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
+export const isViewKey = 'practitionerIsView';
 
 interface FormProps {
   visitId?: string;
@@ -34,6 +36,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     useState<SectionQuestions[]>();
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   const { isLoading: isLoadingSelfAssessment } = useThunkFetchCall(
     'pqa',
@@ -46,6 +49,18 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const dialog = useDialog();
 
   const appDispatch = useAppDispatch();
+
+  const currentSteps = useMemo(() => {
+    if (activityName === coachVisitTypes.supportVisit) {
+      setTitle(coachVisitTypes.supportVisit);
+      return supportVisitSteps;
+    }
+
+    setTitle('Self-assessment');
+    return selfAssessmentSteps;
+  }, [activityName]);
+
+  const isHideSteps = isView && currentSteps.length === 1;
 
   const handleOnBack = useCallback(() => {
     if (isSecondaryPage) {
@@ -64,7 +79,11 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   }, []);
 
   const handleOnClose = useCallback(() => {
-    dialog({
+    if (isView) {
+      return onBack();
+    }
+
+    return dialog({
       blocking: false,
       position: DialogPosition.Middle,
       color: 'bg-white',
@@ -102,7 +121,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         );
       },
     });
-  }, [dialog, onBack]);
+  }, [dialog, isView, onBack]);
 
   const onSubmitSelfAssessment = (payload: SupportVisitModelInput) => {
     appDispatch(
@@ -125,10 +144,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
     const data: CmsVisitDataInputModelInput = {
-      visitId,
       practitionerId: user?.id,
       visitData: {
-        visitName: activityName,
         sections,
       },
     };
@@ -145,11 +162,6 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     }
   };
 
-  const currentSteps = useMemo(() => {
-    setTitle('Self-assessment');
-    return selfAssessmentSteps;
-  }, []);
-
   return (
     <BannerWrapper
       size="medium"
@@ -157,7 +169,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       onBack={handleOnBack}
       onClose={handleOnClose}
       title={`${title || activityName}`}
-      subTitle={`step ${step + 1} of ${currentSteps.length}`}
+      subTitle={isHideSteps ? '' : `step ${step + 1} of ${currentSteps.length}`}
       backgroundColour="white"
       displayOffline={!isOnline}
     >
@@ -173,7 +185,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
+        submitButton={
+          isView
+            ? { icon: 'XIcon', text: 'Close', type: 'outlined' }
+            : undefined
+        }
         isLoading={isLoadingSelfAssessment}
+        isView={isView}
       />
     </BannerWrapper>
   );

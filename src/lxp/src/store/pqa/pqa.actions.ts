@@ -9,6 +9,7 @@ import {
   UpdateVisitPlannedVisitDateModelInput,
   VisitData,
 } from '@ecdlink/graphql';
+import { PQAFormType } from './pqa.types';
 
 export const PqaActions = {
   GET_PRACTITIONER_TIMELINE: 'getPractitionerTimeline',
@@ -272,7 +273,7 @@ export const getVisitDataForVisitId = createAsyncThunk<
   VisitData[],
   {
     visitId: string;
-    visitType: 'pre-pqa' | 'pqa' | 'reAccreditation-follow-up';
+    visitType: PQAFormType;
   },
   ThunkApiType<RootState>
 >(

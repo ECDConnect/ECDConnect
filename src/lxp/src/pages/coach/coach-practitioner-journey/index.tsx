@@ -556,7 +556,7 @@ export const CoachPractitionerJourney = () => {
       appDispatch(
         getVisitDataForVisitId({
           visitId: lastAttendedReAccreditationFollowUpVisit.id,
-          visitType: 'reAccreditation-follow-up',
+          visitType: 're-accreditation-follow-up-visit',
         })
       );
     }
