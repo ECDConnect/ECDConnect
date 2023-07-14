@@ -185,28 +185,27 @@ export default function UiTable(
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
-
+    const checkboxCell = (
+      <input
+        type="checkbox"
+        className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
+        onChange={() => handleRowSelect(row)}
+        checked={selectedRows.includes(row)}
+      />
+    );
     let rowValue: any;
+    if (column.field === "select") {
+      
+      return checkboxCell;
 
-    if (typeof display_value === 'boolean') {
+    }else if (typeof display_value === 'boolean') {
       rowValue = (
         <div className="ml-1 flex cursor-pointer">
           {display_value ? (
-            // <Icon
-            //   icon="CheckCircleIcon"
-            //   className="text-successMain ml-1"
-            //   height="20px"
-            //   color="transparent"
-            // />
 
             <p className="text-successMain ">Active</p>
           ) : (
-            // <Icon
-            //   icon="XCircleIcon"
-            //   className="text-errorMain ml-1"
-            //   height="20px"
-            //   color="transparent"
-            // />
+ 
             <p className="text-errorMain text-normal">Inactive</p>
           )}
         </div>
