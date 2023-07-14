@@ -87,7 +87,21 @@ export const PractitionerJourney = ({
   };
 
   const onView = async ({ visit, visitType }: ViewEvent) => {
-    await appDispatch(getVisitDataForVisitId({ visitId: visit.id, visitType }));
+    if (visitType === 'pre-pqa') {
+      timeline?.prePQASiteVisits?.map(async (item) => {
+        if (item?.id) {
+          await appDispatch(
+            getVisitDataForVisitId({ visitId: item.id, visitType })
+          );
+        }
+
+        return item;
+      });
+    } else {
+      await appDispatch(
+        getVisitDataForVisitId({ visitId: visit.id, visitType })
+      );
+    }
 
     if (
       visit.visitType?.name === generalSupportVisitTypes.visit ||
@@ -131,6 +145,9 @@ export const PractitionerJourney = ({
     )
     .shift();
 
+  const isRenderForm =
+    (activityName && currentVisit?.extraData?.visitId) || showForm || isView;
+
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
@@ -140,10 +157,10 @@ export const PractitionerJourney = ({
   };
 
   const getTimeline = useCallback(() => {
-    if (userId) {
+    if (userId && !isRenderForm) {
       appDispatch(getPractitionerTimeline({ userId: userId }));
     }
-  }, [appDispatch, userId]);
+  }, [appDispatch, isRenderForm, userId]);
 
   useLayoutEffect(() => {
     if (activityName) {
@@ -155,11 +172,7 @@ export const PractitionerJourney = ({
     getTimeline();
   }, [getTimeline]);
 
-  if (
-    (activityName && currentVisit?.extraData?.visitId) ||
-    showForm ||
-    isView
-  ) {
+  if (isRenderForm) {
     return (
       <Form
         visitId={currentVisit?.extraData?.visitId || visitIdKey}

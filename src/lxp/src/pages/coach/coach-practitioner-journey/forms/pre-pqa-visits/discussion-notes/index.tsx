@@ -99,7 +99,10 @@ export const DiscussionNotes = ({
     const value = event.target.value;
     setAnswer(value);
     setSectionQuestions?.([
-      { visitSection, questions: [{ answer: String(value), question }] },
+      {
+        visitSection,
+        questions: [{ answer: String(value), question: question }],
+      },
     ]);
 
     if (value !== '') {
