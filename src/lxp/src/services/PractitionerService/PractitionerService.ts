@@ -114,6 +114,7 @@ class PractitionerService {
                 plannedVisitDate
                 attended
                 comment
+                dueDate
                 visitType {
                   type
                   order
@@ -200,7 +201,17 @@ class PractitionerService {
               supportVisits {
                 id
                 plannedVisitDate
+                insertedDate
                 attended
+                visitType {
+                  description
+                  id
+                  isActive
+                  name
+                  normalizedName
+                  order
+                  type
+                }
               }
             }
           }

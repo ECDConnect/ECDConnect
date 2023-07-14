@@ -2,7 +2,7 @@ import { useCallback, useMemo, useState } from 'react';
 import { DynamicForm, SectionQuestions } from './dynamic-form';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
-import { selfAssessmentSteps, supportVisitSteps } from './steps';
+import { prePqaSteps, selfAssessmentSteps, supportVisitSteps } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { parseBool, useDialog } from '@ecdlink/core';
@@ -51,6 +51,10 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const appDispatch = useAppDispatch();
 
   const currentSteps = useMemo(() => {
+    if (activityName.includes(coachVisitTypes.prePqa.includes)) {
+      setTitle('Pre-PQA site visits summary');
+      return prePqaSteps;
+    }
     if (activityName === coachVisitTypes.supportVisit) {
       setTitle(coachVisitTypes.supportVisit);
       return supportVisitSteps;
