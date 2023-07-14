@@ -503,7 +503,7 @@ export function ViewUser(props: any) {
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
                               )}
                             >
-                              <p className="text-16"> {i.name}</p>
+                              <p className="text-16"> {i.name === 'Community Health Worker' ? 'CHW': i.name}</p>
                             </div>
                           );
                         }

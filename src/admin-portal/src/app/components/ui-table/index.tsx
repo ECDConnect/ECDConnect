@@ -122,30 +122,12 @@ export default function UiTable(
       return [{ [columns[0].field]: 'No entries found' }];
     }
 
-    const handleRowSelect = (row: any) => {
-      if (selectedRows.includes(row)) {
-        setSelectedRows(
-          selectedRows.filter((selectedRow) => selectedRow !== row)
-        );
-      } else {
-        setSelectedRows([...selectedRows, row]);
-      }
-    };
-
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
 
-      const checkboxCell = (
-        <input
-          type="checkbox"
-          className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
-          onChange={() => handleRowSelect(row)}
-          checked={selectedRows.includes(row)}
-        />
-      );
 
       const rowWithCheckbox = {
-        select: checkboxCell,
+        select: null,
         ...row,
       };
 
