@@ -1,7 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.IncomeStatements;
-using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services.Interfaces
 {

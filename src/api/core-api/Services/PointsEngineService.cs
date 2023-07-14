@@ -1,19 +1,25 @@
-﻿using ECDLink.Core.Extensions;
+﻿using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Classroom;
+using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
+using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Http.HttpResults;
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -29,17 +35,26 @@ namespace EcdLink.Api.CoreApi.Services
 
         private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<Mother, Guid> _motherRepo;
+        private IGenericRepository<Child, Guid> _childRepo;
 
         private IGenericRepository<Visit, Guid> _visitRepo;
-        private IGenericRepository<VisitType, Guid> _visitTypeRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
+
+        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
+        private IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
+
+
+        private PersonnelService _personnelService;
+        private ChildAttendanceReport _childAttendanceReport;
 
         private string _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
-            IGenericRepositoryFactory repositoryFactory)
+            IGenericRepositoryFactory repositoryFactory,
+            PersonnelService personnelService,
+            ChildAttendanceReport childAttendanceReport)
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
@@ -55,9 +70,16 @@ namespace EcdLink.Api.CoreApi.Services
             _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
 
             _visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
-            _visitTypeRepo = _repositoryFactory.CreateGenericRepository<VisitType>(userContext: _uId);
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
+
+            _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
+            _statementsIncomeStatementRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+
+            _personnelService = personnelService;
+            _childAttendanceReport = childAttendanceReport;
+
         }
 
         #region PointsLibrary
@@ -1053,7 +1075,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #endregion
 
-        #region GG_UserSummary
+        #region UserSummary
 
         public bool UpdateUserSummaryPoints(string userId)
         {
@@ -1064,6 +1086,29 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 int monthTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
                 int ytdTotal = _pointsUserRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year && x.PointsLibraryId == item.Id).Select(x => x.Points).Sum();
+
+                // ss max point implementation
+                if (item.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3)
+                {
+                    if (ytdTotal > 1200)
+                    {
+                        ytdTotal = 1200;
+                    }
+                }
+                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac3)
+                {
+                    if (ytdTotal > 300)
+                    {
+                        ytdTotal = 300;
+                    }
+                }
+                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac4)
+                {
+                    if (ytdTotal > 100)
+                    {
+                        ytdTotal = 100;
+                    }
+                }
 
                 var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).FirstOrDefault();
                 if (record == null)
@@ -1097,30 +1142,299 @@ namespace EcdLink.Api.CoreApi.Services
 
         #endregion
 
-
         #region SS_Children
+
+        public bool AddChildrenRegistration(string userId)
+        {
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
+
+            DateTime today = DateTime.Now.Date;
+
+            var children = _personnelService.GetAllChildrenForPractitioner(userId);
+            var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
+
+            if (childCount > 0)
+            {
+                PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                int activityPoints = childCount * activity.Points;
+
+                if (activity_record == null)
+                {
+                    InsertIndividualUserPoints(
+                        new PointsUser
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            Month = today.Month,
+                            Year = today.Year,
+                            Points = activityPoints,
+                            UserId = userId,
+                            PointsLibraryId = activity.Id
+                        }
+                    );
+                }
+                else
+                {
+                    activity_record.Points = activityPoints;
+                    activity_record.UpdatedDate = DateTime.Now;
+                    activity_record.UpdatedBy = _uId;
+                    UpdateIndividualUserPoints(activity_record);
+                }
+            }
+            UpdateUserSummaryPoints(userId);
+            return true;
+        }
+
+        public bool RemoveChildrenRegistration(string userId)
+        {
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
+
+            DateTime today = DateTime.Now.Date;
+
+            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
+            if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
+            {
+                var children = _childRepo.GetAll().Where(x => x.User.IsActive == false && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var childCount = children.Where(x => x.User.UpdatedDate.Year == today.Year && x.User.UpdatedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
+
+                if (childCount > 0)
+                {
+                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    int activityPoints = childCount * activity.Points;
+
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activityPoints,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activityPoints;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                }
+            }
+            UpdateUserSummaryPoints(userId);
+            return true;
+        }
+
+        #endregion
+
+        #region SS_Attendance
+        public bool ManageAttendanceSubmitted(string userId)
+        {
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
+            List<Classroom> classrooms = _personnelService.GetAllClassroomsForPractitioner(userId);
+
+            DateTime today = DateTime.Now.Date;
+
+            var totalExpectedAttendance = 0;
+            var totalChildrenAttendedSessions = 0;
+            foreach (var item in classrooms)
+            {
+                if (item.IsActive)
+                {
+                    var result = _childAttendanceReport.GetClassroomAttendanceOverView(item.Id, userId, today.GetStartOfMonth(), today.GetEndOfDay());
+
+                    totalExpectedAttendance += result.TotalAttendanceStatsReport.TotalSessions;
+                    totalChildrenAttendedSessions += result.TotalAttendanceStatsReport.TotalChildrenAttendedSessions;
+                }
+            }
+
+            // Calculation: points awarded per the percentage of attendance registers submitted.
+            // less than 50 % = 0 points
+
+            var perc = Math.Round((double)(totalExpectedAttendance / (double)(totalChildrenAttendedSessions)) * 100);
+            if (perc > 50)
+            {
+                PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                if (activity_record == null)
+                {
+                    InsertIndividualUserPoints(
+                        new PointsUser
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            Month = today.Month,
+                            Year = today.Year,
+                            Points = (int)perc,
+                            UserId = userId,
+                            PointsLibraryId = activity.Id
+                        }
+                    );
+                }
+                else
+                {
+                    activity_record.Points = (int)perc;
+                    activity_record.UpdatedDate = DateTime.Now;
+                    activity_record.UpdatedBy = _uId;
+                    UpdateIndividualUserPoints(activity_record);
+                }
+            }
+            UpdateUserSummaryPoints(userId);
+            return true;
+        }
 
         #endregion
 
         #region SS_IncomeStatements
 
-        #endregion
-
-        #region ScheduledTasks
-        public async Task<DateTime> GetLastRunTime(string task)
+        public bool ManageIncomeStatementsSubmitted(string userId)
         {
-            var scheduledTask = await GetTaskResults(task);
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
 
-            return scheduledTask.EndTime;
+            DateTime today = DateTime.Now.Date;
+            DateTime deadline = today.GetStartOfMonth().AddDays(7);
+            DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
+
+            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
+
+            if (practitioner.IsFundaAppAdmin == true || practitioner.IsPrincipal == true)
+            {
+                List<StatementsIncomeStatement> rows = _statementsIncomeStatementRepo.GetAll().Where(x => x.UserId == userId && 
+                                                                                                     x.Year == previousMonth.Year && 
+                                                                                                     x.Month == previousMonth.Month && 
+                                                                                                     x.Submitted == true && 
+                                                                                                     x.IsActive == true &&
+                                                                                                     x.SubmittedDate.Date >= today.GetStartOfMonth().Date &&
+                                                                                                     x.SubmittedDate.Date <= deadline.Date).ToList();
+
+                if (rows.Count > 0)
+                {
+                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activity.Points,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activity.Points;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                }
+
+                UpdateUserSummaryPoints(userId);
+            }
+            return true;
         }
 
-        public async Task<ServiceScheduler> GetTaskResults(string task)
+        public bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId)
         {
-            var schedulerTask = _schedulerRepo.GetAll().Where(x => x.Name == task).FirstOrDefault();
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
 
-            return schedulerTask;
+            DateTime today = DateTime.Now.Date;
+            DateTime deadline = today.GetStartOfMonth().AddDays(7);
+            DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
+
+            var comboRanges = new List<int>();
+            comboRanges.AddRange(new List<int> { 1, 2, 3 });
+            comboRanges.AddRange(new List<int> { 2, 3, 4 });
+            comboRanges.AddRange(new List<int> { 3, 4, 5 });
+            comboRanges.AddRange(new List<int> { 4, 5, 6 });
+            comboRanges.AddRange(new List<int> { 5, 6, 7 });
+            comboRanges.AddRange(new List<int> { 6, 7, 8 });
+            comboRanges.AddRange(new List<int> { 7, 8, 9 });
+            comboRanges.AddRange(new List<int> { 8, 9, 10 });
+            comboRanges.AddRange(new List<int> { 9, 10, 11 });
+            comboRanges.AddRange(new List<int> { 10, 11, 12 });
+            
+
+            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
+
+            if (practitioner.IsFundaAppAdmin == true || practitioner.IsPrincipal == true)
+            {
+                List<int> rows = _statementsIncomeStatementRepo.GetAll().Where(x => x.UserId == userId &&
+                                                                                x.Year == today.Year &&
+                                                                                x.Submitted == true &&
+                                                                                x.IsActive == true &&
+                                                                                x.SubmittedDate.Date >= x.SubmittedDate.GetStartOfMonth().Date &&
+                                                                                x.SubmittedDate.Date <= x.SubmittedDate.GetStartOfMonth().AddDays(7).Date)
+                                                                                .Select(x => x.SubmittedDate.Month).Distinct().ToList();
+                rows.Sort();
+
+                var results = rows.ToDictionary(k => k, v => rows.Count(x => x == v))
+                .Where(x => x.Value == 3)
+                .Select(x => x.Key);
+
+
+
+
+
+
+                if (rows.Count > 0)
+                {
+                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activity.Points,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activity.Points;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                }
+
+                UpdateUserSummaryPoints(userId);
+            }
+            return true;
         }
+
         #endregion
+
 
     }
 }

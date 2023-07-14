@@ -16,7 +16,6 @@ using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports;
 using ECDLink.SmartStart.Reports.Models;
 using ECDLink.SmartStart.Services;
-using GreenDonut;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
@@ -232,9 +231,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
             pdfDoc.UserId = userId;
             pdfDoc.CreatedUserId = uId;
             return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, pdfDoc);
-           
         }
-
 
         private int GetTotalForDay(int key, IEnumerable<ClassroomGroupChildAttendanceReportModel> children)
         {

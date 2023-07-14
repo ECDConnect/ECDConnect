@@ -1,8 +1,5 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
-using System;
+﻿using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services.Interfaces
 {
@@ -26,10 +23,16 @@ namespace ECDLink.Core.Services.Interfaces
         bool ManageInfantVisits(string userId);
         bool UpdateUserSummaryPoints(string userId);
 
-        // SS - TODO
+        // GG TODO: Team points - development pending
 
-        // Schedular for monthly and yearly calculations
-        Task<DateTime> GetLastRunTime(string task);
-        Task<ServiceScheduler> GetTaskResults(string task);
+        // SS
+        bool AddChildrenRegistration(string userId);
+        bool RemoveChildrenRegistration(string userId);
+        bool ManageAttendanceSubmitted(string userId);
+        bool ManageIncomeStatementsSubmitted(string userId);
+        bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId);
+
+        // SS TODO: Pre-school fees - development pending
+
     }
 }
