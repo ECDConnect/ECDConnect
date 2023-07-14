@@ -35,7 +35,7 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
-            public const string visitType_sef_assessment = "sef_assessment";
+            public const string visitType_self_assessment = "self_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";

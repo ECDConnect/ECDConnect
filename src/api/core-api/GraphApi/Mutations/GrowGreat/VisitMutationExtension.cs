@@ -363,7 +363,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_sef_assessment).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type == Constants.SSSettings.client_practitioner && x.Name == Constants.SSSettings.visitType_self_assessment).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
