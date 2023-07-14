@@ -376,6 +376,7 @@ class PQAService {
             supportVisits {
               id
               plannedVisitDate
+              insertedDate
               attended
               visitType {
                 description
