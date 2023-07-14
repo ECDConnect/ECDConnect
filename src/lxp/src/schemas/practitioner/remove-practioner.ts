@@ -3,11 +3,15 @@ import * as Yup from 'yup';
 export interface RemovePractionerModel {
   removeReasonId: string;
   reasonDetail: string;
+  newPrincipal: string | undefined;
+  reassignedClassrooms: { [id: string]: string };
 }
 
 export const initialRemovePractionerValues: RemovePractionerModel = {
   removeReasonId: '',
   reasonDetail: '',
+  newPrincipal: undefined,
+  reassignedClassrooms: {},
 };
 
 export const removePractionerModelSchema = Yup.object().shape({

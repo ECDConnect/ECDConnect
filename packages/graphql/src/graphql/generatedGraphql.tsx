@@ -1205,6 +1205,11 @@ export type ClassroomGroupInput = {
   UserId?: InputMaybe<Scalars['UUID']>;
 };
 
+export type ClassroomGroupReassignmentsInput = {
+  classroomGroupId?: InputMaybe<Scalars['String']>;
+  practitionerId?: InputMaybe<Scalars['String']>;
+};
+
 export type ClassroomInput = {
   ClassroomGroups?: InputMaybe<Array<InputMaybe<ClassroomGroupInput>>>;
   ClassroomImageUrl?: InputMaybe<Scalars['String']>;
@@ -3703,6 +3708,7 @@ export type Mutation = {
   remapPrincipalToPrincipal?: Maybe<Practitioner>;
   removePermissionsFromNavigation: Scalars['Boolean'];
   removePermissionsFromRole: Scalars['Boolean'];
+  removePractitioner: Scalars['Boolean'];
   removeUserFromRoles: Scalars['Boolean'];
   resetUserPassword: Scalars['Boolean'];
   saveIncomeStatementPDF?: Maybe<Document>;
@@ -5068,6 +5074,15 @@ export type MutationRemovePermissionsFromNavigationArgs = {
 export type MutationRemovePermissionsFromRoleArgs = {
   permissionIds?: InputMaybe<Array<Scalars['UUID']>>;
   roleId?: InputMaybe<Scalars['String']>;
+};
+
+export type MutationRemovePractitionerArgs = {
+  classroomGroupReassignments?: InputMaybe<
+    Array<InputMaybe<ClassroomGroupReassignmentsInput>>
+  >;
+  practitionerId?: InputMaybe<Scalars['String']>;
+  reasonDetails?: InputMaybe<Scalars['String']>;
+  reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
 };
 
 export type MutationRemoveUserFromRolesArgs = {

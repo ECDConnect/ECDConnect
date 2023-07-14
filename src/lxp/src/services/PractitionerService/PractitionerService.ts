@@ -7,6 +7,7 @@ import {
   ClassroomDto,
 } from '@ecdlink/core';
 import {
+  ClassroomGroupReassignmentsInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   PractitionerInput,
@@ -865,6 +866,47 @@ class PractitionerService {
         accepted,
         reasonForPractitionerLeavingId,
         reasonDetails,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerRegistered;
+  }
+
+  async RemovePractitioner(
+    practitionerId: string,
+    reasonForPractitionerLeavingId: string | undefined = undefined,
+    reasonDetails: string | undefined = undefined,
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation removePractitioner(
+        $practitionerId: String
+        $reasonForPractitionerLeavingId: String
+        $reasonDetails: String
+        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+      ) {
+        removePractitioner(
+          practitionerId: $practitionerId
+          reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
+          reasonDetails: $reasonDetails
+          classroomGroupReassignments: $classroomGroupReassignments
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        practitionerId,
+        reasonForPractitionerLeavingId,
+        reasonDetails,
+        classroomGroupReassignments,
       },
     });
 
