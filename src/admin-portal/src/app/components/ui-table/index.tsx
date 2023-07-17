@@ -47,7 +47,7 @@ export default function UiTable(
   };
   const fuse = useRef(new Fuse(rows, fuseOptions));
 
-  const [sendInvitations, { loading:invitationsLoading }] = useMutation(
+  const [sendInvitations, { loading: invitationsLoading }] = useMutation(
     sentInviteToMultipleUsers,
     {
       variables: {
@@ -62,18 +62,26 @@ export default function UiTable(
       variables: {
         userIds: selectedRows,
       }
-    }).then(() => {
-      setNotification({
-        title: 'Successfully Sent Invites',
-        variant: NOTIFICATION.SUCCESS,
-      });
+    }).then((res) => {
+      if ( res.data?.sendBulkInviteToPortal?.success.length > 0) {
+        setNotification({
+          title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+          variant: NOTIFICATION.SUCCESS,
+        });
+        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+          setNotification({
+            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+            variant: NOTIFICATION.ERROR,
+          });
+        }
+      }
     })
-    .catch((err) => {
-      setNotification({
-        title: 'Failed to send invitations',
-        variant: NOTIFICATION.ERROR,
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to send invitations',
+          variant: NOTIFICATION.ERROR,
+        });
       });
-    });
   }
 
   useEffect(() => {
@@ -286,7 +294,7 @@ export default function UiTable(
         <div className="w-4/12">
           <p className="text-white text-md pl-4">{selectedRows?.length} Selected</p>
         </div>
-        <div className="flex items-center flex-row w-5/12">
+        <div className="flex items-center flex-row w-6/12">
           <Button
             className="rounded-xl px-6 mr-4 py-0"
             type="filled"
@@ -295,7 +303,7 @@ export default function UiTable(
             onClick={inviteUsers}
           >
             <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
-            <Typography type="help" color="white" text="Invites" />
+            <Typography type="help" color="white" text="Resend Invitations" />
           </Button>
 
           <Button
