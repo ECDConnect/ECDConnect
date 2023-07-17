@@ -88,8 +88,8 @@ export const Rating = ({
 
   const isRedFlagScoreLess5 = sectionList[2].score < 5;
   const isRedFlagSmartSpaceLicence = step14Question1Answer === true;
-  const isOrangeFlagProgramme = step16Question2Answer === false;
-  const isOrangeFlagManyChildren = step16Question3Answer === true;
+  const isOrangeFlagProgramme = step16Question2Answer === (false || 'false');
+  const isOrangeFlagManyChildren = step16Question3Answer === (true || 'true');
 
   const body = [
     {

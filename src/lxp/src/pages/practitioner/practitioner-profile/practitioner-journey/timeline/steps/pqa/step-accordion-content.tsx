@@ -1,0 +1,121 @@
+import { Visit, Maybe } from '@ecdlink/graphql';
+import { CalendarIcon } from '@heroicons/react/solid';
+import { Button, Typography } from '@ecdlink/ui';
+import { useSelector } from 'react-redux';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import { getRatingData } from '@/pages/coach/coach-practitioner-journey/timeline/utils';
+import { visitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { dateOptions, getStepType } from '../../utils';
+import { ViewEvent } from '../../timeline-steps';
+
+interface PQAVisitsProps {
+  isLoading: boolean;
+  currentVisit: Maybe<Visit>;
+  practitionerId: string;
+  onView: (event: ViewEvent) => void;
+}
+
+export const newPqaFollowUpId = 'new-pqa-follow-up';
+export const newPqaVisitId = 'new-pqa-visit';
+
+export const PQAVisits = ({
+  isLoading,
+  practitionerId,
+  onView,
+}: PQAVisitsProps) => {
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
+  const attendedPqaVisits = timeline?.pQASiteVisits?.filter(
+    (item) => !!item?.attended
+  );
+
+  const pqaRating1 = timeline?.pQARating1;
+  const pqaRating2 = timeline?.pQARating2;
+  const pqaRating3 = timeline?.pQARating3;
+
+  const sortedVisits = attendedPqaVisits?.sort((a, b) => {
+    if (!a?.insertedDate && !b?.insertedDate) {
+      return 0;
+    } else if (!a?.insertedDate) {
+      return 1;
+    } else if (!b?.insertedDate) {
+      return -1;
+    }
+
+    return (
+      new Date(a.insertedDate).getTime() - new Date(b.insertedDate).getTime()
+    );
+  });
+
+  const getVisitRating = (item: Maybe<Visit>) => {
+    switch (item?.visitType?.name) {
+      case visitTypes.pqa.thirdPQA.name:
+        return pqaRating3;
+      case visitTypes.pqa.secondPQA.name:
+        return pqaRating2;
+      default:
+        return pqaRating1;
+    }
+  };
+
+  const renderIcon = (item: Maybe<Visit>) => {
+    if (
+      item?.attended &&
+      !item.visitType?.name?.includes(visitTypes.pqa.followUp.name)
+    ) {
+      return getRatingData(getVisitRating(item)?.overallRatingColor).icon;
+    }
+
+    return (
+      <span>
+        <CalendarIcon className="text-primary h-4 w-4" />
+      </span>
+    );
+  };
+
+  return (
+    <>
+      {sortedVisits?.map((item) => (
+        <div className="my-4" key={item?.id}>
+          <div className="relative flex items-center gap-1">
+            {renderIcon(item)}
+            <Typography
+              type="body"
+              color="textDark"
+              className="w-6/12 font-bold"
+              text={item?.visitType?.description || ''}
+            />
+            <Button
+              style={{
+                position: 'absolute',
+                right: -36,
+              }}
+              className="z-50 w-32"
+              type="filled"
+              color="secondaryAccent2"
+              textColor="secondary"
+              text="View"
+              isLoading={isLoading}
+              disabled={isLoading}
+              onClick={() => onView({ visit: item, visitType: 'pqa' })}
+            />
+          </div>
+          <Typography
+            type="body"
+            color={getStepType(String('Success'))?.color || 'textMid'}
+            text={
+              !!item?.insertedDate
+                ? `${new Date(item.insertedDate).toLocaleDateString(
+                    'en-ZA',
+                    dateOptions
+                  )}`
+                : ''
+            }
+          />
+        </div>
+      ))}
+    </>
+  );
+};
