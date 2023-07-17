@@ -121,8 +121,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 };
                 userImportList.Add(user);
 
-                // Try add to skip duplicates.
-                hcwToTeamLeadMap.TryAdd(user.UserName, teamLeadIdNum);
+                // Add usernames to dictionary, will return false on duplicate.
+                if (!hcwToTeamLeadMap.TryAdd(user.UserName, teamLeadIdNum))
+                    validationErrors.Add(new InputValidationError(row, new List<string> { }, $"Duplicate user: {user.UserName}."));
 
                 // Add new community health worker.
                 hcwUsers.Add(user.UserName,
@@ -229,7 +230,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     {
                         validationErrors.Add(new InputValidationError(
                             rowNum,
-                            new List<string> { string.Join(',', addToRoleResult?.Errors?.ToList()) },
+                            addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
                             $"Could not create {RolesGG.HEALTH_CARE_WORKER}."));
                         continue;
                     }
@@ -266,12 +267,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (!valid.Contains(idOrPassport))
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
 
-                // Matched on non-digits
-                var idNumRegex = new Regex(@"\D+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
                 if (idOrPassport?.ToLowerInvariant() == "id"
-                    && (id.Length != 13
-                    || string.IsNullOrWhiteSpace(id)
-                    || idNumRegex.IsMatch(id)))
+                    && !UserHelper.IsSAIDValid(teamLeadId))
                 {
                     errors.Add("Type of identification is \"id\", is empty or invalid");
                 }
@@ -289,13 +286,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-                if (teamLeadId?.Length != 13)
-                    errors.Add("Team Lead Id is invalid");
 
                 if (idOrPassport?.ToLowerInvariant() == "id"
-                    && (id.Length != 13
-                    || string.IsNullOrWhiteSpace(teamLeadId)
-                    || idNumRegex.IsMatch(teamLeadId)))
+                    && !UserHelper.IsSAIDValid(teamLeadId))
                 {
                     errors.Add("Team Lead Id is empty or invalid.");
                 }
@@ -492,34 +485,29 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var valid = new string[] { "id", "passport" };
                 if (!valid.Contains(idOrPassport))
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-
-                var idNumRegex = new Regex(@"\D+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && (id.Length != 13
-                    || string.IsNullOrWhiteSpace(id)
-                    || idNumRegex.IsMatch(id)))
-                {
+                
+                if (idOrPassport?.ToLowerInvariant() == "id" 
+                    && !UserHelper.IsSAIDValid(id))
                     errors.Add("Type of identification is \"id\", is empty or invalid");
-                }
 
                 if (idOrPassport?.ToLowerInvariant() == "passport"
                     && passport.Length == 0)
                     errors.Add("Type of identification is \"passport\", is empty or invalid");
 
-                if (string.IsNullOrWhiteSpace(firstName) || firstName.Length == 0)
+                if (string.IsNullOrWhiteSpace(firstName) 
+                    || firstName.Length == 0)
                     errors.Add("First Name is empty.");
 
-                if (string.IsNullOrWhiteSpace(surname) || surname.Length == 0)
+                if (string.IsNullOrWhiteSpace(surname) 
+                    || surname.Length == 0)
                     errors.Add("Surname is empty.");
 
-                if (string.IsNullOrWhiteSpace(cellphone) || cellphone.Length == 0)
+                if (string.IsNullOrWhiteSpace(cellphone) 
+                    || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-                // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout. Default is INFINITE.
-                // A malicious user can provide input to RegularExpressions, causing a Denial-of - Service attack.
-                // ASP.NET Core framework APIs that use RegularExpressions pass a timeout.
-                if (!string.IsNullOrEmpty(email) // Emailis optional
-                    && !Regex.IsMatch(email, @"^[^@\s]+@[^@\s]+\.[^@\s]+$", RegexOptions.IgnoreCase, TimeSpan.FromMilliseconds(200)))
+                if (!string.IsNullOrEmpty(email) // Email is optional
+                    && UserHelper.IsEmailValid(email))
                     errors.Add("Email is invalid");
 
                 return errors;

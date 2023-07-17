@@ -1,4 +1,6 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Text.RegularExpressions;
 
 namespace ECDLink.Core.Helpers
@@ -42,6 +44,54 @@ namespace ECDLink.Core.Helpers
 
             return phoneNumber;
             //throw new Exception("Phone number not recognised for normalization");
+        }
+
+        public static bool IsSAIDValid(string southAfricanIdNumber)
+        {
+            if (southAfricanIdNumber?.Length != 13)
+                return false;
+
+            if (Regex.IsMatch(
+                        southAfricanIdNumber,
+                        @"\D",
+                        RegexOptions.IgnoreCase,
+                        TimeSpan.FromMilliseconds(200)))
+                return false;
+
+            var resultIntArray = southAfricanIdNumber
+                .ToCharArray()
+                .Select(c => int.Parse(c.ToString()))
+                .Reverse();
+
+            int i = 0;
+            var finalResult = resultIntArray.Aggregate(new List<int>(), (acc, c) => {
+                if (i % 2 == 1) {
+                    var oddDigitSum = c * 2;
+                    acc.Add(oddDigitSum > 9 ? oddDigitSum - 9 : oddDigitSum);
+                }
+                else
+                    acc.Add(c * 1);
+
+                i++;
+                return acc;
+            }).Aggregate(0, (acc, d) => {
+                return acc + d;
+            });
+
+            return finalResult % 10 == 0;
+        }
+
+        // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout. Default is INFINITE.
+        // A malicious user can provide input to RegularExpressions, causing a Denial-of - Service attack.
+        // ASP.NET Core framework APIs that use RegularExpressions pass a timeout.
+
+        public static bool IsEmailValid(string email)
+        {
+            return Regex.IsMatch(
+                        email, 
+                        @"^[^@\s]+@[^@\s]+\.[^@\s]+$", 
+                        RegexOptions.IgnoreCase,
+                        TimeSpan.FromMilliseconds(200));
         }
     }
 }
