@@ -4,7 +4,11 @@ import {
   getPractitionerTimeline,
   getVisitDataForVisitId,
 } from '@/store/pqa/pqa.actions';
-import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+import {
+  getCurrentPQaRatingByUserId,
+  getCurrentReAccreditationRatingByUserId,
+  getPractitionerTimelineByIdSelector,
+} from '@/store/pqa/pqa.selectors';
 import { getUser } from '@/store/user/user.selectors';
 import {
   Button,
@@ -48,7 +52,10 @@ export const PractitionerJourney = ({
   const userId = user?.id || '';
 
   const timeline = useSelector(getPractitionerTimelineByIdSelector(userId));
-
+  const currentPqaRating = useSelector(getCurrentPQaRatingByUserId(userId));
+  const currentReAccreditationRating = useSelector(
+    getCurrentReAccreditationRatingByUserId(userId)
+  );
   const { isLoading: isLoadingTimeline } = useThunkFetchCall(
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
@@ -97,25 +104,38 @@ export const PractitionerJourney = ({
 
         return item;
       });
+    } else if (visitType === 'pqa') {
+      timeline?.pQASiteVisits?.map(async (item) => {
+        if (item?.id) {
+          await appDispatch(
+            getVisitDataForVisitId({ visitId: item.id, visitType })
+          );
+        }
+
+        return item;
+      });
     } else {
       await appDispatch(
-        getVisitDataForVisitId({ visitId: visit.id, visitType })
+        getVisitDataForVisitId({ visitId: visit?.id, visitType })
       );
     }
 
     if (
-      visit.visitType?.name === generalSupportVisitTypes.visit ||
-      visit.visitType?.name === generalSupportVisitTypes.call
+      visit?.visitType?.name === generalSupportVisitTypes.visit ||
+      visit?.visitType?.name === generalSupportVisitTypes.call
     ) {
       window.sessionStorage.setItem(
         currentActivityKey,
         coachVisitTypes.supportVisit
       );
-      window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
-      window.sessionStorage.setItem(currentActivityKey, visit.visitType?.name!);
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        visit?.visitType?.name!
+      );
     }
 
+    window.sessionStorage.setItem(visitIdKey, visit?.id);
     window.sessionStorage.setItem(isViewKey, 'true');
     setShowForm(true);
   };
@@ -237,6 +257,9 @@ export const PractitionerJourney = ({
             timeline,
             onView,
             isLoading: isLoadingGetVisitData,
+            practitionerId: userId,
+            currentPqaRating,
+            currentReAccreditationRating,
           })}
           typeColor={{ completed: 'successMain' }}
         />

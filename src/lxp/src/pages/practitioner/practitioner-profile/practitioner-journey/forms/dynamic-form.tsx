@@ -140,8 +140,8 @@ export const DynamicForm = ({
     if (Number(steps?.length) === 1) {
       return {
         action: isView ? onClose : onSubmit,
-        text: isView ? 'Close' : submitButton.text,
-        icon: isView ? 'XIcon' : submitButton.icon,
+        text: submitButton.text,
+        icon: submitButton.icon,
         type: submitButton.type,
       };
     }
