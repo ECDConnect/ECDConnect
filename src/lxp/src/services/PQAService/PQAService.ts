@@ -153,6 +153,40 @@ class PQAService {
     return response.data.data.addReAccreditationFollowUpVisitForPractitioner;
   }
 
+  async addSelfAssessmentForPractitioner(
+    input: SupportVisitModelInput
+  ): Promise<Visit> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { addSelfAssessmentForPractitioner: Visit };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation AddSelfAssessmentForPractitioner($input: SupportVisitModelInput) {
+          addSelfAssessmentForPractitioner(input: $input) {
+            id
+            plannedVisitDate
+            actualVisitDate
+            attended
+            visitType {
+                name
+                description
+            } 
+          }
+        }
+      `,
+      variables: {
+        input,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error('Add self assessment failed - Server connection error');
+    }
+
+    return response.data.data.addSelfAssessmentForPractitioner;
+  }
+
   async getVisitDataForVisitId(visitId: string): Promise<VisitData[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<{
@@ -253,6 +287,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              dueDate
               visitType {
                 type
                 order
@@ -330,6 +365,9 @@ class PQAService {
               plannedDate
               visitName
             }
+            selfAssessmentColor
+            selfAssessmentDate
+            selfAssessmentStatus
             smartSpaceLicenseColor
             smartSpaceLicenseDate
             smartSpaceLicenseStatus
@@ -339,6 +377,7 @@ class PQAService {
             supportVisits {
               id
               plannedVisitDate
+              insertedDate
               attended
               visitType {
                 description

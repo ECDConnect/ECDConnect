@@ -133,3 +133,38 @@ export const addPreviousFormData = ({
     ];
   }
 };
+
+export const handleAddSelfAssessment = ({
+  payload,
+  state,
+  visitId,
+  userId,
+}: AddState) => {
+  if (state?.selfAssessmentFormData?.length) {
+    if (
+      !state.selfAssessmentFormData.some(
+        (item) => item.formData.visitId === visitId
+      )
+    ) {
+      state.selfAssessmentFormData = [
+        ...state.selfAssessmentFormData,
+        { practitionerId: userId, formData: payload },
+      ];
+      return;
+    }
+
+    const newState = state.selfAssessmentFormData.map((item) => {
+      if (item.formData.visitId === visitId) {
+        return { ...item, formData: payload };
+      }
+
+      return item;
+    });
+
+    state.selfAssessmentFormData = newState;
+  } else {
+    state.selfAssessmentFormData = [
+      { practitionerId: userId, formData: payload },
+    ];
+  }
+};

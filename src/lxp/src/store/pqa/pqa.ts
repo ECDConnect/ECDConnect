@@ -4,13 +4,14 @@ import {
   addFollowUpVisitForPractitioner,
   addReAccreditationFollowUpVisitForPractitioner,
   addReAccreditationVisitData,
+  addSelfAssessmentForPractitioner,
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
   getVisitDataForVisitId,
   updateVisitPlannedVisitDate,
 } from './pqa.actions';
-import { PQAState } from './pqa.types';
+import { PQAFormType, PQAState } from './pqa.types';
 import {
   CmsVisitDataInputModelInput,
   UpdateVisitPlannedVisitDateModelInput,
@@ -23,6 +24,7 @@ import {
   handleAddFollowUpVisit,
   handleAddReAccreditationFollowUpVisit,
   handleAddReAccreditationVisit,
+  handleAddSelfAssessment,
   handleAddSupportVisit,
 } from './pqa.utils';
 
@@ -71,13 +73,7 @@ const pqaSlice = createSlice({
           string,
           {
             userId: string;
-            formType:
-              | 'pre-pqa'
-              | 'pqa'
-              | 'support-visit'
-              | 'follow-up-visit'
-              | 're-accreditation'
-              | 're-accreditation-follow-up-visit';
+            formType: PQAFormType;
           }
         >
       ) => {
@@ -138,6 +134,14 @@ const pqaSlice = createSlice({
               userId,
             });
             break;
+          case 'self-assessment':
+            handleAddSelfAssessment({
+              payload: action.payload,
+              state,
+              visitId,
+              userId,
+            });
+            break;
           default:
             if (state?.prePqaFormData?.length) {
               if (
@@ -173,13 +177,7 @@ const pqaSlice = createSlice({
         payload: CmsVisitDataInputModelInput,
         meta: {
           userId: string;
-          formType:
-            | 'pre-pqa'
-            | 'pqa'
-            | 'support-visit'
-            | 'follow-up-visit'
-            | 're-accreditation'
-            | 're-accreditation-follow-up-visit';
+          formType: PQAFormType;
         }
       ) => ({ payload, meta }),
     },
@@ -195,6 +193,7 @@ const pqaSlice = createSlice({
       builder,
       addReAccreditationFollowUpVisitForPractitioner
     );
+    setThunkActionStatus(builder, addSelfAssessmentForPractitioner);
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const practitionerId = action.meta.arg.userId;
@@ -243,7 +242,14 @@ const pqaSlice = createSlice({
       const visitId = action.meta.arg.visitId;
       const visitType = action.meta.arg.visitType;
 
-      if (visitType === 'reAccreditation-follow-up') {
+      if (visitType === 'support-visit') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'supportVisitPreviousFormData',
+        });
+      } else if (visitType === 're-accreditation-follow-up-visit') {
         addPreviousFormData({
           state,
           visitId,
@@ -276,6 +282,12 @@ const pqaSlice = createSlice({
     );
     builder.addCase(
       addReAccreditationFollowUpVisitForPractitioner.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+    builder.addCase(
+      addSelfAssessmentForPractitioner.fulfilled,
       (state, action) => {
         setFulfilledThunkActionStatus(state, action);
       }

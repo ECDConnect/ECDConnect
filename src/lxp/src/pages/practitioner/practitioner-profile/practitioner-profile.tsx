@@ -23,9 +23,12 @@ import { analyticsActions } from '@store/analytics';
 import CompleteProfile from '../edit-practitioner-profile/components/complete-profile/complete-profile';
 import ROUTES from '@routes/routes';
 import { practitionerSelectors } from '@/store/practitioner';
+import { PractitionerJourney } from './practitioner-journey';
+import { usePrevious } from 'react-use';
 // import { syncThunkActions } from '@/store/sync';
 
 export const PractitionerProfile: React.FC = () => {
+  const [isJourneyFormOpen, setJourneyFormOpen] = useState(false);
   // const { resetAuth, resetAppStore } = useStoreSetup();
   const user = useSelector(userSelectors.getUser);
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
@@ -37,10 +40,13 @@ export const PractitionerProfile: React.FC = () => {
   const appDispatch = useAppDispatch();
   const { userProfilePicture, classroomImage } = useDocuments();
   const { isOnline } = useOnlineStatus();
-  const [displayError, setDisplayError] = useState(false);
+  const [displayError] = useState(false);
   const history = useHistory();
   const dialog = useDialog();
 
+  const wasJourneyFormOpen = usePrevious(isJourneyFormOpen);
+
+  const selectedTab = wasJourneyFormOpen && !isJourneyFormOpen ? 1 : undefined;
   // const sync = async () => {
   //   if (practitioner?.isPrincipal === true) {
   //     await appDispatch(syncThunkActions.syncOfflineData({}));
@@ -90,7 +96,7 @@ export const PractitionerProfile: React.FC = () => {
         subTitleStyle,
         subTitle: 'Password',
         menuIcon: 'ShieldCheckIcon',
-        menuIconClassName: 'text-white bg-primary',
+        menuIconClassName: 'text-white',
         iconBackgroundColor: 'tertiary',
         showIcon: true,
         iconColor: 'white',
@@ -159,7 +165,7 @@ export const PractitionerProfile: React.FC = () => {
         subTitleStyle,
         menuIconUrl: classroomImage?.file,
         menuIcon: 'HeartIcon',
-        menuIconClassName: 'text-white bg-primary',
+        menuIconClassName: 'text-white',
         iconBackgroundColor: 'tertiary',
         iconColor: 'white',
         showIcon: classroomImage?.file === undefined,
@@ -229,7 +235,16 @@ export const PractitionerProfile: React.FC = () => {
         </div>
       ),
     },
+    {
+      title: 'Journey',
+      initActive: false,
+      child: <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />,
+    },
   ];
+
+  if (isJourneyFormOpen) {
+    return <PractitionerJourney onIsDisplayFormChange={setJourneyFormOpen} />;
+  }
 
   return (
     <BannerWrapper
@@ -241,9 +256,11 @@ export const PractitionerProfile: React.FC = () => {
       backgroundColour="white"
       displayOffline={!isOnline}
     >
-      <div className="bg-white">
-        <TabList className="mb-1 bg-white" tabItems={tabItem} />
-      </div>
+      <TabList
+        className="bg-uiBg mb-1"
+        tabItems={tabItem}
+        setSelectedIndex={selectedTab}
+      />
       {displayError && (
         <Alert
           className={'mt-5 mb-3'}
