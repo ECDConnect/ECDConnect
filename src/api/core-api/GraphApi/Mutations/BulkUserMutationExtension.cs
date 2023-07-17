@@ -49,6 +49,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
+            
             var userImportList = new List<ApplicationUser>();
             var hcwUsers = new Dictionary<string, HealthCareWorker>();
             var createdUsers = new List<string>();
@@ -81,6 +82,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                 var teamLeadIdNum = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+                
+                if (idOrPassport is null
+                    && id is null
+                    && passport is null
+                    && firstName is null
+                    && surname is null
+                    && cellphone is null
+                    && teamLeadIdNum is null)
+                    continue;
 
                 var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, teamLeadIdNum);
 
@@ -279,7 +289,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (cellphone is null || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
-                if (teamLeadId.Length != 13)
+                if (teamLeadId?.Length != 13)
                     errors.Add("Team Lead Id is invalid");
 
                 if (idOrPassport?.ToLowerInvariant() == "id"
@@ -344,6 +354,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                     var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                     var email = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+                    
+                    if (idOrPassport is null
+                    && id is null
+                    && passport is null
+                    && firstName is null
+                    && surname is null
+                    && cellphone is null
+                    && email is null)
+                        continue;
 
                     var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
 
