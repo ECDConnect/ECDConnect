@@ -893,6 +893,7 @@ class PractitionerService {
     practitionerId: string,
     reasonForPractitionerLeavingId: string | undefined = undefined,
     reasonDetails: string | undefined = undefined,
+    newPrincipalId: string | undefined = undefined,
     classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
   ): Promise<boolean> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
@@ -902,12 +903,14 @@ class PractitionerService {
         $practitionerId: String
         $reasonForPractitionerLeavingId: String
         $reasonDetails: String
+        $newPrincipalId: String
         $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
       ) {
         removePractitioner(
           practitionerId: $practitionerId
           reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
           reasonDetails: $reasonDetails
+          newPrincipalId: $newPrincipalId
           classroomGroupReassignments: $classroomGroupReassignments
         ) {
         }
@@ -917,6 +920,7 @@ class PractitionerService {
         practitionerId,
         reasonForPractitionerLeavingId,
         reasonDetails,
+        newPrincipalId,
         classroomGroupReassignments,
       },
     });

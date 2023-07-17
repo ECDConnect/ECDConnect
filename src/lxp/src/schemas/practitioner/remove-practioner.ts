@@ -3,14 +3,14 @@ import * as Yup from 'yup';
 export interface RemovePractionerModel {
   removeReasonId: string;
   reasonDetail: string;
-  newPrincipal: string | undefined;
+  newPrincipalId: string | undefined;
   reassignedClassrooms: { [id: string]: string };
 }
 
 export const initialRemovePractionerValues: RemovePractionerModel = {
   removeReasonId: '',
   reasonDetail: '',
-  newPrincipal: undefined,
+  newPrincipalId: undefined,
   reassignedClassrooms: {},
 };
 

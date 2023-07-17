@@ -152,6 +152,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         practitioner?.userId!,
         formValues.removeReasonId,
         formValues.reasonDetail,
+        formValues.newPrincipalId,
         reassignments
       );
       await appDispatch(
@@ -234,7 +235,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                   fullWidth
                   className={'mt-3 w-11/12'}
                   onChange={(item: any) => {
-                    setRemovePractionerFormValues('newPrincipal', item);
+                    setRemovePractionerFormValues('newPrincipalId', item);
                   }}
                 />
                 <div className="flex w-full justify-center">

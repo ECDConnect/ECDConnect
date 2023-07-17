@@ -5086,6 +5086,7 @@ export type MutationRemovePractitionerArgs = {
   classroomGroupReassignments?: InputMaybe<
     Array<InputMaybe<ClassroomGroupReassignmentsInput>>
   >;
+  newPrincipalId?: InputMaybe<Scalars['String']>;
   practitionerId?: InputMaybe<Scalars['String']>;
   reasonDetails?: InputMaybe<Scalars['String']>;
   reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
@@ -9662,11 +9663,6 @@ export type Setting_SmartLinkApi = {
   Mode: Scalars['String'];
 };
 
-export type Setting_Sms = {
-  __typename?: 'Setting_Sms';
-  Provider: Scalars['String'];
-};
-
 export type Setting_Smtp = {
   __typename?: 'Setting_Smtp';
   FromEmail: Scalars['String'];
@@ -9698,13 +9694,6 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
-export type Setting_ITouch = {
-  __typename?: 'Setting_iTouch';
-  BaseUrl: Scalars['String'];
-  Password: Scalars['String'];
-  Username: Scalars['String'];
-};
-
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -9723,12 +9712,10 @@ export type SettingsType = {
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
-  Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
-  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {
