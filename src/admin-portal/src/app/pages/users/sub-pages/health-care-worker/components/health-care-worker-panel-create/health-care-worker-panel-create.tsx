@@ -38,9 +38,13 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
+  passport: yup
+    .string()
+    .matches( SA_PASSPORT_REGEX, 'passport number is not valid')
+    .required('Passport Number is Required'),
   idNumber: yup
     .string()
-    .matches(SA_ID_REGEX || SA_PASSPORT_REGEX, 'Id number is not valid')
+    .matches(SA_ID_REGEX , 'Id number is not valid')
     .required('ID Number is Required'),
 });
 
@@ -70,10 +74,12 @@ export default function HealthCareWorkerPanelCreate(
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [idType, setIdType] = useState<string>('idNumber');
+
 
   // FORMS
   // USER FORM DETAILS
-  const { register, formState, getValues, handleSubmit, setValue } = useForm({
+  const { register, formState, getValues, handleSubmit } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
     mode: 'onChange',
@@ -103,10 +109,12 @@ export default function HealthCareWorkerPanelCreate(
   const saveUser = async () => {
     const userDetailForm = getValues();
 
+    console.log(userDetailForm);
+
     const userInputModel: UserModelInput = {
       id: newGuid(),
       isSouthAfricanCitizen: null,
-      idNumber: userDetailForm.idNumber,
+      idNumber: userDetailForm.idNumber ,
       verifiedByHomeAffairs: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
@@ -118,6 +126,8 @@ export default function HealthCareWorkerPanelCreate(
         input: { ...userInputModel },
       },
     }).then(async (response) => {
+
+
       const userId = response.data.addUser.id;
       if (userId) {
         await saveHealthCareWorker(userId);
@@ -202,8 +212,10 @@ export default function HealthCareWorkerPanelCreate(
       <>
         <div className="pb-2">
           <h1 className="text-uiMidDark text-xl font-medium leading-6">
-            Create CHW
+            Create Community Health Worker
           </h1>
+          <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
+
         </div>
         <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
           <form className="space-y-6 divide-y divide-gray-200">
@@ -237,13 +249,48 @@ export default function HealthCareWorkerPanelCreate(
                   />
                 </div>
                 <div className="my-4 sm:col-span-3">
-                  <FormField
-                    label={'Id number / passport *'}
+                  <HealthCareWorkerForm
+                    formKey={`createhealthcareworker-${new Date().getTime()}`}
+                    register={healthCareWorkerRegister}
+                    errors={healthCareWorkerFormErrors}
+                  />
+                </div>
+
+                <div className="my-4 sm:col-span-3">
+                  <div className=' flex flex-row mb-4'>
+                    <Button
+                      className={"mt-3 mr-1 w-full rounded-md "}
+                      type={idType === 'idNumber' ? "filled" : "outlined"}
+                      color="tertiary"
+                      onClick={() => setIdType('idNumber')}
+                    >
+                      <Typography type="help" color={idType === 'idNumber' ? "white" : "tertiary"} text="Id Number"></Typography>
+                    </Button>
+
+                    <Button
+                      className="mt-3 w-full rounded-md"
+                      type={idType === 'Passport' ? "filled" : "outlined"}
+                      color="tertiary"
+                      onClick={() => setIdType('Passport')}
+                    >
+                      <Typography type="help" color={idType === 'Passport' ? "white" : "tertiary"} text="Passport"></Typography>
+                    </Button>
+                  </div>
+                  {idType === 'idNumber' && <FormField
+                    label={'Id number *'}
                     nameProp={'idNumber'}
                     register={register}
                     error={errors.idNumber?.message}
                     placeholder="e.g 6201014800088"
-                  />
+                  />}
+
+                  {idType === 'Passport' && <FormField
+                    label={'Passport *'}
+                    nameProp={'idNumber'}
+                    register={register}
+                    // error={errors.passport?.message}
+                    placeholder="e.g EN000666"
+                  />}
                 </div>
               </div>
             </div>
@@ -252,11 +299,7 @@ export default function HealthCareWorkerPanelCreate(
         </div>
 
         <div className="  rounded-lg border-b border-gray-200 px-4 pb-6">
-          <HealthCareWorkerForm
-            formKey={`createhealthcareworker-${new Date().getTime()}`}
-            register={healthCareWorkerRegister}
-            errors={healthCareWorkerFormErrors}
-          />
+
         </div>
       </>
     );

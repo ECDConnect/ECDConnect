@@ -100,7 +100,7 @@ export default function Shell() {
           .slice()
           .sort((a, b) => a.sequence - b.sequence);
         setNavigation(sorted);
-        console.log(sorted);
+     
       } else {
         const filtered = navigationList.filter((x) =>
           x.permissions.some((z) => userPermissionIds.includes(z.id))
@@ -243,10 +243,10 @@ export default function Shell() {
                   </div>
                 ))}
               </nav>
-              <div className="px-4">
+              <div className="px-4 md:py-4 flex flex-col mb-2">
                 <Button
                   className={
-                    'hover:bg-secondary w-full rounded-xl hover:text-white'
+                    'hover:bg-secondary w-full rounded-xl hover:text-white mb-2'
                   }
                   type="filled"
                   // isLoading={isLoading}
@@ -262,8 +262,6 @@ export default function Shell() {
                     fontSize={'24'}
                   ></Typography>
                 </Button>
-              </div>
-              <div className="p-4">
                 <Button
                   className={
                     'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
@@ -281,6 +279,7 @@ export default function Shell() {
                   ></Typography>
                 </Button>
               </div>
+            
             </div>
           </div>
         </div>

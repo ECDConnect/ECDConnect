@@ -122,30 +122,12 @@ export default function UiTable(
       return [{ [columns[0].field]: 'No entries found' }];
     }
 
-    const handleRowSelect = (row: any) => {
-      if (selectedRows.includes(row)) {
-        setSelectedRows(
-          selectedRows.filter((selectedRow) => selectedRow !== row)
-        );
-      } else {
-        setSelectedRows([...selectedRows, row]);
-      }
-    };
-
     return ((searchRows as any[]) || []).map((row: any) => {
       let rowKey = 1;
 
-      const checkboxCell = (
-        <input
-          type="checkbox"
-          className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
-          onChange={() => handleRowSelect(row)}
-          checked={selectedRows.includes(row)}
-        />
-      );
 
       const rowWithCheckbox = {
-        select: checkboxCell,
+        select: null,
         ...row,
       };
 
@@ -185,28 +167,27 @@ export default function UiTable(
     if ((!searchRows?.length && searchValue) || !rows.length) {
       return column.field === columns[0].field ? display_value : <></>;
     }
-
+    const checkboxCell = (
+      <input
+        type="checkbox"
+        className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:bg-blue-600 focus:ring-2 "
+        onChange={() => handleRowSelect(row)}
+        checked={selectedRows.includes(row)}
+      />
+    );
     let rowValue: any;
+    if (column.field === "select") {
+      
+      return checkboxCell;
 
-    if (typeof display_value === 'boolean') {
+    }else if (typeof display_value === 'boolean') {
       rowValue = (
         <div className="ml-1 flex cursor-pointer">
           {display_value ? (
-            // <Icon
-            //   icon="CheckCircleIcon"
-            //   className="text-successMain ml-1"
-            //   height="20px"
-            //   color="transparent"
-            // />
 
             <p className="text-successMain ">Active</p>
           ) : (
-            // <Icon
-            //   icon="XCircleIcon"
-            //   className="text-errorMain ml-1"
-            //   height="20px"
-            //   color="transparent"
-            // />
+ 
             <p className="text-errorMain text-normal">Inactive</p>
           )}
         </div>

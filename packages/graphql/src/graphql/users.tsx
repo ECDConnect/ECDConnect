@@ -36,6 +36,7 @@ export const GetUserById = gql`
   query userById($userId: String) {
     userById(userId: $userId) {
       id
+      isActive
       userName
       email
       isSouthAfricanCitizen

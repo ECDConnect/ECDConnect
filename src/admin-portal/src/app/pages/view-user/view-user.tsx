@@ -503,7 +503,7 @@ export function ViewUser(props: any) {
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
                               )}
                             >
-                              <p className="text-16"> {i.name}</p>
+                              <p className="text-16"> {i.name === 'Community Health Worker' ? 'CHW': i.name}</p>
                             </div>
                           );
                         }
@@ -515,9 +515,16 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {(!userData?.userById?.isActive ||
-            !chwData?.GetHealthCareWorkerById?.user?.isActive) && (
+          {( chwData && !chwData?.GetHealthCareWorkerById?.user?.isActive) && (
             <Alert
+              className="mt-5 mb-3"
+              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+              type="error"
+              // customIcon={<SaveIcon></SaveIcon>}
+            />
+          )}
+              {(userData && !userData?.userById?.isActive) && 
+              (  <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
               type="error"
@@ -535,7 +542,7 @@ export function ViewUser(props: any) {
             </h3>
             <form
               key={'formKey'}
-              className="space-y-8 divide-y divide-gray-200"
+              className="space-y-3 divide-y divide-gray-200"
             >
               {editActive ? (
                 <>
@@ -571,7 +578,7 @@ export function ViewUser(props: any) {
                         </div>
                       )}
 
-                      <div className="my-4 w-6/12 sm:col-span-3">
+                      <div className="my-0 w-6/12 sm:col-span-2">
                         <PasswordInput
                           label={'Password'}
                           nameProp={'password'}
