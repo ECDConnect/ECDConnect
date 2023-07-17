@@ -16,10 +16,15 @@ namespace ECDLink.Tenancy.Context
         /// </summary>
         public static TenantModel? Tenant => tenant.Value;
 
-        public static void SetTenant(TenantModel value)
+        public static void SetTenant(TenantModel value, bool acceptNullValue = false)
         {
             if (value == null)
             {
+                if (acceptNullValue)
+                {
+                    tenant.Value = null;
+                    return;
+                }
                 throw new InvalidOperationException($"No tenant available for context");
             }
 
