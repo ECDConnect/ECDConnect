@@ -48,6 +48,28 @@
                     public const string TokenSecret = "Notifications.SMSProviders.BulkSms.TokenSecret";
                     public const string AuthToken = "Notifications.SMSProviders.BulkSms.BasicAuthToken";
                 }
+
+                public static class Sms
+                {
+                    public const string SmsGrouping = "Notifications.SMSProviders.Sms";
+                    public const string Provider = "Notifications.SMSProviders.Sms.Provider";
+                }
+
+                public static class SMSPortal
+                {
+                    public const string SMSPortalGrouping = "Notifications.SMSProviders.SMSPortal";
+                    public const string Url = "Notifications.SMSProviders.SMSPortal.BaseUrl";
+                    public const string ApiKey = "Notifications.SMSProviders.SMSPortal.ApiKey";
+                    public const string ApiSecret = "Notifications.SMSProviders.SMSPortal.ApiSecret";
+                }
+
+                public static class iTouch
+                {
+                    public const string iTouchGrouping = "Notifications.SMSProviders.iTouch";
+                    public const string Url = "Notifications.SMSProviders.iTouch.BaseUrl";
+                    public const string Username = "Notifications.SMSProviders.iTouch.Username";
+                    public const string Password = "Notifications.SMSProviders.iTouch.Password";
+                }
             }
         }
 
