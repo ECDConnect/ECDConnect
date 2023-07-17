@@ -67,8 +67,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     undefined
   ).filter((item) => item?.type === 'completed');
   const onboardingNotCompleted = completedSteps?.length < 8;
-  console.log({ completedSteps });
-  console.log({ onboardingNotCompleted });
+
   const [showTraineeDashboard, setShowTraineeDashboard] = useState(false);
 
   const { theme } = useTheme();

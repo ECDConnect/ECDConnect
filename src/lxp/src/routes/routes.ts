@@ -86,6 +86,7 @@ const ROUTES = {
   DOWNLOAD_CHILD_PROGRESS_OBSERVATION_REPORTS:
     '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
+  COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
   COACH: addPrefix('/coach', {
     ABOUT: addPrefix('/about', {
       SIGNATURE: '/signature',

@@ -1,7 +1,17 @@
+import ROUTES from '@/routes/routes';
+import { PractitionerDto } from '@ecdlink/core';
 import { ActionModal } from '@ecdlink/ui';
 import { ActionModalButton } from '@ecdlink/ui/lib/components/action-modal/models/ActionModalButton';
+import { useHistory } from 'react-router';
 
-export const SmartSpaceVisit = () => {
+interface SmartSpaceVisitProps {
+  practitioner: PractitionerDto | undefined;
+}
+
+export const SmartSpaceVisit: React.FC<SmartSpaceVisitProps> = ({
+  practitioner,
+}) => {
+  const history = useHistory();
   const actionButtons: ActionModalButton[] = [
     {
       text: 'Schedule in calendar',
@@ -18,7 +28,10 @@ export const SmartSpaceVisit = () => {
     textColour: 'primary',
     colour: 'primary',
     type: 'outlined',
-    onClick: () => {},
+    onClick: () =>
+      history.push(ROUTES.COACH_SMARTSPACE_CHECK, {
+        practitioner: practitioner,
+      }),
     leadingIcon: 'ArrowCircleRightIcon',
   });
 

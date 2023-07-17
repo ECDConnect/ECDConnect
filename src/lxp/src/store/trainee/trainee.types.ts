@@ -10,4 +10,5 @@ export interface TraineeState {
   trainee?: TraineeDto;
   traineeOnboardTimeline?: TraineeOnBoardTimeline;
   traineeVisitData?: VisitData[];
+  coachSmartSpaceCheckData?: VisitData[];
 }

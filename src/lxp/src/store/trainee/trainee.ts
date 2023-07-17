@@ -13,6 +13,7 @@ const initialState: TraineeState = {
   trainee: undefined,
   traineeOnboardTimeline: undefined,
   traineeVisitData: undefined,
+  coachSmartSpaceCheckData: undefined,
 };
 
 const traineeSlice = createSlice({
@@ -21,6 +22,9 @@ const traineeSlice = createSlice({
   reducers: {
     resetPractitionerState: (state) => {
       state.trainee = initialState.trainee;
+    },
+    saveCoachSmartSpaceCheckData: (state, action) => {
+      state.coachSmartSpaceCheckData = action?.payload;
     },
   },
   extraReducers: (builder) => {

@@ -47,7 +47,7 @@ export const TraineeOnboarding: React.FC<TraineeOnboardingProps> = ({
       case 'Register 3 children':
         return null;
       case 'SmartSpace visit from coach':
-        return <SmartSpaceVisit />;
+        return <SmartSpaceVisit practitioner={practitioner} />;
       default:
         return (
           <OnboardingTraineeDashboard
