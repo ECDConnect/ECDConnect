@@ -478,30 +478,25 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         public List<Visit> GetVisitsForClient(string id, string type) {
 
             List<Visit> allVisits = new List<Visit>();
-            if (type == Constants.GGSettings.client_mother) {
-                allVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Mother.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_mother) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderBy(y => y.PlannedVisitDate).ToList();
-            } else if (type == Constants.GGSettings.client_child) {
-                allVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.GGSettings.client_child) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).OrderBy(y => y.PlannedVisitDate).ToList();
-            } else if (type == Constants.SSSettings.client_practitioner) {
-                    allVisits = (
-                       from visit in _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id).OrderBy(x => x.PlannedVisitDate)
-                       join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_practitioner) on visit.VisitTypeId equals visitType.Id
-                       select visit
-                   ).ToList();
-            } else if (type == Constants.SSSettings.client_trainee) {
-                allVisits = (
-                    from visit in _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null).OrderBy(x => x.PlannedVisitDate)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type == Constants.SSSettings.client_trainee) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).ToList();
+            if (type == Constants.GGSettings.client_mother)
+            {
+                allVisits = _visitRepo.GetAll().Where(x => x.Mother.UserId == id && x.VisitType.Type == Constants.GGSettings.client_mother).OrderBy(y => y.PlannedVisitDate).ToList();
+            }
+            else if (type == Constants.GGSettings.client_child)
+            {
+                allVisits = _visitRepo.GetAll().Where(x => x.Infant.UserId == id && x.VisitType.Type == Constants.GGSettings.client_child).OrderBy(y => y.PlannedVisitDate).ToList();
+            }
+            else if (type == Constants.SSSettings.client_practitioner)
+            {
+                allVisits = _visitRepo.GetAll().Where(x => x.Practitioner.UserId == id && x.VisitType.Type == Constants.SSSettings.client_practitioner).OrderBy(y => y.PlannedVisitDate).ToList();
+            }
+            else if (type == Constants.SSSettings.client_trainee)
+            {
+                allVisits = _visitRepo.GetAll().Where(x => x.Trainee.UserId == id && x.CoachId == null && x.VisitType.Type == Constants.SSSettings.client_trainee).OrderBy(y => y.PlannedVisitDate).ToList();
+            }
+            else if (type == Constants.SSSettings.client_coach)
+            {
+                allVisits = _visitRepo.GetAll().Where(x => x.Coach.UserId == id && x.VisitType.Type == Constants.SSSettings.client_coach).OrderBy(y => y.PlannedVisitDate).ToList();
             }
 
             foreach (var _visit in allVisits)
@@ -595,34 +590,21 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         public Visit GetVisitForUserForType(string id, string userType, string vType)
         {
-
             if (userType == Constants.SSSettings.client_trainee)
             {
                 if (vType == Constants.SSSettings.visitType_trainee_visit)
                 {
-                    return (
-                        from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_coach) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).FirstOrDefault();
-            } else
+                    return _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_coach).FirstOrDefault();
+                } 
+                else
                 {
-                    return (
-                        from visit in _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id)
-                        join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_trainee) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
-                        select visit
-                    ).FirstOrDefault();
+                    return _visitRepo.GetAll().Where(x => x.TraineeId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_trainee).FirstOrDefault();
                 }
             }
 
             if (userType == Constants.SSSettings.client_practitioner)
             {
-                return (
-                    from visit in _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id)
-                    join visitType in _visitTypeRepo.GetAll().Where(y => y.Type.Equals(Constants.SSSettings.client_practitioner) && y.Name == vType) on visit.VisitTypeId equals visitType.Id
-                    select visit
-                ).FirstOrDefault();
-
+                return _visitRepo.GetAll().Where(x => x.PractitionerId.ToString() == id && x.VisitType.Name == vType && x.VisitType.Type == Constants.SSSettings.client_practitioner).FirstOrDefault();
             }
 
             return null;

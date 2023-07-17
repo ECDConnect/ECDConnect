@@ -43,6 +43,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+        private IGenericRepository<Coach, Guid> _coachRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -74,6 +75,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
+            _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -762,7 +764,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     timeline.CommunitySupportDate = trainee.CommunitySupportGained;
                 }
             }
-            
 
             // ThreeChildrenRegistered
             var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
@@ -812,13 +813,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
                     timeline.SSCoachVisitDeadlineDate = latestDate;
+                    Coach coach = _coachRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
 
                     VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
 
                     VisitModel input = new VisitModel();
                     input.VisitType = visitType;
                     input.Attended = false;
-                    input.CoachId = trainee.Practitioner.Coach.Id;
+                    input.CoachId = coach.Id;
                     input.TraineeId = trainee.Id;
                     input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
 
