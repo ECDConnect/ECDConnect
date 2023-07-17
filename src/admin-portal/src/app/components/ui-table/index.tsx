@@ -316,7 +316,7 @@ export default function UiTable(
         }}
         columns={makeColumns()}
         rows={makeRows()}
-        per_page={options.per_page || 10}
+        per_page={10}
         no_content_text="-"
         striped
         bordered
