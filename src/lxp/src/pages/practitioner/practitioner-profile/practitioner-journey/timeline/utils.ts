@@ -5,6 +5,12 @@ export interface StepType {
   type: StepItem['type'];
   color?: Colours;
 }
+export const dateLongDayOptions: Intl.DateTimeFormatOptions = {
+  weekday: 'long',
+  day: 'numeric',
+  month: 'long',
+  year: 'numeric',
+};
 
 export const dateOptions: Intl.DateTimeFormatOptions = {
   year: 'numeric',
@@ -63,4 +69,22 @@ export const sortVisit = (visitA?: Maybe<Visit>, visitB?: Maybe<Visit>) => {
   const orderA = Number(visitA?.visitType?.order) || 0;
   const orderB = Number(visitB?.visitType?.order) || 0;
   return orderA - orderB;
+};
+
+export const sortVisitByInsertedDate = (
+  visitA?: Maybe<Visit>,
+  visitB?: Maybe<Visit>
+) => {
+  if (!visitA?.insertedDate && !visitB?.insertedDate) {
+    return 0;
+  } else if (!visitA?.insertedDate) {
+    return 1;
+  } else if (!visitB?.insertedDate) {
+    return -1;
+  }
+
+  return (
+    new Date(visitA.insertedDate).getTime() -
+    new Date(visitB.insertedDate).getTime()
+  );
 };

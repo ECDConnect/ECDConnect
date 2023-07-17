@@ -114,6 +114,12 @@ export const SetupPrincipal: React.FC = () => {
             status: true,
           })
         );
+        await appDispatch(
+          practitionerThunkActions.updatePractitionerProgress({
+            practitionerId: user.id,
+            progress: 2.0,
+          })
+        );
         stopService();
       }
 

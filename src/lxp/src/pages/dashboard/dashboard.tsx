@@ -394,7 +394,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || !isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -503,7 +503,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || !isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',

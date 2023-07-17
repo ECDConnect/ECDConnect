@@ -287,6 +287,7 @@ class PQAService {
               plannedVisitDate
               attended
               comment
+              dueDate
               visitType {
                 type
                 order
@@ -376,6 +377,7 @@ class PQAService {
             supportVisits {
               id
               plannedVisitDate
+              insertedDate
               attended
               visitType {
                 description

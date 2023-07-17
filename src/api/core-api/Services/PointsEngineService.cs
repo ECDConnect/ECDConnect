@@ -1,13 +1,11 @@
-﻿using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
-using ECDLink.Core.Extensions;
+﻿using ECDLink.Core.Extensions;
+using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
 using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
-using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
@@ -15,9 +13,7 @@ using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Http.HttpResults;
 using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 
@@ -28,7 +24,6 @@ namespace EcdLink.Api.CoreApi.Services
         private IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repositoryFactory;
 
-        private IGenericRepository<ServiceScheduler, Guid> _schedulerRepo;
         private IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
         private IGenericRepository<PointsUser, Guid> _pointsUserRepo;
         private IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
@@ -43,25 +38,26 @@ namespace EcdLink.Api.CoreApi.Services
 
         private IGenericRepository<Practitioner, Guid> _practitionerRepo;
         private IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
+        private IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
+        private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
+        private IGenericRepository<Classroom, Guid> _classRepo;
 
-
-        private PersonnelService _personnelService;
         private ChildAttendanceReport _childAttendanceReport;
+        private IncomeExpenseService _incomeExpenseService;
 
         private string _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            PersonnelService personnelService,
-            ChildAttendanceReport childAttendanceReport)
+            ChildAttendanceReport childAttendanceReport,
+            IncomeExpenseService incomeExpenseService
+            )
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
             _uId = _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : null;
             
-            _schedulerRepo = _repositoryFactory.CreateGenericRepository<ServiceScheduler>(userContext: _uId);
-
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
             _pointsUserRepo = _repositoryFactory.CreateGenericRepository<PointsUser>(userContext: _uId);
             _pointsUserSummaryRepo = _repositoryFactory.CreateGenericRepository<PointsUserSummary>(userContext: _uId);
@@ -76,9 +72,11 @@ namespace EcdLink.Api.CoreApi.Services
             _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
             _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
             _statementsIncomeStatementRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
+            _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
+            _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
 
-            _personnelService = personnelService;
             _childAttendanceReport = childAttendanceReport;
+            _incomeExpenseService = incomeExpenseService;
 
         }
 
@@ -1095,6 +1093,13 @@ namespace EcdLink.Api.CoreApi.Services
                         ytdTotal = 1200;
                     }
                 }
+                if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac2)
+                {
+                    if (ytdTotal > 300)
+                    {
+                        ytdTotal = 300;
+                    }
+                }
                 if (item.SubActivity == Constants.PointsEngineSettings.income_statement_ac3)
                 {
                     if (ytdTotal > 300)
@@ -1150,8 +1155,9 @@ namespace EcdLink.Api.CoreApi.Services
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
 
             DateTime today = DateTime.Now.Date;
+            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 
-            var children = _personnelService.GetAllChildrenForPractitioner(userId);
+            var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList(); ;
             var childCount = children.Where(x => x.InsertedDate.Year == today.Year && x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
 
             if (childCount > 0)
@@ -1243,7 +1249,7 @@ namespace EcdLink.Api.CoreApi.Services
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
-            List<Classroom> classrooms = _personnelService.GetAllClassroomsForPractitioner(userId);
+            List<Classroom> classrooms = _classRepo.GetListByUserId(userId);
 
             DateTime today = DateTime.Now.Date;
 
@@ -1355,6 +1361,78 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
+        public bool ManageIncomeStatementPreSchoolFees(string userId)
+        {
+            List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac2).FirstOrDefault();
+            
+            DateTime today = DateTime.Now.Date;
+            DateTime deadline = today.GetStartOfMonth().AddDays(7);
+            DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
+
+            Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
+
+            if (practitioner.IsFundaAppAdmin == true || practitioner.IsPrincipal == true)
+            {
+                var totalPractitionerChildren = _childRepo.GetAll().Where(x => x.User.IsActive == false && x.Hierarchy.StartsWith(practitioner.Hierarchy)).Count();
+
+                List<StatementsIncomeType> incomeTypes = _incomeExpenseService.GetAllStatementIncomeTypes(userId, previousMonth.Year, previousMonth.Month);
+                List<StatementsContributionType> contributionTypes = _incomeExpenseService.GetAllStatementContributionTypes(userId, previousMonth.Year, previousMonth.Month);
+
+                var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).FirstOrDefault();
+                var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).FirstOrDefault();
+
+                var money_preschoolData = _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
+                                                                                && x.DateReceived.Year.Equals(previousMonth.Year)
+                                                                                && x.DateReceived.Month.Equals(previousMonth.Month)
+                                                                                && x.Submitted.Equals(true)
+                                                                                && x.IncomeTypeId == preschoolFeeId.ToString()
+                                                                                && x.ContributionTypeId == moneyId.ToString())
+                                                                                .Select(x => x.ChildUserId).Distinct().ToList();
+
+                var non_money_preschoolData = _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true
+                                                                                && x.DateReceived.Year.Equals(previousMonth.Year)
+                                                                                && x.DateReceived.Month.Equals(previousMonth.Month)
+                                                                                && x.Submitted.Equals(true)
+                                                                                && x.IncomeTypeId == preschoolFeeId.ToString()
+                                                                                && x.ContributionTypeId != moneyId.ToString())
+                                                                                .Select(x => x.ChildUserId).Distinct().ToList();
+
+               // This excludes duplicates from the return set
+               var all_children = money_preschoolData.Union(non_money_preschoolData).Count();
+               if (totalPractitionerChildren == all_children) {
+                    
+                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    if (activity_record == null)
+                    {
+                        InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activity.Points,
+                                UserId = userId,
+                                PointsLibraryId = activity.Id
+                            }
+                        );
+                    }
+                    else
+                    {
+                        activity_record.Points = activity.Points;
+                        activity_record.UpdatedDate = DateTime.Now;
+                        activity_record.UpdatedBy = _uId;
+                        UpdateIndividualUserPoints(activity_record);
+                    }
+                }
+                UpdateUserSummaryPoints(userId);
+            }
+            return true;
+        }
+
         public bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
@@ -1375,7 +1453,6 @@ namespace EcdLink.Api.CoreApi.Services
             comboRanges.AddRange(new List<int> { 8, 9, 10 });
             comboRanges.AddRange(new List<int> { 9, 10, 11 });
             comboRanges.AddRange(new List<int> { 10, 11, 12 });
-            
 
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 

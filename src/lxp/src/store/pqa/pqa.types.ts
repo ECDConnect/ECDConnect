@@ -30,6 +30,7 @@ export type PQAState = {
   coachPractitionersTimeline?: PractitionerTimelineState[];
   prePqaFormData?: FormData[];
   prePqaPreviousFormData?: PreviousFormData[];
+  supportVisitPreviousFormData?: PreviousFormData[];
   reAccreditationFollowUpVisitPreviousFormData?: PreviousFormData[];
   pqaFormData?: FormData[];
   reAccreditationFormData?: FormData[];
@@ -45,7 +46,8 @@ export type VisitType = 'pQASiteVisits' | 'reAccreditationVisits';
 
 export type PQAStateKeys =
   | 'prePqaPreviousFormData'
-  | 'reAccreditationFollowUpVisitPreviousFormData';
+  | 'reAccreditationFollowUpVisitPreviousFormData'
+  | 'supportVisitPreviousFormData';
 
 export type PQAFormType =
   | 'pre-pqa'

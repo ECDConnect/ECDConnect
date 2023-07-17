@@ -242,7 +242,14 @@ const pqaSlice = createSlice({
       const visitId = action.meta.arg.visitId;
       const visitType = action.meta.arg.visitType;
 
-      if (visitType === 'reAccreditation-follow-up') {
+      if (visitType === 'support-visit') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'supportVisitPreviousFormData',
+        });
+      } else if (visitType === 're-accreditation-follow-up-visit') {
         addPreviousFormData({
           state,
           visitId,

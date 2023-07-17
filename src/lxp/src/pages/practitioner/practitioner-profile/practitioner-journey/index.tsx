@@ -1,5 +1,9 @@
 import { useAppDispatch } from '@/store';
-import { PqaActions, getPractitionerTimeline } from '@/store/pqa/pqa.actions';
+import {
+  PqaActions,
+  getPractitionerTimeline,
+  getVisitDataForVisitId,
+} from '@/store/pqa/pqa.actions';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 import { getUser } from '@/store/user/user.selectors';
 import {
@@ -12,8 +16,8 @@ import {
 } from '@ecdlink/ui';
 import { useCallback, useLayoutEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
-import { timelineSteps } from './timeline/timeline-steps';
-import { getFormattedDateInYearsMonthsAndDays } from '@ecdlink/core';
+import { ViewEvent, timelineSteps } from './timeline/timeline-steps';
+import { getFormattedDateInYearsMonthsAndDays, parseBool } from '@ecdlink/core';
 import {
   dateLongMonthOptions,
   dateOptions,
@@ -22,8 +26,12 @@ import {
 } from './timeline/utils';
 import { visitTypes } from './index.types';
 import { Visit } from '@ecdlink/graphql';
-import { Form, currentActivityKey, visitIdKey } from './forms';
+import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
+import {
+  generalSupportVisitTypes,
+  visitTypes as coachVisitTypes,
+} from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 
 interface PractitionerJourneyProps {
   onIsDisplayFormChange: (value: boolean) => void;
@@ -32,7 +40,7 @@ interface PractitionerJourneyProps {
 export const PractitionerJourney = ({
   onIsDisplayFormChange,
 }: PractitionerJourneyProps) => {
-  const [, /* showForm */ setShowForm] = useState(false);
+  const [showForm, setShowForm] = useState(false);
 
   const appDispatch = useAppDispatch();
 
@@ -45,8 +53,13 @@ export const PractitionerJourney = ({
     'pqa',
     PqaActions.GET_PRACTITIONER_TIMELINE
   );
+  const { isLoading: isLoadingGetVisitData } = useThunkFetchCall(
+    'pqa',
+    PqaActions.GET_VISIT_DATA_FOR_VISIT_ID
+  );
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
+  const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
 
   // TODO: add rules
   const uncompletedSelfAssessment = true
@@ -71,6 +84,40 @@ export const PractitionerJourney = ({
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
     onIsDisplayFormChange(true);
+  };
+
+  const onView = async ({ visit, visitType }: ViewEvent) => {
+    if (visitType === 'pre-pqa') {
+      timeline?.prePQASiteVisits?.map(async (item) => {
+        if (item?.id) {
+          await appDispatch(
+            getVisitDataForVisitId({ visitId: item.id, visitType })
+          );
+        }
+
+        return item;
+      });
+    } else {
+      await appDispatch(
+        getVisitDataForVisitId({ visitId: visit.id, visitType })
+      );
+    }
+
+    if (
+      visit.visitType?.name === generalSupportVisitTypes.visit ||
+      visit.visitType?.name === generalSupportVisitTypes.call
+    ) {
+      window.sessionStorage.setItem(
+        currentActivityKey,
+        coachVisitTypes.supportVisit
+      );
+      window.sessionStorage.setItem(visitIdKey, visit.id);
+    } else {
+      window.sessionStorage.setItem(currentActivityKey, visit.visitType?.name!);
+    }
+
+    window.sessionStorage.setItem(isViewKey, 'true');
+    setShowForm(true);
   };
 
   const currentVisit = uncompletedVisits
@@ -98,18 +145,22 @@ export const PractitionerJourney = ({
     )
     .shift();
 
+  const isRenderForm =
+    (activityName && currentVisit?.extraData?.visitId) || showForm || isView;
+
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     window.sessionStorage.removeItem(visitIdKey);
+    window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
     onIsDisplayFormChange(false);
   };
 
   const getTimeline = useCallback(() => {
-    if (userId) {
+    if (userId && !isRenderForm) {
       appDispatch(getPractitionerTimeline({ userId: userId }));
     }
-  }, [appDispatch, userId]);
+  }, [appDispatch, isRenderForm, userId]);
 
   useLayoutEffect(() => {
     if (activityName) {
@@ -121,9 +172,12 @@ export const PractitionerJourney = ({
     getTimeline();
   }, [getTimeline]);
 
-  if (activityName && currentVisit?.extraData?.visitId) {
+  if (isRenderForm) {
     return (
-      <Form visitId={currentVisit.extraData.visitId} onBack={onFormBack} />
+      <Form
+        visitId={currentVisit?.extraData?.visitId || visitIdKey}
+        onBack={onFormBack}
+      />
     );
   }
 
@@ -179,7 +233,11 @@ export const PractitionerJourney = ({
       />
       {!!timeline && (
         <Steps
-          items={timelineSteps({ timeline })}
+          items={timelineSteps({
+            timeline,
+            onView,
+            isLoading: isLoadingGetVisitData,
+          })}
           typeColor={{ completed: 'successMain' }}
         />
       )}

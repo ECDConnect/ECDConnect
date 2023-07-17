@@ -30,6 +30,7 @@ namespace ECDLink.Core.Services.Interfaces
         bool RemoveChildrenRegistration(string userId);
         bool ManageAttendanceSubmitted(string userId);
         bool ManageIncomeStatementsSubmitted(string userId);
+        bool ManageIncomeStatementPreSchoolFees(string userId);
         bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId);
 
         // SS TODO: Pre-school fees - development pending
