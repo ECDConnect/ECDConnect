@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -53,6 +53,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<any>();
 
   const { theme } = useTheme();
+  const { showMessage } = useSnackbar();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
     useState<boolean>(false);
@@ -486,8 +487,11 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                     userId={practitionerId || ''}
                     noteType={NoteTypeEnum.Unknown}
                     titleText={`Remove ${practitioner?.user?.firstName}`}
-                    //onBack={() => {}}
-                    //onCreated={() => {}}
+                    onSuccess={() =>
+                      showMessage({
+                        message: `${practitioner?.user?.firstName} removed`,
+                      })
+                    }
                   />
                 </div>
               </Dialog>

@@ -11,6 +11,7 @@ import {
   classNames,
   Dropdown,
   Alert,
+  DialogPosition,
 } from '@ecdlink/ui';
 import { useAppDispatch } from '@store/config';
 import { authSelectors } from '@store/auth';
@@ -35,9 +36,11 @@ import { PractitionerProfileRouteState } from '../../practitioner-profile-info.t
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
 import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   userId,
+  onSuccess,
 }) => {
   const history = useHistory();
   const user = useSelector(authSelectors.getAuthUser);
@@ -154,9 +157,11 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
       ).unwrap();
-      history.push(ROUTES.COACH.PRACTITIONERS);
     }
   };
+
+  const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
+    useState<boolean>(false);
 
   return (
     <>
@@ -300,7 +305,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             <Divider></Divider>
           </div>
           <Button
-            onClick={() => handleFormSubmit(getRemovePractionerFormValues())}
+            onClick={() => setRemovePractionerPromptVisible(true)}
             className="w-full"
             size="small"
             color="errorMain"
@@ -332,6 +337,23 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           </Button>
         </div>
       </BannerWrapper>
+      <Dialog
+        className={'mb-16 px-4'}
+        stretch={true}
+        visible={removePractionerPromptVisible}
+        position={DialogPosition.Bottom}
+      >
+        <RemovePractitionerPrompt
+          practitioner={practitioner}
+          onProceed={() => {
+            handleFormSubmit(getRemovePractionerFormValues());
+            setRemovePractionerPromptVisible(false);
+            history.push(ROUTES.COACH.PRACTITIONERS);
+            onSuccess();
+          }}
+          onClose={() => setRemovePractionerPromptVisible(false)}
+        />
+      </Dialog>
     </>
   );
 };

@@ -5,6 +5,5 @@ export interface RemovePractionerReasonsProps extends ComponentBaseProps {
   noteType: NoteTypeEnum;
   userId: string;
   titleText?: string;
-  onCreated?: () => void;
-  onBack?: () => void;
+  onSuccess: Function;
 }
