@@ -502,7 +502,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             }
 
             input.VisitType = visitType;
-            input.Attended = false;
+            input.Attended = input.Attended;
             input.CoachId = coach.Id;
             input.TraineeId = trainee.Id;
             input.LinkedVisitId = input.LinkedVisitId;
