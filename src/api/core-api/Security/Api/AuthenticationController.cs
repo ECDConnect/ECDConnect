@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -121,7 +122,7 @@ namespace ECDLink.Security.Api
                 return BadRequest("Could not reset password");
             }
 
-            var sites = new string[] { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
+            var sites = new List<string> { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
             var originHost = new Uri(Request.Headers.Origin);
             var isPortal = sites.Contains($"{originHost.Host}:{originHost.Port}") || sites.Contains(originHost.Host);
 

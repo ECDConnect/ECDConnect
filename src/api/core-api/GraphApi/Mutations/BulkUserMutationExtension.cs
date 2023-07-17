@@ -1,4 +1,3 @@
-using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
@@ -52,11 +51,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userImportList = new List<ApplicationUser>();
             var hcwUsers = new Dictionary<string, HealthCareWorker>();
-            var createdUsers = new List<UserModel>();
-            var userClinics = new Dictionary<string, Guid>();
+            var createdUsers = new List<string>();
+            var hcwToTeamLeadMap = new Dictionary<string, string>();
 
             var validationErrors = new List<InputValidationError>();
 
+            // TODO: Addd async enumerator for this?
             var bytes = Convert.FromBase64String(file);
             using MemoryStream fileStream = new MemoryStream(bytes);
             var workbook = WorkbookFactory.Create(fileStream);
@@ -70,58 +70,60 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             {
                 var currentRow = sheet.GetRow(row);
 
-                if (currentRow != null)
+                if (currentRow is null)
                 {
-                    var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                    var id = ExcelHelper.GetCellValue(currentRow.GetCell(1));
-                    var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
-                    var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
-                    var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
-                    var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
-                    var uniqueClinicId = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-
-                    var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, uniqueClinicId);
-
-                    // Collect all row errors.
-                    // Could be on a row with no errors, but previous rows had errors.
-                    if (rowErrors.Any() || validationErrors.Any())
-                    {
-                        // Dont add null rows
-                        if (rowErrors.Any())
-                            validationErrors.Add(new InputValidationError(row, rowErrors));
-
-                        // Do not continue processing if errors.
-                        continue;
-                    }
-
-                    var user = new ApplicationUser()
-                    {
-                        IdNumber = id,
-                        UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
-                        FirstName = firstName,
-                        Surname = surname,
-                        WhatsAppNumber = cellphone,
-                        PhoneNumber = cellphone,
-                        PhoneNumberConfirmed = false,
-                        PendingPhoneNumber = cellphone,
-                        ContactPreference = MessageTypeConstants.SMS,
-                        TenantId = tenantId
-                    };
-                    userImportList.Add(user);
-                    // Try add to skip duplicates.
-                    userClinics.TryAdd(user.UserName, Guid.Parse(uniqueClinicId));
-
-                    // Add new community health worker.
-                    hcwUsers.Add(user.UserName,
-                        new HealthCareWorker()
-                        {
-                            User = user,
-                            IsRegistered = false, //TODO: Registered by default?
-                            ConsentForPhoto = false,
-                            // TeamLeadId = ? // Team lead needs to be fetched from clinic?
-                            TenantId = tenantId,
-                        });
+                    break;
                 }
+                var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
+                var id = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
+                var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
+                var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
+                var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
+                var teamLeadIdNum = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+
+                var rowErrors = GetCHWValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, teamLeadIdNum);
+
+                // Collect all row errors.
+                // Could be on a row with no errors, but previous rows had errors.
+                if (rowErrors.Any() || validationErrors.Any())
+                {
+                    // Dont add null rows
+                    if (rowErrors.Any())
+                        validationErrors.Add(new InputValidationError(row, rowErrors, $"Errors on row {row}."));
+
+                    // Do not continue processing if errors.
+                    continue;
+                }
+
+                var user = new ApplicationUser()
+                {
+                    IdNumber = id,
+                    UserName = idOrPassport?.ToLowerInvariant() == "id" ? id : passport,
+                    FirstName = firstName,
+                    Surname = surname,
+                    WhatsAppNumber = cellphone,
+                    PhoneNumber = cellphone,
+                    PhoneNumberConfirmed = false,
+                    PendingPhoneNumber = cellphone,
+                    ContactPreference = MessageTypeConstants.SMS,
+                    TenantId = tenantId
+                };
+                userImportList.Add(user);
+
+                // Try add to skip duplicates.
+                hcwToTeamLeadMap.TryAdd(user.UserName, teamLeadIdNum);
+
+                // Add new community health worker.
+                hcwUsers.Add(user.UserName,
+                    new HealthCareWorker()
+                    {
+                        User = user,
+                        IsRegistered = false, //TODO: Registered by default?
+                        ConsentForPhoto = false,
+                        // TeamLeadId = ? // Team lead needs to be fetched from clinic?
+                        TenantId = tenantId,
+                    });
             }
 
             if (validationErrors.Any())
@@ -130,40 +132,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ValidationErrors = validationErrors
                 };
 
-            var userClinicIds = userClinics.Select(uc => uc.Value).ToList().Distinct();
-
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
-            var clinics = clinicRepo.GetAll().Where(c => userClinicIds.Contains(c.Id)).ToList();
-
-            var missingClinicIds = userClinicIds.Except(clinics.Select(c => c.Id)).Select(i => i.ToString());
-
-            if (missingClinicIds.Any())
-            {
-                validationErrors.Add(new InputValidationError(0, missingClinicIds, "These clinic Id's could not be found."));
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-            }
-
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>();
-            var teamLeads = teamLeadRepo.GetAll()
-                .Where(tl => userClinicIds.Contains(tl.ClinicId.Value))
-                .OrderBy(tl => tl.InsertedDate)
+            var teamLeadIds = hcwToTeamLeadMap
+                .Select(uc => uc.Value)
+                .Distinct()
                 .ToList();
 
-            if (!teamLeads.Any())
-            {
-                var clinicsMissingTeamLead = clinics.Select(c => c.Id)
-                    .Except(teamLeads.Select(tl => tl.ClinicId.Value))
-                    .Select(i => i.ToString());
-
-                validationErrors.Add(new InputValidationError(0, clinicsMissingTeamLead, "These clinics have no Team Leads."));
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-            }
+            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
+            var teamLeadSAIdToIdMap = teamLeadRepo.GetAll()
+                .Include(t => t.User)
+                .Where(t => teamLeadIds.Contains(t.User.IdNumber))
+                .ToDictionary(t => t.User.IdNumber, t => t.Id);
 
             var communityHealthWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: currentUserId);
 
@@ -171,9 +149,41 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
+                var userExists = await userManager.FindByNameAsync(user.UserName);
+
+                if (userExists is not null)
+                {
+                    validationErrors.Add(
+                        new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
+                        );
+                    continue;
+                }
+            }
+
+            // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
+            if (validationErrors.Any())
+                return new UserImportModel()
+                {
+                    ValidationErrors = validationErrors
+                };
+
+            rowNum = 0;
+            foreach (var user in userImportList)
+            {
+                rowNum++;
                 try
                 {
-                    var created = await userManager.CreateAsync(user, $"A{Guid.NewGuid()}!");
+                    var userExists = await userManager.FindByNameAsync(user.UserName);
+
+                    if (userExists is not null)
+                    {
+                        validationErrors.Add(
+                            new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
+                            );
+                        continue;
+                    }
+                    var created = await userManager.CreateAsync(user);
+
                     if (!created.Succeeded)
                     {
                         validationErrors.Add(
@@ -181,6 +191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             );
                         continue;
                     }
+
                     IdentityResult addToRoleResult = null;
                     try
                     {
@@ -198,35 +209,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     try
                     {
-                        var currentUserClinic = userClinics.Where(u => u.Key == user.UserName).First();
-                        var tls = teamLeads.Where(tl => tl.ClinicId == currentUserClinic.Value);
-
-                        if (!tls.Any())
-                        {
-                            validationErrors.Add(new InputValidationError(
-                                rowNum, 
-                                new List<string> { $"{currentUserClinic.Value}." },
-                                "Could not find team lead for user's clinic."));
-                            continue;
-                        }
-
-                        var tlId = tls.First().Id;
+                        var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                         var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
-                        hcw.TeamLeadId = tlId;
+                        hcw.TeamLeadId = teamLeadSAIdToIdMap.First(teamLead => teamLead.Key == teamLeadSAIdNum).Value;
 
                         communityHealthWorkerRepo.Insert(hcw);
                     }
                     catch (Exception ex)
                     {
                         validationErrors.Add(new InputValidationError(
-                            rowNum, 
+                            rowNum,
                             new List<string> { string.Join(',', addToRoleResult?.Errors?.ToList()) },
                             $"Could not create {RolesGG.HEALTH_CARE_WORKER}."));
                         continue;
                     }
-                    
-                    var userModel = new UserModel(user);
-                    createdUsers.Add(userModel);
+
+                    createdUsers.Add(user.UserName);
                 }
                 catch (Exception ex)
                 {
@@ -241,33 +239,56 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetValidationErrors(string idOrPassport, string id, string passport, string firstName, string surname, string cellphone, string uniqueClinicId)
+            static IEnumerable<string> GetCHWValidationErrors(
+                string idOrPassport,
+                string id,
+                string passport,
+                string firstName,
+                string surname,
+                string cellphone,
+                string teamLeadId)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
                     errors.Add("Type of identification is empty");
 
-                if (idOrPassport is null ||
-                    (idOrPassport.ToLowerInvariant() == "id" && id is not null && id.Length != 13))
-                    errors.Add("Type of identification is Id and Id is empty or invalid");
+                var valid = new string[] { "id", "passport" };
+                if (!valid.Contains(idOrPassport))
+                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
+
+                // Matched on non-digits
+                var idNumRegex = new Regex(@"\D+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
+                if (idOrPassport?.ToLowerInvariant() == "id"
+                    && (id.Length != 13
+                    || string.IsNullOrWhiteSpace(id)
+                    || idNumRegex.IsMatch(id)))
+                {
+                    errors.Add("Type of identification is \"id\", is empty or invalid");
+                }
 
                 if (idOrPassport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
-                    errors.Add("Type of identification is Passport and Passport is empty or invalid");
+                    errors.Add("Type of identification is \"passport\", is empty or invalid");
+
                 if (firstName is null || firstName.Length == 0)
                     errors.Add("First Name is empty.");
 
                 if (surname is null || surname.Length == 0)
-                    errors.Add("Surname Name is empty.");
+                    errors.Add("Surname is empty.");
 
                 if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Surname Name is empty.");
+                    errors.Add("Cellphone is empty.");
 
-                if (!Guid.TryParse(uniqueClinicId, out Guid uniqueClinicIdGuid))
-                    errors.Add("Unique ClinicId is invalid");
+                if (teamLeadId.Length != 13)
+                    errors.Add("Team Lead Id is invalid");
 
-                if (uniqueClinicId is null || uniqueClinicIdGuid == Guid.Empty)
-                    errors.Add("Unique ClinicId is empty.");
+                if (idOrPassport?.ToLowerInvariant() == "id"
+                    && (id.Length != 13
+                    || string.IsNullOrWhiteSpace(teamLeadId)
+                    || idNumRegex.IsMatch(teamLeadId)))
+                {
+                    errors.Add("Team Lead Id is empty or invalid.");
+                }
 
                 return errors;
             }
@@ -296,7 +317,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             var userImportList = new List<ApplicationUser>();
             var teamLeadUsers = new Dictionary<string, TeamLead>();
-            var createdUsers = new List<UserModel>();
+            var createdUsers = new List<string>();
             var userClinics = new Dictionary<string, Guid>();
 
             var validationErrors = new List<InputValidationError>();
@@ -353,7 +374,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     };
                     userImportList.Add(user);
-                                        
+
                     // Add new community health worker.
                     teamLeadUsers.Add(user.UserName,
                         new TeamLead()
@@ -367,54 +388,34 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
             }
 
-            if (validationErrors.Any())
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-
-            var userClinicIds = userClinics.Select(uc => uc.Value).ToList().Distinct();
-
-            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
-            var clinics = clinicRepo.GetAll().Where(c => userClinicIds.Contains(c.Id)).ToList();
-
-            var missingClinicIds = userClinicIds.Except(clinics.Select(c => c.Id)).Select(i => i.ToString());
-
-            if (missingClinicIds.Any())
-            {
-                validationErrors.Add(new InputValidationError(0, missingClinicIds, "These clinic Id's could not be found."));
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-            }
-
-            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>();
-            var teamLeads = teamLeadRepo.GetAll()
-                .Where(tl => userClinicIds.Contains(tl.ClinicId.Value))
-                .OrderBy(tl => tl.InsertedDate)
-                .ToList();
-
-            if (!teamLeads.Any())
-            {
-                var clinicsMissingTeamLead = clinics.Select(c => c.Id)
-                    .Except(teamLeads.Select(tl => tl.ClinicId.Value))
-                    .Select(i => i.ToString());
-
-                validationErrors.Add(new InputValidationError(0, clinicsMissingTeamLead, "These clinics have no Team Leads."));
-                return new UserImportModel()
-                {
-                    ValidationErrors = validationErrors
-                };
-            }
-
             var rowNum = 0;
+            foreach (var user in userImportList)
+            {
+                rowNum++;
+
+                var userExists = await userManager.FindByNameAsync(user.UserName);
+
+                if (userExists is not null)
+                {
+                    validationErrors.Add(
+                        new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
+                        );
+                    continue;
+                }
+
+            }
+
+            // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
+            if (validationErrors.Any())
+                return new UserImportModel() { ValidationErrors = validationErrors };
+
+            rowNum = 0;
             foreach (var user in userImportList)
             {
                 rowNum++;
                 try
                 {
-                    var created = await userManager.CreateAsync(user, $"A{Guid.NewGuid()}!");
+                    var created = await userManager.CreateAsync(user);
                     if (!created.Succeeded)
                     {
                         validationErrors.Add(
@@ -447,8 +448,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
 
-                    var userModel = new UserModel(user);
-                    createdUsers.Add(userModel);
+                    createdUsers.Add(user.UserName);
                 }
                 catch (Exception ex)
                 {
@@ -470,23 +470,33 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (idOrPassport is null)
                     errors.Add("Type of identification is empty");
 
-                if (idOrPassport is null ||
-                    (idOrPassport.ToLowerInvariant() == "id" && id is not null && id.Length != 13))
-                    errors.Add("Type of identification is Id and Id is empty or invalid");
+                var valid = new string[] { "id", "passport" };
+                if (!valid.Contains(idOrPassport))
+                    errors.Add($"Type of identification must be {string.Join(", ", valid)}");
 
-                if (idOrPassport is null ||
-                    (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
-                    errors.Add("Type of identification is Passport and Passport is empty or invalid");
-                if (firstName is null || firstName.Length == 0)
+                var idNumRegex = new Regex(@"\D+", RegexOptions.None, TimeSpan.FromMilliseconds(200));
+                if (idOrPassport?.ToLowerInvariant() == "id"
+                    && (id.Length != 13
+                    || string.IsNullOrWhiteSpace(id)
+                    || idNumRegex.IsMatch(id)))
+                {
+                    errors.Add("Type of identification is \"id\", is empty or invalid");
+                }
+
+                if (idOrPassport?.ToLowerInvariant() == "passport"
+                    && passport.Length == 0)
+                    errors.Add("Type of identification is \"passport\", is empty or invalid");
+
+                if (string.IsNullOrWhiteSpace(firstName) || firstName.Length == 0)
                     errors.Add("First Name is empty.");
 
-                if (surname is null || surname.Length == 0)
-                    errors.Add("Surname Name is empty.");
+                if (string.IsNullOrWhiteSpace(surname) || surname.Length == 0)
+                    errors.Add("Surname is empty.");
 
-                if (cellphone is null || cellphone.Length == 0)
-                    errors.Add("Surname Name is empty.");
+                if (string.IsNullOrWhiteSpace(cellphone) || cellphone.Length == 0)
+                    errors.Add("Cellphone is empty.");
 
-                // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout.
+                // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout. Default is INFINITE.
                 // A malicious user can provide input to RegularExpressions, causing a Denial-of - Service attack.
                 // ASP.NET Core framework APIs that use RegularExpressions pass a timeout.
                 if (!string.IsNullOrEmpty(email) // Emailis optional

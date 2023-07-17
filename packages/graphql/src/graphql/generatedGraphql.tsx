@@ -10842,16 +10842,6 @@ export type Setting_Google = {
   GoogleTagManager: Scalars['String'];
 };
 
-export type Setting_IncomeStatementSubmitEnd = {
-  __typename?: 'Setting_IncomeStatementSubmitEnd';
-  IncomeStatementSubmitEnd: Scalars['String'];
-};
-
-export type Setting_IncomeStatementSubmitStart = {
-  __typename?: 'Setting_IncomeStatementSubmitStart';
-  IncomeStatementSubmitStart: Scalars['String'];
-};
-
 export type Setting_IntegrationDelay = {
   __typename?: 'Setting_IntegrationDelay';
   IntegrationDelay: Scalars['String'];
@@ -10890,6 +10880,7 @@ export type Setting_Reporting = {
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
+  ForgotPasswordPortal: Scalars['String'];
   Login: Scalars['String'];
 };
 
@@ -10898,17 +10889,6 @@ export type Setting_SendGrid = {
   FromEmail: Scalars['String'];
   Key: Scalars['String'];
   User: Scalars['String'];
-};
-
-export type Setting_SmartLinkApi = {
-  __typename?: 'Setting_SmartLinkApi';
-  BaseUrl: Scalars['String'];
-  Key: Scalars['String'];
-  MaskDataEmail: Scalars['String'];
-  MaskDataIdNumber: Scalars['String'];
-  MaskDataMode: Scalars['String'];
-  MaskDataNumber: Scalars['String'];
-  Mode: Scalars['String'];
 };
 
 export type Setting_Smtp = {
@@ -10949,8 +10929,6 @@ export type SettingsType = {
   BulkSms: Setting_BulkSms;
   Children: Setting_Children;
   Google: Setting_Google;
-  IncomeStatementSubmitEnd: Setting_IncomeStatementSubmitEnd;
-  IncomeStatementSubmitStart: Setting_IncomeStatementSubmitStart;
   IntegrationDelay: Setting_IntegrationDelay;
   InvitationCutoffDelay: Setting_InvitationCutoffDelay;
   Invitations: Setting_Invitations;
@@ -10959,7 +10937,6 @@ export type SettingsType = {
   Reporting: Setting_Reporting;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
-  SmartLinkApi: Setting_SmartLinkApi;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
@@ -12436,36 +12413,9 @@ export type UserHierarchyEntitySortInput = {
 
 export type UserImportModel = {
   __typename?: 'UserImportModel';
-  createdUsers?: Maybe<Array<Maybe<UserModel>>>;
+  createdUsers?: Maybe<Array<Maybe<Scalars['String']>>>;
   /** Rows of errors. */
   validationErrors?: Maybe<Array<Maybe<InputValidationError>>>;
-};
-
-export type UserModel = {
-  __typename?: 'UserModel';
-  contactPreference?: Maybe<Scalars['String']>;
-  dateOfBirth?: Maybe<Scalars['DateTime']>;
-  email?: Maybe<Scalars['String']>;
-  emergencyContactFirstName?: Maybe<Scalars['String']>;
-  emergencyContactPhoneNumber?: Maybe<Scalars['String']>;
-  emergencyContactSurname?: Maybe<Scalars['String']>;
-  firstName?: Maybe<Scalars['String']>;
-  genderId?: Maybe<Scalars['UUID']>;
-  id?: Maybe<Scalars['String']>;
-  idNumber?: Maybe<Scalars['String']>;
-  isAdmin?: Maybe<Scalars['Boolean']>;
-  isSouthAfricanCitizen?: Maybe<Scalars['Boolean']>;
-  languageId?: Maybe<Scalars['UUID']>;
-  nextOfKinContactNumber?: Maybe<Scalars['String']>;
-  nextOfKinFirstName?: Maybe<Scalars['String']>;
-  nextOfKinSurname?: Maybe<Scalars['String']>;
-  password?: Maybe<Scalars['String']>;
-  phoneNumber?: Maybe<Scalars['String']>;
-  profileImageUrl?: Maybe<Scalars['String']>;
-  raceId?: Maybe<Scalars['UUID']>;
-  surname?: Maybe<Scalars['String']>;
-  verifiedByHomeAffairs?: Maybe<Scalars['Boolean']>;
-  whatsAppNumber?: Maybe<Scalars['String']>;
 };
 
 export type UserModelInput = {

@@ -8,7 +8,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
     {
         [GraphQLDescription("Rows of errors.")]
         public List<InputValidationError> ValidationErrors { get; set; }
-        public List<UserModel> CreatedUsers { get; set; }
+        public List<string> CreatedUsers { get; set; }
     }
 
 

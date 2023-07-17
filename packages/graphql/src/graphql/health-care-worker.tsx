@@ -127,9 +127,7 @@ export const UploadHealthCareWorkers = gql`
         errors
         errorDescription
       }
-      createdUsers {
-        id
-      }
+      createdUsers
     }
   }
 `;

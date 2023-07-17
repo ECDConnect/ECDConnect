@@ -110,9 +110,7 @@ export const UploadTeamLeads = gql`
         errors
         errorDescription
       }
-      createdUsers {
-        id
-      }
+      createdUsers
     }
   }
 `;

@@ -232,7 +232,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string>{"First name", "Text, (required)"},
                 new List<string>{"Surname", "Text, (required)"},
                 new List<string>{"Cellphone number", "Number, (required, 10 digits)"},
-                new List<string>{"Clinic unique ID", "UniqueId, (required; please add all Clinics before linking them to CHWs; to find the unique ID, go to the Clinics section on the admin portal and search for the clinic)"}
+                new List<string>{"Team Lead ID", "Team Lead's ID number, (required; please add all TLs before linking them to CHWs, the ID number added must match a Team Lead currently on CHW Connect)" }
             };
             var fieldDefinitionSheet = $"Field Definition";
 
@@ -245,10 +245,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                     "First name",
                     "Surname",
                     "Cellphone number",
-                    "Clinic unique ID"
+                    "Team Lead ID"
                 }
             };
-            var templateHeaderSheet = $"Healthcare Worker Template";
+            var templateHeaderSheet = $"Community Health Worker Template";
 
             var fileName = templateHeaderSheet.Replace(" ", "_");
             var spreadSheets = new Dictionary<string, List<List<string>>>() {
