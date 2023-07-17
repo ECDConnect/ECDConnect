@@ -1,3 +1,4 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Security.Extensions;
@@ -24,12 +25,15 @@ namespace ECDLink.EGraphQL.Resolvers
 
         public IEnumerable<T> GetAll(
           IGenericRepositoryFactory repositoryFactory,
-          [Service] IHttpContextAccessor httpContextAccessor)
+          [Service] IHttpContextAccessor httpContextAccessor,
+          PagedQueryInput? pagingInput = null)
         {
             var repository = repositoryFactory.CreateRepository<T>();
             repository.SetUserContext(httpContextAccessor.HttpContext.GetUser().Id);
 
-            return repository.GetAll();
+            var getAllQuery = repository.GetAll(pagingInput);
+            
+            return getAllQuery;
         }
     }
 }

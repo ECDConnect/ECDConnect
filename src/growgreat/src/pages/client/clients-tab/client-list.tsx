@@ -409,6 +409,7 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
   return (
     <div className={styles.overlay}>
       <SearchHeader<UserAlertListDataItem>
+        id="walkthrough-dashboard-client-multi-step-4"
         searchItems={filteredList}
         onSearchChange={setSearch}
         isTextSearchActive={searchTextActive}
@@ -416,19 +417,22 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
         onSearchButtonClick={() => setSearchTextActive(true)}
         className="flex gap-2 overflow-auto"
       >
-        <SearchDropDown<string>
-          displayMenuOverlay={true}
-          menuItemClassName={'w-11/12 left-4 '}
-          overlayTopOffset={'120'}
-          options={clientTypeOptions}
-          selectedOptions={clientType}
-          onChange={onClientTypeChange}
-          placeholder={'Client type'}
-          color={'secondary'}
-          info={{
-            name: `Filter by: Client type`,
-          }}
-        />
+        <div id="walkthrough-dashboard-client-multi-step-1">
+          <SearchDropDown<string>
+            displayMenuOverlay={true}
+            menuItemClassName={'w-11/12 left-4 '}
+            overlayTopOffset={'120'}
+            options={clientTypeOptions}
+            selectedOptions={clientType}
+            onChange={onClientTypeChange}
+            placeholder={'Client type'}
+            color={'secondary'}
+            info={{
+              name: `Filter by: Client type`,
+            }}
+          />
+        </div>
+        <div id="walkthrough-dashboard-client-multi-step-2"></div>
         {clientType[0]?.value !== clientTypeOptions[0].value && (
           <SearchDropDown<string>
             displayMenuOverlay={true}
@@ -474,13 +478,16 @@ export const ClientList: React.FC<ComponentBaseProps> = () => {
           />
         )}
         {filteredList.length > 0 && (
-          <StackedList
-            className={styles.stackedList}
-            listItems={filteredList || []}
-            type={'UserAlertList'}
-          />
+          <div id="walkthrough-dashboard-client-step-2">
+            <StackedList
+              className={styles.stackedList}
+              listItems={filteredList || []}
+              type={'UserAlertList'}
+            />
+          </div>
         )}
         <FADButton
+          id="walkthrough-dashboard-client-multi-step-5"
           title={'Open a folder'}
           icon={'PlusIcon'}
           iconDirection={'left'}

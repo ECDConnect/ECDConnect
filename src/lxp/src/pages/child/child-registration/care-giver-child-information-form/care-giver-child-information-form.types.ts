@@ -6,4 +6,5 @@ export interface CareGiverChildInformationFormProps
   careGiverInformation?: CareGiverChildInformationFormModel;
   submitButtonText?: string;
   submitButtonIcon?: string;
+  canEdit?: boolean;
 }

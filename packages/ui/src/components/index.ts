@@ -44,3 +44,4 @@ export * from '../components/loading-spinner/loading-spinner';
 export * from './camera';
 export * from './steps';
 export * from './progress-bar';
+export * from './google-map';

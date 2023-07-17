@@ -1,7 +1,6 @@
 import {
   addMonths,
   addYears,
-  differenceInCalendarMonths,
   differenceInDays,
   differenceInMonths,
   differenceInYears,
@@ -89,3 +88,57 @@ export function getAgeInYearsMonthsAndDays(birthdate: string) {
 
   return { years, months, days };
 }
+
+export function numberToDayOfWeek(number: number, format?: 'long' | 'short') {
+  const days = [
+    'Sunday',
+    'Monday',
+    'Tuesday',
+    'Wednesday',
+    'Thursday',
+    'Friday',
+    'Saturday',
+  ];
+  let day = days[number];
+
+  if (format === 'short') {
+    day = day.substring(0, 3);
+  }
+
+  return day;
+}
+
+export function getFormattedDateInYearsMonthsAndDays(startedDate?: string) {
+  if (!startedDate) return undefined;
+
+  const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
+
+  if (!years && !months && !days) return 'Not provided';
+
+  if (years === 0 && months < 1) {
+    return `${days} ${days > 1 ? 'days' : 'day'}`;
+  }
+
+  if (years === 0) {
+    return `${months} ${months > 1 ? 'months' : 'month'}`;
+  }
+
+  return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
+    months > 1 ? 'months' : 'month'
+  }`;
+}
+
+export const getDateWithoutTimeZone = (date: string) => {
+  if (!date) return;
+
+  const [dateWithoutTimeZoneString] = date?.split('T');
+
+  if (dateWithoutTimeZoneString) {
+    const dateWithoutTimeZone = new Date(dateWithoutTimeZoneString);
+    dateWithoutTimeZone.setHours(0, 0, 0, 0);
+
+    return dateWithoutTimeZone;
+  }
+
+  return undefined;
+};

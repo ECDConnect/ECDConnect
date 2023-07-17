@@ -1,4 +1,5 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
@@ -106,6 +107,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
+                    //Update RemoteEntity - Integration
+                    //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+
                     return updateResult;
                 }
                 return practitioner;
@@ -234,15 +238,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] InvitationNotificationManager notificationManager,
          [Service] UserManager<ApplicationUser> userManager,
          [Service] ShortUrlManager shortUrlManager,
+         [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
             var messageType = "invitation";
             var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
 
+            // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
             {
+                // TODO: Make service for invitations
                 SendInvitationMutationExtension invite = new SendInvitationMutationExtension();
-                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, userId);
+                return await invite.SendInviteToApplication(invitationManager, notificationManager, userManager, httpContextAccessor, userId);
             }
 
             return false;

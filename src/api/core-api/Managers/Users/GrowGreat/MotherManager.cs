@@ -3,16 +3,18 @@ using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security.Extensions;
+using FileSignatures.Formats;
 using HotChocolate;
 using Microsoft.AspNetCore.Http;
-using ECDLink.DataAccessLayer.Entities.Documents;
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 
 namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
@@ -28,6 +30,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
+        private IGenericRepository<Infant, Guid> _infantRepo;
         private IGenericRepository<Document, Guid> _documentRepo;
 
         public MotherManager(
@@ -48,6 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
+            _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
             _documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: _applicationUserId);
         }
 
@@ -68,11 +72,25 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 _infantManager.UpdateInfantCaregiverToMother(input.LinkedInfantId, mother.Id);
             }
 
-            if (createdMom != null)
+            if (createdMom != null && input.ExpectedDateOfDelivery != null)
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
             return createdMom;
+        }
+
+        public Mother UpdateMotherDeliveryDate(string id, DateTime? expectedDateOfDelivery)
+        {
+            if (expectedDateOfDelivery != null || expectedDateOfDelivery != default(DateTime))
+            {
+                var entityToUpdate = _motherRepo.GetAll().Where(x => x.UserId == id).FirstOrDefault();
+                entityToUpdate.UpdatedDate = DateTime.Now;
+                entityToUpdate.UpdatedBy = _applicationUserId;
+                entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
+                AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
+                return _motherRepo.Update(entityToUpdate);
+            }
+            return null;
         }
 
         public Mother UpdateMother(string id, MotherModel input)
@@ -181,6 +199,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 return null;
             }
+            // EC-797 - if this infant is not the first client, we set the tab values to true;
+            int totalClients = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count()
+                            + _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == _applicationUserId && (x.ClickedVisitTab == true || x.ClickedProgressTab == true || x.ClickedReferralsTab == true || x.ClickedContactTab == true)).Count();
+
 
             var healthCareWorkerId = _healthCareWorkerManager.GetHealthCareWorkerIdByUserId(_applicationUserId);
             var motherUser = GetUserFromInputModel(input);
@@ -208,10 +230,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 HealthCareWorkerId = healthCareWorkerId,
                 SiteAddress = input.SiteAddress,
                 LinkedCaregiverId = input.LinkedCaregiverId,
-                ClickedVisitTab = false,
-                ClickedProgressTab = false,
-                ClickedReferralsTab = false,
-                ClickedContactTab = false
+                ClickedVisitTab = totalClients != 0,
+                ClickedProgressTab = totalClients != 0,
+                ClickedReferralsTab = totalClients != 0,
+                ClickedContactTab = totalClients != 0
             };
         }
 
@@ -261,6 +283,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                     visit.Attended = false;
                     _visitManager.AddVisit(visit);
                 }
+                UpdateDueDates(motherId.ToString());
             }
         }
 
@@ -397,6 +420,42 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             return dateList;
+        }
+
+        public Boolean UpdateDueDates(string motherId)
+        {
+            var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
+            var visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
+            List<Visit> visitList = visitRepo.GetAll().Where(x => x.MotherId.ToString() == motherId).ToList();
+
+            foreach (var _visit in visitList)
+            {
+                if (_visit.VisitType.Name == Constants.GGSettings.visit1)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit2).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit2)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit3).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit3)
+                {
+                    _visit.DueDate = visitList.Where(x => x.VisitType.Name == Constants.GGSettings.visit4).Select(y => y.PlannedVisitDate).FirstOrDefault();
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
+                }
+                else if (_visit.VisitType.Name == Constants.GGSettings.visit4)
+                {
+                    _visit.DueDate = _visit.PlannedVisitDate;
+                    _visit.DueDate = (_visit.DueDate != default(DateTime) ? _visit?.DueDate.Value.AddDays(-1).Date : null);
+                    visitRepo.Update(_visit);
+                }
+            }
+            return true;
         }
 
         public DisplaySet GetStatusInfo(Mother mother, Boolean withinWeek)

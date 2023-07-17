@@ -29,6 +29,7 @@ import ROUTES from '@routes/routes';
 import { useAppDispatch } from '@/store';
 import { programmeThunkActions } from '@/store/programme';
 import { addDays, format } from 'date-fns';
+import { practitionerSelectors } from '@/store/practitioner';
 
 const ProgrammeTiming: React.FC = () => {
   const history = useHistory();
@@ -50,6 +51,13 @@ const ProgrammeTiming: React.FC = () => {
     mode: 'onChange',
   });
   const appDispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
+  const practitioners = useSelector(
+    practitionerSelectors.getPractitioners
+  )?.filter((x) => {
+    return x.user?.id !== practitioner?.user?.id;
+  });
 
   const {
     date: selectedDate,
@@ -87,10 +95,17 @@ const ProgrammeTiming: React.FC = () => {
       }
     }
 
-    history.push(ROUTES.CLASSROOM, {
-      activeTabIndex: 2,
-      programmeStartDate: validatedDate,
-    });
+    if (isPrincipal && practitioners?.length! > 1) {
+      history.push(ROUTES.CLASSROOM, {
+        activeTabIndex: 3,
+        programmeStartDate: validatedDate,
+      });
+    } else {
+      history.push(ROUTES.CLASSROOM, {
+        activeTabIndex: 2,
+        programmeStartDate: validatedDate,
+      });
+    }
   };
 
   useEffect(() => {

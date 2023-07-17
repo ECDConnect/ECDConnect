@@ -4,7 +4,12 @@ import { ComponentBaseProps } from '../../models/ComponentBaseProps';
 
 export type AlertVariant = 'flat' | 'outlined';
 
-export type AlertType = 'info' | 'success' | 'warning' | 'error';
+export type AlertType =
+  | 'info'
+  | 'success'
+  | 'warning'
+  | 'error'
+  | 'successLight';
 
 export interface AlertProps extends ComponentBaseProps {
   type: AlertType;

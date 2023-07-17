@@ -7,7 +7,7 @@ import {
   ButtonGroupTypes,
   FormInput,
 } from '@ecdlink/ui';
-import { useForm } from 'react-hook-form';
+import { useForm, useFormState } from 'react-hook-form';
 import { useState } from 'react';
 import {
   MotherContactInformationProps,
@@ -25,6 +25,7 @@ export const MotherContactInformation: React.FC<
     getValues: getMotherContactInformationFormValues,
     formState: motherContactInformationFormState,
     register: motherFormRegister,
+    control: momContactInformationControl,
   } = useForm<MothertContactInformationModel>({
     resolver: yupResolver(motherContactInformationModelSchema),
     mode: 'onBlur',
@@ -33,6 +34,7 @@ export const MotherContactInformation: React.FC<
 
   const { isValid } = motherContactInformationFormState;
 
+  const { errors } = useFormState({ control: momContactInformationControl });
   const [hasWhatsapp, setHasWhatsapp] = useState<any>(null);
 
   return (
@@ -62,6 +64,7 @@ export const MotherContactInformation: React.FC<
           placeholder={'e.g 012 345 6789'}
           type={'number'}
           className="mt-4"
+          error={!!errors.cellphone ? errors.cellphone : undefined}
         ></FormInput>
         <div className="mt-4">
           <Typography
@@ -91,6 +94,7 @@ export const MotherContactInformation: React.FC<
               placeholder={'e.g 012 345 6789'}
               type={'number'}
               className="mt-4"
+              error={!!errors.whatsapp ? errors.whatsapp : undefined}
             ></FormInput>
           </>
         )}

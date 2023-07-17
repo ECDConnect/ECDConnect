@@ -25,5 +25,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping
         public string Notes { get; set; }
         public string EntityGrouping { get; set; }
         public string UserId { get; set; }
+        public DateTime? LastIncomeSubmittedDate { get; set; }
+        public DateTime? LastAttendanceSubmittedDate { get; set; }
     }
 }

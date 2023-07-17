@@ -182,10 +182,13 @@ class InfantService {
         query GetInfantVisits($userId: String) {
           infantVisits(id: $userId) {
             id
-            actualVisitDate,
-            plannedVisitDate,
+            insertedDate
+            actualVisitDate
+            plannedVisitDate
             orderDate
-            attended,
+            dueDate
+            attended
+            visitInProgress
             risk
             visitType{
               id
@@ -208,9 +211,7 @@ class InfantService {
     });
 
     if (response.status !== 200) {
-      throw new Error(
-        'Getting Mothers visits failed - Server connection error'
-      );
+      throw new Error('Getting Infant visits failed - Server connection error');
     }
 
     return response.data.data.infantVisits;
@@ -326,6 +327,7 @@ class InfantService {
       query: `
         mutation AddAdditionalVisitForInfant($input: VisitModelInput) {
           addAdditionalVisitForInfant(input: $input) {
+            insertedDate
             actualVisitDate,
             plannedVisitDate,
             orderDate

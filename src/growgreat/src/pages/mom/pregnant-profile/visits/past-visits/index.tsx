@@ -16,6 +16,7 @@ import {
 } from '@/store/mother/mother.selectors';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
+import { getDateWithoutTimeZone } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -26,6 +27,10 @@ export const PastVisits: React.FC = () => {
 
   const [, , , motherId] = location.pathname.split('/');
 
+  const currentDate = new Date();
+  currentDate?.setHours(0, 0, 0, 0);
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
@@ -33,15 +38,25 @@ export const PastVisits: React.FC = () => {
   const visits = useSelector(getMotherVisits);
 
   const visitSteps = useMemo(() => {
-    const filteredVisits = visits.filter((item) => item.attended);
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
 
-    const array: StepItem[] = filteredVisits.map((item, index) => {
+      if (dueDate) {
+        return isAttend || (!isAttend && dueDate < todayDate!);
+      }
+
+      if (orderDate) {
+        return isAttend || (!isAttend && orderDate < todayDate!);
+      }
+
+      return isAttend;
+    });
+
+    const array: StepItem[] = filteredVisits.map((item) => {
       const getType = (): StepItem['type'] => {
-        if (
-          visits[index - 1]?.attended &&
-          !item.attended &&
-          visits[index + 1]
-        ) {
+        if (!item.attended) {
           return 'inProgress';
         }
 
@@ -57,13 +72,16 @@ export const PastVisits: React.FC = () => {
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),
-        showActionButton: getType() === 'completed',
+        // Change this rule to not show 'See info' for past visits until further notice 30 June 2023 (Kim)
+        //showActionButton: getType() === 'completed',
+        showActionButton: false,
         actionButtonText: 'See info',
         actionButtonTextColor: 'secondary',
         actionButtonColor: 'secondaryAccent2',
         actionButtonOnClick: () =>
           history.push(
-            `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}/antenatal-visit`
+            `${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}/activities-form/${item.id}`,
+            { editView: false }
           ),
       };
     });
@@ -74,7 +92,7 @@ export const PastVisits: React.FC = () => {
     });
 
     return array;
-  }, [history, motherId, visits]);
+  }, [history, motherId, todayDate, visits]);
 
   const goBack = useCallback(() => {
     history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);

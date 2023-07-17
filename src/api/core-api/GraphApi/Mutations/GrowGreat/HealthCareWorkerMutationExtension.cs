@@ -33,11 +33,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 UserId = input.UserId,
                 LanguageId = input.LanguageId,
                 TeamLeadId = input.TeamLeadId,
+                ClickedVisitTab = false,
+                ClickedProgressTab = false,
+                ClickedReferralsTab = false,
+                ClickedContactTab = false,
+                ClickedDashboardClientsTab = false,
+                ClickedDashboardVisitsTab = false,
+                ClickedDashboardHighlightsTab = false
             };
 
             var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
             return healthCareWorkerRepo.Insert(healthCareWorker);
-
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
@@ -74,6 +80,51 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
             if (input.User?.Email != null)
             {
                 healthCareWorkerToUpdate.User.Email = input.User.Email;
+            }
+
+            return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);
+        }
+
+
+        
+        [Permission(PermissionGroups.USER, GraphActionEnum.Update)]
+        public HealthCareWorker UpdateHealthCareWorkerTabs(
+            [Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            HealthCareWorkerModel input,
+            string userId)
+        {
+            var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+            var healthCareWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: applicationUserId);
+            var healthCareWorkerToUpdate = healthCareWorkerRepo.GetById(new Guid(userId));
+
+            if (input.ClickedVisitTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedVisitTab = input.ClickedVisitTab;
+            }
+            if (input.ClickedProgressTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedProgressTab = input.ClickedProgressTab;
+            }
+            if (input.ClickedReferralsTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedReferralsTab = input.ClickedReferralsTab;
+            }
+            if (input.ClickedContactTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedContactTab = input.ClickedContactTab;
+            }
+            if (input.ClickedDashboardClientsTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedDashboardClientsTab = input.ClickedDashboardClientsTab;
+            }
+            if (input.ClickedDashboardVisitsTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedDashboardVisitsTab = input.ClickedDashboardVisitsTab;
+            }
+            if (input.ClickedDashboardHighlightsTab != null)
+            {
+                healthCareWorkerToUpdate.ClickedDashboardHighlightsTab = input.ClickedDashboardHighlightsTab;
             }
 
             return healthCareWorkerRepo.Update(healthCareWorkerToUpdate);

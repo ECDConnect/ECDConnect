@@ -7,6 +7,7 @@ export interface CardProps {
   date: string;
   message: string;
   color: 'Success' | 'Warning' | 'Error';
+  measure: 'kg' | 'cm';
   className?: string;
 }
 
@@ -17,6 +18,7 @@ export const Card = ({
   date,
   message,
   color,
+  measure,
 }: CardProps) => {
   const { primaryColour, secondaryColour, icon } = useMemo((): {
     primaryColour: Colours;
@@ -71,7 +73,7 @@ export const Card = ({
             color={primaryColour}
             text={value}
           />
-          <Typography type="body" color="textMid" text="kg" />
+          <Typography type="body" color="textMid" text={measure} />
         </span>
         <Typography color="textMid" type="body" text={formattedDate} />
       </div>

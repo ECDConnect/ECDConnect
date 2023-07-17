@@ -355,11 +355,11 @@ export const addAdditionalVisitForInfant = createAsyncThunk<
 
 export const getReferralsForInfant = createAsyncThunk<
   VisitDataStatus[],
-  { infantId: string },
+  { infantId: string; visitId: string },
   ThunkApiType<RootState>
 >(
   InfantActions.GET_REFERRALS_FOR_INFANT,
-  async ({ infantId }, { getState, rejectWithValue }) => {
+  async ({ infantId, visitId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -370,7 +370,7 @@ export const getReferralsForInfant = createAsyncThunk<
       if (userAuth?.auth_token) {
         referrals = await new Referral(
           userAuth?.auth_token
-        ).getReferralsForInfant(infantId);
+        ).getReferralsForInfant(infantId, visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }
@@ -387,11 +387,11 @@ export const getReferralsForInfant = createAsyncThunk<
 
 export const getCompletedReferralsForInfant = createAsyncThunk<
   VisitDataStatus[],
-  { infantId: string },
+  { infantId: string; visitId: string },
   ThunkApiType<RootState>
 >(
   InfantActions.GET_COMPLETED_REFERRALS_FOR_INFANT,
-  async ({ infantId }, { getState, rejectWithValue }) => {
+  async ({ infantId, visitId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -402,7 +402,7 @@ export const getCompletedReferralsForInfant = createAsyncThunk<
       if (userAuth?.auth_token) {
         referrals = await new Referral(
           userAuth?.auth_token
-        ).getCompletedReferralsForInfant(infantId);
+        ).getCompletedReferralsForInfant(infantId, visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

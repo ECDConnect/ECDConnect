@@ -65,22 +65,29 @@ namespace EcdLink.Api.CoreApi
             services.AddHttpContextAccessor();
 
             // We are explicitly setting these because of CORS issues on .datafree.co
-            var allowedDomains = new[] { "https://ecdconnect.co.za",
-                "https://ecdconnect-co-za-fundasmartstart.datafree.co",
-                "https://*.ecdconnect.co.za",
-                "https://*.ecdlink.co.za",
-                "https://*.azurewebsites.net",
-                "http://localhost:3001",
-                "http://localhost:3000" };
+            var corsAllowedDomainsEnv = System.Environment.GetEnvironmentVariable("CORS_ALLOWED_DOMAINS");
+            if (string.IsNullOrEmpty(corsAllowedDomainsEnv))
+            {
+                corsAllowedDomainsEnv = "https://ecdconnect.co.za,https://*.ecdconnect.co.za,https://*.ecdlink.co.za,https://*.azurewebsites.net,http://localhost:3001,http://localhost:3000,https://smartstart-ecdconnect-co-za-funda.datafree.co";
+            }
+            //var allowedDomains = new[] { "https://ecdconnect.co.za",
+            //"https://ecdconnect-co-za-fundasmartstart.datafree.co",
+            //"https://*.ecdconnect.co.za",
+            //"https://*.ecdlink.co.za",
+            //"https://*.azurewebsites.net",
+            //"http://localhost:3001",
+            //"http://localhost:3000" ,
+            //"https://smartstart-ecdconnect-co-za-funda.datafree.co"};
 
+            var corsAllowedDomains = corsAllowedDomainsEnv.Split(",");
             services.AddCors(options => options.AddPolicy("CorsPolicy", builder => builder
-                          .AllowAnyMethod()
-                          .AllowAnyHeader()
-                          .SetIsOriginAllowedToAllowWildcardSubdomains()
-                          .SetIsOriginAllowed(origin => true)
-                          .WithOrigins(allowedDomains)
-                          .WithExposedHeaders("WWW-Authenticate")
-                     ));
+                            .AllowAnyMethod()
+                            .AllowAnyHeader()
+                            .SetIsOriginAllowedToAllowWildcardSubdomains()
+                            .SetIsOriginAllowed(origin => true)
+                            .WithOrigins(corsAllowedDomains)
+                            .WithExposedHeaders("WWW-Authenticate")
+                        ));
 
             CoreStartup.ConfigureCoreServices(services, Configuration);
 
@@ -150,7 +157,8 @@ namespace EcdLink.Api.CoreApi
             services.AddTransient<ISchedulerService, SchedulerService>();
             services.AddTransient<IntegrationAPIManager>();
             services.AddTransient<IntegrationLogManager>();
-            
+            services.AddTransient<IntegrationHelperManager>();
+
 
             ConfigureJobs(services);
             

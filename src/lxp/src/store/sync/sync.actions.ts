@@ -15,6 +15,7 @@ import { practitionerThunkActions } from '../practitioner';
 
 import { SyncOfflineDataProps, SyncOfflineDataReturnType } from './sync.types';
 import { pqaThunkActions } from '../pqa';
+import { calendarThunkActions } from '../calendar';
 
 type SyncStep = {
   title: string;
@@ -38,6 +39,10 @@ export const syncOfflineData = createAsyncThunk<
     //   title: 'Coach',
     //   action: coachThunkActions.updateCoach,
     // },
+    {
+      title: 'Calendar',
+      action: calendarThunkActions.upsertCalendar,
+    },
     {
       title: 'Care givers',
       action: caregiverThunkActions.upsertCareGivers,
@@ -146,6 +151,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       //   title: 'Coach',
       //   action: coachThunkActions.updateCoach,
       // },
+      {
+        title: 'Calendar',
+        action: calendarThunkActions.upsertCalendar,
+      },
       {
         title: 'Care givers',
         action: caregiverThunkActions.upsertCareGivers,

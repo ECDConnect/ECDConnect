@@ -9,5 +9,11 @@ namespace ECDLink.Core.Services.Interfaces
     {
         Task<bool> IntegrationByMappedCoach(string franchiseeId = null);
         Task<bool> IntegrationByFranchisees();
+        Task<bool> IntegrationClubsData();
+        Task<bool> IntegrationPQASmartSpaceVisitsData();
+        Task<bool> IntegrationStatementsData();
+        Task<bool> IntegrationAttendanceData();
+        Task<bool> IntegrationUpdates();
+        Task<bool> IntegrationByTrainees();
     }
 }
