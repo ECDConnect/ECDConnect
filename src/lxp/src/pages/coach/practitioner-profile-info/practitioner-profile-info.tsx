@@ -484,9 +484,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
               >
                 <div className={styles.dialogContent}>
                   <RemovePractioner
-                    userId={practitionerId || ''}
-                    noteType={NoteTypeEnum.Unknown}
-                    titleText={`Remove ${practitioner?.user?.firstName}`}
                     onSuccess={() =>
                       showMessage({
                         message: `${practitioner?.user?.firstName} removed`,

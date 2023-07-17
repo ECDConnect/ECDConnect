@@ -39,16 +39,16 @@ import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
-  userId,
   onSuccess,
 }) => {
+  const appDispatch = useAppDispatch();
   const history = useHistory();
   const user = useSelector(authSelectors.getAuthUser);
   const { isOnline } = useOnlineStatus();
+  const location = useLocation<PractitionerProfileRouteState>();
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeavingPractitioner
   );
-  const location = useLocation<PractitionerProfileRouteState>();
   const practitionerId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
@@ -60,6 +60,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const practitionerClassroom = coachClassrooms?.find(
     (item) => item.userId === practitionerId
   );
+
   //Get list of practitioners for classroom
   const practitionersForClass =
     practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
@@ -72,8 +73,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
         ); // Get other practitioners with the same principal, their principal and not themselves
 
   const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
-
-  const appDispatch = useAppDispatch();
 
   const [reasonDetailsVisible, setReasonDetailsVisible] =
     useState<boolean>(false);
@@ -97,10 +96,13 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     control: removePractionerFormControl,
   });
 
-  const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
-    useState<any>();
+  const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
+    useState<boolean>(false);
 
-  //TODO -> Make this not a user effect!
+  const [practitionersList, setPractitionersList] = useState<
+    { label: string; value: any }[]
+  >([]);
+
   useEffect(() => {
     //Need to work out if practitioner is principal or who their principal is?
     const _list = practitionersForClass
@@ -117,7 +119,10 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
 
     setPractitionersList(_list);
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitionersForClass]);
+
+  const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
+    useState<any>();
 
   const classroomsGroupsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
@@ -126,10 +131,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     setPractitionerClassroomGroups(classroomDetails);
     return classroomDetails;
   };
-
-  const [practitionersList, setPractitionersList] = useState<
-    { label: string; value: any }[]
-  >([]);
 
   useEffect(() => {
     classroomsGroupsForPractitioner();
@@ -146,7 +147,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
           };
         }
       );
-      console.log('reassignments', reassignments);
 
       await new PractitionerService(user?.auth_token || '').RemovePractitioner(
         practitioner?.userId!,
@@ -159,9 +159,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       ).unwrap();
     }
   };
-
-  const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
-    useState<boolean>(false);
 
   return (
     <>
@@ -288,10 +285,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                                 ...reassignedClassrooms,
                                 [classroomGroup.id]: item,
                               }
-                            );
-                            console.log(
-                              'Form Values',
-                              getRemovePractionerFormValues()
                             );
                           }}
                         />
