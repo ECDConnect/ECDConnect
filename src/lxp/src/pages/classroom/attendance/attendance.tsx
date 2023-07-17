@@ -83,18 +83,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
   const holidays = useSelector(staticDataSelectors.getHolidays);
   const [currentDate] = useState(new Date());
 
-  const { errorDialog } = useRequestResponseDialog();
-
   const { isRejected: isAttendnaceRejected } = useThunkFetchCall(
     'attendanceData',
     'getAttendance'
   );
-
-  useEffect(() => {
-    if (isAttendnaceRejected) {
-      errorDialog();
-    }
-  }, [errorDialog, isAttendnaceRejected]);
 
   function isAllStudentsInsertedBeforeToday(studentsArray: any[]): boolean {
     const filteredArray: boolean[] = studentsArray.map((student) => {
@@ -271,10 +263,10 @@ export const AttendanceComponent: React.FC<ComponentBaseProps> = () => {
     }
   };
 
-  if (children?.length === 0) {
+  if (children?.length === 0 || learners?.length === 0) {
     return (
       <IconInformationIndicator
-        title="You don't have any children yet!"
+        title="You don't have any children allocated to classes yet!"
         subTitle="Navigate to the 'Children' tab to add children"
       />
     );

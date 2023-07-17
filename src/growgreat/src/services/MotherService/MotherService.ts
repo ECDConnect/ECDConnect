@@ -2,6 +2,7 @@ import { MotherDto, Config, VisitDto } from '@ecdlink/core';
 import {
   EventRecordType,
   MotherModelInput,
+  Scalars,
   Visit,
   VisitModelInput,
 } from '@ecdlink/graphql';
@@ -70,6 +71,38 @@ class MotherService {
     }
 
     return response.data.data.allMothersForHealthCareWorker;
+  }
+
+  async updateMotherDeliveryDate(
+    id: string,
+    expectedDateOfDelivery: Scalars['DateTime']
+  ): Promise<MotherDto> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<{
+      data: { updateMotherDeliveryDate: MotherDto };
+      errors?: {};
+    }>(``, {
+      query: `
+        mutation UpdateMotherDeliveryDate($id: String, $expectedDateOfDelivery: DateTime) {
+          updateMotherDeliveryDate(id: $id, expectedDateOfDelivery: $expectedDateOfDelivery) {
+              id
+              expectedDateOfDelivery
+          }
+        }
+      `,
+      variables: {
+        id: id,
+        expectedDateOfDelivery,
+      },
+    });
+
+    if (response.status !== 200 || response.data.errors) {
+      throw new Error(
+        'Updating mother delivered date failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updateMotherDeliveryDate;
   }
 
   async updateMother(id: string, input: MotherModelInput): Promise<MotherDto> {
@@ -202,6 +235,7 @@ class MotherService {
       query: `
         mutation addAdditionalVisitForMother($input: VisitModelInput) {
           addAdditionalVisitForMother(input: $input) {
+            insertedDate
             actualVisitDate,
             plannedVisitDate,
             orderDate
@@ -245,11 +279,14 @@ class MotherService {
       query: `
         query GetMotherVisits($userId: String) {
           motherVisits(id: $userId) {
-              actualVisitDate,
-              plannedVisitDate,
+              insertedDate
+              actualVisitDate
+              plannedVisitDate
               orderDate
-              attended,
-              id,
+              dueDate
+              attended
+              visitInProgress
+              id
               risk
               visitType{
                 id

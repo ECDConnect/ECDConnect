@@ -74,6 +74,7 @@ export const EditChildInformation: React.FC = () => {
   const isFromEditClass = location?.state?.isFromEditClass;
   const playgroupEdit = location.state.playgroupEdit;
   const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const languages = useSelector(staticDataSelectors.getLanguages);
   const currentChild = useSelector(childrenSelectors.getChildById(childId));
   const isPlaygroup = useSelector(classroomsSelectors.isPlaygroup());
@@ -113,10 +114,6 @@ export const EditChildInformation: React.FC = () => {
     useState<boolean>(false);
   const [currentViewInformationType, setCurrentViewInformationType] =
     useState<ChildInformationViewType>();
-  const [
-    changeClassroomGroupPromptVisible,
-    setChangeClassroomGroupPromptVisible,
-  ] = useState<boolean>(false);
 
   // Data Cache
   const [currentChildLearnerRecord, setCurrentChildLearnerRecord] =
@@ -153,8 +150,9 @@ export const EditChildInformation: React.FC = () => {
 
   useEffect(() => {
     if (playgroupEdit) {
-      setChangeClassroomGroupPromptVisible(playgroupEdit);
+      openChildConfirmEditClassPrompt();
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [playgroupEdit]);
 
   useEffect(() => {
@@ -187,18 +185,11 @@ export const EditChildInformation: React.FC = () => {
   }, [currentChild, classroomGroupLearners]);
 
   useEffect(() => {
-    if (currentChild && childCaregiver && currentChildLearnerRecord) {
+    if (currentChild) {
       setNewStackListItems(currentChild, childCaregiver);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentChild, childCaregiver, currentChildLearnerRecord]);
-
-  useEffect(() => {
-    if (isFromEditClass) {
-      setChangeClassroomGroupPromptVisible(true);
-    }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
 
   const openChildConfirmEditClassPrompt = () => {
     dialog({
@@ -229,6 +220,7 @@ export const EditChildInformation: React.FC = () => {
               type: 'filled',
               onClick: () => {
                 onCancel();
+                history.push(ROUTES.CHILD_PROFILE, { childId });
               },
               leadingIcon: 'ArrowLeftIcon',
             },
@@ -255,7 +247,8 @@ export const EditChildInformation: React.FC = () => {
             <CareGiverChildInformationForm
               careGiverInformation={childCareGiverChildInformationForm}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildCareGiverChildInformationForm(form);
                 saveChildAddress(form);
@@ -268,7 +261,8 @@ export const EditChildInformation: React.FC = () => {
               childName={childUser?.firstName ?? ''}
               childHealthInformation={childHealthInformationForm}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildHealthInformationForm(form);
                 saveChildHealthInformation(form);
@@ -281,7 +275,8 @@ export const EditChildInformation: React.FC = () => {
               childCareGiverInformation={childCaregiverInformation}
               childName={childUser?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setChildCaregiverInformation(form);
                 saveChildCareGiver(form);
@@ -294,8 +289,9 @@ export const EditChildInformation: React.FC = () => {
               childEmergencyContactForm={childEmergencyContactForm}
               childName={childUser?.firstName ?? ''}
               submitButtonIcon="SaveIcon"
-              submitButtonText="Save"
+              submitButtonText={isCoach ? 'Close' : 'Save'}
               variation="practitioner"
+              canEdit={isCoach}
               onSubmit={(form) => {
                 setchildEmergencyContactForm(form);
                 saveChildEmergencyContact(form);
@@ -359,18 +355,16 @@ export const EditChildInformation: React.FC = () => {
         switchTextStyles: true,
       });
 
-      if (isPlaygroup) {
-        list.push({
-          title: 'Playgroup',
-          subTitle: learnerClassroomGroup?.name || '',
-          switchTextStyles: true,
-          actionName: 'Edit',
-          actionIcon: 'PencilIcon',
-          onActionClick: () => {
-            setChangeClassroomGroupPromptVisible(true);
-          },
-        });
-      }
+      list.push({
+        title: 'Class',
+        subTitle: learnerClassroomGroup?.name || 'No class',
+        switchTextStyles: true,
+        actionName: isCoach ? undefined : 'Edit',
+        actionIcon: 'PencilIcon',
+        onActionClick: () => {
+          openChildConfirmEditClassPrompt();
+        },
+      });
 
       if (caregiver) {
         list.push({
@@ -502,7 +496,6 @@ export const EditChildInformation: React.FC = () => {
   };
 
   const openEditField = () => {
-    setChangeClassroomGroupPromptVisible(false);
     setEditFieldVisible(true);
   };
 
@@ -862,45 +855,6 @@ export const EditChildInformation: React.FC = () => {
             </Button>
           </div>
         </div>
-      </Dialog>
-
-      <Dialog
-        className={'mb-16 px-4'}
-        stretch={true}
-        visible={changeClassroomGroupPromptVisible}
-        position={DialogPosition.Bottom}
-      >
-        <ActionModal
-          icon={'InformationCircleIcon'}
-          iconColor="alertMain"
-          iconBorderColor="alertBg"
-          importantText={`${childUser?.firstName} will be moved to the new playgroup immediately`}
-          paragraphs={[
-            `Changing ${childUser?.firstName}'s' playgroup now might affect today’s attendance register.`,
-            `If you would like to add ${childUser?.firstName} starting tomorrow, please submit attendance for today before changing the playgroup.`,
-          ]}
-          actionButtons={[
-            {
-              text: 'Yes, change playgroup now',
-              textColour: 'white',
-              colour: 'primary',
-              type: 'filled',
-              onClick: () => openChildConfirmEditClassPrompt(),
-              leadingIcon: 'PencilIcon',
-            },
-            {
-              text: 'No, do this later',
-              textColour: 'primary',
-              colour: 'primary',
-              type: 'outlined',
-              onClick: () => {
-                setChangeClassroomGroupPromptVisible(false);
-                history.push(ROUTES.CHILD_PROFILE, { childId });
-              },
-              leadingIcon: 'ClockIcon',
-            },
-          ]}
-        />
       </Dialog>
     </div>
   );

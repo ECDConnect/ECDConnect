@@ -31,6 +31,7 @@ import {
   getPqaFormDataByIdSelector,
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
+  getReAccreditationFormDataByIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   dateOptions,
@@ -39,7 +40,7 @@ import {
   timelineSteps,
 } from './timeline/timeline-steps';
 import {
-  getAgeInYearsMonthsAndDays,
+  getFormattedDateInYearsMonthsAndDays,
   parseBool,
   usePrevious,
 } from '@ecdlink/core';
@@ -79,24 +80,11 @@ export const CoachPractitionerJourney: React.FC = () => {
   );
   const pqaFormData = useSelector(getPqaFormDataByIdSelector(practitionerId));
 
+  const reAccreditationFormData = useSelector(
+    getReAccreditationFormDataByIdSelector(practitionerId)
+  );
+
   const practitionerFirstName = practitioner?.user?.firstName;
-
-  const getTime = (startedDate?: string) => {
-    if (!startedDate) return undefined;
-    const { years, months, days } = getAgeInYearsMonthsAndDays(startedDate);
-
-    if (years === 0 && months < 1) {
-      return `${days} ${days > 1 ? 'days' : 'day'}`;
-    }
-
-    if (years === 0) {
-      return `${months} ${months > 1 ? 'months' : 'month'}`;
-    }
-
-    return `${years} ${years > 1 ? 'years' : 'year'} ${months} ${
-      months > 1 ? 'months' : 'month'
-    }`;
-  };
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
     year: 'numeric',
@@ -108,19 +96,27 @@ export const CoachPractitionerJourney: React.FC = () => {
     window.sessionStorage.setItem(currentActivityKey, visitName || 'Visit');
     setShowForm(true);
   };
-  // pqa mock -> [{id: '01', visitType: {description: visitTypes.pqa.firstPQA}, plannedVisitDate: new Date()}]
+
   const uncompletedPrePqaVisits =
     timeline?.prePQASiteVisits?.filter(
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
+
   const uncompletedPqaVisits =
     timeline?.pQASiteVisits?.filter(
       (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const uncompletedReAccreditationVisits =
+    timeline?.reAccreditationVisits?.filter(
+      (visit) =>
+        !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
+    ) ?? [];
+
   const uncompletedVisits = [
     ...uncompletedPrePqaVisits,
     ...uncompletedPqaVisits,
+    ...uncompletedReAccreditationVisits,
   ];
 
   const currentVisit = uncompletedVisits
@@ -131,6 +127,7 @@ export const CoachPractitionerJourney: React.FC = () => {
         showIcon: true,
         menuIcon: 'ClipboardListIcon',
         iconColor: 'white',
+        titleStyle: 'text-textDark',
         title: visit?.visitType?.description || 'Visit',
         subTitle: !!visit?.plannedVisitDate
           ? new Date(visit?.plannedVisitDate).toLocaleDateString(
@@ -138,6 +135,7 @@ export const CoachPractitionerJourney: React.FC = () => {
               dateLongMonthOptions
             )
           : '',
+        subTitleStyle: 'text-textDark',
         iconBackgroundColor: 'primary',
         backgroundColor: 'uiBg',
         extraData: { visitId: visit?.id },
@@ -173,10 +171,7 @@ export const CoachPractitionerJourney: React.FC = () => {
       );
       window.sessionStorage.setItem(visitIdKey, visit.id);
     } else {
-      window.sessionStorage.setItem(
-        currentActivityKey,
-        visit.visitType?.description!
-      );
+      window.sessionStorage.setItem(currentActivityKey, visit.visitType?.name!);
     }
 
     window.sessionStorage.setItem(isViewKey, 'true');
@@ -247,7 +242,7 @@ export const CoachPractitionerJourney: React.FC = () => {
             variant="flat"
             title={timeline?.smartSpaceLicenseStatus || ''}
             message={
-              !!timeline?.smartSpaceLicenseDate
+              timeline?.smartSpaceLicenseDate
                 ? new Date(timeline.smartSpaceLicenseDate).toLocaleDateString(
                     'en-ZA',
                     dateLongMonthOptions
@@ -270,7 +265,9 @@ export const CoachPractitionerJourney: React.FC = () => {
           />
           <div className="mb-4 flex gap-2">
             <p className="bg-primary text-14 w-fit w-auto rounded-2xl py-1 px-2 font-semibold text-white">
-              {getTime(timeline?.starterLicenseDate || new Date())}
+              {getFormattedDateInYearsMonthsAndDays(
+                timeline?.starterLicenseDate || new Date()
+              )}
             </p>
             {!!timeline?.starterLicenseDate && (
               <Typography

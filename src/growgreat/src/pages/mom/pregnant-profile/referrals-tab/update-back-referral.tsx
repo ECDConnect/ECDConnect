@@ -21,7 +21,11 @@ import { newGuid } from '@/utils/common/uuid.utils';
 import { toCamelCase } from '@ecdlink/core/lib';
 import { addVisitBackReferral } from '@/store/referral/referral.actions';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
-import { getMotherById } from '@/store/mother/mother.selectors';
+import {
+  getMotherCurrentVisitSelector,
+  getMotherById,
+  getMotherNearestPreviousVisitByOrderDate,
+} from '@/store/mother/mother.selectors';
 
 export const yesNoOptions = [
   { text: 'Yes', value: true },
@@ -50,6 +54,19 @@ export const MotherBackReferralUpdate: React.FC<
   const mother = useSelector((state: RootState) =>
     getMotherById(state, motherId)
   );
+
+  const currentVisit = useSelector((state: RootState) =>
+    getMotherCurrentVisitSelector(state, '')
+  );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  const isToGetPreviousVisitStatusData =
+    !currentVisit?.attended &&
+    !currentVisit?.visitInProgress &&
+    previousVisit?.id;
 
   const selectedReferral = useMemo(() => {
     if (completedReferralsForMother) {
@@ -96,10 +113,28 @@ export const MotherBackReferralUpdate: React.FC<
   };
 
   const refreshList = useCallback(() => {
-    appDispatch(
-      motherThunkActions.getCompletedReferralsForMother({ motherId })
-    ).unwrap();
-  }, [motherId, appDispatch]);
+    if (isToGetPreviousVisitStatusData) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: previousVisit.id,
+        })
+      ).unwrap();
+    } else if (currentVisit) {
+      appDispatch(
+        motherThunkActions.getCompletedReferralsForMother({
+          motherId: motherId,
+          visitId: currentVisit.id,
+        })
+      ).unwrap();
+    }
+  }, [
+    isToGetPreviousVisitStatusData,
+    currentVisit,
+    appDispatch,
+    motherId,
+    previousVisit?.id,
+  ]);
 
   const onCommentChanged = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {

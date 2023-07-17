@@ -111,7 +111,7 @@ export const Screen2 = ({ currentStep, className, onClick }: Step) => {
           <div id="step8">
             <StackedList
               isFullHeight={false}
-              className={'flex flex-col gap-2'}
+              className={'mb-2 flex flex-col gap-2'}
               listItems={followUpForm}
               type={'MenuList'}
             />

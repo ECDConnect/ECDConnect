@@ -58,7 +58,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, true);
-                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
+                    mother.NextVisitDate = visitManager.GetClientsNextDueVisitDate(mother.Id, Constants.GGSettings.client_mother);
                     var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(mother.Id, Constants.GGSettings.client_mother, true);
                      if (nextVisit != "")
                     {
@@ -70,7 +70,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
-                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
+                    mother.NextVisitDate = visitManager.GetClientsNextDueVisitDate(mother.Id, Constants.GGSettings.client_mother);
                     var missedVisit = visitManager.GetFirstMissedVisit(mother.Id, Constants.GGSettings.client_mother);
                     if (missedVisit != "")
                     {
@@ -82,7 +82,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var mother in allMothers)
                 {
                     mother.StatusInfo = motherManager.GetStatusInfo(mother, false);
-                    mother.NextVisitDate = motherManager.GetClientsNextVisitDate(mother.Id);
+                    mother.NextVisitDate = visitManager.GetClientsNextDueVisitDate(mother.Id, Constants.GGSettings.client_mother);
                     mothers.Add(mother);
                 }
             }
@@ -127,15 +127,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother);
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_mother, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetCompletedReferralsForMother([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother);
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_mother, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

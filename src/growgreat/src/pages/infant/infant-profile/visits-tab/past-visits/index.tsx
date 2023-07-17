@@ -33,7 +33,9 @@ export const PastVisits: React.FC = () => {
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector(getInfantCurrentVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getInfantCurrentVisitSelector(state, '')
+  );
 
   const infantInsertedDate = useMemo(
     () => new Date(infant?.insertedDate || ''),
@@ -75,13 +77,16 @@ export const PastVisits: React.FC = () => {
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),
-        showActionButton: getType() === 'completed',
+        // Change this rule to not show 'See info' for past visits until further notice 30 June 2023 (Kim)
+        //showActionButton: getType() === 'completed',
+        showActionButton: false,
         actionButtonText: 'See info',
         actionButtonTextColor: 'secondary',
         actionButtonColor: 'secondaryAccent2',
         actionButtonOnClick: () =>
           history.push(
-            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/activities-form/${item.id}`
+            `${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}/activities-form/${item.id}`,
+            { editView: false }
           ),
       };
     });

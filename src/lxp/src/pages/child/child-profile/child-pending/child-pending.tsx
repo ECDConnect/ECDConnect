@@ -22,6 +22,8 @@ import OnlineOnlyModal from '../../../../modals/offline-sync/online-only-modal';
 import { copyToClip } from '@utils/common/clipboard.utils';
 import { CaregiverChildRegistrationModal } from '../../components/caregiver-child-registration-modal/caregiver-child-registration-modal';
 import ROUTES from '@routes/routes';
+import { practitionerSelectors } from '@/store/practitioner';
+import { userSelectors } from '@store/user';
 
 export const ChildPending: React.FC<ChildPendingProps> = ({
   child,
@@ -36,6 +38,16 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
   const classroomGroupId = classroomGroups?.at(0)?.id;
   const dispatch = useAppDispatch();
+  const practitioner = useSelector(practitionerSelectors?.getPractitioner);
+  const isPrincipal = practitioner?.isPrincipal;
+  const user = useSelector(userSelectors.getUser);
+  const isCoach = user?.roles?.some((role) => role.name === 'Coach');
+
+  const practitioners = useSelector(
+    practitionerSelectors.getPractitioners
+  )?.filter((x) => {
+    return x.user?.id !== practitioner?.user?.id;
+  });
 
   useEffect(() => {
     if (!child || !child.insertedDate) return;
@@ -93,11 +105,15 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
 
     const linkCopied = await copyToClip(caregiverChildregUrl);
 
+    const whatsapp = () => {
+      window.open(`whatsapp://send?text=${caregiverChildregUrl}`);
+    };
+
     dialog({
       render: (onSubmit, onCancel) => {
         return (
           <CaregiverChildRegistrationModal
-            onSubmit={onSubmit}
+            onSubmit={whatsapp}
             onCancel={onCancel}
             childDetails={{
               firstName: childUser?.firstName || '',
@@ -114,7 +130,17 @@ export const ChildPending: React.FC<ChildPendingProps> = ({
 
   return (
     <BannerWrapper
-      onBack={history.goBack}
+      onBack={() => {
+        if (isPrincipal && practitioners?.length! > 1) {
+          history.push(ROUTES.CLASSROOM, { activeTabIndex: 2 });
+        } else {
+          if (isCoach) {
+            history.goBack();
+          } else {
+            history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
+          }
+        }
+      }}
       color="primary"
       size="medium"
       renderBorder

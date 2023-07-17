@@ -27,6 +27,7 @@ export const CareGiverChildInformationForm: React.FC<
   submitButtonText = 'Next',
   submitButtonIcon = 'ArrowCircleRightIcon',
   onSubmit,
+  canEdit = false,
 }) => {
   const provinces = useSelector(staticDataSelectors.getProvinces);
 
@@ -74,6 +75,7 @@ export const CareGiverChildInformationForm: React.FC<
         error={errors['apartmentNumber']}
         nameProp={'apartmentNumber'}
         placeholder={'203 Oak Apartments'}
+        disabled={canEdit}
       />
 
       <FormInput<CareGiverChildInformationFormModel>
@@ -83,6 +85,7 @@ export const CareGiverChildInformationForm: React.FC<
         error={errors['streetAddress']}
         className={styles.spacer}
         placeholder={'E.g. 11 Green Road'}
+        disabled={canEdit}
       />
       <FormInput<CareGiverChildInformationFormModel>
         label={'Suburb/area'}
@@ -91,6 +94,7 @@ export const CareGiverChildInformationForm: React.FC<
         error={errors['suburb']}
         className={styles.spacer}
         placeholder={'E.g.  Mamelodi East'}
+        disabled={canEdit}
       />
       <FormInput<CareGiverChildInformationFormModel>
         label={'City'}
@@ -99,6 +103,7 @@ export const CareGiverChildInformationForm: React.FC<
         error={errors['city']}
         className={styles.spacer}
         placeholder={'E.g. Cape Town'}
+        disabled={canEdit}
       />
 
       <Dropdown
@@ -120,6 +125,7 @@ export const CareGiverChildInformationForm: React.FC<
             shouldValidate: true,
           });
         }}
+        disabled={canEdit}
       />
       <FormInput<CareGiverChildInformationFormModel>
         label={'Postal code'}
@@ -128,6 +134,7 @@ export const CareGiverChildInformationForm: React.FC<
         error={errors['postalCode']}
         placeholder={'E.g. 0081'}
         className={styles.spacer}
+        disabled={canEdit}
       />
       <div className={'py-4'}>
         <Divider></Divider>

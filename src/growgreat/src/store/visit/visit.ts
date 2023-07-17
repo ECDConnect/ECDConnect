@@ -33,7 +33,7 @@ const handleAddCompletedVisitsByVisitId = (
   state: VisitState & ThunkStateStatus,
   action: PayloadAction<CompletedVisitsForVisitId>
 ) => {
-  return state.completedVisitsForVisitId
+  return typeof state.completedVisitsForVisitId?.[0] === 'string'
     ? state.completedVisitsForVisitId?.map((item) => {
         if (item.visitId === action.payload.visitId) {
           const uniqueVisits = [
@@ -131,7 +131,6 @@ const visitSlice = createSlice({
     setThunkActionStatus(builder, getMoreInformation);
     setThunkActionStatus(builder, getCompletedVisitsForVisitId);
     setThunkActionStatus(builder, getVisitVideos);
-    setThunkActionStatus(builder, getPreviousVisitInformationForInfant);
     setThunkActionStatus(builder, getVisitAnswersForInfant);
     setThunkActionStatus(builder, getVisitAnswersForMother);
     setThunkActionStatus(builder, getHealthCareWorkerHighlights);
@@ -210,8 +209,6 @@ const visitSlice = createSlice({
       getPreviousVisitInformationForInfant.fulfilled,
       (state, action) => {
         state.previousVisitInformationForInfant = action.payload;
-
-        setFulfilledThunkActionStatus(state, action);
       }
     );
     builder.addCase(getGrowthDataForInfant.fulfilled, (state, action) => {

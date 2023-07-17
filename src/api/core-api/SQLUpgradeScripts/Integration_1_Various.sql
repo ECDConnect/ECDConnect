@@ -211,14 +211,14 @@ INSERT INTO "IntegrationEntityMapping" ("Id","IsActive","InsertedDate","UpdatedD
 	 ('f1e3843a-70f2-2389-1d1e-59b4514c09e4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'AttendancePDF','Monthly Attendance Register','5258d1f1-f9b6-e571-cbbe-067f4a823c8c','0b887bae-f2ef-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('fefbb983-9d0c-146d-2f1c-0b85e4b42b2e',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ChildRegistrationForm','Child Registration Form','5c37eb53-b528-4dfc-9814-5d2aa14e5298','78ec9b65-20dd-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('7f0a7d74-c44c-e2d8-5f56-9fbeff8f33ba',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'IncomeStatementPDF','Income Statement','9aae913e-47f8-45c7-a0ff-142dd425cf94','85de53bd-8426-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
-	 ('edd1479a-55fb-ff82-a86f-a6efbbd3a531',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'IdentityDocument','Identity Document','9baab379-af82-45a6-8127-fef1644953dd','891d084f-9394-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('6b47bba4-fb36-22b9-126b-e555d6969c06',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'StartupSupportAgreement','Stipend Agreement','97128d9a-c879-4421-9d40-29c999e8d43e','bf8ca50e-8526-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('01930d35-6dcf-6da2-8fde-448f873d1fb4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'Practitioner','Attendance Register','2d8ee3b4-6bc5-473b-85c1-4c3214c15671','fc22a1a8-8226-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
-	 ('82d0084e-367e-4790-4652-07265e4f65e4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ProofOfAccount','Proof of Account','d20614a3-a556-4b57-b3f6-9638ecea4877','7f1c1f22-a925-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('edd1479a-55fb-ff82-a86f-a6efbbd3a531',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'IdentityDocument','Identity Document','9baab379-af82-45a6-8127-fef1644953dd','891d084f-9394-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('f42e13d2-8dd4-0a32-e2d1-764cb7501f5a',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ProofOfSiteAddress','Proof of Site Address','bef3f0de-1483-459f-b016-0a3d5989a43c','accea691-9394-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('82d0084e-367e-4790-4652-07265e4f65e4',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ProofOfAccount','Proof of Account','d20614a3-a556-4b57-b3f6-9638ecea4877','7f1c1f22-a925-ec11-834e-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
+	 ('d20614a3-a556-4b57-b3f6-9638ecea4877',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ChildClinicCard','Child Clinic Card','fe6c6e71-1eb7-424a-8844-5bab1c60104c','26a3ea62-6f04-ee11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('6cb08e37-738a-517f-ed7b-2abb3a354bf8',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'ChildBirthCertificate','Child Birth Certificate','5c464272-2f22-438f-8154-4aa1ff8bf047','0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType'),
 	 ('d088a1c9-9112-2aed-bf31-62cc317ce812',true,'2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'PractitionerAgreement','Franchisee Agreement','2505d06f-d3cb-4544-abf8-f984fbe78505','0d06836c-d2fa-ed11-8354-00155dee5a05','SmartLink','2023-05-27 22:50:37.794','2023-05-27 22:50:37.794',NULL,NULL,'258a15e6-3736-45ea-875c-48d9377de4c8',true,NULL,'DocumentType');
-
 
 INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","UpdatedBy","Name","Description","EnumId","TenantId") VALUES
 ('5c37eb53-b528-4dfc-9814-5d2aa14e5298',true,NOW(),NOW(),NULL,'ChildRegistrationForm','Child Registration Form',17,'258a15e6-3736-45ea-875c-48d9377de4c8'),
@@ -234,4 +234,94 @@ INSERT INTO "DocumentType" ("Id","IsActive","InsertedDate","UpdatedDate","Update
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildRegistrationForm') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'F4-registrationform.png';
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildBirthCertificate') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'birthCertificate.png';
 update "Document" set "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'ChildClinicCard') where "DocumentTypeId" = (select "Id" from "DocumentType" where "Name" = 'Child') and "Name" = 'clinicCard.png';
+	 
+ALTER TABLE public."Club" ADD "NumberOfMembers" numeric NULL;	 
+
+
+CREATE TABLE public."SL_Ingestion_User_Update" (
+	"Id" uuid NOT null 
+);
+
+
+ALTER TABLE public."IntegrationEntityMapping" ADD "LastIncomeSubmittedDate" timestamp NULL;
+ALTER TABLE public."IntegrationEntityMapping" ADD "LastAttendanceSubmittedDate" timestamp NULL;
+
+CREATE TABLE public."PQA" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"TenantId" uuid NULL,
+	"Latitude" text NULL,
+	"Longitude" text NULL,
+	"WasSuccessful" bool NULL,
+	"IsFranchiseeHittingChildren" bool NULL,
+	"IsSmartSpaceStillFine" bool NULL,
+	"IsVenueSafe" bool NULL,
+	"IsThereTooManyChildren" bool NULL,
+	"DateOfVisit" timestamp NULL,
+	"UserId" text NULL,
+	CONSTRAINT "PK_PQA" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_PQA_AspNetUsersId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+
+CREATE TABLE public."SmartSpaceVisit" (
+	"Id" uuid NOT NULL,
+	"IsActive" bool NOT NULL,
+	"InsertedDate" timestamp NOT NULL,
+	"UpdatedDate" timestamp NOT NULL,
+	"UpdatedBy" text NULL,
+	"TenantId" uuid NULL,
+	"Name" text NULL,
+	"NumberOfAssistants" numeric NULL,
+	"Capacity" numeric NULL,
+	"RequiredItemsScore" numeric NULL,
+	"UnrequiredItemsScore" numeric NULL,
+	"TotalScore" numeric NULL,
+	"Latitude" text NULL,
+	"Longitude" text NULL,
+	"OwnsProperty" bool NULL,
+	"HasAcceptedSmartSpaceAgreement" bool NULL,
+	"Q1" bool NULL,
+	"Q2" bool NULL,
+	"Q3" bool NULL,
+	"Q4" bool NULL,
+	"Q5" bool NULL,
+	"Q6" bool NULL,
+	"Q7" bool NULL,
+	"Q8" bool NULL,
+	"Q9" bool NULL,
+	"Q10" bool NULL,
+	"Q11" bool NULL,
+	"Q12" bool NULL,
+	"Q13" bool NULL,
+	"Q14" bool NULL,
+	"Q15" bool NULL,
+	"Q16" bool NULL,
+	"Q17" bool NULL,
+	"Q18" bool NULL,
+	"Q19" bool NULL,
+	"Q20" bool NULL,
+	"Q21" bool NULL,
+	"DateOfVisit" timestamp NULL,
+	"UserId" text NULL,
+	CONSTRAINT "PK_SmartSpaceVisit" PRIMARY KEY ("Id"),
+	CONSTRAINT "FK_SmartSpaceVisit_AspNetUsersId" FOREIGN KEY ("UserId") REFERENCES public."AspNetUsers"("Id") ON DELETE RESTRICT
+);
+
+
+ALTER TABLE public."ClubMeeting" ADD "Name" text NULL;
+
+ALTER TABLE public."Trainee" ADD "HomeAddressLine1" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine2" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressLine3" text NULL;
+ALTER TABLE public."Trainee" ADD "HomeAddressPostalCode" text NULL;
+ALTER TABLE public."Trainee" ADD "PreferredCommunicationLanguage" text NULL;
+ALTER TABLE public."Trainee" ADD "FranchiseeAgreementAcceptedDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "SmartSpaceLicenceDate" timestamp NULL;
+ALTER TABLE public."Trainee" ADD "StarterLicenceDate" timestamp NULL;
+
+
+select * from "IntegrationColumnMapping" icm where "LocalColumn" in ('AttendedBusinessSkills','AttendedChildProgress');
 	 */

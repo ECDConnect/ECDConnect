@@ -21,11 +21,11 @@ export const ReferralActions = {
 
 export const getReferralsForInfant = createAsyncThunk<
   VisitDataStatus[],
-  { infantId: string },
+  { infantId: string; visitId: string },
   ThunkApiType<RootState>
 >(
   ReferralActions.GET_REFERRAL_FOR_INFANT,
-  async ({ infantId }, { getState, rejectWithValue }) => {
+  async ({ infantId, visitId }, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
     } = getState();
@@ -36,7 +36,7 @@ export const getReferralsForInfant = createAsyncThunk<
       if (userAuth?.auth_token) {
         content = await new Referral(
           userAuth?.auth_token ?? ''
-        ).getReferralsForInfant(infantId);
+        ).getReferralsForInfant(infantId, visitId);
       } else {
         return rejectWithValue('no access token, profile check required');
       }

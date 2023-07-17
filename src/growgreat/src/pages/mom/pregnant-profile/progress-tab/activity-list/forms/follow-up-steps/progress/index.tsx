@@ -8,7 +8,6 @@ import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition, LoadingSpinner } from '@ecdlink/ui';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
-import { useAppDispatch } from '@/store';
 
 export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
@@ -16,7 +15,6 @@ export const ProgressStep = ({ mother, setEnableButton }: DynamicFormProps) => {
     () => mother?.user?.firstName || '',
     [mother?.user?.firstName]
   );
-  const appDispatch = useAppDispatch();
   const dialog = useDialog();
 
   // Previous visit data

@@ -7,6 +7,7 @@ export const progressSteps: Step[] = [
       'I’ll show you a score at the top to let you know how your client is doing!',
     disableOverlayClose: true,
     disableCloseOnEsc: true,
+    disableBeacon: true,
   },
   {
     target: '#walkthrough-progress-step-2',

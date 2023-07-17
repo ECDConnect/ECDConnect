@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GGSettings.client_child, true);
                     if (nextVisit != "")
                     {
@@ -68,37 +68,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, true);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
                     var nextVisit = visitManager.GetNextVisitLessThan7DaysAway(child.Id, Constants.GGSettings.client_child, true);
                     if (nextVisit != "")
                     {
                         infants.Add(child);
                     }
                 }
-
             }
             else
             {
                 foreach (var child in children)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
-                    var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
-                    if (missedVisit != "")
-                    {
-                        infants.Add(child);
-                    }   
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
+                    infants.Add(child);
                 }
 
                 foreach (var child in childrenMother)
                 {
                     child.StatusInfo = infantManager.GetStatusInfo(child, false);
-                    child.NextVisitDate = infantManager.GetClientsNextVisitDate(child.Id);
-                    var missedVisit = visitManager.GetFirstMissedVisit(child.Id, Constants.GGSettings.client_child);
-                    if (missedVisit != "")
-                    {
-                        infants.Add(child);
-                    }   
+                    child.NextVisitDate = visitManager.GetClientsNextDueVisitDate(child.Id, Constants.GGSettings.client_child);
+                    infants.Add(child);
                 }
             }
             return infants;
@@ -136,15 +127,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_child);
+            return visitDataStatusManager.GetReferralDataForClient(id, Constants.GGSettings.client_child, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetCompletedReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id)
+        public List<VisitDataStatus> GetCompletedReferralsForInfant([Service] VisitDataStatusManager visitDataStatusManager, string id, string visitId)
         {
-            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_child);
+            return visitDataStatusManager.GetCompletedReferralDataForClient(id, Constants.GGSettings.client_child, visitId);
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
@@ -160,7 +151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitManager visitManager, [Service] VisitDataStatusManager visitDataStatusManager, string visitId)
+        public Progress_VisitDataStatus GetPreviousVisitInformationForInfant([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
         {
             var _visitId = new Guid(visitId);
             return visitDataStatusManager.GetPreviousVisitInformationForClient(_visitId);

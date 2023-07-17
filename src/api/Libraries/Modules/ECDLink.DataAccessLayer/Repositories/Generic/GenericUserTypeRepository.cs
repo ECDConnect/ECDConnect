@@ -1,8 +1,10 @@
+using ECDLink.Abstractrions.GraphQL.Attributes;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
 using ECDLink.DataAccessLayer.Events;
+using ECDLink.DataAccessLayer.Helpers;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.Security;
@@ -62,7 +64,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
         }
 
 
-        public override IQueryable<T> GetAll()
+        public override IQueryable<T> GetAll(PagedQueryInput pagingInput = null)
         {
             Guid tenantId = TenantExecutionContext.Tenant.Id;
             if (string.IsNullOrEmpty(_userId))
@@ -73,8 +75,16 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             var user = _userManager.FindByIdAsync(_userId).Result;
             var roles = _userManager.GetRolesAsync(user).Result;
             var isAdmin = roles.Contains(Roles.ADMINISTRATOR);
+            
+            var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();
 
-            var query = entities.Where(e => e.TenantId == null || e.TenantId.Equals(tenantId)).AsQueryable();//.Where(e => e.TenantId.Equals(tenantId))
+            if (pagingInput is not null)
+            {
+                query = PaginationHelper.AddFiltering(pagingInput?.FilterBy, query);
+                query = PaginationHelper.AddSorting(pagingInput?.SortBy, query);
+                query = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, query);
+            }
+
             if (isAdmin)
             {
                 return query.OrderByDescending(x => x.InsertedDate);

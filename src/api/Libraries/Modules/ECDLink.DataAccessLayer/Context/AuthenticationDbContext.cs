@@ -13,7 +13,9 @@ using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
+using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
@@ -45,6 +47,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Absentees> Absents { get; set; }
         public DbSet<ProgrammeType> ProgrammeTypes { get; set; }
         public DbSet<SL_Ingestion_User> SL_Ingestion_Users { get; set; }
+        public DbSet<SL_Ingestion_User_Update> SL_Ingestion_Users_Update { get; set; }
         public DbSet<SystemLog> SystemLogs { get; set; }
 
         // Notes
@@ -142,8 +145,14 @@ namespace ECDLink.DataAccessLayer.Context
 
         // Clubs
         public DbSet<Club> Clubs { get; set; }
-        public DbSet<ClubMeeting> ClubMeeting { get; set; }
-        public DbSet<ClubMeetingRegister> ClubMeetingRegister { get; set; }
+        public DbSet<ClubMeeting> ClubMeetings { get; set; }
+        public DbSet<ClubMeetingRegister> ClubMeetingRegisters { get; set; }
+
+        // PQA
+        public DbSet<PQA> PQAs { get; set; }
+
+        // SmartSpaceVisit
+        public DbSet<SmartSpaceVisit> SmartSpaceVisits { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)

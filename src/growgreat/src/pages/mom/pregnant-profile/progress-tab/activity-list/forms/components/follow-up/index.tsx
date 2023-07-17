@@ -26,19 +26,19 @@ import {
 } from 'react';
 import { useSelector } from 'react-redux';
 import { ReactComponent as Home } from '@/assets/home.svg';
-import PollyHappy from '@/assets/pollyHappy.svg';
-import PollyInformational from '@/assets/pollyInformational.svg';
-import PollyShock from '@/assets/pollyShock.svg';
-import BabyHealthcare from '@/assets/iconCircleAntenatalSmall.svg';
+import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
+import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
+import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall2.svg';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
+import Pregnant from '@/assets/pregnant.svg';
 import PrintBanner from '@/assets/printBanner.png';
 import { progressSteps } from '../../../../walkthrough/steps';
 import { useAppDispatch } from '@/store';
 import {
-  // getMotherCurrentVisitSelector,
-  getMotherLastVisitSelector,
-  getMotherVisits,
+  getMotherCurrentVisitSelector,
+  getMotherNearestPreviousVisitByOrderDate,
 } from '@/store/mother/mother.selectors';
 import { visitThunkActions } from '@/store/visit';
 import { VisitDataStatus } from '@/../../../packages/graphql/lib';
@@ -48,6 +48,7 @@ import {
 } from '../../../activities-list';
 import { InfoCard, Item } from './info-card';
 import { useLocation } from 'react-router';
+import { RootState } from '@/store/types';
 
 export interface FollowUpWalkthroughData {
   progressBar: {
@@ -70,6 +71,7 @@ interface FollowUpComponentProps {
   walkthroughData?: FollowUpWalkthroughData;
   isPrint?: boolean;
   isVisit: boolean;
+  isFromProgressTab?: boolean;
 }
 
 interface Status {
@@ -86,6 +88,7 @@ export const FollowUp = ({
   walkthroughData,
   isPrint,
   isVisit,
+  isFromProgressTab,
 }: FollowUpComponentProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const appDispatch = useAppDispatch();
@@ -108,50 +111,53 @@ export const FollowUp = ({
     }
   }, [isPrint]);
 
-  // this provides the status of previous visit
-  const previousVisit = useSelector(
-    getPreviousVisitInformationForMotherSelector
-  );
-
-  // getting all visits for a client
-  const allVisits = useSelector(getMotherVisits);
   // this will be available when you are busy completing a questionnaire
   const [, , , , , visitId] = location.pathname.split('/');
 
-  const getCurrentVisit = () => {
-    // grab visit id from url and set current visit
-    if (visitId) {
-      for (var i = 0; i < allVisits.length; i++) {
-        if (allVisits[i].id === visitId) {
-          return allVisits[i];
-        }
-      }
-    } else {
-      // grab the latest completed visit from the list
-      const lastAttended = allVisits?.filter((item) => item.attended) || [];
-      return lastAttended.length
-        ? lastAttended.reduce((prev, curr) =>
-            (prev.visitType?.order || 0) > (curr.visitType?.order || 0)
-              ? prev
-              : curr
-          )
-        : undefined;
+  // this provides the status of previous visit
+  const previousVisitStatus = useSelector(
+    getPreviousVisitInformationForMotherSelector
+  );
+  const previousVisitStatusToSort = Object.assign({}, previousVisitStatus);
+
+  const currentVisit = useSelector((state: RootState) =>
+    getMotherCurrentVisitSelector(state, visitId)
+  );
+
+  const previousVisit = useSelector((state: RootState) =>
+    getMotherNearestPreviousVisitByOrderDate(state, currentVisit)
+  );
+
+  useLayoutEffect(() => {
+    if (
+      isFromProgressTab &&
+      previousVisit?.id &&
+      previousVisit?.attended &&
+      !currentVisit?.visitInProgress
+    ) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: previousVisit.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: previousVisit.id,
+        })
+      );
+    } else if (currentVisit?.id) {
+      appDispatch(
+        visitThunkActions.getPreviousVisitInformationForMother({
+          visitId: currentVisit.id,
+        })
+      );
+      appDispatch(
+        visitThunkActions.GetMotherSummaryByPriority({
+          visitId: currentVisit.id,
+        })
+      );
     }
-  };
-
-  const previousVisitToSort = Object.assign({}, previousVisit);
-  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  const currentVisit = getCurrentVisit();
-  const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
-
-  // if the previousVisit is null, lets fetch the latest
-  if (!previousVisit && currentVisit) {
-    appDispatch(
-      visitThunkActions.getPreviousVisitInformationForMother({
-        visitId: currentVisit.id,
-      })
-    );
-  }
+  }, [appDispatch, currentVisit, isFromProgressTab, previousVisit]);
 
   const diffDates = !!mother?.expectedDateOfDelivery
     ? getWeeksDiff(new Date(), new Date(mother?.expectedDateOfDelivery))
@@ -160,47 +166,6 @@ export const FollowUp = ({
   const actualGestationWeek = !!diffDates ? 40 - diffDates : '';
 
   const printData = useSelector(GetMotherSummaryByPrioritySelector);
-
-  // Get Printing data
-  useLayoutEffect(() => {
-    if (
-      (!previousCurrentVisit ||
-        (!!previousCurrentVisit &&
-          previousCurrentVisit?.id !== currentVisit?.id)) &&
-      !!currentVisit
-    )
-      if (isVisit) {
-        appDispatch(
-          visitThunkActions.GetMotherSummaryByPriority({
-            visitId: currentVisit.id,
-          })
-        );
-        appDispatch(
-          visitThunkActions.getPreviousVisitInformationForMother({
-            visitId: currentVisit.id,
-          })
-        );
-      } else {
-        if (previousCurrentVisit) {
-          appDispatch(
-            visitThunkActions.GetMotherSummaryByPriority({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-          appDispatch(
-            visitThunkActions.getPreviousVisitInformationForMother({
-              visitId: previousCurrentVisit.id,
-            })
-          );
-        }
-      }
-  }, [
-    appDispatch,
-    currentVisit,
-    currentVisit?.id,
-    isVisit,
-    previousCurrentVisit,
-  ]);
 
   const getColorAndIcon = useCallback(
     (
@@ -238,7 +203,7 @@ export const FollowUp = ({
     value: number;
     message: string;
   } => {
-    switch (previousVisit?.scoreColor) {
+    switch (previousVisitStatus?.scoreColor) {
       case 'Warning':
         return {
           primaryColour: 'alertMain',
@@ -262,7 +227,7 @@ export const FollowUp = ({
           value: 25,
         };
     }
-  }, [name, previousVisit?.scoreColor]);
+  }, [name, previousVisitStatus?.scoreColor]);
 
   const getVisitIcon = (visitName: string) => {
     switch (visitName) {
@@ -274,7 +239,10 @@ export const FollowUp = ({
       case activitiesSectionTypes.nutrition:
         return { icon: P1, color: '#8CDBDF' };
       case activitiesSectionTypes.pregnancyCare:
-        return { icon: P1, color: activitiesColours.pillar1.primaryColor };
+        return {
+          icon: Pregnant,
+          color: activitiesColours.pillar1.primaryColor,
+        };
       default:
         return { icon: P5, color: activitiesColours.pillar5.primaryColor };
     }
@@ -283,7 +251,7 @@ export const FollowUp = ({
   const groupedData = useMemo(() => {
     if (!!walkthroughData?.infoCard) return walkthroughData.infoCard;
 
-    const sortedData = previousVisitToSort?.visitDataStatus
+    const sortedData = previousVisitStatusToSort?.visitDataStatus
       ?.slice()
       .sort(function (a, b) {
         var colorOrder = ['Success', 'Warning', 'Error'];
@@ -305,15 +273,11 @@ export const FollowUp = ({
       {}
     );
     return groupedData;
-  }, [previousVisitToSort?.visitDataStatus, walkthroughData]) as
+  }, [previousVisitStatusToSort?.visitDataStatus, walkthroughData]) as
     | Status
     | undefined;
 
-  if (
-    !previousVisit?.visitDataStatus?.length &&
-    previousVisit?.scoreComment === 'No data available for visit' &&
-    !walkthroughData
-  ) {
+  if (!previousVisitStatus?.visitDataStatus?.length && !walkthroughData) {
     return (
       <div className="mt-20 flex flex-col items-center justify-center gap-4">
         <Home />
@@ -345,7 +309,9 @@ export const FollowUp = ({
           <ProgressBar
             className="h-2"
             label={
-              walkthroughData?.progressBar.label || previousVisit?.score || ''
+              walkthroughData?.progressBar.label ||
+              previousVisitStatus?.score ||
+              ''
             }
             subLabel="score"
             value={
@@ -450,16 +416,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-successDark false bg-successBg border-successMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyHappy}
-                              className="text-successMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyHappy className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-successDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -490,16 +452,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-alertDark false bg-alertBg border-alertMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyInformational}
-                              className="text-alertMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyInformational className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-alertDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -530,16 +488,12 @@ export const FollowUp = ({
                     <>
                       <div className="rounded-10 text-errorDark false bg-errorBg border-errorMain mb-4 border-2 p-4">
                         <div className="flex flex-row ">
-                          <div className="rounded-full">
-                            <img
-                              src={PollyShock}
-                              className="text-errorMain h-10 w-10"
-                              alt=""
-                            />
+                          <div>
+                            <PollyShock className="h-10 w-10" />
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-errorDark text-sm text-sm font-semibold ">
+                              <p className=" font-h1 text-errorDark text-sm font-semibold ">
                                 {visit?.areaName}
                               </p>
                               <div className="pt-2">
@@ -579,7 +533,7 @@ export const FollowUp = ({
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-successDark text-sm text-sm font-semibold "></p>
+                              <p className=" font-h1 text-successDark text-sm font-semibold "></p>
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>
@@ -610,7 +564,7 @@ export const FollowUp = ({
                           </div>
                           <div className="flex flex-col items-start justify-start ">
                             <div className="ml-3 ">
-                              <p className=" font-h1 text-alertDark text-sm text-sm font-semibold "></p>
+                              <p className=" font-h1 text-alertDark text-sm font-semibold "></p>
                               <div className="pt-2">
                                 {documentItems?.map((item, indexb) => (
                                   <div className="flex gap-2" key={indexb}>

@@ -5,8 +5,8 @@ import {
   useMemo,
   useState,
 } from 'react';
-import { Button } from '@ecdlink/ui';
-import { InfantDto, MotherDto, usePrevious } from '@ecdlink/core';
+import { ActionModal, Button, DialogPosition } from '@ecdlink/ui';
+import { InfantDto, MotherDto, useDialog, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import {
   CmsVisitDataInputModelInput,
@@ -19,7 +19,7 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { activitiesTypes } from '../activities-list';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router';
@@ -61,6 +61,9 @@ export interface MotherProfileParams {
   id: string;
   visitId: string;
 }
+export interface ViewEditState {
+  editView?: true;
+}
 
 export const DynamicForm = ({
   name,
@@ -97,6 +100,10 @@ export const DynamicForm = ({
   const wasLoading = usePrevious(isLoading);
   const wasLoadingReferral = usePrevious(isLoadingReferral);
   const wasLoadingCompletedVisits = isLoadingCompletedVisits;
+
+  const location = useLocation<ViewEditState>();
+  const canEdit = location.state?.editView;
+  const dialog = useDialog();
 
   const { visitId } = useParams<MotherProfileParams>();
 
@@ -167,47 +174,73 @@ export const DynamicForm = ({
   }, [onNextStep]);
 
   const onSubmit = useCallback(async () => {
-    const sections = sectionQuestions?.map((item) => ({
-      ...item,
-      questions: item.questions.map((question) => ({
-        ...question,
-        answer: String(question.answer),
-      })),
-    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+    if (!canEdit) {
+      return dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render(onClose) {
+          return (
+            <ActionModal
+              className="z-50"
+              icon="ExclamationCircleIcon"
+              iconColor="alertMain"
+              iconClassName="h-10 w-10"
+              title="You cannot edit this form"
+              detailText="You have completed this visit and can only view this information"
+              actionButtons={[
+                {
+                  text: 'Close',
+                  colour: 'primary',
+                  type: 'filled',
+                  textColour: 'white',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      });
+    } else {
+      const sections = sectionQuestions?.map((item) => ({
+        ...item,
+        questions: item.questions.map((question) => ({
+          ...question,
+          answer: String(question.answer),
+        })),
+      })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const input: CmsVisitDataInputModelInput = {
-      visitId: visitId, // TODO: add integration
-      motherId: mother?.user?.id,
-      visitData: {
-        visitName: name,
-        sections,
-      },
-    };
+      const input: CmsVisitDataInputModelInput = {
+        visitId: visitId, // TODO: add integration
+        motherId: mother?.user?.id,
+        visitData: {
+          visitName: name,
+          sections,
+        },
+      };
 
-    const referrals = referralsInput?.map((item) => ({
-      ...item,
-      isCompleted: String(item.isCompleted),
-    })) as VisitDataStatusFilterInput[];
+      const referrals = referralsInput?.map((item) => ({
+        ...item,
+        isCompleted: String(item.isCompleted),
+      })) as VisitDataStatusFilterInput[];
 
-    appDispatch(visitActions.addVisitFormDataForMother(input));
-    await appDispatch(visitThunkActions.addVisitForMomFormData(input));
-    await appDispatch(
-      visitThunkActions.getMomCompletedVisitsForVisitId({
-        visitId: visitId,
-      })
-    );
-    // TODO: fix local update
-    // appDispatch(
-    //   visitActions.addMomCompletedVisitsByVisitId({
-    //     visitId: visitId,
-    //     visits: [name || ''],
-    //   })
-    // );
-
-    if (!!referrals?.length) {
-      appDispatch(
-        referralThunkActions.updateVisitDataStatus({ input: referrals })
+      appDispatch(visitActions.addVisitFormDataForMother(input));
+      await appDispatch(visitThunkActions.addVisitForMomFormData(input));
+      await appDispatch(
+        visitThunkActions.getMomCompletedVisitsForVisitId({
+          visitId: visitId,
+        })
       );
+
+      if (!!referrals?.length) {
+        appDispatch(
+          referralThunkActions.updateVisitDataStatus({ input: referrals })
+        );
+      }
+
+      if (name === activitiesTypes.followUp) {
+        history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${mother?.user?.id}`);
+      }
     }
 
     if (name === activitiesTypes.followUp) {
@@ -221,6 +254,8 @@ export const DynamicForm = ({
     referralsInput,
     appDispatch,
     history,
+    dialog,
+    canEdit,
   ]);
 
   // TODO: sync visit form

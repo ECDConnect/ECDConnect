@@ -1,4 +1,10 @@
-import React, { useCallback, useLayoutEffect, useMemo, useState } from 'react';
+import React, {
+  useCallback,
+  useEffect,
+  useLayoutEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { useHistory, useLocation, useParams } from 'react-router';
 
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -43,6 +49,7 @@ import {
   getMotherById,
   getMotherLastVisitSelector,
 } from '@/store/mother/mother.selectors';
+import { usePrevious } from '@ecdlink/core';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -66,14 +73,15 @@ export const MomActivityList: React.FC = () => {
   const { visitId } = useParams<MotherProfileParams>();
 
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
-  const MOCKED_VISIT_ID = visitId;
   const appDispatch = useAppDispatch();
   const history = useHistory();
   const location = useLocation();
   const [, , , infantId] = location.pathname.split('/');
   const [, , , motherId] = location.pathname.split('/');
 
-  const currentVisit = useSelector(getMotherLastVisitSelector);
+  const currentVisit = useSelector((state: RootState) =>
+    getMotherLastVisitSelector(state, visitId)
+  );
 
   useLayoutEffect(() => {
     appDispatch(infantThunkActions.getInfantVisits({ infantId })).unwrap();
@@ -88,6 +96,9 @@ export const MomActivityList: React.FC = () => {
   }, [appDispatch, infantId, motherId, visitId]);
 
   const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
+  const previousSelectedOption = usePrevious(selectedOption) as
+    | string
+    | undefined;
 
   useLayoutEffect(() => {
     if (
@@ -112,12 +123,12 @@ export const MomActivityList: React.FC = () => {
   useLayoutEffect(() => {
     appDispatch(
       visitThunkActions.getVisitAnswersForMother({
-        visitId: MOCKED_VISIT_ID,
+        visitId: visitId,
         visitName: activitiesTypes.nutrition,
         visitSection: DevelopmentalScreeningVisitSection,
       })
     );
-  }, [MOCKED_VISIT_ID, appDispatch]);
+  }, [visitId, appDispatch]);
 
   const { isOnline } = useOnlineStatus();
 
@@ -128,8 +139,18 @@ export const MomActivityList: React.FC = () => {
   const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
 
   const completedVisits = useSelector((state: RootState) =>
-    getMomCompletedVisitsByVisitIdSelector(state, MOCKED_VISIT_ID)
+    getMomCompletedVisitsByVisitIdSelector(state, visitId)
   )?.visits;
+
+  useLayoutEffect(() => {
+    if (!completedVisits) {
+      appDispatch(
+        visitThunkActions.getMomCompletedVisitsForVisitId({
+          visitId,
+        })
+      );
+    }
+  }, [visitId, appDispatch, completedVisits]);
 
   const previousMotherVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
@@ -248,19 +269,20 @@ export const MomActivityList: React.FC = () => {
       return { uncompletedForms, completedForms, followUpForm, stepperCount };
     }, [visibleActivities, completedVisits]);
 
-  const isFollowUp = completedVisits?.length === stepperCount - 1;
-  const isAllCompleted = completedVisits?.length === stepperCount;
+  const isFollowUp =
+    completedForms.length >= visibleActivities.length &&
+    !completedVisits?.some((item) => item.includes('Follow'));
+  const isAllCompleted =
+    !!currentVisit?.attended || completedVisits?.length === stepperCount;
 
   const goBack = useCallback(() => {
-    if (isStartVisit) {
-      return setIsStartVisit(false);
-    }
     history.push(`${ROUTES.CLIENTS.MOM_PROFILE.ROOT}${motherId}`);
-  }, [history, isStartVisit, motherId]);
+  }, [history, motherId]);
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
     setShowForm(false);
+    setIsStartVisit(true);
   };
 
   const onHelp = () => {
@@ -272,6 +294,28 @@ export const MomActivityList: React.FC = () => {
       setShowForm(true);
     }
   }, [selectedOption]);
+
+  useEffect(() => {
+    if (
+      !previousSelectedOption?.includes('Follow') &&
+      selectedOption?.includes('Follow')
+    ) {
+      appDispatch(
+        motherThunkActions.getReferralsForMother({
+          motherId: motherId,
+          visitId: visitId,
+        })
+      ).unwrap();
+    }
+  }, [appDispatch, motherId, previousSelectedOption, selectedOption, visitId]);
+
+  useLayoutEffect(() => {
+    appDispatch(
+      visitThunkActions.getPreviousVisitInformationForMother({
+        visitId,
+      })
+    );
+  }, [appDispatch, visitId]);
 
   const renderContent = useMemo(() => {
     if (isLoading) {
@@ -285,7 +329,11 @@ export const MomActivityList: React.FC = () => {
       );
     }
 
-    if (isStartVisit || !previousMotherVisit?.visitDataStatus?.length) {
+    if (
+      isStartVisit ||
+      !previousMotherVisit?.visitDataStatus?.length ||
+      isAllCompleted
+    ) {
       return (
         <div className="p-4">
           <Typography
@@ -352,7 +400,7 @@ export const MomActivityList: React.FC = () => {
               {isFollowUp && (
                 <StackedList
                   isFullHeight={false}
-                  className={'flex flex-col gap-2'}
+                  className={'mb-2 flex flex-col gap-2'}
                   listItems={followUpForm}
                   type={'MenuList'}
                 />

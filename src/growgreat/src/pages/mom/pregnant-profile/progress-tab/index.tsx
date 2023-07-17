@@ -43,8 +43,6 @@ export const ProgressTab = () => {
   const previousVisit = useSelector(
     getPreviousVisitInformationForMotherSelector
   );
-  // const currentVisit = useSelector(getMotherCurrentVisitSelector);
-  // const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
 
   const walkthroughData: FollowUpWalkthroughData = {
     progressBar: {
@@ -73,26 +71,7 @@ export const ProgressTab = () => {
       window.sessionStorage.clear();
       return;
     }
-
-    // if (
-    //   (!previousCurrentVisit ||
-    //     (!!previousCurrentVisit &&
-    //       previousCurrentVisit?.id !== currentVisit?.id)) &&
-    //   !!currentVisit
-    // )
-    //   appDispatch(
-    //     visitThunkActions.getPreviousVisitInformationForMother({
-    //       visitId: currentVisit?.id,
-    //     })
-    //   );
-  }, [
-    appDispatch,
-    //currentVisit,
-    //currentVisit?.id,
-    isWalkthroughSession,
-    //mother?.id,
-    //previousCurrentVisit,
-  ]);
+  }, [appDispatch, isWalkthroughSession]);
 
   useLayoutEffect(() => {
     history.push(location.pathname, {
@@ -134,6 +113,7 @@ export const ProgressTab = () => {
           }
           headerText={mother?.user?.firstName}
           isPrint={isPrint}
+          isFromProgressTab
         />
       </div>
       <div className="flex h-full flex-col gap-4 px-4">

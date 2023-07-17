@@ -86,7 +86,7 @@ export const CheckboxGroup = ({
           onChange={(e) => checkboxChange(e)}
         />
       )}
-      <div className="ml-2 flex w-full flex-col items-start gap-2 font-bold">
+      <div className="ml-2 flex w-full flex-col items-start font-bold">
         <div className="flex items-center gap-2">
           {icon && (
             <div

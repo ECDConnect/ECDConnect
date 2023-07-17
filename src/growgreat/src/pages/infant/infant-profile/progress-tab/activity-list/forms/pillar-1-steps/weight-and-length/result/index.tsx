@@ -460,16 +460,22 @@ export const WeightAndLengthResultStep = ({
           differenceFunction = differenceInYears;
           break;
       }
-
       const newResult = [...result];
 
       const formattedResult = data.map((item) => {
-        const date = differenceFunction(
+        let date = differenceFunction(
           new Date(item.visit?.plannedVisitDate),
           new Date(age)
         );
+
         const scale = dateAxios;
         const index = scale.indexOf(date);
+
+        if (index === -1) {
+          newResult[0] = Number(item?.questionAnswer);
+
+          return newResult;
+        }
 
         if (index !== -1) {
           newResult[index] = Number(item?.questionAnswer);
@@ -524,12 +530,13 @@ export const WeightAndLengthResultStep = ({
 
     const {
       years: ageYears,
-      months: ageMonths,
+      months: ageMonthsPart,
       days: ageDays,
     } = getAgeInYearsMonthsAndDays(dateOfBirth);
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
+    const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
-    if (!ageYears && !ageMonths && ageDays <= 14) {
+    if (!ageYears && !ageMonthsPart && ageDays <= 14) {
       const weightChartData = getChartData(ageDays, weightPerDay);
       const lengthChartDate = getChartData(ageDays, lengthPerDay);
 
@@ -591,9 +598,9 @@ export const WeightAndLengthResultStep = ({
       return setWeightAxios(weightChartData);
     }
 
-    if (!ageYears && ageMonths <= 12) {
+    if (ageYears < 2) {
       const weightChartData = getChartData(ageMonths, weightPerMonth);
-      const lengthChartDate = getChartData(ageMonths, lengthPerMonth);
+      const lengthChartData = getChartData(ageMonths, lengthPerMonth);
 
       setWeightResult(
         fillInMissingNumbers(
@@ -611,14 +618,14 @@ export const WeightAndLengthResultStep = ({
           getWeightOrLengthResult(
             dateOfBirth,
             lengthHistory,
-            lengthChartDate.date,
+            lengthChartData.date,
             'm',
             lengthOrHeightResult
           )
         )
       );
       setSuffix('m');
-      setLengthAxios(lengthChartDate);
+      setLengthAxios(lengthChartData);
       return setWeightAxios(weightChartData);
     }
 

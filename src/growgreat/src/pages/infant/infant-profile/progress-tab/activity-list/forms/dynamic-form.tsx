@@ -6,7 +6,6 @@ import {
   useState,
 } from 'react';
 import { Button } from '@ecdlink/ui';
-import { Header } from '@/pages/infant/infant-profile/components';
 import { InfantDto, usePrevious } from '@ecdlink/core';
 import { useAppDispatch } from '@/store';
 import {
@@ -22,16 +21,14 @@ import { useRequestResponseDialog } from '@/hooks/useRequestResponseDialog';
 import { referralThunkActions } from '@/store/referral';
 import { ReferralActions } from '@/store/referral/referral.actions';
 import { GrowthMonitoring } from './pillar-1-steps';
-import { useParams } from 'react-router';
+import { useLocation, useParams } from 'react-router';
 import { InfantProfileParams } from '../../../infant-profile.types';
 import { useDialog } from '@ecdlink/core';
 import { ActionModal, DialogPosition } from '@ecdlink/ui';
 import ROUTES from '@/routes/routes';
-import { CLIENT_TABS } from '../../../../../client/client-dashboard/class-dashboard';
 import { useHistory } from 'react-router';
-import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
-import P4 from '@/assets/pillar/p4.svg';
-import { activitiesColours } from '../activities-list';
+import { DocumentActions } from '@/store/document/document.actions';
+import { currentActivityKey } from '..';
 
 export interface Question {
   question: string;
@@ -49,6 +46,11 @@ export interface SectionQuestions {
   questions: Question[];
 }
 
+export interface ViewEditState {
+  editView?: true;
+}
+
+type Risk = 0 | 1 | 2;
 export interface DynamicFormProps {
   name?: string;
   infant?: InfantDto;
@@ -85,7 +87,6 @@ export const DynamicForm = ({
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
   const [growthMonitoring, setGrowthMonitoring] = useState<GrowthMonitoring>();
-  type Risk = 0 | 1 | 2;
   const [risk, setRisk] = useState<Risk>(0);
 
   const { isLoading } = useThunkFetchCall(
@@ -95,6 +96,10 @@ export const DynamicForm = ({
   const { isLoading: isLoadingReferral } = useThunkFetchCall(
     'referrals',
     ReferralActions.UPDATE_VISIT_DATA_STATUS
+  );
+  const { isLoading: isLoadingCreateDocument } = useThunkFetchCall(
+    'documents',
+    DocumentActions.CREATE_DOCUMENT
   );
 
   const wasLoading = usePrevious(isLoading);
@@ -112,11 +117,13 @@ export const DynamicForm = ({
   const dialog = useDialog();
   const history = useHistory();
 
+  const location = useLocation<ViewEditState>();
+  const canEdit = location.state?.editView;
+
   const goHome = useCallback(() => {
-    history.push(ROUTES.CLIENTS.ROOT, {
-      activeTabIndex: CLIENT_TABS.CLIENT,
-    });
-  }, [history]);
+    window.sessionStorage.removeItem(currentActivityKey);
+    history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infant?.user?.id}`);
+  }, [history, infant?.user?.id]);
 
   const handleSetQuestions = useCallback(
     (value: SectionQuestions[]) => {
@@ -192,48 +199,77 @@ export const DynamicForm = ({
   }, [onNextStep]);
 
   const onSubmit = useCallback(async () => {
-    const sections = sectionQuestions?.map((item) => ({
-      ...item,
-      questions: item.questions.map((question) => ({
-        ...question,
-        answer: String(question.answer),
-      })),
-    })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
+    if (!canEdit) {
+      return dialog({
+        position: DialogPosition.Middle,
+        color: 'bg-white',
+        render(onClose) {
+          return (
+            <ActionModal
+              className="z-50"
+              icon="ExclamationCircleIcon"
+              iconColor="alertMain"
+              iconClassName="h-10 w-10"
+              title="You cannot edit this form"
+              detailText="You have completed this visit and can only view this information"
+              actionButtons={[
+                {
+                  text: 'Close',
+                  colour: 'primary',
+                  type: 'filled',
+                  textColour: 'white',
+                  leadingIcon: 'XIcon',
+                  onClick: onClose,
+                },
+              ]}
+            />
+          );
+        },
+      });
+    } else {
+      const sections = sectionQuestions?.map((item) => ({
+        ...item,
+        questions: item.questions.map((question) => ({
+          ...question,
+          answer: String(question.answer),
+        })),
+      })) as InputMaybe<Array<InputMaybe<CmsVisitSectionInput>>>;
 
-    const input: CmsVisitDataInputModelInput = {
-      visitId,
-      infantId: infant?.user?.id,
-      visitData: {
-        visitName: name,
-        sections,
-      },
-    };
-
-    const referrals = referralsInput?.map((item) => ({
-      ...item,
-      isCompleted: String(item.isCompleted),
-    })) as VisitDataStatusFilterInput[];
-
-    appDispatch(
-      visitActions.addCompletedVisitsByVisitId({
+      const input: CmsVisitDataInputModelInput = {
         visitId,
-        visits: [name || ''],
-      })
-    );
+        infantId: infant?.user?.id,
+        visitData: {
+          visitName: name,
+          sections,
+        },
+      };
 
-    appDispatch(visitActions.addVisitFormData(input));
-    await appDispatch(visitThunkActions.addVisitFormData(input));
+      const referrals = referralsInput?.map((item) => ({
+        ...item,
+        isCompleted: String(item.isCompleted),
+      })) as VisitDataStatusFilterInput[];
 
-    await appDispatch(
-      visitThunkActions.getCompletedVisitsForVisitId({
-        visitId,
-      })
-    );
-
-    if (!!referrals?.length) {
       appDispatch(
-        referralThunkActions.updateVisitDataStatus({ input: referrals })
+        visitActions.addCompletedVisitsByVisitId({
+          visitId,
+          visits: [name || ''],
+        })
       );
+
+      appDispatch(visitActions.addVisitFormData(input));
+      await appDispatch(visitThunkActions.addVisitFormData(input));
+
+      await appDispatch(
+        visitThunkActions.getCompletedVisitsForVisitId({
+          visitId,
+        })
+      );
+
+      if (!!referrals?.length) {
+        appDispatch(
+          referralThunkActions.updateVisitDataStatus({ input: referrals })
+        );
+      }
     }
   }, [
     visitId,
@@ -242,6 +278,8 @@ export const DynamicForm = ({
     name,
     referralsInput,
     sectionQuestions,
+    canEdit,
+    dialog,
   ]);
 
   // TODO: sync visit form
@@ -321,10 +359,10 @@ export const DynamicForm = ({
 
     return {
       action: onSubmit,
-      text: 'Save',
-      icon: 'SaveIcon',
+      text: risk === 2 ? 'Close' : 'Save',
+      icon: risk === 2 ? 'XIcon' : 'SaveIcon',
     };
-  }, [currentStep, handleOnNext, onSubmit, steps?.length, name]);
+  }, [risk, currentStep, handleOnNext, onSubmit, steps?.length, name]);
 
   useEffect(() => {
     if (
@@ -361,47 +399,7 @@ export const DynamicForm = ({
         });
         goHome?.();
       } else if (risk === 2) {
-        dialog({
-          blocking: false,
-          position: DialogPosition.Full,
-          color: 'bg-white',
-          render: (onClose) => {
-            return (
-              <>
-                <Header
-                  customIcon={P4}
-                  title={`${name}`}
-                  subTitle={`Sugar Salt Solution`}
-                  iconHexBackgroundColor={
-                    activitiesColours.pillar4.primaryColor
-                  }
-                  hexBackgroundColor={activitiesColours.pillar4.secondaryColor}
-                />
-                <ActionModal
-                  customIcon={
-                    <div className="rounded-full">
-                      <PollyShock className="h-24 w-24" />
-                    </div>
-                  }
-                  className="z-50"
-                  title={`Take ${infantName} to the hospital immediately or call an ambulance!`}
-                  detailText={`Help ${caregiverName} to make the Sugar Salt Solution on page 30 of the Road to Health Book and give it to ${infantName} on the way to the hospital.`}
-                  actionButtons={[
-                    {
-                      colour: 'primary',
-                      text: 'Close',
-                      textColour: 'white',
-                      type: 'filled',
-                      leadingIcon: 'XIcon',
-                      onClick: onClose,
-                    },
-                  ]}
-                />
-              </>
-            );
-          },
-        });
-        goHome?.();
+        goHome();
       } else {
         onClose?.();
       }
@@ -419,6 +417,8 @@ export const DynamicForm = ({
     goHome,
     caregiverName,
     name,
+    history,
+    infant?.user?.id,
   ]);
 
   return (
@@ -434,8 +434,8 @@ export const DynamicForm = ({
             className="mb-4 w-full"
             text={renderButton.text}
             onClick={renderButton.action}
-            disabled={!isEnableButton || isLoading}
-            isLoading={isLoading}
+            disabled={!isEnableButton || isLoading || isLoadingCreateDocument}
+            isLoading={isLoading || isLoadingCreateDocument}
           />
         </div>
       )}

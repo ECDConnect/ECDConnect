@@ -3,7 +3,8 @@ using System;
 namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
 {
     public class MappedTrainee : MappedBaseEntity
-    {    
+    {
+        public string WhatsAppNumber { get; set; }
         public string SiteArea { get; set; }
         public bool? IsFranchisee { get; set; } = false;
         public bool? HasStarterLicence { get; set; } = false;
@@ -25,6 +26,7 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public DateTime? SmartSpaceLicenceDate { get; set; }
         public DateTime? ConsolidationMeetingDate { get; set; }
         public DateTime? FranchiseeAgreementAcceptedDate { get; set; }
+        public DateTime? StartDate { get; set; }
         public string HomeAddressLine1 { get; set; }
         public string HomeAddressLine2 { get; set; }
         public string HomeAddressLine3 { get; set; }
@@ -32,7 +34,9 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
         public string HighestEducationLevel { get; set; }
         public string StipendType { get; set; }
         public string ProgrammeType { get; set; }
-        public string ConsolidationMeetingStatus { get; set; }        
+        public string ConsolidationMeetingStatus { get; set; }
+        public string IsAdminFileAndPlaykitValidated { get; set; }
+        public string PreferredCommunicationLanguage { get; set; }
         public MappedFranchisor Franchisor { get; set; }
         public MappedCoach Coach { get; set; }        
 

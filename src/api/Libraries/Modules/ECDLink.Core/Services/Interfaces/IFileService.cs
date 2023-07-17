@@ -12,5 +12,8 @@ namespace ECDLink.Core.Services.Interfaces
         Task<byte[]> GetFile(string fileName, FileTypeEnum fileType);
 
         Task<bool> DeleteFile(string fileName, FileTypeEnum fileType);
+        Task<string> GetFileAsBase64Async(string url);
+        Task<string> GetFileExtensionFromUrl(string url);
+        Task<string> GetMimeType(string extension);
     }
 }
