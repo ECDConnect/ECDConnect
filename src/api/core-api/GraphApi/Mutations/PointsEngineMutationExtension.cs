@@ -1,5 +1,4 @@
 ﻿using ECDLink.Core.Services.Interfaces;
-using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
