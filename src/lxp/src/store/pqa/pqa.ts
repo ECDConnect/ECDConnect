@@ -256,6 +256,20 @@ const pqaSlice = createSlice({
           action,
           stateType: 'reAccreditationFollowUpVisitPreviousFormData',
         });
+      } else if (visitType === 'pqa') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'pqaPreviousFormData',
+        });
+      } else if (visitType === 're-accreditation') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'reAccreditationPreviousFormData',
+        });
       } else
         addPreviousFormData({
           state,

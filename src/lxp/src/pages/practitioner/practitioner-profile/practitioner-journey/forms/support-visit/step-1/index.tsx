@@ -26,6 +26,11 @@ export const SupportVisitStep1 = ({
   const note = data?.find(
     (item) => item.question === supportVisitSharedQuestion
   );
+  const noteDate = new Date(note?.insertedDate).toLocaleDateString(
+    'en-ZA',
+    dateLongDayOptions
+  );
+
   const visitType = data?.find((item) =>
     item.question?.includes('support phone call')
   )?.questionAnswer;
@@ -44,19 +49,11 @@ export const SupportVisitStep1 = ({
       />
       {note && (
         <>
-          <Typography
-            type="h4"
-            text={new Date(note?.insertedDate).toLocaleDateString(
-              'en-ZA',
-              dateLongDayOptions
-            )}
-            color="textMid"
-          />
+          <Typography type="h4" text={noteDate} color="textMid" />
           <Divider dividerType="dashed" className="my-4" />
           <Note
             title="Next steps from discussion"
-            // TODO: add date
-            subTitle="---"
+            subTitle={noteDate}
             body={note?.questionAnswer!}
           />
         </>
