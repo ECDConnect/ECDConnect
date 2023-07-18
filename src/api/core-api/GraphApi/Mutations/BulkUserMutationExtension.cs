@@ -20,7 +20,6 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations
@@ -33,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<UserImportModel> ImportHealthCareWorkersAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
+          [Service] ILogger<ImportUserMutationExtension> _logger,
           UserManager<ApplicationUser> userManager,
           string file)
         {
@@ -240,7 +240,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch (Exception ex)
                 {
-
+                    _logger.LogError($"Exception during bulk insert of {nameof(HealthCareWorker)}", ex);
+                    throw;
                 }
             }
 
@@ -342,7 +343,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (currentRow != null)
                 {
                     var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                    var id = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                    var id = UserHelper.CoerceValidSAID(
+                        ExcelHelper.GetCellValue(currentRow.GetCell(1)));
                     var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
                     var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                     var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
