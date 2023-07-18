@@ -1,0 +1,359 @@
+import { ClassroomDto, ReasonForLeavingDto } from '@ecdlink/core';
+import { yupResolver } from '@hookform/resolvers/yup';
+import {
+  BannerWrapper,
+  Button,
+  Dialog,
+  Divider,
+  FormInput,
+  Typography,
+  renderIcon,
+  classNames,
+  Dropdown,
+  Alert,
+  DialogPosition,
+} from '@ecdlink/ui';
+import { useAppDispatch } from '@store/config';
+import { authSelectors } from '@store/auth';
+import { useEffect, useState } from 'react';
+import { useForm, useFormState, useWatch } from 'react-hook-form';
+import { useSelector } from 'react-redux';
+import {
+  RemovePractionerModel,
+  removePractionerModelSchema,
+  initialRemovePractionerValues,
+} from '@/schemas/practitioner/remove-practioner';
+import * as styles from './remove-practioner.styles';
+import { RemovePractionerReasonsProps as RemovePractionerProps } from './remove-practioner.types';
+import {
+  practitionerSelectors,
+  practitionerThunkActions,
+} from '@/store/practitioner';
+import { staticDataSelectors } from '@store/static-data';
+import { useOnlineStatus } from '@hooks/useOnlineStatus';
+import { useHistory, useLocation } from 'react-router-dom';
+import { PractitionerProfileRouteState } from '../../practitioner-profile-info.types';
+import { PractitionerService } from '@/services/PractitionerService';
+import ROUTES from '@routes/routes';
+import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
+
+export const RemovePractioner: React.FC<RemovePractionerProps> = ({
+  onSuccess,
+}) => {
+  const appDispatch = useAppDispatch();
+  const history = useHistory();
+  const user = useSelector(authSelectors.getAuthUser);
+  const { isOnline } = useOnlineStatus();
+  const location = useLocation<PractitionerProfileRouteState>();
+  const reasonsForLeaving = useSelector(
+    staticDataSelectors.getReasonsForLeavingPractitioner
+  );
+  const practitionerId = location.state.practitionerId;
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+  const practitioner = practitioners?.find(
+    (practitioner) => practitioner?.userId === practitionerId
+  );
+  const coachClassrooms = useSelector(
+    classroomsForCoachSelectors.getClassroomForCoach
+  );
+  const practitionerClassroom = coachClassrooms?.find(
+    (item) => item.userId === practitionerId
+  );
+
+  //Get list of practitioners for classroom
+  const practitionersForClass =
+    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+      ? practitioners?.filter((x) => x.principalHierarchy === practitionerId) // If they are the principal, get any practiutioners where their principal is this practitioner
+      : practitioners?.filter(
+          (x) =>
+            (x.id === practitioner?.principalHierarchy ||
+              x.principalHierarchy === practitioner?.principalHierarchy) &&
+            x.id !== practitionerId
+        ); // Get other practitioners with the same principal, their principal and not themselves
+
+  const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
+
+  const [reasonDetailsVisible, setReasonDetailsVisible] =
+    useState<boolean>(false);
+  const {
+    getValues: getRemovePractionerFormValues,
+    setValue: setRemovePractionerFormValues,
+    trigger: triggerRemovePractionerForm,
+    register: removePractionerFormRegister,
+    control: removePractionerFormControl,
+  } = useForm<RemovePractionerModel>({
+    resolver: yupResolver(removePractionerModelSchema),
+    mode: 'onChange',
+    defaultValues: initialRemovePractionerValues,
+  });
+
+  const { isValid } = useFormState({
+    control: removePractionerFormControl,
+  });
+
+  const { reassignedClassrooms } = useWatch({
+    control: removePractionerFormControl,
+  });
+
+  const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
+    useState<boolean>(false);
+
+  const [practitionersList, setPractitionersList] = useState<
+    { label: string; value: any }[]
+  >([]);
+
+  useEffect(() => {
+    //Need to work out if practitioner is principal or who their principal is?
+    const _list = practitionersForClass
+      ?.map((p) => {
+        if (p?.user?.firstName && p?.user?.surname) {
+          return {
+            label: `${p?.user?.firstName} ${p?.user?.surname}`,
+            value: p.userId,
+          };
+        }
+        return undefined;
+      })
+      .filter(Boolean) as { label: string; value: any }[];
+
+    setPractitionersList(_list);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [practitionersForClass]);
+
+  const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
+    useState<any>();
+
+  const classroomsGroupsForPractitioner = async () => {
+    const classroomDetails = await new PractitionerService(
+      user?.auth_token!
+    ).getClassroomGroupClassroomsForPractitioner(practitioner?.userId!);
+    setPractitionerClassroomGroups(classroomDetails);
+    return classroomDetails;
+  };
+
+  useEffect(() => {
+    classroomsGroupsForPractitioner();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  const handleFormSubmit = async (formValues: RemovePractionerModel) => {
+    if (isValid) {
+      const reassignments = Object.keys(formValues.reassignedClassrooms).map(
+        (x) => {
+          return {
+            classroomGroupId: x,
+            practitionerId: formValues.reassignedClassrooms[x],
+          };
+        }
+      );
+
+      await new PractitionerService(user?.auth_token || '').RemovePractitioner(
+        practitioner?.userId!,
+        formValues.removeReasonId,
+        formValues.reasonDetail,
+        formValues.newPrincipalId,
+        reassignments
+      );
+      await appDispatch(
+        practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
+    }
+  };
+
+  return (
+    <>
+      <BannerWrapper
+        size={'small'}
+        backgroundColour={'uiBg'}
+        renderBorder={true}
+        title={`Remove ${practitioner?.user?.firstName}`}
+        color={'primary'}
+        displayOffline={!isOnline}
+      >
+        <div className="flex w-full justify-center">
+          <Alert
+            className="mt-10 w-11/12 rounded-xl"
+            type={'error'}
+            title={`${practitioner?.user?.firstName} will be removed from the programme immediately.`}
+            list={[
+              `If you remove ${practitioner?.user?.firstName} now, they will no longer be able to see child information or perform any actions in the classroom section.`,
+            ]}
+          />
+        </div>
+        <div className="py-4' px-4">
+          <Typography
+            type={'h1'}
+            text={`Why is ${practitioner?.user?.firstName} leaving SmartStart?`}
+            color={'primary'}
+            className={'pt-1'}
+          />
+
+          <label className={classNames(styles.label, 'mt-4')}>
+            {'Reason for leaving'}
+          </label>
+          <Dropdown<string>
+            placeholder={'Choose reason'}
+            fullWidth
+            fillType="clear"
+            list={
+              (reasonsForLeaving &&
+                reasonsForLeaving.map((x: ReasonForLeavingDto) => {
+                  return { label: x.description, value: x.id || '' };
+                })) ||
+              []
+            }
+            selectedValue={getRemovePractionerFormValues().removeReasonId}
+            onChange={(item) => {
+              setRemovePractionerFormValues('removeReasonId', item);
+              triggerRemovePractionerForm();
+              setReasonDetailsVisible(item === otherReasonId);
+            }}
+          />
+          {reasonDetailsVisible && (
+            <FormInput<RemovePractionerModel>
+              label={'Please add details'}
+              className={'mt-3'}
+              textInputType="textarea"
+              register={removePractionerFormRegister}
+              nameProp={'reasonDetail'}
+              hint={'Optional'}
+              placeholder={'E.g. Found the daily routine too difficult'}
+              onChange={() => triggerRemovePractionerForm()}
+            />
+          )}
+          {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
+            practitionerClassroom &&
+            practitionersList &&
+            practitionersList.length && (
+              <div>
+                <Dropdown
+                  placeholder={'Select practitioner'}
+                  list={practitionersList || []}
+                  fillType="clear"
+                  label={`Which practitioner will take over as ${
+                    practitioner?.isFundaAppAdmin ? 'FAA' : 'principal'
+                  } at ${practitionerClassroom.name}`}
+                  fullWidth
+                  className={'mt-3 w-11/12'}
+                  onChange={(item: any) => {
+                    setRemovePractionerFormValues('newPrincipalId', item);
+                  }}
+                />
+                <div className="flex w-full justify-center">
+                  <Alert
+                    className="mt-10 w-11/12 rounded-xl"
+                    type={'info'}
+                    title={
+                      'If the programme is closing down, please remove all other SmartStarters before removing the principal.'
+                    }
+                  />
+                </div>
+              </div>
+            )}
+          {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
+            practitionerClassroomGroups &&
+            practitionersList &&
+            practitionersList.length && (
+              <div>
+                <Divider dividerType="dashed" className="my-4" />
+                <Typography
+                  type={'h1'}
+                  text={`Reassign ${practitioner?.user?.firstName} classes`}
+                  color={'primary'}
+                  className={'pt-1'}
+                />
+                <label className={classNames(styles.label, 'mt-4')}>
+                  {`${practitioner?.user?.firstName} is still assigned to ${
+                    practitionerClassroomGroups.length
+                  } ${
+                    practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
+                  }`}
+                </label>
+                <ul>
+                  {practitionerClassroomGroups.map(function (
+                    classroomGroup: any
+                  ) {
+                    return (
+                      <li id={classroomGroup.id}>
+                        <Dropdown
+                          placeholder={'Select practitioner'}
+                          list={practitionersList || []}
+                          fillType="clear"
+                          label={`Which practitioner will teach ${classroomGroup.name}?`}
+                          fullWidth
+                          className={'mt-3 w-11/12'}
+                          onChange={(item: any) => {
+                            setRemovePractionerFormValues(
+                              'reassignedClassrooms',
+                              {
+                                ...reassignedClassrooms,
+                                [classroomGroup.id]: item,
+                              }
+                            );
+                          }}
+                        />
+                      </li>
+                    );
+                  })}
+                </ul>
+              </div>
+            )}
+          <div className={'py-4'}>
+            <Divider></Divider>
+          </div>
+          <Button
+            onClick={() => setRemovePractionerPromptVisible(true)}
+            className="w-full"
+            size="small"
+            color="errorMain"
+            type="filled"
+            disabled={!isValid}
+          >
+            {renderIcon('TrashIcon', classNames('h-5 w-5 text-white'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text={'Remove SmartStarter'}
+              color="white"
+            />
+          </Button>
+          <Button
+            onClick={() => history.goBack()}
+            className="mt-4 w-full"
+            size="small"
+            color="primary"
+            type="outlined"
+          >
+            {renderIcon('XIcon', classNames('h-5 w-5 text-primary'))}
+            <Typography
+              type="h6"
+              className="ml-2"
+              text="Cancel"
+              color="primary"
+            />
+          </Button>
+        </div>
+      </BannerWrapper>
+      <Dialog
+        className={'mb-16 px-4'}
+        stretch={true}
+        visible={removePractionerPromptVisible}
+        position={DialogPosition.Bottom}
+      >
+        <RemovePractitionerPrompt
+          practitioner={practitioner}
+          onProceed={() => {
+            handleFormSubmit(getRemovePractionerFormValues());
+            setRemovePractionerPromptVisible(false);
+            history.push(ROUTES.COACH.PRACTITIONERS);
+            onSuccess();
+          }}
+          onClose={() => setRemovePractionerPromptVisible(false)}
+        />
+      </Dialog>
+    </>
+  );
+};
+
+export default RemovePractioner;

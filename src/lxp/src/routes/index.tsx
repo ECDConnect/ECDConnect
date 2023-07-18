@@ -56,6 +56,7 @@ import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-l
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
+import { RemovePractioner } from '@/pages/coach/practitioner-profile-info/components/remove-practinioner/remove-practioner';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
 import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
 import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
@@ -361,6 +362,10 @@ const AuthRoutes: React.FC = () => {
         component={CoachPractitionerClassroom}
       />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
+      <Route
+        path={ROUTES.COACH.PRACTIONER_REMOVE}
+        component={RemovePractioner}
+      />
       <Route
         exact
         path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}

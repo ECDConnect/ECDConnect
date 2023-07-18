@@ -140,6 +140,9 @@ export const Dashboard: React.FC = () => {
     ).unwrap();
     await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getReasonsForPractitionerLeaving({})
+    ).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();

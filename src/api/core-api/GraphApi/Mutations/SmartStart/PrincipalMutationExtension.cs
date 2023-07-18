@@ -6,7 +6,6 @@ using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
-using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
@@ -154,16 +153,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public PrincipalInvitationStatus UpdatePrincipalInvitation([Service] IHttpContextAccessor contextAccessor,
-    IGenericRepositoryFactory repoFactory,
-    [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
-    [Service] IReassignmentService reassignmentService,
-    string practitionerId, string principalId, bool accepted)
+            IGenericRepositoryFactory repoFactory,
+            [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
+            [Service] IReassignmentService reassignmentService,
+        string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner principal = practitionerRepo.GetByUserId(principalId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
+
             //reassign all practitioners to the new principal
             if (principal != null && practitioner != null)
             {
@@ -194,7 +194,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
                     else
                     {
-                        //reset the classroomgroups away from this practitioner and back to teh principal
+                        //reset the classroomgroups away from this practitioner and back to the principal
                         if (principal.UserId != null && practitioner.UserId != null)
                         {
                             //Reassign all classes and programmes back to principal
