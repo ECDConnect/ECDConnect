@@ -17,18 +17,19 @@ namespace ECDLink.Core.Services.Interfaces
         PointsUserSummary InsertIndividualSummaryUserPoints(PointsUserSummary input);
         PointsUserSummary UpdateIndividualSummaryUserPoints(PointsUserSummary input);
 
+        bool UpdateUserSummaryPoints(string userId, DateTime today);
+
         // GG
         bool CalculatePregnantMomClientRegistration(string userId, DateTime today);
         bool CalculateInfantClientRegistration(string userId, DateTime today);
         bool CalculatePregnantMomVisits(string userId, DateTime today);
         bool CalculateInfantVisits(string userId, DateTime today);
-        bool UpdateUserSummaryPoints(string userId, DateTime today);
 
         // GG TODO: Team points - development pending
 
         // SS
-        bool AddChildrenRegistration(string userId, DateTime today);
-        bool RemoveChildrenRegistration(string userId, DateTime today);
+        bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
+        bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
         bool CalculateAttendanceSubmitted(string userId, DateTime today);
         bool CalculateIncomeStatements(string userId, DateTime today);
         bool CalculateIncomeStatementsSubmitted(string userId, DateTime today);

@@ -346,7 +346,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             DoAudit(currentUserId, repoFactory, null, id);
 
             // Manage points for user
-            pointsEngineService.RemoveChildrenRegistration(currentUserId, DateTime.UtcNow);
+            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
             return updateResult.Succeeded;
         }
 

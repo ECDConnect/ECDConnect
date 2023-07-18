@@ -1141,7 +1141,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region SS_Children
 
-        public bool AddChildrenRegistration(string userId, DateTime today)
+        public bool CalculateChildrenRegistrationAdd(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
@@ -1185,7 +1185,7 @@ namespace EcdLink.Api.CoreApi.Services
             return true;
         }
 
-        public bool RemoveChildrenRegistration(string userId, DateTime today)
+        public bool CalculateChildrenRegistrationRemoval(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
