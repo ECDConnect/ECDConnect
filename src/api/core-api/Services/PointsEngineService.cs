@@ -1,4 +1,5 @@
-﻿using ECDLink.Core.Extensions;
+﻿using DotLiquid.Tags;
+using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
@@ -11,10 +12,13 @@ using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
+using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Services
 {
@@ -158,7 +162,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activity2.Points,
                                 UserId = userId,
-                                PointsLibraryId = activity2.Id
+                                PointsLibraryId = activity2.Id,
+                                Comment = "Total: " + mothers.Count
                             }
                         );
                     }
@@ -193,7 +198,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Year = today.Year,
                             Points = activity3.Points,
                             UserId = userId,
-                            PointsLibraryId = activity3.Id
+                            PointsLibraryId = activity3.Id,
+                            Comment = "Total: " + lessThan20Weeks
                         }
                         );
                     }
@@ -215,7 +221,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Year = today.Year,
                             Points = activity4.Points,
                             UserId = userId,
-                            PointsLibraryId = activity4.Id
+                            PointsLibraryId = activity4.Id,
+                            Comment = "Total: " + lessThan20Weeks
                         }
                         );
                     }
@@ -255,7 +262,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Year = today.Year,
                             Points = activity1.Points,
                             UserId = userId,
-                            PointsLibraryId = activity1.Id
+                            PointsLibraryId = activity1.Id,
+                            Comment = "Total: " + childrenCount
                         }
                     );
                 }
@@ -310,7 +318,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     Year = today.Year,
                                     Points = activity1.Points,
                                     UserId = userId,
-                                    PointsLibraryId = activity1.Id
+                                    PointsLibraryId = activity1.Id,
+                                    Comment = "Total: " + monthVisits
                                 }
                             );
                         }
@@ -344,7 +353,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activity2.Points,
                                 UserId = userId,
-                                PointsLibraryId = activity2.Id
+                                PointsLibraryId = activity2.Id,
+                                Comment = "Total: " + maternal_referrals
                             }
                         );
                     }
@@ -380,7 +390,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     Year = today.Year,
                                     Points = activity3.Points,
                                     UserId = userId,
-                                    PointsLibraryId = activity3.Id
+                                    PointsLibraryId = activity3.Id,
+                                    Comment = "Total: " + visit1_count
                                 }
                             );
                         }
@@ -414,7 +425,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activity4.Points,
                                 UserId = userId,
-                                PointsLibraryId = activity4.Id
+                                PointsLibraryId = activity4.Id,
+                                Comment = "Total: " + muac_referrals
                             }
                         );
                     }
@@ -448,7 +460,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     Year = today.Year,
                                     Points = activity5.Points,
                                     UserId = userId,
-                                    PointsLibraryId = activity5.Id
+                                    PointsLibraryId = activity5.Id,
+                                    Comment = "Total: " + abuseVisits
                                 }
                             );
                         }
@@ -485,6 +498,8 @@ namespace EcdLink.Api.CoreApi.Services
                 PointsLibrary activity13 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_clients_ac13).FirstOrDefault();
                 PointsLibrary activity14 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_clients_ac14).FirstOrDefault();
 
+                var comment = "";
+
                 // 1
                 // Child support grant - all eligible children accessing the CSG
                 // Monthly total (capped at 100) Calculated at the end of the month.
@@ -501,6 +516,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac1_count > 0)
                     {
+                        comment = "Total: " + ac1_count;
                         int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
                         if (activity1_records == 0)
                         {
@@ -515,7 +531,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     Year = today.Year,
                                     Points = activity1.Points,
                                     UserId = userId,
-                                    PointsLibraryId = activity1.Id
+                                    PointsLibraryId = activity1.Id,
+                                    Comment = comment
                                 }
                             );
                         }
@@ -540,6 +557,7 @@ namespace EcdLink.Api.CoreApi.Services
                     {
                         if (pillar2Data.Count == 0)
                         {
+                            comment = "Total: " + pillar2Data.Count;
                             InsertIndividualUserPoints(
                                 new PointsUser
                                 {
@@ -551,7 +569,8 @@ namespace EcdLink.Api.CoreApi.Services
                                     Year = today.Year,
                                     Points = activity2.Points,
                                     UserId = userId,
-                                    PointsLibraryId = activity2.Id
+                                    PointsLibraryId = activity2.Id,
+                                    Comment = comment
                                 }
                             );
                         } else
@@ -570,6 +589,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                             if (children.Count > 0 )
                             {
+                                comment = "Total: " + children.Count;
                                 InsertIndividualUserPoints(
                                  new PointsUser
                                  {
@@ -581,7 +601,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity2.Points,
                                      UserId = userId,
-                                     PointsLibraryId = activity2.Id
+                                     PointsLibraryId = activity2.Id,
+                                     Comment = comment
                                  }
                              );
                             }
@@ -605,7 +626,9 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity3_points = ac3_count * activity3.Points;
                     PointsUser activity3_record = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).FirstOrDefault();
-                    if ( activity3_record == null)
+                    comment = "Total: " + ac3_count;
+
+                    if (activity3_record == null)
                     {
                         InsertIndividualUserPoints(
                                  new PointsUser
@@ -618,7 +641,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity3_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity3.Id
+                                     PointsLibraryId = activity3.Id,
+                                     Comment = comment
                                  }
                              );
                     } else
@@ -626,6 +650,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity3_record.Points = activity3_points;
                         activity3_record.UpdatedDate = DateTime.Now;
                         activity3_record.UpdatedBy = _uId;
+                        activity3_record.Comment = comment;
                         UpdateIndividualUserPoints(activity3_record);
                     }
                 }
@@ -646,6 +671,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity4_points = ac4_count * activity4.Points;
                     PointsUser activity4_record = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac4_count;
                     if (activity4_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -659,7 +685,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity4_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity4.Id
+                                     PointsLibraryId = activity4.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -668,6 +695,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity4_record.Points = activity4_points;
                         activity4_record.UpdatedDate = DateTime.Now;
                         activity4_record.UpdatedBy = _uId;
+                        activity4_record.Comment = comment;
                         UpdateIndividualUserPoints(activity4_record);
                     }
                 }
@@ -688,6 +716,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity5_points = ac5_count * activity5.Points;
                     PointsUser activity5_record = GetIndividualUserPoints(activity5.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac5_count;
                     if (activity5_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -701,7 +730,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity5_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity5.Id
+                                     PointsLibraryId = activity5.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -710,6 +740,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity5_record.Points = activity5_points;
                         activity5_record.UpdatedDate = DateTime.Now;
                         activity5_record.UpdatedBy = _uId;
+                        activity5_record.Comment = comment;
                         UpdateIndividualUserPoints(activity5_record);
                     }
                 }
@@ -728,6 +759,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity6_points = ac6_count * activity6.Points;
                     PointsUser activity6_record = GetIndividualUserPoints(activity6.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac6_count;
                     if (activity6_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -741,7 +773,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity6_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity6.Id
+                                     PointsLibraryId = activity6.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -750,6 +783,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity6_record.Points = activity6_points;
                         activity6_record.UpdatedDate = DateTime.Now;
                         activity6_record.UpdatedBy = _uId;
+                        activity6_record.Comment = comment;
                         UpdateIndividualUserPoints(activity6_record);
                     }
                 }
@@ -771,6 +805,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity7_points = ac7_count * activity7.Points;
                     PointsUser activity7_record = GetIndividualUserPoints(activity7.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac7_count;
                     if (activity7_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -784,7 +819,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity7_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity7.Id
+                                     PointsLibraryId = activity7.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -793,6 +829,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity7_record.Points = activity7_points;
                         activity7_record.UpdatedDate = DateTime.Now;
                         activity7_record.UpdatedBy = _uId;
+                        activity7_record.Comment = comment;
                         UpdateIndividualUserPoints(activity7_record);
                     }
                 }
@@ -814,6 +851,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity8_points = ac8_count * activity8.Points;
                     PointsUser activity8_record = GetIndividualUserPoints(activity8.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac8_count;
                     if (activity8_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -827,7 +865,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity8_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity8.Id
+                                     PointsLibraryId = activity8.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -836,6 +875,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity8_record.Points = activity8_points;
                         activity8_record.UpdatedDate = DateTime.Now;
                         activity8_record.UpdatedBy = _uId;
+                        activity8_record.Comment = comment;
                         UpdateIndividualUserPoints(activity8_record);
                     }
                 }
@@ -854,6 +894,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity9_points = ac9_count * activity9.Points;
                     PointsUser activity9_record = GetIndividualUserPoints(activity9.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac9_count;
                     if (activity9_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -867,7 +908,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity9_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity9.Id
+                                     PointsLibraryId = activity9.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -876,6 +918,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity9_record.Points = activity9_points;
                         activity9_record.UpdatedDate = DateTime.Now;
                         activity9_record.UpdatedBy = _uId;
+                        activity9_record.Comment = comment;
                         UpdateIndividualUserPoints(activity9_record);
                     }
                 }
@@ -895,28 +938,31 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity10_points = ac10_count * activity10.Points;
                     PointsUser activity10_record = GetIndividualUserPoints(activity10.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac10_count;
                     if (activity10_record == null)
                     {
                         InsertIndividualUserPoints(
-                                 new PointsUser
-                                 {
-                                     Id = Guid.NewGuid(),
-                                     IsActive = true,
-                                     InsertedDate = DateTime.Now,
-                                     UpdatedBy = _uId,
-                                     Month = today.Month,
-                                     Year = today.Year,
-                                     Points = activity10_points,
-                                     UserId = userId,
-                                     PointsLibraryId = activity10.Id
-                                 }
-                             );
+                        new PointsUser
+                        {
+                            Id = Guid.NewGuid(),
+                            IsActive = true,
+                            InsertedDate = DateTime.Now,
+                            UpdatedBy = _uId,
+                            Month = today.Month,
+                            Year = today.Year,
+                            Points = activity10_points,
+                            UserId = userId,
+                            PointsLibraryId = activity10.Id,
+                            Comment = comment
+                        }
+                       );
                     }
                     else
                     {
                         activity10_record.Points = activity10_points;
                         activity10_record.UpdatedDate = DateTime.Now;
                         activity10_record.UpdatedBy = _uId;
+                        activity10_record.Comment = comment;
                         UpdateIndividualUserPoints(activity10_record);
                     }
                 }
@@ -936,6 +982,7 @@ namespace EcdLink.Api.CoreApi.Services
                 {
                     var activity11_points = ac11_count * activity11.Points;
                     PointsUser activity11_record = GetIndividualUserPoints(activity11.Id, userId, today.Month, today.Year).FirstOrDefault();
+                    comment = "Total: " + ac11_count;
                     if (activity11_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -949,7 +996,8 @@ namespace EcdLink.Api.CoreApi.Services
                                      Year = today.Year,
                                      Points = activity11_points,
                                      UserId = userId,
-                                     PointsLibraryId = activity11.Id
+                                     PointsLibraryId = activity11.Id,
+                                     Comment = comment
                                  }
                              );
                     }
@@ -958,6 +1006,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity11_record.Points = activity11_points;
                         activity11_record.UpdatedDate = DateTime.Now;
                         activity11_record.UpdatedBy = _uId;
+                        activity11_record.Comment = comment;
                         UpdateIndividualUserPoints(activity11_record);
                     }
                 }
@@ -1172,7 +1221,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Year = today.Year,
                             Points = activityPoints,
                             UserId = userId,
-                            PointsLibraryId = activity.Id
+                            PointsLibraryId = activity.Id,
+                            Comment = "Total: " + childCount
                         }
                     );
                 }
@@ -1217,7 +1267,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activityPoints,
                                 UserId = userId,
-                                PointsLibraryId = activity.Id
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + childCount
                             }
                         );
                     }
@@ -1226,6 +1277,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Points = activityPoints;
                         activity_record.UpdatedDate = DateTime.Now;
                         activity_record.UpdatedBy = _uId;
+                        activity_record.Comment = "Total: " + childCount;
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
@@ -1276,7 +1328,8 @@ namespace EcdLink.Api.CoreApi.Services
                             Year = today.Year,
                             Points = (int)perc,
                             UserId = userId,
-                            PointsLibraryId = activity.Id
+                            PointsLibraryId = activity.Id,
+                            Comment = "Total: " + perc
                         }
                     );
                 }
@@ -1285,6 +1338,7 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.Points = (int)perc;
                     activity_record.UpdatedDate = DateTime.Now;
                     activity_record.UpdatedBy = _uId;
+                    activity_record.Comment = "Total: " + perc;
                     UpdateIndividualUserPoints(activity_record);
                 }
                 UpdateUserSummaryPoints(userId, today);
@@ -1340,7 +1394,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activity.Points,
                                 UserId = userId,
-                                PointsLibraryId = activity.Id
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + rows.Count
                             }
                         );
                     }
@@ -1349,6 +1404,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Points = activity.Points;
                         activity_record.UpdatedDate = DateTime.Now;
                         activity_record.UpdatedBy = _uId;
+                        activity_record.Comment = "Total: " + rows.Count;
                         UpdateIndividualUserPoints(activity_record);
                     }
                     UpdateUserSummaryPoints(userId, today);
@@ -1411,15 +1467,17 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = activity.Points,
                                 UserId = userId,
-                                PointsLibraryId = activity.Id
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + totalPractitionerChildren + " | " + all_children
                             }
-                        );
+                        ); ;
                     }
                     else
                     {
                         activity_record.Points = activity.Points;
                         activity_record.UpdatedDate = DateTime.Now;
                         activity_record.UpdatedBy = _uId;
+                        activity_record.Comment = "Total: " + totalPractitionerChildren + " | " + all_children;
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
@@ -1500,7 +1558,8 @@ namespace EcdLink.Api.CoreApi.Services
                                 Year = today.Year,
                                 Points = totalPoints,
                                 UserId = userId,
-                                PointsLibraryId = activity.Id
+                                PointsLibraryId = activity.Id,
+                                Comment = "Total: " + total
                             }
                         );
                     }
@@ -1509,6 +1568,7 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.Points = totalPoints;
                         activity_record.UpdatedDate = DateTime.Now;
                         activity_record.UpdatedBy = _uId;
+                        activity_record.Comment = "Total: " + total;
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
