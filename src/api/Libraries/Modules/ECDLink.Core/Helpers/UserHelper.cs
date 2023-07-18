@@ -81,11 +81,19 @@ namespace ECDLink.Core.Helpers
             return finalResult % 10 == 0;
         }
 
-        // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout. Default is INFINITE.
-        // A malicious user can provide input to RegularExpressions, causing a Denial-of - Service attack.
-        // ASP.NET Core framework APIs that use RegularExpressions pass a timeout.
+        public static string CoerceValidSAID(string shortSouthAfricanIdNumber)
+        { 
+            if (shortSouthAfricanIdNumber is null)
+                return null;
 
-        public static bool IsEmailValid(string email)
+            return shortSouthAfricanIdNumber.PadLeft(13, '0');
+        }
+
+            // Warning: When using System.Text.RegularExpressions to process untrusted input, pass a timeout. Default is INFINITE.
+            // A malicious user can provide input to RegularExpressions, causing a Denial-of - Service attack.
+            // ASP.NET Core framework APIs that use RegularExpressions pass a timeout.
+
+            public static bool IsEmailValid(string email)
         {
             return Regex.IsMatch(
                         email, 

@@ -76,12 +76,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     break;
                 }
                 var idOrPassport = ExcelHelper.GetCellValue(currentRow.GetCell(0));
-                var id = ExcelHelper.GetCellValue(currentRow.GetCell(1));
+                var id = UserHelper.CoerceValidSAID(ExcelHelper.GetCellValue(currentRow.GetCell(1)));
                 var passport = ExcelHelper.GetCellValue(currentRow.GetCell(2));
                 var firstName = ExcelHelper.GetCellValue(currentRow.GetCell(3));
                 var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
-                var teamLeadIdNum = ExcelHelper.GetCellValue(currentRow.GetCell(6));
+                var teamLeadIdNum = UserHelper.CoerceValidSAID(
+                    ExcelHelper.GetCellValue(currentRow.GetCell(6)));
                 
                 if (idOrPassport is null
                     && id is null
@@ -268,7 +269,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
 
                 if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(teamLeadId))
+                    && !UserHelper.IsSAIDValid(id))
                 {
                     errors.Add("Type of identification is \"id\", is empty or invalid");
                 }
