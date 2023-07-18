@@ -1,8 +1,6 @@
-﻿using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.PointsEngine;
+﻿using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using System;
 using System.Collections.Generic;
-using System.Threading.Tasks;
 
 namespace ECDLink.Core.Services.Interfaces
 {
@@ -12,24 +10,33 @@ namespace ECDLink.Core.Services.Interfaces
         // Points library
         List<PointsLibrary> GetPointsLibraryForActivity(string activity);
         List<PointsLibrary> GetPointsLibraryForTenant();
-        List<PointsUser> GetIndividualUserPoints(string subActivity, string userId, int month, int year);
+        List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year);
         List<PointsUserSummary> GetSummaryUserPoints(string userId, int year);
         PointsUser InsertIndividualUserPoints(PointsUser input);
         PointsUser UpdateIndividualUserPoints(PointsUser input);
         PointsUserSummary InsertIndividualSummaryUserPoints(PointsUserSummary input);
         PointsUserSummary UpdateIndividualSummaryUserPoints(PointsUserSummary input);
 
+        bool UpdateUserSummaryPoints(string userId, DateTime today);
+
         // GG
-        bool ManagePregnantMomClientRegistration(string userId);
-        bool ManageInfantClientRegistration(string userId);
-        bool ManagePregnantMomVisits(string userId);
-        bool ManageInfantVisits(string userId);
-        bool UpdateUserSummaryPoints(string userId);
+        bool CalculatePregnantMomClientRegistration(string userId, DateTime today);
+        bool CalculateInfantClientRegistration(string userId, DateTime today);
+        bool CalculatePregnantMomVisits(string userId, DateTime today);
+        bool CalculateInfantVisits(string userId, DateTime today);
 
-        // SS - TODO
+        // GG TODO: Team points - development pending
 
-        // Schedular for monthly and yearly calculations
-        Task<DateTime> GetLastRunTime(string task);
-        Task<ServiceScheduler> GetTaskResults(string task);
+        // SS
+        bool CalculateChildrenRegistrationAdd(string userId, DateTime today);
+        bool CalculateChildrenRegistrationRemoval(string userId, DateTime today);
+        bool CalculateAttendanceSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatements(string userId, DateTime today);
+        bool CalculateIncomeStatementsSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatementPreSchoolFees(string userId, DateTime today);
+        bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
+
+        // SS TODO: Pre-school fees on profile - development pending
+
     }
 }

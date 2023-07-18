@@ -67,7 +67,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
                 PractitionerId = input.PractitionerId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId
             };
@@ -100,7 +100,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
                 PractitionerId = input.PractitionerId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
@@ -132,7 +132,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 TraineeId = input.TraineeId,
                 PractitionerId = input.PractitionerId,
                 CoachId = input.CoachId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
@@ -163,7 +163,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 UpdatedDate = DateTime.Now,
                 VisitTypeId = input.VisitType.Id,
                 TraineeId = input.TraineeId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
                 ActualVisitDate = input.ActualVisitDate,
@@ -188,7 +188,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 MotherId = input.MotherId,
                 InfantId = input.InfantId,
                 PractitionerId = input.PractitionerId,
-                Risk = input.Risk == null ? Constants.GGSettings.normal_risk : input.Risk,
+                Risk = input.Risk ?? Constants.GGSettings.normal_risk,
                 Comment = input.Comment,
                 UpdatedBy = _applicationUserId,
                 LinkedVisitId = input.LinkedVisitId,
@@ -624,13 +624,15 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var input = new VisitModel();
                 foreach (VisitType visitType in visitTypes)
                 {
-                    input = new VisitModel();
-                    input.VisitType = visitType;
-                    input.Attended = false;
-                    input.MotherId = null;
-                    input.InfantId = null;
-                    input.LinkedVisitId = null;
-                    input.PractitionerId = practitioner.Id;
+                    input = new VisitModel
+                    {
+                        VisitType = visitType,
+                        Attended = false,
+                        MotherId = null,
+                        InfantId = null,
+                        LinkedVisitId = null,
+                        PractitionerId = practitioner.Id
+                    };
 
                     // -- first visit; Deadline for first visit = { date SmartSpace licence was received + 1 month }
                     if (visitType.Name == Constants.SSSettings.visitType_pre_pqa_visit_1)

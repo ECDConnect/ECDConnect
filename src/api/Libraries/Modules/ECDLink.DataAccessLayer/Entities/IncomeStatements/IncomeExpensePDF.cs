@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
+﻿namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
 {
     public class IncomeExpensePDF
     {
