@@ -55,6 +55,7 @@ namespace ECDLink.Core.UnitTest
         [InlineData("aaaaaaaaaaaaaaaaaaaaaaaaa@bbbbbbbbbbbbbbbbbbb.cccccccccccccccooooooommmmmmmmmmmmmm")]
         [InlineData("a@b.co.za")]
         [InlineData("a@b.za")]
+        [InlineData("a1@tl.com")]
         public void IsEmailValid_WithValidEmails_ReturnTrue(string email)
         {
             // Act

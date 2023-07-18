@@ -8,11 +8,13 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Data;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using NPOI.SS.Formula.Functions;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -59,12 +61,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         [UseFiltering]
-        public int GetCountTeamLeads([Service] IHttpContextAccessor contextAccessor,
-         IGenericRepositoryFactory repoFactory,
-         PagedQueryInput pagingInput = null,
-         string search = null,
-         string provinceSearch = null,
-         string clinicSearch = null)
+        public int GetCountTeamLeads(
+            [Service] IHttpContextAccessor contextAccessor,
+             IGenericRepositoryFactory repoFactory,
+             PagedQueryInput pagingInput = null,
+             string search = null,
+             string provinceSearch = null,
+             string clinicSearch = null)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var teamLeadRepo = repoFactory.CreateRepository<TeamLead>(userContext: uId).GetAll(pagingInput);
@@ -87,8 +90,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<FileModel> TeamLeadTemplateGenerator(
           [Service] IFileGenerationService fileService,
+          [Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory)
         {
+            var user = contextAccessor.HttpContext.GetUser();
+            var uId = user.Id;
+            
+            var fieldDefinitionSheet = $"Field Definition";
             var fieldDefinitionList = new List<List<string>>
             {
                 new List<string> { "Column", "Type Description"},
@@ -98,10 +106,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                 new List<string> {"First name", "Text, (required)"},
                 new List<string> {"Surname", "Text, (required)"},
                 new List<string> {"Cellphone number", "Number, (required, 10 digits)"},
-                new List<string> {"Email address", "email, (optional)"}
+                new List<string> {"Email address", "email, (optional)"},
+                new List<string> {"Clinic Name", "exact name of clinic, (required)"}
             };
-            var fieldDefinitionSheet = $"Field Definition";
-
+            
+            var templateHeaderSheet = $"Team Lead Template";
             var templateHeaders = new List<List<string>>()
             {
                 new List<string> {
@@ -111,14 +120,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
                      "First name",
                     "Surname",
                     "Cellphone number",
-                    "Email address"
+                    "Email address",
+                    "Clinic Name"
                 }
             };
-            var templateHeaderSheet = $"Team Lead Template";
+
+            var clinicNameSheet = $"Clinic Names";
+            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: uId);
+            var clinicNames = clinicRepo.GetAll().Where(c => c.TenantId == TenantExecutionContext.Tenant.Id).Select(c => new List<string> { c.Name, "" }).ToList();
 
             var spreadSheets = new Dictionary<string, List<List<string>>>() {
                 { templateHeaderSheet, templateHeaders },
-                { fieldDefinitionSheet, fieldDefinitionList }
+                { fieldDefinitionSheet, fieldDefinitionList },
+                { clinicNameSheet, clinicNames }
             };
 
             var fileName = templateHeaderSheet.Replace(" ", "_");

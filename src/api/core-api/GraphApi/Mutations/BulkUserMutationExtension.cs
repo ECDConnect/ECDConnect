@@ -1,3 +1,5 @@
+using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Helpers;
@@ -7,6 +9,7 @@ using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
+using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Execution;
@@ -32,6 +35,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<UserImportModel> ImportHealthCareWorkersAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
+          [Service] InvitationNotificationManager notificationManager,
+          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           [Service] ILogger<ImportUserMutationExtension> _logger,
           UserManager<ApplicationUser> userManager,
           string file)
@@ -49,7 +54,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 throw new QueryException("You do not have permission to use this function.");
 
             Guid tenantId = TenantExecutionContext.Tenant.Id;
-            
+
             var userImportList = new List<ApplicationUser>();
             var hcwUsers = new Dictionary<string, HealthCareWorker>();
             var createdUsers = new List<string>();
@@ -83,7 +88,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                 var teamLeadIdNum = UserHelper.CoerceValidSAID(
                     ExcelHelper.GetCellValue(currentRow.GetCell(6)));
-                
+
                 if (idOrPassport is null
                     && id is null
                     && passport is null
@@ -224,6 +229,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
                         var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
                         hcw.TeamLeadId = teamLeadSAIdToIdMap.First(teamLead => teamLead.Key == teamLeadSAIdNum).Value;
+                        hcw.UserId = user.Id;
 
                         communityHealthWorkerRepo.Insert(hcw);
                     }
@@ -237,11 +243,27 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     }
 
                     createdUsers.Add(user.UserName);
+
+                    try
+                    {
+                        var token = await invitationManager.GenerateTokenAsync(user);
+
+                        if (string.IsNullOrWhiteSpace(token))
+                        {
+                            validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
+                            continue;
+                        }
+                        await notificationManager.SendInvitationAsync(user, token);
+                    }
+                    catch
+                    {
+                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError($"Exception during bulk insert of {nameof(HealthCareWorker)}", ex);
-                    throw;
+                    validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
                 }
             }
 
@@ -303,6 +325,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<UserImportModel> ImportTeamLeadsAsync(
           [Service] IHttpContextAccessor httpContextAccessor,
           [Service] ILogger<ImportUserMutationExtension> _logger,
+          [Service] InvitationNotificationManager notificationManager,
+          [Service] ITokenManager<ApplicationUser, InvitationTokenManager> invitationManager,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
           string file)
@@ -323,7 +347,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var userImportList = new List<ApplicationUser>();
             var teamLeadUsers = new Dictionary<string, TeamLead>();
             var createdUsers = new List<string>();
-            var userClinics = new Dictionary<string, Guid>();
+            var userClinicNames = new Dictionary<string, string>();
 
             var validationErrors = new List<InputValidationError>();
 
@@ -350,17 +374,19 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     var surname = ExcelHelper.GetCellValue(currentRow.GetCell(4));
                     var cellphone = ExcelHelper.GetCellValue(currentRow.GetCell(5));
                     var email = ExcelHelper.GetCellValue(currentRow.GetCell(6));
-                    
+                    var clinicName = ExcelHelper.GetCellValue(currentRow.GetCell(7));
+
                     if (idOrPassport is null
                     && id is null
                     && passport is null
                     && firstName is null
                     && surname is null
                     && cellphone is null
-                    && email is null)
+                    && email is null
+                    && clinicName is null)
                         continue;
 
-                    var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email);
+                    var rowErrors = GetValidationErrors(idOrPassport, id, passport, firstName, surname, cellphone, email, clinicName);
 
                     // Collect all row errors.
                     // Could be on a row with no errors, but previous rows had errors.
@@ -389,6 +415,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         TenantId = tenantId
                     };
                     userImportList.Add(user);
+
+                    // Record Clinic Name
+                    userClinicNames.TryAdd(user.UserName, clinicName);
 
                     // Add new community health worker.
                     teamLeadUsers.Add(user.UserName,
@@ -423,6 +452,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             // Return errors before trying to create users so the list doesn't need to be diff'd for users that were created.
             if (validationErrors.Any())
                 return new UserImportModel() { ValidationErrors = validationErrors };
+
+
+            // Get Clinics
+            var userClinicNameList = userClinicNames.Select(uc => uc.Value).Distinct().ToList();
+
+            var clinicRepo = repoFactory.CreateGenericRepository<Clinic>(userContext: currentUserId);
+            var clinics = clinicRepo.GetAll().Where(c => userClinicNameList.Contains(c.Name)).ToList();
+            var foundClinicNames = clinics.Select(c => c.Name);
+
+            var missingClinicIds = userClinicNameList.Except(foundClinicNames).ToList();
+
+            if (missingClinicIds.Any())
+            {
+                validationErrors.Add(new InputValidationError(0, missingClinicIds, "These clinic Id's could not be found."));
+                return new UserImportModel()
+                {
+                    ValidationErrors = validationErrors
+                };
+            }
+
+            // Create Team Leads
+            var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
 
             rowNum = 0;
             foreach (var user in userImportList)
@@ -463,12 +514,58 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         continue;
                     }
 
+                    if (addToRoleResult != null)
+                    {
+                        // Get the current tl's user.
+                        var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
+
+                        // Assign newly created user
+                        newTl.UserId = user.Id;
+
+                        if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
+                        {
+                            var clinic = clinics.First(c => c.Name == clinicName);
+                            newTl.ClinicId = clinic.Id;
+                        }
+
+                        try
+                        {
+                            teamLeadRepo.Insert(newTl);
+                        }
+                        catch (Exception ex)
+                        {
+                            validationErrors.Add(
+                            new InputValidationError(
+                                rowNum,
+                                new string[] { ex.Message },
+                                $"Could not create team lead for user: {user.UserName}."));
+                            continue;
+                        }
+                    }
+
+
                     createdUsers.Add(user.UserName);
+
+                    try
+                    {
+                        var token = await invitationManager.GenerateTokenAsync(user);
+
+                        if (string.IsNullOrWhiteSpace(token))
+                        {
+                            validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
+                            continue;
+                        }
+                        await notificationManager.SendInvitationAsync(user, token);
+                    }
+                    catch
+                    {
+                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
+                    }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message, ex);
-                    throw new QueryException($"Could not create user: {user.UserName}");
+                    validationErrors.Add(new InputValidationError(rowNum, null, $"Could not create, assign role or send invitation for: {user.UserName}"));
                 }
             }
 
@@ -479,7 +576,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             };
 
             // Local function
-            static IEnumerable<string> GetValidationErrors(string idOrPassport, string id, string passport, string firstName, string surname, string cellphone, string email)
+            static IEnumerable<string> GetValidationErrors(string idOrPassport, string id, string passport, string firstName, string surname, string cellphone, string email, string clinicName)
             {
                 var errors = new List<string>();
                 if (idOrPassport is null)
@@ -488,8 +585,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 var valid = new string[] { "id", "passport" };
                 if (!valid.Contains(idOrPassport))
                     errors.Add($"Type of identification must be {string.Join(", ", valid)}");
-                
-                if (idOrPassport?.ToLowerInvariant() == "id" 
+
+                if (idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                     errors.Add("Type of identification is \"id\", is empty or invalid");
 
@@ -497,21 +594,24 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     && passport.Length == 0)
                     errors.Add("Type of identification is \"passport\", is empty or invalid");
 
-                if (string.IsNullOrWhiteSpace(firstName) 
+                if (string.IsNullOrWhiteSpace(firstName)
                     || firstName.Length == 0)
                     errors.Add("First Name is empty.");
 
-                if (string.IsNullOrWhiteSpace(surname) 
+                if (string.IsNullOrWhiteSpace(surname)
                     || surname.Length == 0)
                     errors.Add("Surname is empty.");
 
-                if (string.IsNullOrWhiteSpace(cellphone) 
+                if (string.IsNullOrWhiteSpace(cellphone)
                     || cellphone.Length == 0)
                     errors.Add("Cellphone is empty.");
 
                 if (!string.IsNullOrEmpty(email) // Email is optional
-                    && UserHelper.IsEmailValid(email))
+                    && !UserHelper.IsEmailValid(email))
                     errors.Add("Email is invalid");
+
+                if (string.IsNullOrWhiteSpace(clinicName) || clinicName?.Length < 1)
+                    errors.Add("Clinic Name is invalid");
 
                 return errors;
             }
