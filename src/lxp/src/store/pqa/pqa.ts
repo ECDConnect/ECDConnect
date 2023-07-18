@@ -249,6 +249,13 @@ const pqaSlice = createSlice({
           action,
           stateType: 'supportVisitPreviousFormData',
         });
+      } else if (visitType === 'follow-up-visit') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'pqaFollowUpPreviousFormData',
+        });
       } else if (visitType === 're-accreditation-follow-up-visit') {
         addPreviousFormData({
           state,
