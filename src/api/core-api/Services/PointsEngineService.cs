@@ -1,5 +1,4 @@
-﻿using DotLiquid.Tags;
-using ECDLink.Core.Extensions;
+﻿using ECDLink.Core.Extensions;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
@@ -12,13 +11,10 @@ using ECDLink.Security.Extensions;
 using ECDLink.SmartStart.Reports;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
-using iTextSharp.text;
 using Microsoft.AspNetCore.Http;
-using NPOI.SS.Formula.Functions;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using static ECDLink.Core.SystemSettings.SettingGroups;
 
 namespace EcdLink.Api.CoreApi.Services
 {
