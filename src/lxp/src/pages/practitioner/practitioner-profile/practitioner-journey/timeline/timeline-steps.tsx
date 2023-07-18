@@ -1,27 +1,43 @@
-import { PractitionerTimeline, Visit } from '@ecdlink/graphql';
-import { StepItem } from '@ecdlink/ui';
+import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
+import { StepItem, Typography } from '@ecdlink/ui';
 import { dateOptions, getStepType, setStep } from './utils';
 import { SupportVisits } from './steps/support-visits';
-import { PQAFormType } from '@/store/pqa/pqa.types';
+import { PQAFormType, RatingData } from '@/store/pqa/pqa.types';
 import { PrePqaVisits } from './steps/pre-pqa';
+import { getPqaStepData } from './steps/pqa/step';
+import { PQAVisits } from './steps/pqa/step-accordion-content';
+import { ReAccreditationVisits } from './steps/re-accreditation/step-accordion-content';
+import { getReAccreditationStepData } from './steps/re-accreditation/step';
 
 export interface ViewEvent {
-  visit: Visit;
+  visit: Visit | Maybe<Visit>;
   visitType: PQAFormType;
 }
 
 interface TimelineStepsProps {
+  practitionerId: string;
   timeline: PractitionerTimeline;
   isLoading: boolean;
+  currentPqaRating: RatingData;
+  currentReAccreditationRating: RatingData;
   onView: (event: ViewEvent) => void;
 }
 
 export const timelineSteps = ({
   timeline,
   isLoading,
+  currentPqaRating,
+  currentReAccreditationRating,
+  practitionerId,
   onView,
 }: TimelineStepsProps) => {
   const attendedSupportVisits = timeline.supportVisits?.filter(
+    (item) => !!item?.attended
+  );
+  const attendedPqaVisits = timeline.pQASiteVisits?.filter(
+    (item) => !!item?.attended
+  );
+  const attendedReAccreditationVisits = timeline.reAccreditationVisits?.filter(
     (item) => !!item?.attended
   );
 
@@ -130,6 +146,88 @@ export const timelineSteps = ({
           isOnline={true}
           onView={onView}
           timeline={timeline}
+        />
+      ),
+    });
+  }
+
+  if (!!attendedPqaVisits?.length) {
+    const { currentVisit, ratingData, stepType } = getPqaStepData({
+      timeline,
+      currentPqaRating,
+    });
+
+    steps.push({
+      title: 'First PQA',
+      customSubTitle: (
+        <div className="flex items-center">
+          <Typography
+            type="body"
+            color={stepType?.color}
+            className="mr-4"
+            text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
+              'en-ZA',
+              dateOptions
+            )}
+          />
+
+          {ratingData?.icon}
+          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+        </div>
+      ),
+      inProgressStepIcon: stepType?.color && 'CheckIcon',
+      type: stepType?.type,
+      extraData: {
+        date: new Date(currentVisit?.plannedVisitDate),
+      },
+      showAccordion: true,
+      accordionContent: (
+        <PQAVisits
+          isLoading={isLoading}
+          currentVisit={currentVisit!}
+          practitionerId={practitionerId}
+          onView={onView}
+        />
+      ),
+    });
+  }
+
+  if (attendedReAccreditationVisits?.length) {
+    const { currentVisit, ratingData, stepType } = getReAccreditationStepData({
+      timeline,
+      currentRating: currentReAccreditationRating,
+    });
+
+    steps.push({
+      title: 'Annual re-accreditation',
+      customSubTitle: (
+        <div className="flex items-center">
+          <Typography
+            type="body"
+            color={stepType?.color}
+            className="mr-4"
+            text={new Date(currentVisit?.plannedVisitDate).toLocaleDateString(
+              'en-ZA',
+              dateOptions
+            )}
+          />
+
+          {ratingData?.icon}
+          <p className="text-textMid text-12 ml-2">{ratingData?.text}</p>
+        </div>
+      ),
+      subTitleColor: stepType?.color,
+      type: stepType?.type,
+      inProgressStepIcon: stepType?.color && 'CheckIcon',
+      extraData: {
+        date: new Date(currentVisit?.plannedVisitDate),
+      },
+      showAccordion: true,
+      accordionContent: (
+        <ReAccreditationVisits
+          isLoading={isLoading}
+          practitionerId={practitionerId}
+          onView={onView}
         />
       ),
     });

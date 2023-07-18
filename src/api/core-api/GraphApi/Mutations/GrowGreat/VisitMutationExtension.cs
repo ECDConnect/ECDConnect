@@ -112,6 +112,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -150,6 +151,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -188,6 +190,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -255,6 +258,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 visitModel.PractitionerId = practitioner.Id;
                 visitModel.Attended = (bool)input.Attended;
                 visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+                visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
                 if ((bool)input.Attended == true)
                 {
                     visitModel.ActualVisitDate = DateTime.Now;
@@ -312,6 +316,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
                     DateTime newDate = dt.AddDays(14);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType2;
                     return visitManager.AddVisit(input);
                 }
@@ -326,12 +331,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     DateTime dt = secondPQA.PlannedVisitDate;
                     DateTime newDate = dt.AddDays(60);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType3;
                 } else
                 {
                     DateTime dt = firstPQA.PlannedVisitDate;
                     DateTime newDate = dt.AddDays(60);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType2;
                 }
                 
@@ -375,6 +382,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -426,6 +434,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.TraineeId = trainee.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -462,6 +471,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.TraineeId = trainee.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -507,7 +517,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.TraineeId = trainee.Id;
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-
+            input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             return visitManager.AddVisitForCoach(input);
         }
 
@@ -547,7 +557,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.PractitionerId = practitioner.Id;
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-
+            input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             return visitManager.AddVisitForCoach(input);
         }
 

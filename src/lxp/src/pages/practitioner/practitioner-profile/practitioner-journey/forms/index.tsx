@@ -1,8 +1,18 @@
 import { useCallback, useMemo, useState } from 'react';
-import { DynamicForm, SectionQuestions } from './dynamic-form';
+import {
+  DynamicForm,
+  DynamicFormProps,
+  SectionQuestions,
+} from './dynamic-form';
 import { useSelector } from 'react-redux';
 import { getUser } from '@/store/user/user.selectors';
-import { prePqaSteps, selfAssessmentSteps, supportVisitSteps } from './steps';
+import {
+  pqaSteps,
+  prePqaSteps,
+  reAccreditationSteps,
+  selfAssessmentSteps,
+  supportVisitSteps,
+} from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { parseBool, useDialog } from '@ecdlink/core';
@@ -58,6 +68,26 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     if (activityName === coachVisitTypes.supportVisit) {
       setTitle(coachVisitTypes.supportVisit);
       return supportVisitSteps;
+    }
+
+    if (activityName.includes(coachVisitTypes.pqa.followUp.name)) {
+      setTitle(coachVisitTypes.pqa.followUp.description);
+      return supportVisitSteps;
+    }
+
+    if (activityName.includes(coachVisitTypes.pqa.includes)) {
+      setTitle('PQA site visits summary');
+      return pqaSteps;
+    }
+
+    if (activityName.includes(coachVisitTypes.reaccreditation.followUp.name)) {
+      setTitle(coachVisitTypes.pqa.followUp.description);
+      return supportVisitSteps;
+    }
+
+    if (activityName.includes(coachVisitTypes.reaccreditation.includes)) {
+      setTitle('Reaccreditation summary');
+      return reAccreditationSteps;
     }
 
     setTitle('Self-assessment');
@@ -166,6 +196,22 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     }
   };
 
+  const renderSubmitButtonStyle =
+    useMemo((): DynamicFormProps['submitButton'] => {
+      if (isView) {
+        if (
+          activityName.includes(coachVisitTypes.pqa.includes) &&
+          !activityName.includes(coachVisitTypes.pqa.followUp.name)
+        ) {
+          return { icon: 'EyeIcon', text: 'View details', type: 'filled' };
+        }
+
+        return { icon: 'XIcon', text: 'Close', type: 'outlined' };
+      }
+
+      return undefined;
+    }, [activityName, isView]);
+
   return (
     <BannerWrapper
       size="medium"
@@ -189,11 +235,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         onNextStep={handleOnNext}
         onClose={onBack}
         onSubmit={handleOnSubmit}
-        submitButton={
-          isView
-            ? { icon: 'XIcon', text: 'Close', type: 'outlined' }
-            : undefined
-        }
+        submitButton={renderSubmitButtonStyle}
         isLoading={isLoadingSelfAssessment}
         isView={isView}
       />
