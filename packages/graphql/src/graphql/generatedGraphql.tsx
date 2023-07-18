@@ -6247,6 +6247,7 @@ export type PointsLibraryInput = {
 
 export type PointsUser = {
   __typename?: 'PointsUser';
+  comment?: Maybe<Scalars['String']>;
   id: Scalars['UUID'];
   insertedDate: Scalars['DateTime'];
   isActive: Scalars['Boolean'];
@@ -6263,6 +6264,7 @@ export type PointsUser = {
 
 export type PointsUserFilterInput = {
   and?: InputMaybe<Array<PointsUserFilterInput>>;
+  comment?: InputMaybe<StringOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   insertedDate?: InputMaybe<ComparableDateTimeOperationFilterInput>;
   isActive?: InputMaybe<BooleanOperationFilterInput>;
@@ -6279,6 +6281,7 @@ export type PointsUserFilterInput = {
 };
 
 export type PointsUserInput = {
+  Comment?: InputMaybe<Scalars['String']>;
   Id?: InputMaybe<Scalars['UUID']>;
   IsActive: Scalars['Boolean'];
   Month: Scalars['Int'];
