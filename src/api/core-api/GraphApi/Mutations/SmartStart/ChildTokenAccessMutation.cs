@@ -77,7 +77,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
 
                 // Manage points for user
-                pointsEngineService.AddChildrenRegistration(appUser.Id);
+                pointsEngineService.AddChildrenRegistration(appUser.Id, DateTime.UtcNow);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 

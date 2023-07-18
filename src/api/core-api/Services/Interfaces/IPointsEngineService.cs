@@ -1,4 +1,5 @@
 ﻿using ECDLink.DataAccessLayer.Entities.PointsEngine;
+using System;
 using System.Collections.Generic;
 
 namespace ECDLink.Core.Services.Interfaces
@@ -17,23 +18,24 @@ namespace ECDLink.Core.Services.Interfaces
         PointsUserSummary UpdateIndividualSummaryUserPoints(PointsUserSummary input);
 
         // GG
-        bool ManagePregnantMomClientRegistration(string userId);
-        bool ManageInfantClientRegistration(string userId);
-        bool ManagePregnantMomVisits(string userId);
-        bool ManageInfantVisits(string userId);
-        bool UpdateUserSummaryPoints(string userId);
+        bool CalculatePregnantMomClientRegistration(string userId, DateTime today);
+        bool CalculateInfantClientRegistration(string userId, DateTime today);
+        bool CalculatePregnantMomVisits(string userId, DateTime today);
+        bool CalculateInfantVisits(string userId, DateTime today);
+        bool UpdateUserSummaryPoints(string userId, DateTime today);
 
         // GG TODO: Team points - development pending
 
         // SS
-        bool AddChildrenRegistration(string userId);
-        bool RemoveChildrenRegistration(string userId);
-        bool ManageAttendanceSubmitted(string userId);
-        bool ManageIncomeStatementsSubmitted(string userId);
-        bool ManageIncomeStatementPreSchoolFees(string userId);
-        bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId);
+        bool AddChildrenRegistration(string userId, DateTime today);
+        bool RemoveChildrenRegistration(string userId, DateTime today);
+        bool CalculateAttendanceSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatements(string userId, DateTime today);
+        bool CalculateIncomeStatementsSubmitted(string userId, DateTime today);
+        bool CalculateIncomeStatementPreSchoolFees(string userId, DateTime today);
+        bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today);
 
-        // SS TODO: Pre-school fees - development pending
+        // SS TODO: Pre-school fees on profile - development pending
 
     }
 }

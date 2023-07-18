@@ -1,5 +1,4 @@
 ﻿using ECDLink.Core.Extensions;
-using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.IncomeStatements;
@@ -21,42 +20,42 @@ namespace EcdLink.Api.CoreApi.Services
 {
     public class PointsEngineService : IPointsEngineService
     {
-        private IHttpContextAccessor _contextAccessor;
+        private readonly IHttpContextAccessor _contextAccessor;
         private readonly IGenericRepositoryFactory _repositoryFactory;
 
-        private IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
-        private IGenericRepository<PointsUser, Guid> _pointsUserRepo;
-        private IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
+        private readonly IGenericRepository<PointsLibrary, Guid> _pointsLibraryRepo;
+        private readonly IGenericRepository<PointsUser, Guid> _pointsUserRepo;
+        private readonly IGenericRepository<PointsUserSummary, Guid> _pointsUserSummaryRepo;
 
-        private IGenericRepository<Infant, Guid> _infantRepo;
-        private IGenericRepository<Mother, Guid> _motherRepo;
-        private IGenericRepository<Child, Guid> _childRepo;
+        private readonly IGenericRepository<Infant, Guid> _infantRepo;
+        private readonly IGenericRepository<Mother, Guid> _motherRepo;
+        private readonly IGenericRepository<Child, Guid> _childRepo;
+        private readonly IGenericRepository<Practitioner, Guid> _practitionerRepo;
 
-        private IGenericRepository<Visit, Guid> _visitRepo;
-        private IGenericRepository<VisitData, Guid> _visitDataRepo;
-        private IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
+        private readonly IGenericRepository<Visit, Guid> _visitRepo;
+        private readonly IGenericRepository<VisitData, Guid> _visitDataRepo;
+        private readonly IGenericRepository<VisitDataStatus, Guid> _visitDataStatusRepo;
 
-        private IGenericRepository<Practitioner, Guid> _practitionerRepo;
-        private IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
-        private IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
-        private IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
-        private IGenericRepository<Classroom, Guid> _classRepo;
+        private readonly IGenericRepository<Classroom, Guid> _classRepo;
 
-        private ChildAttendanceReport _childAttendanceReport;
-        private IncomeExpenseService _incomeExpenseService;
+        private readonly IGenericRepository<StatementsIncomeStatement, Guid> _statementsIncomeStatementRepo;
+        private readonly IGenericRepository<StatementsIncome, Guid> _statementsIncomeRepo;
+        private readonly IGenericRepository<StatementsIncomeType, Guid> _statementsIncomeTypeRepo;
+        private readonly IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
 
-        private string _uId;
+        private readonly ChildAttendanceReport _childAttendanceReport;
+
+        private readonly string _uId;
 
         public PointsEngineService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repositoryFactory,
-            ChildAttendanceReport childAttendanceReport,
-            IncomeExpenseService incomeExpenseService
+            ChildAttendanceReport childAttendanceReport
             )
         {
             _contextAccessor = contextAccessor;
             _repositoryFactory = repositoryFactory;
-            _uId = _contextAccessor.HttpContext.GetUser() != null ? _contextAccessor.HttpContext.GetUser().Id : null;
+            _uId = _contextAccessor.HttpContext.GetUser()?.Id;
             
             _pointsLibraryRepo = _repositoryFactory.CreateGenericRepository<PointsLibrary>(userContext: _uId);
             _pointsUserRepo = _repositoryFactory.CreateGenericRepository<PointsUser>(userContext: _uId);
@@ -64,19 +63,21 @@ namespace EcdLink.Api.CoreApi.Services
 
             _infantRepo = _repositoryFactory.CreateGenericRepository<Infant>(userContext: _uId);
             _motherRepo = _repositoryFactory.CreateGenericRepository<Mother>(userContext: _uId);
+            _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
+            _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
 
             _visitRepo = _repositoryFactory.CreateGenericRepository<Visit>(userContext: _uId);
             _visitDataRepo = _repositoryFactory.CreateGenericRepository<VisitData>(userContext: _uId);
             _visitDataStatusRepo = _repositoryFactory.CreateGenericRepository<VisitDataStatus>(userContext: _uId);
 
-            _practitionerRepo = _repositoryFactory.CreateGenericRepository<Practitioner>(userContext: _uId);
-            _childRepo = _repositoryFactory.CreateGenericRepository<Child>(userContext: _uId);
             _statementsIncomeStatementRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeStatement>(userContext: _uId);
             _statementsIncomeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncome>(userContext: _uId);
+            _statementsIncomeTypeRepo = _repositoryFactory.CreateGenericRepository<StatementsIncomeType>(userContext: _uId);
+            _statementsContributionTypeRepo = _repositoryFactory.CreateGenericRepository<StatementsContributionType>(userContext: _uId);
+
             _classRepo = _repositoryFactory.CreateGenericRepository<Classroom>(userContext: _uId);
 
             _childAttendanceReport = childAttendanceReport;
-            _incomeExpenseService = incomeExpenseService;
 
         }
 
@@ -125,14 +126,12 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region GG_ClientRegistration
 
-        public bool ManagePregnantMomClientRegistration(string userId)
+        public bool CalculatePregnantMomClientRegistration(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.client_registration);
             PointsLibrary activity2 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac2).FirstOrDefault();
             PointsLibrary activity3 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac3).FirstOrDefault();
             PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac4).FirstOrDefault();
-
-            DateTime today = DateTime.Now.Date;
 
             var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId && 
                                                      x.IsActive == true && 
@@ -144,7 +143,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Complete client registration flow for 2 or more pregnant women
                 if (mothers.Count >= 2)
                 {
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
 
                     if (activity2_records == 0)
                     {
@@ -181,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Complete the client registration flow for 1 - 2 pregnant clients who are less than 20 weeks into pregnancy.
                 if (lessThan20Weeks <= 2)
                 {
-                    int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count;
                     if (activity3_records == 0) {
                         InsertIndividualUserPoints(
                         new PointsUser
@@ -202,7 +201,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Complete the client registration flow for 3 or more pregnant clients who are less than 20 weeks into pregnancy.
                 if (lessThan20Weeks >= 3)
                 {
-                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count;
                     if (activity4_records == 0)
                     {
                         InsertIndividualUserPoints(
@@ -223,16 +222,14 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
-        public bool ManageInfantClientRegistration(string userId)
+        public bool CalculateInfantClientRegistration(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.client_registration);
             PointsLibrary activity1 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac1).FirstOrDefault();
-
-            DateTime today = DateTime.Now.Date;
 
             // Complete the client registration flow for 5 or more children under the age of 2 years old
             var childrenCount = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == userId &&
@@ -242,7 +239,7 @@ namespace EcdLink.Api.CoreApi.Services
             if (childrenCount >= 5)
             {
                 // Get user records for userId
-                int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count();
+                int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
                 if (activity1_records == 0)
                 {
                     InsertIndividualUserPoints(
@@ -262,7 +259,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -270,7 +267,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region GG_PregnantMom_Visits
 
-        public bool ManagePregnantMomVisits(string userId)
+        public bool CalculatePregnantMomVisits(string userId, DateTime today)
         {
             bool hasMothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId && x.IsActive == true).Count() != 0;
 
@@ -283,7 +280,6 @@ namespace EcdLink.Api.CoreApi.Services
                 PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac4).FirstOrDefault();
                 PointsLibrary activity5 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.pregnant_mom_clients_ac5).FirstOrDefault();
 
-                DateTime today = DateTime.Now.Date;
 
                 // 1
                 // If no visits overdue or missing for pregnant mom clients by the end of the month, user earns 50 points.
@@ -298,7 +294,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (monthVisits == 0)
                     {
-                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity1_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -332,7 +328,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (maternal_referrals > 0 )
                 {
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
                     if (activity2_records == 0 )
                     {
                         InsertIndividualUserPoints(
@@ -368,7 +364,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 x.Visit.DueDate.Value.Month == today.Month)).Select(x => x.Id).Distinct().Count();
                     if (visit1_count > 0)
                     {
-                        int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity3_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -402,7 +398,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                     x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
                 if (muac_referrals > 0)
                 {
-                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count;
                     if (activity4_records == 0)
                     {
                         InsertIndividualUserPoints(
@@ -436,7 +432,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 x.Visit.DueDate.Value.Month == today.Month)).Select(x => x.Id).Distinct().Count();
                     if (abuseVisits == 0)
                     {
-                        int activity5_records = GetIndividualUserPoints(activity5.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity5_records = GetIndividualUserPoints(activity5.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity5_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -457,7 +453,7 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
             }
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -465,7 +461,7 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region GG_Infants
 
-        public bool ManageInfantVisits(string userId)
+        public bool CalculateInfantVisits(string userId, DateTime today)
         {
             bool hasChildren = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == userId && x.IsActive == true).Count() != 0;
 
@@ -487,9 +483,6 @@ namespace EcdLink.Api.CoreApi.Services
                 PointsLibrary activity13 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_clients_ac13).FirstOrDefault();
                 PointsLibrary activity14 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_clients_ac14).FirstOrDefault();
 
-                DateTime today = DateTime.Now.Date;
-
-
                 // 1
                 // Child support grant - all eligible children accessing the CSG
                 // Monthly total (capped at 100) Calculated at the end of the month.
@@ -506,7 +499,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac1_count > 0)
                     {
-                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity1_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -540,7 +533,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 (x.Visit.DueDate.Value.Year == today.Year &&
                                                                 x.Visit.DueDate.Value.Month == today.Month)).ToList();
 
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count();
+                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
                     if (activity2_records == 0)
                     {
                         if (pillar2Data.Count == 0)
@@ -979,7 +972,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac12_count == 0)
                     {
-                        int activity12_records = GetIndividualUserPoints(activity12.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity12_records = GetIndividualUserPoints(activity12.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity12_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1012,7 +1005,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac13_count == 0)
                     {
-                        int activity13_records = GetIndividualUserPoints(activity13.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity13_records = GetIndividualUserPoints(activity13.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity13_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1045,7 +1038,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac14_count == 0)
                     {
-                        int activity14_records = GetIndividualUserPoints(activity14.SubActivity, userId, today.Month, today.Year).Count();
+                        int activity14_records = GetIndividualUserPoints(activity14.SubActivity, userId, today.Month, today.Year).Count;
                         if (activity14_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1067,7 +1060,7 @@ namespace EcdLink.Api.CoreApi.Services
                 }
             }
 
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1075,9 +1068,8 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region UserSummary
 
-        public bool UpdateUserSummaryPoints(string userId)
+        public bool UpdateUserSummaryPoints(string userId, DateTime today)
         {
-            DateTime today = DateTime.Now.Date;
             List<PointsLibrary> allRecords = GetPointsLibraryForTenant();
 
             foreach (var item in allRecords)
@@ -1149,12 +1141,11 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region SS_Children
 
-        public bool AddChildrenRegistration(string userId)
+        public bool AddChildrenRegistration(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac1).FirstOrDefault();
 
-            DateTime today = DateTime.Now.Date;
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 
             var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList(); ;
@@ -1190,16 +1181,14 @@ namespace EcdLink.Api.CoreApi.Services
                     UpdateIndividualUserPoints(activity_record);
                 }
             }
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
-        public bool RemoveChildrenRegistration(string userId)
+        public bool RemoveChildrenRegistration(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac2).FirstOrDefault();
-
-            DateTime today = DateTime.Now.Date;
 
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
@@ -1238,20 +1227,18 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
             }
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
         #endregion
 
         #region SS_Attendance
-        public bool ManageAttendanceSubmitted(string userId)
+        public bool CalculateAttendanceSubmitted(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.child_data_collection);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.child_data_collection_ac3).FirstOrDefault();
             List<Classroom> classrooms = _classRepo.GetListByUserId(userId);
-
-            DateTime today = DateTime.Now.Date;
 
             var totalExpectedAttendance = 0;
             var totalChildrenAttendedSessions = 0;
@@ -1298,7 +1285,7 @@ namespace EcdLink.Api.CoreApi.Services
                     UpdateIndividualUserPoints(activity_record);
                 }
             }
-            UpdateUserSummaryPoints(userId);
+            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1306,12 +1293,19 @@ namespace EcdLink.Api.CoreApi.Services
 
         #region SS_IncomeStatements
 
-        public bool ManageIncomeStatementsSubmitted(string userId)
+        public bool CalculateIncomeStatements(string userId, DateTime today)
+        {
+            CalculateIncomeStatementsSubmitted(userId, today);
+            CalculateIncomeStatementPreSchoolFees(userId, today);
+            CalculateThreeConsecutiveIncomeStatementsSubmitted(userId, today);
+            return true;
+        }
+
+        public bool CalculateIncomeStatementsSubmitted(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
 
-            DateTime today = DateTime.Now.Date;
             DateTime deadline = today.GetStartOfMonth().AddDays(7);
             DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
 
@@ -1356,17 +1350,16 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                 }
 
-                UpdateUserSummaryPoints(userId);
+                UpdateUserSummaryPoints(userId, today);
             }
             return true;
         }
 
-        public bool ManageIncomeStatementPreSchoolFees(string userId)
+        public bool CalculateIncomeStatementPreSchoolFees(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
             PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac2).FirstOrDefault();
             
-            DateTime today = DateTime.Now.Date;
             DateTime deadline = today.GetStartOfMonth().AddDays(7);
             DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
 
@@ -1376,8 +1369,8 @@ namespace EcdLink.Api.CoreApi.Services
             {
                 var totalPractitionerChildren = _childRepo.GetAll().Where(x => x.User.IsActive == false && x.Hierarchy.StartsWith(practitioner.Hierarchy)).Count();
 
-                List<StatementsIncomeType> incomeTypes = _incomeExpenseService.GetAllStatementIncomeTypes(userId, previousMonth.Year, previousMonth.Month);
-                List<StatementsContributionType> contributionTypes = _incomeExpenseService.GetAllStatementContributionTypes(userId, previousMonth.Year, previousMonth.Month);
+                List<StatementsIncomeType> incomeTypes = GetAllStatementIncomeTypes(userId, previousMonth.Year, previousMonth.Month);
+                List<StatementsContributionType> contributionTypes = GetAllStatementContributionTypes(userId, previousMonth.Year, previousMonth.Month);
 
                 var preschoolFeeId = incomeTypes.Where(x => x.Description == IncomeExpensePDF.PRESCHOOL_FEE).Select(y => y.Id).FirstOrDefault();
                 var moneyId = contributionTypes.Where(x => x.Description == IncomeExpensePDF.MONEY).Select(y => y.Id).FirstOrDefault();
@@ -1428,56 +1421,69 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
-                UpdateUserSummaryPoints(userId);
+                UpdateUserSummaryPoints(userId, today);
             }
             return true;
         }
 
-        public bool ManageThreeConsecutiveIncomeStatementsSubmitted(string userId)
+        private List<StatementsIncomeType> GetAllStatementIncomeTypes(string userId, int year, int month)
+        {
+            // Only return types linked to incomes for params
+            return
+            (
+                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
+                join statementIncomeType in _statementsIncomeTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.IncomeTypeId equals statementIncomeType.Id.ToString()
+                select statementIncomeType
+            ).Distinct().ToList();
+        }
+
+        private List<StatementsContributionType> GetAllStatementContributionTypes(string userId, int year, int month)
+        {
+            // Only return types linked to incomes for params
+            return
+            (
+                from statementsIncome in _statementsIncomeRepo.GetAll().Where(x => string.Equals(x.UserId, userId) && x.IsActive == true && x.DateReceived.Year.Equals(year) && x.DateReceived.Month.Equals(month) && x.Submitted.Equals(true))
+                join statementContributionType in _statementsContributionTypeRepo.GetAll().Where(x => x.IsActive == true).OrderBy(z => z.Description) on statementsIncome.ContributionTypeId equals statementContributionType.Id.ToString()
+                select statementContributionType
+            ).Distinct().ToList();
+        }
+
+        public bool CalculateThreeConsecutiveIncomeStatementsSubmitted(string userId, DateTime today)
         {
             List<PointsLibrary> pointsLibraries = GetPointsLibraryForActivity(Constants.PointsEngineSettings.income_statement);
-            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac3).FirstOrDefault();
-
-            DateTime today = DateTime.Now.Date;
-            DateTime deadline = today.GetStartOfMonth().AddDays(7);
-            DateTime previousMonth = today.GetEndOfPreviousMonth().Date;
-
-            var comboRanges = new List<int>();
-            comboRanges.AddRange(new List<int> { 1, 2, 3 });
-            comboRanges.AddRange(new List<int> { 2, 3, 4 });
-            comboRanges.AddRange(new List<int> { 3, 4, 5 });
-            comboRanges.AddRange(new List<int> { 4, 5, 6 });
-            comboRanges.AddRange(new List<int> { 5, 6, 7 });
-            comboRanges.AddRange(new List<int> { 6, 7, 8 });
-            comboRanges.AddRange(new List<int> { 7, 8, 9 });
-            comboRanges.AddRange(new List<int> { 8, 9, 10 });
-            comboRanges.AddRange(new List<int> { 9, 10, 11 });
-            comboRanges.AddRange(new List<int> { 10, 11, 12 });
+            PointsLibrary activity = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.income_statement_ac4).FirstOrDefault();
 
             Practitioner practitioner = _practitionerRepo.GetByUserId(userId);
 
             if (practitioner.IsFundaAppAdmin == true || practitioner.IsPrincipal == true)
             {
-                List<int> rows = _statementsIncomeStatementRepo.GetAll().Where(x => x.UserId == userId &&
-                                                                                x.Year == today.Year &&
-                                                                                x.Submitted == true &&
-                                                                                x.IsActive == true &&
-                                                                                x.SubmittedDate.Date >= x.SubmittedDate.GetStartOfMonth().Date &&
-                                                                                x.SubmittedDate.Date <= x.SubmittedDate.GetStartOfMonth().AddDays(7).Date)
-                                                                                .Select(x => x.SubmittedDate.Month).Distinct().ToList();
+                List<int> rows = _statementsIncomeStatementRepo.GetAll().Where(x => x.UserId == userId && x.Year == today.Year &&
+                                                                                x.Submitted == true && x.IsActive == true).Select(x => x.SubmittedDate.Month).Distinct().ToList();
                 rows.Sort();
 
-                var results = rows.ToDictionary(k => k, v => rows.Count(x => x == v))
-                .Where(x => x.Value == 3)
-                .Select(x => x.Key);
-
-
-
-
-
-
-                if (rows.Count > 0)
+                // Split sorted months into batches of 3
+                int nSize = 3;
+                var subList = new List<List<int>>();
+                for (var i = 0; i < rows.Count; i += nSize)
                 {
+                    var answer = rows.GetRange(i, Math.Min(nSize, rows.Count - i));
+                    subList.Add(answer);
+                }
+
+                // Find consecutive numbers
+                var total = 0;
+                foreach (var row in subList)
+                {
+                    var _answer = !row.Select((i, j) => i - j).Distinct().Skip(1).Any();
+                    if (_answer)
+                    {
+                        total++;
+                    }
+                }
+
+                if (total > 0)
+                {
+                    var totalPoints = total * activity.Points;
                     PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity_record == null)
                     {
@@ -1490,7 +1496,7 @@ namespace EcdLink.Api.CoreApi.Services
                                 UpdatedBy = _uId,
                                 Month = today.Month,
                                 Year = today.Year,
-                                Points = activity.Points,
+                                Points = totalPoints,
                                 UserId = userId,
                                 PointsLibraryId = activity.Id
                             }
@@ -1498,20 +1504,19 @@ namespace EcdLink.Api.CoreApi.Services
                     }
                     else
                     {
-                        activity_record.Points = activity.Points;
+                        activity_record.Points = totalPoints;
                         activity_record.UpdatedDate = DateTime.Now;
                         activity_record.UpdatedBy = _uId;
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
 
-                UpdateUserSummaryPoints(userId);
+                UpdateUserSummaryPoints(userId, today);
             }
             return true;
         }
 
         #endregion
-
 
     }
 }

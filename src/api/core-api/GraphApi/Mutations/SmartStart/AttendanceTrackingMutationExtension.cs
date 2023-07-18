@@ -1,13 +1,17 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Extensions;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Repositories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
+using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
 using HotChocolate.Types;
+using Microsoft.AspNetCore.Http;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -19,6 +23,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<bool> TrackAttendance(
           [Service] AttendanceTrackingRepository trackingRepository,
+          [Service] IPointsEngineService pointsEngineService,
+          IHttpContextAccessor contextAccessor,
           List<TrackAttendanceModel> attendance
           )
         {
@@ -59,7 +65,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         });
                     }
                 }
-                return await trackingRepository.TrackAttendance(dbEntities);
+                var result = await trackingRepository.TrackAttendance(dbEntities);
+                pointsEngineService.CalculateAttendanceSubmitted(contextAccessor.HttpContext.GetUser()?.Id, DateTime.UtcNow);
+                return result;
             }
             return false;
         }

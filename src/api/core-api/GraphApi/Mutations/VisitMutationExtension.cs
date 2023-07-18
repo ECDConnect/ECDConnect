@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitMutationExtension
@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.MotherId = mother.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
-            if (input.PlannedVisitDate != default(DateTime))
+            if (input.PlannedVisitDate != default)
             {
                 input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             }
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.InfantId = infant.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
-            if (input.PlannedVisitDate != default(DateTime))
+            if (input.PlannedVisitDate != default)
             {
                 input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             }
@@ -96,7 +96,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             if (input.isSupportCall == true)
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            } else
+            }
+            else
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }
@@ -228,16 +229,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             if (firstVisit == null)
             {
                 visit_string = Constants.SSSettings.visitType_re_accreditation_1;
-            } else
+            }
+            else
             {
                 var secondVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2).FirstOrDefault();
                 if (secondVisit == null)
                 {
                     visit_string = Constants.SSSettings.visitType_re_accreditation_2;
-                } else
+                }
+                else
                 {
                     var thirdVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3).FirstOrDefault();
-                    
+
                     if (thirdVisit == null)
                     {
                         visit_string = Constants.SSSettings.visitType_re_accreditation_3;
@@ -333,7 +336,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     input.PlannedVisitDate = newDate;
                     input.DueDate = newDate;
                     input.VisitType = pqaType3;
-                } else
+                }
+                else
                 {
                     DateTime dt = firstPQA.PlannedVisitDate;
                     DateTime newDate = dt.AddDays(60);
@@ -341,7 +345,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     input.DueDate = newDate;
                     input.VisitType = pqaType2;
                 }
-                
+
                 return visitManager.AddVisit(input);
             }
 

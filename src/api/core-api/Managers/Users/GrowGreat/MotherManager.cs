@@ -80,7 +80,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // Call points engine for hcw
-            _pointsEngineService.ManagePregnantMomClientRegistration(_applicationUserId);
+            _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId, DateTime.UtcNow);
             return createdMom;
         }
 
@@ -95,7 +95,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
 
                 // Call points engine for hcw
-                _pointsEngineService.ManagePregnantMomClientRegistration(_applicationUserId);
+                _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId, DateTime.UtcNow);
                 
                 return _motherRepo.Update(entityToUpdate);
             }

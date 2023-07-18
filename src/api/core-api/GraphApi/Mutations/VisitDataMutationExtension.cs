@@ -8,22 +8,23 @@ using HotChocolate;
 using HotChocolate.Types;
 using System;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+{
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitDataMutationExtension
     {
-        
+
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Boolean AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        public bool AddVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             if (input.MotherId != null)
             {
                 visitDataManager.AddAntenatalVisitData(input);
-            } 
+            }
             else if (input.InfantId != null)
             {
                 visitDataManager.AddChildVisitData(input);
-            } 
+            }
             else if (input.PractitionerId != null)
             {
                 visitDataManager.AddPractitionerVisitData(input, true);
@@ -36,7 +37,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Boolean EditVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
+        public bool EditVisitData([Service] VisitDataManager visitDataManager, CMSVisitDataInputModel input)
         {
             return visitDataManager.EditVisitData(input);
         }
