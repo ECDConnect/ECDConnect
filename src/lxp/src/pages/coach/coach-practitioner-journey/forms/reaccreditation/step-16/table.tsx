@@ -29,7 +29,7 @@ export interface TableProps {
     section3: Section;
     section4: Section;
   };
-  isToRemoveSmartStarter: boolean;
+  isToRemoveSmartStarter?: boolean;
   setReAccreditationRating?: (value: RatingType) => void;
 }
 
