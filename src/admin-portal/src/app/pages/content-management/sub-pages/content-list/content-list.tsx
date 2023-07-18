@@ -67,6 +67,8 @@ export default function ContentList({
           displayFields.push(x.fieldName);
       });
 
+      console.log(displayFields);
+
       setDisplayFields(displayFields);
     }
   }, [contentType]);
@@ -267,6 +269,7 @@ export default function ContentList({
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
+                  component={'consent'}
                 />
               </div>
             </div>
