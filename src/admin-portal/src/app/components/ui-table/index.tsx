@@ -116,7 +116,7 @@ export default function UiTable(
 
     const columnsWithSelect = [selectColumn, ...cols];
 
-    return [...columnsWithSelect, ...columns];
+    return component !== 'consent'? [...columnsWithSelect, ...columns] : [ ...columns];
   };
 
   const handleRowSelect = (event: ChangeEvent<HTMLInputElement>, row: { id: any; }) => {
@@ -148,7 +148,7 @@ export default function UiTable(
       };
 
       ++rowKey;
-      return rowWithCheckbox;
+      return row;
     });
   };
 
@@ -193,7 +193,7 @@ export default function UiTable(
         onChange={event => handleRowSelect(event, row)}
       />
     );
-    if (column.field === "select") {
+    if (column.field === "select" && component !== 'consent') {
 
       return checkboxCell;
 

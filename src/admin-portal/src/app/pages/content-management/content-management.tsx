@@ -11,6 +11,7 @@ import ContentLoader from '../../components/content-loader/content-loader';
 import { ContentManagementView } from './content-management-models';
 import ContentList from './sub-pages/content-list/content-list';
 import ContentWorkflow from './sub-pages/content-workflow/content-workflow';
+import SubNavigationLink from '../../components/sub-navigation-link/sub-navigation-link';
 
 export default function ContentManagement() {
   const { data: languages } = useQuery(GetAllLanguage, {
@@ -70,6 +71,21 @@ export default function ContentManagement() {
   ) {
     return (
       <div className="flex flex-col">
+        <div className="flex justify-center bg-white ">
+          {dataTypes.contentTypes.map((item) => (
+            <div
+             
+              style={{
+                width: '15%'
+              }}
+            >
+              <SubNavigationLink
+                key={`${item.name}-${new Date().getTime()}`}
+                item={item}
+              ></SubNavigationLink>
+            </div>
+          ))}
+        </div>
         {!selectedContent && (
           <div className="shadow flex-1 min-w-0 bg-white xl:flex rounded bg-white">
             <div className="border-b border-gray-200 xl:border-b-0 xl:flex-shrink-0 xl:w-64 xl:border-r xl:border-uiMidDark ">
@@ -128,7 +144,7 @@ export default function ContentManagement() {
             goBack={() => setSelectedContent(undefined)}
             savedContent={() => refreshParent()}
           />
-        )}
+        )} 
       </div>
     );
   } else {
