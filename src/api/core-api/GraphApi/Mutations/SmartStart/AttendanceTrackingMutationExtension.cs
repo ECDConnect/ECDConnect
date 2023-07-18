@@ -19,43 +19,49 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.CLASSROOM, GraphActionEnum.Create)]
         public async Task<bool> TrackAttendance(
           [Service] AttendanceTrackingRepository trackingRepository,
-          TrackAttendanceModel attendance
+          List<TrackAttendanceModel> attendance
           )
         {
             System.Guid tenantId = TenantExecutionContext.Tenant.Id;
             var dbEntities = new List<Attendance>();
 
-            // Add Parent Record
-            dbEntities.Add(new Attendance
+            if (attendance != null)
             {
-                ClassroomProgrammeId = attendance.ClassroomProgrammeId,
-                ParentRecordId = attendance.ProgrammeOwnerId,
-                UserId = attendance.ProgrammeOwnerId,
-                WeekOfYear = attendance.AttendanceDate.GetWeekOfYear(),
-                MonthOfYear = attendance.AttendanceDate.Month,
-                Year = attendance.AttendanceDate.Year,
-                AttendanceDate = attendance.AttendanceDate,
-                Attended = true,
-                TenantId = tenantId
-            });
-
-            foreach (var attendee in attendance.Attendees)
-            {
-                dbEntities.Add(new Attendance
+                foreach (var attendanceElement in attendance)
                 {
-                    ClassroomProgrammeId = attendance.ClassroomProgrammeId,
-                    ParentRecordId = attendance.ProgrammeOwnerId,
-                    UserId = attendee.UserId,
-                    WeekOfYear = attendance.AttendanceDate.GetWeekOfYear(),
-                    MonthOfYear = attendance.AttendanceDate.Month,
-                    Year = attendance.AttendanceDate.Year,
-                    AttendanceDate = attendance.AttendanceDate,
-                    Attended = attendee.Attended,
-                    TenantId = tenantId
-                });
-            }
+                    // Add Parent Record
+                    dbEntities.Add(new Attendance
+                    {
+                        ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
+                        ParentRecordId = attendanceElement.ProgrammeOwnerId,
+                        UserId = attendanceElement.ProgrammeOwnerId,
+                        WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
+                        MonthOfYear = attendanceElement.AttendanceDate.Month,
+                        Year = attendanceElement.AttendanceDate.Year,
+                        AttendanceDate = attendanceElement.AttendanceDate,
+                        Attended = true,
+                        TenantId = tenantId
+                    });
 
-            return await trackingRepository.TrackAttendance(dbEntities);
+                    foreach (var attendee in attendanceElement.Attendees)
+                    {
+                        dbEntities.Add(new Attendance
+                        {
+                            ClassroomProgrammeId = attendanceElement.ClassroomProgrammeId,
+                            ParentRecordId = attendanceElement.ProgrammeOwnerId,
+                            UserId = attendee.UserId,
+                            WeekOfYear = attendanceElement.AttendanceDate.GetWeekOfYear(),
+                            MonthOfYear = attendanceElement.AttendanceDate.Month,
+                            Year = attendanceElement.AttendanceDate.Year,
+                            AttendanceDate = attendanceElement.AttendanceDate,
+                            Attended = attendee.Attended,
+                            TenantId = tenantId
+                        });
+                    }
+                }
+                return await trackingRepository.TrackAttendance(dbEntities);
+            }
+            return false;
         }
     }
 }

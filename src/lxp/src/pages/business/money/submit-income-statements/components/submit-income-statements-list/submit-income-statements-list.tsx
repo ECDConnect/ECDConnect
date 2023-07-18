@@ -66,6 +66,7 @@ export const SubmitIncomeStatementsList: React.FC = () => {
   };
   const income = useSelector(statementsSelectors.getIncome);
   const expenses = useSelector(statementsSelectors.getExpenses);
+
   const preschoolIncome = useSelector(
     statementsSelectors.getPreschoolFeeIncome
   );
