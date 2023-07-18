@@ -31,6 +31,7 @@ CREATE TABLE "PointsUser" (
 	"Month" numeric NOT NULL,
 	"Year" numeric NOT NULL,
 	"Points" numeric NULL,
+	"Comment" text NULL,
 	CONSTRAINT "PK_PointsUser" PRIMARY KEY ("Id")
 );
 ALTER TABLE "PointsUser" ADD CONSTRAINT "PK_PointsUser_PointsLibraryId" FOREIGN KEY ("PointsLibraryId") REFERENCES "PointsLibrary"("Id") ON DELETE RESTRICT;

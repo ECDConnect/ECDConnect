@@ -166,7 +166,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             }
 
             // Call points engine for hcw
-            _pointsEngineService.ManageInfantClientRegistration(_applicationUserId);
+            _pointsEngineService.CalculateInfantClientRegistration(_applicationUserId, DateTime.UtcNow);
 
             return createdInfant;
         }

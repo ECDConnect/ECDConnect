@@ -44,6 +44,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Race> Races { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
+        public DbSet<ReasonForPractitionerLeaving> ReasonsForPractionerLeaving { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }

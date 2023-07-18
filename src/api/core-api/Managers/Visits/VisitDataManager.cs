@@ -96,7 +96,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // call points engine for hcw
             if (result)
             {
-                _pointsEngineService.ManageInfantVisits(_applicationUserId);
+                _pointsEngineService.CalculateInfantVisits(_applicationUserId, DateTime.UtcNow);
             }
             return true;
         }
@@ -145,7 +145,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             // call points engine for hcw
             if (result)
             {
-                _pointsEngineService.ManagePregnantMomVisits(_applicationUserId);
+                _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId, DateTime.UtcNow);
             }
             return true;
         }

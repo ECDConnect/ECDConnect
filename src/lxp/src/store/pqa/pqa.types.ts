@@ -31,6 +31,7 @@ export type PQAState = {
   prePqaFormData?: FormData[];
   prePqaPreviousFormData?: PreviousFormData[];
   pqaPreviousFormData?: PreviousFormData[];
+  pqaFollowUpPreviousFormData?: PreviousFormData[];
   reAccreditationPreviousFormData?: PreviousFormData[];
   supportVisitPreviousFormData?: PreviousFormData[];
   reAccreditationFollowUpVisitPreviousFormData?: PreviousFormData[];
@@ -51,7 +52,8 @@ export type PQAStateKeys =
   | 'reAccreditationFollowUpVisitPreviousFormData'
   | 'supportVisitPreviousFormData'
   | 'pqaPreviousFormData'
-  | 'reAccreditationPreviousFormData';
+  | 'reAccreditationPreviousFormData'
+  | 'pqaFollowUpPreviousFormData';
 
 export type PQAFormType =
   | 'pre-pqa'

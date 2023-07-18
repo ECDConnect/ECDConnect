@@ -3,6 +3,7 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
@@ -43,6 +44,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] UserManager<ApplicationUser> userManager,
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IPointsEngineService pointsEngineService,
             string token,
             AddChildCaregiverTokenModel caregiver,
             AddChildLearnerTokenModel learner,
@@ -73,6 +75,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 var caregiverEntity = AddCaregiver(caregiver, siteAddressEntity, caregiverRepo);
 
                 var childEntity = AddChild(contextAccessor, child, tokenModel, caregiverEntity, childRepo);
+
+                // Manage points for user
+                pointsEngineService.CalculateChildrenRegistrationAdd(appUser.Id, DateTime.UtcNow);
 
                 AddLearner(childEntity, learner, tokenModel, scope);
 

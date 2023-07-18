@@ -1,4 +1,5 @@
 using iTextSharp.text;
+using Org.BouncyCastle.Asn1.X509.Qualified;
 
 namespace EcdLink.Api.CoreApi
 {
@@ -35,7 +36,7 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
-            public const string visitType_sef_assessment = "sef_assessment";
+            public const string visitType_self_assessment = "self_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";
@@ -806,6 +807,20 @@ namespace EcdLink.Api.CoreApi
             public const string child_clients_ac12 = "Vitamin A";
             public const string child_clients_ac13 = "Deworming";
             public const string child_clients_ac14 = "Immunisations";
+
+            public const string SSChild = "Child";
+            public const string child_data_collection = "Child Data Collection";
+            public const string child_data_collection_ac1 = "Child Registration Completed";
+            public const string child_data_collection_ac2 = "Child Registration Removed";
+            public const string child_data_collection_ac3 = "Attendance submitted for practitioner's/principal's class";
+
+            public const string income_statement = "Submission of income statement";
+
+            public const string income_statement_ac1 = "Add/Edit monthly preschool fee";
+            public const string income_statement_ac2 = "Preschool fees added to income statement";
+            public const string income_statement_ac3 = "Monthly income statement submitted by the deadline";
+            public const string income_statement_ac4 = "Practitioner submits 3 consecutive months' income statements";
+
         }
 
 

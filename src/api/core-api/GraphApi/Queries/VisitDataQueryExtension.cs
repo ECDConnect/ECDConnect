@@ -13,7 +13,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
 {
     [ExtendObjectType(OperationTypeNames.Query)]
     public class VisitDataQueryExtension
@@ -33,7 +33,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<string> GetCompletedVisitsForVisitId([Service] VisitDataManager visitDataManager, string visitId) {
+        public List<string> GetCompletedVisitsForVisitId([Service] VisitDataManager visitDataManager, string visitId)
+        {
             return visitDataManager.GetCompletedVisitsForVisitId(visitId);
         }
 

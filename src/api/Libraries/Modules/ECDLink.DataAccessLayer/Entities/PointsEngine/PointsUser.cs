@@ -13,11 +13,10 @@ namespace ECDLink.DataAccessLayer.Entities.PointsEngine
     public class PointsUser<TKey> : EntityBase<TKey>, ApplicationUserJoin, PointsLibraryJoin<TKey>
          where TKey : IEquatable<TKey>
     {
-        public string Activity { get; set; }
-        public string SubActivity { get; set; }
         public int Points { get; set; }
         public int Month { get; set; }
         public int Year { get; set; }
+        public string? Comment { get; set; }
         public string UserId { get; set; }
         [ForeignKey(nameof(UserId))]
         public virtual ApplicationUser User { get; set; }

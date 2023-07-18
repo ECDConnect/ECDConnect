@@ -1,9 +1,11 @@
 using ECDLink.DataAccessLayer.Entities.Base;
 using ECDLink.DataAccessLayer.Entities.Interfaces;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.Security;
 using ECDLink.Security.Attributes;
 using HotChocolate;
 using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities.Users
@@ -37,6 +39,10 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         [ForeignKey(nameof(FranchisorId))]
         public virtual Franchisor Franchisor { get; set; }
         public Guid? FranchisorId { get; set; }
+        [NotMapped]
+        public virtual ICollection<Visit> TraineeVisits { get; set; }
+        [NotMapped]
+        public virtual ICollection<Visit> PractitionerVisits { get; set; }
 
     }
 

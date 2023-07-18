@@ -1,6 +1,6 @@
 import { useHistory, useLocation } from 'react-router';
 import { useState, useEffect } from 'react';
-import { useTheme } from '@ecdlink/core';
+import { useSnackbar, useTheme } from '@ecdlink/core';
 import {
   BannerWrapper,
   Button,
@@ -22,6 +22,7 @@ import * as styles from './practitioner-profile-info.styles';
 import ROUTES from '@routes/routes';
 import { PhoneIcon } from '@heroicons/react/solid';
 import { CreateNote } from './components/create-note/create-note';
+import { RemovePractioner } from './components/remove-practinioner/remove-practioner';
 import { getLastNoteDate } from '@utils/child/child-profile-utils';
 import { notesSelectors } from '@store/notes';
 import { useSelector } from 'react-redux';
@@ -52,9 +53,14 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
     useState<any>();
 
   const { theme } = useTheme();
+  const { showMessage } = useSnackbar();
 
   const [createPractitionerNoteVisible, setCreatePractitionerdNoteVisible] =
     useState<boolean>(false);
+
+  const [removePractionerReasonsVisible, setRemovePractionerReasonsVisible] =
+    useState<boolean>(false);
+
   const notes = useSelector(notesSelectors.getNotesByUserId(practitionerId));
 
   const call = () => {
@@ -67,31 +73,6 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
         practitioner?.user?.phoneNumber ?? ''
       )}`
     );
-  };
-
-  const appDispatch = useAppDispatch();
-  const removePractitioner = async () => {
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token || ''
-    ).UpdatePrincipalInvitation(
-      practitioner?.userId!,
-      practitioner?.principalHierarchy!,
-      false
-    );
-    await new PractitionerService(
-      userAuth?.auth_token!
-    ).UpdatePractitionerRegistered(practitioner?.userId!, false);
-    await appDispatch(
-      practitionerThunkActions.getAllPractitioners({})
-    ).unwrap();
-    history.push(ROUTES.COACH.PRACTITIONERS);
   };
 
   const classroomsDetailsForPractitioner = async () => {
@@ -496,6 +477,21 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                   />
                 </div>
               </Dialog>
+              <Dialog
+                fullScreen
+                visible={removePractionerReasonsVisible}
+                position={DialogPosition.Middle}
+              >
+                <div className={styles.dialogContent}>
+                  <RemovePractioner
+                    onSuccess={() =>
+                      showMessage({
+                        message: `${practitioner?.user?.firstName} removed`,
+                      })
+                    }
+                  />
+                </div>
+              </Dialog>
             </div>
             <Divider dividerType="dashed" className="my-4" />
             <div className="flex w-full justify-center">
@@ -503,7 +499,7 @@ export const CoachPractitionerProfileInfo: React.FC = () => {
                 type="outlined"
                 color="primary"
                 className={'mt-6 mb-6 w-11/12'}
-                onClick={removePractitioner}
+                onClick={() => setRemovePractionerReasonsVisible(true)}
               >
                 {renderIcon(
                   'TrashIcon',

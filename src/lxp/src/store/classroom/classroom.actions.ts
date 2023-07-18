@@ -357,12 +357,9 @@ export const upsertClassroomGroups = createAsyncThunk<
             UserId: x.userId,
           };
 
-          if (x?.isOnline === false) {
-            return await new ClassroomGroupService(
-              userAuth?.auth_token
-            ).updateClassroomGroup(x.id ?? '', input);
-          }
-          return true;
+          return await new ClassroomGroupService(
+            userAuth?.auth_token
+          ).updateClassroomGroup(x.id ?? '', input);
         });
       }
       return Promise.all(promises);
