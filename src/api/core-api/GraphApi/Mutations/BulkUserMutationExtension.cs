@@ -150,16 +150,16 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     ValidationErrors = validationErrors
                 };
 
-            var teamLeadIds = hcwToTeamLeadMap
+            var teamLeadIdNumbers = hcwToTeamLeadMap
                 .Select(uc => uc.Value)
                 .Distinct()
                 .ToList();
 
             var teamLeadRepo = repoFactory.CreateGenericRepository<TeamLead>(userContext: currentUserId);
-            var teamLeadSAIdToIdMap = teamLeadRepo.GetAll()
+            var teamLeadSaIdToIdsMap = teamLeadRepo.GetAll()
                 .Include(t => t.User)
-                .Where(t => teamLeadIds.Contains(t.User.IdNumber))
-                .ToDictionary(t => t.User.IdNumber, t => t.Id);
+                .Where(t => teamLeadIdNumbers.Contains(t.User.IdNumber))
+                .ToDictionary(t => t.Id, t => t.User.IdNumber);
 
             var communityHealthWorkerRepo = repoFactory.CreateGenericRepository<HealthCareWorker>(userContext: currentUserId);
 
@@ -189,82 +189,65 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
+
+                var created = await userManager.CreateAsync(user);
+
+                if (!created.Succeeded)
+                {
+                    validationErrors.Add(
+                        new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
+                        );
+                    continue;
+                }
+
+                IdentityResult addToRoleResult = null;
                 try
                 {
-                    var userExists = await userManager.FindByNameAsync(user.UserName);
-
-                    if (userExists is not null)
-                    {
-                        validationErrors.Add(
-                            new InputValidationError(rowNum, new List<string> { }, $"User already exists: {user.UserName}")
-                            );
-                        continue;
-                    }
-                    var created = await userManager.CreateAsync(user);
-
-                    if (!created.Succeeded)
-                    {
-                        validationErrors.Add(
-                            new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
-                            );
-                        continue;
-                    }
-
-                    IdentityResult addToRoleResult = null;
-                    try
-                    {
-                        addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.HEALTH_CARE_WORKER);
-                    }
-                    catch (Exception ex)
-                    {
-                        validationErrors.Add(
-                            new InputValidationError(
-                                rowNum,
-                                addToRoleResult?.Errors.Select(e => e.Description),
-                                $"Could not add user to role: {RolesGG.HEALTH_CARE_WORKER}."));
-                        continue;
-                    }
-
-                    try
-                    {
-                        var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
-                        var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
-                        hcw.TeamLeadId = teamLeadSAIdToIdMap.First(teamLead => teamLead.Key == teamLeadSAIdNum).Value;
-                        hcw.UserId = user.Id;
-
-                        communityHealthWorkerRepo.Insert(hcw);
-                    }
-                    catch (Exception ex)
-                    {
-                        validationErrors.Add(new InputValidationError(
-                            rowNum,
-                            addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
-                            $"Could not create {RolesGG.HEALTH_CARE_WORKER}."));
-                        continue;
-                    }
-
-                    createdUsers.Add(user.UserName);
-
-                    try
-                    {
-                        var token = await invitationManager.GenerateTokenAsync(user);
-
-                        if (string.IsNullOrWhiteSpace(token))
-                        {
-                            validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
-                            continue;
-                        }
-                        await notificationManager.SendInvitationAsync(user, token);
-                    }
-                    catch
-                    {
-                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
-                    }
+                    addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.HEALTH_CARE_WORKER);
                 }
                 catch (Exception ex)
                 {
-                    _logger.LogError($"Exception during bulk insert of {nameof(HealthCareWorker)}", ex);
-                    validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
+                    validationErrors.Add(
+                        new InputValidationError(
+                            rowNum,
+                            addToRoleResult?.Errors.Select(e => e.Description),
+                            $"Could not add user to role: {RolesGG.HEALTH_CARE_WORKER}."));
+                }
+
+                try
+                {
+                    var teamLeadSAIdNum = hcwToTeamLeadMap[user.UserName];
+                    var hcw = hcwUsers.First(u => u.Key == user.UserName).Value;
+                    hcw.TeamLeadId = teamLeadSaIdToIdsMap.First(teamLead => teamLead.Value == teamLeadSAIdNum).Key;
+                    hcw.UserId = user.Id;
+
+                    communityHealthWorkerRepo.Insert(hcw);
+                }
+                catch (Exception ex)
+                {
+                    validationErrors.Add(new InputValidationError(
+                        rowNum,
+                        addToRoleResult?.Errors?.Select(e => e?.Description?.ToString()),
+                        $"Could not create {RolesGG.HEALTH_CARE_WORKER}."));
+                    continue;
+                }
+
+                createdUsers.Add(user.UserName);
+
+                try
+                {
+                    var token = await invitationManager.GenerateTokenAsync(user);
+
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
+                        continue;
+                    }
+                    await notificationManager.SendInvitationAsync(user, token);
+                }
+                catch (Exception ex)
+                {
+                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user.UserName}"));
                 }
             }
 
@@ -481,93 +464,87 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             foreach (var user in userImportList)
             {
                 rowNum++;
+
+                var created = await userManager.CreateAsync(user);
+                if (!created.Succeeded)
+                {
+                    validationErrors.Add(
+                        new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
+                        );
+                    continue;
+                }
+
+                IdentityResult addToRoleResult = null;
                 try
                 {
-                    var created = await userManager.CreateAsync(user);
-                    if (!created.Succeeded)
+                    addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.TEAM_LEAD);
+                    if (!addToRoleResult.Succeeded)
                     {
                         validationErrors.Add(
-                            new InputValidationError(rowNum, new List<string> { $": {string.Join(',', created.Errors.Select(e => e.Description))}" }, "Could not create this user.")
-                            );
+                        new InputValidationError(
+                            rowNum,
+                            addToRoleResult?.Errors.Select(e => e.Description),
+                            $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
                         continue;
-                    }
-
-                    IdentityResult addToRoleResult = null;
-                    try
-                    {
-                        addToRoleResult = await userManager.AddToRoleAsync(user, RolesGG.TEAM_LEAD);
-                        if (!addToRoleResult.Succeeded)
-                        {
-                            validationErrors.Add(
-                            new InputValidationError(
-                                rowNum,
-                                addToRoleResult?.Errors.Select(e => e.Description),
-                                $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
-                            continue;
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        validationErrors.Add(
-                            new InputValidationError(
-                                rowNum,
-                                addToRoleResult?.Errors.Select(e => e.Description),
-                                $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
-                        continue;
-                    }
-
-                    if (addToRoleResult != null)
-                    {
-                        // Get the current tl's user.
-                        var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
-
-                        // Assign newly created user
-                        newTl.UserId = user.Id;
-
-                        if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
-                        {
-                            var clinic = clinics.First(c => c.Name == clinicName);
-                            newTl.ClinicId = clinic.Id;
-                        }
-
-                        try
-                        {
-                            teamLeadRepo.Insert(newTl);
-                        }
-                        catch (Exception ex)
-                        {
-                            validationErrors.Add(
-                            new InputValidationError(
-                                rowNum,
-                                new string[] { ex.Message },
-                                $"Could not create team lead for user: {user.UserName}."));
-                            continue;
-                        }
-                    }
-
-
-                    createdUsers.Add(user.UserName);
-
-                    try
-                    {
-                        var token = await invitationManager.GenerateTokenAsync(user);
-
-                        if (string.IsNullOrWhiteSpace(token))
-                        {
-                            validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
-                            continue;
-                        }
-                        await notificationManager.SendInvitationAsync(user, token);
-                    }
-                    catch
-                    {
-                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not send invitation to user: {user.UserName}"));
                     }
                 }
                 catch (Exception ex)
                 {
                     _logger.LogError(ex.Message, ex);
-                    validationErrors.Add(new InputValidationError(rowNum, null, $"Could not create, assign role or send invitation for: {user.UserName}"));
+                    validationErrors.Add(
+                        new InputValidationError(
+                            rowNum,
+                            addToRoleResult?.Errors.Select(e => e.Description),
+                            $"Could not add user to role: {RolesGG.TEAM_LEAD}."));
+                    continue;
+                }
+
+                if (addToRoleResult != null)
+                {
+                    // Get the current tl's user.
+                    var newTl = teamLeadUsers.First(tl => tl.Key == user.UserName).Value;
+
+                    // Assign newly created user
+                    newTl.UserId = user.Id;
+
+                    if (userClinicNames.TryGetValue(user.UserName, out string clinicName))
+                    {
+                        var clinic = clinics.First(c => c.Name == clinicName);
+                        newTl.ClinicId = clinic.Id;
+                    }
+
+                    try
+                    {
+                        teamLeadRepo.Insert(newTl);
+                    }
+                    catch (Exception ex)
+                    {
+                        validationErrors.Add(
+                        new InputValidationError(
+                            rowNum,
+                            new string[] { ex.Message },
+                            $"Could not create team lead for user: {user.UserName}."));
+                        continue;
+                    }
+                }
+
+                createdUsers.Add(user.UserName);
+
+                try
+                {
+                    var token = await invitationManager.GenerateTokenAsync(user);
+
+                    if (string.IsNullOrWhiteSpace(token))
+                    {
+                        validationErrors.Add(new InputValidationError(rowNum, null, $"Could not generate invitation token for user: {user.UserName}"));
+                        continue;
+                    }
+                    await notificationManager.SendInvitationAsync(user, token);
+                }
+                catch (Exception ex)
+                {
+                    _logger.LogError(ex.Message, ex);
+                    validationErrors.Add(new InputValidationError(rowNum, new string[] { ex.Message }, $"Could not send invitation to user: {user.UserName}"));
                 }
             }
 
