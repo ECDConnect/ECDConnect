@@ -223,7 +223,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             />
           )}
           {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
-            practitionerClassroom && (
+            practitionerClassroom &&
+            practitionersList &&
+            practitionersList.length && (
               <div>
                 <Dropdown
                   placeholder={'Select practitioner'}
@@ -250,7 +252,9 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
               </div>
             )}
           {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
-            practitionerClassroomGroups && (
+            practitionerClassroomGroups &&
+            practitionersList &&
+            practitionersList.length && (
               <div>
                 <Divider dividerType="dashed" className="my-4" />
                 <Typography
