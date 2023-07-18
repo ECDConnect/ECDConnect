@@ -122,7 +122,7 @@ export const SupportVisitStep1 = ({
         text={`Coaching ${isCallAnswer ? 'call' : 'visit'}`}
         color="textDark"
       />
-      <Typography type="h4" text={noteDate} color="textMid" />
+      {noteDate && <Typography type="h4" text={noteDate} color="textMid" />}
       <Divider dividerType="dashed" className="my-4" />
       {(isPqaVisit || isReAccreditationVisit) && (
         <Typography
