@@ -301,7 +301,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             practitioner.PrincipalHierarchy = null;
             practitioner.CoachHierarchy = null;
             practitioner.ShareInfo = false;
-            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForPractitionerLeavingId);
+            practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
             practitioner.ReasonForLeavingDetails = reasonDetails;
             
             //update practitioner with column changes

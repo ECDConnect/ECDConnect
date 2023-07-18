@@ -6410,7 +6410,7 @@ export type Practitioner = {
   progress: Scalars['Decimal'];
   reasonForLeaving?: Maybe<ReasonForPractitionerLeaving>;
   reasonForLeavingDetails?: Maybe<Scalars['String']>;
-  reasonForLeavingPractitionerId?: Maybe<Scalars['UUID']>;
+  reasonForPractitionerLeavingId?: Maybe<Scalars['UUID']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -6501,7 +6501,7 @@ export type PractitionerFilterInput = {
   progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingFilterInput>;
   reasonForLeavingDetails?: InputMaybe<StringOperationFilterInput>;
-  reasonForLeavingPractitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  reasonForPractitionerLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -6548,7 +6548,7 @@ export type PractitionerInput = {
   Progress: Scalars['Decimal'];
   ReasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingInput>;
   ReasonForLeavingDetails?: InputMaybe<Scalars['String']>;
-  ReasonForLeavingPractitionerId?: InputMaybe<Scalars['UUID']>;
+  ReasonForPractitionerLeavingId?: InputMaybe<Scalars['UUID']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -6779,7 +6779,7 @@ export type Principal = {
   progress: Scalars['Decimal'];
   reasonForLeaving?: Maybe<ReasonForPractitionerLeaving>;
   reasonForLeavingDetails?: Maybe<Scalars['String']>;
-  reasonForLeavingPractitionerId?: Maybe<Scalars['UUID']>;
+  reasonForPractitionerLeavingId?: Maybe<Scalars['UUID']>;
   shareInfo?: Maybe<Scalars['Boolean']>;
   signingSignature?: Maybe<Scalars['String']>;
   siteAddress?: Maybe<SiteAddress>;
@@ -6845,7 +6845,7 @@ export type PrincipalFilterInput = {
   progress?: InputMaybe<ComparableDecimalOperationFilterInput>;
   reasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingFilterInput>;
   reasonForLeavingDetails?: InputMaybe<StringOperationFilterInput>;
-  reasonForLeavingPractitionerId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
+  reasonForPractitionerLeavingId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   shareInfo?: InputMaybe<BooleanOperationFilterInput>;
   signingSignature?: InputMaybe<StringOperationFilterInput>;
   siteAddress?: InputMaybe<SiteAddressFilterInput>;
@@ -6892,7 +6892,7 @@ export type PrincipalInput = {
   Progress: Scalars['Decimal'];
   ReasonForLeaving?: InputMaybe<ReasonForPractitionerLeavingInput>;
   ReasonForLeavingDetails?: InputMaybe<Scalars['String']>;
-  ReasonForLeavingPractitionerId?: InputMaybe<Scalars['UUID']>;
+  ReasonForPractitionerLeavingId?: InputMaybe<Scalars['UUID']>;
   ShareInfo?: InputMaybe<Scalars['Boolean']>;
   SigningSignature?: InputMaybe<Scalars['String']>;
   SiteAddress?: InputMaybe<SiteAddressInput>;
@@ -9647,13 +9647,6 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
-export type Setting_SmsPortal = {
-  __typename?: 'Setting_SMSPortal';
-  ApiKey: Scalars['String'];
-  ApiSecret: Scalars['String'];
-  BaseUrl: Scalars['String'];
-};
-
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -9724,7 +9717,6 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
-  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
