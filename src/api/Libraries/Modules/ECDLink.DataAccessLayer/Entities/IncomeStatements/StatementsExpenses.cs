@@ -37,11 +37,4 @@ namespace ECDLink.DataAccessLayer.Entities.IncomeStatements
         public StatementsExpenses StatementsExpenses { get; set; }
         public TKey StatementsExpensesId { get; set; }
     }
-
-    public interface StatementsExpensesJoin<TKey>
-    {
-        [ForeignKey(nameof(StatementsExpensesId))]
-        public StatementsExpenses StatementsExpenses { get; set; }
-        public TKey StatementsExpensesId { get; set; }
-    }
 }

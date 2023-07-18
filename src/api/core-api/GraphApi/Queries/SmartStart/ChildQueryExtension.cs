@@ -63,7 +63,7 @@ string classroomId)
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public async Task<ChildCreatedByDetail> GetChildCreatedByDetailAsync([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            [Service] PersonnelManager personnelManager,
+            [Service] PersonnelService personnelManager,
         string firstName, string surname, string practitionerId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
@@ -86,16 +86,19 @@ string classroomId)
                             }
                             if (childExists)
                             {
+                                var programmeName = personnelManager.GetSiteNameForPractitioner(practitioner.UserId);
                                 return new ChildCreatedByDetail()
                                 {
                                     ChildUserId = child.UserId,
-                                    FullName = child.User.FullName,
+                                    FullName = child.User.FirstName + " " + child.User.Surname,
                                     CreatedByName = child.InsertedBy,
                                     CreatedById = child.UpdatedBy,
                                     CreatedByDate = child.InsertedDate,
                                     PractitionerName = practitioner.User.FullName,
                                     DateOfBirth = child.User.DateOfBirth,
-                                    ProfileImageUrl = child.User.ProfileImageUrl
+                                    ProfileImageUrl = child.User.ProfileImageUrl,
+                                    ProgrammeName = (!string.IsNullOrWhiteSpace(programmeName) ? programmeName : "N/A"),
+                                    PractitionerUserId = practitioner.UserId
                                 };
                             }
                         }

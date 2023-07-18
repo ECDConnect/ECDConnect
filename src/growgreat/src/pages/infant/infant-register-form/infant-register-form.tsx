@@ -164,11 +164,6 @@ export const InfantRegisterForm: React.FC = () => {
     | (MotherDto & CaregiverDto)
     | undefined;
 
-  const motherInfoFromRecordEvent = useMemo(
-    () => (motherId ? mother : undefined),
-    [mother, motherId]
-  );
-
   const successMessage = useMemo(
     () =>
       multipleChildrenArray.length > 1

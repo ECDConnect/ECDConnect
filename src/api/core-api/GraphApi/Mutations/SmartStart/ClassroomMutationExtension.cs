@@ -1,19 +1,18 @@
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
-using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Hierarchy;
 using ECDLink.DataAccessLayer.Hierarchy.Entities;
 using ECDLink.DataAccessLayer.Repositories.Factories;
+using ECDLink.DataAccessLayer.Repositories.Generic.Base;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using HotChocolate;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
-using Microsoft.EntityFrameworkCore;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -53,7 +52,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).FirstOrDefault();
+            ClassroomGroup classRoomGroup = classRepo.GetAll().Where(x => x.Id.Equals(id)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             Guid? programmeType = input.ProgrammeTypeId;
             //if a programmetype already exists on a previously created classroomgroup, use that to avoid mismatching programmes
@@ -144,21 +143,22 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Guid id,
             ClassProgramme input)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-            var classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
-            ClassroomGroup classRoom = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).FirstOrDefault();
-            var hierarchy = engine.GetUserHierarchy(classRoom.UserId != null ? classRoom.UserId.ToString() : uId);
-            if (classRoom != null)
+            string uId = contextAccessor.HttpContext.GetUser().Id;
+            IGenericRepository<ClassroomGroup, Guid> classRepo = repoFactory.CreateGenericRepository<ClassroomGroup>(userContext: uId);
+            ClassroomGroup classroomGroup = classRepo.GetAll().Where(x => x.Id.Equals(input.ClassroomGroupId)).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
+            string hierarchy = engine.GetUserHierarchy(classroomGroup.UserId != null ? classroomGroup.UserId.ToString() : uId);
+
+            if (classroomGroup != null)
             {
                 if (!string.IsNullOrEmpty(hierarchy))
                 {
-                    var programmeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
-                    var existingProgramme = programmeRepo.GetById(id);
+                    var classProgrammeRepo = repoFactory.CreateGenericRepository<ClassProgramme>(userContext: uId);
+                    var existingClassProgramme = classProgrammeRepo.GetById(id);
 
-                    if (existingProgramme == null)
+                    if (existingClassProgramme == null)
                     {
-                        //create new classroomgroup
-                        ClassProgramme classRoomCreate = new ClassProgramme()
+                        //create new ClassProgramme
+                        ClassProgramme classProgrammeCreate = new ClassProgramme()
                         {
                             Id = input.Id,
                             ClassroomGroupId = input.ClassroomGroupId,
@@ -171,18 +171,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                             Hierarchy = hierarchy
                         };
 
-                        return programmeRepo.Insert(classRoomCreate);
+                        return classProgrammeRepo.Insert(classProgrammeCreate);
                     }
                     else
                     {
-                        existingProgramme.UpdatedDate = DateTime.Now;
-                        existingProgramme.ClassroomGroupId = input.ClassroomGroupId;
-                        existingProgramme.Hierarchy = hierarchy;
-                        existingProgramme.MeetingDay = input.MeetingDay;
-                        existingProgramme.IsFullDay = input.IsFullDay;
-                        existingProgramme.IsActive = input.IsActive;
+                        existingClassProgramme.UpdatedDate = DateTime.Now;
+                        existingClassProgramme.ClassroomGroupId = input.ClassroomGroupId;
+                        existingClassProgramme.Hierarchy = hierarchy;
+                        existingClassProgramme.MeetingDay = input.MeetingDay;
+                        // TODO: existingClassProgramme.ProgrammeStartDate should not be updated?
+                        //existingClassProgramme.ProgrammeStartDate = input.ProgrammeStartDate,
+                        existingClassProgramme.IsFullDay = input.IsFullDay;
+                        existingClassProgramme.IsActive = input.IsActive;
 
-                        return programmeRepo.Update(existingProgramme);
+                        return classProgrammeRepo.Update(existingClassProgramme);
                     }
                 }
             }
