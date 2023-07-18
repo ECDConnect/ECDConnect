@@ -8,21 +8,21 @@ namespace ECDLink.DataAccessLayer.Entities
 {
     [Table(nameof(ReasonForPractitionerLeaving))]
     [EntityPermission(PermissionGroups.GENERAL)]
-    public class ReasonForPractitionerLeaving : ReasonForLeavingPractitioner<Guid>
+    public class ReasonForPractitionerLeaving : ReasonForPractitionerLeaving<Guid>
     {
 
     }
 
-    public class ReasonForLeavingPractitioner<TKey> : EntityBase<TKey>
+    public class ReasonForPractitionerLeaving<TKey> : EntityBase<TKey>
         where TKey : IEquatable<TKey>
     {
         public string Description { get; set; }
     }
 
-    public interface ReasonForLeavingPractitionerJoin<TKey>
+    public interface ReasonForPractitionerLeavingJoin<TKey>
     {
-        [ForeignKey(nameof(ReasonForLeavingPractionerId))]
+        [ForeignKey(nameof(ReasonForPractionerLeavingId))]
         public ReasonForPractitionerLeaving ReasonForLeaving { get; set; }
-        public TKey ReasonForLeavingPractionerId { get; set; }
+        public TKey ReasonForPractionerLeavingId { get; set; }
     }
 }
