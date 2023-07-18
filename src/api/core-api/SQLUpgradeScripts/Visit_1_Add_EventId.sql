@@ -1,0 +1,1 @@
+alter table "Visit" add column "EventId" uuid null;

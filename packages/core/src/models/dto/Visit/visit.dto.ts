@@ -20,6 +20,7 @@ export interface VisitDto {
     insertedDate?: string;
     updatedDate?: string;
   };
+  eventId?: string;
 }
 
 export interface VisitStatusDto {

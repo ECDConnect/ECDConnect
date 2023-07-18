@@ -75,7 +75,6 @@ export const setStep = (
 
 export const timelineSteps = ({
   timeline,
-  practitionerEvents,
   onView,
   onStart,
   onScheduleOrStart,
@@ -88,7 +87,6 @@ export const timelineSteps = ({
 }: {
   practitionerId: string;
   timeline: PractitionerTimeline;
-  practitionerEvents?: CalendarEventModel[];
   onView: (visit: Visit) => void;
   onStart: (visitName: string) => void;
   onScheduleOrStart: (schedule: ScheduleProps) => void;
@@ -208,13 +206,9 @@ export const timelineSteps = ({
   }
 
   if (!!timeline.pQASiteVisits?.length) {
-    const {
-      currentVisit,
-      currentVisitEvent,
-      ratingData,
-      stepType,
-      subTitleText,
-    } = getPqaStepData({ timeline, practitionerEvents, currentPqaRating });
+    const { currentVisit, ratingData, stepType, subTitleText } = getPqaStepData(
+      { timeline, currentPqaRating }
+    );
 
     steps.push({
       title: 'First PQA',
@@ -244,7 +238,6 @@ export const timelineSteps = ({
           isLoading={isLoading}
           currentVisit={currentVisit!}
           practitionerId={practitionerId}
-          currentVisitEventId={currentVisitEvent?.id}
           onStart={onStart}
           onScheduleOrStart={onScheduleOrStart}
           isOnline={isOnline}
@@ -254,17 +247,11 @@ export const timelineSteps = ({
   }
 
   if (timeline.reAccreditationVisits?.length) {
-    const {
-      currentVisit,
-      currentVisitEvent,
-      ratingData,
-      stepType,
-      subTitleText,
-    } = getReAccreditationStepData({
-      timeline,
-      practitionerEvents,
-      currentRating: currentReAccreditationRating,
-    });
+    const { currentVisit, ratingData, stepType, subTitleText } =
+      getReAccreditationStepData({
+        timeline,
+        currentRating: currentReAccreditationRating,
+      });
 
     steps.push({
       title: 'Re-accreditation visit',
@@ -295,7 +282,6 @@ export const timelineSteps = ({
           isLoading={isLoading}
           currentVisit={currentVisit!}
           practitionerId={practitionerId}
-          currentVisitEventId={currentVisitEvent?.id}
           onScheduleOrStart={onScheduleOrStart}
           isOnline={isOnline}
         />

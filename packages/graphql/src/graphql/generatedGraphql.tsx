@@ -9647,6 +9647,13 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
+export type Setting_SmsPortal = {
+  __typename?: 'Setting_SMSPortal';
+  ApiKey: Scalars['String'];
+  ApiSecret: Scalars['String'];
+  BaseUrl: Scalars['String'];
+};
+
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -9669,6 +9676,11 @@ export type Setting_SmartLinkApi = {
   MaskDataMode: Scalars['String'];
   MaskDataNumber: Scalars['String'];
   Mode: Scalars['String'];
+};
+
+export type Setting_Sms = {
+  __typename?: 'Setting_Sms';
+  Provider: Scalars['String'];
 };
 
 export type Setting_Smtp = {
@@ -9702,6 +9714,13 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
+export type Setting_ITouch = {
+  __typename?: 'Setting_iTouch';
+  BaseUrl: Scalars['String'];
+  Password: Scalars['String'];
+  Username: Scalars['String'];
+};
+
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -9717,13 +9736,16 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
+  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
+  Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
+  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {
@@ -10796,6 +10818,7 @@ export type TraineeOnBoardTimeline = {
 };
 
 export type UpdateVisitPlannedVisitDateModelInput = {
+  eventId: Scalars['UUID'];
   plannedVisitDate: Scalars['DateTime'];
   visitId: Scalars['UUID'];
 };
@@ -10938,6 +10961,7 @@ export type Visit = {
   coachId?: Maybe<Scalars['UUID']>;
   comment?: Maybe<Scalars['String']>;
   dueDate?: Maybe<Scalars['DateTime']>;
+  eventId?: Maybe<Scalars['UUID']>;
   id: Scalars['UUID'];
   infant?: Maybe<Infant>;
   infantId?: Maybe<Scalars['UUID']>;
@@ -11143,6 +11167,7 @@ export type VisitFilterInput = {
   coachId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   comment?: InputMaybe<StringOperationFilterInput>;
   dueDate?: InputMaybe<ComparableNullableOfDateTimeOperationFilterInput>;
+  eventId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
   id?: InputMaybe<ComparableGuidOperationFilterInput>;
   infant?: InputMaybe<InfantFilterInput>;
   infantId?: InputMaybe<ComparableNullableOfGuidOperationFilterInput>;
@@ -11266,6 +11291,7 @@ export type VisitInput = {
   CoachId?: InputMaybe<Scalars['UUID']>;
   Comment?: InputMaybe<Scalars['String']>;
   DueDate?: InputMaybe<Scalars['DateTime']>;
+  EventId?: InputMaybe<Scalars['UUID']>;
   Id?: InputMaybe<Scalars['UUID']>;
   Infant?: InputMaybe<InfantInput>;
   InfantId?: InputMaybe<Scalars['UUID']>;
@@ -11293,6 +11319,7 @@ export type VisitModelInput = {
   coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
   dueDate?: InputMaybe<Scalars['DateTime']>;
+  eventId?: InputMaybe<Scalars['UUID']>;
   infant?: InputMaybe<InfantModelInput>;
   infantId?: InputMaybe<Scalars['UUID']>;
   isSupportCall?: InputMaybe<Scalars['Boolean']>;

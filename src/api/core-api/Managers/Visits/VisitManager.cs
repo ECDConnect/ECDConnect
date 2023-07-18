@@ -679,6 +679,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         {
             var visit = _visitRepo.GetById(input.VisitId);
             visit.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visit.EventId = input.EventId;
             _visitRepo.Update(visit);
             return visit;
         }

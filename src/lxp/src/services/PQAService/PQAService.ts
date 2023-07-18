@@ -295,6 +295,7 @@ class PQAService {
                 normalizedName
                 description
               }
+              eventId
             }
             pQASiteVisits {
               id
@@ -309,6 +310,7 @@ class PQAService {
                 normalizedName
                 description
               }
+              eventId
             }
             reAccreditationVisits {
               id
@@ -322,6 +324,7 @@ class PQAService {
                 normalizedName
                 description
               }
+              eventId
             }
             reAccreditationRating1 {
               children {
@@ -388,6 +391,7 @@ class PQAService {
                 order
                 type
               }
+              eventId
             }
           }
         }

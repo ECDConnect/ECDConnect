@@ -68,7 +68,6 @@ import { ExclamationIcon } from '@heroicons/react/solid';
 import { addDays } from 'date-fns';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
-import { calendarSelectors } from '@/store/calendar';
 import { followUpDeadline } from './timeline/utils';
 import {
   newReAccreditationFollowUpId,
@@ -252,12 +251,6 @@ export const CoachPractitionerJourney = () => {
     new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
       new Date(lastAttendedReAccreditationVisit?.insertedDate);
 
-  const practitionerEvents = useSelector(
-    calendarSelectors.findCalendarEvents({
-      participantUserId: practitionerId,
-    })
-  );
-
   const practitionerFirstName = practitioner?.user?.firstName;
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -330,6 +323,7 @@ export const CoachPractitionerJourney = () => {
         const payload: UpdateVisitPlannedVisitDateModelInput = {
           visitId: visit.id,
           plannedVisitDate: event.start,
+          eventId: event.id,
         };
         appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
         appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
@@ -748,7 +742,6 @@ export const CoachPractitionerJourney = () => {
               items={timelineSteps({
                 practitionerId,
                 timeline,
-                practitionerEvents,
                 onView,
                 onStart,
                 onScheduleOrStart,
