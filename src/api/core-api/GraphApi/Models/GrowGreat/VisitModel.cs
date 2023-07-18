@@ -22,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
+        public Guid? EventId { get; set; }
     }
 
     public class SupportVisitModel
@@ -99,6 +100,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public Guid VisitId { get; set; }
         public DateTime PlannedVisitDate { get; set; }
+        public Guid EventId { get; set; }
     }
 
 }

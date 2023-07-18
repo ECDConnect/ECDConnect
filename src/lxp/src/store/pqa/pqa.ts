@@ -62,6 +62,7 @@ const pqaSlice = createSlice({
           );
         if (!!visit) {
           visit.plannedVisitDate = input.plannedVisitDate;
+          visit.eventId = input.eventId;
         }
       });
     },
@@ -339,6 +340,7 @@ const pqaSlice = createSlice({
           );
         if (!!visit) {
           visit.plannedVisitDate = input.plannedVisitDate;
+          visit.eventId = input.eventId;
         }
       });
     });

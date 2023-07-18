@@ -17,7 +17,6 @@ interface PQAVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
   practitionerId: string;
-  currentVisitEventId: string | undefined;
   isOnline: boolean;
   onStart: (visitName: string) => void;
   onScheduleOrStart: (schedule: ScheduleProps) => void;
@@ -29,7 +28,6 @@ export const newPqaVisitId = 'new-pqa-visit';
 export const PQAVisits = ({
   currentVisit,
   practitionerId,
-  currentVisitEventId,
   onStart,
   onScheduleOrStart,
 }: PQAVisitsProps) => {
@@ -159,7 +157,7 @@ export const PQAVisits = ({
   };
 
   const getSubTitleText = (item: Maybe<Visit>) => {
-    if (!!currentVisitEventId) {
+    if (!!currentVisit?.eventId) {
       return 'Scheduled ';
     }
 
@@ -171,21 +169,21 @@ export const PQAVisits = ({
   };
 
   const getButtonText = (item: Maybe<Visit>) => {
-    if (!currentVisitEventId) {
+    if (!currentVisit?.eventId) {
       return 'Schedule';
     }
     return 'Start';
   };
 
   const getButtonIcon = (item: Maybe<Visit>) => {
-    if (!currentVisitEventId) {
+    if (!currentVisit?.eventId) {
       return 'CalendarIcon';
     }
     return 'ArrowCircleRightIcon';
   };
 
   const onClick = (options: ScheduleProps) => {
-    if (!currentVisitEventId) {
+    if (!currentVisit?.eventId) {
       onScheduleOrStart(options);
     } else {
       onStart(options.visit.visitType?.name as string);
@@ -224,7 +222,7 @@ export const PQAVisits = ({
                 onClick={() =>
                   onClick({
                     visit: item as Visit,
-                    visitEventId: currentVisitEventId,
+                    visitEventId: currentVisit?.eventId,
                     eventType: 'First PQA',
                   })
                 }
