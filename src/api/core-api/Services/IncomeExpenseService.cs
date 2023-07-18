@@ -27,10 +27,15 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
 
+        private IPointsEngineService _pointsEngineService;
+
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
-            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
+            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
+            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
+            IPointsEngineService pointsEngineService
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -44,6 +49,7 @@ namespace ECDLink.Core.Services
             _statementsIncomeRepo = _repoFactory.CreateGenericRepository<StatementsIncome>(userContext: _applicationUserId);
             _statementsContributionTypeRepo = _repoFactory.CreateGenericRepository<StatementsContributionType>(userContext: _applicationUserId);
             _childRepo = _repoFactory.CreateGenericRepository<Child>(userContext: _applicationUserId);
+            _pointsEngineService = pointsEngineService;
         }
 
         #region Statement Queries
@@ -745,6 +751,7 @@ namespace ECDLink.Core.Services
                 submittedStatement.UpdatedBy = _applicationUserId;
                 statementRepo.Update(submittedStatement);
             }
+            _pointsEngineService.CalculateIncomeStatements(_applicationUserId, DateTime.UtcNow);
             return retVal;
         }
 

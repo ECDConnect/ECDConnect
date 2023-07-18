@@ -39,7 +39,7 @@ public class EndOfMonthPoints : CronJobService
                 List<HealthCareWorker> hcWorkers = dbContext.HealthCareWorkers.Where(x => x.IsActive).ToList();
                 foreach (var item in hcWorkers)
                 {
-                    _pointsEngineService.UpdateUserSummaryPoints(item.Id.ToString());
+                    _pointsEngineService.UpdateUserSummaryPoints(item.Id.ToString(), today);
                 }
             }
             dbContext.SaveChanges();
