@@ -14,9 +14,6 @@ interface ReAccreditationVisitsProps {
   onView: (event: ViewEvent) => void;
 }
 
-export const newReAccreditationFollowUpId = 'new-re-accreditation-follow-up';
-export const newReAccreditationVisitId = 'new-re-accreditation';
-
 export const ReAccreditationVisits = ({
   practitionerId,
   isLoading,

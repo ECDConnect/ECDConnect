@@ -61,7 +61,7 @@ export const PqaSummaryStep1 = ({
   const step3 = sectionQuestions?.find(
     (item) => item.visitSection === step3VisitSection
   )?.questions[0];
-  const step3answers = step3?.answer as string[];
+  const step3answers = String(step3?.answer)?.split(',') as string[];
   const step3Score = step3GetScore(step3answers);
 
   const section1 = sectionQuestions?.find(
