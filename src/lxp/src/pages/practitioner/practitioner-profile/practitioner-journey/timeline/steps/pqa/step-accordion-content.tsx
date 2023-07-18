@@ -15,9 +15,6 @@ interface PQAVisitsProps {
   onView: (event: ViewEvent) => void;
 }
 
-export const newPqaFollowUpId = 'new-pqa-follow-up';
-export const newPqaVisitId = 'new-pqa-visit';
-
 export const PQAVisits = ({
   isLoading,
   practitionerId,

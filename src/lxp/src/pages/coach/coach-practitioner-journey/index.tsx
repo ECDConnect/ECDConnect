@@ -242,15 +242,15 @@ export const CoachPractitionerJourney = () => {
   const isNewPqaVisit =
     isNewPqaVisitFromBadRating || isNewPqaVisitFromBadReAccreditationRating;
 
-  const isReAccreditationNewVisit = true;
-  // !reAccreditationRating3?.overallRating &&
-  // timeline?.reAccreditationVisits?.every(
-  //   (item) =>
-  //     item?.attended &&
-  //     item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-  // ) &&
-  // new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
-  //   new Date(lastAttendedReAccreditationVisit?.insertedDate);
+  const isReAccreditationNewVisit =
+    !reAccreditationRating3?.overallRating &&
+    timeline?.reAccreditationVisits?.every(
+      (item) =>
+        item?.attended &&
+        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+    ) &&
+    new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
+      new Date(lastAttendedReAccreditationVisit?.insertedDate);
 
   const practitionerEvents = useSelector(
     calendarSelectors.findCalendarEvents({
