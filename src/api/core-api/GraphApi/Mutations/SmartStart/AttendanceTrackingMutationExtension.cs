@@ -24,7 +24,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> TrackAttendance(
           [Service] AttendanceTrackingRepository trackingRepository,
           [Service] IPointsEngineService pointsEngineService,
-          IHttpContextAccessor contextAccessor,
+          [Service] IHttpContextAccessor contextAccessor,
           List<TrackAttendanceModel> attendance
           )
         {
@@ -66,7 +66,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
                 }
                 var result = await trackingRepository.TrackAttendance(dbEntities);
-                pointsEngineService.CalculateAttendanceSubmitted(contextAccessor.HttpContext.GetUser()?.Id, DateTime.UtcNow);
+                var applicationUserId = contextAccessor.HttpContext.GetUser().Id;
+                pointsEngineService.CalculateAttendanceSubmitted(applicationUserId, DateTime.UtcNow);
                 return result;
             }
             return false;

@@ -10,7 +10,7 @@ namespace ECDLink.Core.Services.Interfaces
         // Points library
         List<PointsLibrary> GetPointsLibraryForActivity(string activity);
         List<PointsLibrary> GetPointsLibraryForTenant();
-        List<PointsUser> GetIndividualUserPoints(string subActivity, string userId, int month, int year);
+        List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year);
         List<PointsUserSummary> GetSummaryUserPoints(string userId, int year);
         PointsUser InsertIndividualUserPoints(PointsUser input);
         PointsUser UpdateIndividualUserPoints(PointsUser input);

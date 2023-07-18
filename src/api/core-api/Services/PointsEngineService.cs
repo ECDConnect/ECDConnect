@@ -94,9 +94,9 @@ namespace EcdLink.Api.CoreApi.Services
             return _pointsLibraryRepo.GetAll().Where(x => x.TenantId == tenantId).ToList();
         }
 
-        public List<PointsUser> GetIndividualUserPoints(string subActivity, string userId, int month, int year)
+        public List<PointsUser> GetIndividualUserPoints(Guid pointsLibraryId, string userId, int month, int year)
         {
-            return _pointsUserRepo.GetAll().Where(x => x.PointsLibrary.SubActivity == subActivity && x.UserId == userId && x.Month == month && x.Year == year).ToList();
+            return _pointsUserRepo.GetAll().Where(x => x.PointsLibraryId == pointsLibraryId && x.UserId == userId && x.Month == month && x.Year == year).ToList();
         }
 
         public List<PointsUserSummary> GetSummaryUserPoints(string userId, int year)
@@ -133,33 +133,33 @@ namespace EcdLink.Api.CoreApi.Services
             PointsLibrary activity3 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac3).FirstOrDefault();
             PointsLibrary activity4 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac4).FirstOrDefault();
 
-            var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId && 
-                                                     x.IsActive == true && 
-                                                     x.InsertedDate.Year == today.Year && 
-                                                     x.InsertedDate.Month == today.Month && 
-                                                     x.ExpectedDateOfDelivery != null).ToList();
+            var mothers = _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId == userId &&
+                                          x.IsActive == true &&
+                                          x.InsertedDate.Year == today.Year &&
+                                          x.InsertedDate.Month == today.Month &&
+                                          x.ExpectedDateOfDelivery != null).ToList();
             if (mothers.Count > 0) {
 
                 // Complete client registration flow for 2 or more pregnant women
                 if (mothers.Count >= 2)
                 {
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity2_records = GetIndividualUserPoints(activity2.Id, userId, today.Month, today.Year).Count;
 
                     if (activity2_records == 0)
                     {
-                        InsertIndividualUserPoints(
-                        new PointsUser
-                        {
-                            Id = Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
-                            Month = today.Month,
-                            Year = today.Year,
-                            Points = activity2.Points,
-                            UserId = userId,
-                            PointsLibraryId = activity2.Id
-                        }
+                     var result =   InsertIndividualUserPoints(
+                            new PointsUser
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                Points = activity2.Points,
+                                UserId = userId,
+                                PointsLibraryId = activity2.Id
+                            }
                         );
                     }
                 }
@@ -180,7 +180,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Complete the client registration flow for 1 - 2 pregnant clients who are less than 20 weeks into pregnancy.
                 if (lessThan20Weeks <= 2)
                 {
-                    int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity3_records = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).Count;
                     if (activity3_records == 0) {
                         InsertIndividualUserPoints(
                         new PointsUser
@@ -201,7 +201,7 @@ namespace EcdLink.Api.CoreApi.Services
                 // Complete the client registration flow for 3 or more pregnant clients who are less than 20 weeks into pregnancy.
                 if (lessThan20Weeks >= 3)
                 {
-                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity4_records = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).Count;
                     if (activity4_records == 0)
                     {
                         InsertIndividualUserPoints(
@@ -220,9 +220,8 @@ namespace EcdLink.Api.CoreApi.Services
                         );
                     }
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -232,14 +231,17 @@ namespace EcdLink.Api.CoreApi.Services
             PointsLibrary activity1 = pointsLibraries.Where(x => x.SubActivity == Constants.PointsEngineSettings.client_registration_ac1).FirstOrDefault();
 
             // Complete the client registration flow for 5 or more children under the age of 2 years old
-            var childrenCount = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.UserId == userId &&
-                                                           x.IsActive == true &&
-                                                           x.InsertedDate.Year == today.Year &&
-                                                           x.InsertedDate.Month == today.Month && x.User.Age < 2).Select(x => x.Id).Distinct().Count();
+            var childData = _infantRepo.GetAll().Where(x => x.Caregiver.HealthCareWorker.User.Id == userId &&
+                                               x.IsActive == true &&
+                                               x.InsertedDate.Year == today.Year &&
+                                               x.InsertedDate.Month == today.Month).ToList();
+
+            var childrenCount = childData.Where(x => x.User.Age > 0 && x.User.Age <= 2).Select(x => x.Id).Distinct().Count();
+
             if (childrenCount >= 5)
             {
                 // Get user records for userId
-                int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
+                int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
                 if (activity1_records == 0)
                 {
                     InsertIndividualUserPoints(
@@ -257,9 +259,9 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     );
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
 
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -294,7 +296,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (monthVisits == 0)
                     {
-                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
                         if (activity1_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -328,7 +330,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (maternal_referrals > 0 )
                 {
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity2_records = GetIndividualUserPoints(activity2.Id, userId, today.Month, today.Year).Count;
                     if (activity2_records == 0 )
                     {
                         InsertIndividualUserPoints(
@@ -364,7 +366,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 x.Visit.DueDate.Value.Month == today.Month)).Select(x => x.Id).Distinct().Count();
                     if (visit1_count > 0)
                     {
-                        int activity3_records = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity3_records = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).Count;
                         if (activity3_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -398,7 +400,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                     x.InsertedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
                 if (muac_referrals > 0)
                 {
-                    int activity4_records = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity4_records = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).Count;
                     if (activity4_records == 0)
                     {
                         InsertIndividualUserPoints(
@@ -432,7 +434,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 x.Visit.DueDate.Value.Month == today.Month)).Select(x => x.Id).Distinct().Count();
                     if (abuseVisits == 0)
                     {
-                        int activity5_records = GetIndividualUserPoints(activity5.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity5_records = GetIndividualUserPoints(activity5.Id, userId, today.Month, today.Year).Count;
                         if (activity5_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -452,8 +454,8 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -499,7 +501,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac1_count > 0)
                     {
-                        int activity1_records = GetIndividualUserPoints(activity1.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity1_records = GetIndividualUserPoints(activity1.Id, userId, today.Month, today.Year).Count;
                         if (activity1_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -533,7 +535,7 @@ namespace EcdLink.Api.CoreApi.Services
                                                                 (x.Visit.DueDate.Value.Year == today.Year &&
                                                                 x.Visit.DueDate.Value.Month == today.Month)).ToList();
 
-                    int activity2_records = GetIndividualUserPoints(activity2.SubActivity, userId, today.Month, today.Year).Count;
+                    int activity2_records = GetIndividualUserPoints(activity2.Id, userId, today.Month, today.Year).Count;
                     if (activity2_records == 0)
                     {
                         if (pillar2Data.Count == 0)
@@ -602,7 +604,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac3_count > 0 )
                 {
                     var activity3_points = ac3_count * activity3.Points;
-                    PointsUser activity3_record = GetIndividualUserPoints(activity3.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity3_record = GetIndividualUserPoints(activity3.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if ( activity3_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -643,7 +645,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac4_count > 0)
                 {
                     var activity4_points = ac4_count * activity4.Points;
-                    PointsUser activity4_record = GetIndividualUserPoints(activity4.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity4_record = GetIndividualUserPoints(activity4.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity4_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -685,7 +687,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac5_count > 0)
                 {
                     var activity5_points = ac5_count * activity5.Points;
-                    PointsUser activity5_record = GetIndividualUserPoints(activity5.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity5_record = GetIndividualUserPoints(activity5.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity5_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -725,7 +727,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac6_count > 0)
                 {
                     var activity6_points = ac6_count * activity6.Points;
-                    PointsUser activity6_record = GetIndividualUserPoints(activity6.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity6_record = GetIndividualUserPoints(activity6.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity6_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -768,7 +770,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac7_count > 0)
                 {
                     var activity7_points = ac7_count * activity7.Points;
-                    PointsUser activity7_record = GetIndividualUserPoints(activity7.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity7_record = GetIndividualUserPoints(activity7.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity7_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -811,7 +813,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac8_count > 0)
                 {
                     var activity8_points = ac8_count * activity8.Points;
-                    PointsUser activity8_record = GetIndividualUserPoints(activity8.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity8_record = GetIndividualUserPoints(activity8.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity8_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -851,7 +853,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac9_count > 0)
                 {
                     var activity9_points = ac9_count * activity9.Points;
-                    PointsUser activity9_record = GetIndividualUserPoints(activity9.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity9_record = GetIndividualUserPoints(activity9.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity9_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -892,7 +894,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac10_count > 0)
                 {
                     var activity10_points = ac10_count * activity10.Points;
-                    PointsUser activity10_record = GetIndividualUserPoints(activity10.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity10_record = GetIndividualUserPoints(activity10.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity10_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -933,7 +935,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (ac11_count > 0)
                 {
                     var activity11_points = ac11_count * activity11.Points;
-                    PointsUser activity11_record = GetIndividualUserPoints(activity11.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity11_record = GetIndividualUserPoints(activity11.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity11_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -972,7 +974,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac12_count == 0)
                     {
-                        int activity12_records = GetIndividualUserPoints(activity12.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity12_records = GetIndividualUserPoints(activity12.Id, userId, today.Month, today.Year).Count;
                         if (activity12_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1005,7 +1007,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac13_count == 0)
                     {
-                        int activity13_records = GetIndividualUserPoints(activity13.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity13_records = GetIndividualUserPoints(activity13.Id, userId, today.Month, today.Year).Count;
                         if (activity13_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1038,7 +1040,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                     if (ac14_count == 0)
                     {
-                        int activity14_records = GetIndividualUserPoints(activity14.SubActivity, userId, today.Month, today.Year).Count;
+                        int activity14_records = GetIndividualUserPoints(activity14.Id, userId, today.Month, today.Year).Count;
                         if (activity14_records == 0)
                         {
                             InsertIndividualUserPoints(
@@ -1058,9 +1060,8 @@ namespace EcdLink.Api.CoreApi.Services
                         }
                     }
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1153,7 +1154,7 @@ namespace EcdLink.Api.CoreApi.Services
 
             if (childCount > 0)
             {
-                PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                 int activityPoints = childCount * activity.Points;
 
                 if (activity_record == null)
@@ -1180,8 +1181,8 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.UpdatedBy = _uId;
                     UpdateIndividualUserPoints(activity_record);
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1194,11 +1195,11 @@ namespace EcdLink.Api.CoreApi.Services
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
                 var children = _childRepo.GetAll().Where(x => x.User.IsActive == false && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
-                var childCount = children.Where(x => x.User.UpdatedDate.Year == today.Year && x.User.UpdatedDate.Month == today.Month).Select(x => x.Id).Distinct().Count();
+                var childCount = children.Where(x => x.User.UpdatedDate.HasValue && x.User.UpdatedDate.Value.Year == today.Year && x.User.UpdatedDate.Value.Month == today.Month).Select(x => x.Id).Distinct().Count();
 
                 if (childCount > 0)
                 {
-                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                     int activityPoints = childCount * activity.Points;
 
                     if (activity_record == null)
@@ -1226,8 +1227,8 @@ namespace EcdLink.Api.CoreApi.Services
                         UpdateIndividualUserPoints(activity_record);
                     }
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1259,7 +1260,7 @@ namespace EcdLink.Api.CoreApi.Services
             var perc = Math.Round((double)(totalExpectedAttendance / (double)(totalChildrenAttendedSessions)) * 100);
             if (perc > 50)
             {
-                PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                 if (activity_record == null)
                 {
                     InsertIndividualUserPoints(
@@ -1284,8 +1285,8 @@ namespace EcdLink.Api.CoreApi.Services
                     activity_record.UpdatedBy = _uId;
                     UpdateIndividualUserPoints(activity_record);
                 }
+                UpdateUserSummaryPoints(userId, today);
             }
-            UpdateUserSummaryPoints(userId, today);
             return true;
         }
 
@@ -1323,7 +1324,7 @@ namespace EcdLink.Api.CoreApi.Services
 
                 if (rows.Count > 0)
                 {
-                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -1348,9 +1349,8 @@ namespace EcdLink.Api.CoreApi.Services
                         activity_record.UpdatedBy = _uId;
                         UpdateIndividualUserPoints(activity_record);
                     }
+                    UpdateUserSummaryPoints(userId, today);
                 }
-
-                UpdateUserSummaryPoints(userId, today);
             }
             return true;
         }
@@ -1395,7 +1395,7 @@ namespace EcdLink.Api.CoreApi.Services
                var all_children = money_preschoolData.Union(non_money_preschoolData).Count();
                if (totalPractitionerChildren == all_children) {
                     
-                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity_record == null)
                     {
                         InsertIndividualUserPoints(
@@ -1484,7 +1484,7 @@ namespace EcdLink.Api.CoreApi.Services
                 if (total > 0)
                 {
                     var totalPoints = total * activity.Points;
-                    PointsUser activity_record = GetIndividualUserPoints(activity.SubActivity, userId, today.Month, today.Year).FirstOrDefault();
+                    PointsUser activity_record = GetIndividualUserPoints(activity.Id, userId, today.Month, today.Year).FirstOrDefault();
                     if (activity_record == null)
                     {
                         InsertIndividualUserPoints(
