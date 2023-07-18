@@ -95,17 +95,8 @@ export const PractitionerJourney = ({
 
   const onView = async ({ visit, visitType }: ViewEvent) => {
     if (visitType === 'pre-pqa') {
+      // INFO: this is getting all visits to show all notes
       timeline?.prePQASiteVisits?.map(async (item) => {
-        if (item?.id) {
-          await appDispatch(
-            getVisitDataForVisitId({ visitId: item.id, visitType })
-          );
-        }
-
-        return item;
-      });
-    } else if (visitType === 'pqa') {
-      timeline?.pQASiteVisits?.map(async (item) => {
         if (item?.id) {
           await appDispatch(
             getVisitDataForVisitId({ visitId: item.id, visitType })

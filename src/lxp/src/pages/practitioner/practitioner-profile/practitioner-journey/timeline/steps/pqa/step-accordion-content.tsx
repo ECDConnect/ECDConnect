@@ -96,7 +96,16 @@ export const PQAVisits = ({
               text="View"
               isLoading={isLoading}
               disabled={isLoading}
-              onClick={() => onView({ visit: item, visitType: 'pqa' })}
+              onClick={() =>
+                onView({
+                  visit: item,
+                  visitType: item?.visitType?.name?.includes(
+                    visitTypes.pqa.followUp.name
+                  )
+                    ? 'follow-up-visit'
+                    : 'pqa',
+                })
+              }
             />
           </div>
           <Typography

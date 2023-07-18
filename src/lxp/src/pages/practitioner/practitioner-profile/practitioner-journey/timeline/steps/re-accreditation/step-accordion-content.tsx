@@ -96,7 +96,14 @@ export const ReAccreditationVisits = ({
               isLoading={isLoading}
               disabled={isLoading}
               onClick={() =>
-                onView({ visit: item, visitType: 're-accreditation' })
+                onView({
+                  visit: item,
+                  visitType: item?.visitType?.name?.includes(
+                    visitTypes.reaccreditation.followUp.name
+                  )
+                    ? 're-accreditation-follow-up-visit'
+                    : 're-accreditation',
+                })
               }
             />
           </div>
