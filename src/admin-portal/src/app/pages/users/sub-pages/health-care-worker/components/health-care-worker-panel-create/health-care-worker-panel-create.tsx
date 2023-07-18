@@ -38,14 +38,24 @@ export const userSchema = yup.object().shape({
   firstName: yup.string().required('First name is Required'),
   surname: yup.string().required('Surname is Required'),
   email: yup.string().email('Invalid email'),
-  passport: yup
-    .string()
-    .matches( SA_PASSPORT_REGEX, 'passport number is not valid')
-    .required('Passport Number is Required'),
   idNumber: yup
     .string()
-    .matches(SA_ID_REGEX , 'Id number is not valid')
-    .required('ID Number is Required'),
+    .test('idNumber', 'ID number or passport is not valid', function (value) {
+      const { passport } = this.parent;
+      const isIdValid = SA_ID_REGEX.test(value);
+      const isPassportValid = SA_PASSPORT_REGEX.test(value);
+
+      if (!isIdValid && !isPassportValid) {
+        return false;
+      }
+
+      if (passport && isIdValid) {
+        return false;
+      }
+
+      return true;
+    })
+    .required('ID number or passport is required'),
 });
 
 export default function HealthCareWorkerPanelCreate(
@@ -114,7 +124,7 @@ export default function HealthCareWorkerPanelCreate(
     const userInputModel: UserModelInput = {
       id: newGuid(),
       isSouthAfricanCitizen: null,
-      idNumber: userDetailForm.idNumber ,
+      idNumber: userDetailForm.idNumber,
       verifiedByHomeAffairs: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
@@ -276,21 +286,14 @@ export default function HealthCareWorkerPanelCreate(
                       <Typography type="help" color={idType === 'Passport' ? "white" : "tertiary"} text="Passport"></Typography>
                     </Button>
                   </div>
-                  {idType === 'idNumber' && <FormField
-                    label={'Id number *'}
+                  <FormField
+                    label={idType === 'idNumber' ? 'Id number *' : 'Passport *'}
                     nameProp={'idNumber'}
                     register={register}
                     error={errors.idNumber?.message}
-                    placeholder="e.g 6201014800088"
-                  />}
+                    placeholder={idType === 'idNumber' ? "e.g 6201014800088" : "e.g EN000666"}
+                  />
 
-                  {idType === 'Passport' && <FormField
-                    label={'Passport *'}
-                    nameProp={'idNumber'}
-                    register={register}
-                    // error={errors.passport?.message}
-                    placeholder="e.g EN000666"
-                  />}
                 </div>
               </div>
             </div>
