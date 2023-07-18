@@ -156,15 +156,15 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             IGenericRepositoryFactory repoFactory,
             [Service] ISystemSetting<InvitationCutoffDelayOptions> invitationDelay,
             [Service] IReassignmentService reassignmentService,
-        string practitionerId, string principalId, bool accepted, string reasonForPractitionerLeavingId, string reasonDetails)
+        string practitionerId, string principalId, bool accepted)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
             Practitioner principal = practitionerRepo.GetByUserId(principalId);
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             PrincipalInvitationStatus status = new PrincipalInvitationStatus();
-            //reassign all practitioners to the new principal
 
+            //reassign all practitioners to the new principal
             if (principal != null && practitioner != null)
             {
                 status.LinkedDate = practitioner.DateLinked;
@@ -188,11 +188,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         //update and clear the principals details
                         practitioner.PrincipalHierarchy = null;
                         practitioner.ShareInfo = false;
-                        if (!string.IsNullOrEmpty(reasonForPractitionerLeavingId))
-                        {
-                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForPractitionerLeavingId);
-                        }
-                        practitioner.ReasonForLeavingDetails = reasonDetails;
 
                         status.LeavingDate = DateTime.Now;
                         status.Leaving = true;
@@ -211,11 +206,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                         practitioner.DateToBeRemoved = DateTime.Now.AddHours(hrsToReassign);
                         practitioner.DateAccepted = null;
                         practitioner.IsLeaving = true;
-                        if (!string.IsNullOrEmpty(reasonForPractitionerLeavingId))
-                        {
-                            practitioner.ReasonForLeavingPractitionerId = Guid.Parse(reasonForPractitionerLeavingId);
-                        }
-                        practitioner.ReasonForLeavingDetails = reasonDetails;
 
                         status.LeavingDate = DateTime.Now.AddHours(hrsToReassign);
                         status.Leaving = true;
