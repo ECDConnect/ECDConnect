@@ -1,6 +1,6 @@
 import { Divider, Note, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
-import { getVisitDataForVisitIdSelectorByUserId } from '@/store/pqa/pqa.selectors';
+import { getVisitDataByVisitIdSelector } from '@/store/pqa/pqa.selectors';
 import {
   callAnswer,
   supportVisitSharedQuestion,
@@ -8,20 +8,16 @@ import {
 import { useLayoutEffect } from 'react';
 
 import { DynamicFormProps } from '../../dynamic-form';
-import { visitIdKey } from '../..';
+import { practitionerVisitIdKey } from '../..';
 import { dateLongDayOptions } from '../../../timeline/utils';
 
 export const SupportVisitStep1 = ({
   setEnableButton,
   smartStarter,
 }: DynamicFormProps) => {
-  const visitId = window.sessionStorage.getItem(visitIdKey) || '';
+  const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
   const data = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      smartStarter?.id || '',
-      visitId,
-      'supportVisitPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(visitId, 'supportVisitPreviousFormData')
   );
   const note = data?.find(
     (item) => item.question === supportVisitSharedQuestion

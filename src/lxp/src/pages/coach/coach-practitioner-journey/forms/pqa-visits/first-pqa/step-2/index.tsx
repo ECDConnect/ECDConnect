@@ -3,6 +3,10 @@ import { DynamicFormProps } from '../../../dynamic-form';
 import { Fragment, useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
+import { useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step2VisitSection = 'Step 2';
 export const step2TotalScore = 12;
@@ -37,6 +41,20 @@ export const Step2 = ({
       answer: '',
     },
   ]);
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step2VisitSection
+    )
+  );
+
+  console.log({ previousData });
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,

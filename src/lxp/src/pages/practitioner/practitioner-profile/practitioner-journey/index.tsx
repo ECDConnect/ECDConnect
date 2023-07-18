@@ -30,7 +30,12 @@ import {
 } from './timeline/utils';
 import { visitTypes } from './index.types';
 import { Visit } from '@ecdlink/graphql';
-import { Form, currentActivityKey, isViewKey, visitIdKey } from './forms';
+import {
+  Form,
+  currentActivityKey,
+  isViewKey,
+  practitionerVisitIdKey,
+} from './forms';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import {
   generalSupportVisitTypes,
@@ -104,16 +109,6 @@ export const PractitionerJourney = ({
 
         return item;
       });
-    } else if (visitType === 'pqa') {
-      timeline?.pQASiteVisits?.map(async (item) => {
-        if (item?.id) {
-          await appDispatch(
-            getVisitDataForVisitId({ visitId: item.id, visitType })
-          );
-        }
-
-        return item;
-      });
     } else {
       await appDispatch(
         getVisitDataForVisitId({ visitId: visit?.id, visitType })
@@ -135,7 +130,7 @@ export const PractitionerJourney = ({
       );
     }
 
-    window.sessionStorage.setItem(visitIdKey, visit?.id);
+    window.sessionStorage.setItem(practitionerVisitIdKey, visit?.id);
     window.sessionStorage.setItem(isViewKey, 'true');
     setShowForm(true);
   };
@@ -170,7 +165,7 @@ export const PractitionerJourney = ({
 
   const onFormBack = () => {
     window.sessionStorage.removeItem(currentActivityKey);
-    window.sessionStorage.removeItem(visitIdKey);
+    window.sessionStorage.removeItem(practitionerVisitIdKey);
     window.sessionStorage.setItem(isViewKey, 'false');
     setShowForm(false);
     onIsDisplayFormChange(false);
@@ -193,12 +188,7 @@ export const PractitionerJourney = ({
   }, [getTimeline]);
 
   if (isRenderForm) {
-    return (
-      <Form
-        visitId={currentVisit?.extraData?.visitId || visitIdKey}
-        onBack={onFormBack}
-      />
-    );
+    return <Form onBack={onFormBack} />;
   }
 
   if (isLoadingTimeline) {

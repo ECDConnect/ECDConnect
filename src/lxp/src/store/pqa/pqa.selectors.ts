@@ -9,6 +9,7 @@ import {
   VisitType,
   PQAStateKeys,
 } from './pqa.types';
+import { getSectionQuestions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/utils';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
@@ -84,8 +85,7 @@ export const getPreviousCoachVisitByUserId = (
     return undefined;
   });
 
-export const getVisitDataForVisitIdSelectorByUserId = (
-  userId: string,
+export const getVisitDataByVisitIdSelector = (
   visitId: string,
   stateType: PQAStateKeys
 ) => {
@@ -96,6 +96,21 @@ export const getVisitDataForVisitIdSelectorByUserId = (
     }
   );
 };
+
+export const getSectionsQuestionsByStep = (
+  visitId: string,
+  stateType: PQAStateKeys,
+  visitSection: string
+) =>
+  createSelector(
+    [getVisitDataByVisitIdSelector(visitId, stateType)],
+    (formData) => {
+      const sectionQuestions = getSectionQuestions(formData);
+      return sectionQuestions?.find(
+        (item) => item.visitSection === visitSection
+      );
+    }
+  );
 
 export const getCurrentPQaRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {

@@ -2,7 +2,7 @@ import { Divider, Note, Typography } from '@ecdlink/ui';
 import { useSelector } from 'react-redux';
 import {
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useLayoutEffect } from 'react';
 
@@ -24,15 +24,13 @@ export const PrePqaSummaryStep1 = ({
   );
 
   const previousVisit1 = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      userId,
+    getVisitDataByVisitIdSelector(
       prePqaVisits?.[0]?.id,
       'prePqaPreviousFormData'
     )
   );
   const previousVisit2 = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      userId,
+    getVisitDataByVisitIdSelector(
       prePqaVisits?.[1]?.id,
       'prePqaPreviousFormData'
     )
