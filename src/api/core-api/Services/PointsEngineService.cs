@@ -1107,32 +1107,34 @@ namespace EcdLink.Api.CoreApi.Services
                         ytdTotal = 100;
                     }
                 }
-
-                var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).FirstOrDefault();
-                if (record == null)
+                if (monthTotal > 0 && ytdTotal > 0)
                 {
-                    InsertIndividualSummaryUserPoints(
-                        new PointsUserSummary
-                        {
-                            Id = Guid.NewGuid(),
-                            IsActive = true,
-                            InsertedDate = DateTime.Now,
-                            UpdatedBy = _uId,
-                            Month = today.Month,
-                            Year = today.Year,
-                            UserId = userId,
-                            PointsLibraryId = item.Id,
-                            PointsTotal = monthTotal,
-                            PointsYTD = ytdTotal
-                        }
-                    );
-                } else
-                {
-                    record.PointsTotal = monthTotal;
-                    record.PointsYTD = ytdTotal;
-                    record.UpdatedDate = DateTime.Now;
-                    record.UpdatedBy = _uId;
-                    UpdateIndividualSummaryUserPoints(record);
+                    var record = _pointsUserSummaryRepo.GetAll().Where(x => x.UserId == userId && x.Month == today.Month && x.Year == today.Year && x.PointsLibraryId == item.Id).FirstOrDefault();
+                    if (record == null)
+                    {
+                        InsertIndividualSummaryUserPoints(
+                            new PointsUserSummary
+                            {
+                                Id = Guid.NewGuid(),
+                                IsActive = true,
+                                InsertedDate = DateTime.Now,
+                                UpdatedBy = _uId,
+                                Month = today.Month,
+                                Year = today.Year,
+                                UserId = userId,
+                                PointsLibraryId = item.Id,
+                                PointsTotal = monthTotal,
+                                PointsYTD = ytdTotal
+                            }
+                        );
+                    } else
+                    {
+                        record.PointsTotal = monthTotal;
+                        record.PointsYTD = ytdTotal;
+                        record.UpdatedDate = DateTime.Now;
+                        record.UpdatedBy = _uId;
+                        UpdateIndividualSummaryUserPoints(record);
+                    }
                 }
             }
             return true;
