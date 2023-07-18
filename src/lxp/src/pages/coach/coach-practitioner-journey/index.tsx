@@ -242,15 +242,15 @@ export const CoachPractitionerJourney = () => {
   const isNewPqaVisit =
     isNewPqaVisitFromBadRating || isNewPqaVisitFromBadReAccreditationRating;
 
-  const isReAccreditationNewVisit =
-    !reAccreditationRating3?.overallRating &&
-    timeline?.reAccreditationVisits?.every(
-      (item) =>
-        item?.attended &&
-        item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
-    ) &&
-    new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
-      new Date(lastAttendedReAccreditationVisit?.insertedDate);
+  const isReAccreditationNewVisit = true;
+  // !reAccreditationRating3?.overallRating &&
+  // timeline?.reAccreditationVisits?.every(
+  //   (item) =>
+  //     item?.attended &&
+  //     item?.visitType?.name !== visitTypes.reaccreditation.followUp.name
+  // ) &&
+  // new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
+  //   new Date(lastAttendedReAccreditationVisit?.insertedDate);
 
   const practitionerEvents = useSelector(
     calendarSelectors.findCalendarEvents({
@@ -389,10 +389,12 @@ export const CoachPractitionerJourney = () => {
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
+    (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
+  );
   const uncompletedPqaVisits =
-    timeline?.pQASiteVisits?.filter(
-      (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
-    ) ||
+    (filteredPqaVisits?.length && filteredPqaVisits) ||
+    // TODO: check if add this visit manually makes sense
     (isNewPqaVisit
       ? [
           {
@@ -409,11 +411,14 @@ export const CoachPractitionerJourney = () => {
         ]
       : []);
 
+  const filteredReAccreditionVisits = timeline?.reAccreditationVisits?.filter(
+    (visit) =>
+      !reAccreditationFormData?.some((item) => item.visitId === visit?.id) &&
+      !visit?.attended
+  );
   const uncompletedReAccreditationVisits =
-    timeline?.reAccreditationVisits?.filter(
-      (visit) =>
-        !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
-    ) ||
+    (filteredReAccreditionVisits?.length && filteredReAccreditionVisits) ||
+    // TODO: check if add this visit manually makes sense
     (isReadyToReAccreditationVisit || isReAccreditationNewVisit
       ? [
           {
