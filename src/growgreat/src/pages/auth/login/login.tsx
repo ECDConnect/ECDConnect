@@ -32,7 +32,7 @@ export const Login: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
@@ -192,13 +192,13 @@ export const Login: React.FC = () => {
             type={'error'}
           />
         )}
-        <Offline>
+        {!isOnline && (
           <Alert
             className={'mt-5 mb-3'}
             title="Your internet connection is unstable."
             type={'warning'}
           />
-        </Offline>
+        )}
         <Button
           id="gtm-login"
           className={'mt-3 w-full'}
