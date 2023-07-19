@@ -114,6 +114,7 @@ export default function UiTable(
       accessor: '', // Set the accessor value based on your data structure
       Cell: null,
     };
+    console.log(">>>", columns)
 
     const columnsWithSelect = [selectColumn, ...cols];
     return component !== 'consent' || component !== 'roles'
