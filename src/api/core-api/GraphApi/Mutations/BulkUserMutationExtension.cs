@@ -111,7 +111,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     // Do not continue processing if errors.
                     continue;
                 }
-
+                var insertedDate = DateTime.UtcNow;
                 var user = new ApplicationUser()
                 {
                     IdNumber = id,
@@ -124,7 +124,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     PhoneNumberConfirmed = false,
                     PendingPhoneNumber = cellphone,
                     ContactPreference = MessageTypeConstants.SMS,
-                    TenantId = tenantId
+                    TenantId = tenantId,
+                    InsertedDate = insertedDate,
+                    IsActive = true
                 };
                 userImportList.Add(user);
 
@@ -139,8 +141,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         User = user,
                         IsRegistered = false, //TODO: Registered by default?
                         ConsentForPhoto = false,
+                        InsertedDate = insertedDate,
                         // TeamLeadId = ? // Team lead needs to be fetched from clinic?
                         TenantId = tenantId,
+                        IsActive = true
                     });
             }
 
@@ -383,6 +387,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         // Do not continue processing if errors.
                         continue;
                     }
+                    
+                    var insertedDate = DateTime.UtcNow;
 
                     var user = new ApplicationUser()
                     {
@@ -397,7 +403,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         PhoneNumberConfirmed = false,
                         PendingPhoneNumber = cellphone,
                         ContactPreference = MessageTypeConstants.SMS,
-                        TenantId = tenantId
+                        TenantId = tenantId,
+                        InsertedDate = insertedDate,
+                        IsActive = true
                     };
                     userImportList.Add(user);
 
@@ -412,7 +420,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             JobTitle = RolesGG.TEAM_LEAD,
                             TenantId = tenantId,
                             // Clinics to be added.
-                            ClinicId = null
+                            ClinicId = null,
+                            InsertedDate = insertedDate,
+                            IsActive = true
                         });
                 }
             }
