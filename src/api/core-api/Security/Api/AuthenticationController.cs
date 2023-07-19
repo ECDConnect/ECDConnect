@@ -42,7 +42,7 @@ namespace ECDLink.Security.Api
             }
 
             //exclude funny script attempts
-            if ((login?.Password?.StartsWith('<') ?? true) 
+            if ((login?.Password?.StartsWith('<') ?? true)
                 || (login?.PhoneNumber?.StartsWith('<') ?? false)
                 || (login?.Username?.StartsWith('<') ?? true))
             {
@@ -114,10 +114,11 @@ namespace ECDLink.Security.Api
             var user = string.IsNullOrEmpty(model.Username)
                 ? await _securityManager.GetUserByEmailAsync(model.Email)
                 : await _securityManager.GetUserByNameAsync(model.Username);
-            
+
             var tenant = TenantExecutionContext.Tenant;
             var tenantId = tenant.Id;
-            if (user.TenantId.HasValue && user.TenantId.Value != tenantId)
+
+            if (user is null || user?.TenantId.Value != tenantId)
             {
                 return BadRequest("Could not reset password");
             }
