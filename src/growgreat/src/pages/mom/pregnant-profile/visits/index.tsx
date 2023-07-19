@@ -152,6 +152,14 @@ export const Visits: React.FC = () => {
   const isDueDate = dueDate && currentDate <= dueDate;
   const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
 
+  const weeksPregnant = useMemo(
+    () =>
+      mother?.expectedDateOfDelivery
+        ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
+        : 0,
+    [mother?.expectedDateOfDelivery]
+  );
+
   const insertedDate = useMemo(
     () => new Date(mother?.insertedDate || ''),
     [mother?.insertedDate]
@@ -262,10 +270,6 @@ export const Visits: React.FC = () => {
     todayDate,
     visits,
   ]);
-
-  const weeksPregnant = mother?.expectedDateOfDelivery
-    ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
-    : 0;
 
   const onAddVisit = useCallback(() => {
     return dialog({

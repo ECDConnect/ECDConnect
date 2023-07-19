@@ -30,6 +30,9 @@ enum Question {
   seven = 6,
 }
 
+export const birthCertificateQuestion = `Does {client} have a birth certificate?`;
+export const childDocumentSection = 'Child documentation';
+
 export const ChildDocumentationStep = ({
   infant,
   setSectionQuestions: setQuestions,
@@ -37,7 +40,7 @@ export const ChildDocumentationStep = ({
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question: 'Does {client} have a birth certificate?',
+      question: birthCertificateQuestion,
       answer: undefined as boolean | undefined,
     },
     {
@@ -95,8 +98,6 @@ export const ChildDocumentationStep = ({
   const isChildBefore30Days = useMemo(() => ageDays <= 30, [ageDays]);
   const isChildBefore1Year = useMemo(() => ageDays <= 365, [ageDays]);
 
-  const visitSection = 'Child documentation';
-
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
@@ -148,7 +149,7 @@ export const ChildDocumentationStep = ({
       setAnswers(updatedQuestions);
       setQuestions?.([
         {
-          visitSection,
+          visitSection: childDocumentSection,
           questions: filteredQuestions,
         },
       ]);
@@ -225,7 +226,7 @@ export const ChildDocumentationStep = ({
     <>
       <Header
         customIcon={P5}
-        title={visitSection}
+        title={childDocumentSection}
         iconHexBackgroundColor={activitiesColours.pillar5.primaryColor}
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />

@@ -7,6 +7,8 @@ import { SuccessCard } from '@/components/success-card/success-card';
 import { ReactComponent as CelebrateIcon } from '@/assets/celebrateIcon.svg';
 import { replaceBraces } from '@ecdlink/core';
 
+export const muacQuestion = `What is {client} mid-upper arm circumference (MUAC) today?`;
+
 export const muacFormSection =
   'Mother growth monitoring (Mid-upper arm circumference)';
 
@@ -22,8 +24,6 @@ export const MotherGrowthMUACStep = ({
     (Number(answer) >= 100 && answer !== '');
   const underWeightError = Number(answer) < 22 && Number(answer) > 0;
   const notUnderWeightMessage = notUnderWeight > 21 && notUnderWeight < 100;
-
-  const muacQuestion = `What is {client} mid-upper arm circumference (MUAC) today?`;
 
   const handleChange = (
     e: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
