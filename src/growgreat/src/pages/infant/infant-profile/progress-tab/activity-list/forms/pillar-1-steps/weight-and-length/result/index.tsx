@@ -209,13 +209,30 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
+  const weightIncreased = useMemo(() => {
+    let bIncreased = false;
+    const weightHistory =
+      [
+        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.weight] : []),
+        ...[weight, ...(infant?.weightAtBirth ? [infant?.weightAtBirth] : [])],
+      ] || [];
+
+    if (weightHistory.length > 1) {
+      const first2 = weightHistory.slice(0, 2);
+      if (weightHistory[0] > weightHistory[1]) {
+        bIncreased = true;
+      }
+    }
+    return bIncreased;
+  }, [groupedGrowthData, infant]);
+
   var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
 
-  // if the new weight is mapped to SD2/SD3 and we don't have a lenght/height, we default to median to display correct colour and alert
+  // if the new weight is mapped to SD2/SD3 and we don't have a length/height, we default to median to display correct colour and alert
   // EC-917
   if (
     (weightAlertResult === 'SD2' || weightAlertResult === 'SD3') &&
@@ -287,17 +304,31 @@ export const WeightAndLengthResultStep = ({
         );
         break;
       case 'SD2neg':
-        WeightAlert = (
-          <Alert
-            type="warning"
-            title={`${name} is underweight.`}
-            customIcon={
-              <div className="rounded-full">
-                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-              </div>
-            }
-          />
-        );
+        if (weightIncreased) {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name} is underweight.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        } else {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name}'s growth is faltering.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        }
         break;
       case 'SD3neg':
         WeightAlert = (
