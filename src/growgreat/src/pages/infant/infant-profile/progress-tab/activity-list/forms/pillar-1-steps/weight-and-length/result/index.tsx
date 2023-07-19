@@ -209,11 +209,21 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
-  const weightAlertResult = findClosestWeight(
+  var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
+
+  // if the new weight is mapped to SD2/SD3 and we don't have a lenght/height, we default to median to display correct colour and alert
+  // EC-917
+  if (
+    (weightAlertResult === 'SD2' || weightAlertResult === 'SD3') &&
+    (length === 0 || height === 0)
+  ) {
+    weightAlertResult = 'median';
+  }
+
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
     length || height,
@@ -248,6 +258,7 @@ export const WeightAndLengthResultStep = ({
 
   const WeightAlert = useCallback(() => {
     let WeightAlert = <Fragment />;
+
     switch (weightAlertResult) {
       case 'SD2':
         WeightAlert = (
