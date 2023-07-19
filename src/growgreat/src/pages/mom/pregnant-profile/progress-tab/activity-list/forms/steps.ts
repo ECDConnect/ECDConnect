@@ -44,8 +44,11 @@ export const getHealhcareteps = (
   AntenatalClinicVideoStep,
 ];
 
-export const careForBabySteps = (isDangerSignsFollowUp: boolean) => [
-  MotherGrowthMUACStep,
+export const careForBabySteps = (
+  isDangerSignsFollowUp: boolean,
+  isMUACStep: boolean
+) => [
+  ...(isMUACStep ? [MotherGrowthMUACStep] : []),
   NutritonEatingStep,
   ...(isDangerSignsFollowUp ? [BabyDangerSignsFollowUpStep] : []),
   HealthyEatingStep,
@@ -56,7 +59,8 @@ export const getPregnancyCareSteps = (
   isAlcoholUseStep: boolean,
   isIDDocumentStep: boolean,
   isMaternalDistressFollowUp: boolean,
-  isMaternalDistress: boolean
+  isMaternalDistress: boolean,
+  isHIVCareStep: boolean
 ) => {
   const defaultScreens = [
     WeightAndLengthResultStep,
@@ -68,7 +72,7 @@ export const getPregnancyCareSteps = (
 
   const complementaryFeedingFlow = [
     ...(isAlcoholUseStep ? [AlcoholUseStep] : []),
-    HivCareAndMedicationStep,
+    ...(isHIVCareStep ? [HivCareAndMedicationStep] : []),
     ...(isIDDocumentStep ? [IdDocumentStep] : []),
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [BirthPreparationStep] : []),
     ...(isEqualOrAfter98andEqualOrBefore168Days ? [InfantCareStep] : []),

@@ -42,7 +42,7 @@ interface FormProps {
     isDevelopmentalScreening: boolean;
     isDevelopmentalScreeningWeeksFollowUp: boolean;
     isDevelopmentalScreeningWeeks: boolean;
-    isRoadToHeathBookStep: boolean;
+    isRoadToHealthBookStep: boolean;
     isDangerSignsFollowUpForBaby: boolean;
     isChildBefore49Days: boolean;
     isNewBornCare: boolean;
@@ -57,6 +57,8 @@ interface FormProps {
     isVitaminAQuestion: boolean;
     isDewormingQuestion: boolean;
     isImmunisationsStep: boolean;
+    isChildDocumentStep: boolean;
+    isHivCareStep: boolean;
   };
 }
 
@@ -167,11 +169,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     activitiesTypes.pillar4
   );
 
-  const isDietFormStep = useMemo(
-    () => ageMonths >= 6 && ageYears < 5,
-    [ageMonths, ageYears]
-  );
-
   const handleOnClose = useCallback(() => {
     dialog({
       blocking: false,
@@ -244,7 +241,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
-          stepsRules.isRoadToHeathBookStep,
+          stepsRules.isRoadToHealthBookStep,
           stepsRules.isDangerSignsFollowUpForBaby,
           stepsRules.isChildBefore49Days,
           stepsRules.isNewBornCare,
@@ -265,7 +262,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isMixedFeedingUnsafeFeedingPractices,
           isShowInterventionStep: ageDays >= 7,
           isShowMuacStep: isChildOlderthan6Months,
-          isDietFormStep,
+          isDietFormStep: isMixedFeedingComplementaryFeedingAfter9Months,
           isChildAfter7Days: ageDays >= 7,
         });
       case activitiesTypes.pillar2:
@@ -289,7 +286,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isToShowPillar4DangerSigns
         );
       case activitiesTypes.pillar5:
-        return pillar5Steps;
+        return pillar5Steps(
+          stepsRules.isChildDocumentStep,
+          stepsRules.isHivCareStep
+        );
       default:
         return followUpSteps(!!referralsForInfant?.length);
     }
@@ -309,7 +309,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMixedFeedingFoodsForm,
     isMixedFeedingUnsafeFeedingPractices,
     ageDays,
-    isDietFormStep,
     stepsRules,
     isPillar4FollowUp,
     referralsForInfant?.length,

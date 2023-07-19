@@ -127,9 +127,10 @@ export const getInfantCurrentVisitSelector = (
 
   // Priority 1: if a visit id is available, then return visit for id
   if (visitId && visitId !== '') {
-    for (var i = 0; i < allVisits.length; i++) {
-      if (allVisits[i].id === visitId) {
-        return allVisits[i];
+    const visits = state.infants.visits || [];
+    for (var i = 0; i < visits.length; i++) {
+      if (visits[i].id === visitId) {
+        return visits[i];
       }
     }
   } else {
