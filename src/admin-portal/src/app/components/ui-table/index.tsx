@@ -193,7 +193,7 @@ export default function UiTable(
         onChange={event => handleRowSelect(event, row)}
       />
     );
-    if (column.field === "select" && component !== 'consent') {
+    if (column.field === "select" && component !== 'consent' && component !== 'roles' ) {
 
       return checkboxCell;
 

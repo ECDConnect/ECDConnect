@@ -143,6 +143,7 @@ export default function Roles() {
                     hasPermission(PermissionEnum.delete_system) &&
                     deleteRoleAndRefresh
                   }
+                  component={'roles'}
                 />
               </div>
             </div>
