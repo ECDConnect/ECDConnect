@@ -10,9 +10,8 @@ function CustomDateRangePicker(props: any) {
   };
 
   const formatDate = (date: Date) => {
-    return format(date, 'MM/dd/yyyy');
+    return format(date, 'dd/MM/yyyy');
   };
-
 
   return (
     <div>
