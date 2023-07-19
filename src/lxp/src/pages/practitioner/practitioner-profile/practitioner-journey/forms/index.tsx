@@ -200,8 +200,9 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     useMemo((): DynamicFormProps['submitButton'] => {
       if (isView) {
         if (
-          activityName.includes(coachVisitTypes.pqa.includes) &&
-          !activityName.includes(coachVisitTypes.pqa.followUp.name)
+          (activityName.includes(coachVisitTypes.pqa.includes) ||
+            activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
+          !activityName.includes(coachVisitTypes.prePqa.includes)
         ) {
           return { icon: 'EyeIcon', text: 'View details', type: 'filled' };
         }
