@@ -61,28 +61,29 @@ export default function UiTable(
     sendInvitations({
       variables: {
         userIds: selectedRows,
-      }
-    }).then((res) => {
-      if ( res.data?.sendBulkInviteToPortal?.success.length > 0) {
-        setNotification({
-          title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
-          variant: NOTIFICATION.SUCCESS,
-        });
-        if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
-          setNotification({
-            title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
-            variant: NOTIFICATION.ERROR,
-          });
-        }
-      }
+      },
     })
+      .then((res) => {
+        if (res.data?.sendBulkInviteToPortal?.success.length > 0) {
+          setNotification({
+            title: ` Successfully Sent ${res.data?.sendBulkInviteToPortal?.success.length} Invites!`,
+            variant: NOTIFICATION.SUCCESS,
+          });
+          if (res.data?.sendBulkInviteToPortal?.failed.length > 0) {
+            setNotification({
+              title: ` Failed to Send to ${res.data?.sendBulkInviteToPortal?.failed.length} Users!`,
+              variant: NOTIFICATION.ERROR,
+            });
+          }
+        }
+      })
       .catch((err) => {
         setNotification({
           title: 'Failed to send invitations',
           variant: NOTIFICATION.ERROR,
         });
       });
-  }
+  };
 
   useEffect(() => {
     fuse.current = new Fuse(rows, fuseOptions);
@@ -111,27 +112,34 @@ export default function UiTable(
       use: '',
       Header: 'Select',
       accessor: '', // Set the accessor value based on your data structure
-      Cell: null
+      Cell: null,
     };
+    console.log(">>>", columns)
 
     const columnsWithSelect = [selectColumn, ...cols];
-
-    return component !== 'consent'? [...columnsWithSelect, ...columns] : [ ...columns];
+    return component !== 'consent' || component !== 'roles'
+      ? [...columnsWithSelect, ...columns]
+      : [...columns];
   };
 
-  const handleRowSelect = (event: ChangeEvent<HTMLInputElement>, row: { id: any; }) => {
+  const handleRowSelect = (
+    event: ChangeEvent<HTMLInputElement>,
+    row: { id: any }
+  ) => {
     const selectedRowId = row.id;
     const isChecked = event.target.checked;
 
     if (selectedRows.length === 0) {
-      setInviteRows(!inviteRows)
+      setInviteRows(!inviteRows);
     }
 
-    setSelectedRows(prevSelectedRows => {
+    setSelectedRows((prevSelectedRows) => {
       if (isChecked) {
         return [...prevSelectedRows, selectedRowId];
       } else {
-        return prevSelectedRows.filter(selectedRow => selectedRow !== selectedRowId);
+        return prevSelectedRows.filter(
+          (selectedRow) => selectedRow !== selectedRowId
+        );
       }
     });
   };
@@ -188,23 +196,23 @@ export default function UiTable(
     const checkboxCell = (
       <input
         type="checkbox"
-        className="form-checkbox text-primary border-gray-30 h-5 w-5 rounded focus:border-secondary focus:outline "
+        className="form-checkbox text-primary border-gray-30 focus:border-secondary focus:outline h-5 w-5 rounded "
         checked={selectedRows.includes(row.id)}
-        onChange={event => handleRowSelect(event, row)}
+        onChange={(event) => handleRowSelect(event, row)}
       />
     );
-    if (column.field === "select" && component !== 'consent' && component !== 'roles' ) {
-
+    if (
+      column.field === 'select' &&
+      component !== 'consent' &&
+      component !== 'roles'
+    ) {
       return checkboxCell;
-
     } else if (typeof display_value === 'boolean') {
       rowValue = (
         <div className="ml-1 flex cursor-pointer">
           {display_value ? (
-
             <p className="text-successMain ">Active</p>
           ) : (
-
             <p className="text-errorMain text-normal">Inactive</p>
           )}
         </div>
@@ -228,19 +236,20 @@ export default function UiTable(
           {display_value?.map(
             (item: {
               [x: string]:
-              | boolean
-              | ReactChild
-              | ReactFragment
-              | ReactPortal
-              | Iterable<ReactI18NextChild>;
+                | boolean
+                | ReactChild
+                | ReactFragment
+                | ReactPortal
+                | Iterable<ReactI18NextChild>;
               id: Key;
             }) => (
               <div
                 key={item.id}
                 className={
-                  `${item[column.displayProperty] === 'Administrator'
-                    ? 'bg-tertiary'
-                    : item[column.displayProperty] === 'Practitioner'
+                  `${
+                    item[column.displayProperty] === 'Administrator'
+                      ? 'bg-tertiary'
+                      : item[column.displayProperty] === 'Practitioner'
                       ? 'bg-secondary'
                       : 'bg-primary'
                   }` + ' m-1 rounded-full py-1 px-3 text-xs text-white'
@@ -259,7 +268,6 @@ export default function UiTable(
             'inline-flex rounded-full px-2 text-xs font-semibold leading-5 text-white ',
             display_value && display_value[0].statusColor
           )}
-
         >
           {display_value && display_value[0].statusValue}
         </span>
@@ -267,65 +275,66 @@ export default function UiTable(
     } else {
       rowValue =
         typeof display_value === 'string' ? (
-          <div
-            className="inline-block overflow-ellipsis "
-
-          >
+          <div className="inline-block overflow-ellipsis ">
             <span>{display_value}</span>
           </div>
         ) : (
-          <div
-
-          >
-            {display_value}
-          </div>
+          <div>{display_value}</div>
         );
     }
 
-    return <div onClick={() => {
-      component !== 'team-leads' && viewSelectedRow(row);
-    }} className={'cursor-pointer'}>{rowValue} </div>;
+    return (
+      <div
+        onClick={() => {
+          component !== 'team-leads' && viewSelectedRow(row);
+        }}
+        className={'cursor-pointer'}
+      >
+        {rowValue}{' '}
+      </div>
+    );
   };
 
   return (
     <div className="table-top w-full overflow-hidden rounded-lg shadow-lg">
+      {selectedRows?.length >= 1 && (
+        <div className="bg-infoMain flex w-full flex-row items-center justify-between py-2">
+          <div className="w-4/12">
+            <p className="text-md pl-4 text-white">
+              {selectedRows?.length} Selected
+            </p>
+          </div>
+          <div className="flex w-6/12 flex-row items-center">
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="filled"
+              isLoading={invitationsLoading}
+              color="secondary"
+              onClick={inviteUsers}
+            >
+              <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
+              <Typography type="help" color="white" text="Resend Invitations" />
+            </Button>
 
-      {(selectedRows?.length >= 1) && <div className="bg-infoMain w-full flex flex-row items-center justify-between py-2">
-        <div className="w-4/12">
-          <p className="text-white text-md pl-4">{selectedRows?.length} Selected</p>
-        </div>
-        <div className="flex items-center flex-row w-6/12">
-          <Button
-            className="rounded-xl px-6 mr-4 py-0"
-            type="filled"
-            isLoading={invitationsLoading}
-            color="secondary"
-            onClick={inviteUsers}
-          >
-            <PaperAirplaneIcon color="white" className="mr-2 h-4 w-4" />
-            <Typography type="help" color="white" text="Resend Invitations" />
-          </Button>
-
-          <Button
-            className="rounded-xl px-6 mr-4 py-0"
-
-            type="outlined"
-            // isLoading={isLoading}
-            color="tertiary"
-          // onClick={deactivateUser}
-          >
-            <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
-              {' '}
-            </TrashIcon>
-            <Typography
-              type="help"
+            <Button
+              className="mr-4 rounded-xl px-6 py-0"
+              type="outlined"
+              // isLoading={isLoading}
               color="tertiary"
-              text={'Deactivate User'}
-            ></Typography>
-          </Button>
+              // onClick={deactivateUser}
+            >
+              <TrashIcon color="tertiary" className="mr-2 h-4 w-4">
+                {' '}
+              </TrashIcon>
+              <Typography
+                type="help"
+                color="tertiary"
+                text={'Deactivate User'}
+              ></Typography>
+            </Button>
+          </div>
         </div>
-      </div>}
-
+      )}
 
       <Table
         key={`table-${lastUpdate}`}
@@ -356,8 +365,9 @@ export default function UiTable(
           footer: options.footer || {
             main: `${rows.length < 10 ? 'hidden' : ''} mt-8 mx-5 table-footer`,
             statistics: {
-              main: `${rows.length < 10 ? 'hidden' : ''
-                } text-gray-600 table-stats md:w-auto md:flex-row`,
+              main: `${
+                rows.length < 10 ? 'hidden' : ''
+              } text-gray-600 table-stats md:w-auto md:flex-row`,
               bold_numbers: `text-gray-900 font-bold`,
             },
             page_numbers: ` text-secondary page-numbers z-10 relative inline-flex items-center px-4 py-2 text-sm font-medium w-4`,

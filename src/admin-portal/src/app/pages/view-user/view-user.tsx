@@ -107,7 +107,7 @@ const showNotification = (
 
 export function ViewUser(props: any) {
   const currentDate = new Date();
-  const startDate = startOfMonth(currentDate);
+  const startDate = currentDate;
   const endDate = subDays(currentDate, 30);
 
   const [successNotification, setSucessNotification] = useState<boolean>(false);
