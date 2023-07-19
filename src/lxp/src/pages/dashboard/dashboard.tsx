@@ -50,6 +50,7 @@ import { convertImageToBase64 } from '@/utils/common/convert-image-to-64.utils';
 import { traineeSelectors, traineeThunkActions } from '@/store/trainee';
 import { timelineSteps } from '../trainee/trainee-onboarding/components/trainee-onboarding-dashboard/timeline-steps';
 import { calendarThunkActions } from '@/store/calendar';
+import { differenceInHours, isSameDay } from 'date-fns';
 // import { browserName, browserVersion } from 'react-device-detect';
 const { version } = require('../../../package.json');
 
@@ -139,6 +140,9 @@ export const Dashboard: React.FC = () => {
     ).unwrap();
     await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getReasonsForPractitionerLeaving({})
+    ).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
@@ -269,6 +273,21 @@ export const Dashboard: React.FC = () => {
     }
   }, []);
 
+  const traineeNavigation = [
+    {
+      name: NavigationTypes.Children,
+      href: ROUTES.CLASSROOM,
+      params: { activeTabIndex: 1 },
+      current: false,
+    },
+    {
+      name: NavigationTypes.Programme,
+      href: ROUTES.CLASSROOM,
+      params: { activeTabIndex: 2 },
+      current: false,
+    },
+  ];
+
   const navigation: (NavigationRouteItem | NavigationDropdown)[] = [
     {
       name: NavigationTypes.Home,
@@ -308,6 +327,8 @@ export const Dashboard: React.FC = () => {
                 current: false,
               },
             ]
+          : isTrainee
+          ? traineeNavigation
           : [
               {
                 name: NavigationTypes.Attendance,
@@ -339,23 +360,6 @@ export const Dashboard: React.FC = () => {
       showDivider: true,
     },
     {
-      name: NavigationTypes.Messages,
-      href: ROUTES.MESSAGES,
-      icon: 'BellIcon',
-      current: false,
-      showDivider: true,
-      getNotificationCount: () => {
-        return newNotificationCount;
-      },
-    },
-    {
-      name: NavigationTypes.Community,
-      href: ROUTES.COMMUNITY,
-      icon: 'BookOpenIcon',
-      current: false,
-      showDivider: true,
-    },
-    {
       name: NavigationTypes.Logout,
       href: ROUTES.LOGOUT,
       icon: 'ExternalLinkIcon',
@@ -365,7 +369,26 @@ export const Dashboard: React.FC = () => {
   ];
 
   if (!isTrainee) {
-    navigation?.splice(4, 0, {
+    navigation.splice(3, 0, {
+      name: NavigationTypes.Community,
+      href: ROUTES.COMMUNITY,
+      icon: 'BookOpenIcon',
+      current: false,
+      showDivider: true,
+    });
+
+    navigation.splice(3, 0, {
+      name: NavigationTypes.Messages,
+      href: ROUTES.MESSAGES,
+      icon: 'BellIcon',
+      current: false,
+      showDivider: true,
+      getNotificationCount: () => {
+        return newNotificationCount;
+      },
+    });
+
+    navigation?.splice(3, 0, {
       name: NavigationTypes.Training,
       href: ROUTES.TRAINING,
       icon: 'BellIcon',
@@ -374,7 +397,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -483,7 +506,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
@@ -533,11 +556,12 @@ export const Dashboard: React.FC = () => {
 
   const goToClassroom = () => {
     if (
-      ((classroom && classroom.id) ||
+      (((classroom && classroom.id) ||
         (classroomGroup && classroomGroup.length > 0)) &&
-      isRegistered &&
-      isProgress &&
-      isProgress > 0
+        isRegistered &&
+        isProgress &&
+        isProgress > 0) ||
+      isTrainee
     ) {
       history.push(ROUTES.CLASSROOM, { activeTabIndex: 1 });
     } else {
@@ -561,7 +585,10 @@ export const Dashboard: React.FC = () => {
   };
 
   const onNavigation = (navItem: any) => {
-    if (classroom && classroom.id && navItem.href.includes('classroom')) {
+    if (
+      (classroom && classroom.id && navItem.href.includes('classroom')) ||
+      isTrainee
+    ) {
       history.push(navItem.href, navItem.params);
     } else if (navItem.href.includes('classroom')) {
       showCompleteProfileBlockingDialog();

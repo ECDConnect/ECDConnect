@@ -79,8 +79,8 @@ namespace ECDLink.Notifications.BulkSms
 
             // build the request based on the supplied settings
             var request = new HttpRequestMessage(HttpMethod.Post, "messages");
-
-            request.Content = new StringContent(JsonConvert.SerializeObject(_message), Encoding.UTF8, "application/json");
+            var message = JsonConvert.SerializeObject(_message);
+            request.Content = new StringContent(message, Encoding.UTF8, "application/json");
 
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
             
@@ -92,6 +92,10 @@ namespace ECDLink.Notifications.BulkSms
             }
             else
             {
+                Console.Error.WriteLine("Error sending SMS: {0}", message);
+                Console.Error.WriteLine("Error sending SMS - Response Code: {0}", response.StatusCode);
+                var responseContent = await response.Content.ReadAsStringAsync();
+                Console.Error.WriteLine("Error sending SMS - Response Content: {0}", responseContent);
                 throw new HttpRequestException();
             }
         }

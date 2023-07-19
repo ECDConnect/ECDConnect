@@ -1,5 +1,7 @@
+import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
+
 export interface CalendarSearchParticipantProps {
-  currentParticipantUserIds: string[];
+  currentParticipantUsers: CalendarAddEventParticipantFormModel[];
   onBack: () => void;
-  onDone: (participantUserIds: string[]) => void;
+  onDone: (participantUsers: CalendarAddEventParticipantFormModel[]) => void;
 }

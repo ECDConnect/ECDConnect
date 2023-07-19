@@ -94,67 +94,73 @@ class CoachService {
       query: `
       query coachByCoachUserId($userId: String) {
         coachByCoachUserId(userId: $userId) {
-               signingSignature
-               id
-               startDate
-               user {
-                 id
-                 userName
-                 email
-                 isSouthAfricanCitizen
-                  verifiedByHomeAffairs
-                  dateOfBirth
-                  idNumber
-                  firstName
-                  surname
-                  fullName
-                  contactPreference
-                  genderId
-                  phoneNumber
-                  profileImageUrl
-                  roles {
-                   id
-                   name
+          signingSignature
+          id
+          startDate
+          user {
+            id
+            userName
+            email
+            isSouthAfricanCitizen
+            verifiedByHomeAffairs
+            dateOfBirth
+            idNumber
+            firstName
+            surname
+            fullName
+            contactPreference
+            genderId
+            phoneNumber
+            profileImageUrl
+            roles {
+              id
+              name
+            }
+          }
+          siteAddressId
+            siteAddress {
+              id
+              provinceId
+              province {
+                id
+                description
+              }
+                name
+                addressLine1
+                addressLine2
+                addressLine3
+                postalCode
+                ward
+                isActive
+            }
+            franchisorId
+            franchisor {
+                siteAddressId
+                siteAddress {
+                  id
+                  provinceId
+                  province {
+                    id
+                    description
                   }
-                 }
-                 siteAddressId
-                 siteAddress {
-                   id
-                   provinceId
-                   province {
-                     id
-                     description
-                    }
-                     name
-                     addressLine1
-                     addressLine2
-                     addressLine3
-                     postalCode
-                     ward
-                     isActive
-                   }
-                   franchisorId
-                   franchisor {
-                     siteAddressId
-                     siteAddress {
-                       id
-                       provinceId
-                       province {
-                         id
-                         description
-                        }
-                       name
-                       addressLine1
-                        addressLine2
-                        addressLine3
-                        postalCode
-                        ward
-                       }
-                     }
-                     signingSignature
-                     isActive
-                   }
-                 }
+                  name
+                  addressLine1
+                  addressLine2
+                  addressLine3
+                  postalCode
+                  ward
+                  }
+            }
+            signingSignature
+            isActive
+            traineeVisits {
+              id
+            }
+            practitionerVisits {
+              id
+            }
+        }
+      }
       `,
       variables: {
         userId: userId,

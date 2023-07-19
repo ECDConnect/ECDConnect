@@ -21,12 +21,12 @@ import {
   mapUserToListDataItem,
   sortListDataItems,
 } from '../calendar.utils';
+import { CalendarAddEventParticipantFormModel } from '../calendar-add-event/calendar-add-event.types';
 
 export const CalendarSearchParticipant: React.FC<
   CalendarSearchParticipantProps
-> = ({ currentParticipantUserIds, onBack, onDone }) => {
+> = ({ currentParticipantUsers, onBack, onDone }) => {
   const [filteredData, setFilteredData] = useState<ListDataItem[]>([]);
-  const [data, setData] = useState<ListDataItem[]>([]);
   const [selectedData, setSelectedData] = useState<ListDataItem[]>([]);
   const [unselectedData, setUnselectedData] = useState<ListDataItem[]>([]);
   const [, setAddChildButtonExpanded] = useState<boolean>(true);
@@ -86,7 +86,7 @@ export const CalendarSearchParticipant: React.FC<
       setSelectedData([selectedData[0], ...selected]);
       setFilteredData(filtered);
     },
-    [unselectedData, selectedData, filteredData]
+    [unselectedData, selectedData, filteredData, currentUser.id]
   );
 
   const onPractitionerRemove = useCallback(
@@ -104,22 +104,26 @@ export const CalendarSearchParticipant: React.FC<
       setSelectedData(selected);
       setUnselectedData(unselected);
     },
-    [unselectedData, selectedData]
+    [unselectedData, selectedData, currentUser.id]
   );
 
   const onClickDone = useCallback(() => {
-    const participantUserIds = selectedData.slice(1).map((x) => x.id || '');
-    onDone(participantUserIds);
-  }, [selectedData]);
+    const participantUsers: CalendarAddEventParticipantFormModel[] =
+      selectedData.slice(1).map((x) => ({
+        userId: x.id || '',
+        firstName: x.extraData?.firstName || '',
+        surname: x.extraData?.surname || '',
+      }));
+    onDone(participantUsers);
+  }, [selectedData, onDone]);
 
   useEffect(() => {
     if (!!practitioners && practitioners.length > 0) {
       const list = practitioners.map((p) => mapPractitionerToListDataItem(p));
-      setData(list);
 
       const unselected = list.filter(
         (p) =>
-          !currentParticipantUserIds.includes(p.id || '') &&
+          currentParticipantUsers.findIndex((c) => c.userId === p.id) < 0 &&
           p.id !== currentUser.id
       );
       unselected.forEach((p) => {
@@ -132,7 +136,7 @@ export const CalendarSearchParticipant: React.FC<
       selected.push(
         ...list.filter(
           (p) =>
-            currentParticipantUserIds.includes(p.id || '') &&
+            currentParticipantUsers.findIndex((c) => c.userId === p.id) >= 0 &&
             p.id !== currentUser.id
         )
       );

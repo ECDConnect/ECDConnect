@@ -82,7 +82,11 @@ const Card = ({
       case 'SD3neg':
         return { bg: 'errorBg', main: 'errorMain' };
       case 'SD3':
-        return { bg: 'errorBg', main: 'errorMain' };
+        if (title === 'Length') {
+          return { bg: 'successBg', main: 'successMain' };
+        } else {
+          return { bg: 'errorBg', main: 'errorMain' };
+        }
       default:
         return { bg: 'successBg', main: 'successMain' };
     }
@@ -205,11 +209,38 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
-  const weightAlertResult = findClosestWeight(
+  const weightIncreased = useMemo(() => {
+    let bIncreased = false;
+    const weightHistory =
+      [
+        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.weight] : []),
+        ...[weight, ...(infant?.weightAtBirth ? [infant?.weightAtBirth] : [])],
+      ] || [];
+
+    if (weightHistory.length > 1) {
+      const first2 = weightHistory.slice(0, 2);
+      if (weightHistory[0] > weightHistory[1]) {
+        bIncreased = true;
+      }
+    }
+    return bIncreased;
+  }, [groupedGrowthData, infant]);
+
+  var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
+
+  // if the new weight is mapped to SD2/SD3 and we don't have a length/height, we default to median to display correct colour and alert
+  // EC-917
+  if (
+    (weightAlertResult === 'SD2' || weightAlertResult === 'SD3') &&
+    (length === 0 || height === 0)
+  ) {
+    weightAlertResult = 'median';
+  }
+
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
     length || height,
@@ -273,17 +304,31 @@ export const WeightAndLengthResultStep = ({
         );
         break;
       case 'SD2neg':
-        WeightAlert = (
-          <Alert
-            type="warning"
-            title={`${name} is underweight.`}
-            customIcon={
-              <div className="rounded-full">
-                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-              </div>
-            }
-          />
-        );
+        if (weightIncreased) {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name} is underweight.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        } else {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name}'s growth is faltering.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        }
         break;
       case 'SD3neg':
         WeightAlert = (
@@ -361,21 +406,21 @@ export const WeightAndLengthResultStep = ({
     const gender = infant?.gender?.description;
 
     const weightPerDay =
-      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+      gender === 'Female' ? weightForAgeGirls : weightForAgeBoys;
     const lengthPerDay =
-      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+      gender === 'Female' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
     const weightPerWeek =
-      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+      gender === 'Female' ? weightPerWeekGirls : weightPerWeekBoys;
     const lengthPerWeek =
-      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+      gender === 'Female' ? lengthPerWeekGirls : lengthPerWeekBoys;
     const weightPerMonth =
-      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+      gender === 'Female' ? weightPerMonthGirls : weightPerMonthBoys;
     const lengthPerMonth =
-      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+      gender === 'Female' ? lengthPerMonthGirls : lengthPerMonthBoys;
     const weightPerYear =
-      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+      gender === 'Female' ? weightPerYearGirls : weightPerYearBoys;
     const lengthPerYear =
-      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+      gender === 'Female' ? lengthPerYearGirls : lengthPerYearBoys;
 
     return {
       weightPerDay,

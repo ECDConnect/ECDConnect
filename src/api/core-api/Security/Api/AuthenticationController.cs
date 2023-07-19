@@ -180,13 +180,13 @@ namespace ECDLink.Security.Api
             return new OkObjectResult(result);
         }
 
-        [Route("online-check")]
-        [AllowAnonymous]
-        [HttpGet]
-        public async ValueTask<IActionResult> OnlineCheckAsync()
-        {
-            return Ok();
-        }
+        //[Route("online-check")]
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public async ValueTask<IActionResult> OnlineCheckAsync()
+        //{
+        //    return Ok();
+        //}
 
         [Route("verify-email-address")]
         [AllowAnonymous]

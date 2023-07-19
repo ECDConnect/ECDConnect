@@ -47,7 +47,7 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/pillar-2-steps/developmental-screening-weeks';
-import { relationshipTypes } from '../../../components/mother-details/mother-details.types';
+import { staticDataSelectors } from '@/store/static-data';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
@@ -61,8 +61,17 @@ import {
   clinicCheckupQuestion,
   clinicCheckupSectionName,
 } from './forms/care-for-mom-steps/clinic-check-ups';
+import {
+  HIVQuestion,
+  HIVSection,
+} from './forms/pillar-5-steps/hiv-care-and-medication';
+import {
+  birthCertificateQuestion,
+  childDocumentSection,
+} from './forms/pillar-5-steps/child-documentation';
 import { maternalDistressVisitSection } from './forms/care-for-mom-steps/maternal-distress-screening';
 import { FileTypeEnum } from '@ecdlink/graphql';
+import { useStaticData } from '@/hooks/useStaticData';
 
 export const INFANT_PROFILE_TABS = {
   VISITS: 0,
@@ -78,12 +87,13 @@ export const ActivityList: React.FC = () => {
   const [isShowCompletedForms, setIsShowCompletedForms] = useState(false);
   const [isStartVisit, setIsStartVisit] = useState(false);
   const [displayHelp, setDisplayHelp] = useState(false);
-
+  const relations = useSelector(staticDataSelectors.getRelations);
   const selectedOption = window.sessionStorage.getItem(currentActivityKey);
   const previousSelectedOption = usePrevious(selectedOption) as
     | string
     | undefined;
-
+  const { getDocumentTypeIdByEnum } = useStaticData();
+  const documentTypeId = getDocumentTypeIdByEnum(FileTypeEnum.RoadToHealthBook);
   const { isOnline } = useOnlineStatus();
 
   const { width } = useWindowSize();
@@ -159,13 +169,12 @@ export const ActivityList: React.FC = () => {
     [previousCurrentVisitStatus?.visitDataStatus]
   );
 
-  const isRoadToHeathBookStep = useMemo(
-    () =>
-      !documents?.some(
-        (item) => item?.fileType === FileTypeEnum.RoadToHealthBook
-      ),
-    [documents]
+  const hasRoadToHealthBook = useMemo(
+    () => !!documents?.find((item) => item.documentTypeId === documentTypeId),
+    [documentTypeId, documents]
   );
+
+  const isRoadToHealthBookStep = !hasRoadToHealthBook;
 
   const isDangerSignsFollowUpForBaby = getIsFollowUp(
     dangerSignsVisitSectionForBaby,
@@ -236,6 +245,17 @@ export const ActivityList: React.FC = () => {
     [ageDays, ageMonths, ageYears, isFirstVisit]
   );
 
+  const previousChildDocumentAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === birthCertificateQuestion &&
+      item.visitId === previousVisit?.id
+  )?.questionAnswer;
+
+  const isChildDocumentStep = useMemo(
+    () => isFirstVisit || previousChildDocumentAnswer === 'false',
+    [isFirstVisit, previousChildDocumentAnswer]
+  );
+
   const isMaternalDistressFollowUp = getIsFollowUp(
     maternalDistressVisitSection,
     activitiesTypes.careForMom
@@ -253,7 +273,7 @@ export const ActivityList: React.FC = () => {
   ].some((item) => !!item);
 
   const isDisplayCareForBaby = [
-    isRoadToHeathBookStep,
+    isRoadToHealthBookStep,
     isDangerSignsFollowUpForBaby,
     isChildBefore49Days,
     isNewBornCare,
@@ -317,11 +337,25 @@ export const ActivityList: React.FC = () => {
     [ageDays, ageMonths, ageYears, isFirstVisit]
   );
 
+  const previousHIVAnswer = previousAnswers?.find(
+    (item) =>
+      item.question === HIVQuestion && item.visitId === previousVisit?.id
+  )?.questionAnswer;
+
+  const isHivCareStep = useMemo(
+    () =>
+      (isFirstVisit && !ageYears && ageMonths < 6) ||
+      previousHIVAnswer === 'true',
+    [ageMonths, ageYears, isFirstVisit, previousHIVAnswer]
+  );
+
   const isDisplayPillar3 =
     isImmunisationQuestion ||
     isVitaminAQuestion ||
     isDewormingQuestion ||
     isImmunisationsStep;
+
+  const isDisplayPillar5 = isChildDocumentStep && isHivCareStep;
 
   const options: Intl.DateTimeFormatOptions = useMemo(
     () => ({
@@ -333,9 +367,7 @@ export const ActivityList: React.FC = () => {
   );
 
   const { visibleActivities } = useMemo(() => {
-    const motherType = relationshipTypes.find(
-      (item) => item.label === 'Mother'
-    );
+    const motherType = relations.find((item) => item.description === 'Mother');
 
     const visibleActivities = activitiesList.filter((item) => {
       if (
@@ -343,8 +375,10 @@ export const ActivityList: React.FC = () => {
         (item.id === activitiesTypes.pillar2 && !isDisplayPillar2) ||
         (item.id === activitiesTypes.careForBaby && !isDisplayCareForBaby) ||
         (item.id === activitiesTypes.careForMom &&
-          infant?.caregiver?.relation?.description !== motherType?.label) ||
-        (item.id === activitiesTypes.pillar3 && !isDisplayPillar3)
+          infant?.caregiver?.relation?.description !==
+            motherType?.description) ||
+        (item.id === activitiesTypes.pillar3 && !isDisplayPillar3) ||
+        (item.id === activitiesTypes.pillar5 && !isDisplayPillar5)
       )
         return undefined;
 
@@ -353,11 +387,12 @@ export const ActivityList: React.FC = () => {
 
     return { visibleActivities };
   }, [
-    isDisplayPillar3,
-    infant?.caregiver?.relation?.description,
+    relations,
     isChildAfter49Days,
     isDisplayPillar2,
     isDisplayCareForBaby,
+    infant?.caregiver?.relation?.description,
+    isDisplayPillar3,
   ]);
 
   const { completedForms, uncompletedForms, followUpForm, stepperCount } =
@@ -381,6 +416,12 @@ export const ActivityList: React.FC = () => {
           backgroundColor: 'successBg' as Colours,
           rightIcon: 'BadgeCheckIcon',
           rightIconClassName: 'h-5 w-5 text-successMain',
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
         })
       );
 
@@ -511,7 +552,21 @@ export const ActivityList: React.FC = () => {
           visitName: activitiesTypes.careForMom,
           visitSection: clinicCheckupSectionName,
         })
-      );
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.pillar5,
+          visitSection: childDocumentSection,
+        })
+      ).unwrap();
+      appDispatch(
+        visitThunkActions.getVisitAnswersForInfant({
+          visitId: previousVisit.id,
+          visitName: activitiesTypes.pillar5,
+          visitSection: HIVSection,
+        })
+      ).unwrap();
     }
   }, [previousVisit, appDispatch]);
 
@@ -687,7 +742,7 @@ export const ActivityList: React.FC = () => {
     return (
       <Form
         stepsRules={{
-          isRoadToHeathBookStep,
+          isRoadToHealthBookStep,
           isDevelopmentalScreening,
           isDevelopmentalScreeningWeeks,
           isDevelopmentalScreeningWeeksFollowUp,
@@ -705,6 +760,8 @@ export const ActivityList: React.FC = () => {
           isVitaminAQuestion,
           isDewormingQuestion,
           isImmunisationsStep,
+          isChildDocumentStep,
+          isHivCareStep,
         }}
         onBack={onFormBack}
         getIsFollowUp={getIsFollowUp}

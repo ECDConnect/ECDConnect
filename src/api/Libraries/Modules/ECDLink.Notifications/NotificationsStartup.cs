@@ -1,10 +1,7 @@
 using ECDLink.Abstractrions.Notifications;
 using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.Notifications.BulkSms;
 using ECDLink.Notifications.Factories;
-using ECDLink.Notifications.MessageLogs;
-using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Smtp;
 using ECDLink.Notifications.Templates;
 using Microsoft.AspNetCore.Builder;
@@ -19,10 +16,11 @@ namespace ECDLink.Notifications
         {
             services.AddTransient<INotificationProviderFactory<ApplicationUser>, NotificationProviderFactory>();
             services.AddTransient<IMessageFactory, MessageFactory>();
-            services.AddTransient<IMessageLogger<BulkSmsMessage>, SmsMessageLogger> ();
-            services.AddTransient<IMessageLogger<IEmailMessage>, EmailMessageLogger>();
-            services.AddTransient<INotificationProvider<ApplicationUser>, SmsSender>();
-            services.AddTransient<INotificationProvider<ApplicationUser>, EmailSmtpSender>();
+            services.AddTransient<BulkSms.SmsSender>();
+            services.AddTransient<NoSms.SmsSender>();
+            services.AddTransient<SMSPortal.SmsSender>();
+            services.AddTransient<iTouch.SmsSender>();
+            services.AddTransient<EmailSmtpSender>();
 
             services.AddTransient<TemplateFilters>();
             services.AddTransient<TemplateProcessor>();

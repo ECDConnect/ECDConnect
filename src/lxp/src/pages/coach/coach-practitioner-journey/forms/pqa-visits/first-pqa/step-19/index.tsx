@@ -335,6 +335,7 @@ export const Step19 = ({
               isPrimaryClass={isPrimaryList}
               classroomGroup={selectedGroup}
               attendanceDate={new Date()}
+              isMultipleClasses={selectedClassroomGroups.length > 1}
               onAttendanceUpdated={(state) => {
                 onAttendanceChange(state.listItems);
                 validateAttendanceList(

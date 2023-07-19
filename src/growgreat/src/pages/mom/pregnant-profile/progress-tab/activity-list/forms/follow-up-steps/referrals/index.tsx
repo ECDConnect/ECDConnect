@@ -23,7 +23,7 @@ interface GroupedData {
   immunisationsSupplementsAndDeworming: VisitDataStatus[];
 }
 export const ReferralsStep = ({
-  infant,
+  mother,
   setEnableButton,
   setReferralsInput,
 }: DynamicFormProps) => {
@@ -61,11 +61,7 @@ export const ReferralsStep = ({
 
   const [questions, setAnswers] = useState(groupedData);
 
-  const name = useMemo(() => infant?.user?.firstName || '', [infant]);
-  const caregiverName = useMemo(
-    () => infant?.caregiver?.firstName || '',
-    [infant?.caregiver?.firstName]
-  );
+  const name = useMemo(() => mother?.user?.firstName || '', [mother]);
 
   const visitSection = 'Referrals';
 
@@ -126,7 +122,7 @@ export const ReferralsStep = ({
           title="Once you’ve written a referral on paper for the concerns below, tap the box."
           titleColor="textDark"
           list={[
-            `If you would like to write your referrals later, you can see this list on ${name} & ${caregiverName}’s profile.`,
+            `If you would like to write your referrals later, you can see this list on ${name}'s profile.`,
           ]}
           customIcon={
             <div className="bg-tertiary h-16 w-16 rounded-full">

@@ -1,8 +1,6 @@
 import {
   BannerWrapper,
   Button,
-  Dialog,
-  DialogPosition,
   Dropdown,
   Typography,
   renderIcon,
@@ -123,7 +121,6 @@ export const CalendarHome: React.FC = () => {
   const updateEvent = (event: EventObject) => {
     calendarInstance()?.clearGridSelections();
     calendarViewEvent({
-      canEdit: true,
       event: event.id,
     });
   };
@@ -158,6 +155,7 @@ export const CalendarHome: React.FC = () => {
       calendarInstance()?.off('clickEvent');
       // calendarInstance()?.off('clickDayName');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (

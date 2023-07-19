@@ -1,5 +1,6 @@
 using EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Notifications;
+using EcdLink.Api.CoreApi.Managers.Visits;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Context;
@@ -152,9 +153,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return practitioner;
         }
 
-        public Coach DeleteCoachForFranchisor([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+        public Coach DeleteCoachForFranchisor(
+            [Service] IHttpContextAccessor contextAccessor,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
+            [Service] VisitManager visitManager,
             IGenericRepositoryFactory repoFactory,
             string coachId, string franchisorId)
         {
@@ -164,7 +166,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(visitManager, contextAccessor, repoFactory, coachId);
             coach.FranchisorId = null;
             var updateResult = dbRepo.Update(coach);
 
@@ -172,7 +174,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
         public Coach AddCoachToFranchisor([Service] IHttpContextAccessor contextAccessor,
-            [Service] UserManager<ApplicationUser> userManager,
+            [Service] VisitManager visitManager,
             [Service] IDbContextFactory<AuthenticationDbContext> dbFactory,
             IGenericRepositoryFactory repoFactory,
             string coachId, string franchisorId)
@@ -181,7 +183,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             using var dbContextTransaction = scope.Database.BeginTransaction();
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateRepository<Coach>(userContext: uId);
-            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(contextAccessor, repoFactory, coachId);
+            Coach coach = new CoachQueryExtension().GetCoachByCoachUserId(visitManager, contextAccessor, repoFactory, coachId);
             if (coach != null)
             {
                 coach.FranchisorId = new Guid(franchisorId);

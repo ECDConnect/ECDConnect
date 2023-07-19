@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 {
     [ExtendObjectType(OperationTypeNames.Mutation)]
     public class VisitMutationExtension
@@ -43,7 +43,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.MotherId = mother.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
-            if (input.PlannedVisitDate != default(DateTime))
+            if (input.PlannedVisitDate != default)
             {
                 input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             }
@@ -71,7 +71,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.InfantId = infant.Id;
             input.LinkedVisitId = null;
             input.PractitionerId = null;
-            if (input.PlannedVisitDate != default(DateTime))
+            if (input.PlannedVisitDate != default)
             {
                 input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             }
@@ -96,7 +96,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             if (input.isSupportCall == true)
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_call).OrderBy(x => x.NormalizedName).FirstOrDefault();
-            } else
+            }
+            else
             {
                 visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_support).OrderBy(x => x.NormalizedName).FirstOrDefault();
             }
@@ -112,6 +113,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -150,6 +152,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -188,6 +191,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -225,16 +229,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             if (firstVisit == null)
             {
                 visit_string = Constants.SSSettings.visitType_re_accreditation_1;
-            } else
+            }
+            else
             {
                 var secondVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2).FirstOrDefault();
                 if (secondVisit == null)
                 {
                     visit_string = Constants.SSSettings.visitType_re_accreditation_2;
-                } else
+                }
+                else
                 {
                     var thirdVisit = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_3).FirstOrDefault();
-                    
+
                     if (thirdVisit == null)
                     {
                         visit_string = Constants.SSSettings.visitType_re_accreditation_3;
@@ -255,6 +261,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 visitModel.PractitionerId = practitioner.Id;
                 visitModel.Attended = (bool)input.Attended;
                 visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+                visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
                 if ((bool)input.Attended == true)
                 {
                     visitModel.ActualVisitDate = DateTime.Now;
@@ -312,6 +319,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
                     DateTime newDate = dt.AddDays(14);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType2;
                     return visitManager.AddVisit(input);
                 }
@@ -326,15 +334,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                     DateTime dt = secondPQA.PlannedVisitDate;
                     DateTime newDate = dt.AddDays(60);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType3;
-                } else
+                }
+                else
                 {
                     DateTime dt = firstPQA.PlannedVisitDate;
                     DateTime newDate = dt.AddDays(60);
                     input.PlannedVisitDate = newDate;
+                    input.DueDate = newDate;
                     input.VisitType = pqaType2;
                 }
-                
+
                 return visitManager.AddVisit(input);
             }
 
@@ -363,7 +374,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
             var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
 
-            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_sef_assessment).FirstOrDefault();
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type == Constants.SSSettings.client_practitioner && x.Name == Constants.SSSettings.visitType_self_assessment).FirstOrDefault();
             Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == input.PractitionerId.ToString()).FirstOrDefault();
 
             // Add Visit
@@ -375,6 +386,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.PractitionerId = practitioner.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -387,6 +399,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitDataManager.AddPractitionerVisitData(input.SupportData, false);
 
             return visit;
+        }
+
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit UpdateVisitPlannedVisitDate(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            UpdateVisitPlannedVisitDateModel input)
+        {
+            return visitManager.UpdateVisitPlannedVisitDate(input);
         }
 
         #endregion
@@ -415,6 +438,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.TraineeId = trainee.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -451,6 +475,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             visitModel.TraineeId = trainee.Id;
             visitModel.Attended = (bool)input.Attended;
             visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             if ((bool)input.Attended == true)
             {
                 visitModel.ActualVisitDate = DateTime.Now;
@@ -474,7 +499,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
-            VisitModel input)
+            [Service] VisitDataManager visitDataManager,
+            SSChecklistVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
@@ -490,14 +516,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
                 return new Visit();
             }
 
-            input.VisitType = visitType;
-            input.Attended = false;
-            input.CoachId = coach.Id;
-            input.TraineeId = trainee.Id;
-            input.LinkedVisitId = input.LinkedVisitId;
-            input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.LinkedVisitId = null;
+            visitModel.CoachId = coach.Id;
+            visitModel.TraineeId = trainee.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
 
-            return visitManager.AddVisitForCoach(input);
+            Visit visit = visitManager.AddVisitForCoach(visitModel);
+            // Add VisitData for visit
+            input.ChecklistData.VisitId = visit.Id.ToString();
+            input.ChecklistData.TraineeId = trainee.Id.ToString();
+            input.ChecklistData.CoachId = coach.Id.ToString();
+            visitDataManager.AddTraineeVisitData(input.ChecklistData);
+
+            return visit;
+
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
@@ -536,7 +576,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             input.PractitionerId = practitioner.Id;
             input.LinkedVisitId = input.LinkedVisitId;
             input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-
+            input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
             return visitManager.AddVisitForCoach(input);
         }
 

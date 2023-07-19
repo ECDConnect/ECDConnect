@@ -18,4 +18,7 @@
     <ProjectReference Include="..\Libraries\Modules\ECDLink.DataAccessLayer\ECDLink.DataAccessLayer.csproj" />
     <ProjectReference Include="..\Libraries\Modules\ECDLink.GraphQL\ECDLink.EGraphQL.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <None Remove="..\.dockerignore" />
+  </ItemGroup>
 </Project>

@@ -12,13 +12,14 @@ using Microsoft.AspNetCore.Http;
 using System;
 using System.Linq;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Mutations
+{
     [ExtendObjectType(OperationTypeNames.Mutation)]
+
     public class VisitDataStatusMutationExtension
     {
-        
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Boolean UpdateVisitDataStatus(
+        public bool UpdateVisitDataStatus(
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusReferral input)
@@ -34,6 +35,20 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat {
                 entityToUpdate.IsCompleted = (bool)inputItem.IsCompleted;
                 entityToUpdate.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
                 visitDataStatusRepo.Update(entityToUpdate);
+
+                //update generated G4/G9  item
+                var entityToUpdateG4 = visitDataStatusRepo.GetAll().Where(x => x.VisitDataId == entityToUpdate.VisitDataId
+                && (x.Type.Equals(Constants.GGSettings.visit_data_client_dashboard) || x.Type.Equals(Constants.GGSettings.visit_data_client_summary)))
+                    .OrderBy(x => x.Id).FirstOrDefault();
+
+                if (entityToUpdateG4 != null)
+                {
+                    entityToUpdateG4.UpdatedDate = DateTime.Now;
+                    entityToUpdateG4.UpdatedBy = applicationUserId;
+                    entityToUpdateG4.IsCompleted = (bool)inputItem.IsCompleted;
+                    entityToUpdateG4.ReferralDateCompleted = (bool)inputItem.IsCompleted ? DateTime.Now : null;
+                    visitDataStatusRepo.Update(entityToUpdateG4);
+                }
             }
 
             return true;

@@ -16,7 +16,6 @@ import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
-import { practitionerSelectors } from '@/store/practitioner';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 
@@ -34,10 +33,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
   const startDate = new Date(event.start);
   const endDate = new Date(event.end);
   const user = useSelector(userSelectors.getUser);
-  const participantUserIds = event.participants.map((p) => p.participantUserId);
-  const participantUsers = useSelector(
-    practitionerSelectors.getPractitionersByUserIds(participantUserIds)
-  );
+  const canEdit = !!props.canEdit ? props.canEdit : user?.id === event.userId;
 
   const onEdit = () => {
     props.onClose();
@@ -48,7 +44,9 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   const onAction = () => {
     props.onClose();
-    history.push(event.action.url, event.action.state);
+    if (!!event.action) {
+      history.push(event.action.url, event.action.state);
+    }
   };
 
   return (
@@ -75,7 +73,7 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
               className="px-4 pt-4 pb-4"
             />
           </div>
-          {!!props.canEdit && (
+          {!!canEdit && (
             <div className="mt-2 w-4/12 text-right">
               <Button
                 onClick={() => onEdit()}
@@ -162,12 +160,14 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
             <Typography
               type="small"
               color="textDark"
-              text={user?.fullName}
+              text={`${event.user.firstName} ${event.user.surname} ${
+                event.userId !== user?.id ? '(Organiser)' : '(You, Organiser)'
+              }`}
               className=""
             />
           </div>
         </div>
-        {participantUsers.map((p, index) => (
+        {event.participants.map((p, index) => (
           <div key={`participant-${index}`} className="flex flex-row px-4 pb-2">
             <div className="w-10">
               {renderIcon('UserIcon', 'mt-1 h-4 w-4 text-textDark mr-4')}
@@ -176,7 +176,9 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
               <Typography
                 type="small"
                 color="textDark"
-                text={p.user?.fullName}
+                text={`${p.participantUser.firstName} ${
+                  p.participantUser.surname
+                } ${p.participantUserId === user?.id ? '(You)' : ''}`}
                 className=""
               />
             </div>

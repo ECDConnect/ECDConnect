@@ -27,6 +27,7 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             SeedReasonForLeaving<ReasonForLeaving>(serviceProvider);
             SeedAuditLogType<AuditLogType>(serviceProvider);
             SeedSystemSettings<SystemSetting>(serviceProvider);
+            SeedReasonForPractitionerLeaving<ReasonForPractitionerLeaving>(serviceProvider);
         }
 
         private void SeedNoteType<T>(IServiceProvider serviceProvider)
@@ -221,6 +222,22 @@ namespace ECDLink.DataAccessLayer.Configuration.Setup.Seed.SeedFunctions
             foreach (var setting in settings)
             {
                 repo.Insert(setting);
+            
+            }
+        }
+
+        private void SeedReasonForPractitionerLeaving<T>(IServiceProvider serviceProvider)
+          where T : ReasonForPractitionerLeaving, new()
+        {
+            var repositoryFactory = serviceProvider.GetService<IGenericRepositoryFactory>();
+
+            var repo = repositoryFactory.CreateRepository<T>();
+
+            var reasons = ReasonsForPractitionerLeavingSeed<T>.GetReasonForPractitionerLeavingSeed();
+
+            foreach (var reason in reasons)
+            {
+                repo.Insert(reason);
             }
         }
     }

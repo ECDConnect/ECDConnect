@@ -27,4 +27,5 @@ export interface CaregiverDto extends EntityBase {
   grants?: string[] | undefined;
   healthCareWorkerId?: string;
   isMother?: boolean;
+  isOnline?: boolean;
 }

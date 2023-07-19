@@ -7,6 +7,7 @@ import {
   ClassroomDto,
 } from '@ecdlink/core';
 import {
+  ClassroomGroupReassignmentsInput,
   MutationAddPractitionerToPrincipalArgs,
   MutationUpdatePractitionerContactInfoArgs,
   PractitionerInput,
@@ -48,6 +49,48 @@ class PractitionerService {
               firstAidCourseColor
               firstAidCourseStatus
               firstAidDate
+              pQARating1 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              pQARating2 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              pQARating3 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
               prePQAVisitDate1
               prePQAVisitDate1Color
               prePQAVisitDate1Status
@@ -66,12 +109,14 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               prePQASiteVisits {
                 id
                 plannedVisitDate
                 attended
                 comment
+                dueDate
                 visitType {
                   type
                   order
@@ -79,8 +124,24 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               pQASiteVisits {
+                id
+                plannedVisitDate
+                attended
+                comment
+                insertedDate
+                visitType {
+                  type
+                  order
+                  name
+                  normalizedName
+                  description
+                }
+                eventId
+              }
+              reAccreditationVisits {
                 id
                 plannedVisitDate
                 attended
@@ -92,6 +153,49 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
+              }
+              reAccreditationRating1 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              reAccreditationRating2 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
+              }
+              reAccreditationRating3 {
+                children {
+                  sectionRating
+                  sectionRatingColor
+                  sectionScore
+                  visitSection
+                }
+                overallRating
+                overallRatingColor
+                overallRatingStars
+                overallScore
+                plannedDate
+                visitName
               }
               smartSpaceLicenseColor
               smartSpaceLicenseDate
@@ -102,7 +206,18 @@ class PractitionerService {
               supportVisits {
                 id
                 plannedVisitDate
+                insertedDate
                 attended
+                visitType {
+                  description
+                  id
+                  isActive
+                  name
+                  normalizedName
+                  order
+                  type
+                }
+                eventId
               }
             }
           }
@@ -759,6 +874,51 @@ class PractitionerService {
         practitionerId,
         principalId,
         accepted,
+      },
+    });
+
+    if (response.status !== 200) {
+      throw new Error(
+        'Get Practitioner by ID number Failed - Server connection error'
+      );
+    }
+
+    return response.data.data.updatePractitionerRegistered;
+  }
+
+  async RemovePractitioner(
+    practitionerId: string,
+    reasonForPractitionerLeavingId: string | undefined = undefined,
+    reasonDetails: string | undefined = undefined,
+    newPrincipalId: string | undefined = undefined,
+    classroomGroupReassignments: ClassroomGroupReassignmentsInput[]
+  ): Promise<boolean> {
+    const apiInstance = api(Config.graphQlApi, this._accessToken);
+    const response = await apiInstance.post<any>(``, {
+      query: `
+      mutation removePractitioner(
+        $practitionerId: String
+        $reasonForPractitionerLeavingId: String
+        $reasonDetails: String
+        $newPrincipalId: String
+        $classroomGroupReassignments: [ClassroomGroupReassignmentsInput]
+      ) {
+        removePractitioner(
+          practitionerId: $practitionerId
+          reasonForPractitionerLeavingId: $reasonForPractitionerLeavingId
+          reasonDetails: $reasonDetails
+          newPrincipalId: $newPrincipalId
+          classroomGroupReassignments: $classroomGroupReassignments
+        ) {
+        }
+      }  
+      `,
+      variables: {
+        practitionerId,
+        reasonForPractitionerLeavingId,
+        reasonDetails,
+        newPrincipalId,
+        classroomGroupReassignments,
       },
     });
 

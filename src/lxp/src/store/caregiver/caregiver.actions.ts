@@ -92,10 +92,12 @@ export const upsertCareGivers = createAsyncThunk<
             input.SiteAddressId = addressInput.Id;
           }
 
-          await new CaregiverService(userAuth?.auth_token).updateCareGiver(
-            caregiver.id ?? '',
-            input
-          );
+          if (caregiver?.isOnline === false) {
+            await new CaregiverService(userAuth?.auth_token).updateCareGiver(
+              caregiver.id ?? '',
+              input
+            );
+          }
         }
       }
       return [true];

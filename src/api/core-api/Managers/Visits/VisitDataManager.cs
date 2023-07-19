@@ -1,7 +1,7 @@
 ﻿using AngleSharp.Common;
 using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities.Users.Mapping;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -21,6 +21,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private IGenericRepositoryFactory _repoFactory;
         private VisitDataStatusManager _visitDataStatusManager;
         private VisitDataStatusManager_Practitioner _visitDataStatusManager_practitioner;
+        private IPointsEngineService _pointsEngineService;
         private IGenericRepository<Visit, Guid> _visitRepo;
         private IGenericRepository<VisitData, Guid> _visitDataRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
@@ -31,12 +32,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             VisitDataStatusManager visitDataStatusManager,
-            VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner)
+            VisitDataStatusManager_Practitioner visitDataStatusManager_Practitioner,
+            [Service] IPointsEngineService pointsEngineService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataStatusManager_practitioner = visitDataStatusManager_Practitioner;
+            _pointsEngineService = pointsEngineService;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _visitRepo = _repoFactory.CreateGenericRepository<Visit>(userContext: _applicationUserId);
@@ -88,8 +91,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // then handle status data
-            _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
+            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.InfantId, Constants.GGSettings.client_child, input.VisitId);
 
+            // call points engine for hcw
+            if (result)
+            {
+                _pointsEngineService.CalculateInfantVisits(_applicationUserId, DateTime.UtcNow);
+            }
             return true;
         }
         public Boolean AddAntenatalVisitData(CMSVisitDataInputModel input)
@@ -132,7 +140,13 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             // then handle status data
-            _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+            bool result = _visitDataStatusManager.ManageVisitDataStatus(input.MotherId, Constants.GGSettings.client_mother, input.VisitId);
+
+            // call points engine for hcw
+            if (result)
+            {
+                _pointsEngineService.CalculatePregnantMomVisits(_applicationUserId, DateTime.UtcNow);
+            }
             return true;
         }
         public Boolean AddPractitionerVisitData(CMSVisitDataInputModel input, bool markVisitAsCompleted)

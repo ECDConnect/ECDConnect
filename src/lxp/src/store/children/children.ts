@@ -27,10 +27,15 @@ const childrenSlice = createSlice({
     },
     createChild: (state, action: PayloadAction<ChildDto>) => {
       if (!state.children) state.children = [];
-      state.children?.push(action.payload);
+      const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, isOnline };
+      state.children?.push(payloadUpdated);
     },
     updateChild: (state, action: PayloadAction<ChildDto>) => {
       if (!state.children) return;
+
+      const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, isOnline };
 
       const childIndex = state.children.findIndex(
         (child) => child.id === action.payload.id
@@ -38,17 +43,22 @@ const childrenSlice = createSlice({
 
       if (childIndex < 0) return;
 
-      state.children[childIndex] = action.payload;
+      state.children[childIndex] = payloadUpdated;
     },
     createChildUser: (state, action: PayloadAction<UserDto>) => {
+      const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, isOnline };
+
       if (!state.childUser) state.childUser = [];
-      state.childUser?.push(action.payload);
+      state.childUser?.push(payloadUpdated);
     },
     updateChildUser: (state, action: PayloadAction<UserDto>) => {
       if (state.childUser) {
+        const isOnline = navigator.onLine;
+        const payloadUpdated = { ...action.payload, isOnline };
         for (let i = 0; i < state.childUser.length; i++) {
           if (state.childUser[i].id === action.payload.id)
-            state.childUser[i] = action.payload;
+            state.childUser[i] = payloadUpdated;
         }
       }
     },

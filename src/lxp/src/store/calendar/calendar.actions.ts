@@ -1,50 +1,38 @@
 import { createAsyncThunk } from '@reduxjs/toolkit';
 import { CalendarService } from '@services/CalendarService';
 import { RootState, ThunkApiType } from '../types';
-import { CalendarEventModel, CalendarEventTypeDto } from '@ecdlink/core';
-import { CalendarEventInput } from '@ecdlink/graphql';
+import {
+  CalendarEventModelInputModel,
+  CalendarEventModel,
+  CalendarEventTypeDto,
+} from '@ecdlink/core';
 import { calendarConvert } from './calendar.util';
 
-export const upsertCalendar = createAsyncThunk<
+export const upsertCalendarEvents = createAsyncThunk<
   boolean[],
   // eslint-disable-next-line @typescript-eslint/ban-types
   {},
   ThunkApiType<RootState>
 >(
-  'upsertCalendar',
+  'upsertCalendarEvents',
   // eslint-disable-next-line no-empty-pattern
   async ({}, { getState, rejectWithValue }) => {
     const {
       auth: { userAuth },
-      user: { userLocalePreference },
       calendar: { events },
     } = getState();
 
     try {
       let promises: Promise<boolean>[] = [];
 
-      // if (userAuth?.auth_token && unsyncedChildProgressReportsIds) {
-      //   promises = unsyncedChildProgressReportsIds.map(async (x) => {
-      //     const currentReportCopy = childProgressionReports?.find(
-      //       (z) => z.id === x.reportId
-      //     );
-      //     if (!currentReportCopy) return Promise.resolve<boolean>(true);
-
-      //     const childProgressReportInput: ChildProgressReportInput = {
-      //       ChildId: currentReportCopy?.childId,
-      //       ClassroomGroupId: x.classroomGroupId,
-      //       Id: currentReportCopy?.id,
-      //       ReportDate: currentReportCopy?.reportingDate,
-      //       ReportContent: JSON.stringify(currentReportCopy),
-      //       IsActive: true,
-      //     };
-
-      //     // return await new ContentReportService(
-      //     //   userAuth?.auth_token,
-      //     //   userLocalePreference
-      //     // ).syncChildProgressReport(childProgressReportInput);
-      //   });
-      // }
+      if (userAuth?.auth_token && !!events && events.length > 0) {
+        const service = new CalendarService(userAuth?.auth_token);
+        promises = events
+          .filter((e) => e.__changed === true)
+          .map(async (e) => {
+            return await service.syncCalendarEvent(e);
+          });
+      }
       return Promise.all(promises);
     } catch (err) {
       return rejectWithValue(err);
@@ -135,8 +123,8 @@ export const getCalendarEvents = createAsyncThunk<
 );
 
 export const updateCalendarEvent = createAsyncThunk<
-  CalendarEventModel,
-  CalendarEventInput,
+  CalendarEventModelInputModel,
+  CalendarEventModelInputModel,
   ThunkApiType<RootState>
 >(
   'updateCalendarEvent',
@@ -148,14 +136,12 @@ export const updateCalendarEvent = createAsyncThunk<
 
     try {
       if (userAuth?.auth_token) {
+        input.userId = userAuth.id;
         /*const content =*/ await new CalendarService(
           userAuth?.auth_token
-        ).updateCalendarEvent(input, input?.Id || '');
-
-        const model =
-          calendarConvert.CalendarEventInput.CalendarEventModel(input);
-        model.__changed = false;
-        return model;
+        ).updateCalendarEvent(input, input?.id || '');
+        input.__changed = false;
+        return input;
       } else {
         return rejectWithValue('no access token');
       }

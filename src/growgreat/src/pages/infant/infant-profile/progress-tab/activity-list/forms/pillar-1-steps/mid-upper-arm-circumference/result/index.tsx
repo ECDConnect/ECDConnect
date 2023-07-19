@@ -211,7 +211,7 @@ export const MidUpperArmCircumferenceResultStep = ({
           }
         />
         {renderCard}
-        <table className="mb-6 border border-gray-100">
+        <table className="text-textDark mb-6 border border-gray-100">
           <thead>
             <tr className="bg-uiBg border-primary border-b text-left">
               <th className={'py-4 px-6'}>DATE</th>

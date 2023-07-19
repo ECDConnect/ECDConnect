@@ -8,13 +8,15 @@ using HotChocolate;
 using HotChocolate.Types;
 using System.Collections.Generic;
 
-namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat {
+namespace EcdLink.Api.CoreApi.GraphApi.Queries
+{
     [ExtendObjectType(OperationTypeNames.Query)]
     public class VisitDataStatusQueryExtension
     {
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
-        public List<VisitDataStatus> GetReferralsForVisitId([Service] VisitDataStatusManager visitDataStatusManager, string visitId) {
+        public List<VisitDataStatus> GetReferralsForVisitId([Service] VisitDataStatusManager visitDataStatusManager, string visitId)
+        {
             return visitDataStatusManager.GetReferralDataForVisitId(visitId);
         }
 

@@ -1,12 +1,12 @@
 import { CalendarEventModel } from '@ecdlink/core';
 
 export interface CalendarViewEventProps {
-  canEdit: boolean;
+  canEdit?: boolean;
   event: CalendarEventModel | string;
   onClose: () => void;
 }
 
 export interface CalendarViewEventOptions {
-  canEdit: boolean;
+  canEdit?: boolean;
   event: CalendarEventModel | string;
 }

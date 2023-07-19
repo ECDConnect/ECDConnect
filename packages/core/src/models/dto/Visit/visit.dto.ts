@@ -6,6 +6,7 @@ export interface VisitDto {
   visitInProgress: boolean;
   plannedVisitDate: string;
   insertedDate?: string;
+  comment?: string;
   orderDate: string;
   visitType?: {
     description?: string;
@@ -19,6 +20,7 @@ export interface VisitDto {
     insertedDate?: string;
     updatedDate?: string;
   };
+  eventId?: string;
 }
 
 export interface VisitStatusDto {

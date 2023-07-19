@@ -5,6 +5,7 @@ import {
   CalendarAddEventFormSchema,
   CalendarAddEventOptions,
   CalendarEditEventOptions,
+  CalendarAddEventParticipantFormModel,
 } from './calendar-add-event.types';
 import { useSelector } from 'react-redux';
 import { useCallback, useEffect, useState } from 'react';
@@ -24,7 +25,7 @@ import {
   classNames,
   renderIcon,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { addMilliseconds, format, subMilliseconds } from 'date-fns';
 import { newGuid } from '@/utils/common/uuid.utils';
 import DatePicker from 'react-datepicker';
 import { calendarSelectors, calendarThunkActions } from '@/store/calendar';
@@ -58,11 +59,27 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   const [searchParticipantsVisible, setSearchParticipantsVisible] =
     useState<boolean>(false);
 
+  const currentUser = useSelector(userSelectors.getUser) as UserDto;
+  const practitioners = useSelector(practitionerSelectors.getPractitioners);
+
   const isNewEvent = !eventProps?.id;
+
+  const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
+    eventProps?.participantUserIds?.map((pid) => {
+      const practitioner = practitioners?.find((x) => x.userId === pid);
+      return {
+        id: newGuid(),
+        participantUserId: pid,
+        participantUser: {
+          firstName: practitioner?.user?.firstName || '',
+          surname: practitioner?.user?.surname || '',
+        },
+      };
+    });
+
   const event: CalendarEventModel = useSelector(
     calendarSelectors.getCalendarEventById(eventProps?.id || '')
   ) || {
-    __changed: true,
     id: '',
     allDay: eventProps?.allDay || false,
     description: eventProps?.description || '',
@@ -70,21 +87,18 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     eventType: eventProps?.eventType || '',
     name: eventProps?.name || '',
     start: eventProps?.start || '',
-    participants: (eventProps?.participantUserIds || []).map(
-      (participantUserId) => ({
-        id: newGuid(),
-        participantUserId,
-      })
-    ),
+    participants: eventPropParticipants || [],
     action: eventProps?.action || null,
+    userId: currentUser.id || '',
+    user: {
+      firstName: currentUser.firstName || '',
+      surname: currentUser.surname || '',
+    },
   };
 
   const calendarEventTypes = useSelector(
     calendarSelectors.getCalendarEventTypes
   );
-
-  const currentUser = useSelector(userSelectors.getUser) as UserDto;
-  const practitioners = useSelector(practitionerSelectors.getPractitioners);
 
   const [confirmGoBackPromptVisible, setConfirmGoBackPromptVisible] =
     useState<boolean>(false);
@@ -129,7 +143,11 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     allDay: event.allDay,
     description: event.description || '',
     eventType: !event.eventType ? undefined : event.eventType,
-    participants: event.participants.map((p) => p.participantUserId),
+    participants: event.participants.map((p) => ({
+      userId: p.participantUserId,
+      firstName: p.participantUser.firstName,
+      surname: p.participantUser.surname,
+    })),
   };
   const {
     setValue: setEventFormValue,
@@ -157,6 +175,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     } else {
       setHasChangesOnEvent(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchValues]);
 
   const handleFormSubmit = async (formValues: CalendarAddEventFormModel) => {
@@ -165,19 +184,24 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
       const participants: CalendarEventParticipantModel[] =
         formValues.participants
-          .filter((participantUserId) => participantUserId !== currentUser.id)
-          .map((participantUserId) => {
+          .filter(
+            (participantUser) => participantUser.userId !== currentUser.id
+          )
+          .map((participantUser) => {
             return {
               id:
                 event.participants.find(
-                  (x) => x.participantUserId === participantUserId
+                  (x) => x.participantUserId === participantUser.userId
                 )?.id || newGuid(),
-              participantUserId,
+              participantUserId: participantUser.userId,
+              participantUser: {
+                firstName: participantUser.firstName,
+                surname: participantUser.surname,
+              },
             };
           });
 
       const model: CalendarEventModel = {
-        __changed: true,
         id: id,
         allDay: formValues.allDay,
         description: formValues.description,
@@ -191,10 +215,15 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
           : formValues.start.toISOString(),
         participants: participants,
         action: event.action,
+        userId: currentUser.id || '',
+        user: {
+          firstName: currentUser.firstName || '',
+          surname: currentUser.surname || '',
+        },
       };
       appDispatch(
         calendarThunkActions.updateCalendarEvent(
-          calendarConvert.CalendarEventModel.CalendarEventInput(model)
+          calendarConvert.CalendarEventModel.CalendarEventModelInputModel(model)
         )
       );
       if (onUpdated) {
@@ -219,37 +248,44 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
   }, []);
 
   const onSearchParticipantDone = useCallback(
-    (participantUserIds: string[]) => {
+    (participantUsers: CalendarAddEventParticipantFormModel[]) => {
       setSearchParticipantsVisible(false);
-      setEventFormValue('participants', participantUserIds);
+      setEventFormValue('participants', participantUsers);
     },
-    []
+    [setEventFormValue]
   );
 
   const onAddParticipant = useCallback(() => {
     setSearchParticipantsVisible(true);
   }, []);
 
+  const formValue_participants = getEventFormValues().participants;
+
   const onRemoveParticipant = useCallback(
     (item: any) => {
       const id = (item as ListDataItem).id as string;
-      const list = [...getEventFormValues().participants];
-      const index = list.findIndex((x) => x === id);
+      const list = [...formValue_participants];
+      const index = list.findIndex((x) => x.userId === id);
       if (index !== -1) {
         list.splice(index, 1);
         setEventFormValue('participants', list);
       }
     },
-    [getEventFormValues().participants]
+    [formValue_participants, setEventFormValue]
   );
 
   const getParticipantList = useCallback(
-    (participantUserIds: string[]): ListDataItem[] => {
+    (
+      participantUsers: CalendarAddEventParticipantFormModel[]
+    ): ListDataItem[] => {
       const list: ListDataItem[] = [];
       if (!!practitioners) {
         list.push(
           ...practitioners
-            .filter((p) => participantUserIds.includes(p.userId || ''))
+            .filter(
+              (p) =>
+                participantUsers.findIndex((u) => u.userId === p.userId) >= 0
+            )
             .map((p) => mapPractitionerToListDataItem(p))
         );
         list.forEach((x) => (x.rightIcon = 'XIcon'));
@@ -260,6 +296,31 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       return [cu, ...list];
     },
     [practitioners, currentUser]
+  );
+
+  const formValue_end = getEventFormValues().end;
+  const formValue_start = getEventFormValues().start;
+
+  const onChangeStartDate = useCallback(
+    (start: Date) => {
+      const duration = formValue_end.getTime() - formValue_start.getTime();
+      const end = addMilliseconds(start, duration);
+      setEventFormValue('start', start);
+      setEventFormValue('end', end);
+    },
+    [formValue_end, formValue_start, setEventFormValue]
+  );
+
+  const onChangeEndDate = useCallback(
+    (end: Date) => {
+      const duration = formValue_end.getTime() - formValue_start.getTime();
+      setEventFormValue('end', end);
+      if (formValue_start.getTime() > end.getTime()) {
+        const start = subMilliseconds(end, duration);
+        setEventFormValue('start', start);
+      }
+    },
+    [formValue_end, formValue_start, setEventFormValue]
   );
 
   return (
@@ -315,14 +376,14 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
               wrapperClassName="text-center"
               selected={getEventFormValues().start}
-              onChange={(date: Date) => setEventFormValue('start', date)}
+              onChange={onChangeStartDate}
               dateFormat={
                 getEventFormValues().allDay
                   ? 'EEE, dd MMM yyyy'
                   : 'EEE, dd MMM yyyy  HH:mm'
               }
               minDate={minDate}
-              maxDate={getEventFormValues().end}
+              maxDate={maxDate}
               showTimeInput={!getEventFormValues().allDay}
             />
           </div>
@@ -334,13 +395,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               wrapperClassName="text-center"
               className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
               selected={getEventFormValues().end}
-              onChange={(date: Date) => setEventFormValue('end', date)}
+              onChange={onChangeEndDate}
               dateFormat={
                 getEventFormValues().allDay
                   ? 'EEE, dd MMM yyyy'
                   : 'EEE, dd MMM yyyy  HH:mm'
               }
-              minDate={getEventFormValues().start}
+              minDate={minDate}
               maxDate={maxDate}
               showTimeInput={!getEventFormValues().allDay}
             />
@@ -434,7 +495,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
         position={DialogPosition.Full}
       >
         <CalendarSearchParticipant
-          currentParticipantUserIds={getEventFormValues().participants}
+          currentParticipantUsers={getEventFormValues().participants}
           onBack={onSearchParticipantClose}
           onDone={onSearchParticipantDone}
         />

@@ -107,6 +107,7 @@ class TraineeService {
                     name
                     description
                 }
+                eventId
             }
         }        
     }

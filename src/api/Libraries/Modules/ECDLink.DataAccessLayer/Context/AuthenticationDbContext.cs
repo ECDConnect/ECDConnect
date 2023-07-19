@@ -14,6 +14,7 @@ using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Navigation;
 using ECDLink.DataAccessLayer.Entities.Notes;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.DataAccessLayer.Entities.PointsEngine;
 using ECDLink.DataAccessLayer.Entities.PQA;
 using ECDLink.DataAccessLayer.Entities.Reports;
 using ECDLink.DataAccessLayer.Entities.SmartSpaceVisit;
@@ -44,6 +45,7 @@ namespace ECDLink.DataAccessLayer.Context
         public DbSet<Race> Races { get; set; }
         public DbSet<AuditLog> AuditLogs { get; set; }
         public DbSet<ReasonForLeaving> ReasonsForLeaving { get; set; }
+        public DbSet<ReasonForPractitionerLeaving> ReasonsForPractionerLeaving { get; set; }
         public DbSet<ShortenUrlEntity> ShortUrls { get; set; }
         public DbSet<UserConsent> UserConsents { get; set; }
         public DbSet<Absentees> Absents { get; set; }
@@ -159,6 +161,11 @@ namespace ECDLink.DataAccessLayer.Context
         // Calendar
         public DbSet<CalendarEvent> CalendarEvents { get; set; }
         public DbSet<CalendarEventParticipant> CalendarEventParticipants { get; set; }
+
+        // Points library
+        public DbSet<PointsLibrary> PointsLibrary { get; set; }
+        public DbSet<PointsUser> PointsUser { get; set; }
+        public DbSet<PointsUserSummary> PointsUserSummary { get; set; }
 
         public AuthenticationDbContext(DbContextOptions<AuthenticationDbContext> options)
                : base(options)
