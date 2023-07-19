@@ -248,7 +248,6 @@ export const WeightAndLengthResultStep = ({
 
   const WeightAlert = useCallback(() => {
     let WeightAlert = <Fragment />;
-
     switch (weightAlertResult) {
       case 'SD2':
         WeightAlert = (
@@ -365,21 +364,21 @@ export const WeightAndLengthResultStep = ({
     const gender = infant?.gender?.description;
 
     const weightPerDay =
-      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+      gender === 'Female' ? weightForAgeGirls : weightForAgeBoys;
     const lengthPerDay =
-      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+      gender === 'Female' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
     const weightPerWeek =
-      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+      gender === 'Female' ? weightPerWeekGirls : weightPerWeekBoys;
     const lengthPerWeek =
-      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+      gender === 'Female' ? lengthPerWeekGirls : lengthPerWeekBoys;
     const weightPerMonth =
-      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+      gender === 'Female' ? weightPerMonthGirls : weightPerMonthBoys;
     const lengthPerMonth =
-      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+      gender === 'Female' ? lengthPerMonthGirls : lengthPerMonthBoys;
     const weightPerYear =
-      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+      gender === 'Female' ? weightPerYearGirls : weightPerYearBoys;
     const lengthPerYear =
-      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+      gender === 'Female' ? lengthPerYearGirls : lengthPerYearBoys;
 
     return {
       weightPerDay,
@@ -540,6 +539,13 @@ export const WeightAndLengthResultStep = ({
     const ageWeeks = differenceInWeeks(new Date(), new Date(dateOfBirth));
     const ageMonths = differenceInMonths(new Date(), new Date(dateOfBirth));
 
+    console.log('ageDays', ageDays);
+    console.log('ageWeeks', ageWeeks);
+    console.log('ageMonths', ageMonths);
+    console.log('ageYears', ageYears);
+
+    console.log('ageMonthsPart', ageMonthsPart);
+
     if (!ageYears && !ageMonthsPart && ageDays <= 14) {
       const weightChartData = getChartData(ageDays, weightPerDay);
       const lengthChartDate = getChartData(ageDays, lengthPerDay);
@@ -574,6 +580,13 @@ export const WeightAndLengthResultStep = ({
     if (ageWeeks <= 12) {
       const weightChartData = getChartData(ageWeeks, weightPerWeek);
       const lengthChartDate = getChartData(ageWeeks, lengthPerWeek);
+      console.log('less than 12 weeks', ageWeeks);
+      console.log('weightChartData', weightChartData);
+
+      console.log('dateOfBirth', dateOfBirth);
+      console.log('weightHistory', weightHistory);
+      console.log('weightChartData.date', weightChartData.date);
+      console.log('weightResult', weightResult);
 
       setWeightResult(
         fillInMissingNumbers(
@@ -605,6 +618,7 @@ export const WeightAndLengthResultStep = ({
     if (ageYears < 2) {
       const weightChartData = getChartData(ageMonths, weightPerMonth);
       const lengthChartData = getChartData(ageMonths, lengthPerMonth);
+      console.log('less than 2 years', ageYears);
 
       setWeightResult(
         fillInMissingNumbers(
