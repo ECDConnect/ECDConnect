@@ -282,12 +282,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 if (idOrPassport?.ToLowerInvariant() == "id"
                     && !UserHelper.IsSAIDValid(id))
                 {
-                    errors.Add("Type of identification is \"id\", is empty or invalid");
+                    errors.Add("Id is empty or invalid");
                 }
 
                 if (idOrPassport is null ||
                     (idOrPassport.ToLowerInvariant() == "passport" && passport.Length == 0))
-                    errors.Add("Type of identification is \"passport\", is empty or invalid");
+                    errors.Add("Passport is empty or invalid");
 
                 if (firstName is null || firstName.Length == 0)
                     errors.Add("First Name is empty.");

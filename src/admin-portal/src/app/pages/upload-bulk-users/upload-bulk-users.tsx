@@ -17,7 +17,7 @@ import {
   PaperAirplaneIcon,
 } from '@heroicons/react/solid';
 import { useHistory } from 'react-router';
-import { Alert } from '@ecdlink/ui';
+import { Alert, Button } from '@ecdlink/ui';
 
 const acceptedFormats = ['xls', 'xlsx'];
 
@@ -28,6 +28,7 @@ export default function UploadBulkUser(props: any) {
   // props.location.state?.component === 'team-leads'
   const [templateDownloaded, setTemplateDownloaded] = useState<boolean>(false);
   const [docErrors, setDocErrors] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
 
   const [getExcelTemplateGenerator, { data: templateData }] = useLazyQuery(
     HealthCareWorkerTemplate,
@@ -49,6 +50,7 @@ export default function UploadBulkUser(props: any) {
 
     if (model.templateFile?.file) {
       if (props.location.state?.component === 'team-leads') {
+        setIsLoading(true);
         await importTeamLeads({
           variables: {
             file: model.templateFile?.file,
@@ -71,30 +73,41 @@ export default function UploadBulkUser(props: any) {
               variant: NOTIFICATION.SUCCESS,
             });
           }
+
+          setIsLoading(false);
         });
       } else {
+        // if is not team leads, upload to chw
+        setIsLoading(true);
         await importPractitioners({
           variables: {
             file: model.templateFile?.file,
           },
-        }).then((res) => {
-          if (
-            res.data?.importHealthCareWorkers?.validationErrors.length !== 0
-          ) {
-            setDocErrors(res.data?.importHealthCareWorkers.validationErrors);
-            setNotification({
-              title: `${res.data?.importHealthCareWorkers?.validationErrors?.errors[0]}`,
-              variant: NOTIFICATION.ERROR,
-            });
-          } else {
-            setNotification({
-              title: `Successfully Uploaded ${
-                res.data?.importHealthCareWorkers?.createdUsers?.length ?? 0
-              } CHWs!`,
-              variant: NOTIFICATION.SUCCESS,
-            });
-          }
-        });
+        })
+          .then((res) => {
+            if (
+              res?.data?.importHealthCareWorkers?.validationErrors?.length > 0
+            ) {
+              const errorList =
+                res.data.importHealthCareWorkers.validationErrors;
+
+              setNotification({
+                title: `Please see error details below. (${errorList.length} errors)`,
+                variant: NOTIFICATION.ERROR,
+              });
+              setDocErrors(errorList);
+              setIsLoading(false);
+            } else {
+              setNotification({
+                title: `Successfully Uploaded ${
+                  res.data?.importHealthCareWorkers?.createdUsers?.length ?? 0
+                } CHWs!`,
+                variant: NOTIFICATION.SUCCESS,
+              });
+              setIsLoading(false);
+            }
+          })
+          .finally(() => setIsLoading(false));
       }
     }
   };
@@ -234,15 +247,19 @@ export default function UploadBulkUser(props: any) {
             </div>
             <div className="-ml-4 -mt-2 flex flex-wrap items-center justify-between sm:flex-nowrap">
               <div className="ml-4 mt-2 flex-shrink-0">
-                <button
-                  type="submit"
+                <Button
+                  type="filled"
+                  color="secondary"
                   className="bg-secondary hover:bg-uiMid focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2.5 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  isLoading={isLoading}
+                  disabled={isLoading}
+                  onClick={handleSubmit(onSubmit)}
                 >
                   <PaperAirplaneIcon className=" mr-1 h-4 w-4">
                     {' '}
                   </PaperAirplaneIcon>
                   Add & invite users
-                </button>
+                </Button>
               </div>
             </div>
           </form>
@@ -252,7 +269,12 @@ export default function UploadBulkUser(props: any) {
               className="mt-5 mb-3 rounded-md"
               message={`Error`}
               type="error"
-              list={docErrors.map((error) => error.errorDescription)}
+              list={docErrors.map(
+                (error) =>
+                  error.errorDescription +
+                  '</br>' +
+                  (error.errors?.length ? error.errors.join('</br>') : '')
+              )}
               listColor="errorMain"
             />
           ) : null}
