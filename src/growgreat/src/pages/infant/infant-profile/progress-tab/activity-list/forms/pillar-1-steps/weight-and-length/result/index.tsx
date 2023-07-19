@@ -209,11 +209,21 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
-  const weightAlertResult = findClosestWeight(
+  var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
+
+  // if the new weight is mapped to SD2/SD3 and we don't have a lenght/height, we default to median to display correct colour and alert
+  // EC-917
+  if (
+    (weightAlertResult === 'SD2' || weightAlertResult === 'SD3') &&
+    (length === 0 || height === 0)
+  ) {
+    weightAlertResult = 'median';
+  }
+
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
     length || height,
@@ -365,21 +375,21 @@ export const WeightAndLengthResultStep = ({
     const gender = infant?.gender?.description;
 
     const weightPerDay =
-      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+      gender === 'Female' ? weightForAgeGirls : weightForAgeBoys;
     const lengthPerDay =
-      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+      gender === 'Female' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
     const weightPerWeek =
-      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+      gender === 'Female' ? weightPerWeekGirls : weightPerWeekBoys;
     const lengthPerWeek =
-      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+      gender === 'Female' ? lengthPerWeekGirls : lengthPerWeekBoys;
     const weightPerMonth =
-      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+      gender === 'Female' ? weightPerMonthGirls : weightPerMonthBoys;
     const lengthPerMonth =
-      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+      gender === 'Female' ? lengthPerMonthGirls : lengthPerMonthBoys;
     const weightPerYear =
-      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+      gender === 'Female' ? weightPerYearGirls : weightPerYearBoys;
     const lengthPerYear =
-      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+      gender === 'Female' ? lengthPerYearGirls : lengthPerYearBoys;
 
     return {
       weightPerDay,

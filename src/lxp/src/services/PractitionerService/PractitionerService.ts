@@ -109,6 +109,7 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               prePQASiteVisits {
                 id
@@ -123,6 +124,7 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               pQASiteVisits {
                 id
@@ -137,6 +139,7 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               reAccreditationVisits {
                 id
@@ -150,6 +153,7 @@ class PractitionerService {
                   normalizedName
                   description
                 }
+                eventId
               }
               reAccreditationRating1 {
                 children {
@@ -213,6 +217,7 @@ class PractitionerService {
                   order
                   type
                 }
+                eventId
               }
             }
           }

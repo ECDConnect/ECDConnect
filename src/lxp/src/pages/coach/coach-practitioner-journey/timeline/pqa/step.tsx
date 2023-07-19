@@ -1,4 +1,3 @@
-import { CalendarEventModel } from '@ecdlink/core';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { StepType, getStepType, sortVisit } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
@@ -7,15 +6,12 @@ import { RatingData } from '@/store/pqa/pqa.types';
 interface Props {
   timeline: PractitionerTimeline;
   currentPqaRating: RatingData;
-  practitionerEvents?: CalendarEventModel[];
 }
 
 export const getPqaStepData = ({
   timeline,
-  practitionerEvents,
   currentPqaRating,
 }: Props): {
-  currentVisitEvent?: CalendarEventModel;
   currentVisit?: Maybe<Visit>;
   stepType?: StepType;
   subTitleText?: string;
@@ -33,18 +29,6 @@ export const getPqaStepData = ({
   const currentVisit = !!visitToAttend
     ? visitToAttend
     : formattedVisits[formattedVisits.length - 1];
-  const currentVisitEvent =
-    !!currentVisit && !!practitionerEvents
-      ? practitionerEvents.find(
-          (e) =>
-            e.eventType === 'First PQA' &&
-            e.action?.state !== undefined &&
-            e.action?.state.action === 'onStart' &&
-            e.action?.state.actionParams !== undefined &&
-            e.action?.state.actionParams.visitName ===
-              currentVisit.visitType?.name
-        )
-      : undefined;
 
   const isLateDate =
     new Date(currentVisit?.plannedVisitDate) < new Date() &&
@@ -66,7 +50,7 @@ export const getPqaStepData = ({
   );
 
   const getSubTitleText = () => {
-    if (!!currentVisitEvent) {
+    if (!!currentVisit?.eventId) {
       return 'Scheduled';
     }
 
@@ -78,7 +62,6 @@ export const getPqaStepData = ({
   };
 
   return {
-    currentVisitEvent,
     currentVisit,
     stepType,
     subTitleText: getSubTitleText(),

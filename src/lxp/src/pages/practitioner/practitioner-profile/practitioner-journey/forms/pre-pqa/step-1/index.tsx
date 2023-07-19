@@ -23,6 +23,8 @@ export const PrePqaSummaryStep1 = ({
     item?.visitType?.name?.includes('2')
   );
 
+  const isScheduledVisit2 = !!visit2?.eventId;
+
   const previousVisit1 = useSelector(
     getVisitDataByVisitIdSelector(
       prePqaVisits?.[0]?.id,
@@ -65,20 +67,20 @@ export const PrePqaSummaryStep1 = ({
           body={item?.questionAnswer || '---'}
         />
       ))}
-      {/* TODO: check due date and schedule date */}
       {!visit2Data && (
         <>
           <Typography
             type="h4"
-            text="Your next visit is due by:"
+            text={`Your next visit is ${
+              isScheduledVisit2 ? 'scheduled for' : 'due by'
+            }:`}
             color="textMid"
           />
           <Typography
             type="h4"
-            text={new Date(visit2?.plannedVisitDate).toLocaleDateString(
-              'en-ZA',
-              dateLongMonthOptions
-            )}
+            text={new Date(
+              isScheduledVisit2 ? visit2?.plannedVisitDate : visit2?.dueDate
+            ).toLocaleDateString('en-ZA', dateLongMonthOptions)}
             color="primary"
           />
         </>
