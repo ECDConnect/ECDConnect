@@ -158,7 +158,7 @@ export default function ApplicationUsers() {
     return {
       ...user,
       fullName: `${user?.firstName} ${user?.surname}`,
-      email: user?.idNumber ? user?.email : '',
+      email: user?.userName ?? user?.idNumber ?? user?.email ?? '',
     };
   };
 

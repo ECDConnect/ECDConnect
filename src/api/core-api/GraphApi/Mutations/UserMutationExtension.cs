@@ -1,10 +1,9 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -182,7 +181,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && input.PhoneNumber != user.PhoneNumber)
             {
                 auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-                user.PhoneNumber = replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber);
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                user.PendingPhoneNumber = null;
+            }
+
+            if (input.WhatsAppNumber is not null
+                && input.WhatsAppNumber != user.WhatsAppNumber)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
+                var normalizedWhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
+                user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
+                user.PendingPhoneNumber = null;
             }
 
             if (input.IdNumber is not null 

@@ -201,9 +201,7 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate User"
-          btnText={
-            ['Yes, Deactivate User', 'No, Cancel']
-          }
+          btnText={['Yes, Deactivate User', 'No, Cancel']}
           message={`${
             chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
@@ -237,6 +235,11 @@ export function ViewUser(props: any) {
       ),
     });
   };
+
+  let isAdminUser = userData?.userById?.roles?.some(
+    (role: any) => role.name === 'Administrator'
+  );
+
   const sendInvite = async () => {
     dialog({
       position: DialogPosition.Middle,
@@ -247,17 +250,16 @@ export function ViewUser(props: any) {
             chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
           }`}
-          btnText={
-            ['Yes, Resend Invitation', 'No, Cancel']
-          }
+          btnText={['Yes, Resend Invitation', 'No, Cancel']}
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
             sendInviteToApplication({
               variables: {
                 userId:
-                  userData?.userById.id ?? chwData.GetHealthCareWorkerById.id,
-                inviteToPortal: true,
+                  userData?.userById?.id ??
+                  chwData.GetHealthCareWorkerById.user.id,
+                inviteToPortal: isAdminUser,
               },
             })
               .then(() => {
@@ -366,19 +368,10 @@ export function ViewUser(props: any) {
     const adminDataForm = adminDetailGetValues();
     const chwDataForm = chwDetailGetValues();
 
-    const chwInputModel: UserModelInput = {
-      phoneNumber: chwDataForm?.phoneNumber,
+    const userInputModel: UserModelInput = {
       idNumber: chwDataForm?.idNumber,
-      dateOfBirth: null,
-      isSouthAfricanCitizen: null,
-      verifiedByHomeAffairs: null,
-    };
-
-    const adminInputModel: UserModelInput = {
+      phoneNumber: chwDataForm?.phoneNumber,
       email: adminDataForm?.email,
-      dateOfBirth: null,
-      isSouthAfricanCitizen: null,
-      verifiedByHomeAffairs: null,
     };
 
     await updateUser({
@@ -386,12 +379,18 @@ export function ViewUser(props: any) {
         id:
           userData?.userById.id ??
           chwData?.GetHealthCareWorkerById?.user.id ??
-          teamLeadData,
-        input: !isCHW ? { ...adminInputModel } : { ...chwInputModel },
+          teamLeadData?.user.id,
+        input: userInputModel,
       },
     })
       .then(() => {
-        refetch();
+        if (userData?.phoneNumber) refetch();
+
+        if (chwData?.GetHealthCareWorkerById?.user?.phoneNumber) {
+          console.log('refetchCHW');
+          refetchCHW();
+        }
+
         setNotification({
           title: 'Successfully Updated User!',
           variant: NOTIFICATION.SUCCESS,
@@ -509,7 +508,12 @@ export function ViewUser(props: any) {
                                 ' m-1 my-2 flex flex-row justify-center rounded-full py-1  px-3 text-xs text-white'
                               )}
                             >
-                              <p className="text-16"> {i.name === 'Community Health Worker' ? 'CHW': i.name}</p>
+                              <p className="text-16">
+                                {' '}
+                                {i.name === 'Community Health Worker'
+                                  ? 'CHW'
+                                  : i.name}
+                              </p>
                             </div>
                           );
                         }
@@ -521,7 +525,7 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {( chwData && !chwData?.GetHealthCareWorkerById?.user?.isActive) && (
+          {chwData && !chwData?.GetHealthCareWorkerById?.user?.isActive && (
             <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
@@ -529,8 +533,8 @@ export function ViewUser(props: any) {
               // customIcon={<SaveIcon></SaveIcon>}
             />
           )}
-              {(userData && !userData?.userById?.isActive) && 
-              (  <Alert
+          {userData && !userData?.userById?.isActive && (
+            <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
               type="error"

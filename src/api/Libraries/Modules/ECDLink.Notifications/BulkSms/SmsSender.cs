@@ -152,7 +152,7 @@ namespace ECDLink.Notifications.BulkSms
         // TODO: Should phone number be verified before being changed?
         public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
         {
-            _message.To = receiver.PendingPhoneNumber;
+            _message.To = receiver.PendingPhoneNumber ?? receiver.PhoneNumber ?? receiver.WhatsAppNumber;
             _model = receiver;
 
             return this;
