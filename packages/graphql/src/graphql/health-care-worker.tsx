@@ -5,13 +5,17 @@ export const GetAllHealthCareWorker = gql`
     $search: String
     $clinicSearch: String
     $provinceSearch: String
+    $teamLeadSearch: String
     $pagingInput: PagedQueryInput
+    $order: [HealthCareWorkerSortInput!]
   ) {
     allHealthCareWorkers(
       search: $search
       clinicSearch: $clinicSearch
       provinceSearch: $provinceSearch
+      teamLeadSearch: $teamLeadSearch
       pagingInput: $pagingInput
+      order: $order
     ) {
       id
       insertedDate
@@ -33,7 +37,9 @@ export const GetAllHealthCareWorker = gql`
         roles {
           id
           name
+          __typename
         }
+        __typename
       }
       teamLead {
         clinic {
@@ -41,10 +47,15 @@ export const GetAllHealthCareWorker = gql`
           siteAddress {
             province {
               description
+              __typename
             }
+            __typename
           }
+          __typename
         }
+        __typename
       }
+      __typename
     }
   }
 `;
