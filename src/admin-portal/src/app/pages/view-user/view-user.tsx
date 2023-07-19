@@ -201,6 +201,9 @@ export function ViewUser(props: any) {
       render: (onSubmit: any, onCancel: any) => (
         <AlertModal
           title="Deactivate User"
+          btnText={
+            ['Yes, Deactivate User', 'No, Cancel']
+          }
           message={`${
             chwData?.GetHealthCareWorkerById.user?.firstName ??
             userData.userById.fullName
@@ -244,6 +247,9 @@ export function ViewUser(props: any) {
             chwData?.GetHealthCareWorkerById?.user?.fullName ??
             userData?.userById?.fullName
           }`}
+          btnText={
+            ['Yes, Resend Invitation', 'No, Cancel']
+          }
           onCancel={onCancel}
           onSubmit={() => {
             onSubmit();
