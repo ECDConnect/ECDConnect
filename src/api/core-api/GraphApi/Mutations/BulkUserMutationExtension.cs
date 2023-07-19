@@ -404,7 +404,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         PendingPhoneNumber = cellphone,
                         ContactPreference = MessageTypeConstants.SMS,
                         TenantId = tenantId,
-                        InsertedDate = insertedDate
+                        InsertedDate = insertedDate,
                         IsActive = true
                     };
                     userImportList.Add(user);
@@ -420,7 +420,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                             JobTitle = RolesGG.TEAM_LEAD,
                             TenantId = tenantId,
                             // Clinics to be added.
-                            ClinicId = null
+                            ClinicId = null,
                             InsertedDate = insertedDate,
                             IsActive = true
                         });
