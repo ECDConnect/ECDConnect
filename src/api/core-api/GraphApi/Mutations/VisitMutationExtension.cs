@@ -499,7 +499,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             [Service] IHttpContextAccessor httpContextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] VisitManager visitManager,
-            VisitModel input)
+            [Service] VisitDataManager visitDataManager,
+            SSChecklistVisitModel input)
         {
             var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
             var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
@@ -515,14 +516,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 return new Visit();
             }
 
-            input.VisitType = visitType;
-            input.Attended = input.Attended;
-            input.CoachId = coach.Id;
-            input.TraineeId = trainee.Id;
-            input.LinkedVisitId = input.LinkedVisitId;
-            input.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            input.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
-            return visitManager.AddVisitForCoach(input);
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.LinkedVisitId = null;
+            visitModel.CoachId = coach.Id;
+            visitModel.TraineeId = trainee.Id;
+            visitModel.Attended = (bool)input.Attended;
+            visitModel.PlannedVisitDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            visitModel.DueDate = Convert.ToDateTime(input.PlannedVisitDate, CultureInfo.InvariantCulture);
+            if ((bool)input.Attended == true)
+            {
+                visitModel.ActualVisitDate = DateTime.Now;
+            }
+
+            Visit visit = visitManager.AddVisitForCoach(visitModel);
+            // Add VisitData for visit
+            input.ChecklistData.VisitId = visit.Id.ToString();
+            input.ChecklistData.TraineeId = trainee.Id.ToString();
+            input.ChecklistData.CoachId = coach.Id.ToString();
+            visitDataManager.AddTraineeVisitData(input.ChecklistData);
+
+            return visit;
+
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
