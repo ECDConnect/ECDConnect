@@ -39,6 +39,7 @@ namespace ECDLink.DataAccessLayer.Entities.Visits
         [NotMapped]
         public bool VisitInProgress { get; set; }
         public DateTime? DueDate { get; set; }
+        public Guid? EventId { get; set; }
     }
 
     public interface VisitJoin<TKey>

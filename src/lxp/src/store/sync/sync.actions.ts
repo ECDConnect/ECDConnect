@@ -227,6 +227,10 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
         title: 'ReAccreditation Visits',
         action: pqaThunkActions.addReAccreditationVisitData,
       },
+      {
+        title: 'ReAccreditation Follow up Visits',
+        action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
+      },
     ];
 
     let error: Error | null = null;

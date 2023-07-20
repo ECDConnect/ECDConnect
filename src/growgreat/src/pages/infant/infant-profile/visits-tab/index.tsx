@@ -29,6 +29,7 @@ import {
   getInfantCurrentVisitSelector,
   getInfantById,
   getInfantVisitsSelector,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
 import { InfantProfileParams } from '../infant-profile.types';
@@ -77,6 +78,9 @@ export const VisitsTab: React.FC = () => {
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
+  );
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
   const { isLoading } = useThunkFetchCall(
@@ -131,20 +135,29 @@ export const VisitsTab: React.FC = () => {
 
   const getType = useCallback(
     (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
+
       if (item.attended) {
         return 'completed';
       }
 
+      if (item.visitType?.normalizedName === 'Day 7') {
+        if (infantAgeDays < 7 || infantAgeDays > 13) {
+          return 'todo';
+        }
+      }
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
-        isMissedVisit
+        isMissedVisit ||
+        (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, isWeekDeadline]
+    [currentVisit, infantAgeDays, isWeekDeadline, previousVisit?.attended]
   );
 
   const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
@@ -173,6 +186,35 @@ export const VisitsTab: React.FC = () => {
       }
     });
   }, []);
+
+  const getSubTitle = useCallback(
+    (
+      item: VisitDto,
+      isMissedVisit: boolean,
+      isAdditionalVisit: boolean,
+      date: Date
+    ): string => {
+      if (isAdditionalVisit && item.comment) {
+        return item.comment;
+      }
+
+      if (isMissedVisit) {
+        if (item.visitType?.normalizedName === 'Day 3') {
+          if (infantAgeDays > 3) {
+            return `By ${date.getDate()} ${date.toLocaleString('default', {
+              month: 'long',
+            })} ${date.getFullYear()}`;
+          }
+        }
+        return 'Missed visit deadline';
+      }
+
+      return `By ${date.getDate()} ${date.toLocaleString('default', {
+        month: 'long',
+      })} ${date.getFullYear()}`;
+    },
+    [infantAgeDays]
+  );
 
   const visitSteps = useMemo(() => {
     const filteredVisits = visits.filter((item) => {
@@ -205,14 +247,7 @@ export const VisitsTab: React.FC = () => {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
-        subTitle:
-          isAdditionalVisit && item.comment!
-            ? item.comment
-            : isMissedVisit
-            ? 'Missed visit deadline'
-            : `By ${date.getDate()} ${date.toLocaleString('default', {
-                month: 'long',
-              })} ${date.getFullYear()}`,
+        subTitle: getSubTitle(item, isMissedVisit, isAdditionalVisit, date),
         ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),

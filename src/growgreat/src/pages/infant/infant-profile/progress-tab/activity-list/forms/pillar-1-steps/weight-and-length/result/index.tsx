@@ -209,11 +209,29 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
-  const weightAlertResult = findClosestWeight(
+  const weightIncreased = useMemo(() => {
+    let bIncreased = false;
+    const weightHistory =
+      [
+        ...(groupedGrowthData?.weight ? [...groupedGrowthData?.weight] : []),
+        ...[weight, ...(infant?.weightAtBirth ? [infant?.weightAtBirth] : [])],
+      ] || [];
+
+    if (weightHistory.length > 1) {
+      const first2 = weightHistory.slice(0, 2);
+      if (first2[0] > first2[1]) {
+        bIncreased = true;
+      }
+    }
+    return bIncreased;
+  }, [groupedGrowthData, infant, weight]);
+
+  var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
+
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
     length || height,
@@ -365,21 +383,21 @@ export const WeightAndLengthResultStep = ({
     const gender = infant?.gender?.description;
 
     const weightPerDay =
-      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+      gender === 'Female' ? weightForAgeGirls : weightForAgeBoys;
     const lengthPerDay =
-      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+      gender === 'Female' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
     const weightPerWeek =
-      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+      gender === 'Female' ? weightPerWeekGirls : weightPerWeekBoys;
     const lengthPerWeek =
-      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+      gender === 'Female' ? lengthPerWeekGirls : lengthPerWeekBoys;
     const weightPerMonth =
-      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+      gender === 'Female' ? weightPerMonthGirls : weightPerMonthBoys;
     const lengthPerMonth =
-      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+      gender === 'Female' ? lengthPerMonthGirls : lengthPerMonthBoys;
     const weightPerYear =
-      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+      gender === 'Female' ? weightPerYearGirls : weightPerYearBoys;
     const lengthPerYear =
-      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+      gender === 'Female' ? lengthPerYearGirls : lengthPerYearBoys;
 
     return {
       weightPerDay,
@@ -394,10 +412,42 @@ export const WeightAndLengthResultStep = ({
   }, [infant?.gender?.description]);
 
   function getScale(age: number, date: number[], input: number[]) {
-    let startIndex = Math.max(0, date.indexOf(age) - 4);
-    let endIndex = Math.min(startIndex + 6, date.length);
+    //let startIndex = Math.max(0, date.indexOf(age) - 4);
+    //let endIndex = Math.min(startIndex + 6, date.length);
+    //return input.slice(startIndex, endIndex);
 
-    return input.slice(startIndex, endIndex);
+    // EC-915 - start x-axis at zero + scale numbers
+    // break age into chunks of 6 if age is more than 6
+    var maxIndex = age;
+    var numberOfChunks = maxIndex <= 6 ? maxIndex : 6;
+    var chunkSize = parseInt(
+      (Math.floor(maxIndex) / numberOfChunks).toPrecision(1)
+    );
+    chunkSize = maxIndex <= 6 ? 1 : Math.ceil(maxIndex) / numberOfChunks;
+    var ageNumbers = [0]; // start with zero
+    var counter = 0;
+
+    for (var i = 0; i < numberOfChunks; i++) {
+      var max = counter + chunkSize;
+      if (i === numberOfChunks) {
+        max = maxIndex;
+      }
+      counter += chunkSize;
+      if (max < age) {
+        ageNumbers.push(Math.floor(max));
+      }
+    }
+
+    ageNumbers.push(age);
+    ageNumbers.sort((n1, n2) => n1 - n2);
+
+    // mapping the age chunks to the dataset
+    var endResult = [];
+    for (var j = 0; j < ageNumbers.length; j++) {
+      endResult.push(input[ageNumbers[j]]);
+    }
+
+    return endResult;
   }
 
   const getChartData = useCallback(
@@ -709,6 +759,20 @@ export const WeightAndLengthResultStep = ({
           {(!!length || !!height) && <LengthOrHeightAlert />}
         </>
       );
+    } else if (
+      (weightAlertResult === 'median' ||
+        weightAlertResult === 'SD2' ||
+        weightAlertResult === 'SD3') &&
+      (length === 0 || height === 0) &&
+      !weightIncreased
+    ) {
+      return (
+        <SuccessCard
+          text={`${name}'s growth is faltering.`}
+          color="successMain"
+          customIcon={<CelebrateIcon className="h-14	w-14" />}
+        />
+      );
     }
 
     return (
@@ -727,6 +791,7 @@ export const WeightAndLengthResultStep = ({
     lengthOrHeightAlertResult,
     name,
     weightAlertResult,
+    weightIncreased,
   ]);
 
   useEffect(() => {

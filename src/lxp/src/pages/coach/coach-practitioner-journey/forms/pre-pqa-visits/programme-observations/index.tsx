@@ -10,12 +10,10 @@ import { useCallback, useEffect, useState } from 'react';
 import { DynamicFormProps } from '../../dynamic-form';
 import { replaceBraces } from '@ecdlink/core';
 import { currentActivityKey } from '../..';
-import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
-import { useParams } from 'react-router';
 import { useSelector } from 'react-redux';
 import {
   getCurrentCoachPractitionerVisitByUserId,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 
 export const ProgrammeObservations = ({
@@ -34,8 +32,6 @@ export const ProgrammeObservations = ({
   const visitSection = 'Programme observations';
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
-  const { practitionerId } = useParams<PractitionerJourneyParams>();
-
   const currentVisit = useSelector(
     getCurrentCoachPractitionerVisitByUserId(
       activityName,
@@ -43,7 +39,7 @@ export const ProgrammeObservations = ({
     )
   );
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+    getVisitDataByVisitIdSelector(currentVisit?.id, 'prePqaPreviousFormData')
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection

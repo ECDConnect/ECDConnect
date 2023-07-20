@@ -39,7 +39,8 @@ import { IntroScreen } from './intro-screen';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { VisitActions } from '@/store/visit/visit.actions';
 import { DevelopmentalScreeningVisitSection } from './forms/danger-signs-steps/developmental-screening-weeks';
-// import { relationshipTypes } from '../../../../infant/components/mother-details/mother-details.types';
+import { muacFormSection } from './forms/nutrition-steps/mother-growth-muac';
+import { HIVSection } from './forms/pregnancy-care-steps/nutrition/complementary-feeding-flow/hiv-care';
 import { ReactComponent as PollyImpressed } from '@/assets/pollyImpressed.svg';
 import { userSelectors } from '@/store/user';
 import { ActivityInfoPage } from './activity-info-page';
@@ -48,6 +49,7 @@ import {
   getIsMotherFirstVisitSelector,
   getMotherById,
   getMotherLastVisitSelector,
+  getMotherFirstVisitSelector,
 } from '@/store/mother/mother.selectors';
 import { usePrevious } from '@ecdlink/core';
 
@@ -95,6 +97,7 @@ export const MomActivityList: React.FC = () => {
     ).unwrap();
   }, [appDispatch, infantId, motherId, visitId]);
 
+  const firstVisit = useSelector(getMotherFirstVisitSelector);
   const previousCurrentVisit = useSelector(getMotherLastVisitSelector);
   const previousSelectedOption = usePrevious(selectedOption) as
     | string
@@ -129,6 +132,30 @@ export const MomActivityList: React.FC = () => {
       })
     );
   }, [visitId, appDispatch]);
+
+  useLayoutEffect(() => {
+    if (previousCurrentVisit?.id) {
+      appDispatch(
+        visitThunkActions.getVisitAnswersForMother({
+          visitId: previousCurrentVisit.id,
+          visitName: activitiesTypes.nutrition,
+          visitSection: muacFormSection,
+        })
+      );
+    }
+  }, [appDispatch, previousCurrentVisit?.id]);
+
+  useLayoutEffect(() => {
+    if (firstVisit?.id) {
+      appDispatch(
+        visitThunkActions.getVisitAnswersForMother({
+          visitId: firstVisit.id,
+          visitName: activitiesTypes.pregnancyCare,
+          visitSection: HIVSection,
+        })
+      );
+    }
+  }, [appDispatch, firstVisit?.id]);
 
   const { isOnline } = useOnlineStatus();
 

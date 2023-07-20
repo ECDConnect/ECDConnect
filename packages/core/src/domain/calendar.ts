@@ -7,6 +7,13 @@ export interface CalendarEventParticipantModel {
   };
 }
 
+export interface CalendarEventActionModel {
+  buttonName: string;
+  buttonIcon?: string;
+  url: string;
+  state?: any;
+}
+
 export interface CalendarEventModel {
   __changed?: boolean;
   id: string;
@@ -17,7 +24,7 @@ export interface CalendarEventModel {
   name: string;
   start: string;
   participants: CalendarEventParticipantModel[];
-  action: any;
+  action: CalendarEventActionModel | null;
   userId: string;
   user: {
     firstName: string;
@@ -44,7 +51,7 @@ export interface CalendarEventModelInputModel {
   name: string;
   start: string;
   participants: CalendarEventParticipantModelInputModel[];
-  action: any;
+  action: string | null;
   userId?: string;
   user: {
     firstName: string;

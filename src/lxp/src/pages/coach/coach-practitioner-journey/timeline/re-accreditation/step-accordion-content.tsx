@@ -17,7 +17,6 @@ interface ReAccreditationVisitsProps {
   isLoading: boolean;
   currentVisit: Maybe<Visit>;
   practitionerId: string;
-  currentVisitEventId: string | undefined;
   isOnline: boolean;
   onScheduleOrStart: (schedule: ScheduleProps) => void;
 }
@@ -28,7 +27,6 @@ export const newReAccreditationVisitId = 'new-re-accreditation';
 export const ReAccreditationVisits = ({
   currentVisit,
   practitionerId,
-  currentVisitEventId,
   onScheduleOrStart,
 }: ReAccreditationVisitsProps) => {
   const timeline = useSelector(
@@ -75,6 +73,7 @@ export const ReAccreditationVisits = ({
     new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
       new Date(lastAttendedReAccreditationVisit?.insertedDate);
   const isReAccreditationFollowUp =
+    currentReAccreditationRating.rating?.overallRatingColor &&
     currentReAccreditationRating.rating?.overallRatingColor !== 'Success' &&
     !lastAttendedReAccreditationVisit?.visitType?.name?.includes(
       visitTypes.reaccreditation.third.name
@@ -158,7 +157,7 @@ export const ReAccreditationVisits = ({
   };
 
   const getSubTitleText = (item: Maybe<Visit>) => {
-    if (!!currentVisitEventId) {
+    if (!!currentVisit?.eventId) {
       return 'Scheduled ';
     }
 
@@ -202,7 +201,7 @@ export const ReAccreditationVisits = ({
                 onClick={() =>
                   onScheduleOrStart({
                     visit: item as Visit,
-                    visitEventId: currentVisitEventId,
+                    visitEventId: currentVisit?.eventId,
                     eventType: 'ReAccreditation',
                   })
                 }

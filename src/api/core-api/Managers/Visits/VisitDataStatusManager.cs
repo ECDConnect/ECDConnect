@@ -592,7 +592,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         comment = Constants.GGSettings.missed_clinic_visit;
                         AddVisitDataStatus(visitData, comment, _amber, _G9, visitData.VisitSection, false);
                     }
-                    
+
                     if (visitData.QuestionAnswer == Constants.GGSettings.answer_yes) {
                         // a ""green"" item is added to the client progress list ""Pregnancy booked""
                         comment = Constants.GGSettings.pregnancy_booked;
@@ -732,7 +732,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageMaternalDistressScreening(List<VisitData> maternalDistressScreening, string firstName, string clientId, string clientType) {
             var comment = "";
-            var section = Constants.GGSettings.clinic_referrals;
 
             var q1 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_stop_worry).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_felt_down).OrderBy(x => x.Id).FirstOrDefault();
@@ -786,7 +785,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageAlcoholUse(List<VisitData> alcoholUse, string firstName, string motherId) {
             var comment = "";
             var score = 0;
-            var section = Constants.GGSettings.clinic_referrals;
 
             var q1 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_T).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_A).OrderBy(x => x.Id).FirstOrDefault();
@@ -888,8 +886,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 {
                     _prevWeight = double.Parse(previousVisitWeight, CultureInfo.InvariantCulture);
                 }
-               
-                Boolean weightIncreased = _weight > _prevWeight;
+
+                Boolean weightIncreased = _weight >= _prevWeight;
                 wIndicator = GetHeightWeightIndicator(true, totalDaysOld, _weight, _height, gender, weightIncreased);
 
                 if (totalDaysOld < 7 && _prevWeight == 0 && _weight < 2.5) {
@@ -933,7 +931,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         AddVisitDataStatus(q1, comment, wColor, _progress, q1.VisitSection, false);
 
                         // additional visit
-                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severely_stunted);
+                        AddAdditionalVisit(infantId, Constants.GGSettings.client_child, wIndicator);
 
                         // Amber G4
                         comment = Constants.GGSettings.refer_to_clinic;
@@ -987,7 +985,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
                 if (lIndicator == "Severely stunted") {
                     lColor = _red;
-                    
+
                     // Red progress
                     comment = lIndicator;
                     AddVisitDataStatus(q2, comment, lColor, _progress, q2.VisitSection, false);
@@ -1026,15 +1024,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
-                    mIndicator = "Severe acute malnutrition";
+                    mIndicator = Constants.GGSettings.severe_acute_malnutrition;
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
+                    AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severe_acute_malnutrition);
 
                     // Red G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
@@ -1042,12 +1039,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
 
                 } else if (questionAnswer >= 11.5 && questionAnswer < 12.5) {
-                    mIndicator = "Moderate acute malnutrition";
+                    mIndicator = Constants.GGSettings.moderate_acute_malnutrition;
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
@@ -1061,8 +1057,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _green;
 
                     // Green progress
-                    comment = mIndicator + " " + questionAnswer;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
                 }
             }
 
@@ -1131,10 +1126,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_eat_drink_nutrition) on visit.Id equals visitData.VisitId
                     select visitData.QuestionAnswer
                 ).FirstOrDefault();
-                
+
                 if (mixedFoods != null) {
                     listFoods = FormatNutritionList(mixedFoods);
-                } 
+                }
 
                 // Progress: amber - ""Mixed feeding: ..."" + bulleted list of items selected on screen G5.3.14 Mixed feeding 1 below(use case 39)
                 comment = Constants.GGSettings.mixed_feeding + " " + listFoods;
@@ -1291,7 +1286,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         else
                         {
                             hasVitaminA = true;
-                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
                             if (yes_comment != "")
                             {
                                 yes_comment += ", Vitamin A";
@@ -1336,7 +1330,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             }
 
             var _item = answeredItems.FirstOrDefault();
-            
+
             if (hasImmunisation == true && hasVitaminA == true && hasDeworm == true)
             {
                 //green - if user responded ""Yes"" to all 3 questions: ""All immunisations, Vitamin A and deworming are up to date""
@@ -1374,37 +1368,44 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             return true;
         }
-        private Boolean AddAdditionalVisit(string clientId, string userType, string comment) 
+        private Boolean AddAdditionalVisit(string clientId, string userType, string comment)
         {
             Visit record = _visitRepo.GetAll().Where(x => x.LinkedVisitId == new Guid(_visitId) &&
                                                           x.VisitType.Name == _additionalVisitType.Name &&
                                                           x.MotherId == (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null) &&
                                                           x.InfantId == (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null)).FirstOrDefault();
-            if (record == null)
+
+            Visit visitRecord = _visitRepo.GetById(new Guid(_visitId));
+            //Only add additional visits if the visit is not already an additional visit
+            if (visitRecord != null && visitRecord.VisitType.Name != _additionalVisitType.Name)
             {
 
-                DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
-                if (nextVisitDate == default(DateTime))
+                if (record == null)
                 {
-                    nextVisitDate = DateTime.Now.Date;
-                }
-                DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
-                if (nextVisitDueDate == default(DateTime))
-                {
-                    nextVisitDueDate = DateTime.Now.Date;
-                }
 
-                VisitModel newVisit = new VisitModel();
-                newVisit.Attended = false;
-                newVisit.VisitType = _additionalVisitType;
-                newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
-                newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
-                newVisit.Risk = Constants.GGSettings.normal_risk;
-                newVisit.Comment = comment;
-                newVisit.LinkedVisitId = new Guid(_visitId);
-                newVisit.PlannedVisitDate = nextVisitDate;
-                newVisit.DueDate = nextVisitDueDate;
-                _visitManager.AddAdditionalVisit(newVisit);
+                    DateTime nextVisitDate = (DateTime)_visitManager.GetClientsNextVisitDate(new Guid(clientId), userType);
+                    if (nextVisitDate == default(DateTime))
+                    {
+                        nextVisitDate = DateTime.Now.Date;
+                    }
+                    DateTime nextVisitDueDate = (DateTime)_visitManager.GetClientsNextDueVisitDate(new Guid(clientId), userType);
+                    if (nextVisitDueDate == default(DateTime))
+                    {
+                        nextVisitDueDate = DateTime.Now.Date;
+                    }
+
+                    VisitModel newVisit = new VisitModel();
+                    newVisit.Attended = false;
+                    newVisit.VisitType = _additionalVisitType;
+                    newVisit.MotherId = (Constants.GGSettings.client_mother == userType ? new Guid(clientId) : null);
+                    newVisit.InfantId = (Constants.GGSettings.client_child == userType ? new Guid(clientId) : null);
+                    newVisit.Risk = Constants.GGSettings.normal_risk;
+                    newVisit.Comment = comment;
+                    newVisit.LinkedVisitId = new Guid(_visitId);
+                    newVisit.PlannedVisitDate = nextVisitDate;
+                    newVisit.DueDate = nextVisitDueDate;
+                    _visitManager.AddAdditionalVisit(newVisit);
+                }
             }
 
             return true;
@@ -1434,7 +1435,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ValidateVisitDataStatusRecord(VisitDataStatus input)
         {
-            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && x.Type == input.Type && _clientVisitDataIds.Contains(x.VisitDataId.ToString())).OrderBy(x => x.Id).FirstOrDefault();
+            var visitStatusRecord = _visitDataStatusRepo.GetAll().Where(x => x.Comment == input.Comment && x.Type == input.Type && x.VisitDataId == input.VisitDataId).OrderBy(x => x.Id).FirstOrDefault();
 
             if (visitStatusRecord != null)
             {
@@ -1571,10 +1572,10 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     }
                 }
             }
-            
+
             return indicator;
         }
-        
+
         /* ALL METHODS BELOW ARE RETURNING DATA FOR FE VIA INFANT AND MOTHER MANAGERS/QUERY EXTENSIONS*/
         public List<VisitDataStatus> GetReferralDataForClient(string id, string clientType, string visitId) {
             // This data is for the past 6 months
@@ -1672,7 +1673,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
             foreach (var item in allReferrals)
             {
-                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id); 
+                item.BackReferral = _visitBackReferralManager.GetBackReferralDataForId(item.Id);
             }
 
             return allReferrals;
@@ -1810,19 +1811,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
-            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
+            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
-            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
+            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
-            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
+            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;
@@ -1831,8 +1832,8 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.Score = totalGreen.ToString() + " / " + (totalGreen + totalRed + totalAmber).ToString();
             result.ScoreColor = scoreColor;
             // EC-877: remove weigth, length and muac from list, because they are already handled above
-            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight && 
-                                                                 y.VisitData.Question != Constants.GGSettings.q_length && 
+            result.VisitDataStatus = visitDataStatus?.Where(y => y.VisitData.Question != Constants.GGSettings.q_weight &&
+                                                                 y.VisitData.Question != Constants.GGSettings.q_length &&
                                                                  y.VisitData.Question != Constants.GGSettings.q_muac).ToList();
 
             return result;
@@ -1844,7 +1845,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     join visitStatusData in _visitDataStatusRepo.GetAll().Where(x => x.Type == _G9) on visitData.Id equals visitStatusData.VisitDataId
                     select visitStatusData
                 ).ToList();
-            
+
             return allData;
         }
         public List<VisitDataStatus> GetSummaryDataForVisitByPriority(Guid visitId, string color)

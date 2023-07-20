@@ -29,7 +29,7 @@ export interface TableProps {
     section3: Section;
     section4: Section;
   };
-  isToRemoveSmartStarter: boolean;
+  isToRemoveSmartStarter?: boolean;
   setReAccreditationRating?: (value: RatingType) => void;
 }
 
@@ -87,7 +87,14 @@ export const Rating = ({
       color: scoreColours,
       component: (
         <p className={`text-${scoreColours} font-semibold`}>
-          <span className="text-xl">{icon}</span> {result}/{total}
+          <span
+            className={`${
+              scoreColours === 'alertMain' ? 'text-xs' : 'text-xl'
+            }`}
+          >
+            {icon}
+          </span>{' '}
+          {result}/{total}
         </p>
       ),
     };

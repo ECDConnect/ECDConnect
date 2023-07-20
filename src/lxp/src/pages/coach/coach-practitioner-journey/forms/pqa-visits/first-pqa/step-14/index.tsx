@@ -5,14 +5,17 @@ import {
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
-import { useCallback, useMemo, useState } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { options as step12Options } from '../step-12/options';
 import { options as step13Options } from '../step-13/options';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
-import { replaceBraces } from '@ecdlink/core';
+import { replaceBraces, usePrevious, useSessionStorage } from '@ecdlink/core';
 import { step13VisitSection } from '../step-13';
 import { step12VisitSection } from '../step-12';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step14VisitSection = 'Step 14';
 export const step14CertificateQuestion =
@@ -20,11 +23,17 @@ export const step14CertificateQuestion =
 export const step14NoteQuestion =
   'Together with the franchisee, agree on what next steps can be taken and note them here:';
 
+interface State {
+  question: string;
+  answer: string;
+}
+
 export const Step14 = ({
   smartStarter,
   sectionQuestions,
   setSectionQuestions,
   setEnableButton,
+  isView,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
@@ -37,7 +46,27 @@ export const Step14 = ({
     },
   ]);
 
-  const name = smartStarter?.user?.firstName || 'the smartStarter';
+  const name =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the smartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step14VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const step12Total = 17;
   const step13Total = 5;
@@ -49,8 +78,8 @@ export const Step14 = ({
   )?.questions[0].answer as string[];
 
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const onOptionSelected = useCallback(
@@ -174,6 +203,46 @@ export const Step14 = ({
     );
   }, [name, smartStarter, step12Answer, step13Answer]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const updatedQuestions = questions.map((question) => {
+        const correspondingQuestion = previousData?.questions.find(
+          (secondQuestion) => secondQuestion?.question === question.question
+        );
+
+        if (correspondingQuestion) {
+          return {
+            ...question,
+            answer: correspondingQuestion.answer,
+          };
+        }
+
+        return question;
+      });
+
+      setAnswers(updatedQuestions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData?.questions,
+    previousStatePreviousData?.questions.length,
+    questions,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="p-4">
       <Typography
@@ -182,6 +251,13 @@ export const Step14 = ({
         text="Rating & next steps"
         color="textDark"
       />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       {renderTopCard}
       {step12Answer?.length >= 12 && (
         <>
@@ -203,6 +279,7 @@ export const Step14 = ({
         className="my-4"
         label={questions[1].question}
         value={questions[1].answer}
+        disabled={isViewAnswers}
         onChange={(e) => onOptionSelected(e.target.value, 1)}
         textInputType="textarea"
         placeholder={'e.g. create a list of emergency numbers'}

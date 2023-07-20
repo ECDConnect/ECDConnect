@@ -43,6 +43,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private IGenericRepository<UserConsent, Guid> _userConsentRepo;
         private IGenericRepository<ClubMeetingRegister, Guid> _clubMeetingRegisterRepo;
         private IGenericRepository<VisitType, Guid> _visitTypeRepo;
+        private IGenericRepository<Coach, Guid> _coachRepo;
 
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
@@ -74,6 +75,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             _userConsentRepo = _repoFactory.CreateGenericRepository<UserConsent>(userContext: _applicationUserId);
             _clubMeetingRegisterRepo = _repoFactory.CreateGenericRepository<ClubMeetingRegister>(userContext: _applicationUserId);
             _visitTypeRepo = _repoFactory.CreateGenericRepository<VisitType>(userContext: _applicationUserId);
+            _coachRepo = _repoFactory.CreateGenericRepository<Coach>(userContext: _applicationUserId);
 
             _visitDataManager = visitDataManager;
             _visitManager = visitManager;
@@ -147,7 +149,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             Practitioner practitioner = _practiGenericRepo.GetByUserId(practitionerId);
             if (practitioner != null && !string.IsNullOrEmpty(practitioner.Hierarchy))
             {
-                var children = _childRepo.GetAll().Where(x => x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
+                var children = _childRepo.GetAll().Where(x => x.User.IsActive == true && x.Hierarchy.StartsWith(practitioner.Hierarchy)).ToList();
                 return children;
             }
             else return new List<Child>();
@@ -395,34 +397,156 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
             // Ratings
             timeline.PQARating1 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_1);
+            if (timeline.PQARating1.ActualVisitDate != null) { 
+                if (timeline.PQARating1.OverallRatingColor != MetricsColorEnum.Success.ToString())
+                {
+                    Visit visit2 = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_2);
+
+                    if (visit2 == null)
+                    {
+                        DateTime deadlineDate; 
+                        if (timeline.PQARating1.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                        {
+                            // Red rating follow up -- if the practitioner receives a red rating:
+                            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
+                            deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddDays(14);
+                        }
+                        else
+                        {
+                            // Orange rating follow up -- if the practitioner receives an orange rating:
+                            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
+                            deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddDays(60);
+                        }
+
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = null;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitManager.AddVisitForPractitioner(visitModel);
+                    }
+                } else
+                {
+                    // Re-accreditation visit
+                    // deadline - First PQA green rating received date + 1 year
+                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+
+                    if (reVisit == null)
+                    {
+                        var deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddYears(1);
+
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = null;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitManager.AddVisitForPractitioner(visitModel);
+                    }
+                }
+            }
+
             timeline.PQARating2 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_2);
+            if (timeline.PQARating2.ActualVisitDate != null)
+            {
+                if (timeline.PQARating2.OverallRatingColor != MetricsColorEnum.Success.ToString())
+                {
+                    Visit visit3 = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_pqa_visit_3);
+
+                    if (visit3 == null)
+                    {
+                        DateTime deadlineDate;
+                        if (timeline.PQARating2.OverallRatingColor == MetricsColorEnum.Error.ToString())
+                        {
+                            // Red rating follow up -- if the practitioner receives a red rating:
+                            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
+                            deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddDays(14);
+                        }
+                        else
+                        {
+                            // Orange rating follow up -- if the practitioner receives an orange rating:
+                            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
+                            deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddDays(60);
+                        }
+
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = null;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitManager.AddVisitForPractitioner(visitModel);
+                    }
+                } 
+                else
+                {
+                    // Re-accreditation visit
+                    // deadline - First PQA green rating received date + 1 year
+                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+
+                    if (reVisit == null)
+                    {
+                        var deadlineDate = timeline.PQARating2.ActualVisitDate.Value.AddYears(1);
+
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = null;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitManager.AddVisitForPractitioner(visitModel);
+                    }
+                }
+            }
+
             timeline.PQARating3 = _visitDataManager.GetPractitionerPQARating(userId, Constants.SSSettings.visitType_pqa_visit_3);
+            if (timeline.PQARating3.ActualVisitDate != null)
+            {
+                if (timeline.PQARating3.OverallRatingColor == MetricsColorEnum.Success.ToString())
+                {
+                    // Re-accreditation visit
+                    // deadline - First PQA green rating received date + 1 year
+                    Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
+
+                    if (reVisit == null)
+                    {
+                        var deadlineDate = timeline.PQARating3.ActualVisitDate.Value.AddYears(1);
+
+                        VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
+                        var visitModel = new VisitModel();
+                        visitModel.VisitType = visitType;
+                        visitModel.MotherId = null;
+                        visitModel.InfantId = null;
+                        visitModel.LinkedVisitId = null;
+                        visitModel.PractitionerId = practitioner.Id;
+                        visitModel.Attended = false;
+                        visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        visitModel.DueDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
+                        _visitManager.AddVisitForPractitioner(visitModel);
+                    }
+                }
+            }
             timeline.ReAccreditationRating1 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
             timeline.ReAccreditationRating2 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_2);
             timeline.ReAccreditationRating3 = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_3);
-
-            // Re-accreditation visit
-            // deadline - First PQA green rating received date + 1 year
-            if (timeline.PQARating1?.OverallRatingColor == MetricsColorEnum.Success.ToString())
-            {
-                Visit reVisit = _visitManager.GetVisitForUserForType(practitioner.Id.ToString(), Constants.SSSettings.client_practitioner, Constants.SSSettings.visitType_re_accreditation_1);
-
-                if (reVisit == null)
-                {
-                    var deadlineDate = timeline.PQARating1.ActualVisitDate.Value.AddYears(1);
-
-                    VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_re_accreditation_1).FirstOrDefault();
-                    var visitModel = new VisitModel();
-                    visitModel.VisitType = visitType;
-                    visitModel.MotherId = null;
-                    visitModel.InfantId = null;
-                    visitModel.LinkedVisitId = null;
-                    visitModel.PractitionerId = practitioner.Id;
-                    visitModel.Attended = false;
-                    visitModel.PlannedVisitDate = Convert.ToDateTime(deadlineDate, CultureInfo.InvariantCulture);
-                    _visitManager.AddVisitForPractitioner(visitModel);
-                }
-            }
+            
 
             // Starter license received
             License starterLicense = _userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_starter_licence);
@@ -507,7 +631,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
             List<Visit> reaccreditation_visits = new List<Visit>();
             List<Visit> requested_coach_visits = new List<Visit>();
 
-
             foreach (Visit visit in visits)
             {
                 if (visit != null)
@@ -575,11 +698,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
 
-                        var months = GetMonthDifference(today, visit.PlannedVisitDate);
-                        if (months <= 3)
-                        {
+                       // var months = GetMonthDifference(today, visit.PlannedVisitDate);
+                       // if (months <= 3)
+                      //  {
                             reaccreditation_visits.Add(visit);
-                        }
+                       // }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
                     {
@@ -762,7 +885,6 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     timeline.CommunitySupportDate = trainee.CommunitySupportGained;
                 }
             }
-            
 
             // ThreeChildrenRegistered
             var allChildren = GetAllChildrenForPractitioner(trainee.Practitioner.UserId.ToString());
@@ -812,13 +934,14 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                     var latestDate = dates.OrderDescending().First();
                     latestDate = latestDate.AddDays(7);
                     timeline.SSCoachVisitDeadlineDate = latestDate;
+                    Coach coach = _coachRepo.GetByUserId(trainee.Practitioner.CoachHierarchy.ToString());
 
                     VisitType visitType = _visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_trainee_visit).FirstOrDefault();
 
                     VisitModel input = new VisitModel();
                     input.VisitType = visitType;
                     input.Attended = false;
-                    input.CoachId = trainee.Practitioner.Coach.Id;
+                    input.CoachId = coach.Id;
                     input.TraineeId = trainee.Id;
                     input.PlannedVisitDate = Convert.ToDateTime(latestDate, CultureInfo.InvariantCulture);
 

@@ -22,6 +22,7 @@ export const visitTypes = {
     },
   },
   pqa: {
+    includes: 'pqa_visit',
     firstPQA: { name: 'pqa_visit_1', description: 'First PQA' },
     secondPQA: { name: 'pqa_visit_2', description: 'First PQA' },
     thirdPQA: { name: 'pqa_visit_3', description: 'First PQA' },

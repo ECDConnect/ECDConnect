@@ -15,7 +15,7 @@ import {
   getCurrentReAccreditationRatingByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useParams } from 'react-router';
 import {
@@ -30,6 +30,10 @@ import { followUpDeadline, getRatingData } from '../../../timeline/utils';
 export const visitOrCallQuestion =
   'Did you visit the practitioner’s site, or did you have a support phone call?';
 export const callAnswer = 'Call';
+export const reAccreditationFollowUpQuestion =
+  'Is {client} ready for a follow-up reaccreditation visit?';
+export const supportVisitSharedQuestion = 'What next steps did you agree on?';
+export const supportVisitQuestion2 = 'The focus of this coaching visit was:';
 
 export const CoachingAndVisitOrCallStep = ({
   isView,
@@ -48,7 +52,7 @@ export const CoachingAndVisitOrCallStep = ({
       answer: '',
     },
     {
-      question: 'The focus of this coaching visit was:',
+      question: supportVisitQuestion2,
       answer: '',
     },
     {
@@ -61,7 +65,7 @@ export const CoachingAndVisitOrCallStep = ({
       answer: '',
     },
     {
-      question: 'What next steps did you agree on?',
+      question: supportVisitSharedQuestion,
       answer: '',
     },
   ]);
@@ -147,7 +151,7 @@ export const CoachingAndVisitOrCallStep = ({
   const visitId = window.sessionStorage.getItem(visitIdKey);
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, visitId || '')
+    getVisitDataByVisitIdSelector(visitId || '', 'prePqaPreviousFormData')
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection
@@ -239,9 +243,11 @@ export const CoachingAndVisitOrCallStep = ({
         },
       ]);
 
-      const questionList = isToShowPqaFollowUpQuestion
-        ? updatedQuestions
-        : updatedQuestions.slice(0, 5);
+      const questionList =
+        isToShowPqaFollowUpQuestion || isToShowReAccreditationFollowUpQuestion
+          ? updatedQuestions
+          : updatedQuestions.slice(0, 5);
+
       const isAllCompleted = questionList.every((item) => !!item.answer);
       const isEnabledButton =
         isAllCompleted &&
@@ -258,6 +264,7 @@ export const CoachingAndVisitOrCallStep = ({
       setEnableButton?.(false);
     },
     [
+      isToShowReAccreditationFollowUpQuestion,
       isPQAFollowUpDeadline,
       isPqaFollowUp,
       isReAccreditationFollowUp,
@@ -389,7 +396,7 @@ export const CoachingAndVisitOrCallStep = ({
       setAnswers((prevState) => [
         ...prevState,
         {
-          question: 'Is {client} ready for a follow-up reaccreditation visit?',
+          question: reAccreditationFollowUpQuestion,
           answer: '',
         },
       ]);

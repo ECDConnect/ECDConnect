@@ -2,24 +2,20 @@ import { RatingData } from '@/store/pqa/pqa.types';
 import { Maybe, PractitionerTimeline, Visit } from '@ecdlink/graphql';
 import { StepType, getStepType, sortVisit } from '../timeline-steps';
 import { RatingData as RatingDataUtils, getRatingData } from '../utils';
-import { CalendarEventModel } from '@ecdlink/core';
 
 interface Props {
   timeline: PractitionerTimeline;
-  currentPqaRating: RatingData;
-  practitionerEvents?: CalendarEventModel[];
+  currentRating: RatingData;
 }
 
 export const getReAccreditationStepData = ({
   timeline,
-  practitionerEvents,
-  currentPqaRating,
+  currentRating,
 }: Props): {
   currentVisit?: Maybe<Visit>;
   stepType?: StepType;
   subTitleText?: string;
   ratingData?: RatingDataUtils;
-  currentVisitEvent?: CalendarEventModel;
 } => {
   if (!timeline.reAccreditationVisits?.length) {
     return {};
@@ -35,18 +31,6 @@ export const getReAccreditationStepData = ({
   const currentVisit = !!visitToAttend
     ? visitToAttend
     : formattedVisits[formattedVisits.length - 1];
-  const currentVisitEvent =
-    !!currentVisit && !!practitionerEvents
-      ? practitionerEvents.find(
-          (e) =>
-            e.eventType === 'ReAccreditation' &&
-            e.action.state !== undefined &&
-            e.action.state.action === 'onStart' &&
-            e.action.state.actionParams !== undefined &&
-            e.action.state.actionParams.visitName ===
-              currentVisit.visitType?.name
-        )
-      : undefined;
 
   const isLateDate =
     new Date(currentVisit?.plannedVisitDate) < new Date() &&
@@ -61,12 +45,10 @@ export const getReAccreditationStepData = ({
       undefined
   );
 
-  const ratingData = getRatingData(
-    currentPqaRating?.rating?.overallRatingColor
-  );
+  const ratingData = getRatingData(currentRating?.rating?.overallRatingColor);
 
   const getSubTitleText = () => {
-    if (!!currentVisitEvent) {
+    if (!!currentVisit?.eventId) {
       return 'Scheduled';
     }
 
@@ -79,7 +61,6 @@ export const getReAccreditationStepData = ({
 
   return {
     currentVisit,
-    currentVisitEvent,
     stepType,
     subTitleText: getSubTitleText(),
     ratingData,
