@@ -164,8 +164,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             DateTime? startDate = null,
             DateTime? endDate = null)
         {
-            DateTime today = DateTime.Today;
-
+            // TODO: Verify these
             // Take given date or take start of this week.
             var _startDate = startDate ?? DateTimeExtensions.StartOfWeek(startDate ?? DateTime.Today, DayOfWeek.Monday);
             // Take given date or use end of this week.
@@ -174,11 +173,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.GrowGreat
             HCWSummary summary = new HCWSummary();
 
             // TODO: its meant to be filtered to the current date range: , _startDate, _endDate);
-            summary.totalPregnantMoms = visitManager.GetTotalPregnantMothers(userId, _startDate, _endDate);
+            summary.totalPregnantMoms = motherManager.GetTotalPregnantMothers(userId, _startDate, _endDate);
             summary.totalChildren = infantManager.GetTotalInfantCountForPeriod(userId, _startDate, _endDate);
             
-            var mothersAdnChildren = new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child };
-            summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(userId, mothersAdnChildren, startDate, endDate);
+            
+            //var mothersAdnChildren = new string[] { Constants.GGSettings.client_mother, Constants.GGSettings.client_child };
+            //summary.totalClientsVisited = visitManager.GetTotalVisitsCompletedForPeriod(userId, mothersAdnChildren, startDate, endDate);
+            summary.totalClientsVisited = summary.totalPregnantMoms + summary.totalChildren;
 
             // Mothers are folders.
             summary.totalFoldersOpened = motherManager.GetTotalNewMothersForPeriod(userId, _startDate, _endDate);

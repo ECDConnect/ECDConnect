@@ -705,35 +705,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 .Count();
         }
 
-        public int GetTotalPregnantMothers(
-            string heathCareWorkerUserId,
-            DateTime? startDate = null,
-            DateTime? endDate = null)
-        {
-            // Things that have been painted these color are urgent...
-            var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
-            var motherIds = motherRepo.GetAll()
-                .Where(m => m.HealthCareWorker.UserId == heathCareWorkerUserId).Select(m=>m.Id);
-
-            var allMothers = _visitDataStatusRepo.GetAll()
-                .Include(vsd => vsd.VisitData)
-                    .ThenInclude(vd => vd.Visit.Mother)
-                        .ThenInclude(m => m.HealthCareWorker)
-                .Where(vsd =>
-                    vsd.VisitData.Visit.Mother.HealthCareWorker.UserId == heathCareWorkerUserId
-                    && vsd.Type == Constants.GGSettings.client_mother
-                    );
-
-            if (startDate is not null)
-                allMothers = allMothers.Where(vsd => vsd.InsertedDate >= startDate);
-
-            if (endDate is not null)
-                allMothers = allMothers.Where(vsd => vsd.InsertedDate <= endDate);
-
-            return allMothers.Select(x => x.VisitData.Visit.Mother.Id)
-                .Distinct()
-                .Count();
-        }
 
         public int GetTotalCaregiversAndChildrenWithUrgentIssues(
             string heathCareWorkerUserId,

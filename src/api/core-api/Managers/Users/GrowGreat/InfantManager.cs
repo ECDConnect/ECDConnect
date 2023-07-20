@@ -721,7 +721,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 infants = infants.Where(x => x.InsertedDate >= startDate);
 
             if (endDate is not null)
-                infants = infants.Where(x => x.InsertedDate >= endDate);
+                infants = infants.Where(x => x.InsertedDate <= endDate);
 
             return infants.Select(x => x.Id)
                 .Distinct()

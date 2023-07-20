@@ -644,19 +644,45 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 next7Days = monday.AddDays(6);
             }
 
-            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
+            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days)
+                .Select(x => x.Id)
+                .Distinct()
+                .Count();
         }
 
         public int GetTotalNewMothersForPeriod(string id, DateTime startDate, DateTime endDate)
         {
-
             var a = _motherRepo.GetAll()
-                .Where(x => x.HealthCareWorker.UserId.Equals(id) 
-                && x.IsActive.Equals(true) 
-                && x.InsertedDate >= startDate
-                && x.InsertedDate <= endDate)
-                ;
-            return a.Select(x => x.Id).Distinct().Count();
+                .Where(m => m.HealthCareWorker.UserId == id
+                && m.IsActive.Equals(true) 
+                && m.InsertedDate >= startDate
+                && m.InsertedDate <= endDate);
+
+            return a.Select(x => x.Id)
+                .Distinct()
+                .Count();
+        }
+
+        public int GetTotalPregnantMothers(
+            string heathCareWorkerUserId,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            // Things that have been painted these color are urgent...
+            var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
+            var mothers = motherRepo.GetAll()
+                .Where(m => m.HealthCareWorker.UserId == heathCareWorkerUserId);
+
+            if (startDate is not null)
+                mothers = mothers.Where(m => m.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                mothers = mothers.Where(m => m.InsertedDate <= endDate);
+
+            return mothers
+                .Select(m => m.Id)
+                .Distinct()
+                .Count();
         }
 
         public Mother GetMotherForCaregiver(string caregiverId)
