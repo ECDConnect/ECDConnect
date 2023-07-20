@@ -4,7 +4,7 @@ export interface RemovePractionerModel {
   removeReasonId: string;
   reasonDetail: string;
   newPrincipalId: string | undefined;
-  reassignedClassrooms: { [id: string]: string };
+  reassignedClassrooms: { [id: string]: string | undefined };
 }
 
 export const initialRemovePractionerValues: RemovePractionerModel = {

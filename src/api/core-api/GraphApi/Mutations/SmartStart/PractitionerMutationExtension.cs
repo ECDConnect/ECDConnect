@@ -273,11 +273,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
             var user = await userManager.FindByIdAsync(practitioner.UserId);
 
-            Console.WriteLine("Starting removal process");
-
             if (!string.IsNullOrEmpty(newPrincipalId))
             {
-                Console.WriteLine("Switching principals");
                 personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
             }
 
@@ -289,7 +286,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     Console.WriteLine("Failed to reassing class");
                     return false;
                 }
-                Console.WriteLine($"Reassigning class {reassignment.ClassroomGroupId}");
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 

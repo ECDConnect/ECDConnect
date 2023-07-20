@@ -4,7 +4,7 @@ import {
   UserDto,
   PractitionerDto,
   PractitionerColleagues,
-  ClassroomDto,
+  ClassroomGroupDto,
 } from '@ecdlink/core';
 import {
   ClassroomGroupReassignmentsInput,
@@ -598,7 +598,7 @@ class PractitionerService {
 
   async getClassroomGroupClassroomsForPractitioner(
     userId: string
-  ): Promise<{ classroom: ClassroomDto }> {
+  ): Promise<ClassroomGroupDto[]> {
     const apiInstance = api(Config.graphQlApi, this._accessToken);
     const response = await apiInstance.post<any>(``, {
       query: `
