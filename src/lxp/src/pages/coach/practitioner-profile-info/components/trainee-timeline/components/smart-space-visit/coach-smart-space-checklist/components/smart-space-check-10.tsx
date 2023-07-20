@@ -13,6 +13,8 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
 import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
+import { useHistory } from 'react-router';
+import ROUTES from '@/routes/routes';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -41,6 +43,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   handleNextSection,
   saveSmartSpaceCheckData,
 }) => {
+  const history = useHistory();
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [questions, setAnswers] = useState([
     {
@@ -185,6 +188,7 @@ export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
               onClick={() => {
                 handleNextSection();
                 saveSmartSpaceCheckData();
+                history.push(ROUTES.COACH_FRANCHISE_AGREEMENT);
               }}
               disabled={!trueAnswers}
             >

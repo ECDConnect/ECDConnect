@@ -87,6 +87,7 @@ const ROUTES = {
     '/download-child-progress-observation-reports',
   COACH_REGISTRATION: '/coach-registration',
   COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
+  COACH_FRANCHISE_AGREEMENT: '/coach-franchisor-agreement',
   COACH: addPrefix('/coach', {
     ABOUT: addPrefix('/about', {
       SIGNATURE: '/signature',
