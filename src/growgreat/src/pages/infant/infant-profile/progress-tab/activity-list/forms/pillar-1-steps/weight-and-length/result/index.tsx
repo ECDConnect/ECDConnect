@@ -435,10 +435,35 @@ export const WeightAndLengthResultStep = ({
   }, [infant?.gender?.description]);
 
   function getScale(age: number, date: number[], input: number[]) {
-    let startIndex = Math.max(0, date.indexOf(age) - 4);
-    let endIndex = Math.min(startIndex + 6, date.length);
+    //let startIndex = Math.max(0, date.indexOf(age) - 4);
+    //let endIndex = Math.min(startIndex + 6, date.length);
+    //return input.slice(startIndex, endIndex);
 
-    return input.slice(startIndex, endIndex);
+    // EC-915 - start x-axis at zero + scale numbers
+    // break age into chunks of 6 if age is more than 6
+    var maxIndex = age;
+    var numberOfChunks = age <= 6 ? age : 6;
+    var chunkSize = Math.floor(maxIndex) / numberOfChunks;
+    var ageNumbers = [0]; // start with zero
+    var counter = 0;
+    for (var i = 0; i < numberOfChunks; i++) {
+      var max = counter + chunkSize;
+      if (i == numberOfChunks) {
+        max = maxIndex + 1;
+      }
+      counter += chunkSize;
+      ageNumbers.push(Math.round(max));
+    }
+
+    ageNumbers.push(age + 1); // last item is age + 1
+    ageNumbers.sort((n1, n2) => n1 - n2);
+
+    // mapping the age chunks to the dataset
+    var endResult = [];
+    for (var j = 0; j < ageNumbers.length; j++) {
+      endResult.push(input[ageNumbers[j]]);
+    }
+    return endResult;
   }
 
   const getChartData = useCallback(
