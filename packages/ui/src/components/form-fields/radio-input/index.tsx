@@ -1,4 +1,5 @@
 import { ReactElement } from 'react';
+import { classNames } from '../../../utils';
 
 export interface RadioProps
   extends React.InputHTMLAttributes<HTMLInputElement> {
@@ -18,6 +19,7 @@ export const Radio = ({
   isActivity,
   variant,
   extraButtonIcon,
+  disabled,
   extraButtonOnClick,
   ...rest
 }: RadioProps) => {
@@ -70,12 +72,13 @@ export const Radio = ({
   };
 
   return (
-    <label htmlFor={id} className={getContainerStyle()}>
+    <label htmlFor={id} className={classNames('relative', getContainerStyle())}>
       <input
         {...rest}
         type="radio"
         id={id}
         checked={checked}
+        disabled={disabled}
         className={getInputStyle()}
       />
       <div className={getLabelStyle()}>
@@ -95,6 +98,9 @@ export const Radio = ({
           </button>
         )}
       </div>
+      {disabled && (
+        <span className="rounded-10 absolute left-0 top-0 h-full w-full bg-gray-100 opacity-50" />
+      )}
     </label>
   );
 };

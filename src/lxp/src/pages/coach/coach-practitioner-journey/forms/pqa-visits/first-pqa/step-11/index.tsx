@@ -1,19 +1,41 @@
 import { Alert, ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
+import { useCallback, useEffect, useState } from 'react';
+import { parseBool, usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step11VisitSection = 'Step 11';
 
 export const Step11 = ({
   setSectionQuestions,
   setEnableButton,
+  isView,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState<boolean | boolean[]>();
   const question = 'Do you have concerns about health & safety at this venue?';
 
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step11VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const onOptionSelected = useCallback(
@@ -35,6 +57,32 @@ export const Step11 = ({
     [question, setEnableButton, setSectionQuestions]
   );
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer = String(previousData?.questions?.[0]?.answer) ?? undefined;
+      setAnswer(answer ? parseBool(answer) : undefined);
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="p-4">
       <Typography
@@ -42,6 +90,13 @@ export const Step11 = ({
         text="Additional concerns or observations"
         color="textDark"
       />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Typography
         type="h4"
         text={question}

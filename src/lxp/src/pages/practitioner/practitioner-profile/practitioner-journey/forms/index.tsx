@@ -15,7 +15,7 @@ import {
 } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { parseBool, useDialog } from '@ecdlink/core';
+import { parseBool, useDialog, useSessionStorage } from '@ecdlink/core';
 import { visitTypes } from '../index.types';
 import {
   CmsVisitDataInputModelInput,
@@ -29,6 +29,8 @@ import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
 import { getFirstPqaSteps } from '@/pages/coach/coach-practitioner-journey/forms/steps';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
 
 export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
@@ -52,6 +54,19 @@ export const Form = ({ onBack }: FormProps) => {
     (activityName.includes(coachVisitTypes.pqa.includes) ||
       activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
     !activityName.includes(coachVisitTypes.prePqa.includes);
+
+  const [visitId] = useSessionStorage(practitionerVisitIdKey);
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitId ?? '',
+      'pqaPreviousFormData',
+      step11VisitSection
+    )
+  );
+
+  const pqaStep11Answer =
+    String(previousData?.questions?.[0]?.answer) ?? undefined;
 
   const { isLoading: isLoadingSelfAssessment } = useThunkFetchCall(
     'pqa',
@@ -84,8 +99,10 @@ export const Form = ({ onBack }: FormProps) => {
 
     if (isPQA && isViewDetails) {
       return getFirstPqaSteps({
-        isStep11AnswerTrue: false,
+        isToShowStep1: false,
+        isStep11AnswerTrue: !!pqaStep11Answer,
         isToRemoveSmartStarter: false,
+        isToShowStep17: false,
       });
     }
 
@@ -106,7 +123,7 @@ export const Form = ({ onBack }: FormProps) => {
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName, isViewDetails]);
+  }, [activityName, isViewDetails, pqaStep11Answer]);
 
   const isHideSteps = isView && currentSteps.length === 1;
 
@@ -128,6 +145,7 @@ export const Form = ({ onBack }: FormProps) => {
 
   const handleOnClose = useCallback(() => {
     if (isView) {
+      setIsViewDetails(false);
       return onBack();
     }
 
@@ -172,6 +190,9 @@ export const Form = ({ onBack }: FormProps) => {
   }, [dialog, isView, onBack]);
 
   const onView = () => {
+    if (isViewDetails) {
+      return handleOnClose();
+    }
     setIsViewDetails(true);
   };
 
