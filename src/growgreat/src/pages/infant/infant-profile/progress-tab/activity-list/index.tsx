@@ -174,7 +174,9 @@ export const ActivityList: React.FC = () => {
     [documentTypeId, documents]
   );
 
-  const isRoadToHealthBookStep = !hasRoadToHealthBook;
+  const previousHasRoadToHealthBook = usePrevious(hasRoadToHealthBook);
+
+  const isRoadToHealthBookStep = !previousHasRoadToHealthBook;
 
   const isDangerSignsFollowUpForBaby = getIsFollowUp(
     dangerSignsVisitSectionForBaby,
