@@ -88,7 +88,7 @@ export const Form = ({
   setPqaRating: setPqaRatingForm,
 }: FormProps) => {
   const [isTip, setIsTip] = useState(false);
-  const [step, setStep] = useState(11);
+  const [step, setStep] = useState(0);
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
   const [currentActivity, setCurrentActivity] = useState('');
