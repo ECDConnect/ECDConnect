@@ -409,7 +409,7 @@ public class SmartStartIntegrationService : IIntegrationService
             var _mappedEntities = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
             List<IntegrationAudit> allAudits = await GetAudits("Document", null, 30); //Get all document audits for last 30 days, we should find the latest in there
 
-            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start)).ToList();
+            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= submitPeriod.Start) && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").ToList();
             /**/
             foreach (var prac in statementsDueList)
             {

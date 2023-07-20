@@ -1,5 +1,5 @@
 import { ButtonGroup, ButtonGroupTypes, Typography } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { options } from './options';
 import { DynamicFormProps } from '../../dynamic-form';
 
@@ -72,7 +72,7 @@ export const Step15ReAccreditation = ({
     <div className="flex flex-col p-4">
       <Typography type="h2" text="Additional concerns or observations" />
       {questions.map((question, index) => (
-        <>
+        <Fragment key={question.question}>
           <Typography type="h4" className="mt-4" text={question.question} />
           {index > 0 && <Typography type="body" text={options[index - 1]} />}
           <ButtonGroup<boolean>
@@ -87,7 +87,7 @@ export const Step15ReAccreditation = ({
             }
             onOptionSelected={(value) => onOptionSelected(value, index)}
           />
-        </>
+        </Fragment>
       ))}
     </div>
   );

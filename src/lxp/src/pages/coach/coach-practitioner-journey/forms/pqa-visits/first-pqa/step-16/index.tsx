@@ -6,7 +6,7 @@ import {
   Typography,
 } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { step5TotalScore, step5VisitSection } from '../step-5';
 
 export const step16VisitSection = 'Step 16';
@@ -108,7 +108,7 @@ export const Step16 = ({
         color="textDark"
       />
       {questions.map((item, index) => (
-        <>
+        <Fragment key={item.question}>
           <Typography
             type="h4"
             text={item.question}
@@ -140,7 +140,7 @@ export const Step16 = ({
               <Divider className="mt-2 mb-4" dividerType="dashed" />
             </>
           )}
-        </>
+        </Fragment>
       ))}
     </div>
   );

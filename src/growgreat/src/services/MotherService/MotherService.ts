@@ -288,6 +288,7 @@ class MotherService {
               visitInProgress
               id
               risk
+              comment
               visitType{
                 id
                 order

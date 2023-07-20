@@ -37,6 +37,19 @@ export const visitTypes = {
       name: 're_accreditation_1',
       description: 'Re-accreditation visit',
     },
+    second: {
+      name: 're_accreditation_2',
+      description: 'Re-accreditation visit',
+    },
+    third: {
+      name: 're_accreditation_3',
+      description: 'Re-accreditation visit',
+    },
+    followUp: {
+      name: 're_accreditation_follow_up',
+      description: 'Follow-up visit',
+      timelineDescription: 'Start re-accreditation follow up visit',
+    },
   },
 };
 

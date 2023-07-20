@@ -62,6 +62,7 @@ export const ClassDashboard: React.FC = () => {
   const user = useSelector(userSelectors.getUser);
   const isCoach = user?.roles?.some((role) => role.name === 'Coach');
   const practitioner = useSelector(practitionerSelectors.getPractitioner);
+  const isTrainee = practitioner?.isTrainee;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const children = useSelector(childrenSelectors.getChildren);
   const showAttendanceTutorial = useMemo(
@@ -136,11 +137,6 @@ export const ClassDashboard: React.FC = () => {
 
   const tabItems: TabItem[] = [
     {
-      title: 'Attendance',
-      initActive: false,
-      child: <AttendanceComponent />,
-    },
-    {
       title: 'Children',
       initActive: false,
       child: <ChildList />,
@@ -160,6 +156,14 @@ export const ClassDashboard: React.FC = () => {
       ),
     },
   ];
+
+  if (!isTrainee) {
+    tabItems?.splice(0, 0, {
+      title: 'Attendance',
+      initActive: false,
+      child: <AttendanceComponent />,
+    });
+  }
 
   const tabItemsForPrincipal: TabItem[] = [
     {

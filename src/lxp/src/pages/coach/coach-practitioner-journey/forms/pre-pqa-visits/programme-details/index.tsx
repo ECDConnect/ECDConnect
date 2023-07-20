@@ -73,7 +73,11 @@ export const ProgrammeDetails = ({
     )
   );
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+    getVisitDataForVisitIdSelectorByUserId(
+      practitionerId,
+      currentVisit?.id,
+      'prePqaPreviousFormData'
+    )
   );
 
   const previousSectionAnswers = previousVisitAnswers?.filter(

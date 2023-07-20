@@ -73,8 +73,8 @@ StatementsSubmit input)
         {
             if (input != null)
             {
-                var isUbmitted = incomeManager.SubmitStatement(input);
-                return isUbmitted == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted" } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" };
+                var retObj = incomeManager.SubmitStatement(input);
+                return (retObj == true ? new ResultReturnObject() { Result = true, ResultMessage = "Statement Submitted", ResultObject = JsonConvert.SerializeObject(retObj) } : new ResultReturnObject() { Result = false, ResultMessage = "Statement could not be processed for criteria" });
             }
             else return new ResultReturnObject() { ResultMessage = "Input object was null" };
         }
@@ -86,38 +86,26 @@ StatementsSubmit input)
             //run previous months unsubmitted
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsDueSubmits = incomeManager.GetUnsubmittedStatements();
-            
+
             foreach (var userId in pracsDueSubmits)
             {
                 incomeManager.AutoSubmitStatement(userId, submitPeriod.Start.Year, submitPeriod.Start.Month);
             }
-
             return new ResultReturnObject() { ResultMessage = "OK" };
         }
 
-
         [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public Document SaveIncomeStatementPDF(
+        public async Task<Document> SaveIncomeStatementPDF(
             [Service] DocumentManager documentManager,
             [Service] IHttpContextAccessor contextAccessor,
-            IncomeStatementPDFDoc input)
+            [Service] IFileService fileService,
+            IGenericRepositoryFactory repoFactory,
+            PdfDocumentModel input)
         {
             input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
 
-            return documentManager.SaveIncomeStatementPDF(input);
+            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, input);
             
-        }
-
-        [Permission(PermissionGroups.INCOMESTATEMENTS, GraphActionEnum.View)]
-        public async Task<Document> SaveIncomeStatementPDFAsync(
-    [Service] DocumentManager documentManager,
-    [Service] IHttpContextAccessor contextAccessor,
-    IncomeStatementPDFDoc input)
-        {
-            input.CreatedUserId = contextAccessor.HttpContext.GetUser().Id;
-
-            return await documentManager.SaveIncomeStatementPDFAsync(input);
-
         }
     }
 }

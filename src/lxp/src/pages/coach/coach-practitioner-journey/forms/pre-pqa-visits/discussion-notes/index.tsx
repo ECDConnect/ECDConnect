@@ -62,7 +62,11 @@ export const DiscussionNotes = ({
     )
   );
   const firstVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, previousVisit?.id)
+    getVisitDataForVisitIdSelectorByUserId(
+      practitionerId,
+      previousVisit?.id,
+      'prePqaPreviousFormData'
+    )
   );
 
   const discussionNotesAnswer = firstVisitAnswers?.find(
@@ -71,7 +75,11 @@ export const DiscussionNotes = ({
   const isFollowUp = !!discussionNotesAnswer;
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(practitionerId, currentVisit?.id)
+    getVisitDataForVisitIdSelectorByUserId(
+      practitionerId,
+      currentVisit?.id,
+      'prePqaPreviousFormData'
+    )
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection
@@ -106,7 +114,7 @@ export const DiscussionNotes = ({
       appDispatch(
         getVisitDataForVisitId({
           visitId: previousVisit.id,
-          userId: practitionerId,
+          visitType: 'pre-pqa',
         })
       );
     }

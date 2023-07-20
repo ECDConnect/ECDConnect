@@ -389,6 +389,17 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.GrowGreat
             return visit;
         }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit UpdateVisitPlannedVisitDate(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            UpdateVisitPlannedVisitDateModel input)
+        {
+            return visitManager.UpdateVisitPlannedVisitDate(input);
+        }
+
         #endregion
 
         #region Trainees

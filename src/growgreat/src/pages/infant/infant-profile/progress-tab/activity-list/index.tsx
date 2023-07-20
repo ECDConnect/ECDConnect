@@ -159,13 +159,18 @@ export const ActivityList: React.FC = () => {
     [previousCurrentVisitStatus?.visitDataStatus]
   );
 
-  const isRoadToHeathBookStep = useMemo(
+  const hasRoadToHealthBook = useMemo(
     () =>
-      !documents?.some(
-        (item) => item?.fileType === FileTypeEnum.RoadToHealthBook
+      !documents?.find(
+        (item) =>
+          item?.fileType === FileTypeEnum.RoadToHealthBook ||
+          item.documentType?.name === 'RoadToHealthBook'
       ),
     [documents]
   );
+
+  const isRoadToHeathBookStep =
+    usePrevious(hasRoadToHealthBook) || hasRoadToHealthBook;
 
   const isDangerSignsFollowUpForBaby = getIsFollowUp(
     dangerSignsVisitSectionForBaby,
@@ -381,6 +386,12 @@ export const ActivityList: React.FC = () => {
           backgroundColor: 'successBg' as Colours,
           rightIcon: 'BadgeCheckIcon',
           rightIconClassName: 'h-5 w-5 text-successMain',
+          onActionClick: () => {
+            if (item.id) {
+              window.sessionStorage.setItem(currentActivityKey, item.id);
+              setShowForm(true);
+            }
+          },
         })
       );
 

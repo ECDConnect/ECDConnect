@@ -2,17 +2,26 @@ import { PayloadAction, createSlice } from '@reduxjs/toolkit';
 import localForage from 'localforage';
 import {
   addFollowUpVisitForPractitioner,
+  addReAccreditationFollowUpVisitForPractitioner,
+  addReAccreditationVisitData,
   addSupportVisitFormData,
   addVisitFormData,
   getPractitionerTimeline,
   getVisitDataForVisitId,
+  updateVisitPlannedVisitDate,
 } from './pqa.actions';
 import { PQAState } from './pqa.types';
-import { CmsVisitDataInputModelInput } from '@ecdlink/graphql';
+import {
+  CmsVisitDataInputModelInput,
+  UpdateVisitPlannedVisitDateModelInput,
+} from '@ecdlink/graphql';
 import { setThunkActionStatus } from '../utils';
 import { setFulfilledThunkActionStatus } from '../utils';
 import { getPractitionersForCoach } from '../practitionerForCoach/practitionerForCoach.actions';
 import {
+  addPreviousFormData,
+  handleAddFollowUpVisit,
+  handleAddReAccreditationFollowUpVisit,
   handleAddReAccreditationVisit,
   handleAddSupportVisit,
 } from './pqa.utils';
@@ -23,6 +32,37 @@ const pqaSlice = createSlice({
   name: 'pqa',
   initialState,
   reducers: {
+    updateVisitPlannedVisitDate: (
+      state,
+      action: PayloadAction<UpdateVisitPlannedVisitDateModelInput>
+    ) => {
+      const input = action.payload;
+
+      state.coachPractitionersTimeline?.forEach((p) => {
+        var visit = p.timeline.pQASiteVisits?.find(
+          (v) => v?.id === input.visitId
+        );
+        if (!visit)
+          visit = p.timeline.supportVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.prePQASiteVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.requestedCoachVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.reAccreditationVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!!visit) {
+          visit.plannedVisitDate = input.plannedVisitDate;
+        }
+      });
+    },
     addVisitFormData: {
       reducer: (
         state,
@@ -36,13 +76,24 @@ const pqaSlice = createSlice({
               | 'pqa'
               | 'support-visit'
               | 'follow-up-visit'
-              | 're-accreditation';
+              | 're-accreditation'
+              | 're-accreditation-follow-up-visit';
           }
         >
       ) => {
         const { userId, formType } = action.meta;
         const visitId = action.payload.visitId;
         switch (formType) {
+          case 'follow-up-visit':
+            handleAddFollowUpVisit({ payload: action.payload, state, userId });
+            break;
+          case 're-accreditation-follow-up-visit':
+            handleAddReAccreditationFollowUpVisit({
+              payload: action.payload,
+              state,
+              userId,
+            });
+            break;
           case 'pqa':
             if (state?.pqaFormData?.length) {
               if (
@@ -127,17 +178,23 @@ const pqaSlice = createSlice({
             | 'pqa'
             | 'support-visit'
             | 'follow-up-visit'
-            | 're-accreditation';
+            | 're-accreditation'
+            | 're-accreditation-follow-up-visit';
         }
       ) => ({ payload, meta }),
     },
   },
   extraReducers: (builder) => {
     setThunkActionStatus(builder, addVisitFormData);
+    setThunkActionStatus(builder, addReAccreditationVisitData);
     setThunkActionStatus(builder, getVisitDataForVisitId);
     setThunkActionStatus(builder, addSupportVisitFormData);
     setThunkActionStatus(builder, addFollowUpVisitForPractitioner);
     setThunkActionStatus(builder, getPractitionerTimeline);
+    setThunkActionStatus(
+      builder,
+      addReAccreditationFollowUpVisitForPractitioner
+    );
     builder.addCase(getPractitionerTimeline.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const practitionerId = action.meta.arg.userId;
@@ -184,38 +241,28 @@ const pqaSlice = createSlice({
     builder.addCase(getVisitDataForVisitId.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
       const visitId = action.meta.arg.visitId;
+      const visitType = action.meta.arg.visitType;
 
-      if (state.prePqaPreviousFormData?.length) {
-        if (
-          !state.prePqaPreviousFormData.some((item) => item.visitId === visitId)
-        ) {
-          state.prePqaPreviousFormData = [
-            ...state.prePqaPreviousFormData,
-            { visitId, formData: action.payload },
-          ];
-          return;
-        }
-
-        const newState = state.prePqaPreviousFormData.map((item) => {
-          if (item.visitId === visitId) {
-            return { ...item, formData: action.payload };
-          }
-
-          return item;
+      if (visitType === 'reAccreditation-follow-up') {
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'reAccreditationFollowUpVisitPreviousFormData',
         });
-
-        state.prePqaPreviousFormData = newState;
-      } else {
-        state.prePqaPreviousFormData = [
-          {
-            visitId,
-            formData: action.payload,
-          },
-        ];
-      }
+      } else
+        addPreviousFormData({
+          state,
+          visitId,
+          action,
+          stateType: 'prePqaPreviousFormData',
+        });
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addVisitFormData.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+    });
+    builder.addCase(addReAccreditationVisitData.fulfilled, (state, action) => {
       setFulfilledThunkActionStatus(state, action);
     });
     builder.addCase(addSupportVisitFormData.fulfilled, (state, action) => {
@@ -227,6 +274,41 @@ const pqaSlice = createSlice({
         setFulfilledThunkActionStatus(state, action);
       }
     );
+    builder.addCase(
+      addReAccreditationFollowUpVisitForPractitioner.fulfilled,
+      (state, action) => {
+        setFulfilledThunkActionStatus(state, action);
+      }
+    );
+    builder.addCase(updateVisitPlannedVisitDate.fulfilled, (state, action) => {
+      setFulfilledThunkActionStatus(state, action);
+
+      const input = action.meta.arg;
+      state.coachPractitionersTimeline?.forEach((p) => {
+        var visit = p.timeline.pQASiteVisits?.find(
+          (v) => v?.id === input.visitId
+        );
+        if (!visit)
+          visit = p.timeline.supportVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.prePQASiteVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.requestedCoachVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!visit)
+          visit = p.timeline.reAccreditationVisits?.find(
+            (v) => v?.id === input.visitId
+          );
+        if (!!visit) {
+          visit.plannedVisitDate = input.plannedVisitDate;
+        }
+      });
+    });
   },
 });
 

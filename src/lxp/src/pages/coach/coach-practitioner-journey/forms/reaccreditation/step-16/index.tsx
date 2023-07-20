@@ -11,11 +11,17 @@ import { step8ReAccreditation } from '../step-8';
 import { step10ReAccreditation } from '../step-10';
 import { step11ReAccreditation } from '../step-11';
 import { step12ReAccreditation } from '../step-12';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '../../../coach-practitioner-journey.types';
+import { useSelector } from 'react-redux';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
 export const Step16ReAccreditation = ({
   sectionQuestions,
   smartStarter,
+  reAccreditationRating,
   setSectionQuestions,
+  setReAccreditationRating,
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState('');
@@ -24,6 +30,26 @@ export const Step16ReAccreditation = ({
   const visitSection = 'Step 16';
   const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
+  const reAccreditationRating1 = timeline?.reAccreditationRating1;
+  const reAccreditationRating2 = timeline?.reAccreditationRating2;
+  const reAccreditationRating3 = timeline?.reAccreditationRating3;
+
+  const reAccreditationRatingColorList = [
+    reAccreditationRating1?.overallRatingColor,
+    reAccreditationRating2?.overallRatingColor,
+    reAccreditationRating3?.overallRatingColor,
+    reAccreditationRating?.color,
+  ];
+
+  const reAccreditationRatingRedColorCount =
+    reAccreditationRatingColorList.filter((item) => item === 'Error').length;
 
   const step15Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step15ReAccreditationVisitSection)
@@ -113,9 +139,16 @@ export const Step16ReAccreditation = ({
         sectionQuestions={sectionQuestions}
         sections={sections}
         isToRemoveSmartStarter={isToRemoveSmartStarter}
+        setReAccreditationRating={setReAccreditationRating}
       />
     );
-  }, [firstName, isToRemoveSmartStarter, sectionQuestions, sections]);
+  }, [
+    firstName,
+    isToRemoveSmartStarter,
+    sectionQuestions,
+    sections,
+    setReAccreditationRating,
+  ]);
 
   useEffect(() => {
     setEnableButton?.(false);
@@ -137,6 +170,17 @@ export const Step16ReAccreditation = ({
         })}`}
         color="textMid"
       />
+      {reAccreditationRatingRedColorCount === 2 && (
+        <Alert
+          className="mt-4"
+          type="error"
+          title={`${firstName} has received 2 red ratings`}
+          list={[
+            `This means ${firstName} will not be able to continue in the programme.`,
+            `Explain to ${firstName} why they will not be able to continue.`,
+          ]}
+        />
+      )}
       <Divider dividerType="dashed" className="my-4" />
       {renderContent}
       <FormInput

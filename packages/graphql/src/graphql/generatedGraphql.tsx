@@ -2506,13 +2506,6 @@ export type IncomeExpensePdfTableModel = {
   type?: Maybe<Scalars['String']>;
 };
 
-export type IncomeStatementPdfDocInput = {
-  createdUserId?: InputMaybe<Scalars['String']>;
-  fileName?: InputMaybe<Scalars['String']>;
-  reference?: InputMaybe<Scalars['String']>;
-  userId?: InputMaybe<Scalars['String']>;
-};
-
 export type IncomeStatements = {
   __typename?: 'IncomeStatements';
   description?: Maybe<Scalars['String']>;
@@ -3806,6 +3799,7 @@ export type Mutation = {
   updateVisitDataStatus: Scalars['Boolean'];
   updateVisitGrowthDataDay?: Maybe<VisitGrowthDataDay>;
   updateVisitGrowthDataHeight?: Maybe<VisitGrowthDataHeight>;
+  updateVisitPlannedVisitDate?: Maybe<Visit>;
   updateVisitType?: Maybe<VisitType>;
   updateVisitVideos?: Maybe<VisitVideos>;
   updateWorkflowStatus?: Maybe<WorkflowStatus>;
@@ -5008,7 +5002,7 @@ export type MutationResetUserPasswordArgs = {
 };
 
 export type MutationSaveIncomeStatementPdfArgs = {
-  input?: InputMaybe<IncomeStatementPdfDocInput>;
+  input?: InputMaybe<PdfDocumentModelInput>;
 };
 
 export type MutationScheduleConsolidationMeetingDateArgs = {
@@ -5719,6 +5713,10 @@ export type MutationUpdateVisitGrowthDataHeightArgs = {
   input?: InputMaybe<VisitGrowthDataHeightInput>;
 };
 
+export type MutationUpdateVisitPlannedVisitDateArgs = {
+  input?: InputMaybe<UpdateVisitPlannedVisitDateModelInput>;
+};
+
 export type MutationUpdateVisitTypeArgs = {
   id?: InputMaybe<Scalars['UUID']>;
   input?: InputMaybe<VisitTypeInput>;
@@ -6038,6 +6036,13 @@ export type PagedQueryInput = {
   pageNumber: Scalars['Int'];
   pageSize: Scalars['Int'];
   sortBy?: InputMaybe<SortByFieldInput>;
+};
+
+export type PdfDocumentModelInput = {
+  createdUserId?: InputMaybe<Scalars['String']>;
+  fileName?: InputMaybe<Scalars['String']>;
+  reference?: InputMaybe<Scalars['String']>;
+  userId?: InputMaybe<Scalars['String']>;
 };
 
 export type Permission = {
@@ -7213,6 +7218,7 @@ export type Query = {
   classroomAttendanceReport?: Maybe<
     Array<Maybe<ClassroomGroupChildAttendanceReportModel>>
   >;
+  classroomAttendanceReportPDFFile?: Maybe<Document>;
   classroomDetailsForPractitioner?: Maybe<PrincipalClassroom>;
   classroomGroupClassroomsForPractitioner?: Maybe<Array<Maybe<ClassroomGroup>>>;
   classroomNamesForPractitioner?: Maybe<
@@ -8631,6 +8637,13 @@ export type QueryClassroomAttendanceOverviewReportArgs = {
 };
 
 export type QueryClassroomAttendanceReportArgs = {
+  classgroupId: Scalars['UUID'];
+  endDate: Scalars['DateTime'];
+  startDate: Scalars['DateTime'];
+  userId?: InputMaybe<Scalars['String']>;
+};
+
+export type QueryClassroomAttendanceReportPdfFileArgs = {
   classgroupId: Scalars['UUID'];
   endDate: Scalars['DateTime'];
   startDate: Scalars['DateTime'];
@@ -10394,6 +10407,11 @@ export type TraineeOnBoardTimeline = {
   threeChildrenRegisteredDeadlineDate?: Maybe<Scalars['DateTime']>;
   threeChildrenRegisteredStatus?: Maybe<Scalars['String']>;
   traineeVisits?: Maybe<Array<Maybe<Visit>>>;
+};
+
+export type UpdateVisitPlannedVisitDateModelInput = {
+  plannedVisitDate: Scalars['DateTime'];
+  visitId: Scalars['UUID'];
 };
 
 export type UserByToken = {

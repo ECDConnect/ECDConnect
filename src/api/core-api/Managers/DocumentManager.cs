@@ -1,12 +1,17 @@
-﻿using EcdLink.Api.CoreApi.GraphApi.Models;
+﻿using DinkToPdf;
+using EcdLink.Api.CoreApi.GraphApi.Models;
 using ECDLink.Abstractrions.Enums;
 using ECDLink.Core.Services.Interfaces;
+using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Workflow;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.IdentityModel.Tokens;
 using System;
+using System.Globalization;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,23 +21,109 @@ namespace EcdLink.Api.CoreApi.Managers
     public class DocumentManager
     {
 
-        private IGenericRepositoryFactory _repoFactory;
-        private IFileService _fileService;
-
-        public DocumentManager(IGenericRepositoryFactory repoFactory, [Service] IFileService fileService)
+        public DocumentManager()
         {
-            _fileService = fileService;
-            _repoFactory = repoFactory;
         }
 
-        public async Task<Document> SaveIncomeStatementPDFAsync(IncomeStatementPDFDoc input)
+        //
+        // DEFAULT DOCUMENT SETTINGS
+        //
+
+        public string GetDocumentStyling()
+        {
+            string css = "<style>";
+            css += "body { font-family: 'Arial Regular', 'Arial Bold', sans-serif; color: #4d4d4d; font-size: 10px;}";
+            css += "table { display: table; font-family: 'Arial', page-break-inside: auto; }";
+            css += "th {text-align: left; padding-left: 4px; padding-right: 4px;padding-top: 4px; padding-bottom: 4px;}";
+            css += "td {padding-left: 4px; padding-right: 4px; padding-top: 2px; padding-bottom: 2px;}";
+            css += "table.borderTable {border: 1px solid black; width: 100%;border-collapse: collapse;}";
+            css += "table.borderTable th {border: 1px solid black;text-align: left; padding-left: 4px; padding-right: 4px;padding-top: 4px; padding-bottom: 4px;}";
+            css += "table.borderTable td {border: 1px solid black;padding-left: 4px; padding-right: 4px; padding-top: 2px; padding-bottom: 2px;}";
+            css += "</style>";
+
+            return css;
+        }
+
+        public string GetSignatureRow(string _signingSignature)
+        {
+            return "<table style='width: 100%; margin-top: 12px;'><tr><td style='width: 10%;'>Sign:</td><td colspan='2' style='height: 80px;border: 1px solid black;text-align: center; width: 50%'><img style='height: 80px;' src='" + _signingSignature + "'/></td><td style='width: 10%;'>Date:</td><td colspan='2' style='border: 1px solid black;height: 80px;text-align: center; width: 50%'>" + DateTime.Now.ToString("dd MMMM yyyy") + "</td></tr></table>";
+        }
+
+        public string GetDocumentHeader(int year, int month)
+        {
+            DateTime docDate = new DateTime(year, month, 01);
+            return docDate.ToString("MMMM", CultureInfo.InvariantCulture) + " " + docDate.ToString("yyyy", CultureInfo.InvariantCulture);
+        }
+
+        public string GetDocumentHeaderAddress([Service] UserManager<ApplicationUser> userManager, PdfDocumentHeader pdfDocumentHeader)
+        {
+            var _headerAddress = "";
+            ApplicationUser user = userManager.FindByIdAsync(pdfDocumentHeader.UserId).Result;
+
+            string siteAddress = pdfDocumentHeader.SiteAddress.IsNullOrEmpty() ? "-" : pdfDocumentHeader.SiteAddress;
+            string firstName = user?.FirstName + " " + user?.Surname;
+            string phoneNumber = user.PhoneNumber.IsNullOrEmpty() ? "-" : user?.PhoneNumber;
+            string idNumber = user.IdNumber.IsNullOrEmpty() ? "-" : user?.IdNumber;
+            string classNames = pdfDocumentHeader.ClassName.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ClassName;
+            string programmeDays = pdfDocumentHeader.ProgrammeDays.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ProgrammeDays;
+            string programmeType = pdfDocumentHeader.ProgrammeType.IsNullOrEmpty() ? "-" : pdfDocumentHeader.ProgrammeType;
+
+            if (pdfDocumentHeader.ReportType == "StatementsPDF")
+            {
+                _headerAddress = "<div style='float: right;'><table>";
+                _headerAddress += "<tr><th style='width:50%'>Name:</th><td>" + firstName + "</td></tr>";
+                _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td></tr>";
+                _headerAddress += "<tr><th>ID number:</th><td>" + idNumber + "</td></tr>";
+                _headerAddress += "<tr><th>Site Address:</th><td>" + siteAddress + "</td></tr>";
+                _headerAddress += "</table></div>";
+
+            } else if (pdfDocumentHeader.ReportType == "AttendancePDF")
+            {
+
+                _headerAddress = "<div style='padding-top: 20px;'><table width='100%'><tr><th width='10%'>Name:</th><td>" + firstName + "</td><th width='10%'>Site Address:</th><td>" + siteAddress + "</td><th>Class:</th><td>" + classNames + "</td></tr>";
+                _headerAddress += "<tr><th>Phone number:</th><td>" + phoneNumber + "</td><th></th><td></td><th>Programme days:</th><td>"+ programmeDays + "</td></tr>";
+                _headerAddress += "<tr><th>ID number</th><td>" + idNumber + "</td><th></th><td></td><th>Programme type:</th><td>"+programmeType+"</td></tr></table></div>";
+            }
+
+            return _headerAddress;
+        }
+
+        public HtmlToPdfDocument GetPdfSettings(string _html, string _header, string orientation)
+        {
+            return new HtmlToPdfDocument()
+            {
+                GlobalSettings = {
+                    ColorMode = ColorMode.Color,
+                    Orientation = orientation == "portrait" ?  Orientation.Portrait : Orientation.Landscape,
+                    PaperSize = PaperKind.A4,
+                    Margins = new MarginSettings() { Top = 10, Bottom=10, Left=5, Right=5 },
+                    // Use Out when you want to save the pdf to your local disk
+                    //Out = @"C:\DinkToPdf\" + _header.Replace(" ", "_") + ".pdf",
+                },
+                Objects = {
+                    new ObjectSettings() {
+                        PagesCount = true,
+                        HtmlContent = _html,
+                        WebSettings = { DefaultEncoding = "utf-8" },
+                        HeaderSettings = { FontSize=12, FontName="Arial", Left= _header, Line=false },
+                        FooterSettings = { FontSize=8, FontName="Arial", Right="Page [page] of [toPage]", Line = false },
+                        }
+                    }
+            };
+        }
+
+        //
+        // SAVING DOCUMENTS
+        //
+
+        public async Task<Document> SaveIncomeStatementPDF([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, PdfDocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
-                var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);
-                var documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
-                var workflowStatusTypeRepo = _repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
-                var workflowStatusRepo = _repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
+                var documentRepo = repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);
+                var documentTypeRepo = repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
+                var workflowStatusTypeRepo = repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
+                var workflowStatusRepo = repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
 
                 // Workflow info
                 WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
@@ -43,14 +134,15 @@ namespace EcdLink.Api.CoreApi.Managers
 
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
-                try { 
-                    // Upload the document
-                    var document = await _fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
 
+                // Upload the document
+                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
+                try
+                {
                     if (doc == null)
                     {
                         // Save new document to the database
-                        return documentRepo.Insert(new Document
+                        doc = new Document
                         {
                             CreatedUserId = input.CreatedUserId,
                             Name = input.FileName,
@@ -61,21 +153,22 @@ namespace EcdLink.Api.CoreApi.Managers
                             DocumentTypeId = docType.Id,
                             WorkflowStatusId = ws.Id,
                             TenantId = TenantExecutionContext.Tenant.Id
-                        });
-                }
+                        };
+                        return documentRepo.Insert(doc);
+                    }
                     else
-                {
-                    // remove previous file on file server
-                    await _fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                    {
+                        // remove previous file on file server
+                        await fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
 
-                    doc.Name = input.FileName;
-                    doc.UpdatedBy = input.CreatedUserId;
-                    doc.Reference = document.Url.TrimEnd('/');
-                    doc.UserId = input.UserId;
-                    doc.UpdatedDate = DateTime.Now;
-                    return documentRepo.Update(doc);
+                        doc.Name = input.FileName;
+                        doc.UpdatedBy = input.CreatedUserId;
+                        doc.Reference = document.Url.TrimEnd('/');
+                        doc.UserId = input.UserId;
+                        doc.UpdatedDate = DateTime.Now;
+                        return documentRepo.Update(doc);
+                    }
                 }
-            }
                 catch (Exception e)
                 {
                     return null;
@@ -85,64 +178,64 @@ namespace EcdLink.Api.CoreApi.Managers
             return null;
         }
 
-        public Document SaveIncomeStatementPDF(IncomeStatementPDFDoc input)
+        public async Task<Document> SaveAttendancePDF([Service] IFileService fileService, IGenericRepositoryFactory repoFactory, PdfDocumentModel input)
         {
             if (input != null && input.Reference != "")
             {
-                var documentRepo = _repoFactory.CreateGenericRepository<Document>(userContext: input.CreatedUserId);                
-                var documentTypeRepo = _repoFactory.CreateGenericRepository<DocumentType>(userContext: input.CreatedUserId);
-                var workflowStatusTypeRepo = _repoFactory.CreateGenericRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
-                var workflowStatusRepo = _repoFactory.CreateGenericRepository<WorkflowStatus>(userContext: input.CreatedUserId);
+                var documentRepo = repoFactory.CreateRepository<Document>(userContext: input.CreatedUserId);
+                var documentTypeRepo = repoFactory.CreateRepository<DocumentType>(userContext: input.CreatedUserId);
+                var workflowStatusTypeRepo = repoFactory.CreateRepository<WorkflowStatusType>(userContext: input.CreatedUserId);
+                var workflowStatusRepo = repoFactory.CreateRepository<WorkflowStatus>(userContext: input.CreatedUserId);
 
                 // Workflow info
                 WorkflowStatusType wsType = workflowStatusTypeRepo.GetAll().Where(x => x.Description == Constants.SSSettings.workflow_pdf_type).FirstOrDefault();
                 WorkflowStatus ws = workflowStatusRepo.GetAll().Where(x => x.WorkflowStatusTypeId == wsType.Id && x.Description == Constants.SSSettings.workflow_status_pdf_type).FirstOrDefault();
 
                 // Get the document type
-                DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.income_statement_pdf_type).FirstOrDefault();
+                DocumentType docType = documentTypeRepo.GetAll().Where(x => x.Name == Constants.SSSettings.attendance_pdf_type).FirstOrDefault();
 
                 // First validate if document is already in db
                 var doc = documentRepo.GetAll().Where(x => x.Name == input.FileName && x.UserId == input.UserId && x.DocumentTypeId == docType.Id && x.WorkflowStatusId == ws.Id).FirstOrDefault();
+
+                // Upload the document
+                var document = await fileService.UploadBase64StringFileAsync(input.Reference, input.FileName, FileTypeEnum.AttendancePDF);
                 try
                 {
-                    // Upload the document
-                    var document = _fileService.UploadBase64StringFile(input.Reference, input.FileName, FileTypeEnum.IncomeStatementPDF);
-
                     if (doc == null)
                     {
                         // Save new document to the database
-                        return documentRepo.Insert(new Document
-                    {
-                        CreatedUserId = input.CreatedUserId,
-                        Name = input.FileName,
-                        UpdatedBy = input.CreatedUserId,
-                        InsertedDate = DateTime.Now,
-                        Reference = document.Url.TrimEnd('/'),
-                        UserId = input.UserId,
-                        DocumentTypeId = docType.Id,
-                        WorkflowStatusId = ws.Id,
-                        TenantId = TenantExecutionContext.Tenant.Id
-                    });
-                }
+                        doc = new Document
+                        {
+                            CreatedUserId = input.CreatedUserId,
+                            Name = input.FileName,
+                            UpdatedBy = input.CreatedUserId,
+                            InsertedDate = DateTime.Now,
+                            Reference = document.Url.TrimEnd('/'),
+                            UserId = input.UserId,
+                            DocumentTypeId = docType.Id,
+                            WorkflowStatusId = ws.Id,
+                            TenantId = TenantExecutionContext.Tenant.Id
+                        };
+                        return documentRepo.Insert(doc);
+                    }
                     else
-                {
-                    // remove previous file on file server
-                    _fileService.DeleteFile(doc.Name, FileTypeEnum.IncomeStatementPDF);
+                    {
+                        // remove previous file on file server
+                        await fileService.DeleteFile(doc.Name, FileTypeEnum.AttendancePDF);
 
-                    doc.Name = input.FileName;
-                    doc.UpdatedBy = input.CreatedUserId;
-                    doc.Reference = document.Url.TrimEnd('/');
-                    doc.UserId = input.UserId;
-                    doc.UpdatedDate = DateTime.Now;
-                    return documentRepo.Update(doc);
+                        doc.Name = input.FileName;
+                        doc.UpdatedBy = input.CreatedUserId;
+                        doc.Reference = document.Url.TrimEnd('/');
+                        doc.UserId = input.UserId;
+                        doc.UpdatedDate = DateTime.Now;
+                        return documentRepo.Update(doc);
+                    }
                 }
-            }
                 catch (Exception e)
                 {
                     return null;
                 }
             }
-
             return null;
         }
 

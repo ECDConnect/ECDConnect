@@ -10,7 +10,7 @@ import {
 } from '../step-16';
 import { step14VisitSection } from '../step-14';
 import { step14CertificateQuestion } from '../step-14';
-import { PqaRating } from '../../..';
+import { Rating as RatingType } from '../../..';
 
 interface Section {
   questions?: Question[];
@@ -27,7 +27,7 @@ export interface TableProps {
     section5: Section;
     section6: Section;
   };
-  setPqaRating?: (value: PqaRating) => void;
+  setPqaRating?: (value: RatingType) => void;
 }
 
 export const Rating = ({

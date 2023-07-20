@@ -1,7 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
-import { PqaRating } from '.';
+import { Rating } from '.';
 
 export interface Question {
   question: string;
@@ -31,8 +31,10 @@ export interface DynamicFormProps {
   nextButtonText?: string;
   submitButton?: { text: string; icon: string };
   secondaryButton?: { text: string; icon: string; onClick: () => void };
-  pqaRating?: PqaRating;
-  setPqaRating?: (value: PqaRating) => void;
+  pqaRating?: Rating;
+  reAccreditationRating?: Rating;
+  setPqaRating?: (value: Rating) => void;
+  setReAccreditationRating?: (value: Rating) => void;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -53,7 +55,9 @@ export const DynamicForm = ({
   submitButton = { text: 'Save', icon: 'SaveIcon' },
   secondaryButton,
   pqaRating,
+  reAccreditationRating,
   setSectionQuestions: setSectionQuestionsForm,
+  setReAccreditationRating,
   onNextStep,
   setIsTip,
   onClose,
@@ -124,6 +128,8 @@ export const DynamicForm = ({
         smartStarter={smartStarter}
         isTipPage={isTipPage}
         pqaRating={pqaRating}
+        reAccreditationRating={reAccreditationRating}
+        setReAccreditationRating={setReAccreditationRating}
         setIsTip={setIsTip}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
@@ -133,17 +139,19 @@ export const DynamicForm = ({
       />
     );
   }, [
-    pqaRating,
-    setPqaRating,
-    isView,
-    handleSetQuestions,
-    smartStarter,
-    currentStep,
-    isTipPage,
-    onNextStep,
-    sectionQuestions,
-    setIsTip,
     steps,
+    currentStep,
+    isView,
+    smartStarter,
+    isTipPage,
+    pqaRating,
+    reAccreditationRating,
+    setReAccreditationRating,
+    setIsTip,
+    sectionQuestions,
+    handleSetQuestions,
+    onNextStep,
+    setPqaRating,
   ]);
 
   const renderButton = useMemo(() => {

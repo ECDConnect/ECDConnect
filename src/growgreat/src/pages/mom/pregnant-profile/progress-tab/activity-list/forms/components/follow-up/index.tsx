@@ -29,7 +29,7 @@ import { ReactComponent as Home } from '@/assets/home.svg';
 import { ReactComponent as PollyHappy } from '@/assets/pollyHappy.svg';
 import { ReactComponent as PollyInformational } from '@/assets/pollyInformational.svg';
 import { ReactComponent as PollyShock } from '@/assets/pollyShock.svg';
-import BabyHealthcare from '@/assets/iconCircleAntenatalSmall2.svg';
+import BabyHealthcare from '@/assets/iconCircleAntenatalSmall3.png';
 import P1 from '@/assets/pillar/p1.svg';
 import P5 from '@/assets/pillar/p5.svg';
 import Pregnant from '@/assets/pregnant.svg';

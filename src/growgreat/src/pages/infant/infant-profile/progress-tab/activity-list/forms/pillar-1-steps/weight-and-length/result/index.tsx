@@ -82,7 +82,11 @@ const Card = ({
       case 'SD3neg':
         return { bg: 'errorBg', main: 'errorMain' };
       case 'SD3':
-        return { bg: 'errorBg', main: 'errorMain' };
+        if (title === 'Length') {
+          return { bg: 'successBg', main: 'successMain' };
+        } else {
+          return { bg: 'errorBg', main: 'errorMain' };
+        }
       default:
         return { bg: 'successBg', main: 'successMain' };
     }

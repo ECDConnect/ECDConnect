@@ -16,7 +16,6 @@ import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { userSelectors } from '@/store/user';
-import { practitionerSelectors } from '@/store/practitioner';
 import { useHistory } from 'react-router-dom';
 import { useCalendarEditEvent } from '../calendar-add-event/calendar-add-event';
 
@@ -45,7 +44,9 @@ export const CalendarViewEvent: React.FC<CalendarViewEventProps> = (props) => {
 
   const onAction = () => {
     props.onClose();
-    history.push(event.action.url, event.action.state);
+    if (!!event.action) {
+      history.push(event.action.url, event.action.state);
+    }
   };
 
   return (

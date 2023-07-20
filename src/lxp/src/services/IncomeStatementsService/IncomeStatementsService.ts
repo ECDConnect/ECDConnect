@@ -177,7 +177,7 @@ class IncomeStatementsService {
       query: `
       mutation saveIncomeStatementPDF($input: IncomeStatementPDFDocInput) { 
          saveIncomeStatementPDF(input: $input) {
-           
+          id
           }
         }
       `,

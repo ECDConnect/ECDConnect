@@ -25,7 +25,7 @@ import {
   classNames,
   renderIcon,
 } from '@ecdlink/ui';
-import { format } from 'date-fns';
+import { addMilliseconds, format, subMilliseconds } from 'date-fns';
 import { newGuid } from '@/utils/common/uuid.utils';
 import DatePicker from 'react-datepicker';
 import { calendarSelectors, calendarThunkActions } from '@/store/calendar';
@@ -175,6 +175,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
     } else {
       setHasChangesOnEvent(false);
     }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [watchValues]);
 
   const handleFormSubmit = async (formValues: CalendarAddEventFormModel) => {
@@ -251,24 +252,26 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       setSearchParticipantsVisible(false);
       setEventFormValue('participants', participantUsers);
     },
-    []
+    [setEventFormValue]
   );
 
   const onAddParticipant = useCallback(() => {
     setSearchParticipantsVisible(true);
   }, []);
 
+  const formValue_participants = getEventFormValues().participants;
+
   const onRemoveParticipant = useCallback(
     (item: any) => {
       const id = (item as ListDataItem).id as string;
-      const list = [...getEventFormValues().participants];
+      const list = [...formValue_participants];
       const index = list.findIndex((x) => x.userId === id);
       if (index !== -1) {
         list.splice(index, 1);
         setEventFormValue('participants', list);
       }
     },
-    [getEventFormValues().participants]
+    [formValue_participants, setEventFormValue]
   );
 
   const getParticipantList = useCallback(
@@ -293,6 +296,31 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
       return [cu, ...list];
     },
     [practitioners, currentUser]
+  );
+
+  const formValue_end = getEventFormValues().end;
+  const formValue_start = getEventFormValues().start;
+
+  const onChangeStartDate = useCallback(
+    (start: Date) => {
+      const duration = formValue_end.getTime() - formValue_start.getTime();
+      const end = addMilliseconds(start, duration);
+      setEventFormValue('start', start);
+      setEventFormValue('end', end);
+    },
+    [formValue_end, formValue_start, setEventFormValue]
+  );
+
+  const onChangeEndDate = useCallback(
+    (end: Date) => {
+      const duration = formValue_end.getTime() - formValue_start.getTime();
+      setEventFormValue('end', end);
+      if (formValue_start.getTime() > end.getTime()) {
+        const start = subMilliseconds(end, duration);
+        setEventFormValue('start', start);
+      }
+    },
+    [formValue_end, formValue_start, setEventFormValue]
   );
 
   return (
@@ -348,14 +376,14 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
               wrapperClassName="text-center"
               selected={getEventFormValues().start}
-              onChange={(date: Date) => setEventFormValue('start', date)}
+              onChange={onChangeStartDate}
               dateFormat={
                 getEventFormValues().allDay
                   ? 'EEE, dd MMM yyyy'
                   : 'EEE, dd MMM yyyy  HH:mm'
               }
               minDate={minDate}
-              maxDate={getEventFormValues().end}
+              maxDate={maxDate}
               showTimeInput={!getEventFormValues().allDay}
             />
           </div>
@@ -367,13 +395,13 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
               wrapperClassName="text-center"
               className="bg-uiBg text-textMid mx-auto w-full rounded-md border-none"
               selected={getEventFormValues().end}
-              onChange={(date: Date) => setEventFormValue('end', date)}
+              onChange={onChangeEndDate}
               dateFormat={
                 getEventFormValues().allDay
                   ? 'EEE, dd MMM yyyy'
                   : 'EEE, dd MMM yyyy  HH:mm'
               }
-              minDate={getEventFormValues().start}
+              minDate={minDate}
               maxDate={maxDate}
               showTimeInput={!getEventFormValues().allDay}
             />

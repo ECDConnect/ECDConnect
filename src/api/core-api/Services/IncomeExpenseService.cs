@@ -22,6 +22,7 @@ using EcdLink.Api.CoreApi.Managers;
 using ECDLink.DataAccessLayer.Entities;
 using Microsoft.AspNetCore.Identity;
 using System.Threading.Tasks;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 
 namespace ECDLink.Core.Services
 {
@@ -43,6 +44,7 @@ namespace ECDLink.Core.Services
         private UserManager<ApplicationUser> _userManager;
         private IFileService _fileService;
         private DocumentManager _documentManager;
+        private PersonnelService _personnelService;
 
         public IncomeExpenseService(
             IHttpContextAccessor contextAccessor,
@@ -50,6 +52,7 @@ namespace ECDLink.Core.Services
             [Service] IFileService fileService,
             [Service] DocumentManager documentManager,
             [Service] UserManager<ApplicationUser> userManager,
+            [Service] PersonnelService personnelService,
             ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
         {
@@ -69,6 +72,7 @@ namespace ECDLink.Core.Services
             _userManager = userManager;
             _fileService = fileService;
             _documentManager = documentManager;
+            _personnelService = personnelService;
         }
 
         #region Utils
@@ -165,16 +169,38 @@ namespace ECDLink.Core.Services
             }
             else
             {
-
-                DateTime lastMonthToSubmit = DateTime.Today.AddMonths(-1);
-                var unsubmittedMonth = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Month : DateTime.Today.Month) : DateTime.Today.Month;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
-                var unsubmittedMonthYear = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Year : DateTime.Today.Year) : DateTime.Today.Year;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
-
-                IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, unsubmittedMonthYear, unsubmittedMonth);
-
-                if (incomeExpenses.AllUnSubmitted != null)
+                if (month == 0 && !IsSubmitted(userId, year, DateTime.Today.Month))
                 {
-                    balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = unsubmittedMonth, Year = unsubmittedMonthYear, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
+                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, year, DateTime.Today.Month);
+                    if (incomeExpenses.AllUnSubmitted != null)
+                    {
+                        balanceSheets.Add(new StatementsBalanceSheet()
+                        {
+                            Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2),
+                            IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2),
+                            ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2),
+                            Month = DateTime.Today.Month,
+                            Year = year,
+                            UserId = userId,
+                            AutoSubmitted = false,
+                            SubmittedDate = null,
+                            Submitted = false
+                        });
+                    }
+                }
+                else
+                {
+
+                    DateTime lastMonthToSubmit = DateTime.Today.AddMonths(-1);
+                    var unsubmittedMonth = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Month : DateTime.Today.Month) : DateTime.Today.Month;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
+                    var unsubmittedMonthYear = DateTime.Today <= new DateTime(DateTime.Today.Year, DateTime.Today.Month, submitEndDate) ? (!allMonths.Contains(lastMonthToSubmit.Month) ? lastMonthToSubmit.Year : DateTime.Today.Year) : DateTime.Today.Year;//check cutoff date for submissions, and if its before or on, its still valid for the previous month if its not yet submitted
+
+                    IncomeExpenseLinesMonthly incomeExpenses = GetMonthlyIncomeExpenses(userId, unsubmittedMonthYear, unsubmittedMonth);
+
+                    if (incomeExpenses.AllUnSubmitted != null && incomeExpenses.AllUnSubmitted.Income != null && incomeExpenses.AllUnSubmitted.Expenses != null)
+                    {
+                        balanceSheets.Add(new StatementsBalanceSheet() { Balance = Math.Round((incomeExpenses.AllUnSubmitted.IncomeTotal - incomeExpenses.AllUnSubmitted.ExpenseTotal), 2), IncomeTotal = Math.Round(incomeExpenses.AllUnSubmitted.IncomeTotal, 2), ExpenseTotal = Math.Round(incomeExpenses.AllUnSubmitted.ExpenseTotal, 2), Month = unsubmittedMonth, Year = unsubmittedMonthYear, UserId = userId, AutoSubmitted = false, SubmittedDate = null, Submitted = false });
+                    }
                 }
             }
             return balanceSheets;
@@ -712,7 +738,7 @@ namespace ECDLink.Core.Services
                     UserId = model.UserId,
                     Id = Guid.NewGuid()
                 };
-                statementRepo.Insert(submittedStatement);
+
 
                 //income
                 if (incomeExpenses.AllUnSubmitted.Income?.Count > 0)
@@ -750,28 +776,31 @@ namespace ECDLink.Core.Services
                     }
                     retVal = true;
                 }
-                //statement update
-                submittedStatement.ExpenseTotal = allExpenses;
-                submittedStatement.IncomeTotal = allIncome;
-                submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
-                submittedStatement.UpdatedDate = DateTime.Now;
-                submittedStatement.UpdatedBy = _applicationUserId;
 
                 try
                 {
                     if (rows>0) //dont create or send empty docs
                     {
+                        //statement update
+                        submittedStatement.ExpenseTotal = allExpenses;
+                        submittedStatement.IncomeTotal = allIncome;
+                        submittedStatement.Balance = Math.Round(allIncome - allExpenses, 2);
+                        submittedStatement.UpdatedDate = DateTime.Now;
+                        submittedStatement.UpdatedBy = _applicationUserId;
+
                         //try generating autosubmit doc
-                        Document pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile(_contextAccessor, this, _userManager, _documentManager, model.UserId, model.Year, model.Month);
+                        Task<Document> pdfDoc = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFFile(_contextAccessor, _fileService, this, _documentManager, _personnelService, _userManager, _repoFactory, model.UserId, model.Year, model.Month);
                         if (pdfDoc != null)
                             submittedStatement.RelatedDocumentId = pdfDoc.Id.ToString();
+
+                        statementRepo.Insert(submittedStatement);
                     }
                 }
                 catch (Exception e)
                 {
-                    submittedStatement.RelatedDocumentId = null;
+
                 }
-                statementRepo.Update(submittedStatement);
+
 
 
             }
@@ -806,7 +835,7 @@ namespace ECDLink.Core.Services
             //find all users that are principal and/or FAA that were created before the start of the  submission period, as they would be due statements for stipends
             StatementsSubmitPeriod submitPeriod = IncomeExpenseService.GetStatementPeriod();
             var pracsRepo = _repoFactory.CreateGenericRepository<Practitioner>(userContext: _applicationUserId);
-            var allDuePracs =pracsRepo.GetAll().Where(x => x.IsPrincipal == true || x.IsFundaAppAdmin == true && x.InsertedDate.Date <= submitPeriod.Start.Date).Select(x => x.UserId).ToList();
+            var allDuePracs =pracsRepo.GetAll().Where(x => (x.IsPrincipal == true || x.IsFundaAppAdmin == true) && x.InsertedDate.Date <= submitPeriod.Start.Date && x.UserId == "3f69013c-07dc-42ab-88ac-01a555488315").Select(x => x.UserId).ToList();
 
             return allDuePracs;
         }

@@ -39,7 +39,7 @@ export const AlcoholUseStep = ({
   isTipPage,
 }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const sectionQuestionsValues = sectionQuestions?.[1]?.questions;
+  const sectionQuestionsValues = sectionQuestions?.[0]?.questions;
   const visitSection = `Alcohol use`;
   const [alcoholAbuseInfo, setAlcoholAbuseInfo] = useState(false);
 

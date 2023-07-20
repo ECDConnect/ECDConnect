@@ -99,6 +99,11 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     [ageMonths, ageYears, days]
   );
 
+  const isChildOlderthan6Months = useMemo(
+    () => !ageYears && ageMonths >= 6,
+    [ageMonths, ageYears]
+  );
+
   const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
 
   const isFormulaMilkHowBreastfeedingWorks = useMemo(
@@ -259,8 +264,9 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isMixedFeedingFoodsForm,
           isMixedFeedingUnsafeFeedingPractices,
           isShowInterventionStep: ageDays >= 7,
-          isShowMuacStep: !isChild6Months,
+          isShowMuacStep: isChildOlderthan6Months,
           isDietFormStep,
+          isChildAfter7Days: ageDays >= 7,
         });
       case activitiesTypes.pillar2:
         return pillar2Steps(

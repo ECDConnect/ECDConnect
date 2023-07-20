@@ -1,6 +1,7 @@
 using DinkToPdf;
 using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers;
+using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services;
 using ECDLink.Core.Services.Interfaces;
@@ -60,69 +61,46 @@ string userId, int year, int month)
             return incomeManager.GetAllStatementsBalanceSheet(userId, year, month);
         }
 
-        public Document GetStatementsIncomeExpensesPDFFile(
+        public async Task<Document> GetStatementsIncomeExpensesPDFFile(
             [Service] IHttpContextAccessor contextAccessor,
+            [Service] IFileService fileService,
             [Service] IncomeExpenseService incomeManager,
-            [Service] UserManager<ApplicationUser> userManager,
             [Service] DocumentManager documentManager,
+            [Service] PersonnelService personnelService,
+            [Service] UserManager<ApplicationUser> userManager,
+            IGenericRepositoryFactory repoFactory,
             string userId, int year, int month)
         {
-            var uId = contextAccessor.HttpContext.GetUser().Id;
-
+            // Data for pdf
             List<IncomeExpensePDFTableModel> htmlData = GetStatementsIncomeExpensesPDFData(incomeManager, userId, year, month);
-            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
 
+            var uId = contextAccessor.HttpContext.GetUser().Id;
             var nfi = (NumberFormatInfo)CultureInfo.InvariantCulture.NumberFormat.Clone();
             nfi.NumberGroupSeparator = " ";
 
             double allIncome = 0.0;
             double allExpense = 0.0;
-
-            var siteAddress = "No address available";
-            var _siteAddress = new SiteAddress();
-            var _signingSignature = "";
-
-            if (user?.franchisorObjectData?.SiteAddress != null)
-            {
-                _siteAddress = user?.franchisorObjectData.SiteAddress;
-                _signingSignature = user?.franchisorObjectData.SigningSignature;
-            }
-            if (user?.practitionerObjectData?.SiteAddress != null)
-            {
-                _siteAddress = user?.practitionerObjectData.SiteAddress;
-                _signingSignature = user?.practitionerObjectData.SigningSignature;
-            }
-            siteAddress = _siteAddress?.AddressLine1 ?? "" + _siteAddress?.AddressLine2 ?? "" + _siteAddress?.AddressLine3 ?? "" + _siteAddress?.PostalCode ?? "" + _siteAddress?.Province.Description ?? "";
-
-            DateTime statementDate = new DateTime(year, month, 01);
-
-            string signDateRow = "<table style='width: 100%; margin-top: 12px;'><tr><td style='width: 10%;'>Sign:</td><td colspan='2' style='height: 80px;border: 1px solid black;text-align: center; width: 50%'><img style='height: 80px;' src='" + _signingSignature + "'/></td><td style='width: 10%;'>Date:</td><td colspan='2' style='border: 1px solid black;height: 80px;text-align: center; width: 50%'>" + DateTime.Now.ToString("dd MMMM yyyy") + "</td></tr></table>";
-
-            string css = "<style>";
-            css += "body { font-family: 'Arial Regular', 'Arial Bold', sans-serif; color: #4d4d4d; font-size: 10px;}";
-            css += "table { display: table; border-collapse: separate; border-spacing: 1px;  font-family: 'Arial', page-break-inside: auto }";
-            css += "th {text-align: left; padding-left: 4px; padding-right: 4px;}";
-            css += "td {padding-left: 4px; padding-right: 4px; padding-top: 2px; padding-bottom: 2px;}";
-            css += "</style>";
-
-            string _html = "<html><head>" + css + "</head><body>";
-            string _header = statementDate.ToString("MMMM", CultureInfo.InvariantCulture) + " " + statementDate.ToString("yyyy", CultureInfo.InvariantCulture) + " Statement";
-
-            string _userInfo = "<div style='float: right;'><table>";
-            _userInfo += "<tr><th style='width:50%'>Name:</th><td>" + user?.FirstName + " " + user?.Surname + "</td></tr>";
-            _userInfo += "<tr><th>Phone number:</th><td>" + user?.PhoneNumber + "</td></tr>";
-            _userInfo += "<tr><th>ID number:</th><td>" + user?.IdNumber + "</td></tr>";
-            _userInfo += "<tr><th>Site Address:</th><td>" + siteAddress + "</td></tr>";
-            _userInfo += "</table></div>";
-
-            _html += _userInfo;
-
             string _income = "";
             string _expense = "";
             string _receipts = "";
-
             Boolean hasExpenses = false;
             List<ExpenseReceipt> receipts = new List<ExpenseReceipt>();
+
+            string _siteAddress = personnelService.GetUserSiteAddress(userManager, userId);
+            string _signingSignature = personnelService.GetUserSignature(userManager, userId);
+            string signDateRow = documentManager.GetSignatureRow(_signingSignature);
+            string _css = documentManager.GetDocumentStyling();
+            string _header = documentManager.GetDocumentHeader(year, month) + " Statement";
+            string _html = "<html><head>" + _css + "</head><body>";
+
+            PdfDocumentHeader pdfDocumentHeader = new PdfDocumentHeader();
+            pdfDocumentHeader.UserId = userId;
+            pdfDocumentHeader.SiteAddress = _siteAddress;
+            pdfDocumentHeader.ReportType = "StatementsPDF";
+            string _userInfo = documentManager.GetDocumentHeaderAddress(userManager, pdfDocumentHeader);
+
+            _html += _userInfo;
+            
 
             //
             //  INCOMES
@@ -305,47 +283,19 @@ string userId, int year, int month)
             }
 
             _html += "</body></html>";
-            try { 
+
             // discard result
-                var doc = new HtmlToPdfDocument()
-                {
-                    GlobalSettings = {
-                        ColorMode = ColorMode.Color,
-                        Orientation = Orientation.Portrait,
-                       // PaperSize = PaperKind.A4Plus,
-                        PaperSize = PaperKind.A4,
-                        Margins = new MarginSettings() { Top = 10, Bottom=10, Left=10, Right=10 },
-                        // Use Out when you want to save the pdf to your local disk
-                       // Out = @"C:\DinkToPdf\" + _header.Replace(" ", "_") + ".pdf",
+            HtmlToPdfDocument doc = documentManager.GetPdfSettings(_html, _header, "portrait");
+            byte[] pdf = _pdfConverter.Convert(doc);
+            string Base64Result = Convert.ToBase64String(pdf);
 
-                    },
-                    Objects = {
-                        new ObjectSettings() {
-                            PagesCount = true,
-                            HtmlContent = _html,
-                            WebSettings = { DefaultEncoding = "utf-8" },
-                            HeaderSettings = { FontSize=12, FontName="Arial", Left= _header, Line=false },
-                            FooterSettings = { FontSize=8, FontName="Arial", Right="Page [page] of [toPage]", Line = false },
-                            }
-                        }
-                };
+            PdfDocumentModel pdfDoc = new PdfDocumentModel();
+            pdfDoc.Reference = Base64Result;
+            pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
+            pdfDoc.UserId = userId;
+            pdfDoc.CreatedUserId = uId;
 
-                SynchronizedConverter _pdfConverter = new SynchronizedConverter(new PdfTools());
-                byte[] pdf = _pdfConverter.Convert(doc);
-                string Base64Result = Convert.ToBase64String(pdf);
-
-                IncomeStatementPDFDoc pdfDoc = new IncomeStatementPDFDoc();
-                pdfDoc.Reference = Base64Result;
-                pdfDoc.FileName = _header.Replace(" ", "_") + ".pdf";
-                pdfDoc.UserId = userId;
-                pdfDoc.CreatedUserId = uId;
-
-                return documentManager.SaveIncomeStatementPDF(pdfDoc);
-            }
-            catch (Exception e)
-            {
-               return null;
-            }
+            return await documentManager.SaveIncomeStatementPDF(fileService, repoFactory, pdfDoc);
 
         }
 

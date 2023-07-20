@@ -50,11 +50,7 @@ import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
-import {
-  traineeActions,
-  traineeSelectors,
-  traineeThunkActions,
-} from './store/trainee';
+import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
 
 type IntialStoreSetupContextValues = {
@@ -82,12 +78,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
+
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline
   );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -229,12 +225,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  useEffect(() => {
-    if (shouldSaveStateHash) {
-      localforage.setItem('state:hash', hash(state));
-      setShouldSaveStateHash(false);
-    }
-  }, [state, shouldSaveStateHash]);
+  // useEffect(() => {
+  //   if (shouldSaveStateHash) {
+  //     localforage.setItem('state:hash', hash(state));
+  //     setShouldSaveStateHash(false);
+  //   }
+  // }, [state, shouldSaveStateHash]);
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
@@ -276,7 +272,6 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         ),
       })
     );
-
     setOtherLoading(false);
   };
 

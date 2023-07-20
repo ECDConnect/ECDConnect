@@ -47,6 +47,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         private VisitDataManager _visitDataManager;
         private VisitManager _visitManager;
         private UserLicenseManager _userLicenseManager;
+        private UserManager<ApplicationUser> _userManager;
+        
 
         public PersonnelService(
             IHttpContextAccessor contextAccessor,
@@ -573,11 +575,11 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                         PQARating rating = _visitDataManager.GetPractitionerReAccreditationRating(userId, Constants.SSSettings.visitType_re_accreditation_1);
                         visit.OverallRatingColor = rating.OverallRatingColor;
 
-                        var months = GetMonthDifference(today, visit.PlannedVisitDate);
-                        if (months <= 3)
-                        {
+                       // var months = GetMonthDifference(today, visit.PlannedVisitDate);
+                       // if (months <= 3)
+                      //  {
                             reaccreditation_visits.Add(visit);
-                        }
+                       // }
                     }
                     if (visit.VisitType.Name == Constants.SSSettings.visitType_re_accreditation_2)
                     {
@@ -863,6 +865,54 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
         {
             int monthsApart = 12 * (startDate.Year - endDate.Year) + startDate.Month - endDate.Month;
             return Math.Abs(monthsApart);
+        }
+
+        public string GetUserSignature([Service] UserManager<ApplicationUser> userManager, string userId)
+        {
+            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
+
+            if (user?.franchisorObjectData?.SigningSignature != null)
+            {
+                return user?.franchisorObjectData.SigningSignature;
+            }
+            else if (user?.coachObjectData?.SigningSignature != null)
+            {
+                return user?.coachObjectData.SigningSignature;
+            }
+            else if (user?.principalObjectData?.SigningSignature != null)
+            {
+                return user?.principalObjectData.SigningSignature;
+            }
+            else if (user?.practitionerObjectData?.SigningSignature != null)
+            {
+                return user?.practitionerObjectData.SigningSignature;
+            }
+            return "";
+        }
+
+        public string GetUserSiteAddress([Service] UserManager<ApplicationUser> userManager, string userId)
+        {
+            var _siteAddress = new SiteAddress();
+            ApplicationUser user = userManager.FindByIdAsync(userId).Result;
+
+            if (user?.franchisorObjectData?.SiteAddress != null)
+            {
+                _siteAddress = user?.franchisorObjectData.SiteAddress;
+            }
+            else if (user?.coachObjectData?.SiteAddress != null)
+            {
+                _siteAddress = user?.coachObjectData.SiteAddress;
+            }
+            else if (user?.principalObjectData?.SiteAddress != null)
+            {
+                _siteAddress = user?.principalObjectData.SiteAddress;
+            }
+            else if (user?.practitionerObjectData?.SiteAddress != null)
+            {
+                _siteAddress = user?.practitionerObjectData.SiteAddress;
+            }
+
+            return _siteAddress?.AddressLine1 ?? "" + _siteAddress?.AddressLine2 ?? "" + _siteAddress?.AddressLine3 ?? "" + _siteAddress?.PostalCode ?? "" + _siteAddress?.Province.Description ?? "";
         }
 
     }
