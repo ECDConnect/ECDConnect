@@ -94,6 +94,9 @@ namespace ECDLink.DataAccessLayer.Entities.Users
 
     public class HCWPointsEngine
     {
+        // TODO: This class breaks Hot Chocolate as it has no fields
+        // Why isn't is using EF navigations?
+        public bool ignored { get; set; }
         public virtual ICollection<PointsLibrary> PointsLibrary { get; set; }
         public virtual ICollection<PointsUserSummary> PointsUserSummary { get; set; }
     }

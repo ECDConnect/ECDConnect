@@ -525,15 +525,17 @@ export function ViewUser(props: any) {
             </div>
           </div>
           {/* End main area */}
-          {chwData && !chwData?.GetHealthCareWorkerById?.user?.isActive && (
-            <Alert
-              className="mt-5 mb-3"
-              message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
-              type="error"
-              // customIcon={<SaveIcon></SaveIcon>}
-            />
-          )}
-          {userData && !userData?.userById?.isActive && (
+          {!userData &&
+            chwData &&
+            !chwData?.GetHealthCareWorkerById?.user?.isActive && (
+              <Alert
+                className="mt-5 mb-3"
+                message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
+                type="error"
+                // customIcon={<SaveIcon></SaveIcon>}
+              />
+            )}
+          {!chwData && userData && !userData?.userById?.isActive && (
             <Alert
               className="mt-5 mb-3"
               message={`This user has been deactivated and cannot access ${data?.tenantContext.applicationName} App`}
