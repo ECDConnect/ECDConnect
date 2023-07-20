@@ -1,4 +1,8 @@
-import { ClassroomDto, ReasonForLeavingDto } from '@ecdlink/core';
+import {
+  ClassroomDto,
+  ClassroomGroupDto,
+  ReasonForLeavingDto,
+} from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   BannerWrapper,
@@ -15,7 +19,7 @@ import {
 } from '@ecdlink/ui';
 import { useAppDispatch } from '@store/config';
 import { authSelectors } from '@store/auth';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { useForm, useFormState, useWatch } from 'react-hook-form';
 import { useSelector } from 'react-redux';
 import {
@@ -62,15 +66,18 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   );
 
   //Get list of practitioners for classroom
-  const practitionersForClass =
-    practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-      ? practitioners?.filter((x) => x.principalHierarchy === practitionerId) // If they are the principal, get any practiutioners where their principal is this practitioner
-      : practitioners?.filter(
-          (x) =>
-            (x.id === practitioner?.principalHierarchy ||
-              x.principalHierarchy === practitioner?.principalHierarchy) &&
-            x.id !== practitionerId
-        ); // Get other practitioners with the same principal, their principal and not themselves
+  const practitionersForClass = useMemo(
+    () =>
+      practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+        ? practitioners?.filter((x) => x.principalHierarchy === practitionerId) // If they are the principal, get any practitioners where their principal is this practitioner
+        : practitioners?.filter(
+            (x) =>
+              (x.id === practitioner?.principalHierarchy ||
+                x.principalHierarchy === practitioner?.principalHierarchy) &&
+              x.id !== practitionerId
+          ), // Get other practitioners with the same principal, their principal and not themselves
+    [practitionerId, practitioner, practitioners]
+  );
 
   const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
 
@@ -100,7 +107,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
     useState<boolean>(false);
 
   const [practitionersList, setPractitionersList] = useState<
-    { label: string; value: any }[]
+    { label: string; value: string }[]
   >([]);
 
   useEffect(() => {
@@ -122,7 +129,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   }, [practitionersForClass]);
 
   const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
-    useState<any>();
+    useState<ClassroomGroupDto[]>();
 
   const classroomsGroupsForPractitioner = async () => {
     const classroomDetails = await new PractitionerService(
@@ -135,7 +142,7 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   useEffect(() => {
     classroomsGroupsForPractitioner();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [practitioner]);
 
   const handleFormSubmit = async (formValues: RemovePractionerModel) => {
     if (isValid) {
@@ -271,31 +278,31 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                   }`}
                 </label>
                 <ul>
-                  {practitionerClassroomGroups.map(function (
-                    classroomGroup: any
-                  ) {
-                    return (
-                      <li id={classroomGroup.id}>
-                        <Dropdown
-                          placeholder={'Select practitioner'}
-                          list={practitionersList || []}
-                          fillType="clear"
-                          label={`Which practitioner will teach ${classroomGroup.name}?`}
-                          fullWidth
-                          className={'mt-3 w-11/12'}
-                          onChange={(item: any) => {
-                            setRemovePractionerFormValues(
-                              'reassignedClassrooms',
-                              {
-                                ...reassignedClassrooms,
-                                [classroomGroup.id]: item,
-                              }
-                            );
-                          }}
-                        />
-                      </li>
-                    );
-                  })}
+                  {practitionerClassroomGroups.map(
+                    (classroomGroup: ClassroomGroupDto) => {
+                      return (
+                        <li key={classroomGroup.id}>
+                          <Dropdown
+                            placeholder={'Select practitioner'}
+                            list={practitionersList || []}
+                            fillType="clear"
+                            label={`Which practitioner will teach ${classroomGroup.name}?`}
+                            fullWidth
+                            className={'mt-3 w-11/12'}
+                            onChange={(item: string) => {
+                              setRemovePractionerFormValues(
+                                'reassignedClassrooms',
+                                {
+                                  ...reassignedClassrooms,
+                                  [classroomGroup.id as string]: item,
+                                }
+                              );
+                            }}
+                          />
+                        </li>
+                      );
+                    }
+                  )}
                 </ul>
               </div>
             )}
