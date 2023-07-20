@@ -25,7 +25,7 @@ namespace EcdLink.Api.CoreApi.Managers.Notifications
         {
             var encodedToken = TokenHelper.EncodeToken(token);
 
-            var invitationUrl = $"{_options.Value.Signup}/{encodedToken}";
+            var invitationUrl = $"{_options.Value.Signup}?token={encodedToken}";
             var applicationName = TenantExecutionContext.Tenant.ApplicationName;
             var organisationName = TenantExecutionContext.Tenant.OrganisationName;
             string firstName = user.FirstName;
