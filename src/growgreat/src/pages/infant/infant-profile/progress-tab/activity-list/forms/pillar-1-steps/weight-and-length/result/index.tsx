@@ -219,27 +219,18 @@ export const WeightAndLengthResultStep = ({
 
     if (weightHistory.length > 1) {
       const first2 = weightHistory.slice(0, 2);
-      if (weightHistory[0] > weightHistory[1]) {
+      if (first2[0] > first2[1]) {
         bIncreased = true;
       }
     }
     return bIncreased;
-  }, [groupedGrowthData, infant]);
+  }, [groupedGrowthData, infant, weight]);
 
   var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
-
-  // if the new weight is mapped to SD2/SD3 and we don't have a length/height, we default to median to display correct colour and alert
-  // EC-917
-  if (
-    (weightAlertResult === 'SD2' || weightAlertResult === 'SD3') &&
-    (length === 0 || height === 0)
-  ) {
-    weightAlertResult = 'median';
-  }
 
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
@@ -304,31 +295,17 @@ export const WeightAndLengthResultStep = ({
         );
         break;
       case 'SD2neg':
-        if (weightIncreased) {
-          WeightAlert = (
-            <Alert
-              type="warning"
-              title={`${name} is underweight.`}
-              customIcon={
-                <div className="rounded-full">
-                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-                </div>
-              }
-            />
-          );
-        } else {
-          WeightAlert = (
-            <Alert
-              type="warning"
-              title={`${name}'s growth is faltering.`}
-              customIcon={
-                <div className="rounded-full">
-                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-                </div>
-              }
-            />
-          );
-        }
+        WeightAlert = (
+          <Alert
+            type="warning"
+            title={`${name} is underweight.`}
+            customIcon={
+              <div className="rounded-full">
+                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              </div>
+            }
+          />
+        );
         break;
       case 'SD3neg':
         WeightAlert = (
@@ -448,7 +425,7 @@ export const WeightAndLengthResultStep = ({
     var counter = 0;
     for (var i = 0; i < numberOfChunks; i++) {
       var max = counter + chunkSize;
-      if (i == numberOfChunks) {
+      if (i === numberOfChunks) {
         max = maxIndex + 1;
       }
       counter += chunkSize;
@@ -775,6 +752,20 @@ export const WeightAndLengthResultStep = ({
           {(!!length || !!height) && <LengthOrHeightAlert />}
         </>
       );
+    } else if (
+      (weightAlertResult === 'median' ||
+        weightAlertResult === 'SD2' ||
+        weightAlertResult === 'SD3') &&
+      (length === 0 || height === 0) &&
+      !weightIncreased
+    ) {
+      return (
+        <SuccessCard
+          text={`${name}'s growth is faltering.`}
+          color="successMain"
+          customIcon={<CelebrateIcon className="h-14	w-14" />}
+        />
+      );
     }
 
     return (
@@ -793,6 +784,7 @@ export const WeightAndLengthResultStep = ({
     lengthOrHeightAlertResult,
     name,
     weightAlertResult,
+    weightIncreased,
   ]);
 
   useEffect(() => {
