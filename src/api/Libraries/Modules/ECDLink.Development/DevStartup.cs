@@ -7,6 +7,7 @@ using ECDLink.Development.Notifications;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
 using System.Linq;
 
 namespace ECDLink.Development
@@ -30,11 +31,15 @@ namespace ECDLink.Development
 
         private static void OverrideNotifications(IServiceCollection services)
         {
-            var notificationFactory = services.FirstOrDefault(x => x.ServiceType == typeof(INotificationProviderFactory<ApplicationUser>));
-            services.Remove(notificationFactory);
+            if (System.Environment.GetEnvironmentVariable("OVERRIDE_NOTIFICATIONS") == "1")
+            {
+                Console.WriteLine("Overriding notifications");
+                var notificationFactory = services.FirstOrDefault(x => x.ServiceType == typeof(INotificationProviderFactory<ApplicationUser>));
+                services.Remove(notificationFactory);
 
-            services.AddTransient<INotificationProviderFactory<ApplicationUser>, DevNotificationProviderFactory>();
-            services.AddTransient<INotificationProvider<ApplicationUser>, DevNotificationProvider>();
+                services.AddTransient<INotificationProviderFactory<ApplicationUser>, DevNotificationProviderFactory>();
+                services.AddTransient<INotificationProvider<ApplicationUser>, DevNotificationProvider>();
+            }
         }
 
         public static void AddNotificationConfiguration(IApplicationBuilder app)

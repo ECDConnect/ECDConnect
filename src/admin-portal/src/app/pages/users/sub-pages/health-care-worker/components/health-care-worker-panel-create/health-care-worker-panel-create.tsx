@@ -129,6 +129,7 @@ export default function HealthCareWorkerPanelCreate(
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
       phoneNumber: userDetailForm.phoneNumber,
+      contactPreference: "sms"
     };
 
     await createUser({
@@ -177,7 +178,7 @@ export default function HealthCareWorkerPanelCreate(
       await sendInviteToApplication({
         variables: {
           userId: userId,
-          inviteToPortal: true,
+          inviteToPortal: false,
         },
       }).catch((err) => [
         setNotification({
