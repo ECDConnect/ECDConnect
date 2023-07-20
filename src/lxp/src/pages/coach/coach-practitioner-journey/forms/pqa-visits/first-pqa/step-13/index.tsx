@@ -6,15 +6,21 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { options } from './options';
+import { useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { usePrevious } from 'react-use';
 
 export const step13VisitSection = 'Step 13';
 
 export const Step13 = ({
   setSectionQuestions,
   setEnableButton,
+  isView,
 }: DynamicFormProps) => {
   const [question, setAnswers] = useState({
     question: 'Additional standards',
@@ -22,6 +28,23 @@ export const Step13 = ({
   });
 
   const answers = question.answer as string[];
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step13VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -69,6 +92,31 @@ export const Step13 = ({
     };
   };
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
   useEffect(() => {
     setEnableButton?.(true);
   }, [setEnableButton]);
@@ -81,6 +129,13 @@ export const Step13 = ({
         type="info"
         title="These standards are also required. If they are not in place, SmartStarters should be able to show how they are working towards them."
       />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Divider dividerType="dashed" className="my-4" />
       {options.question1.map((item) => (
         <CheckboxGroup
@@ -91,8 +146,9 @@ export const Step13 = ({
           titleColours="textMid"
           titleSize="sm"
           titleWeight="normal"
-          checked={answers?.some((option) => option === item)}
+          checked={answers?.some((option) => item.includes(option))}
           value={item}
+          disabled={isViewAnswers}
           onChange={onCheckboxChange}
         />
       ))}

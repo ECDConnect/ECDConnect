@@ -18,8 +18,15 @@ export const getSectionQuestions = (data?: VisitData[]) => {
     };
 
     if (existingSection) {
-      // Add the question to the existing section
-      existingSection.questions.push(question);
+      // Check if the question already exists in the existing section
+      const existingQuestion = existingSection.questions.find(
+        (item) => item.question === question.question
+      );
+
+      if (!existingQuestion) {
+        // Add the question to the existing section if it doesn't already exist
+        existingSection.questions.push(question);
+      }
     } else {
       // Create a new section with the question
       const newSection: SectionQuestions = {

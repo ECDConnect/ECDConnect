@@ -46,7 +46,7 @@ import {
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
   getReAccreditationFormDataByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   ScheduleProps,
@@ -158,8 +158,7 @@ export const CoachPractitionerJourney = () => {
   );
 
   const reAccreditationFollowUpAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
+    getVisitDataByVisitIdSelector(
       lastAttendedReAccreditationFollowUpVisit?.id || '',
       'reAccreditationFollowUpVisitPreviousFormData'
     )

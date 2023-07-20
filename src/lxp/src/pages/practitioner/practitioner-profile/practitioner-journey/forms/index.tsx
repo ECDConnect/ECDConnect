@@ -15,7 +15,7 @@ import {
 } from './steps';
 import { ActionModal, BannerWrapper, DialogPosition } from '@ecdlink/ui';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { parseBool, useDialog } from '@ecdlink/core';
+import { parseBool, useDialog, useSessionStorage } from '@ecdlink/core';
 import { visitTypes } from '../index.types';
 import {
   CmsVisitDataInputModelInput,
@@ -28,25 +28,45 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { getFirstPqaSteps } from '@/pages/coach/coach-practitioner-journey/forms/steps';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
 
-export const visitIdKey = 'practitionerVisitId';
+export const practitionerVisitIdKey = 'practitionerVisitId';
 export const currentActivityKey = 'practitionerSelectedFormOption';
 export const isViewKey = 'practitionerIsView';
 
 interface FormProps {
-  visitId?: string;
   onBack: () => void;
 }
 
-export const Form = ({ visitId, onBack }: FormProps) => {
+export const Form = ({ onBack }: FormProps) => {
   const [isSecondaryPage, setIsSecondaryPage] = useState(false);
   const [step, setStep] = useState(0);
   const [title, setTitle] = useState('');
   const [sectionQuestions, setSectionQuestions] =
     useState<SectionQuestions[]>();
+  const [isViewDetails, setIsViewDetails] = useState(false);
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
   const isView = parseBool(window.sessionStorage.getItem(isViewKey) || '');
+  const isViewPqaOrReAccreditation =
+    (activityName.includes(coachVisitTypes.pqa.includes) ||
+      activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
+    !activityName.includes(coachVisitTypes.prePqa.includes);
+
+  const [visitId] = useSessionStorage(practitionerVisitIdKey);
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitId ?? '',
+      'pqaPreviousFormData',
+      step11VisitSection
+    )
+  );
+
+  const pqaStep11Answer =
+    String(previousData?.questions?.[0]?.answer) ?? undefined;
 
   const { isLoading: isLoadingSelfAssessment } = useThunkFetchCall(
     'pqa',
@@ -61,6 +81,8 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const appDispatch = useAppDispatch();
 
   const currentSteps = useMemo(() => {
+    const isPQA = activityName.includes(coachVisitTypes.pqa.includes);
+
     if (activityName.includes(coachVisitTypes.prePqa.includes)) {
       setTitle('Pre-PQA site visits summary');
       return prePqaSteps;
@@ -75,7 +97,16 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       return supportVisitSteps;
     }
 
-    if (activityName.includes(coachVisitTypes.pqa.includes)) {
+    if (isPQA && isViewDetails) {
+      return getFirstPqaSteps({
+        isToShowStep1: false,
+        isStep11AnswerTrue: !!pqaStep11Answer,
+        isToRemoveSmartStarter: false,
+        isToShowStep17: false,
+      });
+    }
+
+    if (isPQA) {
       setTitle('PQA site visits summary');
       return pqaSteps;
     }
@@ -92,7 +123,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
     setTitle('Self-assessment');
     return selfAssessmentSteps;
-  }, [activityName]);
+  }, [activityName, isViewDetails, pqaStep11Answer]);
 
   const isHideSteps = isView && currentSteps.length === 1;
 
@@ -114,6 +145,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
 
   const handleOnClose = useCallback(() => {
     if (isView) {
+      setIsViewDetails(false);
       return onBack();
     }
 
@@ -157,6 +189,13 @@ export const Form = ({ visitId, onBack }: FormProps) => {
     });
   }, [dialog, isView, onBack]);
 
+  const onView = () => {
+    if (isViewDetails) {
+      return handleOnClose();
+    }
+    setIsViewDetails(true);
+  };
+
   const onSubmitSelfAssessment = (payload: SupportVisitModelInput) => {
     appDispatch(
       pqaActions.addVisitFormData(payload, {
@@ -199,11 +238,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
   const renderSubmitButtonStyle =
     useMemo((): DynamicFormProps['submitButton'] => {
       if (isView) {
-        if (
-          (activityName.includes(coachVisitTypes.pqa.includes) ||
-            activityName.includes(coachVisitTypes.reaccreditation.includes)) &&
-          !activityName.includes(coachVisitTypes.prePqa.includes)
-        ) {
+        if (isViewPqaOrReAccreditation) {
           return { icon: 'EyeIcon', text: 'View details', type: 'filled' };
         }
 
@@ -211,7 +246,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
       }
 
       return undefined;
-    }, [activityName, isView]);
+    }, [isView, isViewPqaOrReAccreditation]);
 
   return (
     <BannerWrapper
@@ -239,6 +274,7 @@ export const Form = ({ visitId, onBack }: FormProps) => {
         submitButton={renderSubmitButtonStyle}
         isLoading={isLoadingSelfAssessment}
         isView={isView}
+        {...(isViewPqaOrReAccreditation && { onView })}
       />
     </BannerWrapper>
   );

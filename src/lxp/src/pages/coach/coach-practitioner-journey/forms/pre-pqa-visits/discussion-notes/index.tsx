@@ -18,7 +18,7 @@ import { useSelector } from 'react-redux';
 import {
   getCurrentCoachPractitionerVisitByUserId,
   getPreviousCoachVisitByUserId,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { currentActivityKey } from '../..';
 import { useAppDispatch } from '@/store';
@@ -62,11 +62,7 @@ export const DiscussionNotes = ({
     )
   );
   const firstVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
-      previousVisit?.id,
-      'prePqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(previousVisit?.id, 'prePqaPreviousFormData')
   );
 
   const discussionNotesAnswer = firstVisitAnswers?.find(
@@ -75,11 +71,7 @@ export const DiscussionNotes = ({
   const isFollowUp = !!discussionNotesAnswer;
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
-      currentVisit?.id,
-      'prePqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(currentVisit?.id, 'prePqaPreviousFormData')
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection

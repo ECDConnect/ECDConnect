@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import {
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   callAnswer,
@@ -13,7 +13,7 @@ import {
 import { useLayoutEffect, useMemo } from 'react';
 
 import { DynamicFormProps } from '../../dynamic-form';
-import { currentActivityKey, visitIdKey } from '../..';
+import { currentActivityKey, practitionerVisitIdKey } from '../..';
 import {
   dateLongDayOptions,
   dateLongMonthOptions,
@@ -25,8 +25,9 @@ export const SupportVisitStep1 = ({
   setEnableButton,
   smartStarter,
 }: DynamicFormProps) => {
+  const visitId = window.sessionStorage.getItem(practitionerVisitIdKey) || '';
   const userId = smartStarter?.id ?? '';
-  const visitId = window.sessionStorage.getItem(visitIdKey) || '';
+
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
   const isSupportVisit = activityName === coachVisitTypes.supportVisit;
@@ -89,13 +90,7 @@ export const SupportVisitStep1 = ({
     }
   }, [activityName]);
 
-  const data = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      smartStarter?.id || '',
-      visitId,
-      stateType
-    )
-  );
+  const data = useSelector(getVisitDataByVisitIdSelector(visitId, stateType));
 
   const note1 = data?.find(
     (item) => item.question === supportVisitSharedQuestion
@@ -134,7 +129,7 @@ export const SupportVisitStep1 = ({
           className="mb-4"
         />
       )}
-      {note2 && (
+      {(isPqaVisit || isReAccreditationVisit) && note2 && (
         <Note
           title="Focus of the coaching visit"
           body={note2?.questionAnswer!}
