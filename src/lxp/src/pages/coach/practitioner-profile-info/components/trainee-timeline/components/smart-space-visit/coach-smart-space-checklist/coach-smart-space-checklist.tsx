@@ -2,7 +2,6 @@ import ROUTES from '@/routes/routes';
 import { PractitionerDto } from '@ecdlink/core';
 import { BannerWrapper } from '@ecdlink/ui';
 import { useHistory, useLocation } from 'react-router';
-import { Route } from 'workbox-routing';
 import { SmartSpaceCheck2 } from './components/smart-space-check-2';
 import { useSelector } from 'react-redux';
 import { traineeActions, traineeSelectors } from '@/store/trainee';
@@ -12,6 +11,13 @@ import { CoachSmartSpaceChecklistSteps } from './coach-smart-space-checklist.typ
 import { SmartSpaceCheck1 } from './components/smart-space-check-1';
 import { SmartSpaceCheck3 } from './components/smart-space-check-3';
 import { useAppDispatch } from '@/store';
+import { SmartSpaceCheck4 } from './components/smart-space-check-4';
+import { SmartSpaceCheck5 } from './components/smart-space-check-5';
+import { SmartSpaceCheck6 } from './components/smart-space-check-6';
+import { SmartSpaceCheck7 } from './components/smart-space-check-7';
+import { SmartSpaceCheck8 } from './components/smart-space-check-8';
+import { SmartSpaceCheck9 } from './components/smart-space-check-9';
+import { SmartSpaceCheck10 } from './components/smart-space-check-10';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -37,10 +43,8 @@ export const CoachSmartSpaceChecklist: React.FC<
     CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK
   );
 
-  console.log({ sectionQuestions });
-
   const handleNextSection = () => {
-    if (activeStep < 5) {
+    if (activeStep < 11) {
       setActiveStep(activeStep + 1);
       return;
     }
@@ -54,7 +58,9 @@ export const CoachSmartSpaceChecklist: React.FC<
 
   const handleBackButton = () => {
     if (activeStep === 1) {
-      return;
+      history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+        practitionerId: practitioner?.userId,
+      });
     }
     setActiveStep(activeStep - 1);
   };
@@ -68,6 +74,7 @@ export const CoachSmartSpaceChecklist: React.FC<
             programmeName={programmeName}
             setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
         );
       case 3:
@@ -77,16 +84,79 @@ export const CoachSmartSpaceChecklist: React.FC<
             programmeName={programmeName}
             setSectionQuestions={setSectionQuestions}
             handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
           />
         );
       case 4:
-        return null;
+        return (
+          <SmartSpaceCheck4
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
       case 5:
-        return null;
+        return (
+          <SmartSpaceCheck5
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
       case 6:
-        return null;
+        return (
+          <SmartSpaceCheck6
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
       case 7:
-        return null;
+        return (
+          <SmartSpaceCheck7
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
+      case 8:
+        return (
+          <SmartSpaceCheck8
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
+      case 9:
+        return (
+          <SmartSpaceCheck9
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
+      case 10:
+        return (
+          <SmartSpaceCheck10
+            practitioner={practitioner}
+            programmeName={programmeName}
+            setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+            saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+          />
+        );
       default:
         return (
           <SmartSpaceCheck1

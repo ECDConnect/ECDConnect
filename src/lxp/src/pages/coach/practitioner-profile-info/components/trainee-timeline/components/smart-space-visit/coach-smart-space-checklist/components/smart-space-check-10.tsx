@@ -12,6 +12,7 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { traineeSelectors } from '@/store/trainee';
+import PositiveBonusEmoticon from '../../../../../../../../../assets/positive-bonus-emoticon.png';
 
 interface SmartSpaceCheck1Props {
   practitioner: PractitionerDto;
@@ -33,7 +34,7 @@ export const getGroupColor = (count: number): Colours => {
   return 'successMain';
 };
 
-export const SmartSpaceCheck2: React.FC<SmartSpaceCheck1Props> = ({
+export const SmartSpaceCheck10: React.FC<SmartSpaceCheck1Props> = ({
   practitioner,
   programmeName,
   setSectionQuestions,
@@ -43,35 +44,15 @@ export const SmartSpaceCheck2: React.FC<SmartSpaceCheck1Props> = ({
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [questions, setAnswers] = useState([
     {
-      question:
-        'The venue offers children enough space to play freely (about one square metre per child).',
-      answer: false,
-    },
-    {
-      question:
-        'If children use an outdoor area, it is fenced with a lockable gate.',
-      answer: false,
-    },
-    {
-      question: 'There is a list of emergency numbers visible on the wall.',
-      answer: false,
-    },
-    {
-      question:
-        'The venue has good natural ventilation (windows or doors that can open).',
-      answer: false,
-    },
-    {
-      question:
-        'The programme does not exceed the maximum child number per programme type.',
+      question: 'I have issued a SmartSpace Certificate for this SmartStarter',
       answer: false,
     },
   ]);
 
-  const visitSection = 'Additional standards';
+  const visitSection = 'SmartSpace licence awarded';
 
   const trueAnswers = useMemo(() => {
-    const answers = questions?.filter((item) => item?.answer === true);
+    const answers = questions?.every((item) => item?.answer === true);
     return answers;
   }, [questions]);
 
@@ -140,18 +121,36 @@ export const SmartSpaceCheck2: React.FC<SmartSpaceCheck1Props> = ({
     <div className="p-4">
       <Typography
         type={'h2'}
-        text={`Additional standards`}
+        text={visitSection}
         color={'textDark'}
         className={'my-3'}
       />
-      <Divider dividerType="dashed" className={'my-4'} />
 
-      <Alert
-        className="my-4"
-        type="info"
-        title="These standards are also required. If they are not in place, SmartStarters should be able to show how they are working towards them."
+      <div>
+        <div className="bg-successMain my-4 flex flex-row flex-nowrap items-center rounded-lg">
+          <div className="rounded-full p-4">
+            <img
+              className={'h-14 w-16'}
+              src={PositiveBonusEmoticon}
+              alt="complete"
+            />
+          </div>
+          <div>
+            <Typography
+              className={'w-full p-2'}
+              type={'body'}
+              color={'white'}
+              text={`${practitioner?.user?.firstName}’s venue meets all of the SmartSpace standards.`}
+            />
+          </div>
+        </div>
+      </div>
+      <Typography
+        className={'my-2 w-full p-2'}
+        type={'h4'}
+        color={'textDark'}
+        text={`Please confirm:`}
       />
-
       {questions.map((item, index) => (
         <CheckboxGroup
           id={item.question}
@@ -167,16 +166,14 @@ export const SmartSpaceCheck2: React.FC<SmartSpaceCheck1Props> = ({
           className="mb-1"
         />
       ))}
-      <div className="mt-2 flex items-center gap-2">
-        <div
-          className={`text-14 flex h-5 w-12 rounded-full bg-${getGroupColor(
-            trueAnswers.length
-          )} items-center justify-center font-bold text-white`}
-        >
-          {`${trueAnswers.length} / ${questions?.length}`}
-        </div>
-        <Typography type={'body'} text={'score'} color={'textDark'} />
-      </div>
+
+      {trueAnswers && (
+        <Alert
+          type={'success'}
+          title={'All steps complete - your signature has been added.'}
+          className="mt-4 mb-2"
+        />
+      )}
 
       <div className="mt-2 space-y-4">
         <div>
@@ -189,9 +186,14 @@ export const SmartSpaceCheck2: React.FC<SmartSpaceCheck1Props> = ({
                 handleNextSection();
                 saveSmartSpaceCheckData();
               }}
+              disabled={!trueAnswers}
             >
-              {renderIcon('ArrowCircleRightIcon', 'mr-2 text-white w-5')}
-              <Typography type={'help'} text={'Next'} color={'white'} />
+              {renderIcon('DownloadIcon', 'mr-2 text-white w-5')}
+              <Typography
+                type={'help'}
+                text={'Save & continue'}
+                color={'white'}
+              />
             </Button>
           </div>
         </div>

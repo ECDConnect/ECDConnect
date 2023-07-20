@@ -81,7 +81,6 @@ export const setStep = (
 ) => {
   const lincenceReceveid = 'Starter Licence received';
   const smartSpaceLincenceReceveid = 'SmartSpace Licence received';
-  const consolidationMeetingScheduled = 'Consolidation meeting scheduled';
   const register3Children = 'Register 3 children';
   const register3Children2 = '3 or more children registered';
   const communitySupport = 'Get community support';
@@ -90,7 +89,6 @@ export const setStep = (
   const franchisorAgreement2 = 'Franchisee agreement signed';
   const smartSpaceVisitFromCoach = 'SmartSpace visit from coach';
 
-  console.log({ status });
   const stepCompleted =
     color?.toLowerCase() === 'success' &&
     status !== lincenceReceveid &&
@@ -105,8 +103,6 @@ export const setStep = (
       status !== franchisorAgreement &&
       status !== franchisorAgreement2);
   if (!!status) {
-    console.log('neto');
-    console.log({ nextStep });
     return {
       title: status,
       subTitle: getStepDate(date),
@@ -124,7 +120,10 @@ export const setStep = (
           : getStepType(color).type,
       extraData: { date: date ? new Date(date) : null },
       showActionButton:
-        notShowButtonRules || nextStep === status ? true : false,
+        (notShowButtonRules || nextStep === status) &&
+        status !== register3Children
+          ? true
+          : false,
       actionButtonText: stepCompleted ? 'View' : 'Schedule',
       actionButtonTextColor: stepCompleted ? 'secondary' : 'primary',
       actionButtonColor: stepCompleted ? 'secondaryAccent2' : 'primary',

@@ -157,7 +157,7 @@ const pqaSlice = createSlice({
           return;
         }
 
-        const newState = state.coachPractitionersTimeline.map((item) => {
+        const newState = state?.coachPractitionersTimeline?.map((item) => {
           if (item.practitionerId === practitionerId) {
             return { ...item, timeline: action.payload };
           }
@@ -177,7 +177,7 @@ const pqaSlice = createSlice({
     });
     builder.addCase(getPractitionersForCoach.fulfilled, (state, action) => {
       // @ts-ignore
-      state.coachPractitionersTimeline = action.payload.map((item) => ({
+      state.coachPractitionersTimeline = action?.payload?.map((item) => ({
         practitionerId: item.userId,
         // @ts-ignore
         timeline: item.timeline,

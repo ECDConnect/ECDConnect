@@ -71,7 +71,6 @@ export const CoachPractitionerClassroom: React.FC = () => {
   const [showRegisterChildrenInfo, setShowRegisterChildrenInfo] =
     useState(false);
 
-  console.log({ traineeTimeline });
   const registerChildrenDeadlineDate =
     traineeTimeline?.threeChildrenRegisteredDeadlineDate;
   const registerChildrenDeadlineDateFormatted = getStepDate(

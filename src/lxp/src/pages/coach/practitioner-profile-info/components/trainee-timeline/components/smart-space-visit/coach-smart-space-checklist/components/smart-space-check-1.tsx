@@ -43,8 +43,6 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
 
-  console.log({ visitData });
-
   const [questions, setAnswers] = useState([
     {
       question: 'The venue has enough clean, safe water for children to drink.',
@@ -159,16 +157,19 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
   );
 
   useEffect(() => {
-    console.log('ebtriyyyy');
     const previousData = questions.map((item) => {
-      const previousAnswer = visitData
-        ?.filter((item) => item?.visitSection === visitSection)
-        .filter((obj) => obj.question === item.question);
-      console.log({ previousAnswer });
+      const visitDataWithoutTypo = visitData as any;
+      const previousAnswer = visitDataWithoutTypo
+        ?.find((item: any) => {
+          const sectionData = item?.visitSection === visitSection;
+          return sectionData;
+        })
+        ?.questions.filter((obj: any) => {
+          return obj.question === item.question;
+        });
+
       const previousHasTrueAnswer = previousAnswer?.some(
-        (item) =>
-          item?.questionAnswer === 'true' ||
-          Boolean(item?.questionAnswer) === true
+        (item: any) => item?.answer === 'true' || Boolean(item?.answer) === true
       );
 
       if (previousAnswer) {
@@ -177,8 +178,15 @@ export const SmartSpaceCheck1: React.FC<SmartSpaceCheck1Props> = ({
           answer: previousHasTrueAnswer!,
         };
       }
+
       return item;
     });
+    setSectionQuestions?.([
+      {
+        visitSection,
+        questions: previousData,
+      },
+    ]);
 
     setAnswers(previousData);
   }, []);
