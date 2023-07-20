@@ -419,20 +419,26 @@ export const WeightAndLengthResultStep = ({
     // EC-915 - start x-axis at zero + scale numbers
     // break age into chunks of 6 if age is more than 6
     var maxIndex = age;
-    var numberOfChunks = age <= 6 ? age : 6;
-    var chunkSize = Math.floor(maxIndex) / numberOfChunks;
+    var numberOfChunks = maxIndex <= 6 ? maxIndex : 6;
+    var chunkSize = parseInt(
+      (Math.floor(maxIndex) / numberOfChunks).toPrecision(1)
+    );
+    chunkSize = maxIndex <= 6 ? 1 : Math.ceil(maxIndex) / numberOfChunks;
     var ageNumbers = [0]; // start with zero
     var counter = 0;
+
     for (var i = 0; i < numberOfChunks; i++) {
       var max = counter + chunkSize;
       if (i === numberOfChunks) {
-        max = maxIndex + 1;
+        max = maxIndex;
       }
       counter += chunkSize;
-      ageNumbers.push(Math.round(max));
+      if (max < age) {
+        ageNumbers.push(Math.floor(max));
+      }
     }
 
-    ageNumbers.push(age + 1); // last item is age + 1
+    ageNumbers.push(age);
     ageNumbers.sort((n1, n2) => n1 - n2);
 
     // mapping the age chunks to the dataset
@@ -440,6 +446,7 @@ export const WeightAndLengthResultStep = ({
     for (var j = 0; j < ageNumbers.length; j++) {
       endResult.push(input[ageNumbers[j]]);
     }
+
     return endResult;
   }
 
