@@ -30,11 +30,12 @@ export default function ApplicationUsers() {
   const [selectedPage, setSelectedPage] = useState<number>(1);
   const [selectedPageSize, setSelectedPageSize] = useState<number>(null);
 
+  // TODO: When sort by gets implemented, this could be useful, else remove.
   // type SortInput = { [Key in keyof ApplicationUserSortInput]?: ApplicationUserSortInput[Key] };
   // const getSortInput = (sorts: SortInput[]) => {
   //   return sorts.map(sort => sort);
   // };
-
+  //
   // const sortinput = getSortInput([
   //   { insertedDate : sortDescending ? SortEnumType.Desc : SortEnumType.Asc },
   //   { fullName: sortDescending ? SortEnumType.Desc : SortEnumType.Asc }
@@ -74,10 +75,10 @@ export default function ApplicationUsers() {
   const getRoleOptions = (users: UserDto[]) => {
     if (!users) return [];
 
+    // TODO: This is very inefficient
     return users.reduce(
       (acc, curr) => {
         const items = curr.roles.map((x) => ({ label: x.name, value: x.name }));
-
         const distinctItems = items.filter(
           (item) => !acc.some((ac) => ac.value === item.value)
         );
@@ -114,11 +115,14 @@ export default function ApplicationUsers() {
     if (data && data.users) {
       const copyItems = data.users;
       const modifiedData = copyItems.map((obj) => {
+        obj.displayColumnIdPassportEmail =
+          obj?.userName ?? obj?.idNumber ?? obj?.email ?? null;
         const { __typename: _, roles, ...rest } = obj;
         const modifiedRoles = roles.map((role) => {
           const { __typename: __, ...roleRest } = role;
           return roleRest;
         });
+
         return { ...rest, roles: modifiedRoles };
       });
       const finalTableData = modifiedData.map(({ roles, ...rest }) => rest);
@@ -154,11 +158,11 @@ export default function ApplicationUsers() {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [selectedRoleFilter, statusFilter]);
 
-  const mapUserTableItem = (user: UserDto) => {
+  const mapUserTableItem = (user: UserDto): any => {
     return {
       ...user,
-      fullName: `${user?.firstName} ${user?.surname}`,
-      email: user?.userName ?? user?.idNumber ?? user?.email ?? '',
+      displayColumnIdPassportEmail:
+        user?.userName ?? user?.idNumber ?? user?.email ?? '',
     };
   };
 
@@ -297,7 +301,10 @@ export default function ApplicationUsers() {
               <div className="overflow-hidden border-b border-gray-200 shadow sm:rounded-lg">
                 <UiTable
                   columns={[
-                    { field: 'email', use: 'ID/Passport/Email' },
+                    {
+                      field: 'displayColumnIdPassportEmail',
+                      use: 'ID/Passport/Email',
+                    },
                     { field: 'fullName', use: 'Name' },
                     {
                       field: 'roles',
