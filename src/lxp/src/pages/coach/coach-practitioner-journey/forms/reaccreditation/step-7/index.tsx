@@ -6,23 +6,39 @@ import {
   FormInput,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
-import { DynamicFormProps } from '../../dynamic-form';
+import { useCallback, useEffect, useState } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { Step7Map } from './map';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { replaceBraces } from '@ecdlink/core';
+import {
+  parseBool,
+  replaceBraces,
+  usePrevious,
+  useSessionStorage,
+} from '@ecdlink/core';
 import { ReactComponent as OfflineIcon } from '@/assets/offline.svg';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+const question1 = 'Is this address correct?';
+
+interface State {
+  question: string;
+  answer: string;
+}
 
 export const Step7ReAccreditation = ({
   smartStarter,
   isTipPage,
+  isView,
   setIsTip,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [questions, setAnswers] = useState([
     {
-      question: 'Is this address correct?',
+      question: question1,
       answer: '',
     },
     {
@@ -38,10 +54,31 @@ export const Step7ReAccreditation = ({
 
   const { isOnline } = useOnlineStatus();
   const visitSection = 'Step 7';
-  const firstName = smartStarter?.user?.firstName || 'the SmartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
+  const firstName =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const onOptionSelected = useCallback(
@@ -81,6 +118,52 @@ export const Step7ReAccreditation = ({
     [questions, setEnableButton, setSectionQuestions]
   );
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const updatedQuestions = questions.map((question) => {
+        const correspondingQuestion = previousData?.questions.find(
+          (secondQuestion) => secondQuestion?.question === question.question
+        );
+
+        if (correspondingQuestion) {
+          const isQuestion1 =
+            correspondingQuestion.question.includes(question1);
+
+          return {
+            ...question,
+            answer:
+              isQuestion1 && correspondingQuestion.answer
+                ? parseBool(String(correspondingQuestion.answer))
+                : correspondingQuestion.answer,
+          };
+        }
+
+        return question;
+      });
+
+      setAnswers(updatedQuestions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData?.questions,
+    previousStatePreviousData?.questions.length,
+    questions,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   if (isTipPage) {
     return (
       <Step7Map
@@ -93,6 +176,13 @@ export const Step7ReAccreditation = ({
   return (
     <div className="p-4">
       <Typography type="h2" text="Property details" color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Typography
         type="h4"
         text="Property address:"
@@ -131,6 +221,7 @@ export const Step7ReAccreditation = ({
                 type="text"
                 className="mt-4"
                 onClick={() => setIsTip?.(true)}
+                disabled={isViewAnswers}
                 suffixIcon="LocationMarkerIcon"
                 sufficIconColor="primary"
               />
@@ -174,6 +265,7 @@ export const Step7ReAccreditation = ({
       <Checkbox
         description={`I have checked that ${firstName} has the required forms proving ownership/lease agreement/permission to use premises.`}
         checked={Boolean(questions[2].answer)}
+        disabled={isViewAnswers}
         onCheckboxChange={(event) => onOptionSelected(event.checked, 2)}
       />
     </div>

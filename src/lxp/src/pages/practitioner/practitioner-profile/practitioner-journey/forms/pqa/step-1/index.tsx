@@ -143,7 +143,10 @@ export const PqaSummaryStep1 = ({
       />
       <Divider dividerType="dashed" className="my-4" />
       <Rating sections={sections} sectionQuestions={sectionQuestions} />
-      <Note title="Summary of discussion" body={String(summaryNote?.answer)} />
+      <Note
+        title="Summary of discussion"
+        body={summaryNote?.answer ? String(summaryNote?.answer) : '---'}
+      />
     </div>
   );
 };
