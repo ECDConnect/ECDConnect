@@ -444,6 +444,7 @@ export type CmsVisitDataInput = {
 };
 
 export type CmsVisitDataInputModelInput = {
+  coachId?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
   practitionerId?: InputMaybe<Scalars['String']>;
@@ -3458,6 +3459,7 @@ export type Mutation = {
   addPractitionerToCoach?: Maybe<Practitioner>;
   addPractitionerToPrincipal?: Maybe<Practitioner>;
   addReAccreditationFollowUpVisitForPractitioner?: Maybe<Visit>;
+  addReAccreditationVisitForPractitioner?: Maybe<Visit>;
   addReassignmentForPractitionerService: Scalars['Boolean'];
   addRole?: Maybe<IdentityRole>;
   addSSChecklistForTrainee?: Maybe<Visit>;
@@ -3904,7 +3906,7 @@ export type MutationAddCoachVisitInviteForPractitionerArgs = {
 };
 
 export type MutationAddCoachVisitInviteForTraineeArgs = {
-  input?: InputMaybe<VisitModelInput>;
+  input?: InputMaybe<SsChecklistVisitModelInput>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -3960,6 +3962,10 @@ export type MutationAddPractitionerToPrincipalArgs = {
 
 export type MutationAddReAccreditationFollowUpVisitForPractitionerArgs = {
   input?: InputMaybe<FollowUpVisitModelInput>;
+};
+
+export type MutationAddReAccreditationVisitForPractitionerArgs = {
+  input?: InputMaybe<ReAccreditationVisitModelInput>;
 };
 
 export type MutationAddReassignmentForPractitionerServiceArgs = {
@@ -9390,6 +9396,23 @@ export type RaceInput = {
   UpdatedBy?: InputMaybe<Scalars['String']>;
 };
 
+export type ReAccreditationVisitModelInput = {
+  actualVisitDate?: InputMaybe<Scalars['DateTime']>;
+  attended?: InputMaybe<Scalars['Boolean']>;
+  coachId?: InputMaybe<Scalars['UUID']>;
+  comment?: InputMaybe<Scalars['String']>;
+  infantId?: InputMaybe<Scalars['UUID']>;
+  linkedVisitId?: InputMaybe<Scalars['UUID']>;
+  motherId?: InputMaybe<Scalars['UUID']>;
+  plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
+  practitionerId?: InputMaybe<Scalars['UUID']>;
+  reAccreditationData?: InputMaybe<CmsVisitDataInputModelInput>;
+  risk?: InputMaybe<Scalars['String']>;
+  traineeId?: InputMaybe<Scalars['UUID']>;
+  visitType?: InputMaybe<VisitTypeInput>;
+  visitTypeId?: InputMaybe<Scalars['UUID']>;
+};
+
 export type ReasonForLeaving = {
   __typename?: 'ReasonForLeaving';
   description?: Maybe<Scalars['String']>;
@@ -9485,7 +9508,9 @@ export type SsChecklistVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
   checklistData?: InputMaybe<CmsVisitDataInputModelInput>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
+  dueDate?: InputMaybe<Scalars['DateTime']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
   plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
   risk?: InputMaybe<Scalars['String']>;
