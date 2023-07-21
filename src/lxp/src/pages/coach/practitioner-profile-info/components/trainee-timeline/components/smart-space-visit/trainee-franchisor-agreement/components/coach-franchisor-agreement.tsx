@@ -14,12 +14,11 @@ import {
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 
-interface SmartSpaceCheck1Props {
+interface CoachTraineeFranchisorAgreement1Props {
   practitioner: PractitionerDto;
   programmeName: string | undefined | null;
   setSectionQuestions: (value?: SectionQuestions[]) => void;
-  handleNextSection: any;
-  saveSmartSpaceCheckData: () => void;
+  saveFranchisorAgreementData: () => void;
 }
 
 export const getGroupColor = (count: number): Colours => {
@@ -35,13 +34,12 @@ export const getGroupColor = (count: number): Colours => {
 };
 
 export const CoachTraineeFranchisorAgreement1: React.FC<
-  SmartSpaceCheck1Props
+  CoachTraineeFranchisorAgreement1Props
 > = ({
   practitioner,
   programmeName,
   setSectionQuestions,
-  handleNextSection,
-  saveSmartSpaceCheckData,
+  saveFranchisorAgreementData,
 }) => {
   const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
   const [questions, setAnswers] = useState([
@@ -193,8 +191,7 @@ export const CoachTraineeFranchisorAgreement1: React.FC<
               color="primary"
               className="mt-1 mb-2 w-full"
               onClick={() => {
-                handleNextSection();
-                saveSmartSpaceCheckData();
+                saveFranchisorAgreementData();
               }}
               disabled={!trueAnswers}
             >

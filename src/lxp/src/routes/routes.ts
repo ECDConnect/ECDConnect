@@ -88,6 +88,7 @@ const ROUTES = {
   COACH_REGISTRATION: '/coach-registration',
   COACH_SMARTSPACE_CHECK: '/coach-smart-space-check',
   COACH_FRANCHISE_AGREEMENT: '/coach-franchisor-agreement',
+  COACH_SELF_ASSESSMENT: '/coach-self-assessment',
   COACH: addPrefix('/coach', {
     ABOUT: addPrefix('/about', {
       SIGNATURE: '/signature',

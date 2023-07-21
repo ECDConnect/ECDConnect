@@ -83,6 +83,7 @@ import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-on
 import Calendar from '@/pages/calendar/calendar-home';
 import { CoachSmartSpaceChecklist } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-smart-space-checklist/coach-smart-space-checklist';
 import { CoachTraineeFranchisorAgreement } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/trainee-franchisor-agreement/trainee-franchisor-agreement';
+import { CoachSelfAssessment } from '@/pages/coach/practitioner-profile-info/components/trainee-timeline/components/smart-space-visit/coach-self-assessment/coach-self-assessment-checklist';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -346,6 +347,11 @@ const AuthRoutes: React.FC = () => {
         exact
         path={ROUTES.COACH_FRANCHISE_AGREEMENT}
         component={CoachTraineeFranchisorAgreement}
+      />
+      <Route
+        exact
+        path={ROUTES.COACH_SELF_ASSESSMENT}
+        component={CoachSelfAssessment}
       />
       <Route
         exact

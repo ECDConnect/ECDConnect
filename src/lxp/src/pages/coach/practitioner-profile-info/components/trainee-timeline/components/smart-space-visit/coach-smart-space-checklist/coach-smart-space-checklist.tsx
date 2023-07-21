@@ -56,10 +56,6 @@ export const CoachSmartSpaceChecklist: React.FC<
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
   };
 
-  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
-
-  console.log({ visitData });
-
   const handleBackButton = () => {
     if (activeStep === 1) {
       history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
@@ -180,7 +176,7 @@ export const CoachSmartSpaceChecklist: React.FC<
       onBack={() => handleBackButton()}
       color="primary"
       className={'h-full'}
-      title={`SmartSpace visith`}
+      title={`SmartSpace visit`}
       subTitle={`${activeStep} of 10`}
     >
       <div>{renderStep(activeStep)}</div>

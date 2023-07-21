@@ -6,9 +6,10 @@ import { useSelector } from 'react-redux';
 import { traineeActions, traineeSelectors } from '@/store/trainee';
 import { SectionQuestions } from '../../smart-space-checklist/components/programme-details/programme-details.types';
 import { useState } from 'react';
-import { CoachSmartSpaceChecklistSteps } from './trainee-franchisor-agreement.types';
+import { CoachSmartSpaceChecklistSteps } from './coach-self-assessment.types';
 import { useAppDispatch } from '@/store';
-import { CoachTraineeFranchisorAgreement1 } from './components/coach-franchisor-agreement';
+import { CoachSelfAssessment1 } from './components/coach-self-assessment1';
+import { CoachSelfAssessment2 } from './components/coach-self-assessment2';
 
 interface CoachSmartSpaceChecklistProps {
   practitioner: PractitionerDto | undefined;
@@ -18,7 +19,7 @@ export interface CoachSmartSpaceChecklistRouteState {
   practitioner: PractitionerDto;
 }
 
-export const CoachTraineeFranchisorAgreement: React.FC<
+export const CoachSelfAssessment: React.FC<
   CoachSmartSpaceChecklistProps
 > = () => {
   const history = useHistory();
@@ -34,21 +35,22 @@ export const CoachTraineeFranchisorAgreement: React.FC<
     CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK
   );
 
-  const saveFranchisorAgreementData = () => {
-    appDispatch(
-      traineeActions.saveCoachFranchisorAgreementData(sectionQuestions)
-    );
+  const handleNextSection = () => {
+    if (activeStep < 11) {
+      setActiveStep(activeStep + 1);
+      return;
+    }
 
-    history.push(ROUTES.COACH_SELF_ASSESSMENT, { practitioner: practitioner });
+    setActiveStep(CoachSmartSpaceChecklistSteps.SMART_SPACE_CHECK);
   };
 
-  const visitData = useSelector(
-    traineeSelectors.getCoachFranchisorAgreementData
-  );
+  const saveSmartSpaceCheckData = () => {
+    appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
+  };
 
   const handleBackButton = () => {
-    if (activeStep === 1) {
-      history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {
+    if (activeStep <= 0) {
+      history.push(ROUTES.COACH_FRANCHISE_AGREEMENT, {
         practitionerId: practitioner?.userId,
       });
     }
@@ -57,13 +59,24 @@ export const CoachTraineeFranchisorAgreement: React.FC<
 
   const renderStep = (step: number) => {
     switch (step) {
+      case 2:
+        return (
+          <CoachSelfAssessment2
+            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
+            practitioner={practitioner}
+            // programmeName={programmeName}
+            // setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
+          />
+        );
       default:
         return (
-          <CoachTraineeFranchisorAgreement1
-            saveFranchisorAgreementData={saveFranchisorAgreementData}
+          <CoachSelfAssessment1
+            // saveSmartSpaceCheckData={saveSmartSpaceCheckData}
             practitioner={practitioner}
-            programmeName={programmeName}
-            setSectionQuestions={setSectionQuestions}
+            // programmeName={programmeName}
+            // setSectionQuestions={setSectionQuestions}
+            handleNextSection={handleNextSection}
           />
         );
     }
@@ -75,8 +88,14 @@ export const CoachTraineeFranchisorAgreement: React.FC<
       onBack={() => handleBackButton()}
       color="primary"
       className={'h-full'}
-      title={`Franchisee agreement`}
-      subTitle={`${practitioner?.user?.fullName}`}
+      title={
+        activeStep === 0 ? `Discuss the self-assessment` : `Self-assessment`
+      }
+      subTitle={
+        activeStep === 0
+          ? `${practitioner?.user?.fullName}`
+          : `${activeStep} of 6`
+      }
     >
       <div>{renderStep(activeStep)}</div>
     </BannerWrapper>
