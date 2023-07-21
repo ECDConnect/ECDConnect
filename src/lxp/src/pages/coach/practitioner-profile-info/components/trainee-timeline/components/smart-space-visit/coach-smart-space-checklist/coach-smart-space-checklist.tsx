@@ -56,6 +56,10 @@ export const CoachSmartSpaceChecklist: React.FC<
     appDispatch(traineeActions.saveCoachSmartSpaceCheckData(sectionQuestions));
   };
 
+  const visitData = useSelector(traineeSelectors.getCoachSmartSpaceVisitData);
+
+  console.log({ visitData });
+
   const handleBackButton = () => {
     if (activeStep === 1) {
       history.push(ROUTES.COACH.PRACTITIONER_PROFILE_INFO, {

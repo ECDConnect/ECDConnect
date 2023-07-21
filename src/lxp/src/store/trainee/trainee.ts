@@ -14,6 +14,7 @@ const initialState: TraineeState = {
   traineeOnboardTimeline: undefined,
   traineeVisitData: undefined,
   coachSmartSpaceCheckData: undefined,
+  coachFranchisorAgreementData: undefined,
 };
 
 const traineeSlice = createSlice({
@@ -29,6 +30,15 @@ const traineeSlice = createSlice({
       );
       checkData?.push(...action?.payload);
       state.coachSmartSpaceCheckData = checkData ? checkData : action.payload;
+    },
+    saveCoachFranchisorAgreementData: (state, action) => {
+      const checkData = state.coachFranchisorAgreementData?.filter(
+        (item) => item?.visitSection !== action.payload?.[0]?.visitSection
+      );
+      checkData?.push(...action?.payload);
+      state.coachFranchisorAgreementData = checkData
+        ? checkData
+        : action.payload;
     },
   },
   extraReducers: (builder) => {

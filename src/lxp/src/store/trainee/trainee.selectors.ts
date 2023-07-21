@@ -28,6 +28,10 @@ export const getCoachSmartSpaceVisitData = (
   state: RootState
 ): VisitData[] | undefined => state.trainee.coachSmartSpaceCheckData;
 
+export const getCoachFranchisorAgreementData = (
+  state: RootState
+): VisitData[] | undefined => state.trainee.coachFranchisorAgreementData;
+
 export const getTraineeVisitDataAssitantsNumber = (
   state: RootState
 ): string | null | undefined => {
