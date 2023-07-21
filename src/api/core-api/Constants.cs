@@ -41,6 +41,7 @@ namespace EcdLink.Api.CoreApi
             public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";
             public const string visitType_practitioner_call = "practitioner_call";
+            public const string visitType_coach_franchisee_agreement = "franchisee_agreement";
 
             public const string answer_yes = "true";
             public const string answer_no = "false";
