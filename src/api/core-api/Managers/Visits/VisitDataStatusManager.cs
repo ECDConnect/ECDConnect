@@ -732,7 +732,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         }
         private Boolean ManageMaternalDistressScreening(List<VisitData> maternalDistressScreening, string firstName, string clientId, string clientType) {
             var comment = "";
-            var section = Constants.GGSettings.clinic_referrals;
 
             var q1 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_stop_worry).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = maternalDistressScreening.Where(x => x.Question == Constants.GGSettings.q_felt_down).OrderBy(x => x.Id).FirstOrDefault();
@@ -786,7 +785,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
         private Boolean ManageAlcoholUse(List<VisitData> alcoholUse, string firstName, string motherId) {
             var comment = "";
             var score = 0;
-            var section = Constants.GGSettings.clinic_referrals;
 
             var q1 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_T).OrderBy(x => x.Id).FirstOrDefault();
             var q2 = alcoholUse.Where(x => x.Question == Constants.GGSettings.q_A).OrderBy(x => x.Id).FirstOrDefault();
@@ -1026,15 +1024,14 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 var questionAnswer = q3.QuestionAnswer != "undefined" ? Int32.Parse(q3.QuestionAnswer) : 0;
                 mIndicator = "Normal";
                 if (questionAnswer < 11.5) {
-                    mIndicator = "Severe acute malnutrition";
+                    mIndicator = Constants.GGSettings.severe_acute_malnutrition;
                     mColor = _red;
 
                     // Red progress
-                    comment = mIndicator;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
-                    AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
+                    AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.severe_acute_malnutrition);
 
                     // Red G4
                     comment = Constants.GGSettings.refer_to_clinic_urgently;
@@ -1042,12 +1039,11 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
 
                 } else if (questionAnswer >= 11.5 && questionAnswer < 12.5) {
-                    mIndicator = "Moderate acute malnutrition";
+                    mIndicator = Constants.GGSettings.moderate_acute_malnutrition;
                     mColor = _amber;
 
                     // Amber progress
-                    comment = Constants.GGSettings.severely_stunted;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
 
                     // additional visit
                     AddAdditionalVisit(infantId, Constants.GGSettings.client_child, Constants.GGSettings.moderate_acute_malnutrition);
@@ -1061,8 +1057,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                     mColor = _green;
 
                     // Green progress
-                    comment = mIndicator + " " + questionAnswer;
-                    AddVisitDataStatus(q3, comment, mColor, _progress, q3.VisitSection, false);
+                    AddVisitDataStatus(q3, mIndicator, mColor, _progress, q3.VisitSection, false);
                 }
             }
 
@@ -1291,7 +1286,6 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                         else
                         {
                             hasVitaminA = true;
-                            AddVisitDataStatus(item, comment, _none, _referral, Constants.GGSettings.clinic_referrals, false);
                             if (yes_comment != "")
                             {
                                 yes_comment += ", Vitamin A";
@@ -1817,19 +1811,19 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
             result.GrowComment = growthStatus?.Comment;
             result.GrowCommentColor = growthStatus?.Color;
 
-            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderBy(x => x.Id).FirstOrDefault();
+            var weightData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_weight).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Weight = weightData?.VisitData.QuestionAnswer == "undefined" ? "0" : weightData?.VisitData.QuestionAnswer;
             result.WeightColor = weightData?.Color;
             result.WeightComment = weightData?.Comment;
 
-            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderBy(x => x.Id).FirstOrDefault();
+            var lengthData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_length).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Length = lengthData?.VisitData.QuestionAnswer == "undefined" ? "0" : lengthData?.VisitData.QuestionAnswer;
             result.LengthColor = lengthData?.Color;
             result.LengthComment = lengthData?.Comment;
 
-            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).OrderBy(x => x.Id).FirstOrDefault();
+            var muacData = visitDataStatus?.Where(y => y.VisitData.Question == Constants.GGSettings.q_muac).OrderByDescending(x => x.InsertedDate).FirstOrDefault();
 
             result.Muac = muacData?.VisitData.QuestionAnswer;
             result.MuacColor = muacData?.Color;

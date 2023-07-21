@@ -15,7 +15,7 @@ import {
   getCurrentReAccreditationRatingByUserId,
   getLastCoachAttendedVisitByUserId,
   getPractitionerTimelineByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import { useParams } from 'react-router';
 import {
@@ -32,6 +32,8 @@ export const visitOrCallQuestion =
 export const callAnswer = 'Call';
 export const reAccreditationFollowUpQuestion =
   'Is {client} ready for a follow-up reaccreditation visit?';
+export const supportVisitSharedQuestion = 'What next steps did you agree on?';
+export const supportVisitQuestion2 = 'The focus of this coaching visit was:';
 
 export const CoachingAndVisitOrCallStep = ({
   isView,
@@ -50,7 +52,7 @@ export const CoachingAndVisitOrCallStep = ({
       answer: '',
     },
     {
-      question: 'The focus of this coaching visit was:',
+      question: supportVisitQuestion2,
       answer: '',
     },
     {
@@ -63,7 +65,7 @@ export const CoachingAndVisitOrCallStep = ({
       answer: '',
     },
     {
-      question: 'What next steps did you agree on?',
+      question: supportVisitSharedQuestion,
       answer: '',
     },
   ]);
@@ -149,11 +151,7 @@ export const CoachingAndVisitOrCallStep = ({
   const visitId = window.sessionStorage.getItem(visitIdKey);
 
   const previousVisitAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
-      visitId || '',
-      'prePqaPreviousFormData'
-    )
+    getVisitDataByVisitIdSelector(visitId || '', 'prePqaPreviousFormData')
   );
   const previousSectionAnswers = previousVisitAnswers?.filter(
     (item) => item.visitSection === visitSection

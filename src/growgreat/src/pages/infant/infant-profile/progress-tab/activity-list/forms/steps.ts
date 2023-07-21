@@ -243,7 +243,13 @@ export const getPillar4Steps = (
   ...(isSicknessAlertStep ? [SicknessAlertStep] : []),
 ];
 
-export const pillar5Steps = [ChildDocumentationStep, HIVCareAndMedicationStep];
+export const pillar5Steps = (
+  isChildDocumentStep: boolean,
+  hivCareStep: boolean
+) => [
+  ...(isChildDocumentStep ? [ChildDocumentationStep] : []),
+  ...(hivCareStep ? [HIVCareAndMedicationStep] : []),
+];
 
 export const followUpSteps = (isReferralsStep: boolean) => [
   NotesStep,

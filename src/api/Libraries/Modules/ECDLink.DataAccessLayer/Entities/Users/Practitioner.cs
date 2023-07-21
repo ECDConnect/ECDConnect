@@ -57,6 +57,7 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public virtual Coach Coach { get; set; }
         public Guid? CoachHierarchy { get; set; }
 
+
         [ForeignKey(nameof(PrincipalHierarchy))]
         public virtual Practitioner Principal { get; set; }
         public Guid? PrincipalHierarchy { get; set; }
@@ -70,6 +71,11 @@ namespace ECDLink.DataAccessLayer.Entities.Users
         public DateTime? DateAccepted { get; set; }
         public DateTime? DateToBeRemoved { get; set; }
         public bool? IsLeaving { get; set; }
+
+        [ForeignKey(nameof(ReasonForPractitionerLeavingId))]
+        public virtual ReasonForPractitionerLeaving ReasonForLeaving { get; set; }
+        public Guid? ReasonForPractitionerLeavingId { get; set; }
+        public string ReasonForLeavingDetails { get; set; }
         public decimal Progress { get; set; }
         public string ProgrammeType { get; set; }
         public bool? IsClubOwner { get; set; }

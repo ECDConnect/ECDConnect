@@ -22,6 +22,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public Guid? TraineeId { get; set; }
         public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
+        public Guid? EventId { get; set; }
     }
 
     public class SupportVisitModel
@@ -83,6 +84,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     public class SSChecklistVisitModel
     {
         public DateTime? PlannedVisitDate { get; set; }
+        public DateTime? DueDate { get; set; }
         public DateTime? ActualVisitDate { get; set; }
 
         public Guid? VisitTypeId { get; set; }
@@ -91,6 +93,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
         public string? Comment { get; set; }
         public bool? Attended { get; set; }
         public Guid? TraineeId { get; set; }
+        public Guid? CoachId { get; set; }
         public Guid? LinkedVisitId { get; set; }
         public CMSVisitDataInputModel ChecklistData { get; set; }
     }
@@ -99,6 +102,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat
     {
         public Guid VisitId { get; set; }
         public DateTime PlannedVisitDate { get; set; }
+        public Guid EventId { get; set; }
     }
 
 }

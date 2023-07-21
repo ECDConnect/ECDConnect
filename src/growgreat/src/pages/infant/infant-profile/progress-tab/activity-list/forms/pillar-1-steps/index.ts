@@ -29,7 +29,8 @@ export interface GrowthMonitoring {
       | 'severely underweight'
       | 'underweight'
       | 'overweight'
-      | 'obese';
+      | 'obese'
+      | 'growth faltering';
     statusType: AlertSeverityType;
   };
   length?: {

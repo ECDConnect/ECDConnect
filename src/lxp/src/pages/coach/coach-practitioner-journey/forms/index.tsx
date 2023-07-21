@@ -238,8 +238,10 @@ export const Form = ({
 
   const setRatingStep = useCallback(() => {
     const stepsLength = getFirstPqaSteps({
+      isToShowStep1: true,
       isStep11AnswerTrue,
       isToRemoveSmartStarter,
+      isToShowStep17: true,
     }).length;
 
     if (stepsLength <= 16) {
@@ -627,7 +629,12 @@ export const Form = ({
     }
 
     setTitle(visitTypes.pqa.firstPQA.description);
-    return getFirstPqaSteps({ isStep11AnswerTrue, isToRemoveSmartStarter });
+    return getFirstPqaSteps({
+      isToShowStep1: true,
+      isStep11AnswerTrue,
+      isToRemoveSmartStarter,
+      isToShowStep17: true,
+    });
   }, [activityName, isStep11AnswerTrue, isToRemoveSmartStarter, visitName]);
 
   const onSetPqaRating = (rating: Rating) => {

@@ -41,6 +41,8 @@ namespace ECDLink.Core.Services
         private IGenericRepository<StatementsContributionType, Guid> _statementsContributionTypeRepo;
         private IGenericRepository<Child, Guid> _childRepo;
 
+        private IPointsEngineService _pointsEngineService;
+
         private UserManager<ApplicationUser> _userManager;
         private IFileService _fileService;
         private DocumentManager _documentManager;
@@ -55,6 +57,10 @@ namespace ECDLink.Core.Services
             [Service] PersonnelService personnelService,
             ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
             ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate)
+            ISystemSetting<IncomeStatementSubmitStartOptions> submitStartDate, 
+            ISystemSetting<IncomeStatementSubmitEndOptions> submitEndDate, 
+            IPointsEngineService pointsEngineService
+            )
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -73,6 +79,7 @@ namespace ECDLink.Core.Services
             _fileService = fileService;
             _documentManager = documentManager;
             _personnelService = personnelService;
+            _pointsEngineService = pointsEngineService;
         }
 
         #region Utils
@@ -804,6 +811,7 @@ namespace ECDLink.Core.Services
 
 
             }
+            _pointsEngineService.CalculateIncomeStatements(_applicationUserId, DateTime.UtcNow);
             return retVal;
         }
 

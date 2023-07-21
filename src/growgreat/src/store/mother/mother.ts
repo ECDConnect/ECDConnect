@@ -17,6 +17,7 @@ import {
   getReferralsForMother,
   getCompletedReferralsForMother,
   updateMother,
+  updateMotherDeliveryDate,
 } from './mother.actions';
 import { MotherState, UpdateMotherDeliveryDateProps } from './mother.types';
 
@@ -138,6 +139,19 @@ const motherSlice = createSlice({
       state.mothers = state.mothers?.map((item) => {
         if (item?.user?.id === action.payload?.user?.id) {
           return { ...item, ...action.payload };
+        }
+        return item;
+      });
+    });
+    builder.addCase(updateMotherDeliveryDate.fulfilled, (state, action) => {
+      if (!action.payload || !state.mothers) return;
+
+      state.mothers = state.mothers?.map((item) => {
+        if (item?.id === action.payload?.id) {
+          return {
+            ...item,
+            expectedDateOfDelivery: action.payload.expectedDateOfDelivery,
+          };
         }
         return item;
       });

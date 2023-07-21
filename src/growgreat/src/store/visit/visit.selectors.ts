@@ -51,6 +51,10 @@ export const getVisitAnswersForInfantSelector = (
   state: RootState
 ): VisitData[] | undefined => state.visits.visitAnswersForInfant;
 
+export const getVisitAnswersForMotherSelector = (
+  state: RootState
+): VisitData[] | undefined => state.visits.visitAnswersForMother;
+
 export const getHealthCareWorkerHighlightsSelector = (
   state: RootState
 ): HcwHighlights | undefined => state.visits.healthCareWorkerHighlights;

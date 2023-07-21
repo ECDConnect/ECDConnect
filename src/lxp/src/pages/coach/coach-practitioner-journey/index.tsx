@@ -46,7 +46,7 @@ import {
   getPractitionerTimelineByIdSelector,
   getPrePqaFormDataByIdSelector,
   getReAccreditationFormDataByIdSelector,
-  getVisitDataForVisitIdSelectorByUserId,
+  getVisitDataByVisitIdSelector,
 } from '@/store/pqa/pqa.selectors';
 import {
   ScheduleProps,
@@ -68,7 +68,6 @@ import { ExclamationIcon } from '@heroicons/react/solid';
 import { addDays } from 'date-fns';
 import { useCalendarAddEvent } from '@/pages/calendar/components/calendar-add-event/calendar-add-event';
 import { CalendarAddEventInfo } from '@/pages/calendar/components/calendar-add-event/calendar-add-event.types';
-import { calendarSelectors } from '@/store/calendar';
 import { followUpDeadline } from './timeline/utils';
 import {
   newReAccreditationFollowUpId,
@@ -159,8 +158,7 @@ export const CoachPractitionerJourney = () => {
   );
 
   const reAccreditationFollowUpAnswers = useSelector(
-    getVisitDataForVisitIdSelectorByUserId(
-      practitionerId,
+    getVisitDataByVisitIdSelector(
       lastAttendedReAccreditationFollowUpVisit?.id || '',
       'reAccreditationFollowUpVisitPreviousFormData'
     )
@@ -252,12 +250,6 @@ export const CoachPractitionerJourney = () => {
     new Date(lastAttendedReAccreditationFollowUpVisit?.insertedDate) >
       new Date(lastAttendedReAccreditationVisit?.insertedDate);
 
-  const practitionerEvents = useSelector(
-    calendarSelectors.findCalendarEvents({
-      participantUserId: practitionerId,
-    })
-  );
-
   const practitionerFirstName = practitioner?.user?.firstName;
 
   const dateLongMonthOptions: Intl.DateTimeFormatOptions = {
@@ -330,6 +322,7 @@ export const CoachPractitionerJourney = () => {
         const payload: UpdateVisitPlannedVisitDateModelInput = {
           visitId: visit.id,
           plannedVisitDate: event.start,
+          eventId: event.id,
         };
         appDispatch(pqaActions.updateVisitPlannedVisitDate(payload));
         appDispatch(pqaThunkActions.updateVisitPlannedVisitDate(payload));
@@ -389,10 +382,12 @@ export const CoachPractitionerJourney = () => {
       (visit) => !prePqaFormData?.some((item) => item.visitId === visit?.id)
     ) ?? [];
 
+  const filteredPqaVisits = timeline?.pQASiteVisits?.filter(
+    (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
+  );
   const uncompletedPqaVisits =
-    timeline?.pQASiteVisits?.filter(
-      (visit) => !pqaFormData?.some((item) => item.visitId === visit?.id)
-    ) ||
+    (filteredPqaVisits?.length && filteredPqaVisits) ||
+    // TODO: check if add this visit manually makes sense
     (isNewPqaVisit
       ? [
           {
@@ -409,11 +404,14 @@ export const CoachPractitionerJourney = () => {
         ]
       : []);
 
+  const filteredReAccreditionVisits = timeline?.reAccreditationVisits?.filter(
+    (visit) =>
+      !reAccreditationFormData?.some((item) => item.visitId === visit?.id) &&
+      !visit?.attended
+  );
   const uncompletedReAccreditationVisits =
-    timeline?.reAccreditationVisits?.filter(
-      (visit) =>
-        !reAccreditationFormData?.some((item) => item.visitId === visit?.id)
-    ) ||
+    (filteredReAccreditionVisits?.length && filteredReAccreditionVisits) ||
+    // TODO: check if add this visit manually makes sense
     (isReadyToReAccreditationVisit || isReAccreditationNewVisit
       ? [
           {
@@ -556,7 +554,7 @@ export const CoachPractitionerJourney = () => {
       appDispatch(
         getVisitDataForVisitId({
           visitId: lastAttendedReAccreditationFollowUpVisit.id,
-          visitType: 'reAccreditation-follow-up',
+          visitType: 're-accreditation-follow-up-visit',
         })
       );
     }
@@ -743,7 +741,6 @@ export const CoachPractitionerJourney = () => {
               items={timelineSteps({
                 practitionerId,
                 timeline,
-                practitionerEvents,
                 onView,
                 onStart,
                 onScheduleOrStart,

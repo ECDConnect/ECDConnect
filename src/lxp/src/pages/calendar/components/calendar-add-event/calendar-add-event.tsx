@@ -66,7 +66,7 @@ export const CalendarAddEvent: React.FC<CalendarAddEventProps> = ({
 
   const eventPropParticipants: CalendarEventParticipantModel[] | undefined =
     eventProps?.participantUserIds?.map((pid) => {
-      const practitioner = practitioners?.find((x) => x.id === pid);
+      const practitioner = practitioners?.find((x) => x.userId === pid);
       return {
         id: newGuid(),
         participantUserId: pid,

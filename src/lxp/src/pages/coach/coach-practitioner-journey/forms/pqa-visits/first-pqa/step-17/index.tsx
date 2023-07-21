@@ -16,6 +16,9 @@ import { PractitionerJourneyParams } from '@/pages/coach/coach-practitioner-jour
 import { useSelector } from 'react-redux';
 import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
 
+export const pqaVisitSectionStep17 = 'Step 17';
+export const pqaSummaryQuestionStep17 = 'Summary of discussion';
+
 export const Step17 = ({
   sectionQuestions,
   smartStarter,
@@ -26,8 +29,6 @@ export const Step17 = ({
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState('');
 
-  const question = 'Summary of discussion';
-  const visitSection = 'Step 17';
   const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
 
@@ -125,7 +126,10 @@ export const Step17 = ({
       const value = event.target.value;
       setAnswer(value);
       setSectionQuestions?.([
-        { visitSection, questions: [{ answer, question }] },
+        {
+          visitSection: pqaVisitSectionStep17,
+          questions: [{ answer, question: pqaSummaryQuestionStep17 }],
+        },
       ]);
 
       if (value !== '') {
@@ -207,7 +211,7 @@ export const Step17 = ({
       <FormInput
         className="mt-4"
         textInputType="textarea"
-        label={question}
+        label={pqaSummaryQuestionStep17}
         subLabel={
           isToRemoveSmartStarter
             ? 'Discuss the decision with the SmartStarter.'

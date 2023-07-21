@@ -1,10 +1,13 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-//using EcdLink.Api.CoreApi.Managers.Integration;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
+using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -18,6 +21,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -28,6 +32,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
+          //IntegrationHelperManager integrationHelperManager,
           Guid? id,
           Practitioner input)
         {
@@ -107,6 +112,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                     }
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
+                    //Update RemoteEntity - Integration
+                    //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
                     return updateResult;
                 }
@@ -253,6 +260,55 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
             return false;
         }
 
+
+        public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IReassignmentService reassignmentService,
+            [Service] PersonnelService personnelManager,
+            UserManager<ApplicationUser> userManager,
+            string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
+        {
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
+            var user = await userManager.FindByIdAsync(practitioner.UserId);
+
+            if (!string.IsNullOrEmpty(newPrincipalId))
+            {
+                personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+            }
+
+            //Reassign all the classes for the practitioner as indicated
+            foreach (var reassignment in classroomGroupReassignments)
+            {
+                if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
+                {
+                    Console.WriteLine("Failed to reassing class");
+                    return false;
+                }
+                reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+            }
+
+            practitioner.DateToBeRemoved = DateTime.Now;
+            practitioner.DateAccepted = null;
+            practitioner.DateLinked = null;
+            practitioner.IsLeaving = true;
+            //update and clear the principals details
+            practitioner.PrincipalHierarchy = null;
+            practitioner.CoachHierarchy = null;
+            practitioner.ShareInfo = false;
+            practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
+            practitioner.ReasonForLeavingDetails = reasonDetails;
+            
+            //update practitioner with column changes
+            practitionerRepo.Update(practitioner);
+
+            //Delete user
+            user.IsActive = false;
+            var updateResult = await userManager.UpdateAsync(user);
+
+            return updateResult.Succeeded;
+        }
 
         public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
         {

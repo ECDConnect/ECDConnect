@@ -187,6 +187,35 @@ export const VisitsTab: React.FC = () => {
     });
   }, []);
 
+  const getSubTitle = useCallback(
+    (
+      item: VisitDto,
+      isMissedVisit: boolean,
+      isAdditionalVisit: boolean,
+      date: Date
+    ): string => {
+      if (isAdditionalVisit && item.comment) {
+        return item.comment;
+      }
+
+      if (isMissedVisit) {
+        if (item.visitType?.normalizedName === 'Day 3') {
+          if (infantAgeDays > 3) {
+            return `By ${date.getDate()} ${date.toLocaleString('default', {
+              month: 'long',
+            })} ${date.getFullYear()}`;
+          }
+        }
+        return 'Missed visit deadline';
+      }
+
+      return `By ${date.getDate()} ${date.toLocaleString('default', {
+        month: 'long',
+      })} ${date.getFullYear()}`;
+    },
+    [infantAgeDays]
+  );
+
   const visitSteps = useMemo(() => {
     const filteredVisits = visits.filter((item) => {
       const dueDate = getDateWithoutTimeZone(item.dueDate);
@@ -218,14 +247,7 @@ export const VisitsTab: React.FC = () => {
         title: isAdditionalVisit
           ? 'Other visit'
           : item.visitType?.normalizedName || 'Visit',
-        subTitle:
-          isAdditionalVisit && item.comment!
-            ? item.comment
-            : isMissedVisit
-            ? 'Missed visit deadline'
-            : `By ${date.getDate()} ${date.toLocaleString('default', {
-                month: 'long',
-              })} ${date.getFullYear()}`,
+        subTitle: getSubTitle(item, isMissedVisit, isAdditionalVisit, date),
         ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),

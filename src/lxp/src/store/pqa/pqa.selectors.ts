@@ -1,7 +1,7 @@
 import { RootState } from '../types';
 import { createSelector } from '@reduxjs/toolkit';
 import {
-  CoachPractitionerTimeline,
+  PractitionerTimelineState,
   FormData,
   RatingData,
   PreviousFormData,
@@ -9,11 +9,13 @@ import {
   VisitType,
   PQAStateKeys,
 } from './pqa.types';
+import { getSectionQuestions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/utils';
+import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
     (state: RootState) => state.pqa.coachPractitionersTimeline,
-    (items: CoachPractitionerTimeline[] | undefined) => {
+    (items: PractitionerTimelineState[] | undefined) => {
       return items?.find((item) => item.practitionerId === userId)?.timeline;
     }
   );
@@ -84,8 +86,7 @@ export const getPreviousCoachVisitByUserId = (
     return undefined;
   });
 
-export const getVisitDataForVisitIdSelectorByUserId = (
-  userId: string,
+export const getVisitDataByVisitIdSelector = (
   visitId: string,
   stateType: PQAStateKeys
 ) => {
@@ -96,6 +97,53 @@ export const getVisitDataForVisitIdSelectorByUserId = (
     }
   );
 };
+
+export const getAllSectionsQuestions = (
+  visitId: string,
+  stateType: PQAStateKeys
+) =>
+  createSelector(
+    [getVisitDataByVisitIdSelector(visitId, stateType)],
+    (formData) => {
+      const sectionQuestions = getSectionQuestions(formData);
+
+      return sectionQuestions;
+    }
+  );
+
+export const getSectionsQuestionsByStep = (
+  visitId: string,
+  stateType: PQAStateKeys,
+  visitSection: string
+) =>
+  createSelector(
+    [getVisitDataByVisitIdSelector(visitId, stateType)],
+    (formData) => {
+      const sectionQuestions = getSectionQuestions(formData);
+
+      const currentSection = sectionQuestions?.find(
+        (item) => item.visitSection === visitSection
+      );
+
+      /* 
+      Remove duplicates based on 'question' property
+
+      This code uses the Set object to keep track of unique question values
+      and then maps the unique questions back to the original array 
+      to obtain the unique data objects. 
+      */
+      const uniqueData = Array.from(
+        new Set(currentSection?.questions?.map((item) => item.question))
+      ).map((question) => {
+        return currentSection?.questions?.find(
+          (item) => item.question === question
+        );
+      });
+
+      // return {...currentSection, questions: uniqueData};
+      return currentSection;
+    }
+  );
 
 export const getCurrentPQaRatingByUserId = (userId: string) =>
   createSelector([getPractitionerTimelineByIdSelector(userId)], (timeline) => {

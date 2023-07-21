@@ -140,6 +140,9 @@ export const Dashboard: React.FC = () => {
     ).unwrap();
     await appDispatch(staticDataThunkActions.getProvinces({})).unwrap();
     await appDispatch(staticDataThunkActions.getReasonsForLeaving({})).unwrap();
+    await appDispatch(
+      staticDataThunkActions.getReasonsForPractitionerLeaving({})
+    ).unwrap();
     await appDispatch(staticDataThunkActions.getGrants({})).unwrap();
     await appDispatch(staticDataThunkActions.getDocumentTypes({})).unwrap();
     await appDispatch(staticDataThunkActions.getNoteTypes({})).unwrap();
@@ -394,7 +397,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || !isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     navigation?.splice(3, 0, {
       name: NavigationTypes.Business,
       href: ROUTES.BUSINESS,
@@ -503,7 +506,7 @@ export const Dashboard: React.FC = () => {
     });
   }
 
-  if (isPrincipal || isFundaAppAdmin || !isTrainee) {
+  if ((isPrincipal || isFundaAppAdmin) && !isTrainee) {
     dashboardItems.splice(1, 0, {
       title: 'Business',
       titleIcon: 'BriefcaseIcon',
