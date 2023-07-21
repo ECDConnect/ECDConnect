@@ -18,9 +18,14 @@ export const VerifyPhoneNumber = () => {
   const appDispatch = useAppDispatch();
 
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [requestDone, setRequestDone] = useState<boolean>(false);
 
   const confirm = async () => {
     setIsLoading(true);
+    setRequestDone(true);
+    if (window.sessionStorage.getItem('verifyPhoneNumberToken') === state.token) return;
+    window.sessionStorage.setItem('verifyPhoneNumberToken', state.token);
+
     const accepted = await new AuthService().AcceptInvitationRequest({
       username: state.username,
       password: state.password,
@@ -45,17 +50,20 @@ export const VerifyPhoneNumber = () => {
             setIsLoading(false);
           } else {
             setIsLoading(false);
+            window.sessionStorage.setItem('verifyPhoneNumberToken', '');
           }
         })
         .catch(() => {
           setIsLoading(false);
+          window.sessionStorage.setItem('verifyPhoneNumberToken', '');
         });
     }
   };
 
   useEffect(() => {
-    confirm();
-  });
+    if (!requestDone)
+      confirm();
+  }, []);
 
   return <Loader loadingMessage={isLoading ? 'Loading . . .' : ''} />;
 };

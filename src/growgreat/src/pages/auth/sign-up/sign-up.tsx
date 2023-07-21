@@ -40,6 +40,7 @@ import bannerTwo from '@/assets/sign-up-carousel/bannerTwox2.png';
 import bannerThree from '@/assets/sign-up-carousel/bannerThreex2.png';
 import bannerFour from '@/assets/sign-up-carousel/bannerFourx2.png';
 import * as styles from '@/pages/auth/sign-up/sign-up.styles';
+import ROUTES from '@/routes/routes';
 
 const headerSlide: HeaderSlide[] = [
   {
@@ -118,7 +119,7 @@ export const SignUp: React.FC = () => {
   const submitForm = async (formValue: SignUpModel) => {
     const valid = await signUpSchema.isValid(formValue);
 
-    if (!valid) return;
+    if (!valid && !isLoading) return;
 
     setIsLoading(true);
 
@@ -148,10 +149,7 @@ export const SignUp: React.FC = () => {
     { cellphone, username, password }: SignUpModel,
     token: string
   ) => {
-    setIsLoading(true);
-
-    setIsLoading(false);
-    history.push('/verify-phone', {
+    history.push(ROUTES.VERIFY_PHONE, {
       phoneNumber: cellphone,
       password: password,
       username,
