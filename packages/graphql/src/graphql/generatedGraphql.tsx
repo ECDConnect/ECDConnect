@@ -4514,6 +4514,8 @@ export type MutationCreateWorkflowStatusTypeArgs = {
 
 export type MutationDeActivatePractitionerArgs = {
   leavingComment?: InputMaybe<Scalars['String']>;
+  reasonDetails?: InputMaybe<Scalars['String']>;
+  reasonForPractitionerLeavingId?: InputMaybe<Scalars['String']>;
   userId?: InputMaybe<Scalars['String']>;
 };
 
