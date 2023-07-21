@@ -329,7 +329,7 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
 
               List<VisitData> vData = new List<VisitData>();
               vData = (
-                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderBy(x => x.PlannedVisitDate)
+                  from visit in _visitRepo.GetAll().Where(x => x.Infant.UserId == id).OrderByDescending(x => x.PlannedVisitDate)
                   join visitData in _visitDataRepo.GetAll().Where(y => y.Question == Constants.GGSettings.q_weight || 
                                                                        y.Question == Constants.GGSettings.q_length || 
                                                                        y.Question == Constants.GGSettings.q_muac) on visit.Id equals visitData.VisitId

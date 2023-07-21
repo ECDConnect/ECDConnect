@@ -185,6 +185,7 @@ export const WeightAndLengthFormStep = ({
             placeholder={'Tap to add'}
             type={'number'}
             min={0}
+            maxLength={5}
           ></FormInput>
           <Typography
             type="body"
@@ -210,6 +211,7 @@ export const WeightAndLengthFormStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 min={0}
+                maxLength={6}
               ></FormInput>
               <Typography
                 type="body"
