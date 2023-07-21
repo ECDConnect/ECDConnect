@@ -103,7 +103,11 @@ export const ReAccreditationSummaryStep1 = ({
 
   return (
     <div className="p-4">
-      <Typography type="h2" text="PQA rating" color="textDark" />
+      <Typography
+        type="h2"
+        text="Reaccreditation PQA rating"
+        color="textDark"
+      />
       <Typography
         type="h4"
         text={new Date(date).toLocaleString('en-ZA', dateLongMonthOptions)}
@@ -111,7 +115,10 @@ export const ReAccreditationSummaryStep1 = ({
       />
       <Divider dividerType="dashed" className="my-4" />
       <Rating sections={sections} sectionQuestions={sectionQuestions} />
-      <Note title="Summary of discussion" body={String(summaryNote?.answer)} />
+      <Note
+        title="Summary of discussion"
+        body={summaryNote?.answer ? String(summaryNote?.answer) : '---'}
+      />
     </div>
   );
 };

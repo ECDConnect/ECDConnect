@@ -1,10 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Visits;
-using ECDLink.Abstractrions.Enums;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
-using ECDLink.DataAccessLayer.Entities.Licenses;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -279,79 +276,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             return new Visit();
         }
 
-
-        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
-        public Visit AddPQARatingVisitForPractitioner([Service] IHttpContextAccessor httpContextAccessor,
-            IGenericRepositoryFactory repoFactory,
-            [Service] VisitManager visitManager,
-            [Service] UserLicenseManager userLicenseManager,
-            string userId,
-            string ratingColor)
-        {
-            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
-            var visitRepo = repoFactory.CreateGenericRepository<Visit>(userContext: applicationUserId);
-            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
-            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: applicationUserId);
-
-            License smartSpaceLic = userLicenseManager.GetLicenseForUserForType(userId, Constants.SSSettings.ss_smart_space_licence);
-            Practitioner practitioner = practitionerRepo.GetAll().Where(x => x.UserId == userId).FirstOrDefault();
-
-            // 3 visit pqa first visit types
-            VisitType pqaType1 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_1).FirstOrDefault();
-            VisitType pqaType2 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_2).FirstOrDefault();
-            VisitType pqaType3 = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_practitioner) && x.Name == Constants.SSSettings.visitType_pqa_visit_3).FirstOrDefault();
-
-            Visit firstPQA = visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitTypeId == pqaType1.Id).FirstOrDefault();
-            Visit secondPQA = visitRepo.GetAll().Where(x => x.Practitioner.User.Id == userId && x.VisitTypeId == pqaType2.Id).FirstOrDefault();
-
-            var input = new VisitModel();
-            input.MotherId = null;
-            input.InfantId = null;
-            input.LinkedVisitId = null;
-            input.PractitionerId = practitioner.Id;
-
-            // Red rating follow up -- if the practitioner receives a red rating:
-            // the coach must schedule another First PQA visit; deadline = date of the initial First PQA visit +14 days
-            if (ratingColor == MetricsColorEnum.Error.ToString())
-            {
-                if (firstPQA != null && secondPQA == null)
-                {
-                    DateTime dt = (DateTime)smartSpaceLic.LicenseDate;
-                    DateTime newDate = dt.AddDays(14);
-                    input.PlannedVisitDate = newDate;
-                    input.DueDate = newDate;
-                    input.VisitType = pqaType2;
-                    return visitManager.AddVisit(input);
-                }
-            }
-
-            // Orange rating follow up -- if the practitioner receives an orange rating:
-            // coach must schedule another First PQA visit when the practitioner is ready (as determined in the follow up visit flow); deadline = date of the last First PQA visit + 60 days
-            if (ratingColor == MetricsColorEnum.Warning.ToString())
-            {
-                if (secondPQA != null)
-                {
-                    DateTime dt = secondPQA.PlannedVisitDate;
-                    DateTime newDate = dt.AddDays(60);
-                    input.PlannedVisitDate = newDate;
-                    input.DueDate = newDate;
-                    input.VisitType = pqaType3;
-                }
-                else
-                {
-                    DateTime dt = firstPQA.PlannedVisitDate;
-                    DateTime newDate = dt.AddDays(60);
-                    input.PlannedVisitDate = newDate;
-                    input.DueDate = newDate;
-                    input.VisitType = pqaType2;
-                }
-
-                return visitManager.AddVisit(input);
-            }
-
-            return null;
-        }
-
         // This function is here for adding visits 'manually' via postman for a practitioner, but is also called from GetAllPractitionersForCoach
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public bool ValidateDefaultVisitsForPractitioner(
@@ -360,7 +284,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         {
             return visitManager.ValidateDefaultVisitsForPractitioner(userId);
         }
-
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Visit AddSelfAssessmentForPractitioner(
@@ -537,7 +460,48 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             visitDataManager.AddTraineeVisitData(input.ChecklistData);
 
             return visit;
+        }
 
+        [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
+        public Visit AddCoachFranchiseeAgreementForTrainee(
+            [Service] IHttpContextAccessor httpContextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] VisitManager visitManager,
+            [Service] VisitDataManager visitDataManager,
+            SSChecklistVisitModel input)
+        {
+            var applicationUserId = httpContextAccessor.HttpContext.GetUser().Id;
+            var visitTypeRepo = repoFactory.CreateGenericRepository<VisitType>(userContext: applicationUserId);
+            var coachRepo = repoFactory.CreateGenericRepository<Coach>(userContext: applicationUserId);
+            var traineeRepo = repoFactory.CreateGenericRepository<Trainee>(userContext: applicationUserId);
+
+            VisitType visitType = visitTypeRepo.GetAll().Where(x => x.Type.Equals(Constants.SSSettings.client_coach) && x.Name == Constants.SSSettings.visitType_coach_franchisee_agreement).FirstOrDefault();
+            Coach coach = coachRepo.GetAll().Where(x => x.UserId == input.CoachId.ToString()).FirstOrDefault();
+            Trainee trainee = traineeRepo.GetAll().Where(x => x.UserId == input.TraineeId.ToString()).FirstOrDefault();
+
+            if (input.CoachId == null || input.TraineeId == null)
+            {
+                return new Visit();
+            }
+
+            var visitModel = new VisitModel();
+            visitModel.VisitType = visitType;
+            visitModel.LinkedVisitId = null;
+            visitModel.CoachId = coach.Id;
+            visitModel.TraineeId = trainee.Id;
+            visitModel.PlannedVisitDate = DateTime.Now;
+            visitModel.DueDate = DateTime.Now;
+            visitModel.ActualVisitDate = DateTime.Now;
+            visitModel.Attended = true;
+
+            Visit visit = visitManager.AddVisitForCoach(visitModel);
+            // Add VisitData for visit
+            input.ChecklistData.VisitId = visit.Id.ToString();
+            input.ChecklistData.TraineeId = trainee.Id.ToString();
+            input.ChecklistData.CoachId = coach.Id.ToString();
+            visitDataManager.AddCoachData(input.ChecklistData);
+
+            return visit;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]

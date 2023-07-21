@@ -239,6 +239,37 @@ namespace EcdLink.Api.CoreApi.Managers.Visits
                 return true;
         }
 
+        public Boolean AddCoachData(CMSVisitDataInputModel input)
+        {
+
+            if (input.VisitData.Sections == null)
+            {
+                var _section = new CMSVisitSection();
+                _section.VisitSection = "";
+                _section.Questions = new List<CMSQuestion>();
+
+                var _question = new CMSQuestion();
+                _question.Question = "";
+                _question.Answer = "";
+                _section.Questions.Add(_question);
+                input.VisitData.Sections = new CMSVisitSection[] { _section };
+            }
+
+            // first add all your questions and answers
+            foreach (CMSVisitSection section in input.VisitData.Sections)
+            {
+                foreach (CMSQuestion question in section.Questions)
+                {
+                    VisitData visitData = (VisitData)GetVisitDataFromInputModel(question, input.VisitId, input.VisitData.VisitName, section.VisitSection);
+                    if (ValidateInsertRecord(visitData))
+                    {
+                        _visitDataRepo.Insert(visitData);
+                    }
+                }
+            }
+            return true;
+        }
+
         public Boolean EditVisitData(CMSVisitDataInputModel input)
         {
             if (input.VisitData.Sections == null)
