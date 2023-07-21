@@ -276,7 +276,11 @@ export const WeightAndLengthResultStep = ({
       case 'SD3neg':
         return { value: 'severely underweight', statusType: 'error' };
       default:
-        return { value: 'normal', statusType: 'success' };
+        if (weightIncreased) {
+          return { value: 'normal', statusType: 'success' };
+        } else {
+          return { value: 'growth faltering', statusType: 'warning' };
+        }
     }
   }, [weightAlertResult, length, height]);
 
