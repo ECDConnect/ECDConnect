@@ -88,11 +88,15 @@ export const getFirstPqaSteps = ({
 export const delicensingSteps = [Step1Delicensing, Step2Delicensing];
 
 export const getReAccreditationSteps = ({
+  isToShowStep1,
+  isToShowStep16,
   isToRemoveSmartStarter,
 }: {
+  isToShowStep1: boolean;
+  isToShowStep16: boolean;
   isToRemoveSmartStarter: boolean;
 }) => [
-  Step1ReAccreditation,
+  ...(isToShowStep1 ? [Step1ReAccreditation] : []),
   Step2ReAccreditation,
   Step3ReAccreditation,
   Step4ReAccreditation,
@@ -107,6 +111,6 @@ export const getReAccreditationSteps = ({
   Step13ReAccreditation,
   Step14ReAccreditation,
   Step15ReAccreditation,
-  Step16ReAccreditation,
+  ...(isToShowStep16 ? [Step16ReAccreditation] : []),
   ...(isToRemoveSmartStarter ? [] : [Step17ReAccreditation]),
 ];

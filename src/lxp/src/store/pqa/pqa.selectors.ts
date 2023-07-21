@@ -10,7 +10,6 @@ import {
   PQAStateKeys,
 } from './pqa.types';
 import { getSectionQuestions } from '@/pages/practitioner/practitioner-profile/practitioner-journey/utils';
-import { SectionQuestions } from '@/pages/coach/coach-practitioner-journey/forms/dynamic-form';
 
 export const getPractitionerTimelineByIdSelector = (userId: string) => {
   return createSelector(
@@ -125,22 +124,6 @@ export const getSectionsQuestionsByStep = (
         (item) => item.visitSection === visitSection
       );
 
-      /* 
-      Remove duplicates based on 'question' property
-
-      This code uses the Set object to keep track of unique question values
-      and then maps the unique questions back to the original array 
-      to obtain the unique data objects. 
-      */
-      const uniqueData = Array.from(
-        new Set(currentSection?.questions?.map((item) => item.question))
-      ).map((question) => {
-        return currentSection?.questions?.find(
-          (item) => item.question === question
-        );
-      });
-
-      // return {...currentSection, questions: uniqueData};
       return currentSection;
     }
   );

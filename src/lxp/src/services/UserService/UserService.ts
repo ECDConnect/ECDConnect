@@ -40,6 +40,9 @@ class UserService {
             nextOfKinSurname
             contactPreference
             genderId
+            principalObjectData  {
+              isPrincipal
+            }
             phoneNumber
             profileImageUrl
             roles {
