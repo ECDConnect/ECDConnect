@@ -217,10 +217,10 @@ export const WeightAndLengthResultStep = ({
     weightHistory.push(weight);
 
     // get history of entered values
-    if (groupedGrowthData) {
-      for (var i = 0; i < groupedGrowthData.weight.length; i++) {
+    if (groupedGrowthData && groupedGrowthData?.weight) {
+      for (var i = 0; i < groupedGrowthData?.weight.length; i++) {
         weightHistory.push(
-          parseInt(groupedGrowthData.weight[i].questionAnswer as string)
+          parseInt(groupedGrowthData?.weight[i].questionAnswer as string)
         );
       }
     }
@@ -856,7 +856,7 @@ export const WeightAndLengthResultStep = ({
           title={`${name}'s growth is faltering.`}
           customIcon={
             <div className="rounded-full">
-              {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+              {renderIcon('ExclamationIcon', 'text-warningMain w-14 h-14')}
             </div>
           }
         />
