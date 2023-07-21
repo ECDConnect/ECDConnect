@@ -444,6 +444,7 @@ export type CmsVisitDataInput = {
 };
 
 export type CmsVisitDataInputModelInput = {
+  coachId?: InputMaybe<Scalars['String']>;
   infantId?: InputMaybe<Scalars['String']>;
   motherId?: InputMaybe<Scalars['String']>;
   practitionerId?: InputMaybe<Scalars['String']>;
@@ -3905,7 +3906,7 @@ export type MutationAddCoachVisitInviteForPractitionerArgs = {
 };
 
 export type MutationAddCoachVisitInviteForTraineeArgs = {
-  input?: InputMaybe<VisitModelInput>;
+  input?: InputMaybe<SsChecklistVisitModelInput>;
 };
 
 export type MutationAddEventRecordArgs = {
@@ -9507,7 +9508,9 @@ export type SsChecklistVisitModelInput = {
   actualVisitDate?: InputMaybe<Scalars['DateTime']>;
   attended?: InputMaybe<Scalars['Boolean']>;
   checklistData?: InputMaybe<CmsVisitDataInputModelInput>;
+  coachId?: InputMaybe<Scalars['UUID']>;
   comment?: InputMaybe<Scalars['String']>;
+  dueDate?: InputMaybe<Scalars['DateTime']>;
   linkedVisitId?: InputMaybe<Scalars['UUID']>;
   plannedVisitDate?: InputMaybe<Scalars['DateTime']>;
   risk?: InputMaybe<Scalars['String']>;
@@ -9647,13 +9650,6 @@ export type Setting_Reporting = {
   ChildProgressReportMonths: Scalars['String'];
 };
 
-export type Setting_SmsPortal = {
-  __typename?: 'Setting_SMSPortal';
-  ApiKey: Scalars['String'];
-  ApiSecret: Scalars['String'];
-  BaseUrl: Scalars['String'];
-};
-
 export type Setting_Security = {
   __typename?: 'Setting_Security';
   ForgotPassword: Scalars['String'];
@@ -9676,11 +9672,6 @@ export type Setting_SmartLinkApi = {
   MaskDataMode: Scalars['String'];
   MaskDataNumber: Scalars['String'];
   Mode: Scalars['String'];
-};
-
-export type Setting_Sms = {
-  __typename?: 'Setting_Sms';
-  Provider: Scalars['String'];
 };
 
 export type Setting_Smtp = {
@@ -9714,13 +9705,6 @@ export type Setting_UrlShortner = {
   RedirectUrl: Scalars['String'];
 };
 
-export type Setting_ITouch = {
-  __typename?: 'Setting_iTouch';
-  BaseUrl: Scalars['String'];
-  Password: Scalars['String'];
-  Username: Scalars['String'];
-};
-
 export type SettingsType = {
   __typename?: 'SettingsType';
   AbsenteeCutoffDelay: Setting_AbsenteeCutoffDelay;
@@ -9736,16 +9720,13 @@ export type SettingsType = {
   Jwts: Setting_Jwts;
   RapidApi: Setting_RapidApi;
   Reporting: Setting_Reporting;
-  SMSPortal: Setting_SmsPortal;
   Security: Setting_Security;
   SendGrid: Setting_SendGrid;
   SmartLinkApi: Setting_SmartLinkApi;
-  Sms: Setting_Sms;
   Smtp: Setting_Smtp;
   SyncDelay: Setting_SyncDelay;
   Tokens: Setting_Tokens;
   UrlShortner: Setting_UrlShortner;
-  iTouch: Setting_ITouch;
 };
 
 export type ShortenUrlEntity = {

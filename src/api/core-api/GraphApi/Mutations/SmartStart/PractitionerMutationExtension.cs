@@ -278,12 +278,11 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
             }
 
-            //Reassign all the classes for the practitioner as indicated
+            //Reassign all the classes for the practitioner as indicated            
             foreach (var reassignment in classroomGroupReassignments)
             {
                 if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
                 {
-                    Console.WriteLine("Failed to reassing class");
                     return false;
                 }
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
