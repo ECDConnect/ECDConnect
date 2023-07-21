@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Http;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Net.Http;
 using System.Text;
 using System.Text.Json;
@@ -123,6 +124,55 @@ namespace EcdLink.Api.CoreApi.Managers.Integration
                 //optionConditions.Add(new IntegrationOptionConditionEntity() { Column = "EntityName", Operator = "In", Value = string.Join(",", entities) });//,'Child','Coach','Franchisor','Caregiver','Address','Document'
                 var responseString = await GetAPIHandlerResponse(SSIntegrationSettings.SLColumnChange + SSIntegrationSettings.QueryAll,columns, optionConditions, relatedConditions);
                 return JsonConvert.DeserializeObject<List<ColumnChange>>(responseString);
+            }
+            catch (Exception e)
+            {
+                await _logManager.IntegrationLog(e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "GetColumnChangesBetweenDates > " + startDate + " " + endDate);
+                return null; //throw new HttpRequestException("SmartLink API Error: " + e.Message);
+            }
+        }
+
+        public async Task<RemoteChangesList> GetMappedColumnChangesBetweenDates(DateTime startDate, DateTime endDate)
+        {
+            try
+            {
+                RemoteChangesList changes = new RemoteChangesList();
+                var remoteLogs = await GetColumnChangesBetweenDates(startDate, endDate);
+                string[] excludes = { "Caregiver" };
+                foreach (var change in remoteLogs)
+                {
+                    UpdateLocalEntity updateEntity = new UpdateLocalEntity()
+                    {
+                        Guid = change.RecordChange.RecordGuid,
+                        RelatedGuid = change.RecordChange.RelatedEntityGuid,
+                        RelatedEntityType = change.RecordChange.RelatedEntityType,  //related is always the parent
+                        EntityColumn = change.Column,
+                        EntityType = change.Entity,
+                        LastUpdatedDateTime = change.DateTimeStamp,
+                        NewData = change.NewValue
+                    };
+                    switch (change.RecordChange.ChangeType)
+                    {
+                        case SLChangeType.Delete:
+                        case SLChangeType.Deactivate:
+                            changes.Deletes.Add(updateEntity);
+                            break;
+                        case SLChangeType.Update:
+                            changes.Updates.Add(updateEntity);
+                            break;
+                        case SLChangeType.Insert:
+                        case SLChangeType.Create:
+                            if (!changes.Inserts.Where(x => string.Equals(x.Guid, updateEntity.Guid) && string.Equals(x.EntityType, updateEntity.EntityType)).Any())
+                            {  //do not insert inserts of the same kind and ids
+                                //exclude any entities in the xclude list from being added, they are usually associated
+                                if (!excludes.Contains(updateEntity.EntityType))
+                                    changes.Inserts.Add(updateEntity);
+                            }
+                            break;
+
+                    }
+                }
+                 return changes;
             }
             catch (Exception e)
             {

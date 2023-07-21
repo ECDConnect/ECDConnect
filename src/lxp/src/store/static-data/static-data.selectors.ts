@@ -11,6 +11,7 @@ import {
   ProvinceDto,
   RaceDto,
   ReasonForLeavingDto,
+  ReasonForPractitionerLeavingDto,
   RelationDto,
   WorkflowStatusDto,
 } from '@ecdlink/core';
@@ -60,6 +61,12 @@ export const getHolidays = (state: RootState): HolidayDto[] =>
 export const getReasonsForLeaving = (
   state: RootState
 ): ReasonForLeavingDto[] | undefined => state.staticData.reasonForLeaving;
+
+export const getReasonsForLeavingPractitioner = (
+  state: RootState
+): ReasonForPractitionerLeavingDto[] | undefined =>
+  state.staticData.reasonForPractitionerLeaving;
+
 export const getGrants = (state: RootState): GrantDto[] =>
   state.staticData.grants || [];
 

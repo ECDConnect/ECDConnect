@@ -1,10 +1,9 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
-using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -289,12 +288,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     fields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
+            user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
 
             DoAudit(currentUserId, repoFactory, fields, id);
             //Update RemoteEntity - Integration
-            //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+            //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
             if (!updateResult.Succeeded)
             {
@@ -314,6 +314,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
+          [Service] IPointsEngineService pointsEngineService,
           UserManager<ApplicationUser> userManager,
           string id)
         {
@@ -339,9 +340,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             user.IsActive = false;
+            user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
             DoAudit(currentUserId, repoFactory, null, id);
+
+            // Manage points for user
+            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
             return updateResult.Succeeded;
         }
 
@@ -356,7 +361,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string newPassword)
         {
             var user = await userManager.FindByIdAsync(id);
-
+            user.UpdatedDate = DateTime.UtcNow;
             // Don't let normal users reset admin passwords...
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)

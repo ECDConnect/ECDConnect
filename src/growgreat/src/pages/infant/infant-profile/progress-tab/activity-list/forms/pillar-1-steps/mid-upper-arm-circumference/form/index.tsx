@@ -10,7 +10,7 @@ import { replaceBraces } from '@ecdlink/core';
 export const muacFormSection =
   'Growth monitoring (Mid-upper arm circumference)';
 
-export const muacQuestion = `What is {client}’s MUAC today?`;
+export const muacQuestion = `What is {client} MUAC today?`;
 
 export const MidUpperArmCircumferenceFormStep = ({
   infant,

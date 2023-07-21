@@ -55,14 +55,17 @@ export const WeightAndLengthFormStep = ({
     [ageInMonths, ageInYears]
   );
 
-  const isCheckedWeight = useCallback(() => {
+  const isCheckedWeight = useMemo(() => {
     return (
-      weightAtBirth && Number(weightAtBirth) > 0 && Number(weightAtBirth) <= 7
+      weightAtBirth && Number(weightAtBirth) > 0 && Number(weightAtBirth) <= 50
     );
   }, [weightAtBirth]);
 
-  const isCheckedLength =
-    Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 70;
+  const isCheckedLength = useMemo(() => {
+    return (
+      lengthAtBirth && Number(lengthAtBirth) > 0 && Number(lengthAtBirth) <= 250
+    );
+  }, [lengthAtBirth]);
 
   const dialog = useDialog();
 
@@ -132,10 +135,21 @@ export const WeightAndLengthFormStep = ({
           ],
         },
       ]);
-      return setEnableButton?.(true);
     }
 
-    return setEnableButton?.(false);
+    if (isDisplayHeight || isDisplayLength) {
+      if (isCheckedWeight && isCheckedLength) {
+        return setEnableButton?.(true);
+      } else {
+        return setEnableButton?.(false);
+      }
+    } else {
+      if (isCheckedWeight) {
+        return setEnableButton?.(true);
+      } else {
+        return setEnableButton?.(false);
+      }
+    }
   }, [
     setEnableButton,
     setSectionQuestions,
@@ -144,6 +158,8 @@ export const WeightAndLengthFormStep = ({
     isDisplayLength,
     isDisplayHeight,
     height,
+    isCheckedWeight,
+    isCheckedLength,
   ]);
 
   return (
@@ -169,6 +185,7 @@ export const WeightAndLengthFormStep = ({
             placeholder={'Tap to add'}
             type={'number'}
             min={0}
+            maxLength={5}
           ></FormInput>
           <Typography
             type="body"
@@ -177,7 +194,7 @@ export const WeightAndLengthFormStep = ({
             className="mt-7"
           />
         </div>
-        {!isCheckedWeight && (
+        {!!weightAtBirth && !isCheckedWeight && (
           <Alert
             className="mb-4"
             type="error"
@@ -194,6 +211,7 @@ export const WeightAndLengthFormStep = ({
                 placeholder={'Tap to add'}
                 type={'number'}
                 min={0}
+                maxLength={6}
               ></FormInput>
               <Typography
                 type="body"

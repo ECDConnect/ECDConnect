@@ -27,8 +27,8 @@ export const HealthyEatingStep = ({
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
   const videoSection = 'Healthy eating';
 
-  const nutritionAnswers = sectionQuestions?.[1].questions?.[0]
-    .answer as string[];
+  const nutritionAnswers = sectionQuestions?.[0]?.questions?.[0]
+    ?.answer as string[];
 
   const previousVisit = useSelector(
     getPreviousVisitInformationForInfantSelector

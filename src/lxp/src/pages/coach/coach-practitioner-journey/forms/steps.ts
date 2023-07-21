@@ -57,13 +57,17 @@ export const prePqaVisits = [
 export const generalSupportVisit = [CoachingAndVisitOrCallStep];
 
 export const getFirstPqaSteps = ({
+  isToShowStep1,
   isStep11AnswerTrue,
   isToRemoveSmartStarter,
+  isToShowStep17,
 }: {
+  isToShowStep1: boolean;
   isStep11AnswerTrue: boolean;
   isToRemoveSmartStarter: boolean;
+  isToShowStep17: boolean;
 }) => [
-  Step1,
+  ...(isToShowStep1 ? [Step1] : []),
   Step2,
   Step3,
   Step4,
@@ -77,13 +81,17 @@ export const getFirstPqaSteps = ({
   ...(isStep11AnswerTrue ? [Step12, Step13, Step14] : []),
   Step15,
   Step16,
-  Step17,
+  ...(isToShowStep17 ? [Step17] : []),
   ...(isToRemoveSmartStarter ? [] : [Step18, Step19]),
 ];
 
 export const delicensingSteps = [Step1Delicensing, Step2Delicensing];
 
-export const reaccreditationSteps = [
+export const getReAccreditationSteps = ({
+  isToRemoveSmartStarter,
+}: {
+  isToRemoveSmartStarter: boolean;
+}) => [
   Step1ReAccreditation,
   Step2ReAccreditation,
   Step3ReAccreditation,
@@ -100,5 +108,5 @@ export const reaccreditationSteps = [
   Step14ReAccreditation,
   Step15ReAccreditation,
   Step16ReAccreditation,
-  Step17ReAccreditation,
+  ...(isToRemoveSmartStarter ? [] : [Step17ReAccreditation]),
 ];

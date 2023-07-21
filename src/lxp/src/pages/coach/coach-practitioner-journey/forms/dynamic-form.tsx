@@ -1,6 +1,7 @@
 import { useCallback, useMemo, useState } from 'react';
 import { Button } from '@ecdlink/ui';
 import { PractitionerDto } from '@ecdlink/core';
+import { Rating } from '.';
 
 export interface Question {
   question: string;
@@ -30,6 +31,10 @@ export interface DynamicFormProps {
   nextButtonText?: string;
   submitButton?: { text: string; icon: string };
   secondaryButton?: { text: string; icon: string; onClick: () => void };
+  pqaRating?: Rating;
+  reAccreditationRating?: Rating;
+  setPqaRating?: (value: Rating) => void;
+  setReAccreditationRating?: (value: Rating) => void;
   setIsTip?: (value: boolean) => void;
   setSectionQuestions?: (value?: SectionQuestions[]) => void;
   setEnableButton?: (value: boolean) => void;
@@ -49,11 +54,15 @@ export const DynamicForm = ({
   nextButtonText = 'Next',
   submitButton = { text: 'Save', icon: 'SaveIcon' },
   secondaryButton,
+  pqaRating,
+  reAccreditationRating,
   setSectionQuestions: setSectionQuestionsForm,
+  setReAccreditationRating,
   onNextStep,
   setIsTip,
   onClose,
   onSubmit,
+  setPqaRating,
 }: DynamicFormProps) => {
   const [isEnableButton, setIsEnableButton] = useState(false);
   const [sectionQuestions, setSectionQuestions] =
@@ -118,31 +127,39 @@ export const DynamicForm = ({
         isView={isView}
         smartStarter={smartStarter}
         isTipPage={isTipPage}
+        pqaRating={pqaRating}
+        reAccreditationRating={reAccreditationRating}
+        setReAccreditationRating={setReAccreditationRating}
         setIsTip={setIsTip}
         sectionQuestions={sectionQuestions}
         setSectionQuestions={handleSetQuestions}
         setEnableButton={setIsEnableButton}
         onNextStep={onNextStep}
+        setPqaRating={setPqaRating}
       />
     );
   }, [
-    isView,
-    handleSetQuestions,
-    smartStarter,
-    currentStep,
-    isTipPage,
-    onNextStep,
-    sectionQuestions,
-    setIsTip,
     steps,
+    currentStep,
+    isView,
+    smartStarter,
+    isTipPage,
+    pqaRating,
+    reAccreditationRating,
+    setReAccreditationRating,
+    setIsTip,
+    sectionQuestions,
+    handleSetQuestions,
+    onNextStep,
+    setPqaRating,
   ]);
 
   const renderButton = useMemo(() => {
     if (Number(steps?.length) === 1) {
       return {
         action: isView ? onClose : onSubmit,
-        text: isView ? 'Close' : 'Save',
-        icon: isView ? 'XIcon' : 'SaveIcon',
+        text: isView ? 'Close' : submitButton.text,
+        icon: isView ? 'XIcon' : submitButton.icon,
       };
     }
 

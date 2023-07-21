@@ -190,6 +190,7 @@ class InfantService {
             attended
             visitInProgress
             risk
+            comment
             visitType{
               id
               order
@@ -334,6 +335,7 @@ class InfantService {
             attended,
             id,
             risk
+            comment
             visitType{
               id
               order

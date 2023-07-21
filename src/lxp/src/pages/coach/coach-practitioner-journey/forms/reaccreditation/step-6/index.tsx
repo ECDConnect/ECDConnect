@@ -84,7 +84,7 @@ export const Step6ReAccreditation = ({
       shortSide: Number(questions[0].answer),
       numberOfAssistants: Number(numberOfAssistants),
       programType: toCamelCase(
-        currentClassroomGroups[0].programmeType?.description ?? ''
+        currentClassroomGroups[0]?.programmeType?.description ?? ''
       ) as CalculateCapacityProps['programType'],
     });
 
@@ -92,7 +92,7 @@ export const Step6ReAccreditation = ({
       return `${result} children`;
     }
 
-    if (!currentClassroomGroups[0].programmeType?.description) {
+    if (!currentClassroomGroups[0]?.programmeType?.description) {
       return 'Programme type could not be found';
     }
 
@@ -115,7 +115,7 @@ export const Step6ReAccreditation = ({
         className="my-4"
       />
       {questions.map((item, index) => (
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2" key={item.question}>
           <FormInput
             type="number"
             className="mt-2"
@@ -162,6 +162,7 @@ export const Step6ReAccreditation = ({
         </>
       )}
       <Alert
+        className="mt-4"
         type="info"
         title="Check the capacity above before tapping Next. How is programme capacity calculated?"
         list={[

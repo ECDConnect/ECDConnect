@@ -56,6 +56,7 @@ import CoachPractitionerChildList from '@/pages/coach/coach-practitioner-child-l
 import ROUTES from './routes';
 import { CoachClassesReassigned } from '@/pages/coach/coach-classes-reassigned/coach-classes-reassigned';
 import { CoachNotes } from '@/pages/coach/practitioner-profile-info/components/coach-notes/coach-notes';
+import { RemovePractioner } from '@/pages/coach/practitioner-profile-info/components/remove-practinioner/remove-practioner';
 import { SetupPrincipal } from '@/pages/principal/setup-principal/setup-principal';
 import { PrincipalPractitionerProfileInfo } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-profile/principal-practitioner-profile';
 import { PrincipalPractitionerChildList } from '@/pages/classroom/class-dashboard/practitioners/principal-practitioner-child-list/principal-practitioner-child-list';
@@ -80,7 +81,6 @@ import { CoachPractitionerJourney } from '@/pages/coach/coach-practitioner-journ
 import { SetupTrainee } from '@/pages/trainee/setup-trainee/setup-trainee';
 import { TraineeOnboarding } from '@/pages/trainee/trainee-onboarding/trainee-onboarding';
 import Calendar from '@/pages/calendar/calendar-home';
-import { CalendarAddEvent } from '@/pages/calendar/calendar-add-event/calendar-add-event';
 
 const PublicRoutes: React.FC = () => {
   return (
@@ -259,8 +259,7 @@ const AuthRoutes: React.FC = () => {
         path={ROUTES.TRAINEE.TRAINEE_ONBOARDING}
         component={TraineeOnboarding}
       />
-      <Route path={ROUTES.CALENDAR} component={Calendar} />
-      <Route path={ROUTES.CALENDAR_ADD_EVENT} component={CalendarAddEvent} />
+      <Route exact path={ROUTES.CALENDAR} component={Calendar} />
       <Route path={ROUTES.CLASSROOM} component={ClassDashboard} />
       <Route path={ROUTES.CHILD_REGISTRATION} component={ChildRegistration} />
       <Route
@@ -363,6 +362,10 @@ const AuthRoutes: React.FC = () => {
         component={CoachPractitionerClassroom}
       />
       <Route path={ROUTES.COACH.NOTES} component={CoachNotes} />
+      <Route
+        path={ROUTES.COACH.PRACTIONER_REMOVE}
+        component={RemovePractioner}
+      />
       <Route
         exact
         path={ROUTES.COACH.PRACTITIONER_CHILD_LIST}

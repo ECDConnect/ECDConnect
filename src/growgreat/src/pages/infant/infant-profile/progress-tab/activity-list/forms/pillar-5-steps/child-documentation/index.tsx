@@ -19,6 +19,12 @@ import { SuccessCard } from '@/components/success-card/success-card';
 import { showDialog } from './dialog';
 import { getNextDateByDay } from '@ecdlink/core';
 import { differenceInDays } from 'date-fns';
+import {
+  childDocumentationModelSchema,
+  ChildDocumentationModel,
+} from './child-documentation';
+import { yupResolver } from '@hookform/resolvers/yup';
+import { useForm, useFormState } from 'react-hook-form';
 
 enum Question {
   one = 0,
@@ -30,14 +36,26 @@ enum Question {
   seven = 6,
 }
 
+export const birthCertificateQuestion = `Does {client} have a birth certificate?`;
+export const childDocumentSection = 'Child documentation';
+
 export const ChildDocumentationStep = ({
   infant,
   setSectionQuestions: setQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
+  const { register: childDocumentRegister, control: childDocumentControl } =
+    useForm<ChildDocumentationModel>({
+      resolver: yupResolver(childDocumentationModelSchema),
+      mode: 'onBlur',
+      reValidateMode: 'onChange',
+    });
+
+  const { errors } = useFormState({ control: childDocumentControl });
+
   const [questions, setAnswers] = useState([
     {
-      question: 'Does {client} have a birth certificate?',
+      question: birthCertificateQuestion,
       answer: undefined as boolean | undefined,
     },
     {
@@ -95,8 +113,6 @@ export const ChildDocumentationStep = ({
   const isChildBefore30Days = useMemo(() => ageDays <= 30, [ageDays]);
   const isChildBefore1Year = useMemo(() => ageDays <= 365, [ageDays]);
 
-  const visitSection = 'Child documentation';
-
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
@@ -148,7 +164,7 @@ export const ChildDocumentationStep = ({
       setAnswers(updatedQuestions);
       setQuestions?.([
         {
-          visitSection,
+          visitSection: childDocumentSection,
           questions: filteredQuestions,
         },
       ]);
@@ -225,7 +241,7 @@ export const ChildDocumentationStep = ({
     <>
       <Header
         customIcon={P5}
-        title={visitSection}
+        title={childDocumentSection}
         iconHexBackgroundColor={activitiesColours.pillar5.primaryColor}
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />
@@ -253,12 +269,15 @@ export const ChildDocumentationStep = ({
               label={replaceBraces(questionTwo.question, name)}
               subLabel="The ID number is needed to complete the profile."
               placeholder="e.g 851201123456"
+              nameProp={'idNumber'}
               type="number"
               className="mt-4"
+              register={childDocumentRegister}
               value={questionTwo.answer as string}
               onChange={(event) =>
                 onOptionSelected(event.target.value, Question.two)
               }
+              error={!!errors.idNumber ? errors.idNumber : undefined}
             ></FormInput>
             <Typography
               type="h3"

@@ -20,16 +20,23 @@ namespace ECDLink.Tenancy.Middleware
 
         public async Task InvokeAsync(HttpContext context, ITenantService tenancyService)
         {
-            TenantModel tenantModel = GetTenant(context, tenancyService);
-
-            if (tenantModel == null)
+            string path = context.Request.Path;
+            if (!path.Contains("/authentication/online-check"))
             {
-                throw new TenantNotFoundException();
+                TenantModel tenantModel = GetTenant(context, tenancyService);
+
+                if (tenantModel == null)
+                {
+                    throw new TenantNotFoundException();
+                }
+
+                // Add the tenant to the ambient context to use for DB injection
+                TenantExecutionContext.SetTenant(tenantModel);
             }
-
-            // Add the tenant to the ambient context to use for DB injection
-            TenantExecutionContext.SetTenant(tenantModel);
-
+            else
+            {
+                TenantExecutionContext.SetTenant(null, true);
+            }
             // Call the next delegate/middleware in the pipeline.
             await _next(context);
         }

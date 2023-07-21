@@ -8,7 +8,7 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useState } from 'react';
 import { detailTexts, options } from './options';
 import { DynamicFormProps } from '../../dynamic-form';
 import {
@@ -195,7 +195,7 @@ export const Step10ReAccreditation = ({
       />
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
-        <>
+        <Fragment key={question.question}>
           <div className="flex justify-between">
             <Typography type="h4" text={`${index + 1} ${question.question}`} />
             {index > 0 && (
@@ -216,7 +216,7 @@ export const Step10ReAccreditation = ({
             }
             onOptionSelected={(value) => onOptionSelected(value, index)}
           />
-        </>
+        </Fragment>
       ))}
       {questions.some((item) => item.answer !== '') && (
         <Score

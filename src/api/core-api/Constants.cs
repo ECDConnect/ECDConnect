@@ -1,3 +1,6 @@
+using iTextSharp.text;
+using Org.BouncyCastle.Asn1.X509.Qualified;
+
 namespace EcdLink.Api.CoreApi
 {
     public static class Constants
@@ -9,8 +12,8 @@ namespace EcdLink.Api.CoreApi
             public const string GraphEndPoint = "GraphQl:EndPoint";
         }
 
-    public static class  SSSettings
-    {
+        public static class SSSettings
+        {
             public const string client_practitioner = "practitioner";
             public const string client_trainee = "trainee";
             public const string client_coach = "coach";
@@ -33,7 +36,7 @@ namespace EcdLink.Api.CoreApi
 
             public const string visitType_smart_space_checklist = "smart_space_checklist";
             public const string visitType_startup_support_agreement = "startup_support_agreement";
-            public const string visitType_sef_assessment = "sef_assessment";
+            public const string visitType_self_assessment = "self_assessment";
 
             public const string visitType_trainee_visit = "trainee_visit";
             public const string visitType_practitioner_visit = "practitioner_visit";
@@ -65,6 +68,7 @@ namespace EcdLink.Api.CoreApi
             public const string second_site_visit = "Second site visit before PQA";
 
             public const string income_statement_pdf_type = "IncomeStatementPDF";
+            public const string attendance_pdf_type = "AttendancePDF";
             public const string workflow_pdf_type = "Document";
             public const string workflow_status_pdf_type = "Verified";
 
@@ -301,7 +305,6 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation = "B. Programme implementation";
             public const string step_11_re_accreditation = "C. Records";
             public const string step_12_re_accreditation = "D. Operational standards";
-
           
             public const string step8_re_accreditation_a1 = "Supervision: children are supervised at all times.";
             public const string step8_re_accreditation_a2 = "Learning space: the space is divided into 3 or more interest areas, which are labelled.";
@@ -315,7 +318,6 @@ namespace EcdLink.Api.CoreApi
             public const string step8_re_accreditation_a10 = "Story time: there was story time (at least 20 minutes).";
             public const string step8_re_accreditation_a11 = "Large group time: there was large group time (at least 15 minutes).";
             public const string step8_re_accreditation_a12 = "Message board: the message board is up to date.";
-
             
             public const string step_10_re_accreditation_q1 = "Adults speak and act warmly & respectfully to children.";
             public const string step_10_re_accreditation_q2 = "Adults offer individual attention to children, and give encouragement.";
@@ -327,7 +329,6 @@ namespace EcdLink.Api.CoreApi
             public const string step_10_re_accreditation_q8 = "Adults join in as a partner in children's play, encourage children to talk about what they are doing, and use comments and questions to help children learn.";
             public const string step_10_re_accreditation_q9 = "Adults use appropriate activities and materials for the different ages and stages of children.";
             public const string step_10_re_accreditation_q10 = "During story time there is lots of conversation and children are encouraged to take part and ask questions.";
-
             
             public const string step_11_re_accreditation_a1 = "Register: the attendance register is up to date.";
             public const string step_11_re_accreditation_a2 = "Planning: weekly reflection and planning notes are completed and filed.";
@@ -387,10 +388,9 @@ namespace EcdLink.Api.CoreApi
 
             public const string consent_type_franchisee = "FranchiseeAgreement";
             public const string consent_type_support_agreement = "StartupSupportAgreement";
-
         }
 
-    public static class GGSettings
+        public static class GGSettings
         {
             public const int recordsPerPage = 40;
             public const int pageNumber = 0;
@@ -457,6 +457,8 @@ namespace EcdLink.Api.CoreApi
             public const string underweight = "May be underweight - MUAC less than 22cm";
             public const string underweight2 = "You might be underweight: eat 3 meals every day";
             public const string underweight3 = "Underweight";
+            public const string overweight = "Overweight";
+            public const string obese = "Obese";
             public const string muac_over_22 = "MUAC over 22cm";
             public const string healthy_weight = "According to your mid-upper arm circumference, you are a healthy weight";
             public const string urgent_care = "You need urgent care for some serious health issues";
@@ -482,8 +484,10 @@ namespace EcdLink.Api.CoreApi
             public const string health_issues = "You have some health issues";
             public const string severely_underweight= "Severely underweight";
             public const string severely_stunted = "Severely stunted";
-            public const string growth_faltering = "Growth faltering: weight has not increased ";
+            public const string stunted = "Stunted";
+            public const string severe_acute_malnutrition = "Severe acute malnutrition";
             public const string moderate_acute_malnutrition = "Moderate acute malnutrition";
+            public const string growth_faltering = "Growth faltering: weight has not increased ";
             public const string great_job_breastfeeding = "You're doing a great job breastfeeding!";
             public const string great_job_formula_feeding = "You're doing a great job formula feeding!";
             public const string try_to_make_sure = "Try to make sure you give ";
@@ -506,13 +510,14 @@ namespace EcdLink.Api.CoreApi
             public const string has_birth_certificate = "Has applied for a birth certificate";
             public const string has_csg = "Has applied for a child support grant";
             public const string has_csg2 = "You applied for the child support grant - this will support {client}'s healthy growth!";
+            public const string has_csg3 = "Has not applied for a child support grant";
 
             // Infant Questions
             public const string q_postnatal_check_up = "Has {client} been to the clinic for a postnatal check-up?";
             public const string q_postnatal_6_weeks = "Did your client attend her 6-week postnatal clinic visit?";
             public const string q_weight = "Weight";
             public const string q_length = "Length";
-            public const string q_muac = "What is {client}�s MUAC today?";
+            public const string q_muac = "What is {client} MUAC today?";
             public const string q_eat_drink = "What did {client} eat or drink in the last 24 hours?";
             public const string q_eat_drink_nutrition = "What did you give {client} to eat or drink in the last 24 hours?";
             public const string q_breastfeeding_club = "Would you like to join a breastfeeding club?";
@@ -522,16 +527,16 @@ namespace EcdLink.Api.CoreApi
             public const string q_hearing1 = "Gets a fright when they hear a loud sound";
             public const string q_hearing2 = "Moves eyes or head in direction of sounds";
             public const string q_hearing3 = "Responds by making sounds when talked to";
-            public const string q_hearing4 = "Babbles(ma-ma.da-daa)";
+            public const string q_hearing4 = "Babbles (ma-ma. da-daa)";
             public const string q_hearing5 = "Turns when called";
-            public const string q_hearing6 = "Uses simple gestures(lifts arms to be picked up)";
-            public const string q_hearing7 = "Has one meaningful word(dada.mama) although it may not be clear";
-            public const string q_hearing8 = "Understands names of at least 2 common objects(cup)";
+            public const string q_hearing6 = "Uses simple gestures (lifts arms to be picked up)";
+            public const string q_hearing7 = "Has one meaningful word (dada. mama) although it may not be clear";
+            public const string q_hearing8 = "Understands names of at least 2 common objects (cup)";
             public const string q_hearing9 = "Uses at least 3 words";
 
             public const string q_seeing1 = "Follows faces or close objects with their eyes";
             public const string q_seeing2 = "Follows faces or close objects with his/her eyes";
-            public const string q_seeing3 = "Eyes move well together(no squinting). recognises familiar faces and looks at own hands";
+            public const string q_seeing3 = "Eyes move well together (no squinting). recognises familiar faces and looks at own hands";
             public const string q_seeing4 = "Eyes focus on far objects?";
             public const string q_seeing5 = "Looks for toys/objects that disappear";
             public const string q_seeing6 = "Looks closely at toys/objects and pictures";
@@ -539,13 +544,13 @@ namespace EcdLink.Api.CoreApi
 
             public const string q_brain1 = "Smiles at people";
             public const string q_brain2 = "Laughs out loud";
-            public const string q_brain3 = "Uses different cries or sounds to show hunger.tiredness or discomfort?";
-            public const string q_brain4 = "Throws.bangs toys/objects";
+            public const string q_brain3 = "Uses different cries or sounds to show hunger. tiredness or discomfort?";
+            public const string q_brain4 = "Throws. bangs toys/objects";
             public const string q_brain5 = "React when caregiver leaves and calms when they return";
             public const string q_brain6 = "Imitates gestures (clapping hands)";
             public const string q_brain7 = "Follows simple commands";
 
-            public const string q_moving1 = "Holds their head upright when held against shoulder";
+            public const string q_moving1 = "Holds up their head upright when held against shoulder";
             public const string q_moving2 = "Grabs toys in each hand";
             public const string q_moving3 = "Lifts their head when lying on their tummy";
             public const string q_moving4 = "Moves objects from hand to hand";
@@ -559,6 +564,7 @@ namespace EcdLink.Api.CoreApi
             public const string q_birth_certificate = "Does {client} have a birth certificate?";
             public const string q_csg_receiving = "Is {client} receiving the CSG?";
             public const string q_csg_applied = "Has {client} applied for a CSG?";
+            public const string q_csg_qualify = "Does {client} qualify for CSG?";
 
             public const string cfm_name = "Care for mom";
             public const string cfb_name = "Care for baby";
@@ -615,11 +621,12 @@ namespace EcdLink.Api.CoreApi
             public const string normal_risk = "normal";
             public const string more_than_2 = "More than 2";
             public const string male = "Male";
-            public const string female = "Girl";
+            public const string female = "Female";
             public const string growth_section = "Growth";
             public const string breast_milk_only = "Breast milk only";
             public const string formula_milk_only = "Formula milk only";
             public const string mixed_feeding = "Mixed feeding";
+            public const string normal_comment = "Normal";
 
             // Growth names
             public const string weightForAgeBoys = "weight-for-age-boys";
@@ -681,6 +688,16 @@ namespace EcdLink.Api.CoreApi
             public const string months_24 = "24_months";
             public const string years_5 = "5_years";
 
+            //record events
+            public const string caregiverIsPregnant = "caregiver_is_pregnant";
+            public const string newChildInFamily = "new_child_in_family";
+            public const string caregiverHasChanged = "caregiver_has_changed";
+
+            //sections
+            public const string maternal_distress_screening = "Maternal distress screening";
+            public const string mother_growth = "Mother growth monitoring (Mid-upper arm circumference)";
+            public const string alcohol_use = "Alcohol use";
+            public const string child_docs = "Child documentation";
         }
 
         public static class SSIntegrationSettings
@@ -759,6 +776,55 @@ namespace EcdLink.Api.CoreApi
             public const string IntegrationSystem = "Smartlink";
 
         }
+
+        public static class PointsEngineSettings
+        {
+            public const string client_registration = "Client Registration";
+            public const string client_registration_ac1 = "Complete the client registration flow for 5 or more children under the age of 2 years old";
+            public const string client_registration_ac2 = "Complete client registration flow for 2 or more pregnant women";
+            public const string client_registration_ac3 = "Complete the client registration flow for 1-2 pregnant clients who are less than 20 weeks into pregnancy";
+            public const string client_registration_ac4 = "Complete the client registration flow for 3 or more pregnant clients who are less than 20 weeks into pregnancy";
+            
+            public const string pregnant_mom_clients = "Pregnant Mom Clients";
+            public const string pregnant_mom_clients_ac1 = "Screening for maternal distress 'up to date'";
+            public const string pregnant_mom_clients_ac2 = "1 referral per month [Screening for maternal distress]";
+            public const string pregnant_mom_clients_ac3 = "Screening for maternal malnutrition";
+            public const string pregnant_mom_clients_ac4 = "Referral made for maternal malnutrition [Screening for maternal malnutrition]";
+            public const string pregnant_mom_clients_ac5 = "Screening for substance abuse 'up to date'";
+            
+            public const string child_clients = "Child Clients";
+            public const string child_clients_ac1 = "Child support grant - all eligible children accessing the CSG";
+            public const string child_clients_ac2 = "Love, play and talk for healthy development guide. All children screened";
+            public const string child_clients_ac3 = "Measuring childrens' growth length - normal";
+            public const string child_clients_ac4 = "Measuring childrens' growth length - referral not required";
+            public const string child_clients_ac5 = "Measuring childrens' growth length - referral required";
+            public const string child_clients_ac6 = "Measuring childrens' growth weight - normal";
+            public const string child_clients_ac7 = "Measuring childrens' growth weight - referral not required";
+            public const string child_clients_ac8 = "Measuring childrens' growth weight - referral required";
+            public const string child_clients_ac9 = "Measuring childrens' growth MUAC - normal";
+            public const string child_clients_ac10 = "Measuring childrens' growth MUAC - referral not required";
+            public const string child_clients_ac11 = "Measuring childrens' growth MUAC - referral required";
+            public const string child_clients_ac12 = "Vitamin A";
+            public const string child_clients_ac13 = "Deworming";
+            public const string child_clients_ac14 = "Immunisations";
+
+            public const string SSChild = "Child";
+            public const string child_data_collection = "Child Data Collection";
+            public const string child_data_collection_ac1 = "Child Registration Completed";
+            public const string child_data_collection_ac2 = "Child Registration Removed";
+            public const string child_data_collection_ac3 = "Attendance submitted for practitioner's/principal's class";
+
+            public const string income_statement = "Submission of income statement";
+
+            public const string income_statement_ac1 = "Add/Edit monthly preschool fee";
+            public const string income_statement_ac2 = "Preschool fees added to income statement";
+            public const string income_statement_ac3 = "Monthly income statement submitted by the deadline";
+            public const string income_statement_ac4 = "Practitioner submits 3 consecutive months' income statements";
+
+        }
+
+
+
     }
 }
 

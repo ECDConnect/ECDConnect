@@ -1,7 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Caregiver;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -26,6 +26,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private VisitManager _visitManager;
         private VisitDataManager _visitDataManager;
         private VisitDataStatusManager _visitDataStatusManager;
+        private IPointsEngineService _pointsEngineService;
 
         private string _applicationUserId;
         private IGenericRepository<Infant, Guid> _infantRepo;
@@ -41,7 +42,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             HealthCareWorkerManager healthCareWorkerManager,
             VisitManager visitManager,
             VisitDataStatusManager visitDataStatusManager,
-            VisitDataManager visitDataManager)
+            VisitDataManager visitDataManager,
+            [Service] IPointsEngineService pointsEngineService)
         {
             _contextAccessor = contextAccessor;
             _repoFactory = repoFactory;
@@ -49,6 +51,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
             _visitDataManager = visitDataManager;
+            _pointsEngineService = pointsEngineService;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _infantRepo = _repoFactory.CreateGenericRepository<Infant>(userContext: _applicationUserId);
@@ -161,6 +164,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 AddVisits(infant.Id, infant.User.DateOfBirth);
             }
+
+            // Call points engine for hcw
+            _pointsEngineService.CalculateInfantClientRegistration(_applicationUserId, DateTime.UtcNow);
 
             return createdInfant;
         }

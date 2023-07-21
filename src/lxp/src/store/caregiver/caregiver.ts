@@ -18,14 +18,19 @@ const caregiverSlice = createSlice({
       state.caregivers = initialState.caregivers;
     },
     createCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
+      const isOnline = navigator.onLine;
+      const payloadUpdated = { ...action.payload, isOnline };
       if (!state.caregivers) state.caregivers = [];
-      state.caregivers?.push(action.payload);
+      state.caregivers?.push(payloadUpdated);
     },
     updateCaregiver: (state, action: PayloadAction<CaregiverDto>) => {
       if (state.caregivers) {
+        const isOnline = navigator.onLine;
+        const payloadUpdated = { ...action.payload, isOnline };
+
         for (let i = 0; i < state.caregivers.length; i++) {
           if (state.caregivers[i].id === action.payload.id)
-            state.caregivers[i] = action.payload;
+            state.caregivers[i] = payloadUpdated;
         }
       }
     },

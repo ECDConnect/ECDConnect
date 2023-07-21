@@ -62,7 +62,6 @@ export const Step2ReAccreditation = ({
         const updatedQuestion = { ...question, answer: currentAnswers };
 
         setAnswers(updatedQuestion);
-        setEnableButton?.(true);
         return setSectionQuestions?.([
           {
             visitSection: visitSection,
@@ -73,7 +72,6 @@ export const Step2ReAccreditation = ({
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
-      setEnableButton?.(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
@@ -82,7 +80,7 @@ export const Step2ReAccreditation = ({
         },
       ]);
     },
-    [answers, question, setEnableButton, setSectionQuestions]
+    [answers, question, setSectionQuestions]
   );
 
   const classroomsDetailsForPractitioner = useCallback(async () => {
@@ -98,6 +96,7 @@ export const Step2ReAccreditation = ({
 
   useEffect(() => {
     classroomsDetailsForPractitioner();
+    setEnableButton?.(true);
   }, [classroomsDetailsForPractitioner, setEnableButton]);
 
   return (
@@ -107,8 +106,8 @@ export const Step2ReAccreditation = ({
         type="h4"
         text={
           isOnline
-            ? `${practitionerClassroomDetails?.[0].classroom?.name || ''} ${
-                practitionerClassroomDetails?.[0].programmeType?.description ||
+            ? `${practitionerClassroomDetails?.[0]?.classroom?.name || ''} ${
+                practitionerClassroomDetails?.[0]?.programmeType?.description ||
                 ''
               }`
             : 'Not available offline'

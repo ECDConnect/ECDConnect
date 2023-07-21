@@ -73,6 +73,30 @@ class HealthCareWorkerService {
           clickedProgressTab
           clickedReferralsTab
           clickedContactTab
+          pointsEngineData {
+            pointsLibrary {
+              activity
+              subActivity
+              points
+              maxPointsIndividualMonthly
+              calculatedAtMonthEnd
+              calculatedAtYearEnd
+            }
+            pointsUserSummary {
+              pointsTotal
+              pointsYTD
+              month
+              year
+              pointsLibrary {
+                activity
+                subActivity
+                points
+                maxPointsIndividualMonthly
+                calculatedAtMonthEnd
+                calculatedAtYearEnd
+              }
+            }
+          }
         }
       }
       `,

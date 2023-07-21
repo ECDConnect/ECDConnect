@@ -32,19 +32,36 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries
           DateTime? start)
         {
             var requestingUser = httpContextAccessor.HttpContext.GetUser();
+            var userId = requestingUser.Id;
 
             if (string.IsNullOrWhiteSpace(requestingUser?.Id))
                 return Enumerable.Empty<CalendarEvent>();
 
-            var eventRepo = repoFactory.CreateGenericRepository<CalendarEvent>(userContext: requestingUser.Id);
+            var eventRepo = repoFactory.CreateGenericRepository<CalendarEvent>();
+            var eventParticipantRepo = repoFactory.CreateGenericRepository<CalendarEventParticipant>();
 
-            return eventRepo
-                .GetAll()
-                .Where(p => p.IsActive
-                    && p.Start >= start)
-                .Include(c => c.Participants)
-                .OrderBy(c => c.Start)
+            var ownEvents = eventRepo.GetAll()
+                .Where(e => e.UserId == userId
+                    && e.IsActive
+                    && e.Start >= start)
+                .Include(e => e.Participants)
                 .ToList();
+
+            var otherEventIds = eventParticipantRepo.GetAll()
+                .Where(e => e.ParticipantUserId == userId)
+                .Where(e => e.CalendarEvent.IsActive && e.CalendarEvent.Start >= start)
+                .Select(e => e.CalendarEventId)
+                .ToList();
+            var otherEvents = eventRepo.GetAll()
+                .Where(e => otherEventIds.Contains(e.Id))
+                .Where(e => e.IsActive && e.Start >= start)
+                .Include(e => e.Participants)
+                .ToList();
+
+            var list = new List<CalendarEvent>();
+            list.AddRange(ownEvents);
+            list.AddRange(otherEvents);
+            return list.OrderBy(e => e.Start);
         }
 
 

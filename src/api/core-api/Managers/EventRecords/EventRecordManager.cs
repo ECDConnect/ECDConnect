@@ -88,10 +88,17 @@ namespace EcdLink.Api.CoreApi.Managers.EventRecords
             var applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             var repository = _repoFactory.CreateGenericRepository<EventRecord>(userContext: applicationUserId);
             var eventRecord = GetEventRecordFromInputModel(input, applicationUserId);
+            var eventRecordTypeRepo = _repoFactory.CreateGenericRepository<EventRecordType>(userContext: applicationUserId);
+            var eventRec = eventRecordTypeRepo.GetById(Guid.Parse(input.EventRecordTypeId.ToString()));
+
 
             if (eventRecord != null && eventRecord.InfantId != null)
             {
-                ArchiveInfant(eventRecord.InfantId.ToString());
+                //do not archive for caregiver_is_pregnant && caregiver_has_changed
+                if (eventRec != null && eventRec.Name != Constants.GGSettings.caregiverIsPregnant && eventRec.Name != Constants.GGSettings.newChildInFamily &&
+                    eventRec.Name != Constants.GGSettings.caregiverHasChanged) {
+                    ArchiveInfant(eventRecord.InfantId.ToString());
+                }
             }
             if (eventRecord != null && eventRecord.MotherId != null)
             {

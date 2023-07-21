@@ -89,7 +89,16 @@ export const Visits: React.FC = () => {
         return 1;
       }
 
-      return new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime();
+      if (a.visitType && b.visitType) {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime() ||
+          a.visitType.order - b.visitType.order!
+        );
+      } else {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        );
+      }
     });
   }, []);
 
@@ -143,6 +152,14 @@ export const Visits: React.FC = () => {
   const isDueDate = dueDate && currentDate <= dueDate;
   const isWeekDeadline = isFirstVisit || (isOrderVisitDate && isDueDate);
 
+  const weeksPregnant = useMemo(
+    () =>
+      mother?.expectedDateOfDelivery
+        ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
+        : 0,
+    [mother?.expectedDateOfDelivery]
+  );
+
   const insertedDate = useMemo(
     () => new Date(mother?.insertedDate || ''),
     [mother?.insertedDate]
@@ -195,18 +212,22 @@ export const Visits: React.FC = () => {
       const isMissedVisit = dueDate
         ? dueDate < todayDate!
         : orderDate! < todayDate!;
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
 
       return {
-        title:
-          item.visitType?.normalizedName === 'Additional visits'
-            ? 'Other visit'
-            : item.visitType?.normalizedName + ' visit' || 'Visit',
-        subTitle: isMissedVisit
-          ? 'Missed visit deadline'
-          : `By ${day} ${orderDate?.toLocaleString('default', {
-              month: 'long',
-            })} ${orderDate?.getFullYear()}`,
-        ...(isMissedVisit && {
+        title: isAdditionalVisit
+          ? 'Other visit'
+          : item.visitType?.normalizedName || 'Visit',
+        subTitle:
+          isAdditionalVisit && item.comment!
+            ? item.comment
+            : isMissedVisit
+            ? 'Missed visit deadline'
+            : `By ${day} ${orderDate?.toLocaleString('default', {
+                month: 'long',
+              })} ${orderDate?.getFullYear()}`,
+        ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: 'CalendarIcon',
@@ -249,10 +270,6 @@ export const Visits: React.FC = () => {
     todayDate,
     visits,
   ]);
-
-  const weeksPregnant = mother?.expectedDateOfDelivery
-    ? getPregnancyWeeks(mother?.expectedDateOfDelivery)
-    : 0;
 
   const onAddVisit = useCallback(() => {
     return dialog({

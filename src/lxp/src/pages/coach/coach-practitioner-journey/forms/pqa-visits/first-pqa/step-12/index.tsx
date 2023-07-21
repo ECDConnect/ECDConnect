@@ -6,7 +6,7 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { ClassroomGroup } from '@ecdlink/graphql';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
@@ -15,6 +15,10 @@ import { useSelector } from 'react-redux';
 import { authSelectors } from '@/store/auth';
 import { options } from './options';
 import { ReactComponent as Emoji3 } from '@/assets/ECD_Connect_emoji3.svg';
+import { usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { userSelectors } from '@/store/user';
 
 export const step12VisitSection = 'Step 12';
 
@@ -22,6 +26,7 @@ export const Step12 = ({
   smartStarter,
   setSectionQuestions,
   setEnableButton,
+  isView,
 }: DynamicFormProps) => {
   const [practitionerClassroomDetails, setPractitionerClassroomDetails] =
     useState<ClassroomGroup[]>();
@@ -32,12 +37,31 @@ export const Step12 = ({
 
   const answers = question.answer as string[];
 
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step12VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
   const { isOnline } = useOnlineStatus();
   const userAuth = useSelector(authSelectors.getAuthUser);
+  // INFO: from practitioner
+  const user = useSelector(userSelectors.getUser);
 
-  const name = `${smartStarter?.user?.firstName} ${
-    smartStarter?.user?.surname || ''
-  }`;
+  const name = smartStarter?.user
+    ? `${smartStarter?.user?.firstName} ${smartStarter?.user?.surname || ''}`
+    : `${user?.firstName} ${user?.surname || ''}`;
 
   const onCheckboxChange = useCallback(
     (event: CheckboxChange) => {
@@ -96,10 +120,35 @@ export const Step12 = ({
     return classroomDetails;
   }, [smartStarter?.userId, userAuth?.auth_token]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
   useEffect(() => {
     setEnableButton?.(true);
     classroomsDetailsForPractitioner();
   }, [classroomsDetailsForPractitioner, setEnableButton]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
 
   return (
     <div className="p-4">
@@ -112,8 +161,8 @@ export const Step12 = ({
         type="h4"
         text={
           isOnline
-            ? `${practitionerClassroomDetails?.[0].classroom?.name || ''} ${
-                practitionerClassroomDetails?.[0].programmeType?.description ||
+            ? `${practitionerClassroomDetails?.[0]?.classroom?.name || ''} ${
+                practitionerClassroomDetails?.[0]?.programmeType?.description ||
                 ''
               }`
             : 'Not available offline'
@@ -125,6 +174,13 @@ export const Step12 = ({
         type="info"
         title="Walk around the site and make sure the following standards are in place."
       />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Divider dividerType="dashed" className="my-4" />
       {options.question1.map((item) => (
         <CheckboxGroup
@@ -135,8 +191,9 @@ export const Step12 = ({
           titleColours="textMid"
           titleSize="sm"
           titleWeight="normal"
-          checked={answers?.some((option) => option === item)}
+          checked={answers?.some((option) => item.includes(option))}
           value={item}
+          disabled={isViewAnswers}
           onChange={onCheckboxChange}
         />
       ))}

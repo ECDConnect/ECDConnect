@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Classroom;
 using ECDLink.DataAccessLayer.Entities.Users;
+using ECDLink.DataAccessLayer.Entities.Visits;
 using ECDLink.DataAccessLayer.Repositories.Factories;
 using ECDLink.EGraphQL.Authorization;
 using ECDLink.Security;
@@ -52,14 +53,21 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]
         public Coach GetCoachByCoachUserId(
+            [Service] VisitManager visitManager,
             [Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             string userId)
         {
             var uId = contextAccessor.HttpContext.GetUser().Id;
             var dbRepo = repoFactory.CreateGenericRepository<Coach>(userContext: uId);
+            Coach coach = dbRepo.GetByUserId(userId);
 
-            return dbRepo.GetByUserId(userId);
+            List<Visit> visits = visitManager.GetVisitsForClient(userId, Constants.SSSettings.client_coach);
+
+            coach.TraineeVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_trainee_visit).ToList();
+            coach.PractitionerVisits = visits.Where(x => x.VisitType.Name == Constants.SSSettings.visitType_practitioner_visit || x.VisitType.Name == Constants.SSSettings.visitType_practitioner_call).ToList();
+
+            return coach;
         }
 
         [Permission(PermissionGroups.USER, GraphActionEnum.View)]

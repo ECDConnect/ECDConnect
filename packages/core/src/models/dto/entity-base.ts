@@ -4,4 +4,5 @@ export interface EntityBase {
   updatedDate?: Date | string;
   updatedBy?: string;
   isActive?: boolean;
+  isOnline?: boolean;
 }

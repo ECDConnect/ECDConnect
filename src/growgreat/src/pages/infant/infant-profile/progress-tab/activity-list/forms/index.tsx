@@ -42,7 +42,7 @@ interface FormProps {
     isDevelopmentalScreening: boolean;
     isDevelopmentalScreeningWeeksFollowUp: boolean;
     isDevelopmentalScreeningWeeks: boolean;
-    isRoadToHeathBookStep: boolean;
+    isRoadToHealthBookStep: boolean;
     isDangerSignsFollowUpForBaby: boolean;
     isChildBefore49Days: boolean;
     isNewBornCare: boolean;
@@ -57,6 +57,8 @@ interface FormProps {
     isVitaminAQuestion: boolean;
     isDewormingQuestion: boolean;
     isImmunisationsStep: boolean;
+    isChildDocumentStep: boolean;
+    isHivCareStep: boolean;
   };
 }
 
@@ -97,6 +99,11 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   const isChild6Months = useMemo(
     () => !ageYears && ((ageMonths === 6 && days === 0) || ageMonths < 6),
     [ageMonths, ageYears, days]
+  );
+
+  const isChildOlderthan6Months = useMemo(
+    () => !ageYears && ageMonths >= 6,
+    [ageMonths, ageYears]
   );
 
   const isFirstVisit = useSelector(getIsInfantFirstVisitSelector);
@@ -160,11 +167,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
   const isPillar4FollowUp = getIsFollowUp(
     dangerSignsVisitSection,
     activitiesTypes.pillar4
-  );
-
-  const isDietFormStep = useMemo(
-    () => ageMonths >= 6 && ageYears < 5,
-    [ageMonths, ageYears]
   );
 
   const handleOnClose = useCallback(() => {
@@ -239,7 +241,7 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
         );
       case activitiesTypes.careForBaby:
         return careForBabySteps(
-          stepsRules.isRoadToHeathBookStep,
+          stepsRules.isRoadToHealthBookStep,
           stepsRules.isDangerSignsFollowUpForBaby,
           stepsRules.isChildBefore49Days,
           stepsRules.isNewBornCare,
@@ -259,8 +261,9 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isMixedFeedingFoodsForm,
           isMixedFeedingUnsafeFeedingPractices,
           isShowInterventionStep: ageDays >= 7,
-          isShowMuacStep: !isChild6Months,
-          isDietFormStep,
+          isShowMuacStep: isChildOlderthan6Months,
+          isDietFormStep: isMixedFeedingComplementaryFeedingAfter9Months,
+          isChildAfter7Days: ageDays >= 7,
         });
       case activitiesTypes.pillar2:
         return pillar2Steps(
@@ -283,7 +286,10 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
           isToShowPillar4DangerSigns
         );
       case activitiesTypes.pillar5:
-        return pillar5Steps;
+        return pillar5Steps(
+          stepsRules.isChildDocumentStep,
+          stepsRules.isHivCareStep
+        );
       default:
         return followUpSteps(!!referralsForInfant?.length);
     }
@@ -303,7 +309,6 @@ export const Form = ({ onBack, getIsFollowUp, stepsRules }: FormProps) => {
     isMixedFeedingFoodsForm,
     isMixedFeedingUnsafeFeedingPractices,
     ageDays,
-    isDietFormStep,
     stepsRules,
     isPillar4FollowUp,
     referralsForInfant?.length,

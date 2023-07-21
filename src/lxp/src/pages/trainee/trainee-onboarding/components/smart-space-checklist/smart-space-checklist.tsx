@@ -63,6 +63,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
   const [showCoachVisit, setSHowCoachVisit] = useState(false);
 
   const { isLoading } = useThunkFetchCall('trainee', 'getTraineeVisitData');
+
   const communitySupportGained =
     traineeTimeline?.communitySupportStatus === 'Community support gained';
   const registeredThreeChildren =
@@ -77,8 +78,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       .filter(
         (item) =>
           item?.questionAnswer === 'true' ||
-          item?.questionAnswer !== '' ||
-          item?.questionAnswer === undefined
+          (item?.questionAnswer !== ' ' && item?.questionAnswer !== 'false')
       );
     return completedItems?.length;
   };
@@ -212,7 +212,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
           sections,
         },
       };
-      await new TraineeService(userAuth?.auth_token!).addVisitData(
+      await new TraineeService(userAuth?.auth_token!).editVisitData(
         visitDateInput
       );
 
@@ -258,7 +258,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         },
       };
 
-      await new TraineeService(userAuth?.auth_token!).addVisitData(
+      await new TraineeService(userAuth?.auth_token!).editVisitData(
         visitDateInput
       );
 
@@ -388,11 +388,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  if (
-    !traineeVisitData?.some(
-      (item) => item.visitSection === 'Health, sanitation & safety'
-    )
-  ) {
+  const completedHealthSanitationItems = completedItems(
+    'Health, sanitation & safety'
+  );
+  if (completedHealthSanitationItems && completedHealthSanitationItems < 6) {
     notificationItems.push({
       showIcon: true,
       menuIcon: 'PlusCircleIcon',
@@ -400,7 +399,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Health, sanitation & safety',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 6 completed',
+      subTitle: `${completedHealthSanitationItems} of 7 completed`,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
@@ -408,7 +407,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.HEALTH_SANITATION_SAFETY),
     });
   } else {
-    const completedSectionItems = completedItems('Health, sanitation & safety');
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'PlusCircleIcon',
@@ -416,7 +414,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Health, sanitation & safety',
       titleStyle: 'text-textDark semibold',
-      subTitle: `${completedSectionItems} of 7 completed`,
+      subTitle: `${completedHealthSanitationItems} of 7 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -425,11 +423,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  if (
-    !traineeVisitData?.some(
-      (item) => item.visitSection === 'Safety - structure, space & area'
-    )
-  ) {
+  const completedSafetyStructureItems = completedItems(
+    'Safety - structure, space & area'
+  );
+  if (completedSafetyStructureItems && completedSafetyStructureItems < 10) {
     notificationItems.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
@@ -437,7 +434,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Safety - structure & area',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 10 completed',
+      subTitle: `${completedSafetyStructureItems} of 10 completed`,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
@@ -445,9 +442,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.SAFETY_STRUCTURE_AREA),
     });
   } else {
-    const completedSectionItems = completedItems(
-      'Safety - structure, space & area'
-    );
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'ShieldCheckIcon',
@@ -455,7 +449,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Safety - structure & area',
       titleStyle: 'text-textDark semibold',
-      subTitle: `${completedSectionItems} of 10 completed`,
+      subTitle: `${completedSafetyStructureItems} of 10 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
@@ -464,11 +458,10 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
     });
   }
 
-  if (
-    !traineeVisitData?.some(
-      (item) => item.visitSection === 'Space & emergency planning'
-    )
-  ) {
+  const completedSpaceEmergencyItems = completedItems(
+    'Space & emergency planning'
+  );
+  if (completedSpaceEmergencyItems && completedSpaceEmergencyItems < 4) {
     notificationItemsLaterStage.push({
       showIcon: true,
       menuIcon: 'ShieldExclamationIcon',
@@ -476,7 +469,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Space & emergency planning',
       titleStyle: 'text-textDark semibold',
-      subTitle: '0 of 4 completed',
+      subTitle: `${completedSpaceEmergencyItems} of 4 completed`,
       subTitleStyle: 'text-textMid',
       iconBackgroundColor: 'tertiary',
       backgroundColor: 'uiBg',
@@ -484,7 +477,6 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
         setActiveStep(SmartSpaceChecklisstStepsSteps.SPACE_EMERGENCY_PLANNING),
     });
   } else {
-    const completedSectionItems = completedItems('Space & emergency planning');
     notificationsCompleted.push({
       showIcon: true,
       menuIcon: 'ShieldExclamationIcon',
@@ -492,7 +484,7 @@ export const SmartSpaceChecklist: React.FC<SmartSpaceChecklistProps> = ({
       iconColor: 'white',
       title: 'Space & emergency planning',
       titleStyle: 'text-textDark semibold',
-      subTitle: `${completedSectionItems} of 4 completed`,
+      subTitle: `${completedSpaceEmergencyItems} of 4 completed`,
       subTitleStyle: 'text-successMain',
       iconBackgroundColor: 'successMain',
       backgroundColor: 'successBg',
