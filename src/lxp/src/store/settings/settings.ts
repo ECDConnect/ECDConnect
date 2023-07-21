@@ -1,5 +1,5 @@
 import { createSlice, PayloadAction } from '@reduxjs/toolkit';
-import { format } from 'date-fns';
+import { format, formatISO } from 'date-fns';
 import localForage from 'localforage';
 import { getSettings } from './settings.actions';
 import { SettingsState } from './settings.types';
@@ -9,6 +9,7 @@ const initialState: SettingsState = {
   childProgressReportMonths: [6, 12],
   childInitialObservationPeriod: 30,
   lastDataSync: format(new Date(), 'MM/dd/yyyy hh:mm aa'),
+  lastDataSyncUnformatted: formatISO(new Date()),
   notificationPollInterval: 3600000 * 24, //
   applicationVersion: undefined,
   settings: undefined,
@@ -27,6 +28,7 @@ const settingSlice = createSlice({
     },
     setLastDataSync: (state) => {
       state.lastDataSync = format(new Date(), 'MM/dd/yyyy hh:mm aa');
+      state.lastDataSyncUnformatted = formatISO(new Date());
     },
     setApplicationVersion: (state, action: PayloadAction<string>) => {
       state.applicationVersion = action.payload;

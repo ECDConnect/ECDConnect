@@ -22,7 +22,9 @@ export type StackedListType =
 export type StackedListItemType =
   | ActionListDataItem
   | MenuListDataItem
-  | TitleListDataItem;
+  | TitleListDataItem
+  | UserAlertListDataItem
+  | AlertListDataItem;
 
 export interface StackedListProps<T> extends ComponentBaseProps {
   type: string;
@@ -30,6 +32,7 @@ export interface StackedListProps<T> extends ComponentBaseProps {
   isFullHeight?: boolean;
   onScroll?: (scrollTop: number) => void;
   id?: string;
+  onClickItem?: (item: any) => void;
 }
 
 export const StackedList = <T extends {}>({
@@ -39,6 +42,7 @@ export const StackedList = <T extends {}>({
   isFullHeight = true,
   id,
   onScroll,
+  onClickItem,
 }: StackedListProps<T>) => {
   const getItemComponent = (
     type: string,
@@ -53,6 +57,7 @@ export const StackedList = <T extends {}>({
             key={item.title + '-stackedList-listItem-' + index}
             item={item as ActionListDataItem}
             id={'actionList' + index}
+            onClickItem={onClickItem}
           ></ActionListItem>
         );
       case 'MenuList':
@@ -60,6 +65,7 @@ export const StackedList = <T extends {}>({
           <MenuListItem
             key={item.title + '-stackedList-listItem-' + index}
             item={item as MenuListDataItem}
+            onClickItem={onClickItem}
           ></MenuListItem>
         );
       case 'TitleList':
@@ -67,6 +73,7 @@ export const StackedList = <T extends {}>({
           <TitleListItem
             key={item.title + '-stackedList-listItem-' + index}
             item={item as TitleListDataItem}
+            onClickItem={onClickItem}
           ></TitleListItem>
         );
       case 'UserAlertList':
@@ -74,6 +81,7 @@ export const StackedList = <T extends {}>({
           <UserAlertListItem
             key={item.title + '-stackedList-listItem-' + index}
             item={item as UserAlertListDataItem}
+            onClickItem={onClickItem}
           ></UserAlertListItem>
         );
       case 'AlertList':
@@ -81,6 +89,7 @@ export const StackedList = <T extends {}>({
           <AlertListItem
             key={item.title + '-stackedList-listItem-' + index}
             item={item as AlertListDataItem}
+            onClickItem={onClickItem}
           ></AlertListItem>
         );
       default:

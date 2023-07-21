@@ -41,7 +41,7 @@ export const syncOfflineData = createAsyncThunk<
     // },
     {
       title: 'Calendar',
-      action: calendarThunkActions.upsertCalendar,
+      action: calendarThunkActions.upsertCalendarEvents,
     },
     {
       title: 'Care givers',
@@ -153,7 +153,7 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       // },
       {
         title: 'Calendar',
-        action: calendarThunkActions.upsertCalendar,
+        action: calendarThunkActions.upsertCalendarEvents,
       },
       {
         title: 'Care givers',
@@ -218,6 +218,18 @@ export const syncOfflineDataForPractitioner = createAsyncThunk<
       {
         title: 'PQAs Support Visits',
         action: pqaThunkActions.addSupportVisitFormData,
+      },
+      {
+        title: 'PQAs Follow up Visits',
+        action: pqaThunkActions.addFollowUpVisitForPractitioner,
+      },
+      {
+        title: 'ReAccreditation Visits',
+        action: pqaThunkActions.addReAccreditationVisitData,
+      },
+      {
+        title: 'ReAccreditation Follow up Visits',
+        action: pqaThunkActions.addReAccreditationFollowUpVisitForPractitioner,
       },
     ];
 

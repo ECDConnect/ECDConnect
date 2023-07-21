@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace EcdLink.Api.CoreApi.Managers.Integration
+namespace EcdLink.Api.CoreApi.Managers
 {
     public class BaseManager
     {

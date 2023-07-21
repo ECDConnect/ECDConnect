@@ -9,7 +9,9 @@ namespace ECDLink.DataAccessLayer.Entities.Integration.MappedEntities
     public enum SLChangeType
     {
         Create, 
+        Insert,
         Deactivate,
+        Delete,
         Update
     }
 }

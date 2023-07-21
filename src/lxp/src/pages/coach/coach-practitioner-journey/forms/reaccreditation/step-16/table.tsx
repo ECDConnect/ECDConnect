@@ -14,6 +14,7 @@ import {
   step15ReAccreditationVisitSection,
 } from '../step-15';
 import { DynamicFormProps, Question } from '../../dynamic-form';
+import { Rating as RatingType } from '../..';
 
 interface Section {
   questions?: Question[];
@@ -28,13 +29,15 @@ export interface TableProps {
     section3: Section;
     section4: Section;
   };
-  isToRemoveSmartStarter: boolean;
+  isToRemoveSmartStarter?: boolean;
+  setReAccreditationRating?: (value: RatingType) => void;
 }
 
 export const Rating = ({
   sections,
   sectionQuestions,
   isToRemoveSmartStarter,
+  setReAccreditationRating,
 }: TableProps) => {
   const step15Questions = sectionQuestions?.find(
     (item) => item.visitSection === step15ReAccreditationVisitSection
@@ -84,7 +87,14 @@ export const Rating = ({
       color: scoreColours,
       component: (
         <p className={`text-${scoreColours} font-semibold`}>
-          <span className="text-xl">{icon}</span> {result}/{total}
+          <span
+            className={`${
+              scoreColours === 'alertMain' ? 'text-xs' : 'text-xl'
+            }`}
+          >
+            {icon}
+          </span>{' '}
+          {result}/{total}
         </p>
       ),
     };
@@ -155,6 +165,8 @@ export const Rating = ({
 
   const getCard = () => {
     if (isGreenCard) {
+      setReAccreditationRating?.({ color: 'Success', score: rating });
+
       return (
         <div className="rounded-10 bg-successBg mb-4 flex items-center p-4">
           <Emoji1 className="mr-2 h-auto w-12" />
@@ -169,6 +181,8 @@ export const Rating = ({
     }
 
     if (isOrangeCard) {
+      setReAccreditationRating?.({ color: 'Warning', score: rating });
+
       return (
         <>
           <div className="rounded-10 bg-alertBg mb-4 flex items-center p-4">
@@ -189,6 +203,8 @@ export const Rating = ({
         </>
       );
     }
+
+    setReAccreditationRating?.({ color: 'Error', score: rating });
 
     return (
       <>

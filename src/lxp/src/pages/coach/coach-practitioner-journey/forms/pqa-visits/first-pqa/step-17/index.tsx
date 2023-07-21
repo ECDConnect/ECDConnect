@@ -11,19 +11,47 @@ import { step7TotalScore, step7VisitSection } from '../step-7';
 import { step8TotalScore, step8VisitSection } from '../step-8';
 import { step16Question1, step16VisitSection } from '../step-16';
 import { ReactComponent as RedRating } from '@/assets/red_rating.svg';
+import { useParams } from 'react-router';
+import { PractitionerJourneyParams } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
+import { useSelector } from 'react-redux';
+import { getPractitionerTimelineByIdSelector } from '@/store/pqa/pqa.selectors';
+
+export const pqaVisitSectionStep17 = 'Step 17';
+export const pqaSummaryQuestionStep17 = 'Summary of discussion';
 
 export const Step17 = ({
   sectionQuestions,
   smartStarter,
+  pqaRating,
   setSectionQuestions,
   setEnableButton,
+  setPqaRating,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState('');
 
-  const question = 'Summary of discussion';
-  const visitSection = 'Step 17';
   const firstName = smartStarter?.user?.firstName || 'the smartStarter';
   const fullName = `${firstName} ${smartStarter?.user?.surname || ''}`;
+
+  const { practitionerId } = useParams<PractitionerJourneyParams>();
+
+  const timeline = useSelector(
+    getPractitionerTimelineByIdSelector(practitionerId)
+  );
+
+  const pqaRating1 = timeline?.pQARating1;
+  const pqaRating2 = timeline?.pQARating2;
+  const pqaRating3 = timeline?.pQARating3;
+
+  const pqaRatingColorList = [
+    pqaRating1?.overallRatingColor,
+    pqaRating2?.overallRatingColor,
+    pqaRating3?.overallRatingColor,
+    pqaRating?.color,
+  ];
+
+  const pqaRatingRedColorCount = pqaRatingColorList.filter(
+    (item) => item === 'Error'
+  ).length;
 
   const step3 = sectionQuestions?.find(
     (item) => item.visitSection === step3VisitSection
@@ -98,7 +126,10 @@ export const Step17 = ({
       const value = event.target.value;
       setAnswer(value);
       setSectionQuestions?.([
-        { visitSection, questions: [{ answer, question }] },
+        {
+          visitSection: pqaVisitSectionStep17,
+          questions: [{ answer, question: pqaSummaryQuestionStep17 }],
+        },
       ]);
 
       if (value !== '') {
@@ -133,8 +164,20 @@ export const Step17 = ({
         </>
       );
     }
-    return <Rating sectionQuestions={sectionQuestions} sections={sections} />;
-  }, [firstName, isToRemoveSmartStarter, sectionQuestions, sections]);
+    return (
+      <Rating
+        sectionQuestions={sectionQuestions}
+        sections={sections}
+        setPqaRating={setPqaRating}
+      />
+    );
+  }, [
+    firstName,
+    isToRemoveSmartStarter,
+    sectionQuestions,
+    sections,
+    setPqaRating,
+  ]);
 
   useEffect(() => {
     setEnableButton?.(false);
@@ -152,12 +195,23 @@ export const Step17 = ({
         })}`}
         color="textMid"
       />
+      {pqaRatingRedColorCount === 2 && (
+        <Alert
+          className="mt-4"
+          type="error"
+          title={`${firstName} has received 2 red ratings`}
+          list={[
+            `This means ${firstName} will not be able to continue in the programme.`,
+            `Explain to ${firstName} why they will not be able to continue.`,
+          ]}
+        />
+      )}
       <Divider dividerType="dashed" className="my-4" />
       {renderContent}
       <FormInput
         className="mt-4"
         textInputType="textarea"
-        label={question}
+        label={pqaSummaryQuestionStep17}
         subLabel={
           isToRemoveSmartStarter
             ? 'Discuss the decision with the SmartStarter.'

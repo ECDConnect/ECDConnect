@@ -170,7 +170,7 @@ export const RemoveChild: React.FC = () => {
         </Button>
         <Button
           onClick={() => history.goBack()}
-          className="w-full mt-4"
+          className="mt-4 w-full"
           size="small"
           color="primary"
           type="outlined"

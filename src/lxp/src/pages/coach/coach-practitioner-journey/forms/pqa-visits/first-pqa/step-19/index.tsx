@@ -9,12 +9,18 @@ import {
   SearchDropDownOption,
   Typography,
 } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { ClassroomGroupDto, replaceBraces, usePrevious } from '@ecdlink/core';
+import {
+  ClassroomGroupDto,
+  parseBool,
+  replaceBraces,
+  usePrevious,
+  useSessionStorage,
+} from '@ecdlink/core';
 import { filterInfo } from '@/pages/classroom/attendance/components/attendance-list/attendance-list';
 
 import { getAttendanceStatusCheck } from '@/utils/classroom/attendance/track-attendance-utils';
@@ -25,12 +31,20 @@ import { PractitionerService } from '@/services/PractitionerService';
 import { ClassroomGroup } from '@ecdlink/graphql';
 import { authSelectors } from '@/store/auth';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step19Question2Pqa =
   'Does {client} need to register any children on Funda App?';
 
+interface State {
+  question: string;
+  answer: string;
+}
+
 export const Step19 = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -58,6 +72,23 @@ export const Step19 = ({
   const visitSection = 'Step 19';
   const name = smartStarter?.user?.firstName || 'the SmartStarter';
   const hasChildren = !!presentChildrenCount || !!absentChildrenCount;
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const { isOnline } = useOnlineStatus();
 
@@ -88,8 +119,8 @@ export const Step19 = ({
   );
 
   const options = [
-    { text: 'Yes', value: true },
-    { text: 'No', value: false },
+    { text: 'Yes', value: true, disabled: isViewAnswers },
+    { text: 'No', value: false, disabled: isViewAnswers },
   ];
 
   const onOptionSelected = useCallback(
@@ -237,6 +268,52 @@ export const Step19 = ({
     practitionerClassroomDetails,
   ]);
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const updatedQuestions = questions.map((question) => {
+        const correspondingQuestion = previousData?.questions.find(
+          (secondQuestion) => secondQuestion?.question === question.question
+        );
+
+        if (correspondingQuestion) {
+          const isQuestion2 =
+            correspondingQuestion.question.includes(step19Question2Pqa);
+
+          return {
+            ...question,
+            answer:
+              isQuestion2 && correspondingQuestion.answer
+                ? parseBool(String(correspondingQuestion.answer))
+                : correspondingQuestion.answer,
+          };
+        }
+
+        return question;
+      });
+
+      setAnswers(updatedQuestions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData?.questions,
+    previousStatePreviousData?.questions.length,
+    questions,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   useEffect(() => {
     classroomsDetailsForPractitioner();
   }, [classroomsDetailsForPractitioner, setEnableButton]);
@@ -257,6 +334,13 @@ export const Step19 = ({
         text={questions[0].question}
         color="textDark"
       />
+      {isViewAnswers && (
+        <Alert
+          className="mx-4 mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Typography
         className="px-4 pt-4"
         type="h4"
@@ -269,6 +353,7 @@ export const Step19 = ({
             displayMenuOverlay
             menuItemClassName="w-11/12 left-4"
             className={'mr-1'}
+            disabled={isViewAnswers}
             options={
               (classroomGroups && isPrincipal
                 ? currentClassroomGroups.map((x) => {
@@ -335,6 +420,7 @@ export const Step19 = ({
               isPrimaryClass={isPrimaryList}
               classroomGroup={selectedGroup}
               attendanceDate={new Date()}
+              isMultipleClasses={selectedClassroomGroups.length > 1}
               onAttendanceUpdated={(state) => {
                 onAttendanceChange(state.listItems);
                 validateAttendanceList(
@@ -359,6 +445,7 @@ export const Step19 = ({
           color="secondary"
           type={ButtonGroupTypes.Button}
           options={options}
+          selectedOptions={Boolean(questions[1].answer)}
           onOptionSelected={(value) => onOptionSelected(value, 1)}
         />
         {questions[1].answer !== '' && (

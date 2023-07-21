@@ -21,7 +21,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         {
             return personnelService.GetOnBoardTraineeTimeline(userId);
         }
-        
 
     }
 }

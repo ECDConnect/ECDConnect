@@ -13,6 +13,7 @@ import {
   getProvinces,
   getRaces,
   getReasonsForLeaving,
+  getReasonsForPractitionerLeaving,
   getRelations,
   getWorkflowStatuses,
 } from './static-data.actions';
@@ -29,6 +30,7 @@ const initialState: StaticDataState = {
   holidays: undefined,
   provinces: undefined,
   reasonForLeaving: undefined,
+  reasonForPractitionerLeaving: undefined,
   grants: undefined,
   documentTypes: undefined,
   WorkflowStatuses: undefined,
@@ -50,6 +52,8 @@ const staticDataSlice = createSlice({
       state.holidays = initialState.holidays;
       state.provinces = initialState.provinces;
       state.reasonForLeaving = initialState.reasonForLeaving;
+      state.reasonForPractitionerLeaving =
+        initialState.reasonForPractitionerLeaving;
       state.grants = initialState.grants;
       state.documentTypes = initialState.documentTypes;
       state.WorkflowStatuses = initialState.WorkflowStatuses;
@@ -90,6 +94,12 @@ const staticDataSlice = createSlice({
     builder.addCase(getReasonsForLeaving.fulfilled, (state, action) => {
       state.reasonForLeaving = action.payload;
     });
+    builder.addCase(
+      getReasonsForPractitionerLeaving.fulfilled,
+      (state, action) => {
+        state.reasonForPractitionerLeaving = action.payload;
+      }
+    );
     builder.addCase(getGrants.fulfilled, (state, action) => {
       state.grants = action.payload;
     });

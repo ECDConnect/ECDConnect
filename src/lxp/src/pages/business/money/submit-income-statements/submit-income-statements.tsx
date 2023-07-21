@@ -165,11 +165,16 @@ export const SubmitIncomeStatements: React.FC = () => {
     7
   );
 
+  const isLastMonth =
+    today.getMonth() === balanceSheet?.[balanceSheet?.length - 1]?.month!;
+
   const isSameMonth =
-    today.getMonth() + 1 === balanceSheet?.[balanceSheet?.length - 1]?.month!;
+    monthDateNumber === balanceSheet?.[balanceSheet?.length - 1]?.month!;
 
   const submitDateDaysCount =
-    balanceSheet?.length === 1 || (isSameMonth && disableSubmit)
+    (balanceSheet?.length === 1 && isSameMonth) ||
+    (isSameMonth && disableSubmit) ||
+    balanceSheet?.[balanceSheet?.length - 1]?.submitted === true
       ? differenceInDays(lastDayToSubmitNextMonth, today)
       : differenceInDays(lastDayToSubmit, today);
 
@@ -244,7 +249,14 @@ export const SubmitIncomeStatements: React.FC = () => {
                 shadowSize={'md'}
               >
                 <Typography
-                  text={`${format(new Date(), 'LLLL')} balance`}
+                  text={
+                    isLastMonth
+                      ? `${format(
+                          new Date().setMonth(today.getMonth() - 1),
+                          'LLLL'
+                        )} balance`
+                      : `${format(new Date(), 'LLLL')} balance`
+                  }
                   type="h4"
                   color={'white'}
                   className="w-6/12"

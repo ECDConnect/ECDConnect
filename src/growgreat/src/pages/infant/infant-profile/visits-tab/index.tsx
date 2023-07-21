@@ -18,6 +18,7 @@ import { useSelector } from 'react-redux';
 import { RootState } from '@/store/types';
 import { useAppDispatch } from '@/store';
 import {
+  getDateWithoutTimeZone,
   getStringFromClassNameOrId,
   useDialog,
   usePrevious,
@@ -28,6 +29,7 @@ import {
   getInfantCurrentVisitSelector,
   getInfantById,
   getInfantVisitsSelector,
+  getInfantNearestPreviousVisitByOrderDate,
 } from '@/store/infant/infant.selectors';
 import { infantThunkActions } from '@/store/infant';
 import { InfantProfileParams } from '../infant-profile.types';
@@ -76,6 +78,9 @@ export const VisitsTab: React.FC = () => {
   const visits = useSelector(getInfantVisitsSelector);
   const currentVisit = useSelector((state: RootState) =>
     getInfantCurrentVisitSelector(state, '')
+  );
+  const previousVisit = useSelector((state: RootState) =>
+    getInfantNearestPreviousVisitByOrderDate(state, currentVisit)
   );
 
   const { isLoading } = useThunkFetchCall(
@@ -128,77 +133,122 @@ export const VisitsTab: React.FC = () => {
     [infant?.insertedDate]
   );
 
-  const filteredVisits = useMemo(
-    () =>
-      visits.filter(
-        (item) => new Date(item?.orderDate || '') >= infantInsertedDate
-      ),
-    [infantInsertedDate, visits]
-  );
-
   const getType = useCallback(
     (item: VisitDto, isMissedVisit: boolean): StepItem['type'] => {
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
+
       if (item.attended) {
         return 'completed';
       }
 
+      if (item.visitType?.normalizedName === 'Day 7') {
+        if (infantAgeDays < 7 || infantAgeDays > 13) {
+          return 'todo';
+        }
+      }
       if (
         (isWeekDeadline && currentVisit.visitType?.id === item.visitType?.id) ||
-        isMissedVisit
+        isMissedVisit ||
+        (isAdditionalVisit && previousVisit?.attended)
       ) {
         return 'inProgress';
       }
 
       return 'todo';
     },
-    [currentVisit, isWeekDeadline]
+    [currentVisit, infantAgeDays, isWeekDeadline, previousVisit?.attended]
   );
 
-  const filterArrayById = (arr: VisitDto[], id: string) => {
-    const index = arr.findIndex((obj) => obj.id === id);
-    return index !== -1 ? arr.slice(index) : [];
-  };
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
+  const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
+    return visitsToSort.sort((a, b) => {
+      if (a === undefined && b === undefined) {
+        return 0;
+      }
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
+
+      if (a.visitType && b.visitType) {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime() ||
+          a.visitType.order - b.visitType.order!
+        );
+      } else {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        );
+      }
+    });
+  }, []);
+
+  const getSubTitle = useCallback(
+    (
+      item: VisitDto,
+      isMissedVisit: boolean,
+      isAdditionalVisit: boolean,
+      date: Date
+    ): string => {
+      if (isAdditionalVisit && item.comment) {
+        return item.comment;
+      }
+
+      if (isMissedVisit) {
+        if (item.visitType?.normalizedName === 'Day 3') {
+          if (infantAgeDays > 3) {
+            return `By ${date.getDate()} ${date.toLocaleString('default', {
+              month: 'long',
+            })} ${date.getFullYear()}`;
+          }
+        }
+        return 'Missed visit deadline';
+      }
+
+      return `By ${date.getDate()} ${date.toLocaleString('default', {
+        month: 'long',
+      })} ${date.getFullYear()}`;
+    },
+    [infantAgeDays]
+  );
 
   const visitSteps = useMemo(() => {
-    const visitsFromCurrentVisit = filterArrayById(
-      visits,
-      currentVisit?.id || ''
-    );
-    const visitsNoAttend = visitsFromCurrentVisit.filter(
-      (item) => !item.attended
-    );
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
+      if (dueDate) {
+        return !isAttend && dueDate >= todayDate!;
+      }
 
-    // const visitsBeforeCurrentVisit = filterArrayBeforeId(
-    //   filteredVisits,
-    //   currentVisit?.id || ''
-    // );
+      if (orderDate) {
+        return !isAttend && orderDate >= todayDate!;
+      }
 
-    const isPastVisits = !!filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    ).length;
+      return !isAttend;
+    });
 
-    const sortedVisits = visitsNoAttend.sort(
-      (a, b) => (a.visitType?.order || 0) - (b.visitType?.order || 0)
-    );
+    const sortedVisits = getSortedVisits(filteredVisits);
+    const isToShowPastVisits = visits.length > filteredVisits.length;
 
     const array: StepItem[] = sortedVisits.map((item) => {
       const date = new Date(item.orderDate);
       currentDate.setHours(0, 0, 0, 0);
       date.setHours(0, 0, 0, 0);
       const isMissedVisit = date < currentDate;
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
 
       return {
-        title:
-          item.visitType?.normalizedName === 'Additional visits'
-            ? 'Other visit'
-            : item.visitType?.normalizedName + ' visit' || 'Visit',
-        subTitle: isMissedVisit
-          ? 'Missed visit deadline'
-          : `By ${date.getDate()} ${date.toLocaleString('default', {
-              month: 'long',
-            })} ${date.getFullYear()}`,
-        ...(isMissedVisit && {
+        title: isAdditionalVisit
+          ? 'Other visit'
+          : item.visitType?.normalizedName || 'Visit',
+        subTitle: getSubTitle(item, isMissedVisit, isAdditionalVisit, date),
+        ...((isMissedVisit || isAdditionalVisit) && {
           subTitleColor: 'alertDark',
         }),
         inProgressStepIcon: isMissedVisit
@@ -216,8 +266,8 @@ export const VisitsTab: React.FC = () => {
     });
 
     array.unshift({
-      title: isPastVisits ? 'Past visits' : 'Folder opened',
-      subTitle: isPastVisits
+      title: isToShowPastVisits ? 'Past visits' : 'Folder opened',
+      subTitle: isToShowPastVisits
         ? ''
         : `${infantInsertedDate.getDate()} ${infantInsertedDate.toLocaleString(
             'default',
@@ -226,7 +276,7 @@ export const VisitsTab: React.FC = () => {
             }
           )} ${infantInsertedDate.getFullYear()}`,
       type: 'completed',
-      showActionButton: isPastVisits,
+      showActionButton: isToShowPastVisits,
       actionButtonText: 'See info',
       actionButtonTextColor: 'secondary',
       actionButtonColor: 'secondaryAccent2',
@@ -237,12 +287,12 @@ export const VisitsTab: React.FC = () => {
     return array;
   }, [
     currentDate,
-    currentVisit?.id,
-    filteredVisits,
+    getSortedVisits,
     getType,
     history,
     infantInsertedDate,
     location.pathname,
+    todayDate,
     visits,
   ]);
 

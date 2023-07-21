@@ -1,17 +1,28 @@
 import { Alert, Divider, Radio, Typography } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
-import { useState } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { options } from './options';
 import { Score } from '../components/score';
+import { useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+import { usePrevious } from 'react-use';
 
 export const step5VisitSection = 'Step 5';
 export const step5TotalScore = 12;
 
+interface State {
+  question: string;
+  answer: string;
+}
+
 export const Step5 = ({
   setSectionQuestions,
   setEnableButton,
+  isView,
 }: DynamicFormProps) => {
-  const [questions, setAnswers] = useState([
+  const [questions, setAnswers] = useState<State[]>([
     {
       question: 'Warm & respectful interactions',
       answer: '',
@@ -37,6 +48,23 @@ export const Step5 = ({
       answer: '',
     },
   ]);
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step5VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const handleChange = (
     event: React.ChangeEvent<HTMLInputElement>,
@@ -69,6 +97,26 @@ export const Step5 = ({
     setEnableButton?.(false);
   };
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      setAnswers(previousData?.questions as State[]);
+    }
+  }, [isViewAnswers, previousData, previousStatePreviousData]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="flex flex-col gap-2 p-4">
       <Typography
@@ -80,9 +128,15 @@ export const Step5 = ({
         text="Choose a score for each of the areas below"
         color="textMid"
       />
+      {isViewAnswers && (
+        <Alert
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
-        <>
+        <Fragment key={question.question}>
           <Typography type="h4" text={`3.${index + 1} ${question.question}`} />
           {index === 3 && (
             <Alert
@@ -112,11 +166,12 @@ export const Step5 = ({
                 description={item}
                 value={item}
                 checked={questions[index].answer === item}
+                disabled={isViewAnswers}
                 onChange={(event) => handleChange(event, question.question)}
               />
             ))}
           </fieldset>
-        </>
+        </Fragment>
       ))}
       <Score questions={questions} total={step5TotalScore} />
     </div>

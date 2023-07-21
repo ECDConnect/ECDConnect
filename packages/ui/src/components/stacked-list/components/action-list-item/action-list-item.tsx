@@ -8,9 +8,14 @@ import Typography from '../../../typography/typography';
 export interface ActionListItemProps {
   item: ActionListDataItem;
   id?: string;
+  onClickItem?: (item: any) => void;
 }
 
-export const ActionListItem: React.FC<ActionListItemProps> = ({ item, id }) => {
+export const ActionListItem: React.FC<ActionListItemProps> = ({
+  item,
+  id,
+  onClickItem,
+}) => {
   const getIcon = (iconType: string) => {
     return renderIcon(iconType, styles.actionIcon);
   };
@@ -59,8 +64,13 @@ export const ActionListItem: React.FC<ActionListItemProps> = ({ item, id }) => {
             </>
           </div>
         </div>
-        {item.onActionClick && (
-          <div onClick={() => item.onActionClick && item.onActionClick()}>
+        {(!!onClickItem || !!item.onActionClick) && (
+          <div
+            onClick={() => {
+              if (!!item.onActionClick) item.onActionClick();
+              else if (!!onClickItem) onClickItem(item);
+            }}
+          >
             {item.actionName && (
               <Button type={buttonType} color="secondaryAccent2" size="small">
                 <Typography

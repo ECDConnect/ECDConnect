@@ -14,10 +14,9 @@ import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import ROUTES from '@/routes/routes';
 import {
   getInfantById,
-  getInfantCurrentVisitSelector,
   getInfantVisitsSelector,
 } from '@/store/infant/infant.selectors';
-import { filterArrayBeforeId } from '..';
+import { getDateWithoutTimeZone, VisitDto } from '@ecdlink/core';
 
 export const PastVisits: React.FC = () => {
   const { isOnline } = useOnlineStatus();
@@ -28,38 +27,61 @@ export const PastVisits: React.FC = () => {
 
   const [, , , infantId] = location.pathname.split('/');
 
+  const currentDate = new Date();
+  currentDate?.setHours(0, 0, 0, 0);
+  const todayDate = getDateWithoutTimeZone(currentDate.toISOString());
+
   const infant = useSelector((state: RootState) =>
     getInfantById(state, infantId)
   );
 
   const visits = useSelector(getInfantVisitsSelector);
-  const currentVisit = useSelector((state: RootState) =>
-    getInfantCurrentVisitSelector(state, '')
-  );
 
-  const infantInsertedDate = useMemo(
-    () => new Date(infant?.insertedDate || ''),
-    [infant?.insertedDate]
-  );
+  const getSortedVisits = useCallback((visitsToSort: VisitDto[]) => {
+    return visitsToSort.sort((a, b) => {
+      if (a === undefined && b === undefined) {
+        return 0;
+      }
+      if (a === undefined) {
+        return -1;
+      }
+      if (b === undefined) {
+        return 1;
+      }
 
-  const filteredVisits = useMemo(
-    () =>
-      visits.filter(
-        (item) => new Date(item.orderDate || '') >= infantInsertedDate
-      ),
-    [infantInsertedDate, visits]
-  );
+      if (a.visitType && b.visitType) {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime() ||
+          a.visitType.order - b.visitType.order!
+        );
+      } else {
+        return (
+          new Date(a.orderDate).getTime() - new Date(b.orderDate).getTime()
+        );
+      }
+    });
+  }, []);
 
   const visitSteps = useMemo(() => {
-    const visitsBeforeCurrentVisit = filterArrayBeforeId(
-      filteredVisits,
-      currentVisit?.id || ''
-    );
-    const pastVisits = visitsBeforeCurrentVisit.length
-      ? visitsBeforeCurrentVisit
-      : filteredVisits;
+    const filteredVisits = visits.filter((item) => {
+      const dueDate = getDateWithoutTimeZone(item.dueDate);
+      const orderDate = getDateWithoutTimeZone(item.orderDate);
+      const isAttend = item.attended;
 
-    const array: StepItem[] = pastVisits.map((item, index) => {
+      if (dueDate) {
+        return isAttend || (!isAttend && dueDate < todayDate!);
+      }
+
+      if (orderDate) {
+        return isAttend || (!isAttend && orderDate < todayDate!);
+      }
+
+      return isAttend;
+    });
+
+    const sortedVisits = getSortedVisits(filteredVisits);
+
+    const array: StepItem[] = sortedVisits.map((item, index) => {
       const getType = (): StepItem['type'] => {
         if (!item.attended) {
           return 'inProgress';
@@ -67,13 +89,19 @@ export const PastVisits: React.FC = () => {
 
         return 'completed';
       };
+      const isAdditionalVisit =
+        item.visitType?.normalizedName === 'Additional visits';
 
       return {
-        title:
-          item.visitType?.normalizedName === 'Additional visits'
-            ? 'Other visit'
-            : item.visitType?.normalizedName + ' visit' || 'Visit',
-        subTitle: getType() === 'inProgress' ? 'Missed visit' : '',
+        title: isAdditionalVisit
+          ? 'Other visit'
+          : item.visitType?.normalizedName + ' visit' || 'Visit',
+        subTitle:
+          isAdditionalVisit && item.comment!
+            ? item.comment
+            : getType() === 'inProgress'
+            ? 'Missed visit'
+            : '',
         subTitleColor: 'alertDark',
         inProgressStepIcon: 'ExclamationCircleIcon',
         type: getType(),
@@ -97,7 +125,7 @@ export const PastVisits: React.FC = () => {
     });
 
     return array;
-  }, [currentVisit?.id, filteredVisits, history, infantId]);
+  }, [history, infantId, todayDate, visits]);
 
   const goBack = useCallback(() => {
     history.push(`${ROUTES.CLIENTS.INFANT_PROFILE.ROOT}${infantId}`);

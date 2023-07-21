@@ -1,25 +1,64 @@
-import { CalendarEventModel, CalendarEventTypeDto } from '@ecdlink/core';
-import { CalendarEventInput } from '@ecdlink/graphql';
+import {
+  CalendarEventActionModel,
+  CalendarEventDto,
+  CalendarEventModel,
+  CalendarEventModelInputModel,
+  CalendarEventTypeDto,
+} from '@ecdlink/core';
+import { CalendarEventModelInput } from '@ecdlink/graphql';
 import type { EventObject } from '@toast-ui/calendar';
 
 export const calendarConvert = {
-  CalendarEventInput: {
-    CalendarEventModel: (input: CalendarEventInput): CalendarEventModel => {
+  CalendarEventModelInputModel: {
+    CalendarEventModelInput: (
+      input: CalendarEventModelInputModel
+    ): CalendarEventModelInput => {
       return {
-        __changed: false,
-        id: input.Id,
-        allDay: input.AllDay,
-        description: input.Description || '',
-        end: input.End,
-        eventType: input.EventType || '',
-        name: input.Name || '',
-        start: input.Start,
-        participants: !input.Participants
+        action: input.action,
+        allDay: input.allDay,
+        description: input.description,
+        end: input.end,
+        eventType: input.eventType,
+        id: input.id,
+        name: input.name,
+        participants: input.participants.map((p) => ({
+          id: p.id,
+          participantUserId: p.participantUserId,
+        })),
+        start: input.start,
+      };
+    },
+
+    CalendarEventModel: (
+      input: CalendarEventModelInputModel
+    ): CalendarEventModel => {
+      return {
+        __changed: input.__changed,
+        id: input.id || '',
+        action: !input.action
+          ? null
+          : (JSON.parse(input.action) as CalendarEventActionModel),
+        allDay: input.allDay,
+        description: input.description || '',
+        end: input.end as string,
+        eventType: input.eventType || '',
+        name: input.name || '',
+        start: input.start as string,
+        participants: !input.participants
           ? []
-          : input.Participants.map((p) => ({
-              id: p?.Id || '',
-              participantUserId: p?.ParticipantUserId || '',
+          : input.participants.map((p) => ({
+              id: p?.id || '',
+              participantUserId: p?.participantUserId || '',
+              participantUser: {
+                firstName: p.participantUser.firstName,
+                surname: p.participantUser.surname,
+              },
             })),
+        userId: input.userId || '',
+        user: {
+          firstName: input.user.firstName,
+          surname: input.user.surname,
+        },
       };
     },
   },
@@ -45,23 +84,89 @@ export const calendarConvert = {
       };
     },
 
-    CalendarEventInput: (input: CalendarEventModel): CalendarEventInput => {
+    CalendarEventModelInputModel: (
+      input: CalendarEventModel
+    ): CalendarEventModelInputModel => {
       return {
-        AllDay: input.allDay,
-        Description: input.description,
-        End: input.end,
-        EventType: input.eventType,
-        Id: input.id,
-        IsActive: true,
-        Name: input.name,
-        Participants: input.participants.map((p) => ({
-          CalendarEventId: input.id,
-          Id: p.id,
-          ParticipantUserId: p.participantUserId,
-          IsActive: true,
+        __changed: input.__changed,
+        userId: input.userId,
+        action: !input.action ? null : JSON.stringify(input.action),
+        allDay: input.allDay,
+        description: input.description,
+        end: input.end,
+        eventType: input.eventType,
+        id: input.id,
+        name: input.name,
+        participants: input.participants.map((p) => ({
+          id: p.id,
+          participantUserId: p.participantUserId,
+          participantUser: {
+            firstName: p.participantUser.firstName,
+            surname: p.participantUser.surname,
+          },
         })),
-        Start: input.start,
+        start: input.start,
+        user: {
+          firstName: input.user.firstName,
+          surname: input.user.surname,
+        },
       };
+    },
+
+    CalendarEventModelInput: (
+      input: CalendarEventModel
+    ): CalendarEventModelInput => {
+      return {
+        action: !!input.action ? JSON.stringify(input.action) : null,
+        allDay: input.allDay,
+        description: input.description,
+        end: input.end,
+        eventType: input.eventType,
+        id: input.id,
+        name: input.name,
+        participants: input.participants.map((p) => ({
+          id: p.id,
+          participantUserId: p.participantUserId,
+        })),
+        start: input.start,
+      };
+    },
+  },
+
+  CalendarEventDto: {
+    CalendarEventModel: (input: CalendarEventDto): CalendarEventModel => {
+      return {
+        __changed: false,
+        id: input.id,
+        action: !!input.action ? JSON.parse(input.action) : null,
+        allDay: input.allDay,
+        description: input.description || '',
+        end: input.end,
+        eventType: input.eventType || '',
+        name: input.name || '',
+        start: input.start || '',
+        participants: !input.participants
+          ? []
+          : input.participants.map((p) => ({
+              id: p.id,
+              participantUserId: p.participantUserId || '',
+              participantUser: {
+                firstName: p.participantUser?.firstName || '',
+                surname: p.participantUser?.surname || '',
+              },
+            })),
+        userId: input.userId || '',
+        user: {
+          firstName: input.user?.firstName || '',
+          surname: input.user?.surname || '',
+        },
+      };
+    },
+
+    CalendarEventModels: (input: CalendarEventDto[]): CalendarEventModel[] => {
+      return input.map((i) =>
+        calendarConvert.CalendarEventDto.CalendarEventModel(i)
+      );
     },
   },
 };

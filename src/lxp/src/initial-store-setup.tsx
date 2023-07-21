@@ -1,4 +1,4 @@
-import { getYear, getMonth, getWeek } from 'date-fns';
+import { getYear, getMonth, getWeek, subMonths } from 'date-fns';
 import React, { useCallback, useEffect, useState } from 'react';
 import Loader from './components/loader/loader';
 import { useOnlineStatus } from './hooks/useOnlineStatus';
@@ -50,11 +50,7 @@ import { userSelectors } from '@store/user';
 import { useSelector } from 'react-redux';
 import { childrenForPractitionerThunkActions } from './store/childrenForPractitioner';
 import { programmeActions, programmeThunkActions } from './store/programme';
-import {
-  traineeActions,
-  traineeSelectors,
-  traineeThunkActions,
-} from './store/trainee';
+import { traineeSelectors, traineeThunkActions } from './store/trainee';
 import { calendarThunkActions } from './store/calendar';
 
 type IntialStoreSetupContextValues = {
@@ -82,12 +78,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
   const practitioners = useSelector(practitionerSelectors?.getPractitioners);
   const practitioner = useSelector(practitionerSelectors?.getPractitioner);
   const isPrincipal = practitioner?.isPrincipal;
+
   const traineeTimeline = useSelector(
     traineeSelectors.getTraineeOnboardTimeline
   );
   const traineeVisits = traineeTimeline?.traineeVisits;
   const traineeCurrentVisit = traineeVisits?.[0];
-
   const [otherLoading, setOtherLoading] = useState(false);
 
   const [shouldSaveStateHash, setShouldSaveStateHash] = useState(false);
@@ -229,12 +225,12 @@ const InitialStoreSetup: React.FC = ({ children }) => {
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isOnline]);
 
-  useEffect(() => {
-    if (shouldSaveStateHash) {
-      localforage.setItem('state:hash', hash(state));
-      setShouldSaveStateHash(false);
-    }
-  }, [state, shouldSaveStateHash]);
+  // useEffect(() => {
+  //   if (shouldSaveStateHash) {
+  //     localforage.setItem('state:hash', hash(state));
+  //     setShouldSaveStateHash(false);
+  //   }
+  // }, [state, shouldSaveStateHash]);
 
   const initAdditionalStoreSetup = async () => {
     // SPECIFIC DATA
@@ -268,7 +264,14 @@ const InitialStoreSetup: React.FC = ({ children }) => {
         weekOfYear: getWeek(new Date()),
       })
     ).unwrap();
-
+    await appDispatch(
+      calendarThunkActions.getCalendarEvents({
+        start: subMonths(
+          new Date(new Date().getFullYear(), new Date().getMonth(), 0),
+          1
+        ),
+      })
+    );
     setOtherLoading(false);
   };
 
@@ -321,10 +324,10 @@ const InitialStoreSetup: React.FC = ({ children }) => {
       classroomsThunkActions.upsertClassroomGroups({})
     ).unwrap();
     await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupProgrammes({})
+      classroomsThunkActions.updateClassroomGroupProgrammes({})
     ).unwrap();
     await appDispatch(
-      classroomsThunkActions.upsertClassroomGroupLearners({})
+      classroomsThunkActions.updateClassroomGroupLearners({})
     ).unwrap();
   };
 
