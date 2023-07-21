@@ -136,8 +136,19 @@ export const WeightAndLengthFormStep = ({
         },
       ]);
     }
-    if (isCheckedWeight && isCheckedLength) {
-      return setEnableButton?.(true);
+
+    if (isDisplayHeight || isDisplayLength) {
+      if (isCheckedWeight && isCheckedLength) {
+        return setEnableButton?.(true);
+      } else {
+        return setEnableButton?.(false);
+      }
+    } else {
+      if (isCheckedWeight) {
+        return setEnableButton?.(true);
+      } else {
+        return setEnableButton?.(false);
+      }
     }
   }, [
     setEnableButton,
