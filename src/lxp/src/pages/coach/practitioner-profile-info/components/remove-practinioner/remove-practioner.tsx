@@ -1,8 +1,4 @@
-import {
-  ClassroomDto,
-  ClassroomGroupDto,
-  ReasonForLeavingDto,
-} from '@ecdlink/core';
+import { ClassroomGroupDto, ReasonForLeavingDto } from '@ecdlink/core';
 import { yupResolver } from '@hookform/resolvers/yup';
 import {
   BannerWrapper,
@@ -39,7 +35,10 @@ import { useHistory, useLocation } from 'react-router-dom';
 import { PractitionerProfileRouteState } from '../../practitioner-profile-info.types';
 import { PractitionerService } from '@/services/PractitionerService';
 import ROUTES from '@routes/routes';
-import { classroomsForCoachSelectors } from '@/store/classroomForCoach';
+import {
+  classroomsForCoachSelectors,
+  classroomsForCoachThunkActions,
+} from '@/store/classroomForCoach';
 import { RemovePractitionerPrompt } from './remove-practitioner-prompt';
 
 export const RemovePractioner: React.FC<RemovePractionerProps> = ({
@@ -53,31 +52,48 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
   const reasonsForLeaving = useSelector(
     staticDataSelectors.getReasonsForLeavingPractitioner
   );
-  const practitionerId = location.state.practitionerId;
+  const practitionerUserId = location.state.practitionerId;
   const practitioners = useSelector(practitionerSelectors.getPractitioners);
   const practitioner = practitioners?.find(
-    (practitioner) => practitioner?.userId === practitionerId
+    (practitioner) => practitioner?.userId === practitionerUserId
   );
   const coachClassrooms = useSelector(
     classroomsForCoachSelectors.getClassroomForCoach
   );
   const practitionerClassroom = coachClassrooms?.find(
-    (item) => item.userId === practitionerId
+    (item) => item.userId === practitionerUserId
   );
 
   //Get list of practitioners for classroom
-  const practitionersForClass = useMemo(
-    () =>
-      practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
-        ? practitioners?.filter((x) => x.principalHierarchy === practitionerId) // If they are the principal, get any practitioners where their principal is this practitioner
+  const practitionersForClass = useMemo<
+    { label: string; value: string }[]
+  >(() => {
+    return (
+      ((practitioner?.isPrincipal || practitioner?.isFundaAppAdmin
+        ? practitioners?.filter(
+            // If they are the principal, get any practitioners where their principal is this practitioner
+            (x) => x.principalHierarchy === practitionerUserId
+          )
         : practitioners?.filter(
+            // Get other practitioners with the same principal, their principal and not themselves
             (x) =>
-              (x.id === practitioner?.principalHierarchy ||
+              (x.userId === practitioner?.principalHierarchy ||
                 x.principalHierarchy === practitioner?.principalHierarchy) &&
-              x.id !== practitionerId
-          ), // Get other practitioners with the same principal, their principal and not themselves
-    [practitionerId, practitioner, practitioners]
-  );
+              x.userId !== practitionerUserId
+          )
+      )
+        ?.map((p) => {
+          if (p?.user?.firstName && p?.user?.surname) {
+            return {
+              label: `${p?.user?.firstName} ${p?.user?.surname}`,
+              value: p.userId,
+            };
+          }
+          return undefined;
+        })
+        .filter(Boolean) as { label: string; value: string }[]) || []
+    );
+  }, [practitionerUserId, practitioner, practitioners]);
 
   const otherReasonId = '528d108a-b70a-4cbb-943e-f799cecceba6';
 
@@ -105,28 +121,6 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
 
   const [removePractionerPromptVisible, setRemovePractionerPromptVisible] =
     useState<boolean>(false);
-
-  const [practitionersList, setPractitionersList] = useState<
-    { label: string; value: string }[]
-  >([]);
-
-  useEffect(() => {
-    //Need to work out if practitioner is principal or who their principal is?
-    const _list = practitionersForClass
-      ?.map((p) => {
-        if (p?.user?.firstName && p?.user?.surname) {
-          return {
-            label: `${p?.user?.firstName} ${p?.user?.surname}`,
-            value: p.userId,
-          };
-        }
-        return undefined;
-      })
-      .filter(Boolean) as { label: string; value: any }[];
-
-    setPractitionersList(_list);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [practitionersForClass]);
 
   const [practitionerClassroomGroups, setPractitionerClassroomGroups] =
     useState<ClassroomGroupDto[]>();
@@ -164,6 +158,11 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
       );
       await appDispatch(
         practitionerThunkActions.getAllPractitioners({})
+      ).unwrap();
+      await appDispatch(
+        classroomsForCoachThunkActions.getClassroomForCoach({
+          id: user?.id!,
+        })
       ).unwrap();
     }
   };
@@ -230,13 +229,11 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
             />
           )}
           {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
-            practitionerClassroom &&
-            practitionersList &&
-            practitionersList.length && (
+            practitionerClassroom && (
               <div>
                 <Dropdown
                   placeholder={'Select practitioner'}
-                  list={practitionersList || []}
+                  list={practitionersForClass || []}
                   fillType="clear"
                   label={`Which practitioner will take over as ${
                     practitioner?.isFundaAppAdmin ? 'FAA' : 'principal'
@@ -258,54 +255,51 @@ export const RemovePractioner: React.FC<RemovePractionerProps> = ({
                 </div>
               </div>
             )}
-          {(practitioner?.isFundaAppAdmin || practitioner?.isPrincipal) &&
-            practitionerClassroomGroups &&
-            practitionersList &&
-            practitionersList.length && (
-              <div>
-                <Divider dividerType="dashed" className="my-4" />
-                <Typography
-                  type={'h1'}
-                  text={`Reassign ${practitioner?.user?.firstName} classes`}
-                  color={'primary'}
-                  className={'pt-1'}
-                />
-                <label className={classNames(styles.label, 'mt-4')}>
-                  {`${practitioner?.user?.firstName} is still assigned to ${
-                    practitionerClassroomGroups.length
-                  } ${
-                    practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
-                  }`}
-                </label>
-                <ul>
-                  {practitionerClassroomGroups.map(
-                    (classroomGroup: ClassroomGroupDto) => {
-                      return (
-                        <li key={classroomGroup.id}>
-                          <Dropdown
-                            placeholder={'Select practitioner'}
-                            list={practitionersList || []}
-                            fillType="clear"
-                            label={`Which practitioner will teach ${classroomGroup.name}?`}
-                            fullWidth
-                            className={'mt-3 w-11/12'}
-                            onChange={(item: string) => {
-                              setRemovePractionerFormValues(
-                                'reassignedClassrooms',
-                                {
-                                  ...reassignedClassrooms,
-                                  [classroomGroup.id as string]: item,
-                                }
-                              );
-                            }}
-                          />
-                        </li>
-                      );
-                    }
-                  )}
-                </ul>
-              </div>
-            )}
+          {practitionerClassroomGroups && (
+            <div>
+              <Divider dividerType="dashed" className="my-4" />
+              <Typography
+                type={'h1'}
+                text={`Reassign ${practitioner?.user?.firstName} classes`}
+                color={'primary'}
+                className={'pt-1'}
+              />
+              <label className={classNames(styles.label, 'mt-4')}>
+                {`${practitioner?.user?.firstName} is still assigned to ${
+                  practitionerClassroomGroups.length
+                } ${
+                  practitionerClassroomGroups.length > 1 ? 'classes' : 'class'
+                }`}
+              </label>
+              <ul>
+                {practitionerClassroomGroups.map(
+                  (classroomGroup: ClassroomGroupDto) => {
+                    return (
+                      <li key={classroomGroup.id}>
+                        <Dropdown
+                          placeholder={'Select practitioner'}
+                          list={practitionersForClass || []}
+                          fillType="clear"
+                          label={`Which practitioner will teach ${classroomGroup.name}?`}
+                          fullWidth
+                          className={'mt-3 w-11/12'}
+                          onChange={(item: string) => {
+                            setRemovePractionerFormValues(
+                              'reassignedClassrooms',
+                              {
+                                ...reassignedClassrooms,
+                                [classroomGroup.id as string]: item,
+                              }
+                            );
+                          }}
+                        />
+                      </li>
+                    );
+                  }
+                )}
+              </ul>
+            </div>
+          )}
           <div className={'py-4'}>
             <Divider></Divider>
           </div>

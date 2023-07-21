@@ -261,7 +261,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
                 _practiGenericRepo.Update(practitionerToDemote);
 
                 //now list through all practitioners and remove the principalhierarchies and assign new
-                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(oldPrincipalUserId)).ToList();
+                List<Practitioner> allPrincipalPractitioners = _practiGenericRepo.GetAll().Where(x => x.PrincipalHierarchy.Equals(Guid.Parse(oldPrincipalUserId))).ToList();
                 if (allPrincipalPractitioners.Count > 0)
                 {
                     foreach (var practi in allPrincipalPractitioners)
@@ -281,13 +281,12 @@ namespace EcdLink.Api.CoreApi.Managers.Users.SmartStart
 
                 //now add user to principal
                 var userToPromote = userManager.FindByIdAsync(newPrincipalUserId).Result;
-                userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER);
-                userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL);
+                var result = userManager.RemoveFromRoleAsync(userToPromote, Roles.PRACTITIONER).Result;
+                result = userManager.AddToRoleAsync(userToPromote, Roles.PRINCIPAL).Result;
 
                 var userToDemote = userManager.FindByIdAsync(oldPrincipalUserId).Result;
-                userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL);
-                userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER);
-
+                result = userManager.RemoveFromRoleAsync(userToDemote, Roles.PRINCIPAL).Result;
+                result = userManager.AddToRoleAsync(userToDemote, Roles.PRACTITIONER).Result;
             }
             return practitionerToPromote;
         }

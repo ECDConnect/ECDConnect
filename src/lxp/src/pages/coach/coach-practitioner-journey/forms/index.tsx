@@ -629,7 +629,11 @@ export const Form = ({
 
     if (visitName.includes(visitTypes.reaccreditation.includes)) {
       setTitle('Reaccreditation');
-      return getReAccreditationSteps({ isToRemoveSmartStarter });
+      return getReAccreditationSteps({
+        isToShowStep1: true,
+        isToShowStep16: true,
+        isToRemoveSmartStarter,
+      });
     }
 
     setTitle(visitTypes.pqa.firstPQA.description);

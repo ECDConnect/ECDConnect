@@ -28,7 +28,10 @@ import { pqaActions, pqaThunkActions } from '@/store/pqa';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { PqaActions } from '@/store/pqa/pqa.actions';
 import { visitTypes as coachVisitTypes } from '@/pages/coach/coach-practitioner-journey/coach-practitioner-journey.types';
-import { getFirstPqaSteps } from '@/pages/coach/coach-practitioner-journey/forms/steps';
+import {
+  getFirstPqaSteps,
+  getReAccreditationSteps,
+} from '@/pages/coach/coach-practitioner-journey/forms/steps';
 import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 import { step11VisitSection } from '@/pages/coach/coach-practitioner-journey/forms/pqa-visits/first-pqa';
 
@@ -82,6 +85,9 @@ export const Form = ({ onBack }: FormProps) => {
 
   const currentSteps = useMemo(() => {
     const isPQA = activityName.includes(coachVisitTypes.pqa.includes);
+    const isReAccreditation = activityName.includes(
+      coachVisitTypes.reaccreditation.includes
+    );
 
     if (activityName.includes(coachVisitTypes.prePqa.includes)) {
       setTitle('Pre-PQA site visits summary');
@@ -116,7 +122,15 @@ export const Form = ({ onBack }: FormProps) => {
       return supportVisitSteps;
     }
 
-    if (activityName.includes(coachVisitTypes.reaccreditation.includes)) {
+    if (isReAccreditation && isViewDetails) {
+      return getReAccreditationSteps({
+        isToShowStep1: false,
+        isToShowStep16: false,
+        isToRemoveSmartStarter: false,
+      });
+    }
+
+    if (isReAccreditation) {
       setTitle('Reaccreditation summary');
       return reAccreditationSteps;
     }
