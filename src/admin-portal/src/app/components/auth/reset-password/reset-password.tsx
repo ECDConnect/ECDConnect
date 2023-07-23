@@ -1,8 +1,7 @@
 import {
   Config,
-  initialResetValues,
-  LocalStorageKeys,
-  ResetPasswordRequestModel,
+  initialResetPasswordValues,
+  PasswordResetModel,
   resetPasswordSchema,
   useTheme,
 } from '@ecdlink/core';
@@ -10,39 +9,74 @@ import { Button, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
-import { useHistory } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
 import thumbs_up from '../../../../assets/icon_thumbsup.svg';
+import zxcvbn from 'zxcvbn-typescript';
+import { PasswordInput } from '../../password-input/password-input';
+
+interface RouteParams {
+  resetToken: string;
+  email: string;
+}
 
 export default function ResetPassword() {
   const { theme } = useTheme();
   const [resetLinkSent, setResetLinkSent] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const { resetPassword } = useAuth();
+  const { resetToken } = useParams<RouteParams>();
+  const { email } = useParams<RouteParams>();
+  const [displayError, setDisplayError] = useState(false);
 
   const history = useHistory();
 
   const { register, getValues, formState, watch } = useForm({
     resolver: yupResolver(resetPasswordSchema),
-    defaultValues: initialResetValues,
+    defaultValues: initialResetPasswordValues,
     mode: 'onChange',
   });
-
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
 
   //check password strength
   const password = watch('password');
   const formValues = getValues();
 
-  const { errors, isValid } = formState;
+  const requestResetPasword = async () => {
+    let _email = localStorage.getItem('email') ?? email;
 
-  const resetPassword = async () => {
     if (isValid) {
+      console.log(Config.authApi);
+
+      setIsLoading(true);
+      const body: PasswordResetModel = {
+        username: _email,
+        password: formValues.password,
+        resetToken: resetToken,
+      };
+      const isLinkSent = await resetPassword(body, Config.authApi);
+
+      if (isLinkSent) {
+        setIsLoading(false);
+        history.push('/login');
+      } else {
+        setIsLoading(false);
+        // setDisplayError(true);
+      }
+
+      setTimeout(() => {
+        // setDisplayError(false);
+      }, 5000);
+    }
+  };
+
+  const { errors, isValid } = formState;
+  console.log(isValid);
+
+  const submitResetPassword = async () => {
+    if (isValid) {
+      requestResetPasword();
       setResetLinkSent(!resetLinkSent);
       setIsLoading(!isLoading);
     }
@@ -111,27 +145,21 @@ export default function ResetPassword() {
             </h2>
           </div>
           <p className="text-md mb-3 pt-2 text-center text-gray-700">
-            Fill in your email address and we will send you a link to reset your
-            password.
+            Fill in your new password.
           </p>
 
           <div className="mt-8">
             <div className="mt-6">
               <form className="space-y-6">
                 <div className="space-y-1">
-                  <FormField
-                    label={'Password *'}
+                  <PasswordInput
+                    label={'Password'}
                     nameProp={'password'}
+                    sufficIconColor="black"
+                    value={formValues.password}
                     register={register}
-                    type="password"
-                    error={errors.password?.message}
-                    instructions={[
-                      'At least 8 characters',
-                      'At least 1 number',
-                      'At least 1 capital letter',
-                    ]}
-                    showPassword={showPassword}
-                    togglePasswordVisibility={togglePasswordVisibility}
+                    strengthMeterVisible={true}
+                    className="mb-9 "
                   />
                 </div>
 
@@ -142,7 +170,7 @@ export default function ResetPassword() {
                     isLoading={isLoading}
                     color="secondary"
                     disabled={!isValid}
-                    onClick={resetPassword}
+                    onClick={submitResetPassword}
                   >
                     <Typography
                       type="help"

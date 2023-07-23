@@ -150,5 +150,42 @@ namespace ECDLink.Core.Services
                 FileName = $"{fileName}"
             };
         }
+
+        public async Task<FileModel> DictionaryToExcelTemplate(Dictionary<string, List<List<string>>> sheetDefinitions, string fileName)
+        {
+            using MemoryStream stream = new MemoryStream();
+            var workbook = new XSSFWorkbook();
+            
+            foreach (var newSheet in sheetDefinitions)
+            {
+                var sheet = workbook.CreateSheet(newSheet.Key);
+
+                int rowNumber = 0;
+                foreach (var columns in newSheet.Value) { 
+                    var row = sheet.CreateRow(rowNumber);
+                    int colNumber = 0;
+                    foreach (var collumn in columns)
+                    {
+                        var cell = row.CreateCell(colNumber);
+                        cell.SetCellValue(collumn);
+                        colNumber++;
+                    }
+                    rowNumber++;
+                }
+            }
+
+            workbook.Write(stream);
+            await stream.FlushAsync();
+
+            var byteFile = stream.ToArray();
+
+            return new FileModel
+            {
+                FileType = MimeTypesMap.GetMimeType(".xlsx"),
+                Base64File = Convert.ToBase64String(byteFile),
+                Extension = ".xlsx",
+                FileName = fileName
+            };
+        }
     }
 }

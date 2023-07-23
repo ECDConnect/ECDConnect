@@ -4,6 +4,7 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
 using ECDLink.Notifications.Templates;
 using MailKit;
@@ -35,6 +36,7 @@ namespace ECDLink.Notifications.Smtp
         private EmailMessage _message;
         private IWebHostEnvironment _currentEnvironment;
         private bool _smtpDisabled;
+        private readonly IMessageLogger<IEmailMessage> _messageLogger;
 
         public EmailSmtpSender(
             IMessageFactory messageFactory,
@@ -42,13 +44,15 @@ namespace ECDLink.Notifications.Smtp
             TemplateProcessor templateProcessor,
             ISystemSetting<EmailSmtpOptions> optionsAccessor,
             IWebHostEnvironment environment,
-            ILogger<EmailSmtpSender> logger)
+            ILogger<EmailSmtpSender> logger,
+            IMessageLogger<IEmailMessage> messageLogger)
         {
             _messageFactory = messageFactory;
             _templateProcessor = templateProcessor;
             _logger = logger;
             _optionsAccessor = optionsAccessor?.Value;
             _smtpDisabled = _optionsAccessor is null || _optionsAccessor.Disabled;
+            _messageLogger = messageLogger;
 
             _fieldTransform = new Dictionary<string, string>();
             _message = new EmailMessage();
@@ -177,7 +181,15 @@ namespace ECDLink.Notifications.Smtp
                     _logger.LogError(exception, "Fatal error sending email. Giving up.");
                 }
 
-                await client.DisconnectAsync(true);
+                // Close client (TODO: should this be pooled)
+                await client.DisconnectAsync(true, cancellationToken);
+                try
+                {
+                    _messageLogger.Log(_message, _messageTemplate?.TemplateType);
+                } catch (Exception exception)
+                {
+                    _logger.LogError(exception, "Error logging email message: TemplateType: {templateType}", _messageTemplate?.TemplateType);
+                }
             }
         }
 

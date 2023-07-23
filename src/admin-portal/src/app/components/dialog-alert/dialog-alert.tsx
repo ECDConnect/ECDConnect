@@ -3,6 +3,7 @@ import React from 'react';
 
 export type AlertModalProps = {
   title: string;
+  btnText?: string[];
   message: string;
   onSubmit: () => void;
   onCancel: () => void;
@@ -11,6 +12,7 @@ export type AlertModalProps = {
 const AlertModal: React.FC<AlertModalProps> = ({
   title,
   message,
+  btnText,
   onSubmit,
   onCancel,
 }) => {
@@ -21,22 +23,23 @@ const AlertModal: React.FC<AlertModalProps> = ({
       iconBorderColor="alertBg"
       title={title}
       detailText={message}
+      buttonClass="rounded-xl"
       actionButtons={[
         {
-          text: 'Okay',
+          text: btnText[0] ?? 'Yes',
           textColour: 'white',
-          colour: 'primary',
+          colour: 'secondary',
           type: 'filled',
           onClick: () => onSubmit && onSubmit(),
-          leadingIcon: 'CheckCircleIcon',
+          leadingIcon: 'TrashIcon',
         },
         {
-          text: 'Cancel',
-          textColour: 'white',
-          colour: 'primary',
-          type: 'filled',
+          text: btnText[1] ?? 'No',
+          textColour: 'secondary',
+          colour: 'secondary',
+          type: 'outlined',
           onClick: () => onCancel && onCancel(),
-          leadingIcon: 'XCircleIcon',
+          leadingIcon: 'XIcon',
         },
       ]}
     />

@@ -1,10 +1,12 @@
 import * as Yup from 'yup';
-import { LoginRequestModel, ResetPasswordRequestModel } from '../models/login';
+import { LoginRequestModel } from '../models/login';
 import { RegisterRequestModel } from '../models/login';
+import { PasswordResetModel, SimpleUserModel } from '../models/forgot-password';
 
 export const initialRegisterValues: RegisterRequestModel = {
-  email: '',
+  username: '',
   password: '',
+  token: '',
   acceptedTerms: false,
 };
 export const initialLoginValues: LoginRequestModel = {
@@ -12,16 +14,17 @@ export const initialLoginValues: LoginRequestModel = {
   password: '',
 };
 
-export const initialResetPasswordValues: ResetPasswordRequestModel = {
+export const initialForgotPasswordValues: SimpleUserModel = {
   email: '',
 };
 
-export const initialResetValues: ResetPasswordRequestModel = {
+export const initialResetPasswordValues: PasswordResetModel = {
+  username: '',
   password: '',
+  resetToken: '',
 };
 export const registerSchema = Yup.object().shape({
-  email: Yup.string().required(),
-  // email: Yup.string().email().required(),
+  username: Yup.string().email().required(),
   password: Yup.string()
     .min(8, 'Password must be at least 8 characters')
     .matches(
@@ -44,7 +47,7 @@ export const loginSchema = Yup.object().shape({
 });
 
 export const resetSchema = Yup.object().shape({
-  email: Yup.string().email().required(),
+  email: Yup.string().email().required('Password is required'),
 });
 
 export const resetPasswordSchema = Yup.object().shape({

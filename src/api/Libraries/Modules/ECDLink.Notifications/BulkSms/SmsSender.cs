@@ -4,7 +4,9 @@ using ECDLink.Abstractrions.Notifications.Message;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
+using ECDLink.Notifications.MessageLogs;
 using ECDLink.Notifications.Model;
+using ECDLink.Notifications.Sms;
 using ECDLink.Notifications.Templates;
 using Newtonsoft.Json;
 using System;
@@ -16,15 +18,12 @@ using System.Threading.Tasks;
 
 namespace ECDLink.Notifications.BulkSms
 {
-    public class SmsSender : NotificationBase<ApplicationUser>, INotificationProvider<ApplicationUser>
+    public class SmsSender : SmsSenderBase
     {
-        private readonly IMessageFactory _messageFactory;
-        private readonly TemplateProcessor _templateProcessor;
+        private readonly IMessageLogger<BulkSmsMessage> _messageLogger;
         private HttpClient _smsClient;
-
         private ISystemSetting<BulkSmsOptions> _smsOptions;
 
-        private BulkSmsMessage _message;
 
         private HttpClient GetSmsClient
         {
@@ -43,16 +42,15 @@ namespace ECDLink.Notifications.BulkSms
             }
         }
 
-        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor)
+        public SmsSender(ISystemSetting<BulkSmsOptions> optionsAccessor, IMessageFactory messageFactory, TemplateProcessor templateProcessor, IMessageLogger<BulkSmsMessage> messageLogger)
+               : base(messageFactory, templateProcessor, new BulkSmsMessage())
         {
             _smsOptions = optionsAccessor;
-            _messageFactory = messageFactory;
-            _templateProcessor = templateProcessor;
-            _message = new BulkSmsMessage();
+            _messageLogger = messageLogger;
             _fieldTransform = new Dictionary<string, string>();
         }
 
-        public async Task SendMessageAsync(CancellationToken cancellationToken = default)
+        override public async Task SendMessageAsync(CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(_message.To))
             {
@@ -80,6 +78,8 @@ namespace ECDLink.Notifications.BulkSms
             request.Content = new StringContent(message, Encoding.UTF8, "application/json");
 
             var response = await GetSmsClient.SendAsync(request, cancellationToken);
+            
+            _messageLogger.Log(_message as BulkSmsMessage, _messageTemplate.TemplateType);
 
             if (response.IsSuccessStatusCode)
             {
@@ -93,68 +93,6 @@ namespace ECDLink.Notifications.BulkSms
                 Console.Error.WriteLine("Error sending SMS - Response Content: {0}", responseContent);
                 throw new HttpRequestException();
             }
-        }
-
-        public INotificationProvider<ApplicationUser> AddReceiver(ApplicationUser receiver)
-        {
-            _message.To = receiver.PhoneNumber;
-            _model = receiver;
-            return this;
-        }
-
-        public INotificationProvider<ApplicationUser> SetMessageTemplate(TemplateTypeEnum template)
-        {
-            var messageTemplate = GetTemplate(template);
-            _message.MessageBody = messageTemplate.Message;
-
-            _messageTemplate = messageTemplate;
-
-            base.AddUserFieldOverrides(messageTemplate.Message);
-
-            return this;
-        }
-
-        public INotificationProvider<ApplicationUser> AddOrUpdateFieldReplacement(string key, string value)
-        {
-            if (_fieldTransform.ContainsKey(key))
-            {
-                _fieldTransform[key] = value;
-            }
-            else
-            {
-                _fieldTransform.Add(key, value);
-            }
-
-            return this;
-        }
-
-        private IMessageTemplate GetTemplate(TemplateTypeEnum template)
-        {
-            return _messageFactory.GetMessageTemplate(MessageProtocolEnum.Sms, template);
-        }
-
-        public INotificationProvider<ApplicationUser> OverrideSender(string sender)
-        {
-            throw new NotImplementedException();
-        }
-
-        public INotificationProvider<ApplicationUser> SetMessageMetaData<T>(T type) where T : IMessageMetaData
-        {
-            throw new NotImplementedException();
-        }
-
-        public INotificationProvider<ApplicationUser> SetSubject(string sender)
-        {
-            throw new NotImplementedException();
-        }
-
-        // TODO: Should phone number be verified before being changed?
-        public INotificationProvider<ApplicationUser> UsePendingReceiver(ApplicationUser receiver)
-        {
-            _message.To = receiver.PendingPhoneNumber;
-            _model = receiver;
-
-            return this;
         }
     }
 }

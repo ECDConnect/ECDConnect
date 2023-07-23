@@ -14,14 +14,9 @@ export interface FormFieldProps {
   placeholder?: string;
   togglePasswordVisibility?: () => void;
   showPassword?: boolean;
+  customStyle?: string;
+  defaultValue?: any;
 }
-
-const checkboxStyle =
-  'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
-const errorStyle =
-  'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
-const defaultInputStyle =
-  'focus:border-secondary block w-full sm:text-md border-gray-300 rounded-md p-10';
 
 const FormField: React.FC<FormFieldProps> = ({
   label,
@@ -36,7 +31,15 @@ const FormField: React.FC<FormFieldProps> = ({
   placeholder,
   togglePasswordVisibility,
   showPassword,
+  defaultValue,
 }) => {
+  const checkboxStyle =
+    'focus:ring-secondary h-6 w-6 text-secondary border-gray-600 rounded';
+  const errorStyle =
+    'block w-full pr-10 border-errorMain text-errorMain placeholder-errorMain focus:outline-none focus:ring-errorMain focus:border-errorMain sm:text-sm rounded-md';
+  const defaultInputStyle =
+    'bg-uiBg focus:outline-none sm:text-md block w-full rounded-lg py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white';
+
   const getInputTypeStyles = () => {
     switch (type) {
       case 'checkbox':
@@ -69,20 +72,11 @@ const FormField: React.FC<FormFieldProps> = ({
           </ul>
         )}
       </div>
-      <div
-        className={
-          type === 'password'
-            ? 'relative mt-1'
-            : type === 'checkbox'
-            ? 'mt-2 flex'
-            : 'mt-1'
-        }
-      >
+      <div className={type === 'checkbox' ? 'mt-2 flex' : 'mt-1'}>
         <input
+          defaultValue={defaultValue}
           disabled={disabled}
-          type={
-            type === 'password' ? (showPassword ? 'text' : 'password') : type
-          }
+          type={type}
           {...register(nameProp, {
             required: required,
             validate: validation,
@@ -90,10 +84,19 @@ const FormField: React.FC<FormFieldProps> = ({
           className={error ? errorStyle : getInputTypeStyles()}
           placeholder={placeholder}
         />
-        {type === 'checkbox' && nameProp === 'terms' && (
-          <a className="text-md text-secondary mb-3 pl-2" href="/terms">
-            {instructions[0] ?? ''}
-          </a>
+
+        {nameProp === 'acceptedTerms' && (
+          <div>
+            <p className="pl-4">
+              I accept the{' '}
+              <a
+                className="text-md text-secondary mb-3 cursor-pointer"
+                href="/ecd-terms"
+              >
+                terms and conditions
+              </a>
+            </p>
+          </div>
         )}
 
         {type === 'password' && (

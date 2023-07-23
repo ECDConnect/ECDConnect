@@ -33,6 +33,7 @@ namespace ECDLink.DataAccessLayer.Context
     public class AuthenticationDbContext : IdentityDbContext<ApplicationUser> //AuditIdentityDbContext<ApplicationUser>
     {
         public DbSet<MessageTemplate> MessageTemplates { get; set; }
+        public DbSet<MessageLog> MessageLogs { get; set; }
         public DbSet<UserGrant> UserGrants { get; set; }
         public DbSet<Document> Documents { get; set; }
         public DbSet<DocumentType> DocumentTypes { get; set; }

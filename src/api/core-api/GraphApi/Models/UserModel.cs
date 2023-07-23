@@ -1,14 +1,47 @@
+using ECDLink.Abstractrions.Constants;
+using ECDLink.DataAccessLayer.Entities;
 using System;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Models
 {
     public class UserModel
     {
+        public UserModel()
+        {
+        }
+
+        public UserModel(ApplicationUser user)
+        {
+            Id = user.Id;
+            IsSouthAfricanCitizen = user.IsSouthAfricanCitizen;
+            IdNumber = user.IdNumber;
+            VerifiedByHomeAffairs = user.VerifiedByHomeAffairs;
+            DateOfBirth = user.DateOfBirth;
+            GenderId = user.GenderId;
+            RaceId = user.RaceId;
+            FirstName = user.FirstName;
+            Surname = user.Surname;
+            ContactPreference = user.ContactPreference ?? MessageTypeConstants.SMS;
+            PhoneNumber = user.PhoneNumber;
+            Email = user.Email;
+            ProfileImageUrl = user.ProfileImageUrl;
+            LanguageId = user.LanguageId;
+            EmergencyContactPhoneNumber = user.EmergencyContactPhoneNumber;
+            EmergencyContactFirstName = user.EmergencyContactFirstName;
+            EmergencyContactSurname = user.EmergencyContactSurname;
+            NextOfKinFirstName = user.NextOfKinFirstName;
+            NextOfKinSurname = user.NextOfKinSurname;
+            NextOfKinContactNumber = user.NextOfKinContactNumber;
+            WhatsAppNumber = user.WhatsAppNumber;
+            Password = null;
+            IsAdmin = null;
+        }
+
         public string Id { get; set; }
-        public bool IsSouthAfricanCitizen { get; set; }
+        public bool? IsSouthAfricanCitizen { get; set; }
         public string IdNumber { get; set; }
-        public bool VerifiedByHomeAffairs { get; set; }
-        public DateTime DateOfBirth { get; set; }
+        public bool? VerifiedByHomeAffairs { get; set; }
+        public DateTime? DateOfBirth { get; set; }
         public Guid? GenderId { get; set; }
         public Guid? RaceId { get; set; }
         public string FirstName { get; set; }
@@ -26,5 +59,6 @@ namespace EcdLink.Api.CoreApi.GraphApi.Models
         public string NextOfKinSurname { get; set; }
         public string NextOfKinContactNumber { get; set; }
         public string WhatsAppNumber { get; set; }
+        public bool? IsAdmin { get; set; } = false;
     }
 }
