@@ -76,6 +76,11 @@ export function Dropdown<T>({
         <input
           id="search-input"
           value={search}
+          onBlur={() => {
+            // Delay closing the menu to allow time for the click event to trigger on the menu item
+            setTimeout(() => setIsOpenMenu(false), 100);
+            onToggleMenu;
+          }}
           type="text"
           placeholder={selectedItem?.label ? selectedItem.label : placeholder}
           className={classNames(
@@ -84,7 +89,6 @@ export function Dropdown<T>({
           )}
           onChange={(event) => setSearch(event.target.value)}
           onFocus={onToggleMenu}
-          onBlur={onToggleMenu}
           disabled={disabled}
         />
         {renderIcon(
@@ -145,6 +149,13 @@ export function Dropdown<T>({
     }
   }, [selectedValue, list]);
 
+  const handleMenuItemClick = (item: DropDownOption<T>) => {
+    handler(item);
+    if (showSearch) {
+      setIsOpenMenu(false);
+    }
+  };
+
   return (
     <div className={className}>
       {label && <label className={styles.label}>{label}</label>}
@@ -172,31 +183,33 @@ export function Dropdown<T>({
                     return (
                       <div className={styles.menuItemWrapper} key={index}>
                         <Menu.Item>
-                          <div
-                            className={
-                              item.value === selectedItem?.value
-                                ? styles.menuItemSelected
-                                : styles.menuItem
-                            }
-                            onClick={() => handler(item)}
-                          >
+                          {({ active }) => (
                             <div
-                              className={`flex flex-row gap-2.5 text-${
+                              className={
                                 item.value === selectedItem?.value
-                                  ? 'dark font-medium'
-                                  : 'textMid font-normal'
-                              }`}
+                                  ? styles.menuItemSelected
+                                  : styles.menuItem
+                              }
+                              onClick={() => handleMenuItemClick(item)}
                             >
-                              <CheckCircleIcon
-                                className={`h-22 w-22 cursor-pointer text-${
+                              <div
+                                className={`text-md flex flex-row gap-2.5 text-${
                                   item.value === selectedItem?.value
-                                    ? 'blue-accent3'
-                                    : 'primaryAccent2'
+                                    ? 'dark font-medium'
+                                    : 'textMid font-normal'
                                 }`}
-                              />
-                              {item.label}
+                              >
+                                <CheckCircleIcon
+                                  className={`h-6 w-6 cursor-pointer text-${
+                                    item.value === selectedItem?.value
+                                      ? 'secondary '
+                                      : 'secondary'
+                                  }`}
+                                />
+                                <p>{item.label}</p>
+                              </div>
                             </div>
-                          </div>
+                          )}
                         </Menu.Item>
                       </div>
                     );
@@ -214,4 +227,5 @@ export function Dropdown<T>({
     </div>
   );
 }
+
 export default Dropdown;

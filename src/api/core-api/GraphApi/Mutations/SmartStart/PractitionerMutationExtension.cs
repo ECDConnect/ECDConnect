@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
@@ -246,8 +247,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var messageType = "invitation";
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
@@ -264,7 +264,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
             IGenericRepositoryFactory repoFactory,
             [Service] IReassignmentService reassignmentService,
-            [Service] PersonnelService personnelManager,
+            [Service] PersonnelService personnelService,
             UserManager<ApplicationUser> userManager,
             string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
@@ -275,7 +275,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
             if (!string.IsNullOrEmpty(newPrincipalId))
             {
-                personnelManager.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+                personnelService.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
             }
 
             //Reassign all the classes for the practitioner as indicated            
@@ -288,36 +288,18 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
                 reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
             }
 
-            practitioner.DateToBeRemoved = DateTime.Now;
-            practitioner.DateAccepted = null;
-            practitioner.DateLinked = null;
-            practitioner.IsLeaving = true;
-            //update and clear the principals details
-            practitioner.PrincipalHierarchy = null;
-            practitioner.CoachHierarchy = null;
-            practitioner.ShareInfo = false;
-            practitioner.ReasonForPractitionerLeavingId = Guid.Parse(reasonForPractitionerLeavingId);
-            practitioner.ReasonForLeavingDetails = reasonDetails;
-            
-            //update practitioner with column changes
-            practitionerRepo.Update(practitioner);
-
-            //Delete user
-            user.IsActive = false;
-            var updateResult = await userManager.UpdateAsync(user);
-
-            return updateResult.Succeeded;
+            return personnelService.DeActivatePractitioner(practitionerId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
         }
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
+        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+            string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment);
+            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
         {
             return userLicenseManager.DelicenseUser(input);
         }
-
     }
 }

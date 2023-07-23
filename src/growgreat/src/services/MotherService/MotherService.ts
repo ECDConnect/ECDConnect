@@ -222,7 +222,7 @@ class MotherService {
 
     if (response.status !== 200) {
       throw new Error(
-        'Getting count for health care worker for month failed - Server connection error'
+        'Getting count for Community Health Worker for month failed - Server connection error'
       );
     }
 

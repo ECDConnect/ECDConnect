@@ -2,6 +2,7 @@ import {
   APIs,
   LoginRequestModel,
   PasswordResetModel,
+  RegisterRequestModel,
   SimpleUserModel,
 } from '@ecdlink/core';
 import { api } from '../utils/axios.helper';
@@ -24,9 +25,9 @@ export async function RefreshJwtToken(
   return await api(baseEndPoint).get(`${APIs.refreshJwtToken}/${currentToken}`);
 }
 
-export async function ForgotPasswordRequest(
-  baseEndPoint: string,
-  body: SimpleUserModel
+export async function UserForgotPassword(
+  body: SimpleUserModel,
+  baseEndPoint: string
 ) {
   return await api(baseEndPoint).post(
     APIs.forgotPassword,
@@ -43,6 +44,19 @@ export async function ResetPasswordConfirmation(
 ) {
   return await api(baseEndPoint).post(
     APIs.confirmForgotPasswordReset,
+    JSON.stringify(body),
+    {
+      headers: headers,
+    }
+  );
+}
+
+export async function RegisterNewUser(
+  baseEndPoint: string,
+  body: RegisterRequestModel
+) {
+  return await api(baseEndPoint).post(
+    APIs.acceptAdminInvitation,
     JSON.stringify(body),
     {
       headers: headers,

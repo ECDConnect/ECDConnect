@@ -10,6 +10,7 @@ using ECDLink.Security.Managers;
 using ECDLink.Tenancy.Context;
 using ECDLink.UrlShortner.Managers;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.EntityFrameworkCore;
 using Newtonsoft.Json;
 using System;
 using System.Linq;
@@ -99,7 +100,22 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             return await _userManager.FindByNameAsync(username);
         }
 
-        public async Task<bool> ForgotPasswordAsync(ApplicationUser user)
+        public async Task<ApplicationUser> GetUserByEmailAsync(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+            {
+                return default;
+            }
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            // TODO: Make the user email and tenantId unique
+            var firstUserWithThatEmail = await _userManager.Users.FirstOrDefaultAsync(
+                user => user.IsActive == true 
+                    && user.Email == email 
+                    && user.TenantId == tenantId);
+            return firstUserWithThatEmail;
+        }
+
+        public async Task<bool> ForgotPasswordAsync(ApplicationUser user, bool isPortal = false)
         {
             var resetToken = await _passwordManager.RequestPasswordResetTokenAsync(user);
 
@@ -108,8 +124,14 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return false;
             }
 
-            await _notificationManager.SendForgotPasswordMessageAsync(user, resetToken);
-
+            if (isPortal)
+            {
+                await _notificationManager.SendPortalForgotPasswordMessageAsync(user, resetToken);
+            }
+            else
+            {
+                await _notificationManager.SendForgotPasswordMessageAsync(user, resetToken);
+            }
             return true;
         }
 

@@ -96,7 +96,12 @@ namespace ECDLink.PostgresTenancy.Repository
         public bool DeleteAllTokensById(string id)
         {
             if (id == null) throw new ArgumentNullException("id");
-            List<JWTUserTokensEntity> tokens = entities.Where(x => x.UserId.Equals(id)).Where(g => string.Equals(g.TenantId, _tenantId)).ToList();
+
+            List<JWTUserTokensEntity> tokens = entities.Where(
+                x => x.UserId == id
+                && x.TenantId == _tenantId)
+                .AsNoTracking()
+                .ToList();
             
             if (tokens?.Any() ?? false)
             {

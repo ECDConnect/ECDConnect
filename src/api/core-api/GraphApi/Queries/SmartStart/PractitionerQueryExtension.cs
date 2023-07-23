@@ -1,7 +1,7 @@
-using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Visits;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.Files;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Abstractrions.Services;
@@ -346,28 +346,25 @@ namespace EcdLink.Api.CoreApi.GraphApi.Queries.SmartStart
         }
 
 
-        public int GetPractitionerInviteCount([Service] IHttpContextAccessor contextAccessor,
+        public int GetPractitionerInviteCount(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetMessageCountForUser(userId, messageType);
+            return shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
         }
 
-        public string GetLastPractitionerInviteDate([Service] IHttpContextAccessor contextAccessor,
+        public string GetLastPractitionerInviteDate(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetLastMessageDateForUser(userId, messageType);
+            return shortUrlManager.GetLastMessageDateForUser(userId, TemplateTypeConstants.Invitation);
         }
 
-        public List<System.DateTime> GetAllPractitionerInvites([Service] IHttpContextAccessor contextAccessor,
+        public List<System.DateTime> GetAllPractitionerInvites(
             [Service] ShortUrlManager shortUrlManager,
             string userId)
         {
-            var messageType = "invitation";
-            return shortUrlManager.GetAllMessageInvitesForUser(userId, messageType);
+            return shortUrlManager.GetAllMessageInvitesForUser(userId, TemplateTypeConstants.Invitation);
         }
 
         public List<Visit> GetPractitionerVisits([Service] VisitManager visitManager, string userId)

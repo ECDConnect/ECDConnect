@@ -57,7 +57,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
                 return string.Empty;
             }
 
-            return user.PhoneNumber;
+            return user.PhoneNumber ?? user.Email;
         }
 
         public async Task<bool> IsPasswordSecureAsync(ApplicationUser user, string password)
