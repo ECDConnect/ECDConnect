@@ -7,6 +7,8 @@ import UiTable from '../../../../components/ui-table';
 import { useUser } from '../../../../hooks/useUser';
 import FranchisorPanelCreate from './franchisor-panel-create/franchisor-panel-create';
 import FranchisorPanelEdit from './franchisor-panel-edit/franchisor-panel-edit';
+import { SearchIcon } from '@heroicons/react/solid';
+import debounce from 'lodash.debounce';
 
 export default function Franchisors() {
   const { hasPermission } = useUser();
@@ -73,18 +75,34 @@ export default function Franchisors() {
     });
   };
 
+  const [searchValue, setSearchValue] = useState('');
+
+  const search = debounce((e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchValue(e.target.value || '');
+  }, 150);
+
   if (tableData) {
     return (
       <div>
         <div className="flex flex-col">
           <div className="pb-5 sm:flex sm:items-center sm:justify-between">
             <span className="text-lg font-medium leading-6 text-gray-900"></span>
+            <div className="relative w-full">
+              <span className="absolute inset-y-1/2 left-3 mr-4 flex -translate-y-1/2 transform items-center">
+                <SearchIcon className="h-5 w-5 text-black"></SearchIcon>
+              </span>
+              <input
+                onClick={search}
+                className="bg-uiBg focus:outline-none sm:text-md block w-6/12 rounded-md py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:border-white focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+                placeholder="      Search"
+              />
+            </div>
             <div className="mt-3 sm:mt-0 sm:ml-4">
               {hasPermission(PermissionEnum.create_user) && (
                 <button
                   onClick={displayPanel}
                   type="button"
-                  className="bg-uiMid hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
+                  className="bg-secondary hover:bg-uiLight focus:outline-none inline-flex items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white shadow-sm focus:ring-2 focus:ring-offset-2"
                 >
                   Create Franchisor
                 </button>
@@ -106,6 +124,7 @@ export default function Franchisors() {
                     hasPermission(PermissionEnum.update_user) &&
                     displayEditPanel
                   }
+                  searchInput={searchValue}
                 />
               </div>
             </div>

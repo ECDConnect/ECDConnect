@@ -5,6 +5,7 @@ using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
 using ECDLink.Core.Services.Interfaces;
 using ECDLink.Core.SystemSettings.SystemOptions;
@@ -246,8 +247,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var messageType = "invitation";
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)

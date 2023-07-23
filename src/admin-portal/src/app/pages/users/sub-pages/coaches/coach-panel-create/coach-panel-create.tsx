@@ -223,6 +223,7 @@ export default function CoachPanelCreate(props: UserPanelCreateProps) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
+          inviteToPortal: false,
         },
       });
 

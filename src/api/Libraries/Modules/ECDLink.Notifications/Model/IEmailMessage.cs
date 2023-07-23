@@ -1,7 +1,7 @@
 ﻿
 namespace ECDLink.Notifications.Model
 {
-    internal interface IEmailMessage : IMessage
+    public interface IEmailMessage : IMessage
     {
         public string From { get; set; }
         public string FromDisplayName { get; set; }

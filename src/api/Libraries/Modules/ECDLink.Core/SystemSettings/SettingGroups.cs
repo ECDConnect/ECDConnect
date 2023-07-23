@@ -136,6 +136,7 @@
                 public const string InvitationsGrouping = "General.Callback.Invitations";
 
                 public const string Signup = "General.Callback.Invitations.Signup";
+                public const string AdminSignup = "General.Callback.Invitations.AdminSignup";
             }
 
             public static class Security
@@ -143,6 +144,7 @@
                 public const string SecurityGrouping = "General.Callback.Security";
 
                 public const string ForgotPassword = "General.Callback.Security.ForgotPassword";
+                public const string ForgotPasswordPortal = "General.Callback.Security.ForgotPasswordPortal";
                 public const string Login = "General.Callback.Security.Login";
             }
         }
