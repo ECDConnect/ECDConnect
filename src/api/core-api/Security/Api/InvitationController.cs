@@ -64,6 +64,32 @@ namespace ECDLink.Security.Api
             return Ok();
         }
 
+        [Route("accept-admin-invitation")]
+        [AllowAnonymous]
+        [HttpPost]
+        public async Task<IActionResult> AcceptAdminInvitation([FromBody] AcceptInvitationModel invitationModel)
+        {
+            var decodedToken = TokenHelper.DecodeToken(invitationModel.Token);
+
+            var user = await _invitationManager.GetValidUserWithTokenAsync(invitationModel.Username, decodedToken);
+
+            if (user == default(ApplicationUser))
+            {
+                return BadRequest("Invalid token");
+            }
+
+            if (!await _passwordManager.IsPasswordSecureAsync(user, invitationModel.Password))
+            {
+                return BadRequest();
+            }
+
+            await _passwordManager.AddPasswordAsync(user, invitationModel.Password);
+
+            _shortUrlManager.RemoveShortUrl(user.Id, TemplateTypeConstants.Invitation);
+
+            return Ok(true);
+        }
+
         [Route("verify-invitation")]
         [AllowAnonymous]
         [HttpPost]
