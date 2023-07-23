@@ -144,7 +144,14 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                         InsertedDate = insertedDate,
                         // TeamLeadId = ? // Team lead needs to be fetched from clinic?
                         TenantId = tenantId,
-                        IsActive = true
+                        IsActive = true,
+                        ClickedVisitTab = false,
+                        ClickedProgressTab = false,
+                        ClickedReferralsTab = false,
+                        ClickedContactTab = false,
+                        ClickedDashboardClientsTab = false,
+                        ClickedDashboardVisitsTab = false,
+                        ClickedDashboardHighlightsTab = false
                     });
             }
 
@@ -299,10 +306,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                     errors.Add("Cellphone is empty.");
 
 
-                if (idOrPassport?.ToLowerInvariant() == "id"
-                    && !UserHelper.IsSAIDValid(teamLeadId))
+                if (teamLeadId is null || teamLeadId.Length == 0)
                 {
-                    errors.Add("Team Lead Id is empty or invalid.");
+                    errors.Add("Team Lead Id is empty.");
                 }
 
                 return errors;
