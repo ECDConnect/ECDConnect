@@ -1,7 +1,7 @@
 import { AvatarStyle } from '../avatar/avatar.styles';
 import { AvatarSize } from '../avatar/models/AvatarSize';
 
-export const wrapper = 'relative rounded-full';
+export const wrapper = 'relative rounded-full cursor-pointer';
 export const camaraWrapper =
   'rounded-full -top-1 -right-1 z-1 bg-white absolute p-1';
 export const iconColor = 'text-primary';

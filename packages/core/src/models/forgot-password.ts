@@ -1,9 +1,11 @@
 export interface SimpleUserModel {
-  username: string;
+  email?: string;
+  username?: string;
 }
 
 export interface PasswordResetModel {
   username: string;
   password: string;
   resetToken: string;
+  isSouthAfricanCitizen?: boolean;
 }

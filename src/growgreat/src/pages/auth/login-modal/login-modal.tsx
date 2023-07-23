@@ -44,7 +44,7 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
   const [idFieldVisible, setIdFieldVisible] = useState(true);
   const { resetAppStore } = useStoreSetup();
 
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   const {
     register: loginRegister,
@@ -181,13 +181,13 @@ export const LoginModal: React.FC<LoginModalProps> = ({ loginSuccessful }) => {
               />
             )}
           </div>
-          <Offline>
+          {!isOnline && (
             <Alert
               className={'mt-5 mb-3'}
               title="Your internet connection is unstable."
               type={'warning'}
             />
-          </Offline>
+          )}
 
           <Button
             className={'mt-3 w-full'}

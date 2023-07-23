@@ -5,10 +5,11 @@ import {
   usePanel,
   useTheme,
 } from '@ecdlink/core';
-import { GetAllNavigation } from '@ecdlink/graphql';
-import { UserAvatar } from '@ecdlink/ui';
+import { GetAllNavigation, GetTenantContext } from '@ecdlink/graphql';
+import { Avatar, Button, Typography, UserAvatar } from '@ecdlink/ui';
 import { Dialog, Menu, Transition } from '@headlessui/react';
 import {
+  ArrowLeftIcon,
   InformationCircleIcon,
   MenuAlt2Icon,
   XIcon,
@@ -20,6 +21,8 @@ import Icon from '../../components/icon';
 import InformationPanel from '../../components/information-panel/information-panel';
 import { useAuth } from '../../hooks/useAuth';
 import { useUser } from '../../hooks/useUser';
+import ggLogo from '../../../assets/gg-logo.svg';
+import logo from '../../../assets/Logo-ECDConnect-white.svg';
 
 function classNames(...classes: any[]) {
   return classes.filter(Boolean).join(' ');
@@ -30,13 +33,17 @@ type menuItemProps = {
 };
 const MenuItem: React.FC<menuItemProps> = ({ item }) => {
   const routeMatch = useRouteMatch(item.route);
+  const routeViewUserMatch = useRouteMatch('/view-user/');
+  const routeUploadUserMatch = useRouteMatch('/upload-users/');
 
   return (
     <Link
       to={item.route}
       className={classNames(
-        routeMatch ? 'bg-tertiary text-white' : 'hover:textMid hover:bg-white',
-        'group flex items-center rounded-md px-2 py-2 text-sm font-medium text-white'
+        routeMatch
+          ? 'bg-tertiary text-white'
+          : 'hover:bg-white hover:text-black',
+        'group my-2 mx-1 flex items-center rounded-md px-2 py-2 text-sm font-medium text-white'
       )}
     >
       <Icon
@@ -82,7 +89,7 @@ export default function Shell() {
   }, []);
 
   useEffect(() => {
-    if (user && navigationData && navigationData.GetAllNavigation) {
+    if (navigationData?.GetAllNavigation) {
       const navigationList: NavigationDto[] = navigationData.GetAllNavigation;
       const userRolePermissions = user.roles.map((x) => x.permissions).flat();
       const userPermissionIds = userRolePermissions.map((x) => x.id);
@@ -100,11 +107,19 @@ export default function Shell() {
     }
   }, [user, navigationData]);
 
+  const { data } = useQuery(GetTenantContext, {
+    fetchPolicy: 'cache-and-network',
+  });
+
   const getLogoUrl = () => {
-    if (theme && theme.images) {
+    if (
+      theme &&
+      theme.images &&
+      data?.tenantContext.applicationName !== 'GrowGreat'
+    ) {
       return theme.images.logoUrl;
     } else {
-      return '';
+      return ggLogo;
     }
   };
 
@@ -113,10 +128,9 @@ export default function Shell() {
     history.push('/');
   };
 
-  const userNavigation = [
-    { name: 'Profile', onClick: () => {} },
-    { name: 'Sign out', onClick: signOutClick },
-  ];
+  const gotToProfile = () => {
+    history.push('/profile');
+  };
 
   const displayInformationPanel = () => {
     panel({
@@ -158,7 +172,7 @@ export default function Shell() {
             leaveFrom="translate-x-0"
             leaveTo="-translate-x-full"
           >
-            <div className="bg-primary relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4">
+            <div className="darkBackground relative flex w-full max-w-xs flex-1 flex-col pt-5 pb-4">
               <Transition.Child
                 as={Fragment}
                 enter="ease-in-out duration-300"
@@ -179,9 +193,11 @@ export default function Shell() {
                   </button>
                 </div>
               </Transition.Child>
-              <div className="flex flex-shrink-0 items-center justify-center px-4">
+              <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
+                <img className="h-100 mb-8" src={logo} alt="Login Logo" />
+
                 <img
-                  className="h-20 w-auto"
+                  className="h-16 w-8/12"
                   src={getLogoUrl()}
                   alt="Workflow"
                 />
@@ -205,18 +221,61 @@ export default function Shell() {
       <div className="darkBackground hidden md:flex md:flex-shrink-0">
         <div className="flex w-64 flex-col">
           <div className="flex flex-grow flex-col overflow-y-auto pt-5 pb-4">
-            <div className="flex flex-shrink-0 items-center justify-center px-4">
-              <img className="h-20 w-auto" src={getLogoUrl()} alt="Workflow" />
+            <div className="flex flex-shrink-0 flex-col items-center justify-center px-4">
+              <div></div>
+              <img className="h-100 mb-8" src={logo} alt="Login Logo" />
+
+              <img className="h-16 w-8/12" src={getLogoUrl()} alt="Workflow" />
             </div>
             <div className="mt-5 flex flex-1 flex-col">
               <nav className="flex-1 space-y-1 px-2">
                 {navigation?.map((item) => (
-                  <MenuItem
-                    key={`${item.name}-${new Date().getTime()}`}
-                    item={item}
-                  ></MenuItem>
+                  <div>
+                    <MenuItem
+                      key={`${item.name}-${new Date().getTime()}`}
+                      item={item}
+                    ></MenuItem>
+
+                    <hr className=" border-b-uiLight mx-2 border-dashed" />
+                  </div>
                 ))}
               </nav>
+              <div className="mb-2 flex flex-col px-4 md:py-4">
+                <Button
+                  className={
+                    'hover:bg-secondary mb-2 w-full rounded-xl hover:text-white'
+                  }
+                  type="filled"
+                  // isLoading={isLoading}
+                  color="uiMid"
+                  // disabled={!isValid}
+                  // onClick={signIn}
+                  icon="InformationCircleIcon"
+                >
+                  <Typography
+                    type="body"
+                    color="white"
+                    text={'Help'}
+                    fontSize={'24'}
+                  ></Typography>
+                </Button>
+                <Button
+                  className={
+                    'hover:bg-secondary w-full justify-self-start rounded-xl hover:text-white '
+                  }
+                  type="filled"
+                  color="uiMid"
+                  onClick={signOutClick}
+                  icon="ArrowLeftIcon"
+                >
+                  <Typography
+                    type="body"
+                    color="white"
+                    text={'Logout'}
+                    fontSize={'24'}
+                  ></Typography>
+                </Button>
+              </div>
             </div>
           </div>
         </div>
@@ -251,50 +310,29 @@ export default function Shell() {
                 {({ open }) => (
                   <>
                     <div>
-                      <Menu.Button className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2">
+                      <Menu.Button
+                        onClick={gotToProfile}
+                        className="focus:outline-none flex max-w-xs items-center rounded-full bg-white text-sm focus:ring-2 focus:ring-indigo-500 focus:ring-offset-2"
+                      >
                         <span className="sr-only">Open user menu</span>
 
-                        {user ? (
+                        {user?.profileImageUrl ? (
+                          <Avatar
+                            size={'md'}
+                            displayBorder
+                            dataUrl={`${user?.profileImageUrl}`}
+                            borderColor="secondary"
+                          />
+                        ) : (
                           <UserAvatar
                             size={'md'}
                             avatarColor={avatarColor}
-                            text={`${user.firstName[0]}${user.surname[0]}`}
+                            text={`${user?.firstName[0]}${user?.surname[0]}`}
                             displayBorder
                           />
-                        ) : null}
+                        )}
                       </Menu.Button>
                     </div>
-                    <Transition
-                      show={open}
-                      as={Fragment}
-                      enter="transition ease-out duration-100"
-                      enterFrom="transform opacity-0 scale-95"
-                      enterTo="transform opacity-100 scale-100"
-                      leave="transition ease-in duration-75"
-                      leaveFrom="transform opacity-100 scale-100"
-                      leaveTo="transform opacity-0 scale-95"
-                    >
-                      <Menu.Items
-                        static
-                        className="focus:outline-none absolute right-0 mt-2 w-48 origin-top-right rounded-md bg-white py-1 shadow-lg ring-1 ring-black ring-opacity-5"
-                      >
-                        {userNavigation.map((item: any) => (
-                          <Menu.Item key={item.name}>
-                            {({ active }) => (
-                              <div
-                                onClick={item.onClick}
-                                className={classNames(
-                                  active ? 'bg-gray-100' : '',
-                                  'block cursor-pointer px-4 py-2 text-sm text-gray-700'
-                                )}
-                              >
-                                {item.name}
-                              </div>
-                            )}
-                          </Menu.Item>
-                        ))}
-                      </Menu.Items>
-                    </Transition>
                   </>
                 )}
               </Menu>

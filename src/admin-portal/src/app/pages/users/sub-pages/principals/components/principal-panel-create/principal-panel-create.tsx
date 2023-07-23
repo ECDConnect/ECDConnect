@@ -227,6 +227,7 @@ export default function PractitionerPanelCreate(props: UserPanelCreateProps) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
+          inviteToPortal: false,
         },
       });
 

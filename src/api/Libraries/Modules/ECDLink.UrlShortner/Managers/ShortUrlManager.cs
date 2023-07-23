@@ -3,6 +3,7 @@ using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Context;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Notifications;
+using ECDLink.Tenancy.Context;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.WebUtilities;
 using Microsoft.EntityFrameworkCore;
@@ -53,13 +54,16 @@ namespace ECDLink.UrlShortner.Managers
 
         public string GetUrlToken(string url, ApplicationUser user, string messageType)
         {
+            var tenantId = TenantExecutionContext.Tenant.Id;
+            
             var urlEntity = new ShortenUrlEntity
             {
                 Id = new Guid(),
                 URL = url,
                 Clicked = 0,
                 UserId = user.Id,
-                MessageType = messageType
+                MessageType = messageType,
+                TenantId = tenantId
             };
 
             _entities.Add(urlEntity);
@@ -93,7 +97,7 @@ namespace ECDLink.UrlShortner.Managers
                 .OrderBy(x => x.InsertedDate);
             return selectedEntities?.LastOrDefault()?.InsertedDate.ToString();
         }
-        public List<System.DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
+        public List<DateTime> GetAllMessageInvitesForUser(string userId, string messageType)
         {
             return _entities.Where(x => string.Equals(x.UserId, userId) && string.Equals(x.MessageType, messageType)).OrderBy(x => x.InsertedDate).Select(x => x.InsertedDate).ToList();
         }
