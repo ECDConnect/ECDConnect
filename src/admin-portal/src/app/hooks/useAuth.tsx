@@ -13,18 +13,35 @@ import {
   Config,
   LocalStorageKeys,
   LoginRequestModel,
+  PasswordResetModel,
   RegisterRequestModel,
+  SimpleUserModel,
 } from '@ecdlink/core';
-import { AuthenticateUser, RefreshJwtToken } from '../services/auth.service';
+import {
+  AuthenticateUser,
+  RefreshJwtToken,
+  UserForgotPassword,
+  ResetPasswordConfirmation,
+  RegisterNewUser,
+} from '../services/auth.service';
 
 export interface AuthContextType {
   authenticatedUser?: AuthUser;
-  loading: boolean;
+  loading?: boolean;
   registerUser: (
     body: RegisterRequestModel,
     baseEndPoint: string
   ) => Promise<boolean>;
   login: (body: LoginRequestModel, baseEndPoint: string) => Promise<boolean>;
+
+  forgotPassword: (
+    body: SimpleUserModel,
+    baseEndPoint: string
+  ) => Promise<boolean>;
+  resetPassword: (
+    body: PasswordResetModel,
+    baseEndPoint: string
+  ) => Promise<boolean>;
   logout: () => void;
   getAccessTokenPromise: () => Promise<any>;
 }
@@ -70,12 +87,11 @@ export function AuthProvider({
   };
 
   const registerUser = async (
-    body: LoginRequestModel,
+    body: RegisterRequestModel,
     baseEndPoint: string
   ): Promise<boolean> => {
     try {
-      console.log('>>>>>');
-      const response = await AuthenticateUser(baseEndPoint, body);
+      const response = await RegisterNewUser(baseEndPoint, body);
 
       if (response.data) {
         localStorage.setItem(
@@ -83,6 +99,40 @@ export function AuthProvider({
           JSON.stringify(response.data)
         );
         setAuthenticatedUser(response.data);
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  const forgotPassword = async (
+    body: SimpleUserModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await UserForgotPassword(body, baseEndPoint);
+
+      if (response) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response));
+        return true;
+      }
+      return false;
+    } catch (err) {
+      return false;
+    }
+  };
+
+  const resetPassword = async (
+    body: PasswordResetModel,
+    baseEndPoint: string
+  ): Promise<boolean> => {
+    try {
+      const response = await ResetPasswordConfirmation(baseEndPoint, body);
+
+      if (response) {
+        localStorage.setItem(LocalStorageKeys.user, JSON.stringify(response));
         return true;
       }
       return false;
@@ -152,6 +202,9 @@ export function AuthProvider({
     () => ({
       authenticatedUser,
       login,
+      forgotPassword,
+      resetPassword,
+      registerUser,
       logout,
       getAccessTokenPromise,
     }),

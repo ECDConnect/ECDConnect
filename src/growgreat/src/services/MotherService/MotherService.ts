@@ -23,6 +23,7 @@ class MotherService {
       query: `
         query GetAllMothersForHealthCareWorker($id: String, $visitType: String) {
           allMothersForHealthCareWorker(id: $id, visitType: $visitType) {
+            id
             clickedVisitTab
             clickedProgressTab
             clickedReferralsTab
@@ -111,6 +112,7 @@ class MotherService {
       query: `
         mutation updateMother($input: MotherModelInput, $id: String) {
           updateMother(input: $input, id: $id) {
+            id
             clickedVisitTab
             clickedProgressTab
             clickedReferralsTab
@@ -156,6 +158,7 @@ class MotherService {
       query: `
         mutation addMother($input: MotherModelInput) {
           addMother(input: $input) {
+            id
             user {
               firstName
               surname
@@ -219,7 +222,7 @@ class MotherService {
 
     if (response.status !== 200) {
       throw new Error(
-        'Getting count for health care worker for month failed - Server connection error'
+        'Getting count for Community Health Worker for month failed - Server connection error'
       );
     }
 
@@ -288,6 +291,7 @@ class MotherService {
               visitInProgress
               id
               risk
+              comment
               visitType{
                 id
                 order

@@ -302,57 +302,59 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
 
   return (
     <div className={styles.wrapper}>
-      <div className={styles.contentWrapper}>
+      <div className={'bg-uiBg flex w-full flex-col items-start'}>
         {shouldFilter &&
           classroomGroupsForPrincipal.length > 1 &&
           submitText === '' && (
-            <SearchDropDown<any>
-              displayMenuOverlay
-              menuItemClassName={styles.dropdownStyles}
-              className={'mr-1'}
-              options={
-                (classroomGroups && isPrincipal
-                  ? classroomGroupsForPrincipal.map((x) => {
-                      return {
-                        id: x.id ?? '',
-                        value: x,
-                        label: x.name,
-                        disabled: false,
-                      };
-                    })
-                  : classroomGroups.map((x) => {
-                      return {
-                        id: x.id ?? '',
-                        value: x,
-                        label: x.name,
-                        disabled: false,
-                      };
-                    })) || []
-              }
-              onChange={(value) => onFilterItemsChanges(value)}
-              placeholder={'Class'}
-              pluralSelectionText={'Classes'}
-              color={'secondary'}
-              selectedOptions={selectedClassroomGroups.map((x) => {
-                return {
-                  id: x.id ?? '',
-                  value: x,
-                  label: x.name,
-                };
-              })}
-              info={{
-                name: `Filter by:${filterInfo?.filterName}`,
-                hint: filterInfo?.filterHint || '',
-              }}
-            />
+            <>
+              <SearchDropDown<any>
+                displayMenuOverlay
+                menuItemClassName={styles.dropdownStyles}
+                className={'mr-1 ml-2'}
+                options={
+                  (classroomGroups && isPrincipal
+                    ? classroomGroupsForPrincipal.map((x) => {
+                        return {
+                          id: x.id ?? '',
+                          value: x,
+                          label: x.name,
+                          disabled: false,
+                        };
+                      })
+                    : classroomGroups.map((x) => {
+                        return {
+                          id: x.id ?? '',
+                          value: x,
+                          label: x.name,
+                          disabled: false,
+                        };
+                      })) || []
+                }
+                onChange={(value) => onFilterItemsChanges(value)}
+                placeholder={'Class'}
+                pluralSelectionText={'Classes'}
+                color={'secondary'}
+                multiple
+                selectedOptions={selectedClassroomGroups.map((x) => {
+                  return {
+                    id: x.id ?? '',
+                    value: x,
+                    label: x.name,
+                  };
+                })}
+                info={{
+                  name: `Filter by:${filterInfo?.filterName}`,
+                  hint: filterInfo?.filterHint || '',
+                }}
+              />
+            </>
           )}
       </div>
-
       <div>
-        <div className={styles.statusChipsWrapper(true)}>
+        <div className={styles.statusChipsWrapper(false)}>
           <StatusChip
             className={'mr-2 '}
-            padding={'px-3 py-1.5'}
+            padding={'px-3 py-3'}
             textColour="successMain"
             borderColour="white"
             textType="h2"
@@ -362,7 +364,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
           <div>
             <StatusChip
               textColour="errorMain"
-              padding={'px-3 py-1.5'}
+              padding={'px-3 py-3'}
               borderColour="white"
               textType="h2"
               backgroundColour="white"
@@ -382,6 +384,7 @@ export const AttendanceList: React.FC<AttendanceListProps> = ({
                 isPrimaryClass={isPrimaryList}
                 classroomGroup={selectedGroup}
                 attendanceDate={attendanceDate}
+                isMultipleClasses={selectedClassroomGroups.length > 1}
                 onAttendanceUpdated={(state) => {
                   validateAttendanceList(
                     editAttendanceRegisterVisible

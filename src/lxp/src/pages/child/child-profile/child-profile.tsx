@@ -41,7 +41,11 @@ import { attendanceSelectors } from '@store/attendance';
 import { authSelectors } from '@store/auth';
 import { caregiverSelectors } from '@store/caregiver';
 import { CaregiverContactReason } from '@store/caregiver/caregiver.types';
-import { childrenActions, childrenSelectors } from '@store/children';
+import {
+  childrenActions,
+  childrenSelectors,
+  childrenThunkActions,
+} from '@store/children';
 import { classroomsSelectors } from '@store/classroom';
 import { documentActions, documentSelectors } from '@store/document';
 import { notesSelectors } from '@store/notes';
@@ -619,6 +623,12 @@ export const ChildProfile: React.FC = () => {
     if (copy) {
       copy.profileImageUrl = imageBaseString;
       appDispatch(childrenActions.updateChildUser(copy));
+      await appDispatch(
+        childrenThunkActions.updateChildUser({
+          id: copy.id as string,
+          childUser: copy,
+        })
+      );
     }
 
     if (profilePicture) {

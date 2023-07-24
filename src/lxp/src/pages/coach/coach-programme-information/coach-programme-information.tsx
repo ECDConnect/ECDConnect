@@ -50,9 +50,17 @@ export const CoachProgrammeInformation: React.FC = () => {
     (item) => item.userId === practitionerId
   );
   const classroomGroups = useSelector(classroomsSelectors.getClassroomGroups);
-  const practitionerClassroomGroups = classroomGroups.filter(
-    (item) => item.classroomId === practitionerClassroom?.id
-  );
+  const practitionerClassroomGroups = practitionerClassroom
+    ? classroomGroups.filter(
+        (item) => item.classroomId === practitionerClassroom?.id
+      )
+    : practitionerClassroomDetails
+    ? classroomGroups.filter(
+        (item) =>
+          item.classroomId === practitionerClassroomDetails?.[0].classroom?.id
+      )
+    : [];
+
   const practitionersOnSite = practitioners?.filter((el) => {
     return practitionerClassroomGroups.some((f) => {
       return f.userId === el.userId;

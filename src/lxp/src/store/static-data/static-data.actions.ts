@@ -7,6 +7,7 @@ import {
   ProgrammeAttendanceReasonDto,
   ProgrammeTypeDto,
   ReasonForLeavingDto,
+  ReasonForPractitionerLeavingDto,
   ProvinceDto,
   RaceDto,
   RelationDto,
@@ -20,7 +21,6 @@ import { EducationLevelService } from '@services/EducationLevelService';
 import { GenderService } from '@services/GenderService';
 import GrantService from '@services/GrantService/GrantService';
 import { HolidayService } from '@services/HolidayService';
-
 import { LanguageService } from '@services/LanguageService';
 import { NoteTypeService } from '@services/NoteTypeService';
 import { ProgrammeAttendanceReasonService } from '@services/ProgrammeAttendanceReasonService';
@@ -28,6 +28,7 @@ import { ProgrammeTypeService } from '@services/ProgrammeTypeService';
 import { ProvinceService } from '@services/ProvinceService';
 import { RaceService } from '@services/RaceService';
 import { ReasonForLeavingService } from '@services/ReasonForLeavingService';
+import { ReasonForPractitionerLeavingService } from '@services/ReasonForPractitionerLeavingService';
 import { RelationsService } from '@services/RelationsService';
 import { WorkflowStatusService } from '@services/WorkflowStatusService';
 import { RootState, ThunkApiType } from '../types';
@@ -419,6 +420,48 @@ export const getReasonsForLeaving = createAsyncThunk<
       }
     } else {
       return reasonForLeaving;
+    }
+  }
+);
+
+export const getReasonsForPractitionerLeaving = createAsyncThunk<
+  ReasonForPractitionerLeavingDto[],
+  // eslint-disable-next-line @typescript-eslint/ban-types
+  {},
+  ThunkApiType<RootState>
+>(
+  'getReasonsForPractitionerLeaving',
+  // eslint-disable-next-line no-empty-pattern
+  async ({}, { getState, rejectWithValue }) => {
+    const {
+      auth: { userAuth },
+      staticData: { reasonForPractitionerLeaving },
+    } = getState();
+
+    if (!reasonForPractitionerLeaving) {
+      try {
+        let reasons: ReasonForPractitionerLeavingDto[] | undefined;
+
+        if (userAuth?.auth_token) {
+          reasons = await new ReasonForPractitionerLeavingService(
+            userAuth?.auth_token
+          ).getReasonsForPractitionerLeaving();
+        } else {
+          return rejectWithValue('no access token, profile check required');
+        }
+
+        if (!reasons) {
+          return rejectWithValue(
+            'Error getting Reasons For Leaving practitioner'
+          );
+        }
+
+        return reasons;
+      } catch (err) {
+        return rejectWithValue(err);
+      }
+    } else {
+      return reasonForPractitionerLeaving;
     }
   }
 );

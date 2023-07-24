@@ -81,13 +81,12 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
             if (pagingInput is not null)
             {
                 query = PaginationHelper.AddFiltering(pagingInput?.FilterBy, query);
-                query = PaginationHelper.AddSorting(pagingInput?.SortBy, query);
                 query = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, query);
             }
 
             if (isAdmin)
             {
-                return query.OrderByDescending(x => x.InsertedDate);
+                return query;
             }
             else
             {
@@ -98,7 +97,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic
                     {
                         if (!hh.Contains(null)) //dont run any null values through teh check, nothing should be null
                         {
-                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy)).OrderByDescending(y => y.InsertedDate);
+                            return query.Where(x => hh.Contains(((IUserType)x).Hierarchy));
                         }
                     }
                 }

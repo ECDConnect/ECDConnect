@@ -60,7 +60,7 @@ export const Translations = ({
       />
       <div className="flex h-full flex-col p-4">
         <Typography type="h4" text={toTranslate} className="mb-6" />
-        <table className="mb-6 border border-gray-100">
+        <table className="text-textDark mb-6 border border-gray-100">
           <thead>
             <tr className="bg-uiBg border-primary border-b text-left">
               <th className={'py-4 px-6'}>Language</th>

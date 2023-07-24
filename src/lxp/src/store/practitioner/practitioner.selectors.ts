@@ -25,3 +25,16 @@ export const getPractitionerByUserId = (id: string) =>
       return practitioners.find((practitioner) => practitioner.userId === id);
     }
   );
+
+export const getPractitionersByUserIds = (ids: string[]) =>
+  createSelector(
+    (state: RootState) => state.practitioner.practitioners,
+    (practitioners: PractitionerDto[] | undefined) => {
+      if (!practitioners || ids.length === 0) return [];
+
+      return practitioners.filter(
+        (practitioner) =>
+          !!practitioner.userId && ids.includes(practitioner.userId)
+      );
+    }
+  );

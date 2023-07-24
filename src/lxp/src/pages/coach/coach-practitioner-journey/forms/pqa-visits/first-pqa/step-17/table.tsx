@@ -10,6 +10,7 @@ import {
 } from '../step-16';
 import { step14VisitSection } from '../step-14';
 import { step14CertificateQuestion } from '../step-14';
+import { Rating as RatingType } from '../../..';
 
 interface Section {
   questions?: Question[];
@@ -26,8 +27,14 @@ export interface TableProps {
     section5: Section;
     section6: Section;
   };
+  setPqaRating?: (value: RatingType) => void;
 }
-export const Rating = ({ sections, sectionQuestions }: TableProps) => {
+
+export const Rating = ({
+  sections,
+  sectionQuestions,
+  setPqaRating,
+}: TableProps) => {
   const step14Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step14VisitSection)
     ?.questions.find(
@@ -81,8 +88,8 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
 
   const isRedFlagScoreLess5 = sectionList[2].score < 5;
   const isRedFlagSmartSpaceLicence = step14Question1Answer === true;
-  const isOrangeFlagProgramme = step16Question2Answer === false;
-  const isOrangeFlagManyChildren = step16Question3Answer === true;
+  const isOrangeFlagProgramme = step16Question2Answer === (false || 'false');
+  const isOrangeFlagManyChildren = step16Question3Answer === (true || 'true');
 
   const body = [
     {
@@ -133,6 +140,7 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
       !isRedFlagSmartSpaceLicence &&
       !isOrangeFlag
     ) {
+      setPqaRating?.({ color: 'Success', score: rating });
       return (
         <div className="rounded-10 bg-successBg mb-4 flex items-center p-4">
           <Emoji1 className="mr-2 h-auto w-12" />
@@ -151,6 +159,7 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
     }
 
     if (isOrangeCard) {
+      setPqaRating?.({ color: 'Warning', score: rating });
       return (
         <>
           <div className="rounded-10 bg-alertBg mb-4 flex items-center p-4">
@@ -176,6 +185,7 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
       );
     }
 
+    setPqaRating?.({ color: 'Error', score: rating });
     return (
       <>
         <div className="rounded-10 bg-errorBg mb-4 flex items-center p-4">
@@ -225,7 +235,7 @@ export const Rating = ({ sections, sectionQuestions }: TableProps) => {
           )}
         </ul>
       )}
-      <table className="mb-6 w-full border border-gray-100">
+      <table className="text-textDark mb-6 w-full border border-gray-100">
         <thead>
           <tr className="bg-uiBg border-blue-accent3 border-b text-left">
             <th className={'w-3/4 py-4 px-6'}>SECTION</th>

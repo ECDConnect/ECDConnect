@@ -49,7 +49,10 @@ export const getExpenses = (
 
 export const getBalanceSheet = (
   state: RootState
-): BalanceSheetDto[] | undefined => state?.statements?.balanceSheet || [];
+): BalanceSheetDto[] | undefined =>
+  [...(state.statements.balanceSheet || [])].sort(
+    (a, b) => a.month - b.month
+  ) || [];
 
 // Income types selectors
 export const getPreschoolFeeIncome = (state: RootState): IncomeStatementsDto =>

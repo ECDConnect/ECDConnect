@@ -1,0 +1,37 @@
+using ECDLink.Abstractrions.Notifications.Message;
+using ECDLink.DataAccessLayer.Entities.Base;
+using System;
+using System.ComponentModel.DataAnnotations.Schema;
+
+namespace ECDLink.DataAccessLayer.Entities.Notifications
+{
+    [Table(nameof(MessageLog))]
+    public class MessageLog : MessageLog<Guid>
+    {
+
+    }
+
+    public class MessageLog<TKey> : EntityBase<TKey>, IMessageLog<TKey> where TKey : IEquatable<TKey>
+    {
+        public Guid Id { get; set; }
+        public string MessageTemplateType { get; set; }
+        public string MessageProtocol { get; set; }
+        public string From { get; set; }
+        public string To { get; set; }
+        public string Subject { get; set; }
+        public string Message { get; set; }
+        public Guid FromUserId { get; set; }
+        public Guid SentByUserId { get; set; }
+        
+        [ForeignKey(nameof(Id))]
+        public virtual MessageTemplate MessageTemplate { get; set; }
+    }
+
+    // Circular Reference?
+    public interface MessageLogJoin<TKey>
+    {
+        [ForeignKey(nameof(MessageTemplateId))]
+        public MessageTemplate MessageTemplate { get; set; }
+        public TKey MessageTemplateId { get; set; }
+    }
+}

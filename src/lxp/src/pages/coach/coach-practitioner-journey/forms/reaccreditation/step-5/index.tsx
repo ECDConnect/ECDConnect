@@ -1,21 +1,42 @@
-import { FormInput, Typography } from '@ecdlink/ui';
-import { useState, ChangeEvent } from 'react';
-import { DynamicFormProps } from '../../dynamic-form';
+import { Alert, FormInput, Typography } from '@ecdlink/ui';
+import { useState, ChangeEvent, useCallback, useEffect } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
+import { usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step5ReAccreditationQuestion =
   'How many assistants will attend every session?';
-export const step5ReAccreditationVisitSection = 'step 5';
+export const step5ReAccreditationVisitSection = 'Step 5';
 
 export const Step5ReAccreditation = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
   const [answer, setAnswer] = useState('');
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      step5ReAccreditationVisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const { isOnline } = useOnlineStatus();
 
@@ -48,13 +69,42 @@ export const Step5ReAccreditation = ({
     }
   };
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const currentAnswer = previousData?.questions?.[0]?.answer;
+      setAnswer(currentAnswer ? String(currentAnswer) : '');
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="p-4">
-      <Typography
-        type="h2"
-        text={step5ReAccreditationVisitSection}
-        color="textDark"
-      />
+      <Typography type="h2" text="Programme details" color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <div className="flex">
         <Typography
           type="h4"
@@ -65,7 +115,7 @@ export const Step5ReAccreditation = ({
         <Typography
           type="h4"
           text={
-            currentClassroomGroups?.[0].programmeType?.description ??
+            currentClassroomGroups?.[0]?.programmeType?.description ??
             'Not provided'
           }
           color={isOnline ? 'textDark' : 'errorMain'}
@@ -78,6 +128,7 @@ export const Step5ReAccreditation = ({
         subLabel="Any programme with more than 10 children must have an assistant."
         placeholder="e.g. 2"
         value={answer}
+        disabled={isViewAnswers}
         onChange={onChange}
       />
     </div>

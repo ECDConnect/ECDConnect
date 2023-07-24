@@ -1,10 +1,14 @@
 using EcdLink.Api.CoreApi.GraphApi.Models;
+using EcdLink.Api.CoreApi.GraphApi.Models.SmartStart;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Notifications;
 using EcdLink.Api.CoreApi.Managers.Users;
 using EcdLink.Api.CoreApi.Managers.Users.SmartStart;
 using EcdLink.Api.CoreApi.Security.Managers.TokenAccess;
+using ECDLink.Abstractrions.Constants;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.SystemSettings.SystemOptions;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Users;
 using ECDLink.DataAccessLayer.Repositories.Factories;
@@ -18,6 +22,7 @@ using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
@@ -28,6 +33,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public Practitioner UpdatePractitioner([Service] IHttpContextAccessor contextAccessor,
           IGenericRepositoryFactory repoFactory,
+          //IntegrationHelperManager integrationHelperManager,
           Guid? id,
           Practitioner input)
         {
@@ -108,7 +114,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
 
                     Practitioner updateResult = dbRepo.Update(practitioner);
                     //Update RemoteEntity - Integration
-                    //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+                    //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
                     return updateResult;
                 }
@@ -241,8 +247,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
          [Service] IHttpContextAccessor httpContextAccessor,
          string userId)
         {
-            var messageType = "invitation";
-            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, messageType);
+            var inviteCount = shortUrlManager.GetMessageCountForUser(userId, TemplateTypeConstants.Invitation);
 
             // TODO: Do we need this arbitrary check?
             if (inviteCount < 6)
@@ -256,15 +261,45 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations.SmartStart
         }
 
 
-        public bool DeActivatePractitioner([Service] PersonnelService personnelService, string userId, string leavingComment)
+        public async Task<bool> RemovePractitioner([Service] IHttpContextAccessor contextAccessor,
+            IGenericRepositoryFactory repoFactory,
+            [Service] IReassignmentService reassignmentService,
+            [Service] PersonnelService personnelService,
+            UserManager<ApplicationUser> userManager,
+            string practitionerId, string reasonForPractitionerLeavingId, string reasonDetails, string newPrincipalId, List<ClassroomGroupReassignments> classroomGroupReassignments)
         {
-            return personnelService.DeActivatePractitioner(userId, leavingComment);
+            var uId = contextAccessor.HttpContext.GetUser().Id;
+            var practitionerRepo = repoFactory.CreateGenericRepository<Practitioner>(userContext: uId);
+            Practitioner practitioner = practitionerRepo.GetByUserId(practitionerId);
+            var user = await userManager.FindByIdAsync(practitioner.UserId);
+
+            if (!string.IsNullOrEmpty(newPrincipalId))
+            {
+                personnelService.SwitchPrincipal(userManager, practitionerId, newPrincipalId);
+            }
+
+            //Reassign all the classes for the practitioner as indicated            
+            foreach (var reassignment in classroomGroupReassignments)
+            {
+                if (reassignment.ClassroomGroupId == null || reassignment.PractitionerId == null)
+                {
+                    return false;
+                }
+                reassignmentService.AddReassignmentForPractitioner(uId, practitioner.UserId, reassignment.PractitionerId, "Practitioner removed by coach", DateTime.Now, uId, reassignment.ClassroomGroupId, true);
+            }
+
+            return personnelService.DeActivatePractitioner(practitionerId, "Practitioner removed by coach", reasonForPractitionerLeavingId, reasonDetails);
+        }
+
+        public bool DeActivatePractitioner([Service] PersonnelService personnelService,
+            string userId, string leavingComment, string reasonForPractitionerLeavingId, string reasonDetails)
+        {
+            return personnelService.DeActivatePractitioner(userId, leavingComment, reasonForPractitionerLeavingId, reasonDetails);
         }
 
         public bool DelicensePractitioner([Service] UserLicenseManager userLicenseManager, LicenseModel input)
         {
             return userLicenseManager.DelicenseUser(input);
         }
-
     }
 }

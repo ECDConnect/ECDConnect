@@ -63,6 +63,26 @@ namespace EcdLink.Api.CoreApi.Security.Managers
               .SendMessageAsync();
         }
 
+        public async Task SendPortalForgotPasswordMessageAsync(ApplicationUser user, string token)
+        {
+            var encodedToken = TokenHelper.EncodeToken(token);
+
+            var forgotPasswordCallback = $"{_options.Value.ForgotPasswordPortal}{encodedToken}/{user.UserName}";
+            var applicationName = TenantExecutionContext.Tenant.ApplicationName;
+            var organisationName = TenantExecutionContext.Tenant.ApplicationName;
+            string firstName = user.FirstName;
+
+            var notificationProvider = _notificationProviderFactory.Create(user);
+
+            await notificationProvider
+              .SetMessageTemplate(TemplateTypeEnum.ForgotPasswordPortal)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.PasswordResetLink, forgotPasswordCallback)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
+              .AddOrUpdateFieldReplacement(MessageTemplateConstants.OrganisationName, organisationName)
+              .SendMessageAsync();
+        }
+
         public async Task RequestVerifyEmailAsync(ApplicationUser user, Uri hostUrl)
         {
             var token = await _userManager.GenerateChangeEmailTokenAsync(user, user.PendingEmail);
@@ -105,7 +125,8 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var userRoles = await _userManager.GetRolesAsync(user);
             if (userRoles.Contains("admin"))
             {
-                await notificationProvider
+                var adminNotificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
+                await adminNotificationProvider
                     .SetMessageTemplate(TemplateTypeEnum.SuperadminNotifyEmailChanged)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.ApplicationName, applicationName)
                     .AddOrUpdateFieldReplacement(MessageTemplateConstants.FirstName, firstName)
@@ -120,7 +141,7 @@ namespace EcdLink.Api.CoreApi.Security.Managers
             var organisationName = TenantExecutionContext.Tenant.ApplicationName;
             string firstName = user.FirstName;
 
-            var notificationProvider = _notificationProviderFactory.Create(user);
+            var notificationProvider = _notificationProviderFactory.Create(user, MessageTypeConstants.EMAIL);
 
             await notificationProvider
               .SetMessageTemplate(TemplateTypeEnum.PasswordChangedByAdmin)

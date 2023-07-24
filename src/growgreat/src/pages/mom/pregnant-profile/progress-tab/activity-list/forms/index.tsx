@@ -16,7 +16,10 @@ import {
   getPregnancyCareSteps,
   dangerSignsSteps,
 } from './steps';
-import { getPreviousVisitInformationForMotherSelector } from '@/store/visit/visit.selectors';
+import {
+  getPreviousVisitInformationForMotherSelector,
+  getVisitAnswersForMotherSelector,
+} from '@/store/visit/visit.selectors';
 import { dangerSignsVisitSectionForBaby } from './nutrition-steps/danger-signs';
 import { getReferralsForMotherSelector } from '@/store/mother/mother.selectors';
 import {
@@ -31,6 +34,8 @@ import {
 } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/id-document';
 import { dangerSignsSectionName } from './danger-signs-steps/danger-signs';
 import { maternalDistressVisitSection } from './pregnancy-care-steps/maternal-distress/result';
+import { muacQuestion } from './nutrition-steps/mother-growth-muac';
+import { HIVQuestion } from './pregnancy-care-steps/nutrition/complementary-feeding-flow/hiv-care';
 
 interface FormProps {
   onBack: () => void;
@@ -64,6 +69,7 @@ export const Form = ({ onBack }: FormProps) => {
   );
 
   const isFirstVisit = useSelector(getIsMotherFirstVisitSelector);
+  const previousAnswers = useSelector(getVisitAnswersForMotherSelector);
 
   const IDDocumentFirstPreviousAnswer = previousVisit?.visitDataStatus?.find(
     (item) => item?.visitData?.question === idDocumentFirstQuestion
@@ -77,6 +83,20 @@ export const Form = ({ onBack }: FormProps) => {
   )
     ? true
     : false;
+
+  const previousMUAC = useMemo(
+    () =>
+      previousAnswers?.find((item) => item?.question === muacQuestion)
+        ?.questionAnswer,
+    [previousAnswers]
+  );
+
+  const previousHIV = useMemo(
+    () =>
+      previousAnswers?.find((item) => item?.question === HIVQuestion)
+        ?.questionAnswer,
+    [previousAnswers]
+  );
 
   const isFollowUp = useCallback(
     (section: string, visitName: string) => {
@@ -130,6 +150,10 @@ export const Form = ({ onBack }: FormProps) => {
     dangerSignsSectionName,
     activitiesTypes.dangerSigns
   );
+
+  const IsHIVCareStep =
+    isFirstVisit || previousHIV! === 'true' || previousHIV! === 'unsure';
+  const isMUACStep = isFirstVisit || Number(previousMUAC!) < 22;
 
   const activityName = window.sessionStorage.getItem(currentActivityKey) || '';
 
@@ -200,14 +224,15 @@ export const Form = ({ onBack }: FormProps) => {
           isAntenatalClinicStep
         );
       case activitiesTypes.nutrition:
-        return careForBabySteps(isDangerSignsFollowUpForBaby);
+        return careForBabySteps(isDangerSignsFollowUpForBaby, isMUACStep);
       case activitiesTypes.pregnancyCare:
         return getPregnancyCareSteps(
           isEqualOrAfter98andEqualOrBefore168Days,
           isAlcoholUseStep,
           isIDDocumentStep,
           isMaternalDistressFollowUp,
-          isMaternalDistress
+          isMaternalDistress,
+          IsHIVCareStep
         );
       case activitiesTypes.dangerSigns:
         return dangerSignsSteps(isDangerSignsFollowUpStep, isFirstVisit);
@@ -220,6 +245,7 @@ export const Form = ({ onBack }: FormProps) => {
     isFirstVisit,
     isAntenatalClinicStep,
     isDangerSignsFollowUpForBaby,
+    isMUACStep,
     isEqualOrAfter98andEqualOrBefore168Days,
     isAlcoholUseStep,
     isIDDocumentStep,

@@ -1,6 +1,6 @@
 import { Alert, Divider, FormInput, Typography } from '@ecdlink/ui';
-import { useCallback, useState, ChangeEvent } from 'react';
-import { DynamicFormProps } from '../../dynamic-form';
+import { useCallback, useState, ChangeEvent, useEffect } from 'react';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import { useSelector } from 'react-redux';
 import {
   CalculateCapacityProps,
@@ -9,15 +9,23 @@ import {
 } from './utils/math';
 import { classroomsSelectors } from '@/store/classroom';
 import { NoPlaygroupClassroomType } from '@/enums/ProgrammeType';
-import { toCamelCase } from '@ecdlink/core';
+import { toCamelCase, usePrevious, useSessionStorage } from '@ecdlink/core';
 import {
   step5ReAccreditationQuestion,
   step5ReAccreditationVisitSection,
 } from '../step-5';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+interface State {
+  question: string;
+  answer: string;
+}
 
 export const Step6ReAccreditation = ({
   smartStarter,
   sectionQuestions,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -34,6 +42,31 @@ export const Step6ReAccreditation = ({
 
   const visitSection = 'Step 6';
 
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousDataStep5 = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      step5ReAccreditationVisitSection
+    )
+  );
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
   const allClassroomGroups = useSelector(
     classroomsSelectors.getClassroomGroups
   );
@@ -44,11 +77,13 @@ export const Step6ReAccreditation = ({
   const currentClassroomGroups = classroomGroups.filter(
     (item) => item?.userId === smartStarter?.userId
   );
-  const numberOfAssistants = sectionQuestions
-    ?.find((item) => item.visitSection === step5ReAccreditationVisitSection)
-    ?.questions.find(
-      (item) => item.question === step5ReAccreditationQuestion
-    )?.answer;
+  const numberOfAssistants = (
+    isViewAnswers
+      ? previousDataStep5?.questions
+      : sectionQuestions?.find(
+          (item) => item.visitSection === step5ReAccreditationVisitSection
+        )?.questions
+  )?.find((item) => item.question === step5ReAccreditationQuestion)?.answer;
 
   const onOptionSelected = useCallback(
     (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>, index) => {
@@ -84,7 +119,7 @@ export const Step6ReAccreditation = ({
       shortSide: Number(questions[0].answer),
       numberOfAssistants: Number(numberOfAssistants),
       programType: toCamelCase(
-        currentClassroomGroups[0].programmeType?.description ?? ''
+        currentClassroomGroups[0]?.programmeType?.description ?? ''
       ) as CalculateCapacityProps['programType'],
     });
 
@@ -92,16 +127,48 @@ export const Step6ReAccreditation = ({
       return `${result} children`;
     }
 
-    if (!currentClassroomGroups[0].programmeType?.description) {
+    if (!currentClassroomGroups[0]?.programmeType?.description) {
       return 'Programme type could not be found';
     }
 
     return 'It was not possible to calculate the capacity';
   };
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      setAnswers(previousData?.questions as State[]);
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
+
   return (
     <div className="p-4">
       <Typography type="h2" text="Programme details" color="textDark" />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Typography
         type="h4"
         text="Measure the room in centimetres:"
@@ -115,13 +182,14 @@ export const Step6ReAccreditation = ({
         className="my-4"
       />
       {questions.map((item, index) => (
-        <div className="flex items-end gap-2">
+        <div className="flex items-end gap-2" key={item.question}>
           <FormInput
             type="number"
             className="mt-2"
             label={item.question}
             placeholder="e.g. 410"
             value={item.answer}
+            disabled={isViewAnswers}
             onChange={(value) => onOptionSelected(value, index)}
             {...(!!item.answer &&
               Number(item.answer) < 50 && {
@@ -162,6 +230,7 @@ export const Step6ReAccreditation = ({
         </>
       )}
       <Alert
+        className="mt-4"
         type="info"
         title="Check the capacity above before tapping Next. How is programme capacity calculated?"
         list={[

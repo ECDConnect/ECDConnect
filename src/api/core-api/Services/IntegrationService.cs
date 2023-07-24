@@ -400,128 +400,134 @@ namespace ECDLink.Core.Services
         public async Task<bool> IntegrationStatementsData()
         {
             bool isComplete = false;
+            string statementsUrl = SSIntegrationSettings.SLIncomeStatementIncome + SSIntegrationSettings.CreateMultiple;
+
             //TODO: change to run by entities that need sto have docs sent rather than waiting for docs to be picked up - what if autosubmit doesnt run
             var mappedDocTypes = await GetMappedGroupingEntities("DocumentType");
             var statementType = mappedDocTypes.Where(x => x.LocalEntity.Equals("IncomeStatementPDF")).FirstOrDefault();
-            var statements = _docRepo.GetAll().Where(d =>  d.DocumentTypeId.ToString() == statementType.LocalId).ToList();//d.UserId.Equals("6fc08fe0-91fa-4a5d-91ad-24be9aaf02e6") &&
-            _mappedEntities = await this.GetMappedEntities();
-            string statementsUrl = SSIntegrationSettings.SLIncomeStatementIncome + SSIntegrationSettings.CreateMultiple;
-            if (statements.Count > 0)
+            _mappedEntities = await this.GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+            List<IntegrationEntityMapping> statementsDueList = _mappedEntities.Where(x => (x.LastIncomeSubmittedDate == null || x.LastIncomeSubmittedDate <= DateTime.Now)).ToList();
+
+            foreach (var prac in statementsDueList)
             {
-                foreach (var statement in statements)
+                var statements = _docRepo.GetAll().Where(d => d.DocumentTypeId.ToString() == statementType.LocalId && string.Equals(d.UserId, prac.UserId)).ToList();//d.UserId.Equals("6fc08fe0-91fa-4a5d-91ad-24be9aaf02e6") &&
+                if (statements.Count > 0)
                 {
-                    string remoteStatementId = "";
-                    //get associated audit lines
-                    List<IntegrationAudit> audits = await GetAudits("Document", statement.UserId);
-
-                    var entity = _mappedEntities.Where(x => x.UserId == statement.UserId).FirstOrDefault();
-                    if (entity != null)
+                    foreach (var statement in statements)
                     {
-                        //Write statements lines
-                        string remoteDocId = await PushNewDocument(statement);
-
-                        if (!string.IsNullOrEmpty(remoteDocId))
+                        string remoteStatementId = "";
+                        //get associated audit lines
+                        List<IntegrationAudit> audits = await GetAudits("Document", statement.UserId, 30);
+                        audits = audits.Where(x => x.Submitted == null && string.Equals(x.RelatedId, statement.Id)).ToList(); //filter audits where these docs have been created and in audit log as unsubmitted
+                        if (audits.Count > 0)
                         {
-                            DateTime timePeriod = DateTime.Now;//.AddMonths(-1)
-                            List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, entity.UserId, timePeriod.Year, timePeriod.Month);
-                            double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
-                            double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
-                            //calculate based on categories
-                            foreach (var statementLine in statementData)
+                            //Write statements lines
+                            string remoteDocId = await PushNewDocument(statement);
+
+                            if (!string.IsNullOrEmpty(remoteDocId))
                             {
-                                foreach (var dataLine in statementLine.Data)
+                                DateTime timePeriod = DateTime.Now;//.AddMonths(-1)
+                                List<IncomeExpensePDFTableModel> statementData = new IncomeStatementsQueryExtension().GetStatementsIncomeExpensesPDFData(_incomeManager, prac.UserId, timePeriod.Year, timePeriod.Month);
+                                double dStartupSupport = 0.0; double dFees = 0.0; double dDonations = 0.0; double dFundRaising = 0.0; double dOtherIncome = 0.0;
+                                double dRent = 0.0; double dUtilities = 0.0; double dFood = 0.0; double dSalary = 0.0; double dTransport = 0.0; double dOtherExpenses = 0.0;
+                                //calculate based on categories
+                                foreach (var statementLine in statementData)
                                 {
-                                    //TODO: add transport and wages and fundraising
-                                    switch (dataLine.Type) {
-                                        case "Startup Support":
-                                            dStartupSupport += dataLine.Amount;
-                                            break;
-                                        case "Rent":
-                                            dRent += dataLine.Amount;
-                                            break;
-                                        case "Food":
-                                            dFood += dataLine.Amount;
-                                            break;
-                                        case "Subcontractor Wages":
-                                            dSalary += dataLine.Amount;
-                                            break;
-                                        case "Learning Materials":
-                                        case "Maintenance":
-                                            dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        case "Utilities":
-                                            dUtilities += dataLine.Amount;
-                                            break;
-                                        case "Preschool Fee":
-                                            dFees += dataLine.Amount;
-                                            break;
-                                        case "Donation":
-                                            dDonations += dataLine.Amount;
-                                            break;
-                                        case "DBE Subsidy":
-                                            dDonations += dataLine.Amount;
-                                            break;
-                                        case "Other":                                                                                        
-                                            if (statementLine.Type == "Income")
-                                                dOtherIncome += dataLine.Amount;
-                                            else
+                                    foreach (var dataLine in statementLine.Data)
+                                    {
+                                        //TODO: add transport and wages and fundraising
+                                        switch (dataLine.Type)
+                                        {
+                                            case "Startup Support":
+                                                dStartupSupport += dataLine.Amount;
+                                                break;
+                                            case "Rent":
+                                                dRent += dataLine.Amount;
+                                                break;
+                                            case "Food":
+                                                dFood += dataLine.Amount;
+                                                break;
+                                            case "Subcontractor Wages":
+                                                dSalary += dataLine.Amount;
+                                                break;
+                                            case "Learning Materials":
+                                            case "Maintenance":
                                                 dOtherExpenses += dataLine.Amount;
-                                            break;
-                                        default: 
-                                            break;
+                                                break;
+                                            case "Utilities":
+                                                dUtilities += dataLine.Amount;
+                                                break;
+                                            case "Preschool Fee":
+                                                dFees += dataLine.Amount;
+                                                break;
+                                            case "Donation":
+                                                dDonations += dataLine.Amount;
+                                                break;
+                                            case "DBE Subsidy":
+                                                dDonations += dataLine.Amount;
+                                                break;
+                                            case "Other":
+                                                if (statementLine.Type == "Income")
+                                                    dOtherIncome += dataLine.Amount;
+                                                else
+                                                    dOtherExpenses += dataLine.Amount;
+                                                break;
+                                            default:
+                                                break;
+                                        }
                                     }
                                 }
-                            }
 
-                            StringBuilder jsonStatementString = new StringBuilder();
-                            jsonStatementString.AppendLine("[{");
-                            jsonStatementString.AppendLine("\"Month\":\"" + timePeriod.ToString("MMMM") + "\",");
-                            jsonStatementString.AppendLine("\"Year\":\"" + timePeriod.Year + "\",");
-                            
-                            jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
-                            jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
-                            jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
-                            jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
-                            jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
-                            jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
-                            jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
-                            jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
-                            jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
-                            jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
-                            jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
-                            jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + entity.RemoteId + "\"},");
-                            //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}");
-                            jsonStatementString.AppendLine("}]");
-                            //[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
-                            try
-                            {
-                                //now send to API call <entity type>/Multiple
-                                var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl,null, null, null, false, false, jsonStatementString.ToString());
-                                if (!string.IsNullOrEmpty(responseString))
+                                StringBuilder jsonStatementString = new StringBuilder();
+                                jsonStatementString.AppendLine("[{");
+                                jsonStatementString.AppendLine("\"Month\":\"" + timePeriod.ToString("MMMM") + "\",");
+                                jsonStatementString.AppendLine("\"Year\":\"" + timePeriod.Year + "\",");
+
+                                jsonStatementString.AppendLine("\"StartupSupport\":" + dStartupSupport + ",");
+                                jsonStatementString.AppendLine("\"Fees\":" + dFees + ",");
+                                jsonStatementString.AppendLine("\"Donations\":" + dDonations + ",");
+                                jsonStatementString.AppendLine("\"FundRaising\":" + dFundRaising + ",");
+                                jsonStatementString.AppendLine("\"OtherIncome\":" + dOtherIncome + ",");
+                                jsonStatementString.AppendLine("\"Rent\":" + dRent + ",");
+                                jsonStatementString.AppendLine("\"Utilities\":" + dUtilities + ",");
+                                jsonStatementString.AppendLine("\"Food\":" + dFood + ",");
+                                jsonStatementString.AppendLine("\"Salary\":" + dSalary + ",");
+                                jsonStatementString.AppendLine("\"Transport\":" + dTransport + ",");
+                                jsonStatementString.AppendLine("\"OtherExpenses:\":" + dOtherExpenses + ",");
+                                jsonStatementString.AppendLine("\"Franchisee\":{\"Guid\": \"" + prac.RemoteId + "\"},");
+                                //jsonStatementString.AppendLine("\"Document\":{\"Guid\": \"" + remoteDocId + "\"}");
+                                jsonStatementString.AppendLine("}]");
+                                //[{"Month": "January","Year": "2023","StartupSupport": 10.0,"Fees": 0.0,"Donations": 10.0,"FundRaising": 10.0,"OtherIncome": 10.0,"Rent": 10.0,"Utilities": 10.0,"Food": 10.0,"Salary": 10.0,"Transport": 10.0,"OtherExpenses": 10.0,"Franchisee": {"Guid": "4778287e-073f-e711-80e0-005056815442"},"Document": {"Guid": "9c029379-3996-ec11-834e-00155dee5a05"}}]
+                                try
                                 {
-                                    var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
-                                    if (returnObj != null)
+                                    //now send to API call <entity type>/Multiple
+                                    var responseString = await _apiManager.GetAPIHandlerResponse(statementsUrl, null, null, null, false, false, jsonStatementString.ToString());
+                                    if (!string.IsNullOrEmpty(responseString))
                                     {
-                                        remoteStatementId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
-                                        if (audits.Count > 0)
-                                            await _logManager.UpdateAuditSubmitted(audits);
+                                        var returnObj = (JArray)JsonConvert.DeserializeObject(responseString);
+                                        if (returnObj != null)
+                                        {
+                                            remoteStatementId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
+                                            if (audits.Count > 0)
+                                                await _logManager.UpdateAuditSubmitted(audits);
 
-                                        //no need to insert entity mapping item for statements as long as document saved
-                                        isComplete = true;
-                                    }
-                                    else //error empty response received
-                                    {
-                                        await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                            //no need to insert entity mapping item for statements as long as document saved
+                                            isComplete = true;
+                                        }
+                                        else //error empty response received
+                                        {
+                                            await _logManager.IntegrationLog("Data Push Fail: ", jsonStatementString.ToString() + " | " + responseString, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                        }
                                     }
                                 }
-                            }
-                            catch (Exception e)
-                            {
-                                await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                catch (Exception e)
+                                {
+                                    await _logManager.IntegrationLog("SmartLink API Error: " + e.Message, e.InnerException != null ? e.InnerException.ToString() : null, null, LogRelatedType.Error, "IntegrationStatementsData > GetAPIHandlerResponse");
+                                }
                             }
                         }
                     }
-                }               
+                }
             }
 
             return isComplete;
@@ -537,9 +543,6 @@ namespace ECDLink.Core.Services
             //get all mapped practitioners and iterate through them to submit attendance
             _mappedEntities = await this.GetMappedEntities();
 
-            var practitioners = _mappedEntities.Where(x => string.Equals(x.LocalEntity, "Practitioner")).ToList();
-
-
             string attendanceUrl = SSIntegrationSettings.SLChildAttendanceRegister + SSIntegrationSettings.CreateMultiple;
             var attendancesDueList = _mappedEntities.Where(x => (x.LastAttendanceSubmittedDate == null || x.LastAttendanceSubmittedDate <= DateTime.Now.Date.AddDays(-7))).ToList();
 
@@ -548,6 +551,7 @@ namespace ECDLink.Core.Services
 
             foreach (var parent in attendancesDueList)
             {
+
                 IEnumerable<Attendance> attendanceData = new AttendanceQueryExtension().GetWeeklyAttendance(_attendanceTrackingRepository, _contextAccessor, parent.UserId, trackingWeekDate.Year, trackingWeekDate.Month, trackingWeekDate.GetWeekOfYear());
                 if (attendanceData.Any())
                 {
@@ -667,6 +671,9 @@ namespace ECDLink.Core.Services
                                     {
                                         var remoteStatementId = returnObj.Count > 0 ? returnObj[0].ToString() : null;
                                         isComplete = true;
+                                        //mark mapped parent practitioner of last date attendance was sent
+                                        parent.LastAttendanceSubmittedDate = DateTime.Now;
+                                        _mapperRepo.Update(parent);
                                     }
                                     else //error empty response received
                                     {
@@ -698,50 +705,37 @@ namespace ECDLink.Core.Services
             bool returnOK = false;
             _mappedEntities = await GetMappedEntities();
             _mappedColumns = await GetMappedColumns();
-            
-            List<ColumnChange> changedColumns = await _apiManager.GetColumnChangesBetweenDates(DateTime.Now.AddDays(-2), DateTime.Now);                    
+
+            RemoteChangesList changedColumns = await _apiManager.GetMappedColumnChangesBetweenDates(DateTime.Now.AddDays(-6), DateTime.Now);                    
             
             if (changedColumns != null) {
-                foreach (var change in changedColumns)
+                //run all inserts
+                foreach (var change in changedColumns.Inserts)
                 {
-                    //match remote changed entity by name and type to what SS has locally, if we dont have it, we dont performa change and will be picked up by step 2 of integration - creates
-
-                    //var remoteColumnChanges = changedColumns.Where(x => x.Entity.Equals(change.Entity) && x.RecordChange.RecordGuid.Equals(change.RecordChange.RecordGuid)).ToList();
-                    ////kick off change sequence depending on type
-                    //foreach (var item in remoteColumnChanges)
-                    //{
-                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.RecordChange.RecordGuid && x.RemoteEntity.Equals(change.Entity)).FirstOrDefault();
-                    UpdateLocalEntity updateEntity = new UpdateLocalEntity()
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity == null)
                     {
-                        Guid = change.RecordChange.RecordGuid,
-                        RelatedGuid = change.RecordChange.RelatedEntityGuid,
-                        RelatedEntityType = change.RecordChange.RelatedEntityType,  //related is always the parent
-                        EntityColumn = change.Column,
-                        EntityType = change.Entity,
-                        LastUpdatedDateTime = change.DateTimeStamp,
-                        NewData = change.NewValue
-                    }; 
-
-                    switch (change.RecordChange.ChangeType)
-                    {
-                        case SLChangeType.Deactivate:
-                            //TODO: handle deactivates
-
-
-                            break;
-                        default:
-                            //check if item exists, if not create and then update
-                            if (mappedEntity == null)
-                            {
-                                mappedEntity = await UpdateInsertNewEntity(updateEntity);
-                            }
-
-                            if (change.RecordChange.ChangeType == SLChangeType.Update)
-                                await UpdateEntityColumn(updateEntity, mappedEntity);
-
-                            break;
+                        mappedEntity = await UpdateInsertNewEntity(change);
                     }
-                    //}
+                }
+                //run all deactivates
+                foreach (var change in changedColumns.Deletes)
+                {
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity == null)
+                    {
+                        //TODO
+                    }
+                }
+                _mappedEntities = await GetMappedEntities(null,true); //reload the lists to include the latest changes
+                //run all updates, that arent in the insert list either
+                foreach (var change in changedColumns.Updates)
+                {
+                    IntegrationEntityMapping mappedEntity = _mappedEntities.Where(x => x.RemoteId == change.Guid && x.RemoteEntity.Equals(change.EntityType)).FirstOrDefault();
+                    if (mappedEntity != null)
+                    {
+                        await UpdateEntityColumn(change, mappedEntity);
+                    }
                 }
             }
             
@@ -858,9 +852,10 @@ namespace ECDLink.Core.Services
                         //5. - get all data from API and discard whats complete and known to SS
                         //-------------------
                         //5.1) get all frannchisees and map them                
-                        //List<MappedFranchisee> remoteFranchisees = await GetFranchiseesByCoach(coach.RemoteId);
+                        //List<MappedFranchisee> remoteFranchisees = await _apiManager.GetFranchiseesByCoach(coach.RemoteId);
                         List<MappedFranchisee> remoteFranchisees = (franchiseeId != null ? await _apiManager.GetFranchiseesById(franchiseeId) : await _apiManager.GetFranchiseesByCoach(coach.RemoteId));
                         //5.2) iterate through and check if we have it, 3) if not kick off process to create - 4) if we have it add to a new list of ids and move on with iteration. Point 12 will do iteration through changes by looking at recordchange object
+                        
                         if (remoteFranchisees != null)
                         {
                             //order all to load principals first
@@ -938,16 +933,16 @@ namespace ECDLink.Core.Services
                         }
 
                         //Pull Trainees
-                        List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
-                        if (remoteTrainees.Any())
-                        {
-                            foreach (var trainee in remoteTrainees)
-                            {
-                                trainee.localParentEntityUserId = coach.UserId;
-                                trainee.localParentEntityId = coach.Id.ToString();
-                                await MapTrainee(trainee);
-                            }
-                        }
+                        //List<MappedTrainee> remoteTrainees = await _apiManager.GetTraineesByCoach(coach.RemoteId, true); //pull trainees only - if switched to false, it will bring paid of trainee and its practitioner
+                        //if (remoteTrainees.Any())
+                        //{
+                        //    foreach (var trainee in remoteTrainees)
+                        //    {
+                        //        trainee.localParentEntityUserId = coach.UserId;
+                        //        trainee.localParentEntityId = coach.Id.ToString();
+                        //        await MapTrainee(trainee);
+                        //    }
+                        //}
                     }
                 }
 
@@ -981,7 +976,7 @@ namespace ECDLink.Core.Services
 
         #region Utilities
 
-        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null, string auditUserId = null)
+        private async Task<List<IntegrationAudit>> GetAudits(string entityType = null, string auditUserId = null, int historyDays = 2)
         {
             try
             {
@@ -992,7 +987,7 @@ namespace ECDLink.Core.Services
                 var lastScheduledRun = _schedulerService.GetLastRunTime(scheduledTask);
 
                 //get all audits - excludin what the admin user did, these are cerates and SL pulls driven by t he system - so to avoid sending back what we got from SL, ignore these changes
-                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(-3)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
+                var audits = _auditRepo.GetAll().Where(x => x.UserId.Equals(auditUserId) && x.Submitted == null && x.UserId != _uId && x.InsertedDate >= _startTime.AddDays(historyDays*-1)).OrderBy(x => x.InsertedDate).ToList(); //order by oldest to newest
                 //var audits = _auditRepo.GetAll().Where(x => x.InsertedDate >= _startTime.AddMinutes(-10) && x.Submitted == null).OrderByDescending(x => x.InsertedDate)..ToList(); //overlaps with 10 minutes of changes
                 if (entityType != null)
                     return audits.Where(x => x.Entity.Equals(entityType) && x.Entity != "").ToList();
@@ -1006,10 +1001,14 @@ namespace ECDLink.Core.Services
             }
         }
 
-        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null)
+        private async Task<List<IntegrationEntityMapping>> GetMappedEntities(string entityType = null, bool getNew = false)
         {
             try
             {
+                if (getNew)
+                {
+                    return _mapperRepo.GetAll().ToList();
+                }
                 if (entityType != null)
                 {
                     if (_mappedEntities != null)
@@ -2453,13 +2452,16 @@ namespace ECDLink.Core.Services
             try
             {
                 //make sure to exclude any system related updates and do not log
-                var localColumnChange = _mappedColumns.Where(c => c.RemoteColumn.Equals(model.EntityColumn) && c.RemoteEntity.Equals(model.EntityType)).FirstOrDefault();
-                if (localColumnChange != null)
-                { //if its not mapped we arent interested in this change
-                    var pracs = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
-                    switch (localColumnChange.LocalEntity)
+                //var localColumnChange = _mappedColumns.Where(c => c.RemoteColumn.Equals(model.EntityColumn) && c.RemoteEntity.Equals(model.EntityType)).FirstOrDefault();
+                //if (localColumnChange != null)
+                //{ //if its not mapped we arent interested in this change
+                    //var pracs = await GetMappedEntities(SSIntegrationSettings.SSPractitioner);
+                    switch (model.EntityType)
                     {
-                        case SSIntegrationSettings.SSChild:
+                        case SSIntegrationSettings.SLCaregiver:
+                            //caregiver is associated with a child, their details will be pulled in via a child record - so ignore
+                            break;
+                        case SSIntegrationSettings.SLChild:
                             //map child and caregiver
                             MappedChild child = await _apiManager.GetChildById(model.Guid);
                             if (child != null)
@@ -2470,12 +2472,12 @@ namespace ECDLink.Core.Services
                                     Practitioner parentPrac = _practitionerGenericRepo.GetByUserId(parentEntity.UserId);
                                     if (parentPrac != null)
                                     {
-                                        var entity = MapChildCaregiverOfFranchisee(child, parentPrac);
+                                        var entity = await MapChildCaregiverOfFranchisee(child, parentPrac);
                                     }
                                 }
                             }
                             break;
-                        case SSIntegrationSettings.SSDocument:
+                        case SSIntegrationSettings.SLDocument:
                             //TODO:
                             MappedDocument doc = await _apiManager.GetDocumentsById(model.Guid);
                             if (doc!=null)
@@ -2500,12 +2502,12 @@ namespace ECDLink.Core.Services
                                 }
                             }
                             break;
-                        case SSIntegrationSettings.SSAddress:
+                        case SSIntegrationSettings.SLAddress:
                             //TODO:
                             MappedAddress address = await _apiManager.GetAddressById(model.Guid);
 
                             break;
-                        case SSIntegrationSettings.SSTrainee:
+                        case SSIntegrationSettings.SLTrainee:
                             //TODO:
                             MappedTrainee trainee = await _apiManager.GetTraineesById(model.Guid);
 
@@ -2513,7 +2515,7 @@ namespace ECDLink.Core.Services
                             break;
                     }
 
-                }
+               //}
                 return newEntity;
             }
             catch (Exception e)

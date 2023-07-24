@@ -2,6 +2,8 @@ using EcdLink.Api.CoreApi.GraphApi.Models;
 using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Security.Managers;
 using ECDLink.Abstractrions.GraphQL.Enums;
+using ECDLink.Core.Services.Interfaces;
+using ECDLink.Core.Helpers;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Integration.IntegrationEntityMapping;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -11,6 +13,7 @@ using ECDLink.Security;
 using ECDLink.Security.Extensions;
 using ECDLink.Tenancy.Context;
 using HotChocolate;
+using HotChocolate.Execution;
 using HotChocolate.Types;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -28,10 +31,10 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         [Permission(PermissionGroups.USER, GraphActionEnum.Create)]
         public async Task<ApplicationUser> AddUser(
           [Service] IHttpContextAccessor httpContextAccessor,
+          [Service] ILogger<UserMutationExtension> _logger,
           IGenericRepositoryFactory repoFactory,
           UserManager<ApplicationUser> userManager,
-          UserModel input,
-          bool createAdmin = false)
+          UserModel input)
         {
             string currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
             ApplicationUser currentUser = await userManager.FindByIdAsync(currentUserId);
@@ -40,29 +43,38 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
             if (input is null || currentUserId is null)
             {
-                throw new Exception("Invalid input.");
+                throw new QueryException("Invalid User input.");
             }
 
-            if (createAdmin)
+            if (input?.IsAdmin ?? false)
             {
                 currentUserIsAdmin = await userManager.IsInRoleAsync(currentUser, Roles.ADMINISTRATOR);
 
-                if (currentUserIsAdmin)
+                if (!currentUserIsAdmin)
                 {
-                    throw new Exception("You may not create an admin user.");
+                    throw new QueryException("You may not create an admin user.");
                 }
             }
+            
+            // Check for existing user.
+            var newUsername = input?.IdNumber ?? input.Email ?? Guid.NewGuid().ToString();
+            var existingUser = await userManager.FindByNameAsync(newUsername);
+            existingUser ??= await userManager.FindByIdAsync(input.Id);
 
+            if (existingUser is not null)
+                throw new QueryException("User already exists.");
+
+            // Create new user.
             var newUser = new ApplicationUser
             {
                 Id = input.Id ?? Guid.NewGuid().ToString(),
                 PhoneNumber = input.PhoneNumber,
-                UserName = input?.IdNumber ?? Guid.NewGuid().ToString(),
+                UserName = newUsername,
                 IdNumber = input.IdNumber,
                 Email = input.Email,
-                IsSouthAfricanCitizen = input.IsSouthAfricanCitizen,
-                VerifiedByHomeAffairs = input.VerifiedByHomeAffairs,
-                DateOfBirth = input.DateOfBirth,
+                IsSouthAfricanCitizen = input.IsSouthAfricanCitizen ?? false,
+                VerifiedByHomeAffairs = input.VerifiedByHomeAffairs ?? false,
+                DateOfBirth = input.DateOfBirth ?? DateTime.MinValue,
                 GenderId = input.GenderId,
                 RaceId = input.RaceId,
                 FirstName = input.FirstName,
@@ -72,20 +84,31 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 IsActive = true,
                 ProfileImageUrl = input.ProfileImageUrl,
                 TenantId = tenantId,
-                LanguageId = input.LanguageId
+                LanguageId = input.LanguageId,
+                InsertedDate = DateTime.UtcNow,
+                UpdatedDate = null
             };
 
-            var userCreatedResult = await userManager.CreateAsync(newUser);
-
-            if (!userCreatedResult.Succeeded)
+            IdentityResult userCreatedResult = null;
+            try
             {
-                throw new Exception(userCreatedResult.Errors.Count() > 0 ? userCreatedResult.Errors.First().Description : "Could not add user");
+                userCreatedResult = await userManager.CreateAsync(newUser);
+            } catch (Exception ex)
+            {
+                _logger.LogError("Could not add user: {0}\nException:{1}", userCreatedResult?.Errors?.FirstOrDefault()?.Description, ex?.InnerException?.Message ?? ex.Message);
+                throw new QueryException("Could not add user.");
+            }
+
+            if (!(userCreatedResult?.Succeeded ?? false))
+            {
+                _logger.LogError("Could not add user: {0}", userCreatedResult?.Errors?.FirstOrDefault()?.Description);
+                throw new QueryException("Could not add user.");
             }
 
             DoAudit(currentUserId, repoFactory, null, newUser.Id);
 
             // If requested, and allowed, add the admin role to the new user
-            if (createAdmin)
+            if (input.IsAdmin ?? false)
             {
                 if (currentUserIsAdmin)
                 {
@@ -93,9 +116,9 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                     if (!adminRoleResult.Succeeded)
                     {
-                        throw new Exception(adminRoleResult.Errors.Count() > 0
-                            ? adminRoleResult.Errors.First().Description
-                            : "Could not add user to admin role.");
+                        _logger.LogError(adminRoleResult?.Errors?.FirstOrDefault()?.Description ??
+                            "Could not add user to admin role.");
+                        throw new QueryException();
                     }
 
                     // Audit log the role change
@@ -115,7 +138,8 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!passwordCreatedResult.Succeeded)
                 {
-                    throw new Exception(passwordCreatedResult.Errors.First().Description);
+                    _logger.LogError(passwordCreatedResult.Errors.First().Description);
+                    throw new QueryException("Could not set user password.");
                 }
             }
 
@@ -137,113 +161,174 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             var user = await userManager.FindByIdAsync(id);
             var currentUserId = httpContextAccessor.HttpContext.GetUser()?.Id;
 
-            if (user is null || currentUserId is null)
-            {
-                throw new Exception("User not found.");
-            }
+            if (input is null)
+                throw new QueryException("Input cannot be null.");
 
+            if (user is null || currentUserId is null)
+                throw new QueryException("User not found.");
+            
             Guid tenantId = TenantExecutionContext.Tenant.Id;
 
             // Cross tenant, but allow admin user which has no tenant... 
             if (user.TenantId != tenantId && user.TenantId != null)
             {
-                throw new Exception("Cross tenant access denied.");
+                throw new QueryException("Cross tenant access denied.");
             }
 
             input.Id = id;
 
             //audit user changes
-            List<AuditChanges> fields = new List<AuditChanges>();
-            if (input.PhoneNumber != user.PhoneNumber)
-                fields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
-            user.PhoneNumber = replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber);
-            if (input.IdNumber != user.IdNumber)
-                fields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
-            user.IdNumber = input.IdNumber;
-            if (input.IsSouthAfricanCitizen != user.IsSouthAfricanCitizen)
-                fields.Add(new AuditChanges() { FieldName = "IsSouthAfricanCitizen", ValueBefore = ((bool)user.IsSouthAfricanCitizen).ToString(), ValueAfter = ((bool)input.IsSouthAfricanCitizen).ToString() });
-            user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen;
-            if (input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
-                fields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = ((bool)user.VerifiedByHomeAffairs).ToString(), ValueAfter = ((bool)input.VerifiedByHomeAffairs).ToString() });
-            user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs;
-            if (input.DateOfBirth.Date != user.DateOfBirth.Date) //avoid time changes
+            List<AuditChanges> auditFields = new List<AuditChanges>();
+
+            if (input.PhoneNumber is not null 
+                && input.PhoneNumber != user.PhoneNumber)
             {
-                fields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Date.ToString() });
-                user.DateOfBirth = input.DateOfBirth.Date;
+                auditFields.Add(new AuditChanges() { FieldName = "PhoneNumber", ValueBefore = user.PhoneNumber, ValueAfter = input.PhoneNumber });
+                user.PhoneNumber = UserHelper.NormalizePhoneNumber(replaceIfNotNullOrWhiteSpace(user.PhoneNumber, input.PhoneNumber));
+                user.PendingPhoneNumber = null;
             }
-            if (input.GenderId != user.GenderId)
-                fields.Add(new AuditChanges() { FieldName = "GenderId", ValueBefore = (user.GenderId != null ? user.GenderId.ToString() : null), ValueAfter = (input.GenderId != null ? input.GenderId.ToString() : null) });
-            user.GenderId = input.GenderId;
-            if (input.RaceId != user.RaceId)
-                fields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
-            user.RaceId = input.RaceId;
-            if (input.LanguageId != user.LanguageId)
-                fields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
-            user.LanguageId = input.LanguageId;
-            if (input.FirstName != user.FirstName)
-                fields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
-            user.FirstName = input.FirstName;
-            if (input.Surname != user.Surname)
-                fields.Add(new AuditChanges() { FieldName = "Surname", ValueBefore = user.Surname, ValueAfter = input.Surname });
-            user.Surname = input.Surname;
-            user.FullName = $"{input.FirstName} {input.Surname}";
-            if (input.ContactPreference != user.ContactPreference)
-                fields.Add(new AuditChanges() { FieldName = "ContactPreference", ValueBefore = user.ContactPreference, ValueAfter = input.ContactPreference });
-            user.ContactPreference = input.ContactPreference;
-            if (input.EmergencyContactPhoneNumber != null)
+
+            if (input.WhatsAppNumber is not null
+                && input.WhatsAppNumber != user.WhatsAppNumber)
             {
-                if (input.EmergencyContactPhoneNumber != user.EmergencyContactPhoneNumber)
-                    fields.Add(new AuditChanges() { FieldName = "EmergencyContactPhoneNumber", ValueBefore = user.EmergencyContactPhoneNumber, ValueAfter = input.EmergencyContactPhoneNumber });
+                auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
+                var normalizedWhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
+                user.WhatsAppNumber = UserHelper.NormalizePhoneNumber(normalizedWhatsAppNumber);
+                user.PendingPhoneNumber = null;
+            }
+
+            if (input.IdNumber is not null 
+                && input.IdNumber != user.IdNumber)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "IdNumber", ValueBefore = user.IdNumber, ValueAfter = input.IdNumber });
+                user.IdNumber = input.IdNumber;
+            }
+
+            if (input.IsSouthAfricanCitizen is not null 
+                && input.IsSouthAfricanCitizen != user.IsSouthAfricanCitizen)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "IsSouthAfricanCitizen", ValueBefore = ((bool)user.IsSouthAfricanCitizen).ToString(), ValueAfter = ((bool)input.IsSouthAfricanCitizen).ToString() });
+                user.IsSouthAfricanCitizen = input.IsSouthAfricanCitizen ?? false;
+            }
+
+            if (input.VerifiedByHomeAffairs is not null 
+                && input.VerifiedByHomeAffairs != user.VerifiedByHomeAffairs)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "VerifiedByHomeAffairs", ValueBefore = ((bool)user?.VerifiedByHomeAffairs).ToString(), ValueAfter = ((bool)input.VerifiedByHomeAffairs).ToString() });
+                user.VerifiedByHomeAffairs = input.VerifiedByHomeAffairs ?? false;
+            }
+
+            if (input.DateOfBirth.HasValue
+                && input.DateOfBirth.Value != user.DateOfBirth.Date) //avoid time changes
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "DateOfBirth", ValueBefore = user.DateOfBirth.Date.ToString(), ValueAfter = input.DateOfBirth.Value.ToString() });
+                user.DateOfBirth = input.DateOfBirth.Value;
+            }
+
+            if (input.GenderId is not null 
+                && input.GenderId != user.GenderId)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "GenderId", ValueBefore = user?.GenderId?.ToString(), ValueAfter = (input.GenderId != null ? input.GenderId.ToString() : null) });
+                user.GenderId = input.GenderId;
+            }
+
+            if (input?.RaceId is not null 
+                && input.RaceId != user.RaceId)
+            {
+                
+                    auditFields.Add(new AuditChanges() { FieldName = "RaceId", ValueBefore = (user.RaceId != null ? user.RaceId.ToString() : null), ValueAfter = (input.RaceId != null ? input.RaceId.ToString() : null) });
+                user.RaceId = input.RaceId;
+            }
+
+            if (input.LanguageId is not null)
+            {
+                if (input.LanguageId != user.LanguageId)
+                    auditFields.Add(new AuditChanges() { FieldName = "LanguageId", ValueBefore = (user.LanguageId != null ? user.LanguageId.ToString() : null), ValueAfter = (input.LanguageId != null ? input.LanguageId.ToString() : null) });
+                user.LanguageId = input.LanguageId;
+            }
+
+            if (input.FirstName is not null
+                && input.FirstName != user.FirstName)
+            {
+                if (input.FirstName != user.FirstName)
+                    auditFields.Add(new AuditChanges() { FieldName = "FirstName", ValueBefore = user.FirstName, ValueAfter = input.FirstName });
+                user.FirstName = input.FirstName;
+                user.FullName = $"{input.FirstName} {user.Surname}"; //use existing surname incase surname unchanged
+            }
+
+            if (input.Surname is not null
+                && input.Surname != user.Surname)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "Surname", ValueBefore = user.Surname, ValueAfter = input.Surname });
+                user.Surname = input.Surname;
+                user.FullName = $"{user.FirstName} {input.Surname}"; //use existing surname incase surname unchanged
+            }
+
+            if (input.ContactPreference is not null
+                && input.ContactPreference != user.ContactPreference)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "ContactPreference", ValueBefore = user.ContactPreference, ValueAfter = input.ContactPreference });
+                user.ContactPreference = input.ContactPreference;
+            }
+
+            if (input.EmergencyContactPhoneNumber != null
+                && input.EmergencyContactPhoneNumber != user.EmergencyContactPhoneNumber)
+            {
+                auditFields.Add(new AuditChanges() { FieldName = "EmergencyContactPhoneNumber", ValueBefore = user.EmergencyContactPhoneNumber, ValueAfter = input.EmergencyContactPhoneNumber });
                 user.EmergencyContactPhoneNumber = input.EmergencyContactPhoneNumber;
             }
-            if (input.EmergencyContactFirstName != null)
+
+            if (input.EmergencyContactFirstName != null
+                && input.EmergencyContactFirstName != user.EmergencyContactFirstName)
             {
-                if (input.EmergencyContactFirstName != user.EmergencyContactFirstName)
-                    fields.Add(new AuditChanges() { FieldName = "EmergencyContactFirstName", ValueBefore = user.EmergencyContactFirstName, ValueAfter = input.EmergencyContactFirstName });
+                auditFields.Add(new AuditChanges() { FieldName = "EmergencyContactFirstName", ValueBefore = user.EmergencyContactFirstName, ValueAfter = input.EmergencyContactFirstName });
                 user.EmergencyContactFirstName = input.EmergencyContactFirstName;
             }
-            if (input.EmergencyContactSurname != null)
+
+            if (input.EmergencyContactSurname != null
+                && input.EmergencyContactSurname != user.EmergencyContactSurname)
             {
-                if (input.EmergencyContactSurname != user.EmergencyContactSurname)
-                    fields.Add(new AuditChanges() { FieldName = "EmergencyContactSurname", ValueBefore = user.EmergencyContactSurname, ValueAfter = input.EmergencyContactSurname });
+                    auditFields.Add(new AuditChanges() { FieldName = "EmergencyContactSurname", ValueBefore = user.EmergencyContactSurname, ValueAfter = input.EmergencyContactSurname });
                 user.EmergencyContactSurname = input.EmergencyContactSurname;
             }
-            if (input.NextOfKinFirstName != null)
+
+            if (input.NextOfKinFirstName != null
+                && input.NextOfKinFirstName != user.NextOfKinFirstName)
             {
-                if (input.NextOfKinFirstName != user.NextOfKinFirstName)
-                    fields.Add(new AuditChanges() { FieldName = "NextOfKinFirstName", ValueBefore = user.NextOfKinFirstName, ValueAfter = input.NextOfKinFirstName });
+                auditFields.Add(new AuditChanges() { FieldName = "NextOfKinFirstName", ValueBefore = user.NextOfKinFirstName, ValueAfter = input.NextOfKinFirstName });
                 user.NextOfKinFirstName = input.NextOfKinFirstName;
             }
-            if (input.NextOfKinSurname != null)
+
+            if (input.NextOfKinSurname != null
+                && input.NextOfKinSurname != user.NextOfKinSurname)
             {
-                if (input.NextOfKinSurname != user.NextOfKinSurname)
-                    fields.Add(new AuditChanges() { FieldName = "NextOfKinSurname", ValueBefore = user.NextOfKinSurname, ValueAfter = input.NextOfKinSurname });
+                auditFields.Add(new AuditChanges() { FieldName = "NextOfKinSurname", ValueBefore = user.NextOfKinSurname, ValueAfter = input.NextOfKinSurname });
                 user.NextOfKinSurname = input.NextOfKinSurname;
             }
+
             if (input.NextOfKinContactNumber != null)
             {
                 if (input.NextOfKinContactNumber != user.NextOfKinContactNumber)
-                    fields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
+                    auditFields.Add(new AuditChanges() { FieldName = "NextOfKinContactNumber", ValueBefore = user.NextOfKinContactNumber, ValueAfter = input.NextOfKinContactNumber });
                 user.NextOfKinContactNumber = input.NextOfKinContactNumber;
             }
-            if (input.WhatsAppNumber != null)
+
+            if (input.WhatsAppNumber != null
+                && input.WhatsAppNumber != user.WhatsAppNumber)
             {
-                if (input.WhatsAppNumber != user.WhatsAppNumber)
-                    fields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
+                auditFields.Add(new AuditChanges() { FieldName = "WhatsAppNumber", ValueBefore = user.WhatsAppNumber, ValueAfter = input.WhatsAppNumber });
                 user.WhatsAppNumber = replaceIfNotNullOrWhiteSpace(user.WhatsAppNumber, input.WhatsAppNumber);
             }
 
             // If userId is null, you're prob. an admin, admins are allowed to log into any tenant. Management.
             user.TenantId = user.TenantId == null ? null : tenantId;
+            user.UpdatedDate = DateTime.UtcNow;
 
-            if (!string.IsNullOrWhiteSpace(input.IdNumber))
+            if (!string.IsNullOrWhiteSpace(input.IdNumber)
+                && input.IdNumber != user.IdNumber)
             {
-                if (input.IdNumber != user.IdNumber)
-                {
-                    fields.Add(new AuditChanges() { FieldName = "UserName", ValueBefore = user.UserName, ValueAfter = input.IdNumber });
-                    user.UserName = input.IdNumber;
-                    
-                }
+                auditFields.Add(new AuditChanges() { FieldName = "UserName", ValueBefore = user.UserName, ValueAfter = input.IdNumber });
+                user.UserName = input.IdNumber;
             }
 
             // If the user changing the email, is different to the user being changed
@@ -254,7 +339,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && user.Id != currentUserId)
             {
                 user.PendingEmail = input.Email;
-                fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
                 try
                 {
                     var apiUrl = new Uri("https://" + httpContextAccessor.HttpContext.Request.Host.ToString());
@@ -262,12 +347,12 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 }
                 catch (Exception exception)
                 {
-                    logger?.LogError("Could not change user email address.", new { userId = user.Id, exception });
+                    logger?.LogError("Could not send email verification for change of user email address.", new { userId = user.Id, exception });
                 }
 
                 // Set email back to original so that it must first be verified.
                 input.Email = user.Email;
-                fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
             }
 
             // If the email is different (or will become unconfirmed)
@@ -278,27 +363,28 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
                 && !string.IsNullOrWhiteSpace(input.Email)
                 && user.Id == currentUserId)
             {
-                fields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
+                auditFields.Add(new AuditChanges() { FieldName = "Email", ValueBefore = user.Email, ValueAfter = input.Email });
                 user.Email = input.Email;
                 user.EmailConfirmed = false;                
             }
 
-            if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl))
+            if (!string.IsNullOrWhiteSpace(input.ProfileImageUrl)
+                && input.ProfileImageUrl != user.ProfileImageUrl)
             {
-                if (input.ProfileImageUrl != user.ProfileImageUrl)
-                    fields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
+                auditFields.Add(new AuditChanges() { FieldName = "ProfileImageUrl", ValueBefore = user.ProfileImageUrl, ValueAfter = input.ProfileImageUrl });
                 user.ProfileImageUrl = input.ProfileImageUrl;
             }
+            user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
 
-            DoAudit(currentUserId, repoFactory, fields, id);
+            DoAudit(currentUserId, repoFactory, auditFields, id);
             //Update RemoteEntity - Integration
-            //integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
+            //await integrationHelperManager.UpdateRemoteEntity(user.Id.ToString(), "ApplicationUser");
 
             if (!updateResult.Succeeded)
             {
-                throw new Exception(updateResult.Errors.First().Description);
+                throw new QueryException(updateResult.Errors.First().Description);
             }
 
             return user;
@@ -314,6 +400,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
         public async Task<bool> DeleteUser(
           [Service] IHttpContextAccessor httpContextAccessor,
           IGenericRepositoryFactory repoFactory,
+          [Service] IPointsEngineService pointsEngineService,
           UserManager<ApplicationUser> userManager,
           string id)
         {
@@ -329,7 +416,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!isAlsoAdmin)
                 {
-                    throw new Exception("You may not disable an administrator.");
+                    throw new QueryException("You may not disable an administrator.");
                 }
             }
 
@@ -339,9 +426,13 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
             }
 
             user.IsActive = false;
+            user.UpdatedDate = DateTime.UtcNow;
 
             var updateResult = await userManager.UpdateAsync(user);
             DoAudit(currentUserId, repoFactory, null, id);
+
+            // Manage points for user
+            pointsEngineService.CalculateChildrenRegistrationRemoval(currentUserId, DateTime.UtcNow);
             return updateResult.Succeeded;
         }
 
@@ -356,7 +447,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
           string newPassword)
         {
             var user = await userManager.FindByIdAsync(id);
-
+            user.UpdatedDate = DateTime.UtcNow;
             // Don't let normal users reset admin passwords...
             var isAdmin = await userManager.IsInRoleAsync(user, Roles.ADMINISTRATOR);
             if (isAdmin)
@@ -366,7 +457,7 @@ namespace EcdLink.Api.CoreApi.GraphApi.Mutations
 
                 if (!isAlsoAdmin)
                 {
-                    throw new Exception("You may not disable an administrator.");
+                    throw new QueryException("You may not disable an administrator.");
                 }
             }
 

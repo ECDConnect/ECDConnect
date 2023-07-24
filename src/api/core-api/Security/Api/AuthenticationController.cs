@@ -12,6 +12,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Newtonsoft.Json;
 using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace ECDLink.Security.Api
@@ -41,7 +42,7 @@ namespace ECDLink.Security.Api
             }
 
             //exclude funny script attempts
-            if ((login?.Password?.StartsWith('<') ?? true) 
+            if ((login?.Password?.StartsWith('<') ?? true)
                 || (login?.PhoneNumber?.StartsWith('<') ?? false)
                 || (login?.Username?.StartsWith('<') ?? true))
             {
@@ -103,19 +104,30 @@ namespace ECDLink.Security.Api
         [Route("forgot-password")]
         public async Task<IActionResult> ForgotPassword([FromBody] SimpleUserModel model)
         {
-            if (string.IsNullOrWhiteSpace(model.Username))
+            var userIdentifier = model?.Username ?? model?.Email;
+            if (string.IsNullOrWhiteSpace(userIdentifier))
             {
                 return BadRequest("No username specified for Password Reset");
             }
 
-            var user = await _securityManager.GetUserByNameAsync(model.Username);
-            var tenantId = TenantExecutionContext.Tenant.Id;
-            if (user.TenantId.HasValue && user.TenantId.Value != tenantId)
+            // Use username first, if provided, otherwise use email
+            var user = string.IsNullOrEmpty(model.Username)
+                ? await _securityManager.GetUserByEmailAsync(model.Email)
+                : await _securityManager.GetUserByNameAsync(model.Username);
+
+            var tenant = TenantExecutionContext.Tenant;
+            var tenantId = tenant.Id;
+
+            if (user is null || user?.TenantId.Value != tenantId)
             {
                 return BadRequest("Could not reset password");
             }
 
-            var result = await _securityManager.ForgotPasswordAsync(user);
+            var sites = new List<string> { tenant.AdminSiteAddress, tenant.AdminTestSiteAddress };
+            var originHost = new Uri(Request.Headers.Origin);
+            var isPortal = sites.Contains($"{originHost.Host}:{originHost.Port}") || sites.Contains(originHost.Host);
+
+            var result = await _securityManager.ForgotPasswordAsync(user, isPortal);
 
             if (!result)
             {
@@ -168,13 +180,13 @@ namespace ECDLink.Security.Api
             return new OkObjectResult(result);
         }
 
-        [Route("online-check")]
-        [AllowAnonymous]
-        [HttpGet]
-        public async ValueTask<IActionResult> OnlineCheckAsync()
-        {
-            return Ok();
-        }
+        //[Route("online-check")]
+        //[AllowAnonymous]
+        //[HttpGet]
+        //public async ValueTask<IActionResult> OnlineCheckAsync()
+        //{
+        //    return Ok();
+        //}
 
         [Route("verify-email-address")]
         [AllowAnonymous]

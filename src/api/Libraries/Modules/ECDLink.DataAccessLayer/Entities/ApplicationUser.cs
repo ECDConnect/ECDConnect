@@ -10,7 +10,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace ECDLink.DataAccessLayer.Entities
 {
-    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType,ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
+    public class ApplicationUser : ApplicationIdentityUser, IMultiUserType, ITrackableType, RaceJoin<Guid?>, GenderJoin<Guid?>
     {
         [ForeignKey(nameof(RaceId))]
         public virtual Race Race { get; set; }
@@ -111,6 +111,12 @@ namespace ECDLink.DataAccessLayer.Entities
         [ForeignKey(nameof(LanguageId))]
         public virtual Language Language { get; set; }
         public Guid? LanguageId { get; set; }
+
+        [GraphIgnoreInput]
+        public DateTime? InsertedDate { get; set; } = DateTime.Now;
+
+        [GraphIgnoreInput]
+        public DateTime? UpdatedDate { get; set; } = DateTime.Now;
     }
 
     public interface ApplicationUserJoin

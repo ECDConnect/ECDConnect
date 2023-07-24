@@ -7,14 +7,19 @@ import UserAvatar from '../../../user-avatar/user-avatar';
 import { UserAlertListDataItem } from '../../models/UserAlertListDataItem';
 import * as stackedListStyles from '../../stacked-list.styles';
 import * as styles from './user-alert-list-item.styles';
+import { ListItem } from '../../models/ListItem';
 
 export interface UserAlertListItemProps {
   item: UserAlertListDataItem;
+  onClickItem?: (item: any) => void;
 }
 
 export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
   item,
+  onClickItem,
 }) => {
+  const hasClickHandler =
+    (!!onClickItem || !!item.onActionClick) && !item.noClick;
   const renderAvatar = useMemo(() => {
     if (item.icon) {
       return (
@@ -51,8 +56,17 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
 
   return (
     <div
-      className={styles.menulistItemContainer}
-      onClick={() => item.onActionClick && item.onActionClick()}
+      className={
+        hasClickHandler
+          ? styles.menulistItemContainer
+          : styles.menuItemIconContainerNoAction
+      }
+      onClick={() => {
+        if (!item.noClick) {
+          if (!!item.onActionClick) item.onActionClick();
+          else if (onClickItem) onClickItem(item);
+        }
+      }}
     >
       <div className={styles.contentWrapper}>
         <div className={stackedListStyles.textRowsWrapper}>
@@ -67,22 +81,25 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
                 text={item.title}
               ></Typography>
               <div className={styles.menuSubTitle}>
-                {item.alertSeverityNoneIcon && item.alertSeverity === 'none' ? (
-                  renderIcon(
-                    item.alertSeverityNoneIcon,
-                    classNames(
-                      'w-4 h-4',
-                      item.alertSeverityNoneColor &&
-                        `text-${item.alertSeverityNoneColor}`
+                {!item.hideAlertSeverity ? (
+                  item.alertSeverityNoneIcon &&
+                  item.alertSeverity === 'none' ? (
+                    renderIcon(
+                      item.alertSeverityNoneIcon,
+                      classNames(
+                        'w-4 h-4',
+                        item.alertSeverityNoneColor &&
+                          `text-${item.alertSeverityNoneColor}`
+                      )
                     )
+                  ) : (
+                    <div
+                      className={styles.getShapeClassByAlertSeverity(
+                        item.alertSeverity
+                      )}
+                    ></div>
                   )
-                ) : (
-                  <div
-                    className={styles.getShapeClassByAlertSeverity(
-                      item.alertSeverity
-                    )}
-                  ></div>
-                )}
+                ) : null}
                 <Typography
                   className={
                     item?.childMatching
@@ -98,7 +115,13 @@ export const UserAlertListItem: React.FC<UserAlertListItemProps> = ({
             </div>
           </div>
         </div>
-        <div>{renderIcon('ChevronRightIcon', styles.menuChevron)}</div>
+        <div>
+          {hasClickHandler &&
+            renderIcon(
+              !!item.rightIcon ? item.rightIcon : 'ChevronRightIcon',
+              styles.menuChevron
+            )}
+        </div>
       </div>
     </div>
   );

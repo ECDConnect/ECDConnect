@@ -1,7 +1,6 @@
 import { createSelector } from '@reduxjs/toolkit';
 import { RootState } from '../types';
 import { CalendarEventModel, CalendarEventTypeDto } from '@ecdlink/core';
-import type { EventObject } from '@toast-ui/calendar';
 import { CalendarState } from './calendar.types';
 import { calendarConvert } from './calendar.util';
 
@@ -64,5 +63,59 @@ export const getCalendarEventObjectById = (id: string) =>
         e,
         calendar.eventTypes || []
       );
+    }
+  );
+
+export const findCalendarEvents = (values: {
+  eventType?: string;
+  participantUserId?: string;
+  action?: any;
+}) =>
+  createSelector(
+    (state: RootState) => state.calendar,
+    (calendar: CalendarState) => {
+      if (!calendar.events || calendar.events.length === 0) return [];
+      const found = calendar.events.filter((event) => {
+        var required = 0;
+        var matched = 0;
+        if (values.eventType !== undefined) {
+          required++;
+          if (values.eventType === event.eventType) matched++;
+        }
+        if (values.participantUserId !== undefined) {
+          required++;
+          if (
+            event.participants.find(
+              (p) => p.participantUserId === values.participantUserId
+            )
+          )
+            matched++;
+        }
+        if (values.action !== undefined) {
+          required++;
+          if (
+            Object.keys(values.action).length === 1 &&
+            values.action.state !== undefined
+          ) {
+            if (
+              event.action &&
+              event.action.state !== undefined &&
+              JSON.stringify(values.action.state) !==
+                JSON.stringify(event.action.state)
+            )
+              matched++;
+          } else {
+            if (
+              event.action &&
+              event.action.state !== undefined &&
+              JSON.stringify(values.action.state) !==
+                JSON.stringify(event.action.state)
+            )
+              matched++;
+          }
+        }
+        return required === matched;
+      });
+      return found;
     }
   );

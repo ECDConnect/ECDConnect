@@ -12,59 +12,45 @@ const UserRoles: React.FC<UserRolesProps> = ({
   roleList,
   onUserRoleChange,
 }) => {
-  const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [selectedUserRole, setSelectedUserRole] = useState<string>('');
 
   useEffect(() => {
-    if (roles) {
-      setUserRoles([...roles]);
+    if (roles && roles.length > 0) {
+      setSelectedUserRole(roles[0].name);
     }
   }, [roles]);
 
-  const getUserRoleNames = () => {
-    const blah = selectedUserRoles.map((x: RoleDto) => x.name);
-    return blah;
-  };
+  const handleUserRolesChange = (
+    event: React.ChangeEvent<HTMLSelectElement>
+  ) => {
+    const selectedRoleName = event.target.value;
+    setSelectedUserRole(selectedRoleName);
 
-  const handleUserRolesChange = async (role: RoleDto) => {
-    const copyUserRoles = [...selectedUserRoles];
-    if (getUserRoleNames().includes(role.name)) {
-      const idx = copyUserRoles.findIndex((ur) => ur.id === role.id);
-      if (idx > -1) {
-        copyUserRoles.splice(idx, 1);
-      }
+    const selectedRole = roleList.find(
+      (role) => role.name === selectedRoleName
+    );
+    if (selectedRole) {
+      onUserRoleChange([selectedRole]);
     } else {
-      copyUserRoles.push(role);
+      onUserRoleChange([]);
     }
-    setUserRoles(copyUserRoles);
-    onUserRoleChange(copyUserRoles);
   };
 
   return (
     <div>
-      {roleList &&
-        roleList.map((role: RoleDto) => {
-          const checked = selectedUserRoles.some((x) => x.name === role.name);
-          return (
-            <div key={role.id} className="relative flex items-start pt-5">
-              <div className="flex items-center h-5">
-                <input
-                  checked={checked}
-                  type="checkbox"
-                  className="focus:ring-primary h-4 w-4 text-primary border-gray-300 rounded"
-                  onChange={() => handleUserRolesChange(role)}
-                />
-              </div>
-              <div className="ml-3 text-sm">
-                <label
-                  htmlFor="candidates"
-                  className="font-medium text-gray-700"
-                >
-                  {role.name}
-                </label>
-              </div>
-            </div>
-          );
-        })}
+      <select
+        value={selectedUserRole}
+        onChange={handleUserRolesChange}
+        className="bg-uiBg focus:outline-none sm:text-md block w-full rounded-lg py-3 pl-10 pr-3 leading-5 text-gray-900 placeholder-gray-600 focus:ring-2 focus:ring-white focus:ring-offset-2 focus:ring-offset-white"
+      >
+        <option value="">Select a role...</option>
+        {roleList &&
+          roleList.map((role) => (
+            <option key={role.id} value={role.name}>
+              {role.name}
+            </option>
+          ))}
+      </select>
     </div>
   );
 };

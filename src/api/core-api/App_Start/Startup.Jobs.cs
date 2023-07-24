@@ -1,6 +1,7 @@
 ﻿using ECDLink.AutomatedJobs.Anonymise;
 using ECDLink.AutomatedJobs.Configuration;
 using ECDLink.AutomatedJobs.Cron;
+using ECDLink.AutomatedJobs.DailyRunners;
 using ECDLink.AutomatedJobs.Notifications;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -14,7 +15,7 @@ namespace EcdLink.Api.CoreApi
         {
             if (Environment.IsProduction())
             {
-                // Hard-coded times for now, consider using ISystemSettings and move the cron expressions to DB
+                //Hard - coded times for now, consider using ISystemSettings and move the cron expressions to DB
                 services.AddCronJob<RequestLogOnNotification>(c =>
                 {
                     c.TimeZoneInfo = TimeZoneInfo.Local;
@@ -38,14 +39,19 @@ namespace EcdLink.Api.CoreApi
                     c.TimeZoneInfo = TimeZoneInfo.Local;
                     c.CronExpression = CronTags.MidnightDaily;
                 });
+                services.AddCronJob<ChildAnonymiseJob>(c =>
+                {
+                    c.TimeZoneInfo = TimeZoneInfo.Local;
+                    c.CronExpression = CronTags.EveryMinute;
+                });
 
             }
             //run these jobs regardless of environment
-            //services.AddCronJob<ExpireInvitationsJob>(c =>
-            //{
-            //    c.TimeZoneInfo = TimeZoneInfo.Local;
-            //    c.CronExpression = CronTags.MidnightDaily;
-            //});
+            services.AddCronJob<ExpireInvitations>(c =>
+            {
+                c.TimeZoneInfo = TimeZoneInfo.Local;
+                c.CronExpression = CronTags.EveryTwoHours;
+            });
             //services.AddCronJob<RevertReassignment>(c =>
             //{
             //    c.TimeZoneInfo = TimeZoneInfo.Local;

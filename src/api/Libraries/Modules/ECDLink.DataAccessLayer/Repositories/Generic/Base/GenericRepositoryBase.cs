@@ -48,11 +48,22 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
             if (pagingInput is not null)
             {
                 queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
-                queryable = PaginationHelper.AddSorting(pagingInput?.SortBy, queryable);
                 queryable = PaginationHelper.AddPaging(pagingInput?.RowOffset ?? 0, pagingInput?.PageSize ?? 10, queryable);
             }
 
             return queryable;
+        }
+
+        public virtual int Count(PagedQueryInput pagingInput = null)
+        {
+            var queryable = entities.Where(e => e.TenantId == null || e.TenantId.Equals(_tenantId)).AsQueryable();
+
+            if (pagingInput is not null)
+            {
+                queryable = PaginationHelper.AddFiltering(pagingInput?.FilterBy, queryable);
+            }
+
+            return queryable.Count();
         }
 
         public virtual T GetById(Guid id)
@@ -261,7 +272,7 @@ namespace ECDLink.DataAccessLayer.Repositories.Generic.Base
                                     }
                                     else
                                     {
-                                        if (DateTime.Parse(beforeValue).Date != DateTime.Parse(afterValue).Date)
+                                        if (DateTime.Parse(beforeValue).Date != (string.IsNullOrEmpty(afterValue) ? null : DateTime.Parse(afterValue).Date))
                                         {
                                             isValidChange = true;
                                         }
