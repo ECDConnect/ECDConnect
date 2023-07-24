@@ -1,12 +1,13 @@
 import { Divider, Typography } from '@ecdlink/ui';
 import { DynamicFormProps } from '../../../dynamic-form';
 import { useLayoutEffect } from 'react';
+import { Item } from './card';
 
 export const Step10 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
   const name = smartStarter?.user?.firstName || smartStarter?.firstName;
 
   // TODO: add N7
-  const isFilledSelfAssessment = false;
+  const isFilledSelfAssessment = true;
 
   useLayoutEffect(() => {
     setEnableButton?.(true);
@@ -26,7 +27,7 @@ export const Step10 = ({ setEnableButton, smartStarter }: DynamicFormProps) => {
       />
       <Divider dividerType="dashed" className="my-4" />
       {isFilledSelfAssessment ? (
-        <>{/* TODO: add N7 */}</>
+        [0, 1, 2, 3, 4, 5].map((item) => <Item text="lorem ipsum" checked />)
       ) : (
         <>
           <Typography
