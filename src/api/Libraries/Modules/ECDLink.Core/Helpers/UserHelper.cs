@@ -42,6 +42,11 @@ namespace ECDLink.Core.Helpers
                 return $"{noSpacePhoneNumber}";
             }
 
+            if (noSpacePhoneNumber.Length == 9 && !noSpacePhoneNumber.StartsWith("0"))
+            {
+                return $"+27{noSpacePhoneNumber}";
+            }
+                
             return phoneNumber;
             //throw new Exception("Phone number not recognised for normalization");
         }
