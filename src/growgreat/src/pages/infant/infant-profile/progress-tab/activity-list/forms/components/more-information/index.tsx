@@ -22,11 +22,13 @@ export const MoreInformation = ({
   client,
   subTitle,
   onClose,
+  title,
 }: {
   subTitle?: string;
   section: string;
   client?: string;
   onClose: () => void;
+  title?: string;
 }) => {
   const [language, setLanguage] = useState({ locale: 'en-za' });
 
@@ -245,7 +247,7 @@ export const MoreInformation = ({
     <BannerWrapper
       size="small"
       onBack={onClose}
-      title={section}
+      title={title ? title : section}
       renderOverflow
       onClose={onClose}
     >
