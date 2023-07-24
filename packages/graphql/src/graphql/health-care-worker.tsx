@@ -156,12 +156,12 @@ export const HealthCareWorkerTemplate = gql`
 
 export const GetHealthCareWorkerSummaryForPeriod = gql`
   query (
-    $healthCareWorkerUserId: String
+    $healthCareWorkerId: String
     $startDate: DateTime
     $endDate: DateTime
   ) {
     healthCareWorkerSummaryForPeriod(
-      userId: $healthCareWorkerUserId
+      healthCareWorkerId: $healthCareWorkerId
       startDate: $startDate
       endDate: $endDate
     ) {
@@ -175,6 +175,7 @@ export const GetHealthCareWorkerSummaryForPeriod = gql`
       totalPregnantMomsWithUrgentIssues
       totalCaregiversAndChildrenWithUrgentIssues
       totalVisitsOverdue
+      __typename
     }
   }
 `;
