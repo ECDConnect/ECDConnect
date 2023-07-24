@@ -48,6 +48,28 @@
                     public const string TokenSecret = "Notifications.SMSProviders.BulkSms.TokenSecret";
                     public const string AuthToken = "Notifications.SMSProviders.BulkSms.BasicAuthToken";
                 }
+
+                public static class Sms
+                {
+                    public const string SmsGrouping = "Notifications.SMSProviders.Sms";
+                    public const string Provider = "Notifications.SMSProviders.Sms.Provider";
+                }
+
+                public static class SMSPortal
+                {
+                    public const string SMSPortalGrouping = "Notifications.SMSProviders.SMSPortal";
+                    public const string Url = "Notifications.SMSProviders.SMSPortal.BaseUrl";
+                    public const string ApiKey = "Notifications.SMSProviders.SMSPortal.ApiKey";
+                    public const string ApiSecret = "Notifications.SMSProviders.SMSPortal.ApiSecret";
+                }
+
+                public static class iTouch
+                {
+                    public const string iTouchGrouping = "Notifications.SMSProviders.iTouch";
+                    public const string Url = "Notifications.SMSProviders.iTouch.BaseUrl";
+                    public const string Username = "Notifications.SMSProviders.iTouch.Username";
+                    public const string Password = "Notifications.SMSProviders.iTouch.Password";
+                }
             }
         }
 
@@ -114,6 +136,7 @@
                 public const string InvitationsGrouping = "General.Callback.Invitations";
 
                 public const string Signup = "General.Callback.Invitations.Signup";
+                public const string AdminSignup = "General.Callback.Invitations.AdminSignup";
             }
 
             public static class Security
@@ -121,6 +144,7 @@
                 public const string SecurityGrouping = "General.Callback.Security";
 
                 public const string ForgotPassword = "General.Callback.Security.ForgotPassword";
+                public const string ForgotPasswordPortal = "General.Callback.Security.ForgotPasswordPortal";
                 public const string Login = "General.Callback.Security.Login";
             }
         }

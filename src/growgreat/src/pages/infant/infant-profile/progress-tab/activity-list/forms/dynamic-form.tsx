@@ -246,7 +246,7 @@ export const DynamicForm = ({
 
       const referrals = referralsInput?.map((item) => ({
         ...item,
-        isCompleted: String(item.isCompleted),
+        isCompleted: item.isCompleted,
       })) as VisitDataStatusFilterInput[];
 
       appDispatch(

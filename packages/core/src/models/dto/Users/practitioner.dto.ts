@@ -6,6 +6,7 @@ import { UserDto } from './user.dto';
 export interface PractitionerDto extends EntityBase {
   user?: UserDto;
   userId?: string;
+  firstName?: string;
   siteAddress?: SiteAddressDto;
   siteAddressId?: string;
   attendanceRegisterLink?: string;

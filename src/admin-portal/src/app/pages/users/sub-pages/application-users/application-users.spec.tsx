@@ -1,10 +1,10 @@
 import { render } from '@testing-library/react';
 
-import ApplicationUsers from './application-users';
+import ApplicationAdmins from './application-users';
 
-describe('ApplicationUsers', () => {
+describe('ApplicationAdmins', () => {
   it('should render successfully', () => {
-    const { baseElement } = render(<ApplicationUsers />);
+    const { baseElement } = render(<ApplicationAdmins />);
     expect(baseElement).toBeTruthy();
   });
 });

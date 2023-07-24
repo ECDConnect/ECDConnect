@@ -1,8 +1,6 @@
 import {
   BannerWrapper,
   Button,
-  Dialog,
-  DialogPosition,
   Dropdown,
   Typography,
   renderIcon,
@@ -10,14 +8,12 @@ import {
 import * as styles from './calendar-home.styles';
 import { useHistory } from 'react-router-dom';
 import { useOnlineStatus } from '@/hooks/useOnlineStatus';
-import { createRef, useCallback, useEffect, useMemo, useState } from 'react';
+import { createRef, useEffect, useState } from 'react';
 import { addDays, addWeeks, format, subDays, subWeeks } from 'date-fns';
 import {
   CALENDARS,
-  DayNameInfo,
   EventInfo,
   SelectDateTimeInfo,
-  UpdateEventPopupData,
   VIEW_OPTIONS,
   ViewType,
   WEEK_OPTIONS,
@@ -26,9 +22,11 @@ import Calendar from '@toast-ui/react-calendar';
 import ToastUIReactCalendar from '@toast-ui/react-calendar';
 import '@toast-ui/calendar/dist/toastui-calendar.min.css';
 import type { EventObject } from '@toast-ui/calendar';
-import UpdateEvent from './components/update-event/update-event';
+import { useCalendarAddEvent } from './components/calendar-add-event/calendar-add-event';
 import { useSelector } from 'react-redux';
 import { calendarSelectors } from '@/store/calendar';
+import { CalendarEventModel } from '@ecdlink/core';
+import { useCalendarViewEvent } from './components/calendar-view-event/calendar-view-event';
 
 export const CalendarHome: React.FC = () => {
   const history = useHistory();
@@ -41,10 +39,11 @@ export const CalendarHome: React.FC = () => {
   const [calendarDate, setCalendarDate] = useState<Date>(date);
   const [calendarView, setCalendarView] = useState<ViewType>('day');
   const calendarRef = createRef<ToastUIReactCalendar>();
-  const [updateEventPopupData, setUpdateEventPopupData] =
-    useState<UpdateEventPopupData>({ visible: false });
 
   const events = useSelector(calendarSelectors.getCalendarEventObjects());
+
+  const calendarAddEvent = useCalendarAddEvent();
+  const calendarViewEvent = useCalendarViewEvent();
 
   const backToDashboard = () => {
     history.push('/');
@@ -107,50 +106,33 @@ export const CalendarHome: React.FC = () => {
   };
 
   const addEvent = (start: Date, end: Date, isAllday: boolean) => {
-    setUpdateEventPopupData({
-      visible: true,
+    calendarInstance()?.clearGridSelections();
+    calendarAddEvent({
       event: {
+        allDay: isAllday,
         start: start.toISOString(),
         end: end.toISOString(),
-        allDay: isAllday,
       },
+      onCancel: onCalendarAddEventBack,
+      onUpdated: onCalendarAddEventUpdate,
     });
   };
 
   const updateEvent = (event: EventObject) => {
     calendarInstance()?.clearGridSelections();
-    setUpdateEventPopupData({
-      visible: true,
-      event: {
-        id: event.id as string,
-      },
+    calendarViewEvent({
+      event: event.id,
     });
   };
 
-  const onUpdateEventBack = () => {
+  const onCalendarAddEventBack = () => {
     calendarInstance()?.clearGridSelections();
-    setUpdateEventPopupData({
-      visible: false,
-    });
   };
 
-  const onUpdateEvent = (IsNew: boolean, eventId: string) => {
-    setUpdateEventPopupData({
-      visible: false,
-    });
-    // if (isUpdate) {
-    //   const index = events.findIndex((e) => e.id === updatedEvent.id);
-    //   if (index >= 0) {
-    //     const copy = [...events];
-    //     copy[index] = { ...copy[index], ...updatedEvent };
-    //     setEvents(copy);
-    //   }
-    // } else {
-    //   const copy = [...events];
-    //   copy.push(updatedEvent);
-    //   setEvents(copy);
-    // }
-  };
+  const onCalendarAddEventUpdate = (
+    IsNew: boolean,
+    event: CalendarEventModel
+  ) => {};
 
   useEffect(() => {
     if (!isCalendarInstanceValid()) return;
@@ -173,6 +155,7 @@ export const CalendarHome: React.FC = () => {
       calendarInstance()?.off('clickEvent');
       // calendarInstance()?.off('clickDayName');
     };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   return (
@@ -297,21 +280,6 @@ export const CalendarHome: React.FC = () => {
           </div>
         </div>
       </BannerWrapper>
-      <Dialog
-        fullScreen
-        visible={updateEventPopupData.visible}
-        position={DialogPosition.Middle}
-      >
-        <div className={styles.dialogContent}>
-          <UpdateEvent
-            event={updateEventPopupData.event}
-            onBack={() => onUpdateEventBack()}
-            onUpdated={(isNew: boolean, eventId: string) =>
-              onUpdateEvent(isNew, eventId)
-            }
-          />
-        </div>
-      </Dialog>
     </div>
   );
 };

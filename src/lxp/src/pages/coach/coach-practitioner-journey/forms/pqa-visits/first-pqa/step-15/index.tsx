@@ -1,5 +1,5 @@
 import { Alert, CheckboxChange, CheckboxGroup, Typography } from '@ecdlink/ui';
-import { DynamicFormProps } from '../../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../../dynamic-form';
 import { useCallback, useEffect, useState } from 'react';
 import { options } from './options';
 import {
@@ -7,12 +7,17 @@ import {
   step14NoteQuestion,
   step14VisitSection,
 } from '../step-14';
+import { usePrevious, useSessionStorage } from '@ecdlink/core';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step15VisitSection = 'Step 15';
 
 export const Step15 = ({
   smartStarter,
   sectionQuestions,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -21,8 +26,25 @@ export const Step15 = ({
     answer: [] as (string | number | undefined)[],
   });
 
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'pqaPreviousFormData',
+      step15VisitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
+
   const answers = question.answer as string[];
-  const name = smartStarter?.user?.firstName;
+  const name = smartStarter?.user?.firstName || smartStarter?.firstName;
   const step14Question1Answer = sectionQuestions
     ?.find((item) => item.visitSection === step14VisitSection)
     ?.questions.find((item) => item.question === step14CertificateQuestion)
@@ -64,13 +86,38 @@ export const Step15 = ({
     [answers, question, setSectionQuestions]
   );
 
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
   useEffect(() => {
-    if (question.answer?.length === currentOptions?.length) {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (question.answer?.length === currentOptions?.length || isViewAnswers) {
       return setEnableButton?.(true);
     }
 
     setEnableButton?.(false);
-  }, [currentOptions, question, setEnableButton]);
+  }, [currentOptions, isViewAnswers, question, setEnableButton]);
 
   return (
     <div className="p-4">
@@ -79,6 +126,13 @@ export const Step15 = ({
         text={`${name} - ${question.question}`}
         color="textDark"
       />
+      {isViewAnswers && (
+        <Alert
+          className="mt-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       {!!step14Question2Answer && (
         <div className="bg-uiBg rounded-15 mt-4 p-4">
           <Typography
@@ -108,7 +162,8 @@ export const Step15 = ({
           titleColours="textMid"
           titleSize="sm"
           titleWeight="normal"
-          checked={answers?.some((option) => option === item)}
+          checked={answers?.some((option) => item.includes(option))}
+          disabled={isViewAnswers}
           value={item}
           onChange={onCheckboxChange}
         />

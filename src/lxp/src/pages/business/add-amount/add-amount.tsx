@@ -46,6 +46,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
               <Button
                 type="filled"
                 color="primary"
+                size="small"
                 className={`mx-auto mt-4 w-11/12 rounded-xl  ${
                   stateStepIndex1 ? 'pointer-events-none' : ''
                 }`}
@@ -55,7 +56,7 @@ export const AddAmount: React.FC<ComponentBaseProps> = () => {
                 }}
                 id="createIncome"
               >
-                {renderIcon('PlusIcon', styles.buttonIconPrimary)}
+                {renderIcon('PlusIcon', 'w-8 h-8 text-white mr-1')}
                 <Typography
                   type="buttonSmall"
                   color="white"

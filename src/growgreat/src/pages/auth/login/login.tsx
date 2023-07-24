@@ -32,7 +32,7 @@ export const Login: React.FC = () => {
 
   const appDispatch = useAppDispatch();
 
-  const { isOnline, Offline } = useOnlineStatus();
+  const { isOnline } = useOnlineStatus();
 
   const [isLoading, setIsLoading] = useState(false);
   const [displayError, setDisplayError] = useState(false);
@@ -192,13 +192,13 @@ export const Login: React.FC = () => {
             type={'error'}
           />
         )}
-        <Offline>
+        {!isOnline && (
           <Alert
             className={'mt-5 mb-3'}
             title="Your internet connection is unstable."
             type={'warning'}
           />
-        </Offline>
+        )}
         <Button
           id="gtm-login"
           className={'mt-3 w-full'}
@@ -210,7 +210,7 @@ export const Login: React.FC = () => {
         >
           <Typography type="help" color="white" text={'Log in'} />
         </Button>
-        <Button
+        {/* <Button
           id="gtm-signup"
           type="outlined"
           color={'primary'}
@@ -219,7 +219,7 @@ export const Login: React.FC = () => {
           onClick={() => history.push(ROUTES.SIGN_UP)}
         >
           <Typography type="help" color="primary" text={'Sign up'} />
-        </Button>
+        </Button> */}
       </form>
     </BannerWrapper>
   );

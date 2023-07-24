@@ -7,6 +7,7 @@ export type AlertSeverityType = 'error' | 'warning' | 'success' | 'none';
 export interface UserAlertListDataItem<T = {}> extends ListItem {
   id?: string;
   avatarColor: string;
+  hideAlertSeverity?: boolean;
   alertSeverity: AlertSeverityType;
   alertSeverityNoneIcon?: string;
   alertSeverityNoneColor?: Colours;
@@ -17,4 +18,6 @@ export interface UserAlertListDataItem<T = {}> extends ListItem {
   iconColor?: Colours;
   extraData?: T;
   childMatching?: boolean;
+  rightIcon?: string;
+  noClick?: boolean;
 }

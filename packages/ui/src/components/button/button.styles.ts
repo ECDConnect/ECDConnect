@@ -60,7 +60,7 @@ export const getButtonClassName = (
       );
       break;
     default:
-      className = classNames(solid, `text-white bg-${color}`);
+      className = classNames(solid, `text-white bg-tertiaryAccent1`);
       break;
   }
 

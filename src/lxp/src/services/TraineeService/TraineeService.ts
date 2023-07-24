@@ -107,6 +107,7 @@ class TraineeService {
                     name
                     description
                 }
+                eventId
             }
         }        
     }
@@ -284,16 +285,8 @@ class TraineeService {
     }>(``, {
       query: `
       mutation EditVisitData($input: CMSVisitDataInputModelInput) {
-        editVisitData(input: $CMSVisitDataInputModelInput) {
-            id
-           plannedVisitDate
-           actualVisitDate
-           attended
-           visitType {
-               name
-               description
-           } 
-        } 
+        editVisitData(input: $input) {
+        }
     }
       `,
       variables: {

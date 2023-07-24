@@ -478,7 +478,7 @@ const mapMother = (x: Partial<MotherDto>): MotherModelInput => ({
   phoneNumber: x.phoneNumber,
   whatsAppNumber: x.whatsAppNumber,
   siteAddress: x.siteAddress && mapSiteAddress(x.siteAddress),
-  ...(x.linkedInfantId ? { linkedCaregiverId: x.linkedInfantId } : {}),
+  ...(x.linkedInfantId ? { linkedInfantId: x.linkedInfantId } : {}),
 });
 
 const mapSiteAddress = (x: Partial<SiteAddressDto>): SiteAddressInput => ({

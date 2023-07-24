@@ -8,15 +8,23 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { Fragment, useCallback, useEffect, useState } from 'react';
 import { detailTexts, options } from './options';
-import { DynamicFormProps } from '../../dynamic-form';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/solid';
-import { useDialog } from '@ecdlink/core';
+import { useDialog, usePrevious, useSessionStorage } from '@ecdlink/core';
 import { Score } from '../components/score';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
+
+interface State {
+  question: string;
+  answer: string;
+}
 
 export const step10ReAccreditation = {
   visitSection: 'Step 10',
@@ -25,6 +33,7 @@ export const step10ReAccreditation = {
 
 export const Step10ReAccreditation = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -71,12 +80,32 @@ export const Step10ReAccreditation = ({
     },
   ]);
 
-  const firstName = smartStarter?.user?.firstName || 'the SmartStarter';
+  const firstName =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      step10ReAccreditation.visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const optionsButtonGroup = [
-    { text: '0', value: '0' },
-    { text: '1', value: '1' },
-    { text: '2', value: '2' },
+    { text: '0', value: '0', disabled: isViewAnswers },
+    { text: '1', value: '1', disabled: isViewAnswers },
+    { text: '2', value: '2', disabled: isViewAnswers },
   ];
 
   const dialog = useDialog();
@@ -107,6 +136,26 @@ export const Step10ReAccreditation = ({
     },
     [questions, setEnableButton, setSectionQuestions]
   );
+
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      setAnswers(previousData?.questions as State[]);
+    }
+  }, [isViewAnswers, previousData, previousStatePreviousData]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useEffect(() => {
+    if (isViewAnswers) {
+      setEnableButton?.(true);
+    }
+  }, [isViewAnswers, setEnableButton]);
 
   const renderDialog = ({ index }: { index?: number }) => {
     let title = 'Give each section a rating of 0, 1 or 2, where:';
@@ -179,6 +228,13 @@ export const Step10ReAccreditation = ({
   return (
     <div className="flex flex-col gap-2 p-4">
       <Typography type="h2" text="B. Programme implementation" />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Alert
         type="info"
         title="Give each section a rating."
@@ -195,7 +251,7 @@ export const Step10ReAccreditation = ({
       />
       <Divider dividerType="dashed" />
       {questions.map((question, index) => (
-        <>
+        <Fragment key={question.question}>
           <div className="flex justify-between">
             <Typography type="h4" text={`${index + 1} ${question.question}`} />
             {index > 0 && (
@@ -216,7 +272,7 @@ export const Step10ReAccreditation = ({
             }
             onOptionSelected={(value) => onOptionSelected(value, index)}
           />
-        </>
+        </Fragment>
       ))}
       {questions.some((item) => item.answer !== '') && (
         <Score

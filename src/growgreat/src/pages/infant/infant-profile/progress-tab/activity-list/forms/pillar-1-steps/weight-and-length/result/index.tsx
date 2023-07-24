@@ -82,7 +82,11 @@ const Card = ({
       case 'SD3neg':
         return { bg: 'errorBg', main: 'errorMain' };
       case 'SD3':
-        return { bg: 'errorBg', main: 'errorMain' };
+        if (title === 'Length') {
+          return { bg: 'successBg', main: 'successMain' };
+        } else {
+          return { bg: 'errorBg', main: 'errorMain' };
+        }
       default:
         return { bg: 'successBg', main: 'successMain' };
     }
@@ -205,11 +209,42 @@ export const WeightAndLengthResultStep = ({
     [answers]
   );
 
-  const weightAlertResult = findClosestWeight(
+  const weightIncreased = useMemo(() => {
+    let bIncreased = false;
+    var weightHistory: number[] = [];
+
+    // add newly entered weight first
+    weightHistory.push(weight);
+
+    // get history of entered values
+    if (groupedGrowthData && groupedGrowthData?.weight) {
+      for (var i = 0; i < groupedGrowthData?.weight.length; i++) {
+        weightHistory.push(
+          parseInt(groupedGrowthData?.weight[i].questionAnswer as string)
+        );
+      }
+    }
+
+    // add weight at birth last
+    weightHistory.push(infant?.weightAtBirth as number);
+
+    if (weightHistory.length > 1) {
+      const first2 = weightHistory.slice(0, 2);
+
+      if (first2[0] > first2[1]) {
+        bIncreased = true;
+      }
+    }
+
+    return bIncreased;
+  }, [groupedGrowthData, infant, weight]);
+
+  var weightAlertResult = findClosestWeight(
     weightAxios,
     weight,
     findLastIndex(weightResult)
   )[0] as DataSetType;
+
   const lengthOrHeightAlertResult = findClosestWeight(
     lengthAxios,
     length || height,
@@ -219,17 +254,35 @@ export const WeightAndLengthResultStep = ({
   const weightMonitoring = useMemo((): GrowthMonitoring['weight'] => {
     switch (weightAlertResult) {
       case 'SD2':
+        if (length === 0 && height === 0) {
+          if (weightIncreased) {
+            return { value: 'normal', statusType: 'success' };
+          } else {
+            return { value: 'growth faltering', statusType: 'warning' };
+          }
+        }
         return { value: 'overweight', statusType: 'warning' };
       case 'SD3':
+        if (length === 0 && height === 0) {
+          if (weightIncreased) {
+            return { value: 'normal', statusType: 'success' };
+          } else {
+            return { value: 'growth faltering', statusType: 'warning' };
+          }
+        }
         return { value: 'obese', statusType: 'warning' };
       case 'SD2neg':
         return { value: 'underweight', statusType: 'warning' };
       case 'SD3neg':
         return { value: 'severely underweight', statusType: 'error' };
       default:
-        return { value: 'normal', statusType: 'success' };
+        if (weightIncreased) {
+          return { value: 'normal', statusType: 'success' };
+        } else {
+          return { value: 'growth faltering', statusType: 'warning' };
+        }
     }
-  }, [weightAlertResult]);
+  }, [weightAlertResult, length, height]);
 
   const lengthOrHeightMonitoring = useMemo((): GrowthMonitoring['length'] => {
     switch (lengthOrHeightAlertResult) {
@@ -247,30 +300,99 @@ export const WeightAndLengthResultStep = ({
 
     switch (weightAlertResult) {
       case 'SD2':
-        WeightAlert = (
-          <Alert
-            type="warning"
-            title={`${name} is overweight.`}
-            customIcon={
-              <div className="rounded-full">
-                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-              </div>
-            }
-          />
-        );
+        // normally showing overweight, but different rules when only weight is available
+        if (length === 0 && height === 0) {
+          // if weight increased, great, otherwise faltering
+          if (weightIncreased) {
+            WeightAlert = (
+              <Alert
+                type="success"
+                title={`${name} is growing well! Great job ${caregiverName}.`}
+                customIcon={
+                  <div className="rounded-full">
+                    {renderIcon('ExclamationIcon', 'text-sucessMain w-14 h-14')}
+                  </div>
+                }
+              />
+            );
+          } else {
+            WeightAlert = (
+              <Alert
+                type="warning"
+                title={`${name}'s growth is faltering.`}
+                customIcon={
+                  <div className="rounded-full">
+                    {renderIcon(
+                      'ExclamationIcon',
+                      'text-warningMain w-14 h-14'
+                    )}
+                  </div>
+                }
+              />
+            );
+          }
+        } else {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name} is overweight.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        }
         break;
       case 'SD3':
-        WeightAlert = (
-          <Alert
-            type="warning"
-            title={`${name} is obese.`}
-            customIcon={
-              <div className="rounded-full">
-                {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
-              </div>
-            }
-          />
-        );
+        // normally showing obese, but different rules when only weight is available
+        if (length === 0 && height === 0) {
+          // if weight increased, great, otherwise faltering
+          if (weightIncreased) {
+            WeightAlert = (
+              <Alert
+                type="success"
+                title={`${name} is growing well! Great job ${caregiverName}.`}
+                customIcon={
+                  <div className="rounded-full">
+                    {renderIcon(
+                      'ExclamationIcon',
+                      'text-successMain w-14 h-14'
+                    )}
+                  </div>
+                }
+              />
+            );
+          } else {
+            WeightAlert = (
+              <Alert
+                type="warning"
+                title={`${name}'s growth is faltering.`}
+                customIcon={
+                  <div className="rounded-full">
+                    {renderIcon(
+                      'ExclamationIcon',
+                      'text-warningMain w-14 h-14'
+                    )}
+                  </div>
+                }
+              />
+            );
+          }
+        } else {
+          WeightAlert = (
+            <Alert
+              type="warning"
+              title={`${name} is obese.`}
+              customIcon={
+                <div className="rounded-full">
+                  {renderIcon('ExclamationIcon', 'text-alertMain w-14 h-14')}
+                </div>
+              }
+            />
+          );
+        }
         break;
       case 'SD2neg':
         WeightAlert = (
@@ -306,7 +428,7 @@ export const WeightAndLengthResultStep = ({
         break;
     }
     return WeightAlert;
-  }, [name, weightAlertResult]);
+  }, [name, weightAlertResult, length, height]);
 
   const LengthOrHeightAlert = useCallback(() => {
     let LengthOrHeightAlert = <Fragment />;
@@ -361,21 +483,21 @@ export const WeightAndLengthResultStep = ({
     const gender = infant?.gender?.description;
 
     const weightPerDay =
-      gender === 'Girl' ? weightForAgeGirls : weightForAgeBoys;
+      gender === 'Female' ? weightForAgeGirls : weightForAgeBoys;
     const lengthPerDay =
-      gender === 'Girl' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
+      gender === 'Female' ? lengthHeightForAgeGirls : lengthHeightForAgeBoys;
     const weightPerWeek =
-      gender === 'Girl' ? weightPerWeekGirls : weightPerWeekBoys;
+      gender === 'Female' ? weightPerWeekGirls : weightPerWeekBoys;
     const lengthPerWeek =
-      gender === 'Girl' ? lengthPerWeekGirls : lengthPerWeekBoys;
+      gender === 'Female' ? lengthPerWeekGirls : lengthPerWeekBoys;
     const weightPerMonth =
-      gender === 'Girl' ? weightPerMonthGirls : weightPerMonthBoys;
+      gender === 'Female' ? weightPerMonthGirls : weightPerMonthBoys;
     const lengthPerMonth =
-      gender === 'Girl' ? lengthPerMonthGirls : lengthPerMonthBoys;
+      gender === 'Female' ? lengthPerMonthGirls : lengthPerMonthBoys;
     const weightPerYear =
-      gender === 'Girl' ? weightPerYearGirls : weightPerYearBoys;
+      gender === 'Female' ? weightPerYearGirls : weightPerYearBoys;
     const lengthPerYear =
-      gender === 'Girl' ? lengthPerYearGirls : lengthPerYearBoys;
+      gender === 'Female' ? lengthPerYearGirls : lengthPerYearBoys;
 
     return {
       weightPerDay,
@@ -390,10 +512,42 @@ export const WeightAndLengthResultStep = ({
   }, [infant?.gender?.description]);
 
   function getScale(age: number, date: number[], input: number[]) {
-    let startIndex = Math.max(0, date.indexOf(age) - 4);
-    let endIndex = Math.min(startIndex + 6, date.length);
+    //let startIndex = Math.max(0, date.indexOf(age) - 4);
+    //let endIndex = Math.min(startIndex + 6, date.length);
+    //return input.slice(startIndex, endIndex);
 
-    return input.slice(startIndex, endIndex);
+    // EC-915 - start x-axis at zero + scale numbers
+    // break age into chunks of 6 if age is more than 6
+    var maxIndex = age;
+    var numberOfChunks = maxIndex <= 6 ? maxIndex : 6;
+    var chunkSize = parseInt(
+      (Math.floor(maxIndex) / numberOfChunks).toPrecision(1)
+    );
+    chunkSize = maxIndex <= 6 ? 1 : Math.ceil(maxIndex) / numberOfChunks;
+    var ageNumbers = [0]; // start with zero
+    var counter = 0;
+
+    for (var i = 0; i < numberOfChunks; i++) {
+      var max = counter + chunkSize;
+      if (i === numberOfChunks) {
+        max = maxIndex;
+      }
+      counter += chunkSize;
+      if (max < age) {
+        ageNumbers.push(Math.floor(max));
+      }
+    }
+
+    ageNumbers.push(age);
+    ageNumbers.sort((n1, n2) => n1 - n2);
+
+    // mapping the age chunks to the dataset
+    var endResult = [];
+    for (var j = 0; j < ageNumbers.length; j++) {
+      endResult.push(input[ageNumbers[j]]);
+    }
+
+    return endResult;
   }
 
   const getChartData = useCallback(
@@ -695,25 +849,38 @@ export const WeightAndLengthResultStep = ({
   }, [setChartData]);
 
   const renderCard = useMemo(() => {
-    if (
-      weightAlertResult !== 'median' ||
-      ((!!length || !!height) && lengthOrHeightAlertResult !== 'median')
-    ) {
+    if (weightAlertResult === 'median' && !weightIncreased) {
       return (
-        <>
-          <WeightAlert />
-          {(!!length || !!height) && <LengthOrHeightAlert />}
-        </>
+        <Alert
+          type="warning"
+          title={`${name}'s growth is faltering.`}
+          customIcon={
+            <div className="rounded-full">
+              {renderIcon('ExclamationIcon', 'text-warningMain w-14 h-14')}
+            </div>
+          }
+        />
       );
+    } else {
+      if (
+        weightAlertResult !== 'median' ||
+        ((!!length || !!height) && lengthOrHeightAlertResult !== 'median')
+      ) {
+        return (
+          <>
+            <WeightAlert />
+            {(!!length || !!height) && <LengthOrHeightAlert />}
+          </>
+        );
+      } else
+        return (
+          <SuccessCard
+            text={`${name} is growing well! Great job ${caregiverName}.`}
+            color="successMain"
+            customIcon={<CelebrateIcon className="h-14	w-14" />}
+          />
+        );
     }
-
-    return (
-      <SuccessCard
-        text={`${name} is growing well! Great job ${caregiverName}.`}
-        color="successMain"
-        customIcon={<CelebrateIcon className="h-14	w-14" />}
-      />
-    );
   }, [
     LengthOrHeightAlert,
     WeightAlert,
@@ -723,6 +890,7 @@ export const WeightAndLengthResultStep = ({
     lengthOrHeightAlertResult,
     name,
     weightAlertResult,
+    weightIncreased,
   ]);
 
   useEffect(() => {

@@ -6,6 +6,7 @@ import {
   Divider,
   RoundIcon,
   Typography,
+  LoadingSpinner,
 } from '@ecdlink/ui';
 import { useWindowSize } from '@reach/window-size';
 import { useHistory, useLocation, useParams } from 'react-router';
@@ -37,10 +38,12 @@ import {
 } from '@/store/mother/mother.selectors';
 import { motherSelectors, motherThunkActions } from '@/store/mother';
 import { getReferralsForMotherSelector } from '@/store/mother/mother.selectors';
+import { MotherActions } from '@/store/mother/mother.actions';
 import { CheckCircleIcon } from '@heroicons/react/solid';
 import ROUTES from '@/routes/routes';
 import { useWalkthrough } from '@/context/walkthroughContext';
 import { referralsSteps } from './walkthrough/steps';
+import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 
 const HEADER_HEIGHT = 64;
 
@@ -60,11 +63,12 @@ export const ReferralsTab: React.FC = () => {
   const history = useHistory();
   const location = useLocation();
   const appDispatch = useAppDispatch();
-  const referralsForMother = useSelector(getReferralsForMotherSelector);
 
-  const completedreferralsForMother = useSelector(
-    motherSelectors.getCompletedReferralsForMotherSelector
+  const { isLoading } = useThunkFetchCall(
+    'mothers',
+    MotherActions.GET_REFERRALS_FOR_MOTHER
   );
+
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [referralsInput, setReferralsInput] =
     useState<VisitDataStatusFilterInput[]>();
@@ -155,6 +159,12 @@ export const ReferralsTab: React.FC = () => {
     isToGetPreviousVisitStatusData,
     previousVisit,
   ]);
+
+  const referralsForMother = useSelector(getReferralsForMotherSelector);
+
+  const completedreferralsForMother = useSelector(
+    motherSelectors.getCompletedReferralsForMotherSelector
+  );
 
   // group data under sections
   const groupedData = useMemo(() => {
@@ -314,14 +324,7 @@ export const ReferralsTab: React.FC = () => {
     for (const section of sections) {
       currentQuestions = questions[section.value];
       for (const question of currentQuestions) {
-        const referral = questions[section.value].find(
-          (item) => item.comment === question.comment
-        );
-
-        return onOptionSelected(
-          { ...referral, isCompleted: true },
-          section.value
-        );
+        onOptionSelected({ ...question, isCompleted: true }, section.value);
       }
     }
   }, [onOptionSelected, sections, questions]);
@@ -372,6 +375,17 @@ export const ReferralsTab: React.FC = () => {
     },
     [history, location]
   );
+
+  if (isLoading) {
+    return (
+      <LoadingSpinner
+        size="medium"
+        spinnerColor={'primary'}
+        backgroundColor={'uiLight'}
+        className="pt-4"
+      />
+    );
+  }
 
   return (
     <div className="flex flex-col" style={{ height: height - HEADER_HEIGHT }}>

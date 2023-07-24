@@ -67,6 +67,8 @@ export default function ContentList({
           displayFields.push(x.fieldName);
       });
 
+      console.log(displayFields);
+
       setDisplayFields(displayFields);
     }
   }, [contentType]);
@@ -193,6 +195,7 @@ export default function ContentList({
           title="Delete Content"
           message={`You are about to delete content that is part of the Collection ${type}, this can implicate data issues. Would you like to go ahead`}
           onCancel={onCancel}
+          btnText={['Yes, Delete Content', 'No, Cancel']}
           onSubmit={() => {
             onSubmit();
 
@@ -267,6 +270,7 @@ export default function ContentList({
                     hasPermission(PermissionEnum.delete_static) &&
                     deleteAndRefresh
                   }
+                  component={'consent'}
                 />
               </div>
             </div>

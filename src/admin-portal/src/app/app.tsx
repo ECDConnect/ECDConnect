@@ -9,7 +9,6 @@ import { onError } from '@apollo/client/link/error';
 import {
   Config,
   DialogServiceProvider,
-  LocalStorageKeys,
   NOTIFICATION,
   PanelServiceProvider,
   useNotifications,
@@ -19,7 +18,9 @@ import React, { useEffect, useState } from 'react';
 import { MainRoutes, PublicRoutes } from './app.routes';
 import { useAuth } from './hooks/useAuth';
 import { UserProvider } from './hooks/useUser';
-import { RouteComponentProps, useHistory, useParams } from 'react-router-dom';
+import { useHistory, useParams } from 'react-router-dom';
+import 'react-date-range/dist/styles.css'; // main style file
+import 'react-date-range/dist/theme/default.css'; // theme css file
 const cache = new InMemoryCache({});
 export let apolloClient: ApolloClient<any> = null;
 interface RouteParams {

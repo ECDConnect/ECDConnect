@@ -1,21 +1,20 @@
 import {
   Config,
   initialLoginValues,
-  LocalStorageKeys,
   LoginRequestModel,
   loginSchema,
   useTheme,
 } from '@ecdlink/core';
 import { Alert, Button, Divider, Typography } from '@ecdlink/ui';
 import { yupResolver } from '@hookform/resolvers/yup';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { useHistory } from 'react-router-dom';
 import { useAuth } from '../../../hooks/useAuth';
 import FormField from '../../form-field/form-field';
 import logo from '../../../../assets/Logo-ECDConnect.svg';
-import zxcvbn from 'zxcvbn-typescript';
 import { ArrowRightIcon } from '@heroicons/react/solid';
+import { PasswordInput } from '../../password-input/password-input';
 
 export default function Login() {
   const { login } = useAuth();
@@ -24,25 +23,19 @@ export default function Login() {
   const [displayError, setDisplayError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  const { register, getValues, formState, watch } = useForm({
+  const { register, getValues, formState, watch, setValue } = useForm({
     resolver: yupResolver(loginSchema),
     defaultValues: initialLoginValues,
     mode: 'onChange',
   });
 
-  const [showPassword, setShowPassword] = useState(false);
-
-  const togglePasswordVisibility = () => {
-    setShowPassword(!showPassword);
-  };
-
-  //check password strength
-  const password = watch('password');
   const formValues = getValues();
-  const passwordStrength = zxcvbn(password);
-  const passwordScore = passwordStrength.score; // Assuming you have a variable to store the password strength score
-
+  let password = watch('password');
   const { errors, isValid } = formState;
+
+  useEffect(() => {
+    setValue('password', password);
+  }, [password]);
 
   const signIn = async () => {
     if (isValid) {
@@ -71,11 +64,7 @@ export default function Login() {
   };
 
   const getLogoUrl = () => {
-    if (theme && theme.images) {
-      return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
-    } else {
-      return <div className="h-32 w-32">&nbsp;</div>;
-    }
+    return <img className="h-100 w-4/12" src={logo} alt="Login Logo" />;
   };
   return (
     <div className="darkBackground flex min-h-screen items-center justify-center">
@@ -84,9 +73,7 @@ export default function Login() {
           {getLogoUrl()}
         </div>
         <div className="flex flex-shrink-0 items-center justify-center">
-          <h2 className="font-h1 textLight mt-6 text-2xl">
-            Log in to Funda App
-          </h2>
+          <h2 className="font-h1 textLight text-bold mt-6 text-2xl">Log In</h2>
         </div>
         <div className="mt-8">
           <div className="mt-6">
@@ -101,40 +88,21 @@ export default function Login() {
               </div>
 
               <div className="space-y-1">
-                <FormField
-                  label={'Password *'}
+                <PasswordInput
+                  label={'Password'}
                   nameProp={'password'}
+                  value={formValues.password}
                   register={register}
-                  type="password"
-                  error={errors.password?.message}
-                  showPassword={showPassword}
-                  togglePasswordVisibility={togglePasswordVisibility}
+                  // strengthMeterVisible={true}
+                  className="mb-9 "
                 />
-              </div>
-              <div className="-mx-1 flex">
-                {[...Array(4)].map((_, i) => (
-                  <div className="w-1/4 px-1" key={i}>
-                    <div
-                      className={`h-2 rounded-xl transition-colors ${
-                        i < passwordScore
-                          ? passwordScore <= 2
-                            ? 'bg-red-400'
-                            : passwordScore <= 3
-                            ? 'bg-yellow-400'
-                            : passwordScore <= 4
-                            ? 'bg-green-500'
-                            : 'bg-yellow-400'
-                          : 'bg-gray-200'
-                      }`}
-                    ></div>
-                  </div>
-                ))}
               </div>
 
               <Button
-                className={'mt-3 w-full rounded'}
+                className={
+                  ' focus:outline-none my-6 inline-flex w-5/12 items-center rounded-md border border-transparent px-4 py-2 text-sm font-medium text-white '
+                }
                 type="ghost"
-                isLoading={isLoading}
                 color="secondary"
                 onClick={() => history.push('/forgot-password')}
               >
@@ -142,6 +110,7 @@ export default function Login() {
                   type="help"
                   color="secondary"
                   text={' Forgot password?'}
+                  className="text-start"
                 ></Typography>
                 <ArrowRightIcon className="text-secondary ml-2 h-5 w-5" />
               </Button>

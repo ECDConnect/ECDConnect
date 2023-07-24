@@ -1,7 +1,7 @@
 ﻿using EcdLink.Api.CoreApi.GraphApi.Models.GrowGreat;
-using EcdLink.Api.CoreApi.Managers.Integration;
 using EcdLink.Api.CoreApi.Managers.Visits;
 using ECDLink.Abstractrions.Enums;
+using ECDLink.Core.Services.Interfaces;
 using ECDLink.DataAccessLayer.Entities;
 using ECDLink.DataAccessLayer.Entities.Documents;
 using ECDLink.DataAccessLayer.Entities.Users;
@@ -27,6 +27,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
         private InfantManager _infantManager;
         private VisitManager _visitManager;
         private VisitDataStatusManager _visitDataStatusManager;
+        private IPointsEngineService _pointsEngineService;
 
         private string _applicationUserId;
         private IGenericRepository<Mother, Guid> _motherRepo;
@@ -39,7 +40,8 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             HealthCareWorkerManager healthCareWorkerManager,
             InfantManager infantManager,
             VisitManager visitManager,
-            VisitDataStatusManager visitDataStatusManager
+            VisitDataStatusManager visitDataStatusManager,
+            [Service] IPointsEngineService pointsEngineService
             )
         {
             _contextAccessor = contextAccessor;
@@ -48,6 +50,7 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             _infantManager = infantManager;
             _visitManager = visitManager;
             _visitDataStatusManager = visitDataStatusManager;
+            _pointsEngineService = pointsEngineService;
 
             _applicationUserId = _contextAccessor.HttpContext.GetUser().Id;
             _motherRepo = _repoFactory.CreateGenericRepository<Mother>(userContext: _applicationUserId);
@@ -76,6 +79,9 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
             {
                 AddVisits(createdMom.Id, createdMom.ExpectedDateOfDelivery, createdMom.InsertedDate);
             }
+
+            // Call points engine for hcw
+            _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId, DateTime.UtcNow);
             return createdMom;
         }
 
@@ -88,6 +94,10 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 entityToUpdate.UpdatedBy = _applicationUserId;
                 entityToUpdate.ExpectedDateOfDelivery = Convert.ToDateTime(expectedDateOfDelivery, CultureInfo.InvariantCulture); ;
                 AddVisits(entityToUpdate.Id, entityToUpdate.ExpectedDateOfDelivery, entityToUpdate.InsertedDate);
+
+                // Call points engine for hcw
+                _pointsEngineService.CalculatePregnantMomClientRegistration(_applicationUserId, DateTime.UtcNow);
+                
                 return _motherRepo.Update(entityToUpdate);
             }
             return null;
@@ -635,9 +645,47 @@ namespace EcdLink.Api.CoreApi.Managers.Users.GrowGreat
                 next7Days = monday.AddDays(6);
             }
 
-            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days).Select(x => x.Id).Distinct().Count();
+            return _motherRepo.GetAll().Where(x => x.HealthCareWorker.UserId.Equals(id) && x.IsActive.Equals(true) && x.InsertedDate >= monday && x.InsertedDate <= next7Days)
+                .Select(x => x.Id)
+                .Distinct()
+                .Count();
         }
-    
+
+        public int GetTotalNewMothersForPeriod(string id, DateTime startDate, DateTime endDate)
+        {
+            var a = _motherRepo.GetAll()
+                .Where(m => m.HealthCareWorker.UserId == id
+                && m.IsActive.Equals(true) 
+                && m.InsertedDate >= startDate
+                && m.InsertedDate <= endDate);
+
+            return a.Select(x => x.Id)
+                .Distinct()
+                .Count();
+        }
+
+        public int GetTotalPregnantMothers(
+            string heathCareWorkerUserId,
+            DateTime? startDate = null,
+            DateTime? endDate = null)
+        {
+            // Things that have been painted these color are urgent...
+            var motherRepo = _repoFactory.CreateGenericRepository<Mother>();
+            var mothers = motherRepo.GetAll()
+                .Where(m => m.HealthCareWorker.UserId == heathCareWorkerUserId);
+
+            if (startDate is not null)
+                mothers = mothers.Where(m => m.InsertedDate >= startDate);
+
+            if (endDate is not null)
+                mothers = mothers.Where(m => m.InsertedDate <= endDate);
+
+            return mothers
+                .Select(m => m.Id)
+                .Distinct()
+                .Count();
+        }
+
         public Mother GetMotherForCaregiver(string caregiverId)
         {
             Mother mother = _motherRepo.GetAll().Where(x => x.LinkedCaregiverId.ToString() == caregiverId).FirstOrDefault();

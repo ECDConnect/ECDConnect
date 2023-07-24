@@ -1,15 +1,12 @@
 import { useMutation, useQuery } from '@apollo/client';
 import {
-  initialPasswordValue,
   initialHealthCareWorkerValues,
   initialSiteAddressValues,
   initialUserDetailsValues,
   NOTIFICATION,
-  passwordSchema,
   RoleDto,
   siteAddressSchema,
   useNotifications,
-  userSchema,
 } from '@ecdlink/core';
 import {
   AddUsersToRole,
@@ -19,7 +16,6 @@ import {
   HealthCareWorkerModelInput,
   RoleList,
   SendInviteToApplication,
-  SiteAddressInput,
   UserModelInput,
 } from '@ecdlink/graphql';
 import { yupResolver } from '@hookform/resolvers/yup';
@@ -27,11 +23,40 @@ import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { newGuid } from '../../../../../../utils/uuid.utils';
 import HealthCareWorkerForm from '../../../../components/health-care-worker-form/health-care-worker-form';
-import PasswordForm from '../../../../components/password-form/password-form';
-import SiteAddressForm from '../../../../components/site-address-form/site-address-form';
-import UserDetailsForm from '../../../../components/user-details-form/user-details-form';
-import UserPanelSave from '../../../../components/user-panel-save/user-panel-save';
 import { UserPanelCreateProps } from '../../../../components/users';
+import {
+  Button,
+  SA_ID_REGEX,
+  SA_PASSPORT_REGEX,
+  Typography,
+} from '@ecdlink/ui';
+import { SaveIcon } from '@heroicons/react/solid';
+import FormField from '../../../../../../components/form-field/form-field';
+import * as yup from 'yup';
+
+export const userSchema = yup.object().shape({
+  firstName: yup.string().required('First name is Required'),
+  surname: yup.string().required('Surname is Required'),
+  email: yup.string().email('Invalid email'),
+  idNumber: yup
+    .string()
+    .test('idNumber', 'ID number or passport is not valid', function (value) {
+      const { passport } = this.parent;
+      const isIdValid = SA_ID_REGEX.test(value);
+      const isPassportValid = SA_PASSPORT_REGEX.test(value);
+
+      if (!isIdValid && !isPassportValid) {
+        return false;
+      }
+
+      if (passport && isIdValid) {
+        return false;
+      }
+
+      return true;
+    })
+    .required('ID number or passport is required'),
+});
 
 export default function HealthCareWorkerPanelCreate(
   props: UserPanelCreateProps
@@ -52,48 +77,32 @@ export default function HealthCareWorkerPanelCreate(
   }, [roleData]);
 
   const [createUser] = useMutation(CreateUser);
-  const [createHealthCareWorker] = useMutation(CreateHealthCareWorker);
-  const [createSiteAddress] = useMutation(CreateSiteAddress);
+  const [createHealthCareWorker, { loading }] = useMutation(
+    CreateHealthCareWorker
+  );
   const [addRolesToUser] = useMutation(AddUsersToRole);
   const [sendInviteToApplication] = useMutation(SendInviteToApplication);
 
   const [selectedUserRoles, setUserRoles] = useState<RoleDto[]>([]);
+  const [idType, setIdType] = useState<string>('idNumber');
 
   // FORMS
   // USER FORM DETAILS
-  const {
-    register: userDetailRegister,
-    setValue: userDetailSetValue,
-    formState: userDetailFormState,
-    getValues: userDetailGetValues,
-    control,
-  } = useForm({
+  const { register, formState, getValues, handleSubmit } = useForm({
     resolver: yupResolver(userSchema),
     defaultValues: initialUserDetailsValues,
-    mode: 'onBlur',
+    mode: 'onChange',
   });
-  const { errors: userDetailFormErrors, isValid: isUserDetailValid } =
-    userDetailFormState;
 
-  // PASSWORD FORMS
-  const {
-    register: passwordRegister,
-    formState: passwordFormState,
-    getValues: passwordGetValues,
-  } = useForm({
-    resolver: yupResolver(passwordSchema),
-    defaultValues: initialPasswordValue,
-    mode: 'onBlur',
-  });
-  const { errors: passwordFormErrors } = passwordFormState;
+  const { errors, isValid } = formState;
 
-  // HEALTH CARE WORKER FORMS
+  // COMMUNITY HEALTH WORKER FORMS
   const {
     register: healthCareWorkerRegister,
     formState: healthCareWorkerFormState,
     getValues: healthCareWorkerGetValues,
   } = useForm({
-    defaultValues: { ...initialHealthCareWorkerValues, sendInvite: false },
+    defaultValues: { ...initialHealthCareWorkerValues },
     mode: 'onBlur',
   });
   const {
@@ -101,165 +110,102 @@ export default function HealthCareWorkerPanelCreate(
     isValid: isHealthCareWorkerValid,
   } = healthCareWorkerFormState;
 
-  // SITE ADDRESS FORMS
-  const { register: siteAddressRegister, getValues: siteAddressGetValues } =
-    useForm({
-      resolver: yupResolver(siteAddressSchema),
-      defaultValues: { ...initialSiteAddressValues, sendInvite: false },
-      mode: 'onBlur',
-    });
-  const { errors: siteAddressFormErrors } = healthCareWorkerFormState;
-
   const onSave = async () => {
     await saveUser();
     emitCloseDialog(true);
   };
 
   const saveUser = async () => {
-    const userDetailForm = userDetailGetValues();
-    const passwordForm = passwordGetValues();
+    const userDetailForm = getValues();
+
+    console.log(userDetailForm);
 
     const userInputModel: UserModelInput = {
       id: newGuid(),
-      isSouthAfricanCitizen: userDetailForm.isSouthAfricanCitizen,
+      isSouthAfricanCitizen: null,
       idNumber: userDetailForm.idNumber,
-      verifiedByHomeAffairs: userDetailForm.verifiedByHomeAffairs,
-      dateOfBirth: userDetailForm.dateOfBirth,
-      genderId:
-        userDetailForm.genderId && userDetailForm.genderId.length
-          ? userDetailForm.genderId
-          : null,
+      verifiedByHomeAffairs: null,
       firstName: userDetailForm.firstName,
       surname: userDetailForm.surname,
-      contactPreference: userDetailForm.contactPreference,
       phoneNumber: userDetailForm.phoneNumber,
-      email: userDetailForm.email,
-      password:
-        passwordForm.password && passwordForm.password.length > 0
-          ? passwordForm.password
-          : null,
+      contactPreference: 'sms',
     };
 
     await createUser({
       variables: {
         input: { ...userInputModel },
       },
-    })
-      .then(async (response) => {
-        setNotification({
-          title: 'Successfully Created User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-        const userId = response.data.addUser.id;
+    }).then(async (response) => {
+      const userId = response.data.addUser.id;
+      if (userId) {
+        await saveHealthCareWorker(userId);
         await saveRoles(userId);
-        await saveSiteAddress(userId);
-      })
-      .catch((error) => {
-        console.log(error);
-      });
-  };
-
-  const saveSiteAddress = async (userId: string) => {
-    const form = siteAddressGetValues();
-    const siteAddressInputModel: SiteAddressInput = {
-      Id: undefined,
-      Name: form.name ?? '',
-      AddressLine1: form.addressLine1 ?? '',
-      AddressLine2: form.addressLine2 ?? '',
-      AddressLine3: form.addressLine3 ?? '',
-      PostalCode: form.postalCode ?? '',
-      ProvinceId: form.provinceId ?? '',
-      Ward: form.ward ?? '',
-      IsActive: true,
-    };
-
-    let siteAddressId = null;
-
-    if (form.provinceId) {
-      const returnSiteAddress = await createSiteAddress({
-        variables: {
-          input: { ...siteAddressInputModel },
-        },
-      });
-
-      if (returnSiteAddress && returnSiteAddress.data) {
-        setNotification({
-          title: 'Successfully Created Address!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-
-        siteAddressId = returnSiteAddress?.data?.createSiteAddress?.id ?? '';
       }
-    }
-
-    await saveHealthCareWorker(userId, siteAddressId);
+    });
   };
 
-  const saveHealthCareWorker = async (
-    userId: string,
-    siteAddressId?: string
-  ) => {
+  const saveHealthCareWorker = async (userId: string) => {
     const healthCareWorkerForm = healthCareWorkerGetValues();
-    const healthCareWorkeModel: HealthCareWorkerModelInput = {
+    const healthCareWorkModel: HealthCareWorkerModelInput = {
       userId: userId,
-      teamLeadId: healthCareWorkerForm.teamLeadId || null,
-      languageId: healthCareWorkerForm.languageId || null,
+      teamLeadId: healthCareWorkerForm?.teamLeadId,
+      languageId: null,
       isRegistered: false,
     };
 
     await createHealthCareWorker({
       variables: {
-        input: { ...healthCareWorkeModel },
+        input: { ...healthCareWorkModel },
       },
-    });
+    })
+      .then(() => {
+        setNotification({
+          title: 'Successfully Created CHW!',
+          variant: NOTIFICATION.SUCCESS,
+        });
+      })
+      .catch((err) => {
+        setNotification({
+          title: 'Failed to Create CHW!',
+          variant: NOTIFICATION.ERROR,
+        });
+      });
 
-    setNotification({
-      title: 'Successfully Created Health Care Worker!',
-      variant: NOTIFICATION.SUCCESS,
-    });
-
-    if (healthCareWorkerForm.sendInvite) {
+    if (userId) {
       await sendInviteToApplication({
         variables: {
           userId: userId,
+          inviteToPortal: false,
         },
-      });
+      }).catch((err) => [
+        setNotification({
+          title: 'Failed to send CHW Invite!',
+          variant: NOTIFICATION.SUCCESS,
+        }),
+      ]);
 
       setNotification({
-        title: 'Successfully Sent Health Care Worker Invite!',
+        title: 'Successfully Sent CHW Invite!',
         variant: NOTIFICATION.SUCCESS,
       });
     }
   };
 
   const saveRoles = async (userId: string) => {
-    const rolesToAdd: string[] = [];
-    selectedUserRoles.forEach((x) => {
-      rolesToAdd.push(x.name);
-    });
+    const rolesToAdd: string[] = ['Community Health Worker'];
 
     await addRolesToUser({
       variables: {
         userId: userId,
         roleNames: rolesToAdd,
       },
-    })
-      .then((response: any) => {
-        setNotification({
-          title: 'Successfully Added roles to User!',
-          variant: NOTIFICATION.SUCCESS,
-        });
-      })
-      .catch((error) => {
-        console.log(error);
-      });
+    });
   };
 
   const addUserRole = () => {
     const role = roleData.roles.find(
       //TODO: Keeping this patern but the name should not be hard coded
-      (role: RoleDto) => role.name === 'Health Care Worker'
+      (role: RoleDto) => role.name === 'Community Health Worker'
     );
 
     const copy = [...selectedUserRoles];
@@ -269,83 +215,119 @@ export default function HealthCareWorkerPanelCreate(
     setUserRoles(copy);
   };
 
-  const getIsValid = () => {
-    console.log(userDetailFormErrors);
-    console.log(healthCareWorkerFormErrors);
-    let isValid = isUserDetailValid;
-    if (!isHealthCareWorkerValid) isValid = false;
-    return isValid ? true : false;
-  };
-
   const getComponent = () => {
     return (
       <>
-        <div className="bg-uiBg rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              User Detail
-            </h3>
-          </div>
+        <div className="pb-2">
+          <h1 className="text-uiMidDark text-xl font-medium leading-6">
+            Create Community Health Worker
+          </h1>
+          <p className="text-md pb-2 text-gray-500">Step 1 of 1</p>
+        </div>
+        <div className=" border-t border-dashed border-gray-500 px-4 py-5 ">
+          <form className="space-y-6 divide-y divide-gray-200">
+            <div className="space-y-0">
+              <div className="grid grid-cols-1 ">
+                <div className="my-0 sm:col-span-3">
+                  <FormField
+                    label={'First name *'}
+                    nameProp={'firstName'}
+                    register={register}
+                    error={errors.firstName?.message}
+                    placeholder="First name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'Surname *'}
+                    nameProp={'surname'}
+                    register={register}
+                    error={errors.surname?.message}
+                    placeholder="Surname/family name"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <FormField
+                    label={'Cellphone number *'}
+                    nameProp={'phoneNumber'}
+                    register={register}
+                    error={errors.phoneNumber?.message}
+                    placeholder="eg. 0650025055"
+                  />
+                </div>
+                <div className="my-4 sm:col-span-3">
+                  <HealthCareWorkerForm
+                    formKey={`createhealthcareworker-${new Date().getTime()}`}
+                    register={healthCareWorkerRegister}
+                    errors={healthCareWorkerFormErrors}
+                  />
+                </div>
 
-          <UserDetailsForm
-            formKey={`createUserDetails-${new Date().getTime()}`}
-            register={userDetailRegister}
-            errors={userDetailFormErrors}
-            setValue={userDetailSetValue}
-            control={control}
-          />
+                <div className="my-4 sm:col-span-3">
+                  <div className=" mb-4 flex flex-row">
+                    <Button
+                      className={'mt-3 mr-1 w-full rounded-md '}
+                      type={idType === 'idNumber' ? 'filled' : 'outlined'}
+                      color="tertiary"
+                      onClick={() => setIdType('idNumber')}
+                    >
+                      <Typography
+                        type="help"
+                        color={idType === 'idNumber' ? 'white' : 'tertiary'}
+                        text="Id Number"
+                      ></Typography>
+                    </Button>
+
+                    <Button
+                      className="mt-3 w-full rounded-md"
+                      type={idType === 'Passport' ? 'filled' : 'outlined'}
+                      color="tertiary"
+                      onClick={() => setIdType('Passport')}
+                    >
+                      <Typography
+                        type="help"
+                        color={idType === 'Passport' ? 'white' : 'tertiary'}
+                        text="Passport"
+                      ></Typography>
+                    </Button>
+                  </div>
+                  <FormField
+                    label={idType === 'idNumber' ? 'Id number *' : 'Passport *'}
+                    nameProp={'idNumber'}
+                    register={register}
+                    error={errors.idNumber?.message}
+                    placeholder={
+                      idType === 'idNumber'
+                        ? 'e.g 6201014800088'
+                        : 'e.g EN000666'
+                    }
+                  />
+                </div>
+              </div>
+            </div>
+          </form>
+          <div></div>
         </div>
 
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Health Care Worker Detail
-            </h3>
-          </div>
-
-          <HealthCareWorkerForm
-            formKey={`createhealthcareworker-${new Date().getTime()}`}
-            register={healthCareWorkerRegister}
-            errors={healthCareWorkerFormErrors}
-          />
-        </div>
-
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Address Detail
-            </h3>
-          </div>
-          <SiteAddressForm
-            formKey={`createSiteAddress-${new Date().getTime()}`}
-            register={siteAddressRegister}
-            errors={siteAddressFormErrors}
-          />
-        </div>
-
-        <div className="bg-uiBg mt-5 rounded-lg border-b border-gray-200 px-4 py-5">
-          <div className="pb-2">
-            <h3 className="text-uiMidDark text-lg font-medium leading-6">
-              Password
-            </h3>
-          </div>
-
-          <PasswordForm
-            formKey={`createPassword-${new Date().getTime()}`}
-            isEdit={false}
-            register={passwordRegister}
-            errors={passwordFormErrors}
-          />
-        </div>
+        <div className="  rounded-lg border-b border-gray-200 px-4 pb-6"></div>
       </>
     );
   };
 
   return (
     <article>
-      <UserPanelSave disabled={!getIsValid()} onSave={onSave} />
-
       <div className="mx-auto mt-5 max-w-5xl">{getComponent()}</div>
+      <Button
+        className="mt-3 mr-6 w-full rounded"
+        type="filled"
+        color="secondary"
+        disabled={!isValid}
+        isLoading={loading}
+        onClick={handleSubmit(onSave)}
+      >
+        <SaveIcon color="white" className="mr-6 h-6 w-6" />
+        <Typography type="help" color="white" text="Save"></Typography>
+      </Button>
     </article>
   );
 }

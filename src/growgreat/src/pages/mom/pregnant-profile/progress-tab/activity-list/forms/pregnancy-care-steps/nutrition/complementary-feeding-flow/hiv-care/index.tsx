@@ -1,7 +1,8 @@
 import { Header } from '@/pages/infant/infant-profile/components';
 import { DynamicFormProps } from '../../../../dynamic-form';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
+  Alert,
   ButtonGroup,
   ButtonGroupTypes,
   Typography,
@@ -12,6 +13,10 @@ import Pregnant from '@/assets/pregnant.svg';
 import { TipCard } from '@/pages/mom/pregnant-profile/components';
 import { HealthPromotion } from '../../../../components/health-promotion';
 import { replaceBraces } from '@ecdlink/core';
+import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
+
+export const HIVSection = `HIV care & medication`;
+export const HIVQuestion = `Is {client} HIV positive?`;
 
 export const HivCareAndMedicationStep = ({
   mother,
@@ -22,22 +27,23 @@ export const HivCareAndMedicationStep = ({
   setSectionQuestions: setQuestions,
 }: DynamicFormProps) => {
   const name = useMemo(() => mother?.user?.firstName || '', [mother]);
-  const visitSection = `HIV care & medication`;
+  const [answer, setAnswer] = useState<boolean | boolean[] | string>();
 
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
-    { text: 'Unsure', value: undefined },
+    { text: 'Unsure', value: 'unsure' },
   ];
 
-  const question = useMemo(() => `Is {client} HIV positive?`, []);
+  const question = useMemo(() => HIVQuestion, []);
 
   const onOptionSelected = useCallback(
     (value) => {
+      setAnswer(value);
       setQuestions &&
         setQuestions([
           {
-            visitSection: visitSection,
+            visitSection: HIVSection,
             questions: [
               {
                 question,
@@ -48,7 +54,7 @@ export const HivCareAndMedicationStep = ({
         ]);
       setEnableButton && setEnableButton(true);
     },
-    [question, setEnableButton, setQuestions, visitSection]
+    [question, setEnableButton, setQuestions]
   );
 
   useEffect(() => {
@@ -64,8 +70,8 @@ export const HivCareAndMedicationStep = ({
       >
         <HealthPromotion
           title={`Discuss with ${name}`}
-          subTitle={visitSection}
-          section={visitSection}
+          subTitle={HIVSection}
+          section={HIVSection}
           onClose={() => setIsTip && setIsTip(false)}
         />
       </Dialog>
@@ -77,7 +83,7 @@ export const HivCareAndMedicationStep = ({
       <Header
         customIcon={Pregnant}
         backgroundColor={'tertiary'}
-        title={visitSection}
+        title={HIVSection}
       />
       <div className="flex flex-col gap-4 p-4">
         <TipCard
@@ -94,12 +100,26 @@ export const HivCareAndMedicationStep = ({
             )}`}
             color="textDark"
           />
-          <ButtonGroup<boolean | undefined>
+          <ButtonGroup<boolean | string>
             color="secondary"
             type={ButtonGroupTypes.Button}
             options={options}
             onOptionSelected={onOptionSelected}
           />
+          {answer === true && (
+            <Alert
+              type="warning"
+              title={`${name} is HIV positive`}
+              titleColor="textDark"
+              message={`Discuss HIV care & medication with ${name}.`}
+              messageColor="textMid"
+              customIcon={
+                <div className="bg-tertiary h-16 w-16 rounded-full">
+                  <Polly className="h-16 w-16" />
+                </div>
+              }
+            />
+          )}
         </div>
       </div>
     </>

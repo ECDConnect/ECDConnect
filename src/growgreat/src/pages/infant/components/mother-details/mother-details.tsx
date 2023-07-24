@@ -11,11 +11,7 @@ import {
 } from '@ecdlink/ui';
 import { Controller, useForm, useFormState } from 'react-hook-form';
 import { useEffect, useMemo, useState } from 'react';
-import {
-  MotherDetailsProps,
-  yesNoOptions,
-  relationshipTypes,
-} from './mother-details.types';
+import { MotherDetailsProps, yesNoOptions } from './mother-details.types';
 import {
   MotherDetailsModel,
   motherDetailsModelSchema,
@@ -26,6 +22,7 @@ import { motherSelectors } from '@/store/mother';
 import { useThunkFetchCall } from '@/hooks/useThunkFetchCall';
 import { InfantActions } from '@/store/infant/infant.actions';
 import { EventRecordActions } from '@/store/eventRecord/eventRecord.actions';
+import { staticDataSelectors } from '@/store/static-data';
 
 export const MOTHER_TYPE_ID = '568a219f-f1b9-41ac-bf38-143d8d749a39';
 
@@ -56,7 +53,7 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
   const { isValid } = useFormState({ control: motherDetailsFormControl });
   const caregivers = useSelector(caregiverSelectors.getCaregivers) || [];
   const mothers = useSelector(motherSelectors?.getMothers);
-
+  const relations = useSelector(staticDataSelectors.getRelations);
   const [buttonGroupOptions, setButtonGroupOptions] = useState(yesNoOptions);
 
   const { isLoading } = useThunkFetchCall('infants', InfantActions.ADD_INFANTS);
@@ -73,9 +70,9 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
     EventRecordActions.ADD_EVENT_RECORD
   );
 
-  const motherType = relationshipTypes.find((item) => item.label === 'Mother');
-  const caregiverType = relationshipTypes.find(
-    (item) => item.value === motherInfo?.relationId
+  const motherType = relations.find((item) => item.description === 'Mother');
+  const caregiverType = relations.find(
+    (item) => item.id === motherInfo?.relationId
   );
 
   const mothersUpdatedToCaregivers = mothers?.map((item) => ({
@@ -128,12 +125,12 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
       );
       setMotherDetailsFormValue(
         'relationshipId',
-        caregiverType?.value || motherType?.value
+        caregiverType?.id || motherType?.id
       );
       setMotherDetailsFormValue('isMother', !!motherInfo?.user?.id);
     }
   }, [
-    caregiverType?.value,
+    caregiverType?.id,
     isCaregiver,
     motherInfo,
     motherType,
@@ -179,18 +176,18 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   disabled={isCaregiver}
                   selectedValue={
                     isCaregiver
-                      ? caregiverType?.value || motherType?.value
+                      ? caregiverType?.id || motherType?.id
                       : getMotherDetailsFormValues('relationshipId') ||
                         multipleChildrenArray[index].relationshipId
                   }
                   list={
-                    (relationshipTypes &&
-                      relationshipTypes
-                        .filter((x) => x.label?.length > 0)
+                    (relations &&
+                      relations
+                        .filter((x) => x.description?.length > 0)
                         .map((item) => {
                           return {
-                            label: item.label,
-                            value: item.value,
+                            label: item.description,
+                            value: item.id,
                           };
                         })) ||
                     []
@@ -224,15 +221,15 @@ export const MotherDetails: React.FC<MotherDetailsProps> = ({
                   placeholder={'Select relationship:'}
                   fillType="clear"
                   disabled={isCaregiver}
-                  selectedValue={isCaregiver ? motherType?.value : value}
+                  selectedValue={isCaregiver ? motherType?.id : value}
                   list={
-                    (relationshipTypes &&
-                      relationshipTypes
-                        .filter((x) => x.label?.length > 0)
+                    (relations &&
+                      relations
+                        .filter((x) => x.description?.length > 0)
                         .map((item) => {
                           return {
-                            label: item.label,
-                            value: item.value,
+                            label: item.description,
+                            value: item.id,
                           };
                         })) ||
                     []

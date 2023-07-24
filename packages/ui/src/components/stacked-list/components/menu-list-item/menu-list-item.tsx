@@ -13,9 +13,13 @@ import * as styles from './menu-list-item.styles';
 
 export interface MenuListItemProps extends ComponentBaseProps {
   item: MenuListDataItem;
+  onClickItem?: (item: any) => void;
 }
 
-export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
+export const MenuListItem: React.FC<MenuListItemProps> = ({
+  item,
+  onClickItem,
+}) => {
   const getBackground = useMemo(() => {
     if (item.hexBackgroundColor) return;
 
@@ -25,7 +29,10 @@ export const MenuListItem: React.FC<MenuListItemProps> = ({ item }) => {
   return (
     <div
       className={classNames(styles.menulistItemContainer, item.className)}
-      onClick={() => item.onActionClick && item.onActionClick()}
+      onClick={() => {
+        if (!!item.onActionClick) item.onActionClick();
+        else if (!!onClickItem) onClickItem(item);
+      }}
     >
       <div
         className={

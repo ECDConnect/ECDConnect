@@ -153,6 +153,12 @@ class CoachService {
                      }
                      signingSignature
                      isActive
+                     traineeVisits {
+                      id
+                    }
+                    practitionerVisits {
+                      id
+                    }
                    }
                  }
       `,

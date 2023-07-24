@@ -15,6 +15,9 @@ import { ReactComponent as Polly } from '@/assets/momImageSvg.svg';
 import { replaceBraces } from '@ecdlink/core';
 import { HealthPromotion } from '../../components/health-promotion';
 
+export const HIVQuestion = `Is {client} HIV positive?`;
+export const HIVSection = 'HIV care & medication';
+
 export const HIVCareAndMedicationStep = ({
   infant,
   isTipPage,
@@ -29,15 +32,13 @@ export const HIVCareAndMedicationStep = ({
     [infant?.caregiver?.firstName]
   );
 
-  const visitSection = 'HIV care & medication';
-
   const options = [
     { text: 'Yes', value: true },
     { text: 'No', value: false },
     { text: 'Unsure', value: 'unsure' },
   ];
 
-  const question = useMemo(() => `Is {client} HIV positive?`, []);
+  const question = useMemo(() => HIVQuestion, []);
 
   const onOptionSelected = useCallback(
     (value) => {
@@ -45,7 +46,7 @@ export const HIVCareAndMedicationStep = ({
       setQuestions &&
         setQuestions([
           {
-            visitSection,
+            visitSection: HIVSection,
             questions: [
               {
                 question,
@@ -80,7 +81,7 @@ export const HIVCareAndMedicationStep = ({
     <>
       <Header
         customIcon={P5}
-        title={visitSection}
+        title={HIVSection}
         iconHexBackgroundColor={activitiesColours.pillar5.primaryColor}
         hexBackgroundColor={activitiesColours.pillar5.secondaryColor}
       />

@@ -12,6 +12,7 @@ export const menuSubTitle = 'flex pl-0.5 items-center text-sm text-textLight';
 export const menuChevron = 'h-6 w-6 text-primary';
 export const menulistItemContainer =
   'bg-uiBg rounded-10 hover:bg-uiLight cursor-pointer';
+export const menuItemIconContainerNoAction = 'bg-uiBg rounded-10';
 
 export const getColourByAlertSeverity = (type: AlertSeverityType): Colours => {
   switch (type) {

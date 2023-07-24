@@ -182,3 +182,32 @@ export function getMotherNearestPreviousVisitByOrderDate(
 
   return nearestDateObject;
 }
+
+export const getMotherFirstVisitSelector = (
+  state: RootState
+): VisitDto | null => {
+  const visits = state.mothers.visits;
+
+  if (!visits) return null;
+
+  const filteredVisits = visits.filter((visit) => {
+    const orderDate = new Date(visit.orderDate);
+    return (
+      orderDate.getFullYear() !== 0 &&
+      visit.attended &&
+      visit.visitType?.normalizedName !== 'Additional visits'
+    );
+  });
+  const firstVisit = filteredVisits?.reduce(
+    (oldest: VisitDto | null, current: VisitDto) => {
+      const currentPlannedVisitDate = new Date(current.orderDate);
+      if (!oldest || currentPlannedVisitDate < new Date(oldest.orderDate)) {
+        return current;
+      }
+      return oldest;
+    },
+    null
+  );
+
+  return firstVisit;
+};

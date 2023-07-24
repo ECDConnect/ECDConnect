@@ -1,7 +1,7 @@
-import { Typography, FADButton } from '@ecdlink/ui';
+import { Typography, FADButton, LoadingSpinner } from '@ecdlink/ui';
 import { ReactComponent as MoneyIcon } from '@/assets/moneyIcon.svg';
 import * as styles from './money.styles';
-import React, { useEffect, useLayoutEffect } from 'react';
+import React, { useEffect, useLayoutEffect, useState } from 'react';
 import ROUTES from '@/routes/routes';
 import { useHistory } from 'react-router-dom';
 import { SubmitIncomeStatements } from './submit-income-statements/submit-income-statements';
@@ -33,12 +33,17 @@ export const Money: React.FC<MoneyProps> = ({
   const history = useHistory();
   const { isOnline } = useOnlineStatus();
   const balanceSheet = useSelector(statementsSelectors.getBalanceSheet);
+  const [isLoading, setIsLoading] = useState(false);
   const userAuth = useSelector(authSelectors.getAuthUser);
   const appDispatch = useAppDispatch();
   const income = useSelector(statementsSelectors.getIncome);
   const expense = useSelector(statementsSelectors.getExpenses);
   const year = getYear(new Date());
-  const month = getMonth(new Date()) + 1;
+  const month =
+    balanceSheet?.[balanceSheet?.length - 1]?.submitted === false &&
+    balanceSheet?.[balanceSheet?.length - 1]?.month! === new Date().getMonth()
+      ? getMonth(new Date())
+      : getMonth(new Date()) + 1;
 
   const updateStatements = async () => {
     if (userAuth?.auth_token) {
@@ -98,7 +103,9 @@ export const Money: React.FC<MoneyProps> = ({
   }, [isOnline, userAuth?.auth_token]);
 
   useLayoutEffect(() => {
+    setIsLoading(true);
     updateStatements();
+    setIsLoading(false);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -119,7 +126,14 @@ export const Money: React.FC<MoneyProps> = ({
 
   return (
     <>
-      {hasIncomeStatements || state?.run ? (
+      {isLoading ? (
+        <LoadingSpinner
+          size="big"
+          spinnerColor="white"
+          backgroundColor="secondary"
+          className="mb-7"
+        />
+      ) : hasIncomeStatements || state?.run ? (
         <SubmitIncomeStatements />
       ) : (
         <div className="h-full px-4 py-2 pt-7">

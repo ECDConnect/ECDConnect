@@ -8,15 +8,18 @@ import {
   Divider,
   Typography,
 } from '@ecdlink/ui';
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useState } from 'react';
 import { detailTexts, options } from './options';
-import { useDialog } from '@ecdlink/core';
-import { DynamicFormProps } from '../../dynamic-form';
+import { useDialog, usePrevious, useSessionStorage } from '@ecdlink/core';
+import { DynamicFormProps, SectionQuestions } from '../../dynamic-form';
 import {
   InformationCircleIcon,
   QuestionMarkCircleIcon,
 } from '@heroicons/react/solid';
 import { Score } from '../components/score';
+import { practitionerVisitIdKey } from '@/pages/practitioner/practitioner-profile/practitioner-journey/forms';
+import { useSelector } from 'react-redux';
+import { getSectionsQuestionsByStep } from '@/store/pqa/pqa.selectors';
 
 export const step8ReAccreditation = {
   visitSection: 'Step 8',
@@ -25,6 +28,7 @@ export const step8ReAccreditation = {
 
 export const Step8ReAccreditation = ({
   smartStarter,
+  isView,
   setSectionQuestions,
   setEnableButton,
 }: DynamicFormProps) => {
@@ -34,7 +38,27 @@ export const Step8ReAccreditation = ({
   });
 
   const answers = question.answer as string[];
-  const firstName = smartStarter?.user?.firstName || 'the SmartStarter';
+  const firstName =
+    smartStarter?.user?.firstName ||
+    smartStarter?.firstName ||
+    'the SmartStarter';
+
+  const [visitIdFromPractitionerJourney] = useSessionStorage(
+    practitionerVisitIdKey
+  );
+
+  const isViewAnswers = isView || !!visitIdFromPractitionerJourney;
+
+  const previousData = useSelector(
+    getSectionsQuestionsByStep(
+      visitIdFromPractitionerJourney ?? '',
+      'reAccreditationPreviousFormData',
+      step8ReAccreditation.visitSection
+    )
+  );
+  const previousStatePreviousData = usePrevious(previousData) as
+    | SectionQuestions
+    | undefined;
 
   const dialog = useDialog();
 
@@ -48,7 +72,6 @@ export const Step8ReAccreditation = ({
         const updatedQuestion = { ...question, answer: currentAnswers };
 
         setAnswers(updatedQuestion);
-        setEnableButton?.(true);
         return setSectionQuestions?.([
           {
             visitSection: step8ReAccreditation.visitSection,
@@ -59,7 +82,6 @@ export const Step8ReAccreditation = ({
       const currentAnswers = answers?.filter((item) => item !== event.value);
       const updatedQuestion = { ...question, answer: currentAnswers };
 
-      setEnableButton?.(!!currentAnswers?.length);
       setAnswers(updatedQuestion);
       return setSectionQuestions?.([
         {
@@ -68,8 +90,37 @@ export const Step8ReAccreditation = ({
         },
       ]);
     },
-    [answers, question, setEnableButton, setSectionQuestions]
+    [answers, question, setSectionQuestions]
   );
+
+  const handleViewMode = useCallback(() => {
+    if (
+      isViewAnswers &&
+      previousData &&
+      previousData?.questions.length !==
+        previousStatePreviousData?.questions.length
+    ) {
+      const answer =
+        previousData?.questions?.[0]?.answer?.toString()?.split('.,') ?? [];
+
+      setAnswers((prevState) => ({
+        question: prevState.question,
+        answer,
+      }));
+    }
+  }, [
+    isViewAnswers,
+    previousData,
+    previousStatePreviousData?.questions.length,
+  ]);
+
+  useEffect(() => {
+    handleViewMode();
+  }, [handleViewMode]);
+
+  useLayoutEffect(() => {
+    setEnableButton?.(true);
+  }, [setEnableButton]);
 
   const renderDialog = ({ index }: { index?: number }) => {
     let title = 'Check all of the statements that are true';
@@ -114,6 +165,13 @@ export const Step8ReAccreditation = ({
   return (
     <div className="p-4">
       <Typography type="h2" text={question.question} className="mb-4" />
+      {isViewAnswers && (
+        <Alert
+          className="my-4"
+          type="warning"
+          title="You are viewing this form and cannot fill in responses."
+        />
+      )}
       <Alert
         type="info"
         title="Check all of the statements that are true"
@@ -141,7 +199,8 @@ export const Step8ReAccreditation = ({
             key={item}
             title={label}
             titleWeight="normal"
-            checked={answers?.some((option) => option === item)}
+            checked={answers?.some((option) => item.includes(option))}
+            disabled={isViewAnswers}
             value={item}
             onChange={onCheckboxChange}
             {...(index > 4 && {

@@ -21,7 +21,7 @@ namespace ECDLink.EGraphQL
 {
     public static class GraphStartup
     {
-        public static void ConfigureGraphQlServices(IServiceCollection services)
+        public static void ConfigureGraphQlServices(IServiceCollection services, bool isDevelopment)
         {
             const int maxRequestSize = 128 * 1024 * 1024;
 
@@ -33,6 +33,7 @@ namespace ECDLink.EGraphQL
             var builder = services
               .AddGraphQLServer(maxAllowedRequestSize: maxRequestSize)
               .ModifyOptions(o => o.DefaultResolverStrategy = HotChocolate.Execution.ExecutionStrategy.Serial)
+              .ModifyRequestOptions(opt => opt.IncludeExceptionDetails = isDevelopment)
               .AddQueryType<Query>()
               .AddTypeModule(sp => new ContentTypeModule(contentReloader))
               .AddTypeModule(sp => new SettingsModule(contentReloader))
@@ -43,6 +44,7 @@ namespace ECDLink.EGraphQL
               .AddDirectiveType<TokenAccessDirectiveType>()
               .AddDirectiveType<PermissionDirectiveType>()
               .AddFiltering()
+              .AddSorting()
               .RegisterDbContext<AuthenticationDbContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterDbContext<PostgresTenancyContext>(HotChocolate.Data.DbContextKind.Synchronized)
               .RegisterService<HierarchyEngine>(ServiceKind.Synchronized)
